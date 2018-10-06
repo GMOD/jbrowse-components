@@ -1,0 +1,7 @@
+{
+    "devDependencies" : {
+        "lerna" : "^3.4.1"
+    },
+    "name" : "root",
+    "private" : true
+}
