@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/GMOD/jbrowse-components.svg?branch=master)](https://travis-ci.com/GMOD/jbrowse-components)
+
 # jbrowse-components
 
 Lerna-managed monorepo containing many related packages for next-generation JBrowse development.
