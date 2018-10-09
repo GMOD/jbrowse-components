@@ -1,6 +1,6 @@
 import HelloWorker from './hello.worker'
 
-export default function register() {
+export function register() {
   const helloWorker = new HelloWorker()
   let messageCount = 0
 
@@ -20,4 +20,8 @@ export default function register() {
       }
     }
   }
+}
+
+export function unregister() {
+  throw new Error('unregister not yet implemented')
 }
