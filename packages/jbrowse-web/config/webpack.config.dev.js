@@ -108,6 +108,7 @@ module.exports = {
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info =>
       path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+    globalObject: 'typeof self === "undefined" ? this : self',
   },
   optimization: {
     // Automatically split vendor and commons

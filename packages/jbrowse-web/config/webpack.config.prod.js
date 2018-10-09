@@ -120,6 +120,7 @@ module.exports = {
       path
         .relative(paths.appSrc, info.absoluteResourcePath)
         .replace(/\\/g, '/'),
+    globalObject: 'typeof self === "undefined" ? this : self',
   },
   optimization: {
     minimizer: [
