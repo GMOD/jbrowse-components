@@ -1,11 +1,16 @@
-import React, { Component } from 'react'
+import React from 'react'
+import { MuiThemeProvider } from '@material-ui/core/styles'
 import logo from './logo.svg'
+import MainAppBar from './ui/MainAppBar'
+import MenuConfig from './ui/MenuConfigTemp'
+import Theme from './ui/Theme'
 import './App.css'
 
-class App extends Component {
-  render() {
-    return (
+function App() {
+  return (
+    <MuiThemeProvider theme={Theme}>
       <div className="App">
+        <MainAppBar menus={MenuConfig} />
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>
@@ -21,8 +26,8 @@ class App extends Component {
           </a>
         </header>
       </div>
-    )
-  }
+    </MuiThemeProvider>
+  )
 }
 
 export default App
