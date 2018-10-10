@@ -39,17 +39,23 @@ class DropDownMenu extends React.Component {
     this.setState({ anchorEl: anchorEl ? null : event.currentTarget })
   }
 
-  handleClose = event => {
+  handleClose = (event, callback) => {
     const { anchorEl } = this.state
     if (anchorEl.contains(event.target)) {
       return
     }
-
     this.setState({ anchorEl: null })
+    if (callback) callback()
   }
 
   render() {
-    const { classes, menuTitle, menuItems, itemIcons } = this.props
+    const {
+      classes,
+      menuTitle,
+      menuItems,
+      itemCallbacks,
+      itemIcons,
+    } = this.props
     const { anchorEl } = this.state
 
     return (
@@ -82,7 +88,12 @@ class DropDownMenu extends React.Component {
                 <ClickAwayListener onClickAway={this.handleClose}>
                   <MenuList>
                     {menuItems.map((item, i) => (
-                      <MenuItem key={item} onClick={this.handleClose}>
+                      <MenuItem
+                        key={item}
+                        onClick={event =>
+                          this.handleClose(event, itemCallbacks[i])
+                        }
+                      >
                         <ListItemIcon key={item}>
                           {itemIcons[i] ? (
                             <Icon>{itemIcons[i]}</Icon>
@@ -114,6 +125,7 @@ DropDownMenu.propTypes = {
   }).isRequired,
   menuTitle: PropTypes.string.isRequired,
   menuItems: PropTypes.arrayOf(PropTypes.string).isRequired,
+  itemCallbacks: PropTypes.arrayOf(PropTypes.func).isRequired,
   itemIcons: PropTypes.arrayOf(PropTypes.string),
 }
 
