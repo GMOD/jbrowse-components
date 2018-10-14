@@ -15,13 +15,13 @@ const styles = {
   },
 }
 
-function SimpleAppBar(props) {
-  const { classes, menus } = props
+function MainAppBar(props) {
+  const { classes, menus, ...others } = props
 
   return (
     <div className={classes.root}>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar {...others}>
           {menus.map(menu => (
             <DropDownMenu key={menu.menuTitle} {...menu} />
           ))}
@@ -35,7 +35,7 @@ function SimpleAppBar(props) {
   )
 }
 
-SimpleAppBar.propTypes = {
+MainAppBar.propTypes = {
   classes: PropTypes.shape({
     grow: PropTypes.shape.isRequired,
     root: PropTypes.shape.isRequired,
@@ -49,4 +49,4 @@ SimpleAppBar.propTypes = {
   ).isRequired,
 }
 
-export default withStyles(styles)(SimpleAppBar)
+export default withStyles(styles)(MainAppBar)

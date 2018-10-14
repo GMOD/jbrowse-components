@@ -4,7 +4,7 @@ export default createMuiTheme({
   palette: {
     // type: 'dark',
     primary: { main: '#396494' },
-    secondary: { main: '#945c39' },
+    secondary: { main: '#399469' },
   },
   typography: {
     useNextVariants: true,
