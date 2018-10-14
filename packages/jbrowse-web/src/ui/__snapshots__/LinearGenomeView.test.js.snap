@@ -1,0 +1,155 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`linear genome view component renders one track, no blocks 1`] = `
+<div
+  className="LinearGenomeView"
+  style={
+    Object {
+      "gridTemplateColumns": "[controls] 100px [blocks] auto",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px",
+      "height": "40px",
+      "width": "undefinedpx",
+    }
+  }
+>
+  <div
+    className="scale-bar"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "height": "20px",
+      }
+    }
+  />
+  <div
+    className="track-controls"
+    style={
+      Object {
+        "gridColumn": "controls",
+        "gridRow": "foo",
+      }
+    }
+  >
+    foo
+  </div>
+  <div
+    className="track-blocks"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "gridRow": "foo",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`linear genome view component renders two tracks, two blocks 1`] = `
+<div
+  className="LinearGenomeView"
+  style={
+    Object {
+      "gridTemplateColumns": "[controls] 100px [blocks] auto",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px",
+      "height": "40px",
+      "width": "undefinedpx",
+    }
+  }
+>
+  <div
+    className="scale-bar"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "height": "20px",
+      }
+    }
+  >
+    <div
+      className="block"
+      style={
+        Object {
+          "left": "undefinedpx",
+          "width": "NaNpx",
+        }
+      }
+    >
+      200 400
+    </div>
+    <div
+      className="block"
+      style={
+        Object {
+          "left": "undefinedpx",
+          "width": "NaNpx",
+        }
+      }
+    >
+      400 600
+    </div>
+  </div>
+  <div
+    className="track-controls"
+    style={
+      Object {
+        "gridColumn": "controls",
+        "gridRow": "foo",
+      }
+    }
+  >
+    foo
+  </div>
+  <div
+    className="track-blocks"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "gridRow": "foo",
+      }
+    }
+  >
+    <div
+      className="block"
+      style={
+        Object {
+          "left": "undefinedpx",
+          "width": "NaNpx",
+        }
+      }
+    />
+    <div
+      className="block"
+      style={
+        Object {
+          "left": "undefinedpx",
+          "width": "NaNpx",
+        }
+      }
+    />
+  </div>
+</div>
+`;
+
+exports[`linear genome view component renders with no props 1`] = `
+<div
+  className="LinearGenomeView"
+  style={
+    Object {
+      "gridTemplateColumns": "[controls] 100px [blocks] auto",
+      "gridTemplateRows": "[scale-bar] auto ",
+      "height": "20px",
+      "width": "undefinedpx",
+    }
+  }
+>
+  <div
+    className="scale-bar"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "height": "20px",
+      }
+    }
+  />
+</div>
+`;

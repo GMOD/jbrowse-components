@@ -14,6 +14,8 @@
         "react/prefer-stateless-function": "warn",
         "no-use-before-define": 0,
         "no-param-reassign": 0,
+        "no-unused-vars": "warn",
+        "no-debugger": "warn",
         "prettier/prettier": [
             "error",
             {
@@ -25,19 +27,22 @@
     },
     "overrides": [
         {
-          "files": [ "src/*.worker.js" ],
+          "files": [ "src/**/*.worker.js" ],
           "globals": { "self": true },
           "rules": {
               "no-restricted-globals": 0
           }
         },
         {
-            "files": [ "src/*.test.js" ],
+            "files": [ "src/**/*.test.js" ],
             "env": {
                 "jest": true
             },
             "globals": {
-                "document": true
+                "document": true,
+                "it": true,
+                "describe": true,
+                "test": true
             },
             "rules": {
                 "no-restricted-globals": 0
