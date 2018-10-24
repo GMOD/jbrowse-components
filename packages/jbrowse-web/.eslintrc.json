@@ -12,6 +12,7 @@
     "rules": {
         "react/jsx-filename-extension": 0,
         "react/prefer-stateless-function": "warn",
+        "react/no-unused-state": "warn",
         "no-use-before-define": 0,
         "no-param-reassign": 0,
         "no-unused-vars": "warn",

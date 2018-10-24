@@ -1,0 +1,44 @@
+.LinearGenomeView {
+    display: grid;
+    background: #eee;
+    border: 1px solid #000000;
+
+    .view-controls {
+        height: 100%;
+    }
+
+    .block {
+        position: relative;
+        height: 100%;
+        background: white;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        box-sizing: content-box;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+  
+    .track-controls, .track-blocks {
+        border-top: 1px solid gray;
+    }
+    .controls {
+        border-right: 1px solid gray;
+    }
+    .track-blocks {
+        overflow: hidden;
+        background: #333;
+    }
+
+    .ScaleBar {
+        width: 100%;
+        position: relative;
+        background: #555;
+        overflow: hidden;
+    }
+
+    .drag-handle {
+        background: #888;
+        cursor: ns-resize;
+        width: 100%;
+    }
+}

@@ -6,23 +6,38 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px",
-      "height": "40px",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 1px",
+      "height": "43px",
       "width": "undefinedpx",
     }
   }
 >
   <div
-    className="scale-bar"
+    className="controls view-controls"
+    style={
+      Object {
+        "gridRow": "scale-bar",
+      }
+    }
+  >
+    <button
+      type="button"
+    >
+      select tracks
+    </button>
+  </div>
+  <div
+    className="ScaleBar"
     style={
       Object {
         "gridColumn": "blocks",
-        "height": "20px",
+        "gridRow": "scale-bar",
+        "height": "22px",
       }
     }
   />
   <div
-    className="track-controls"
+    className="controls track-controls"
     style={
       Object {
         "gridColumn": "controls",
@@ -38,6 +53,15 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
       Object {
         "gridColumn": "blocks",
         "gridRow": "foo",
+      }
+    }
+  />
+  <div
+    className="drag-handle drag-handle-horizontal"
+    style={
+      Object {
+        "gridColumn": "span 2",
+        "gridRow": "resize-foo",
       }
     }
   />
@@ -50,18 +74,33 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px",
-      "height": "40px",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 1px",
+      "height": "43px",
       "width": "undefinedpx",
     }
   }
 >
   <div
-    className="scale-bar"
+    className="controls view-controls"
+    style={
+      Object {
+        "gridRow": "scale-bar",
+      }
+    }
+  >
+    <button
+      type="button"
+    >
+      select tracks
+    </button>
+  </div>
+  <div
+    className="ScaleBar"
     style={
       Object {
         "gridColumn": "blocks",
-        "height": "20px",
+        "gridRow": "scale-bar",
+        "height": "22px",
       }
     }
   >
@@ -74,7 +113,10 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
         }
       }
     >
-      200 400
+      200
+       
+      400
+       
     </div>
     <div
       className="block"
@@ -85,11 +127,14 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
         }
       }
     >
-      400 600
+      400
+       
+      600
+       
     </div>
   </div>
   <div
-    className="track-controls"
+    className="controls track-controls"
     style={
       Object {
         "gridColumn": "controls",
@@ -127,6 +172,15 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
       }
     />
   </div>
+  <div
+    className="drag-handle drag-handle-horizontal"
+    style={
+      Object {
+        "gridColumn": "span 2",
+        "gridRow": "resize-foo",
+      }
+    }
+  />
 </div>
 `;
 
@@ -137,17 +191,32 @@ exports[`linear genome view component renders with no props 1`] = `
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto ",
-      "height": "20px",
+      "height": "22px",
       "width": "undefinedpx",
     }
   }
 >
   <div
-    className="scale-bar"
+    className="controls view-controls"
+    style={
+      Object {
+        "gridRow": "scale-bar",
+      }
+    }
+  >
+    <button
+      type="button"
+    >
+      select tracks
+    </button>
+  </div>
+  <div
+    className="ScaleBar"
     style={
       Object {
         "gridColumn": "blocks",
-        "height": "20px",
+        "gridRow": "scale-bar",
+        "height": "22px",
       }
     }
   />
