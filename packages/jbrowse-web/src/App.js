@@ -6,18 +6,34 @@ import LinearGenomeView from './ui/LinearGenomeView/LinearGenomeView'
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { offset: 0 }
+    this.state = { offset: 0, width: 800, controlsWidth: 100 }
 
     // bind event methods
     this.horizontalScroll = this.horizontalScroll.bind(this)
   }
 
-  horizontalScroll(pixels, event) {
-    const { offset } = this.state
-    this.setState({ offset: offset + pixels })
+  calculateBlockWidths(blocks, bpPerPx) {
+    let total = 0
+    blocks.forEach(block => {
+      block.width = Math.abs(block.end - block.start) / bpPerPx
+      total += block.width
+    })
+    this.totalBlockWidth = total
+  }
+
+  horizontalScroll(pixels) {
+    const { offset, width, controlsWidth } = this.state
+
+    this.setState({
+      offset: Math.min(
+        Math.max(offset + pixels, 0),
+        width - this.totalBlockWidth - controlsWidth,
+      ),
+    })
   }
 
   render() {
+    const bpPerPx = 1
     const blocks = [
       { refName: 'ctgA', start: 100, end: 200, content: 'foo' },
       {
@@ -38,8 +54,9 @@ class App extends Component {
         ),
       },
     ]
+    this.calculateBlockWidths(blocks, bpPerPx)
     const tracks = [{ id: 'foo', height: 100 }, { id: 'bar', height: 30 }]
-    const { offset } = this.state
+    const { offset, width, controlsWidth } = this.state
     return (
       <div className="App">
         {/* <header className="App-header">
@@ -58,11 +75,12 @@ class App extends Component {
         </header> */}
         <LinearGenomeView
           blocks={blocks}
-          width={800}
+          width={width}
           tracks={tracks}
-          bpPerPx={1}
+          bpPerPx={bpPerPx}
           offsetPx={offset}
           onHorizontalScroll={this.horizontalScroll}
+          controlsWidth={controlsWidth}
         />
       </div>
     )

@@ -32,6 +32,7 @@ export default class LinearGenomeView extends Component {
     offsetPx: PropTypes.number.isRequired,
     width: PropTypes.number.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
+    controlsWidth: PropTypes.number.isRequired,
   }
 
   constructor(props) {
@@ -47,7 +48,14 @@ export default class LinearGenomeView extends Component {
 
   render() {
     const scaleBarHeight = 22
-    const { blocks, tracks, bpPerPx, offsetPx, width } = this.props
+    const {
+      blocks,
+      tracks,
+      bpPerPx,
+      offsetPx,
+      width,
+      controlsWidth,
+    } = this.props
     const height =
       scaleBarHeight +
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
@@ -59,7 +67,7 @@ export default class LinearGenomeView extends Component {
           t => `[${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
         )
         .join(' ')}`,
-      gridTemplateColumns: '[controls] 100px [blocks] auto',
+      gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
     }
     return (
       <div className="LinearGenomeView" style={style}>

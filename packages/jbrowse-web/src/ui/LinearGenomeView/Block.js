@@ -1,13 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-export default function Block({ offset, children, start, end, bpPerPx }) {
-  const blockWidth = Math.abs(end - start) / bpPerPx
+export default function Block({
+  offset,
+  children,
+  start,
+  end,
+  width,
+  bpPerPx,
+}) {
   return (
-    <div
-      style={{ left: `${offset}px`, width: `${blockWidth}px` }}
-      className="block"
-    >
+    <div style={{ left: `${offset}px`, width: `${width}px` }} className="block">
       {children}
     </div>
   )
@@ -20,4 +23,5 @@ Block.propTypes = {
   start: PropTypes.number.isRequired,
   end: PropTypes.number.isRequired,
   bpPerPx: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
 }

@@ -7,14 +7,13 @@ export default function ScaleBar({ style, height, blocks, offset, bpPerPx }) {
   return (
     <div style={finalStyle} className="ScaleBar">
       {blocks.map(block => {
-        const foo = 1
+        const { refName, start, end } = block
         return (
           <Block
-            key={`${block.refName}:${block.start}..${block.end}`}
+            {...block}
+            key={`${refName}:${start}..${end}`}
             offset={offset}
-            start={block.start}
             bpPerPx={bpPerPx}
-            end={block.end}
           >
             {block.start} {block.end}{' '}
           </Block>

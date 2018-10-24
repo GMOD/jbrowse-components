@@ -19,10 +19,45 @@ export default class TrackBlocks extends Component {
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
     this.mouseLeave = this.mouseLeave.bind(this)
+    this.wheel = this.wheel.bind(this)
+
+    const { bpPerPx } = props
+    this.blockWidths = props.blocks.map(
+      ({ start, end }) => Math.abs(end - start) / bpPerPx,
+    )
+    this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
   }
 
   mouseDown(event) {
     this.setState({ mouseDragging: true })
+  }
+
+  wheel(event) {
+    const { onHorizontalScroll } = this.props
+    const delta = { x: 0, y: 0 }
+    if ('wheelDeltaX' in event) {
+      delta.x = event.wheelDeltaX / 2
+      delta.y = event.wheelDeltaY / 2
+    } else if ('deltaX' in event) {
+      delta.x =
+        Math.abs(event.deltaY) > Math.abs(2 * event.deltaX) ? 0 : event.deltaX
+      delta.y = event.deltaY * -10
+    } else if (event.wheelDelta) {
+      delta.y = event.wheelDelta / 2
+      if (window.opera) delta.y = -delta.y
+    } else if (event.detail) {
+      delta.y = -event.detail * 100
+    }
+
+    delta.x = Math.round(-delta.x)
+    delta.y = Math.round(delta.y)
+
+    if (delta.x) onHorizontalScroll(delta.x)
+    // TODO vertical scrolling
+    // if (delta.y)
+    //   // 60 pixels per mouse wheel event
+    //   this.setY(this.getY() - delta.y)
+    event.preventDefault()
   }
 
   mouseMove(event) {
@@ -36,6 +71,8 @@ export default class TrackBlocks extends Component {
   }
 
   mouseLeave(event) {
+    event.preventDefault()
+
     this.setState({ mouseDragging: false })
   }
 
@@ -54,16 +91,17 @@ export default class TrackBlocks extends Component {
         onMouseMove={this.mouseMove}
         onMouseLeave={this.mouseLeave}
         onMouseUp={this.mouseUp}
+        onWheel={this.wheel}
         role="presentation"
       >
-        {blocks.map(block => {
+        {blocks.map((block, i) => {
+          const { refName, start, end } = block
           const comp = (
             <Block
-              key={`${block.refName}:${block.start}..${block.end}`}
+              {...block}
+              key={`${refName}:${start}..${end}`}
               offset={offsetPx}
               bpPerPx={bpPerPx}
-              start={block.start}
-              end={block.end}
             >
               {block.content}
             </Block>
