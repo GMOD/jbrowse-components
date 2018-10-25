@@ -8,6 +8,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { withStyles } from '@material-ui/core/styles'
@@ -67,16 +69,51 @@ function generateExpansionPanel(classes, trackGroup) {
   )
 }
 
-function HierarchicalTrackSelector(props) {
-  const { classes } = props
-  return (
-    <div className={classes.root}>
-      {TrackConfig.map(group => generateExpansionPanel(classes, group))}
-      <Button variant="fab" className={classes.fab} color="primary">
-        <Icon>add</Icon>
-      </Button>
-    </div>
-  )
+class HierarchicalTrackSelector extends React.Component {
+  state = {
+    anchorEl: null,
+  }
+
+  handleClick = event => {
+    this.setState({ anchorEl: event.currentTarget })
+  }
+
+  handleClose = () => {
+    this.setState({ anchorEl: null })
+  }
+
+  render() {
+    const { classes } = this.props
+    const { anchorEl } = this.state
+
+    return (
+      <div className={classes.root}>
+        {TrackConfig.map(group => generateExpansionPanel(classes, group))}
+        <Button
+          variant="fab"
+          className={classes.fab}
+          color="primary"
+          aria-owns={anchorEl ? 'track-menu' : null}
+          aria-haspopup="true"
+          onClick={this.handleClick}
+        >
+          <Icon>add</Icon>
+        </Button>
+        <Menu
+          id="simple-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={this.handleClose}
+        >
+          <MenuItem onClick={this.handleClose}>Open track file or URL</MenuItem>
+          <MenuItem onClick={this.handleClose}>Add combination track</MenuItem>
+          <MenuItem onClick={this.handleClose}>
+            Add sequence search track
+          </MenuItem>
+        </Menu>
+      </div>
+    )
+  }
 }
 
 HierarchicalTrackSelector.propTypes = {

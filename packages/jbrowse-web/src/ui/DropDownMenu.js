@@ -13,8 +13,6 @@ import Popper from '@material-ui/core/Popper'
 import SvgIcon from '@material-ui/core/SvgIcon'
 import { withStyles } from '@material-ui/core/styles'
 
-// import * as Icons from '@material-ui/icons'
-
 function EmptyIcon(props) {
   return (
     <SvgIcon {...props}>
