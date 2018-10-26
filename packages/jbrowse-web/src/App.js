@@ -35,6 +35,7 @@ class App extends Component {
   render() {
     const bpPerPx = 1
     const blocks = [
+      { refName: 'ctgA', start: 0, end: 50, content: 'bar' },
       { refName: 'ctgA', start: 100, end: 200, content: 'foo' },
       {
         refName: 'ctgA',

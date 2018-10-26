@@ -71,8 +71,8 @@ function forEachTickMark(block, majorCallback, minorCallback) {
     b < maxBase;
     b += iterPitch
   ) {
-    if (b % gridPitch.majorPitch) minorCallback(b)
-    else majorCallback(b)
+    if (minorCallback && b % gridPitch.majorPitch) minorCallback(b)
+    else if (majorCallback) majorCallback(b)
   }
 }
 
