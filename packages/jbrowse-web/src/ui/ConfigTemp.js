@@ -286,4 +286,8 @@ const TrackConfig = [
   },
 ]
 
-export { MenuConfig, TrackConfig }
+const DrawerConfig = {
+  width: '30%',
+}
+
+export { MenuConfig, TrackConfig, DrawerConfig }

@@ -20,8 +20,8 @@ function MainAppBar(props) {
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar {...others}>
+      <AppBar position="static" {...others}>
+        <Toolbar>
           {menus.map(menu => (
             <DropDownMenu key={menu.menuTitle} {...menu} />
           ))}

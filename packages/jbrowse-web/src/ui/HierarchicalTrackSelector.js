@@ -13,12 +13,10 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { withStyles } from '@material-ui/core/styles'
-import { TrackConfig } from './ConfigTemp'
 
 const styles = theme => ({
   root: {
     textAlign: 'left',
-    width: 300,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -83,12 +81,17 @@ class HierarchicalTrackSelector extends React.Component {
   }
 
   render() {
-    const { classes } = this.props
+    const { classes, config, theme } = this.props
     const { anchorEl } = this.state
 
+    const style = {
+      padding: theme.spacing.unit,
+    }
+
     return (
-      <div className={classes.root}>
-        {TrackConfig.map(group => generateExpansionPanel(classes, group))}
+      <div className={classes.root} style={style}>
+        <Typography variant="h6">Available Tracks</Typography>
+        {config.map(group => generateExpansionPanel(classes, group))}
         <Button
           variant="fab"
           className={classes.fab}
@@ -122,6 +125,11 @@ HierarchicalTrackSelector.propTypes = {
     heading: PropTypes.shape.isRequired,
     fab: PropTypes.shape.isRequired,
   }).isRequired,
+  config: PropTypes.shape().isRequired,
+  theme: PropTypes.shape().isRequired,
+  // width: PropTypes.number.isRequired,
 }
 
-export default withStyles(styles)(HierarchicalTrackSelector)
+export default withStyles(styles, { withTheme: true })(
+  HierarchicalTrackSelector,
+)
