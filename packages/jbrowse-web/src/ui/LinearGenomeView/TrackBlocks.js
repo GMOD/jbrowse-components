@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 import Block from './Block'
 
 export default class TrackBlocks extends Component {
-  propTypes = {
+  static propTypes = {
     blocks: PropTypes.arrayOf(PropTypes.object).isRequired,
-    trackId: PropTypes.number.isRequired,
+    trackId: PropTypes.string.isRequired,
     offsetPx: PropTypes.number.isRequired,
     bpPerPx: PropTypes.number.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
@@ -28,7 +28,7 @@ export default class TrackBlocks extends Component {
     this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
   }
 
-  mouseDown(event) {
+  mouseDown() {
     this.setState({ mouseDragging: true })
   }
 
@@ -76,7 +76,7 @@ export default class TrackBlocks extends Component {
     this.setState({ mouseDragging: false })
   }
 
-  mouseUp(event) {
+  mouseUp() {
     this.setState({ mouseDragging: false })
   }
 
@@ -94,11 +94,12 @@ export default class TrackBlocks extends Component {
         onWheel={this.wheel}
         role="presentation"
       >
-        {blocks.map((block, i) => {
+        {blocks.map(block => {
           const { refName, start, end } = block
           const comp = (
             <Block
               {...block}
+              width={block.widthPx}
               key={`${refName}:${start}..${end}`}
               offset={offsetPx}
               bpPerPx={bpPerPx}

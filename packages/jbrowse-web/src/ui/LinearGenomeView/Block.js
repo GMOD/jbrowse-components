@@ -19,7 +19,6 @@ export default function Block({
 Block.defaultProps = { children: undefined }
 Block.propTypes = {
   offset: PropTypes.number.isRequired,
-  children: PropTypes.element,
   start: PropTypes.number.isRequired,
   end: PropTypes.number.isRequired,
   bpPerPx: PropTypes.number.isRequired,

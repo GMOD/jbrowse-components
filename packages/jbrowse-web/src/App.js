@@ -1,8 +1,12 @@
 import React, { Component } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { observer, inject } from 'mobx-react'
 import LinearGenomeView from './ui/LinearGenomeView/LinearGenomeView'
 
+import './App.css'
+import logo from './logo.svg'
+
+@inject('rootModel')
+@observer
 class App extends Component {
   constructor(props) {
     super(props)
@@ -33,31 +37,6 @@ class App extends Component {
   }
 
   render() {
-    const bpPerPx = 1
-    const blocks = [
-      { refName: 'ctgA', start: 0, end: 50, content: 'bar' },
-      { refName: 'ctgA', start: 100, end: 200, content: 'foo' },
-      {
-        refName: 'ctgA',
-        start: 300,
-        end: 400,
-        content: (
-          <div
-            style={{
-              color: 'red',
-              top: '10px',
-              left: '30px',
-              position: 'absolute',
-            }}
-          >
-            hihi
-          </div>
-        ),
-      },
-    ]
-    this.calculateBlockWidths(blocks, bpPerPx)
-    const tracks = [{ id: 'foo', height: 100 }, { id: 'bar', height: 30 }]
-    const { offset, width, controlsWidth } = this.state
     return (
       <div className="App">
         {/* <header className="App-header">
@@ -74,18 +53,14 @@ class App extends Component {
             Learn React
           </a>
         </header> */}
-        <LinearGenomeView
-          blocks={blocks}
-          width={width}
-          tracks={tracks}
-          bpPerPx={bpPerPx}
-          offsetPx={offset}
-          onHorizontalScroll={this.horizontalScroll}
-          controlsWidth={controlsWidth}
-        />
+        {this.props.rootModel.views.map(view => {
+          if (view.type === 'linear') {
+            return <LinearGenomeView key={`view-${view.id}`} model={view} />
+          }
+        })}
       </div>
     )
   }
 }
 
-export default App
+export default observer(props => <App {...props} />)

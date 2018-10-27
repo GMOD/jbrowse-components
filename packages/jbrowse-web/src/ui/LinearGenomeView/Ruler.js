@@ -76,6 +76,4 @@ function forEachTickMark(block, majorCallback, minorCallback) {
   }
 }
 
-export default function Ruler(props) {
-    
-}
+export default function Ruler(props) {}

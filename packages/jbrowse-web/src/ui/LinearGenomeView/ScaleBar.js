@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Block from './Block'
 
-export default function ScaleBar({ style, height, blocks, offset, bpPerPx }) {
+export default function ScaleBar({ style, height, blocks, offsetPx, bpPerPx }) {
   const finalStyle = Object.assign({}, style, { height: `${height}px` })
   return (
     <div style={finalStyle} className="ScaleBar">
@@ -11,8 +11,9 @@ export default function ScaleBar({ style, height, blocks, offset, bpPerPx }) {
         return (
           <Block
             {...block}
+            width={block.widthPx}
             key={`${refName}:${start}..${end}`}
-            offset={offset}
+            offset={offsetPx}
             bpPerPx={bpPerPx}
           >
             {block.start} {block.end}{' '}
@@ -27,6 +28,6 @@ ScaleBar.propTypes = {
   style: PropTypes.objectOf(PropTypes.any),
   height: PropTypes.number.isRequired,
   blocks: PropTypes.arrayOf(PropTypes.object),
-  offset: PropTypes.number.isRequired,
   bpPerPx: PropTypes.number.isRequired,
+  offsetPx: PropTypes.number.isRequired,
 }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+import ReactPropTypes from 'prop-types'
+import { inject, observer, PropTypes } from 'mobx-react'
 import ScaleBar from './ScaleBar'
 import TrackBlocks from './TrackBlocks'
 
@@ -17,45 +18,25 @@ function TrackResizeHandle({ trackId }) {
     />
   )
 }
-TrackResizeHandle.propTypes = { trackId: PropTypes.string.isRequired }
+TrackResizeHandle.propTypes = { trackId: ReactPropTypes.string.isRequired }
 
-export default class LinearGenomeView extends Component {
-  defaultProps = {
-    blocks: [],
-    tracks: [],
-  }
-
-  propTypes = {
-    blocks: PropTypes.arrayOf(PropTypes.object),
-    tracks: PropTypes.arrayOf(PropTypes.object),
-    bpPerPx: PropTypes.number.isRequired,
-    offsetPx: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired,
-    onHorizontalScroll: PropTypes.func.isRequired,
-    controlsWidth: PropTypes.number.isRequired,
-  }
-
-  constructor(props) {
-    super(props)
-
-    this.horizontalScroll = this.horizontalScroll.bind(this)
-  }
-
-  horizontalScroll(distance) {
-    const { onHorizontalScroll } = this.props
-    onHorizontalScroll(distance)
+@observer
+class LinearGenomeView extends Component {
+  static propTypes = {
+    model: PropTypes.observableObject.isRequired,
   }
 
   render() {
     const scaleBarHeight = 22
     const {
+      id,
       blocks,
       tracks,
       bpPerPx,
-      offsetPx,
       width,
       controlsWidth,
-    } = this.props
+      offsetPx,
+    } = this.props.model
     const height =
       scaleBarHeight +
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
@@ -70,7 +51,7 @@ export default class LinearGenomeView extends Component {
       gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
     }
     return (
-      <div className="LinearGenomeView" style={style}>
+      <div className="LinearGenomeView" key={`view-${id}`} style={style}>
         <div
           className="controls view-controls"
           style={{ gridRow: 'scale-bar' }}
@@ -82,26 +63,29 @@ export default class LinearGenomeView extends Component {
           height={scaleBarHeight}
           bpPerPx={bpPerPx}
           blocks={blocks}
-          offset={offsetPx}
+          offsetPx={offsetPx}
         />
         {tracks.map(track => [
           <div
             className="controls track-controls"
-            key="handle:track.id"
+            key={`controls:${track.id}`}
             style={{ gridRow: track.id, gridColumn: 'controls' }}
           >
             {track.name || track.id}
           </div>,
           <TrackBlocks
+            key={`track-blocks:${track.id}`}
             blocks={blocks}
             trackId={track.id}
             offsetPx={offsetPx}
             bpPerPx={bpPerPx}
-            onHorizontalScroll={this.horizontalScroll}
+            onHorizontalScroll={this.props.model.horizontalScroll}
           />,
-          <TrackResizeHandle trackId={track.id} />,
+          <TrackResizeHandle key={`handle:${track.id}`} trackId={track.id} />,
         ])}
       </div>
     )
   }
 }
+
+export default LinearGenomeView
