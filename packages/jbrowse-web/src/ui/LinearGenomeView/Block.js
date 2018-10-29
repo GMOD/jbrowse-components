@@ -23,4 +23,8 @@ Block.propTypes = {
   end: PropTypes.number.isRequired,
   bpPerPx: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.arrayOf(PropTypes.node),
+  ]),
 }

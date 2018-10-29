@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { observer, inject } from 'mobx-react'
+import { observer, inject, PropTypes } from 'mobx-react'
 import LinearGenomeView from './ui/LinearGenomeView/LinearGenomeView'
 
 import './App.css'
@@ -8,6 +8,10 @@ import logo from './logo.svg'
 @inject('rootModel')
 @observer
 class App extends Component {
+  static propTypes = {
+    rootModel: PropTypes.observableObject.isRequired,
+  }
+
   constructor(props) {
     super(props)
     this.state = { offset: 0, width: 800, controlsWidth: 100 }
@@ -57,6 +61,7 @@ class App extends Component {
           if (view.type === 'linear') {
             return <LinearGenomeView key={`view-${view.id}`} model={view} />
           }
+          throw new Error(`unsupported view type "${view.type}"`)
         })}
       </div>
     )

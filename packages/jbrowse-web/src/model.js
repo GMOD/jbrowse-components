@@ -6,14 +6,13 @@ export const RootStore = types
   .model({
     views: types.array(LinearGenomeViewState),
   })
-  .actions(self => {
-    return {
-      addView(type) {
-        if (type === 'linear') {
-          self.views.push(LinearGenomeViewState.create({ id: viewSerial++ }))
-        }
-      },
-    }
-  })
+  .actions(self => ({
+    addView(type) {
+      if (type === 'linear') {
+        self.views.push(LinearGenomeViewState.create({ id: viewSerial }))
+        viewSerial += 1
+      }
+    },
+  }))
 
-export default RootStore.create({})
+export default RootStore

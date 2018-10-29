@@ -1,31 +1,61 @@
 import React from 'react'
 import renderer from 'react-test-renderer'
 import LinearGenomeView from './LinearGenomeView'
+import Model from './model'
 
 describe('linear genome view component', () => {
-  it('renders with no props', () => {
-    const component = renderer.create(<LinearGenomeView />)
+  it('renders with an empty model', () => {
+    const model = Model.create({
+      type: 'linear',
+      id: 1,
+      offsetPx: 0,
+      bpPerPx: 1,
+      blocks: [{ refName: 'ctgA', start: 0, end: 100 }],
+      tracks: [
+        { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+        { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+        { id: 'baz', name: 'Baz Track', type: 'tester', height: 20 },
+      ],
+      controlsWidth: 100,
+      width: 800,
+    })
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
   it('renders one track, no blocks', () => {
-    const blocks = []
-    const tracks = [{ id: 'foo', height: 20 }]
-    const component = renderer.create(
-      <LinearGenomeView blocks={blocks} tracks={tracks} />,
-    )
+    const model = Model.create({
+      type: 'linear',
+      id: 1,
+      offsetPx: 0,
+      bpPerPx: 1,
+      blocks: [],
+      tracks: [{ id: 'foo', name: 'Foo Track', type: 'tester', height: 20 }],
+      controlsWidth: 100,
+      width: 800,
+    })
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
   it('renders two tracks, two blocks', () => {
-    const blocks = [
-      { refName: 'ctgA', start: 200, end: 400 },
-      { refName: 'ctgA', start: 400, end: 600 },
-    ]
-    const tracks = [{ id: 'foo', height: 20 }]
-    const component = renderer.create(
-      <LinearGenomeView blocks={blocks} tracks={tracks} />,
-    )
+    const model = Model.create({
+      type: 'linear',
+      id: 1,
+      offsetPx: 0,
+      bpPerPx: 1,
+      blocks: [
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 1000, end: 200 },
+      ],
+      tracks: [
+        { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+        { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+      ],
+      controlsWidth: 100,
+      width: 800,
+    })
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
