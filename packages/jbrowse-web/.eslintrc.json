@@ -1,47 +1,55 @@
 {
-    "parser": "babel-eslint",
-    "extends": [
-        "airbnb",
-        "prettier",
-        "prettier/react"
-    ],
-    "plugins": [ "prettier"],
-    "env": {
-        "browser": true
+  "parser": "babel-eslint",
+  "extends": [
+    "airbnb",
+    "prettier",
+    "prettier/react"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "react/jsx-filename-extension": 0,
+    "react/prefer-stateless-function": "warn",
+    "no-use-before-define": 0,
+    "no-param-reassign": 0,
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "all"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/*.worker.js"
+      ],
+      "globals": {
+        "self": true
+      },
+      "rules": {
+        "no-restricted-globals": 0
+      }
     },
-    "rules": {
-        "react/jsx-filename-extension": 0,
-        "react/prefer-stateless-function": "warn",
-        "no-use-before-define": 0,
-        "no-param-reassign": 0,
-        "prettier/prettier": [
-            "error",
-            {
-              "singleQuote": true,
-              "semi": false,
-              "trailingComma": "all"
-            }
-          ]
-    },
-    "overrides": [
-        {
-          "files": [ "src/*.worker.js" ],
-          "globals": { "self": true },
-          "rules": {
-              "no-restricted-globals": 0
-          }
-        },
-        {
-            "files": [ "src/*.test.js" ],
-            "env": {
-                "jest": true
-            },
-            "globals": {
-                "document": true
-            },
-            "rules": {
-                "no-restricted-globals": 0
-            }
-          }          
-      ]
+    {
+      "files": [
+        "src/*.test.js"
+      ],
+      "env": {
+        "jest": true
+      },
+      "globals": {
+        "document": true
+      },
+      "rules": {
+        "no-restricted-globals": 0
+      }
+    }
+  ]
 }
