@@ -1,0 +1,61 @@
+{
+  "views": [
+    {
+      "width": 800,
+      "type": "linear",
+      "offsetPx": 0,
+      "controlsWidth": 100,
+      "tracks": [
+        {
+          "height": 20,
+          "name": "Foo Track",
+          "type": "tester"
+        },
+        {
+          "height": 20,
+          "name": "Bar Track",
+          "type": "tester"
+        },
+        {
+          "name": "Baz Track",
+          "height": 20,
+          "type": "tester"
+        }
+      ],
+      "blocks": [
+        {
+          "refName": "ctgA",
+          "end": 100,
+          "start": 0
+        }
+      ],
+      "bpPerPx": 1
+    },
+    {
+      "width": 800,
+      "type": "linear",
+      "offsetPx": 0,
+      "controlsWidth": 100,
+      "tracks": [
+        {
+          "name": "Bee Track",
+          "height": 20,
+          "type": "tester"
+        },
+        {
+          "name": "Bonk Track",
+          "height": 20,
+          "type": "tester"
+        }
+      ],
+      "blocks": [
+        {
+          "refName": "ctgA",
+          "end": 100,
+          "start": 0
+        }
+      ],
+      "bpPerPx": 1
+    }
+  ]
+}
