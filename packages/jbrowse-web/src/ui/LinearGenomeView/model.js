@@ -1,5 +1,4 @@
 import shortid from 'shortid'
-import React from 'react'
 import { types, getParent, getSnapshot } from 'mobx-state-tree'
 
 const IdType = types.optional(types.string, shortid.generate)
@@ -63,6 +62,7 @@ const LinearGenomeViewState = types
       const snap = Object.assign({}, getSnapshot(self))
       delete snap.blocks
       delete snap.id
+      delete snap.offsetPx
       return snap
     },
   }))

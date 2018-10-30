@@ -1,8 +1,4 @@
-import {
-  isStateTreeNode,
-  isModelType,
-  getPropertyMembers,
-} from 'mobx-state-tree'
+import { isStateTreeNode, getPropertyMembers } from 'mobx-state-tree'
 
 import { isObservableArray, isObservableObject } from 'mobx'
 
@@ -12,6 +8,8 @@ export function getConfig(tree) {
     let config
     if (isObservableObject(tree)) {
       let keys
+      //   if it has a 'configuration' view, use that as the node instead
+      //   otherwise, just recurse through it normally
       if (tree.configuration) {
         tree = tree.configuration
         keys = Object.keys(tree)
@@ -26,8 +24,6 @@ export function getConfig(tree) {
       config = tree.map(getConfig)
     }
 
-    //   if it has a 'configuration' view, use that as the node instead
-    //   otherwise, just recurse through it normally
     return config
   }
   return tree

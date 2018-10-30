@@ -3,7 +3,7 @@
     {
       "width": 800,
       "type": "linear",
-      "offsetPx": 0,
+      "offsetPx": 20,
       "controlsWidth": 100,
       "tracks": [
         {

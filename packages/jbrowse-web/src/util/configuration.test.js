@@ -17,4 +17,5 @@ test('config can be used to instantiate a new app root model', () => {
   expect(model2).toBeTruthy()
   expect(model2.views.length).toBe(2)
   expect(model2.views[0].tracks.length).toBe(3)
+  expect(model2.views[0].offsetPx).toBe(0)
 })
