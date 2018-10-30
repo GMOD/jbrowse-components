@@ -1,8 +1,10 @@
 import { getConfig } from './configuration'
 
-import Model from '../model'
+import ModelFactory from '../RootModelFactory'
+import JBrowse from '../JBrowse'
 import snap1 from '../../test/root.snap.1.json'
 
+const Model = ModelFactory(new JBrowse())
 test('can fetch the config of the whole app', () => {
   const model = Model.create(snap1)
   const config = getConfig(model)
