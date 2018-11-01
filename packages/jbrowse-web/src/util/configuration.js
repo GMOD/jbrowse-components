@@ -40,6 +40,12 @@ const typeModels = {
   integer: types.integer,
 }
 
+const FunctionStringType = types.refinement(
+  'FunctionString',
+  types.string,
+  str => /^\s*function\s*\(/.test(str),
+)
+
 function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]
@@ -52,7 +58,10 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
-      value: types.optional(model, defaultValue),
+      value: types.optional(
+        types.union(FunctionStringType, model),
+        defaultValue,
+      ),
     })
     .views(self => ({
       get func() {

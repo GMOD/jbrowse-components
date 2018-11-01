@@ -21,14 +21,27 @@ describe('configuration schemas', () => {
           type: 'color',
           defaultValue: '#eee',
         },
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
       }),
     })
 
     const model = container.create()
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
+    expect(getConf(model, 'someInteger')).toBe(12)
 
-    model.configuration.backgroundColor.set('function(a) { return "#"+a }')
+    model.configuration.backgroundColor.set('function(a,b) { return "#"+a}')
     expect(getConf(model, 'backgroundColor', ['zonk'])).toBe('#zonk')
     expect(getConf(model, 'backgroundColor', 'bar')).toBe('#bar')
+    model.configuration.backgroundColor.set('hoog')
+    expect(getConf(model, 'backgroundColor', ['zonk'])).toBe('hoog')
+
+    model.configuration.someInteger.set('function(a,b) { return 5+a }')
+    expect(getConf(model, 'someInteger', 5)).toBe(10)
+    model.configuration.someInteger.set(42)
+    expect(getConf(model, 'someInteger', 5)).toBe(42)
   })
 })
