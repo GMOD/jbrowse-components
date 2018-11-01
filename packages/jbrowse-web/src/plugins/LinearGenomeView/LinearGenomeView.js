@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 import { inject, observer, PropTypes } from 'mobx-react'
+
+import { getConf } from '../../util/configuration'
+
 import ScaleBar from './ScaleBar'
 import TrackBlocks from './TrackBlocks'
 
@@ -75,6 +78,7 @@ class LinearGenomeView extends Component {
           </div>,
           <TrackBlocks
             key={`track-blocks:${track.id}`}
+            backgroundColor={getConf(track, 'backgroundColor')}
             blocks={blocks}
             trackId={track.id}
             offsetPx={offsetPx}

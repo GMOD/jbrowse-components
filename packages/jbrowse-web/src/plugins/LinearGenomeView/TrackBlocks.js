@@ -81,12 +81,16 @@ export default class TrackBlocks extends Component {
   }
 
   render() {
-    const { blocks, trackId, offsetPx, bpPerPx } = this.props
+    const { blocks, trackId, offsetPx, bpPerPx, backgroundColor } = this.props
     return (
       <div
         className="track-blocks"
         key={`blocks:${trackId}`}
-        style={{ gridRow: trackId, gridColumn: 'blocks' }}
+        style={{
+          gridRow: trackId,
+          gridColumn: 'blocks',
+          background: backgroundColor,
+        }}
         onMouseDown={this.mouseDown}
         onMouseMove={this.mouseMove}
         onMouseLeave={this.mouseLeave}

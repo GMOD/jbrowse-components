@@ -55,9 +55,9 @@ class JBrowse {
     return this.viewTypes[name]
   }
 
-  configure(config = {}) {
+  start() {
     const RootModel = RootModelFactory(this)
-    this.model = RootModel.create(config)
+    this.model = RootModel.create({})
     this.model.addView('linear')
     this.model.views[0].addTrack('foo', 'Foo Track', 'tester')
     this.model.views[0].addTrack('bar', 'Bar Track', 'tester')
@@ -66,6 +66,7 @@ class JBrowse {
     this.model.addView('linear')
     this.model.views[1].addTrack('bee', 'Bee Track', 'tester')
     this.model.views[1].addTrack('bonk', 'Bonk Track', 'tester')
+    this.model.views[1].tracks[0].configuration.backgroundColor.set('red')
     this.model.views[1].pushBlock('ctgA', 0, 100)
     this.configured = true
 
