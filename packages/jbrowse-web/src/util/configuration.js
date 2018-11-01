@@ -35,6 +35,17 @@ export function getConf(model, slotName, ...args) {
   return slot.func.apply(null, args)
 }
 
+export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
+export function stringToFunction(str) {
+  const match = functionRegexp.exec(str)
+  if (!match)
+    throw new Error('string does not appear to be a function declaration')
+  const paramList = match[1].split(',').map(s => s.trim())
+  const code = match[2].replace(/}\s*$/, '')
+  const func = new Function(...paramList, `"use strict"; ${code}`) // eslint-disable-line
+  return func
+}
+
 const typeModels = {
   color: types.string, // TODO: refine
   integer: types.integer,
@@ -67,9 +78,7 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       get func() {
         if (/^\s*function\s*\(/.test(self.value)) {
           // compile this as a function
-          let func
-          eval(`func = ${self.value}`) // eslint-disable-line
-          return func
+          return stringToFunction(String(self.value))
         }
         return () => self.value
       },
