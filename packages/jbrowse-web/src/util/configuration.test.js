@@ -41,6 +41,7 @@ describe('function string parsing', () => {
     'function( a, b,c){\nreturn a+b+c+5 }',
     '  function( a, b,c){\nreturn a+b+c+5 } ',
     '  function( a, b,c){\nreturn a+b+c+5; ;}',
+    '  function( a, b,c){\nreturn a+b+c+5; \n ;\n}',
   ].forEach(funcStr => {
     it(`can parse '${funcStr}'`, () => {
       const func = stringToFunction(funcStr)
