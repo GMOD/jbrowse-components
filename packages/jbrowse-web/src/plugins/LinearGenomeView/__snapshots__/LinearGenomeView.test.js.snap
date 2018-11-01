@@ -57,6 +57,7 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
       }
@@ -160,6 +161,7 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
       }
@@ -214,6 +216,7 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "bar",
       }
@@ -322,6 +325,7 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
       }
@@ -367,6 +371,7 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "bar",
       }
@@ -412,6 +417,7 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
+        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "baz",
       }
