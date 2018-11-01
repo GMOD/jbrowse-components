@@ -1,7 +1,8 @@
 import shortid from 'shortid'
 import { types, getParent, getSnapshot } from 'mobx-state-tree'
+import { ConfigurationSchema } from '../../util/configuration'
 
-const IdType = types.optional(types.string, shortid.generate)
+const IdType = types.optional(types.identifier, shortid.generate)
 
 export const Block = types
   .model({
@@ -16,25 +17,23 @@ export const Block = types
   }))
 
 const minTrackHeight = 20
-export const Track = types
-  .model('Track', {
-    id: IdType,
-    name: types.string,
-    type: types.string,
-    height: types.optional(
-      types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
-      minTrackHeight,
-    ),
-    subtracks: types.maybe(types.array(types.late(() => Track))),
-  })
-  .views(self => ({
-    get configuration() {
-      const snap = Object.assign({}, getSnapshot(self))
-      delete snap.blocks
-      delete snap.id
-      return snap
+export const Track = types.model('Track', {
+  id: IdType,
+  name: types.string,
+  type: types.string,
+  height: types.optional(
+    types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
+    minTrackHeight,
+  ),
+  subtracks: types.maybe(types.array(types.late(() => Track))),
+  configuration: ConfigurationSchema('Track', {
+    backgroundColor: {
+      description: `the track's background color`,
+      type: 'color',
+      defaultValue: '#eee',
     },
-  }))
+  }),
+})
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
@@ -43,6 +42,7 @@ const ViewStateBase = types.model({
 
 const LinearGenomeViewState = types
   .compose(
+    'LinearViewModel',
     ViewStateBase,
     types.model({
       type: types.literal('linear'),
@@ -52,18 +52,14 @@ const LinearGenomeViewState = types
       tracks: types.array(Track),
       controlsWidth: 100,
       width: 800,
+      configuration: ConfigurationSchema('LinearView', {
+        bar: { type: 'integer', model: types.integer, defaultValue: 0 },
+      }),
     }),
   )
   .views(self => ({
     get totalBlocksWidthPx() {
       return self.blocks.reduce((a, b) => a + b.widthPx, 0)
-    },
-    get configuration() {
-      const snap = Object.assign({}, getSnapshot(self))
-      delete snap.blocks
-      delete snap.id
-      delete snap.offsetPx
-      return snap
     },
   }))
   .actions(self => ({

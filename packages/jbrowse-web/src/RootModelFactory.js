@@ -2,7 +2,7 @@ import { types } from 'mobx-state-tree'
 
 export default function({ viewTypes }) {
   const RootModel = types
-    .model({
+    .model('JBrowseWebRootModel', {
       views: types.array(
         types.union(
           ...Object.values(viewTypes).map(({ mstModel }) => mstModel),

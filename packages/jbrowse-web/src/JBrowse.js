@@ -9,23 +9,32 @@ import * as webWorkers from './webWorkers'
 
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
+const corePlugins = [LinearGenomeViewPlugin]
+
 // the main class used to configure and start a new JBrowse app
 class JBrowse {
   viewTypes = {}
 
-  static libraries = { 'mobx-state-tree': mst, React }
+  plugins = []
+
+  static lib = { 'mobx-state-tree': mst, React }
 
   constructor() {
+    this.lib = JBrowse.lib
+
     // add all the core plugins
-    this.addPlugin(new LinearGenomeViewPlugin())
+    corePlugins.forEach(PluginClass => {
+      this.addPlugin(new PluginClass())
+    })
 
     this.getViewType = this.getViewType.bind(this)
   }
 
   addPlugin(plugin) {
-    if (this.started)
-      throw new Error('JBrowse already started, cannot add plugins')
+    if (this.configured)
+      throw new Error('JBrowse already configured, cannot add plugins')
     plugin.install(this)
+    this.plugins.push(plugin)
     return this
   }
 
@@ -46,9 +55,9 @@ class JBrowse {
     return this.viewTypes[name]
   }
 
-  start() {
+  configure(config = {}) {
     const RootModel = RootModelFactory(this)
-    this.model = RootModel.create({})
+    this.model = RootModel.create(config)
     this.model.addView('linear')
     this.model.views[0].addTrack('foo', 'Foo Track', 'tester')
     this.model.views[0].addTrack('bar', 'Bar Track', 'tester')
@@ -58,7 +67,7 @@ class JBrowse {
     this.model.views[1].addTrack('bee', 'Bee Track', 'tester')
     this.model.views[1].addTrack('bonk', 'Bonk Track', 'tester')
     this.model.views[1].pushBlock('ctgA', 0, 100)
-    this.started = true
+    this.configured = true
 
     // console.log(JSON.stringify(getSnapshot(model)))
 
