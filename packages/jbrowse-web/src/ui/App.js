@@ -2,7 +2,10 @@ import React, { Component } from 'react'
 import { observer, inject, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
-import './App.css'
+import CssBaseline from '@material-ui/core/CssBaseline'
+import { MuiThemeProvider } from '@material-ui/core/styles'
+
+import Theme from './Theme'
 
 @observer
 class App extends Component {
@@ -13,7 +16,8 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
+      <MuiThemeProvider theme={Theme}>
+        <CssBaseline />
         {/* <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>
@@ -32,7 +36,7 @@ class App extends Component {
           const { ReactComponent } = this.props.getViewType(view.type)
           return <ReactComponent key={`view-${view.id}`} model={view} />
         })}
-      </div>
+      </MuiThemeProvider>
     )
   }
 }
