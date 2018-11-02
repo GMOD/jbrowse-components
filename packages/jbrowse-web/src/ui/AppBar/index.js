@@ -1,6 +1,6 @@
 import React from 'react'
 import mstModel from './appBarModel'
-import ReactComponent from './AppBar'
+import AppBar from './AppBar'
 
 // export default class AppBarPlugin {
 //   install(browser) {
@@ -27,4 +27,4 @@ const store = mstModel.create({
   ],
 })
 
-export default <ReactComponent store={store} />
+export default <AppBar store={store} />

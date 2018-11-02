@@ -9,4 +9,16 @@ export default createMuiTheme({
   typography: {
     useNextVariants: true,
   },
+  overrides: {
+    MuiToolbar: {
+      root: {
+        height: '48px',
+      },
+    },
+    MuiDrawer: {
+      paper: {
+        width: '25%',
+      },
+    },
+  },
 })

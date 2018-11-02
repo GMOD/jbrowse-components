@@ -24,7 +24,7 @@ function MainAppBar(props) {
   return (
     <div className={classes.root}>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar variant="dense">
           {values(store.menus).map(menu => (
             <DropDownMenu
               key={menu.name}
