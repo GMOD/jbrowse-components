@@ -59,6 +59,7 @@
     "style-loader": "0.23.0",
     "terser-webpack-plugin": "1.1.0",
     "thread-loader": "^1.2.0",
+    "typeface-roboto": "^0.0.54",
     "url-loader": "1.1.1",
     "webpack": "4.19.1",
     "webpack-dev-server": "3.1.9",
