@@ -5,6 +5,8 @@ import ReactPropTypes from 'prop-types'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 
+import AppBar from './AppBar'
+
 import Theme from './Theme'
 
 @observer
@@ -18,6 +20,7 @@ class App extends Component {
     return (
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
+        {AppBar}
         {/* <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>
