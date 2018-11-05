@@ -44,12 +44,12 @@ class DropDownMenu extends React.Component {
 
   handleClose = (event, callback) => {
     const { anchorEl } = this.state
-    const { store } = this.props
+    const { model } = this.props
     if (anchorEl.contains(event.target)) {
       return
     }
     this.setState({ anchorEl: null })
-    if (callback) callback(store)
+    if (callback) callback(model)
   }
 
   render() {
@@ -123,7 +123,7 @@ DropDownMenu.propTypes = {
   }).isRequired,
   menuTitle: PropTypes.string.isRequired,
   menuItems: MobxPropTypes.observableArray.isRequired,
-  store: MobxPropTypes.observableObject.isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(DropDownMenu)

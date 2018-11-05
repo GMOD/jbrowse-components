@@ -6,7 +6,7 @@ const MenuItem = types
     icon: types.optional(types.string, ''),
     callback: types.optional(
       types.string,
-      'function(store){console.log(store)}',
+      'function(model){console.log(model)}',
     ),
   })
   .views(self => ({

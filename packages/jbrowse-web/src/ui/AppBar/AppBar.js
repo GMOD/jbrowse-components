@@ -19,18 +19,18 @@ const styles = {
 }
 
 function MainAppBar(props) {
-  const { classes, store } = props
+  const { classes, model } = props
 
   return (
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar variant="dense">
-          {values(store.menus).map(menu => (
+          {values(model.menus).map(menu => (
             <DropDownMenu
               key={menu.name}
               menuTitle={menu.name}
               menuItems={menu.menuItems}
-              store={store}
+              model={model}
             />
           ))}
           <div className={classes.grow} />
@@ -48,7 +48,7 @@ MainAppBar.propTypes = {
     grow: PropTypes.shape.isRequired,
     root: PropTypes.shape.isRequired,
   }).isRequired,
-  store: MobxPropTypes.observableObject.isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
   // menus: PropTypes.arrayOf(
   //   PropTypes.shape({
   //     menuTitle: PropTypes.string.isRequired,

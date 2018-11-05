@@ -32,6 +32,7 @@ class App extends Component {
   static propTypes = {
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
+    getUiType: ReactPropTypes.func.isRequired,
     classes: ReactPropTypes.shape({
       drawer: ReactPropTypes.string.isRequired,
       main: ReactPropTypes.string.isRequired,
@@ -40,15 +41,18 @@ class App extends Component {
   }
 
   render() {
-    const { classes } = this.props
+    const { classes, rootModel, getUiType, getViewType } = this.props
     return (
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
         <main className={classes.main}>
-          {AppBar}
+          {rootModel.uis.map(ui => {
+            const { ReactComponent } = getUiType(ui.type)
+            return <ReactComponent key={`ui-${ui.id}`} model={ui} />
+          })}
           <div className={classes.views}>
-            {this.props.rootModel.views.map(view => {
-              const { ReactComponent } = this.props.getViewType(view.type)
+            {rootModel.views.map(view => {
+              const { ReactComponent } = getViewType(view.type)
               return <ReactComponent key={`view-${view.id}`} model={view} />
             })}
           </div>
