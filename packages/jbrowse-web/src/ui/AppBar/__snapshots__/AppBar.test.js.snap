@@ -1,0 +1,207 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`app bar renders one menu with two menu items 1`] = `
+<div
+  className="MainAppBar-root-1"
+>
+  <header
+    className="MuiPaper-root-12 MuiPaper-elevation4-18 MuiAppBar-root-3 MuiAppBar-positionStatic-7 MuiAppBar-colorPrimary-10"
+  >
+    <div
+      className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
+    >
+      <div
+        className="DropDownMenu-root-78"
+      >
+        <button
+          aria-haspopup="true"
+          aria-owns={null}
+          className="MuiButtonBase-root-105 MuiButton-root-79 MuiButton-text-81 MuiButton-flat-84 MuiButton-colorInherit-100"
+          disabled={false}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          onKeyUp={[Function]}
+          onMouseDown={[Function]}
+          onMouseLeave={[Function]}
+          onMouseUp={[Function]}
+          onTouchEnd={[Function]}
+          onTouchMove={[Function]}
+          onTouchStart={[Function]}
+          tabIndex="0"
+          type="button"
+        >
+          <span
+            className="MuiButton-label-80"
+          >
+            FirstMenu
+            <span
+              aria-hidden="true"
+              className="material-icons MuiIcon-root-108"
+            >
+              arrow_drop_down
+            </span>
+          </span>
+          <span
+            className="MuiTouchRipple-root-117"
+          />
+        </button>
+      </div>
+      <div
+        className="MainAppBar-grow-2"
+      />
+      <h6
+        className="MuiTypography-root-43 MuiTypography-h6-60 MuiTypography-colorInherit-72"
+      >
+        JBrowse
+      </h6>
+    </div>
+  </header>
+</div>
+`;
+
+exports[`app bar renders two menu with two menu items each 1`] = `
+<div
+  className="MainAppBar-root-1"
+>
+  <header
+    className="MuiPaper-root-12 MuiPaper-elevation4-18 MuiAppBar-root-3 MuiAppBar-positionStatic-7 MuiAppBar-colorPrimary-10"
+  >
+    <div
+      className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
+    >
+      <div
+        className="DropDownMenu-root-78"
+      >
+        <button
+          aria-haspopup="true"
+          aria-owns={null}
+          className="MuiButtonBase-root-105 MuiButton-root-79 MuiButton-text-81 MuiButton-flat-84 MuiButton-colorInherit-100"
+          disabled={false}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          onKeyUp={[Function]}
+          onMouseDown={[Function]}
+          onMouseLeave={[Function]}
+          onMouseUp={[Function]}
+          onTouchEnd={[Function]}
+          onTouchMove={[Function]}
+          onTouchStart={[Function]}
+          tabIndex="0"
+          type="button"
+        >
+          <span
+            className="MuiButton-label-80"
+          >
+            FirstMenu
+            <span
+              aria-hidden="true"
+              className="material-icons MuiIcon-root-108"
+            >
+              arrow_drop_down
+            </span>
+          </span>
+          <span
+            className="MuiTouchRipple-root-117"
+          />
+        </button>
+      </div>
+      <div
+        className="DropDownMenu-root-78"
+      >
+        <button
+          aria-haspopup="true"
+          aria-owns={null}
+          className="MuiButtonBase-root-105 MuiButton-root-79 MuiButton-text-81 MuiButton-flat-84 MuiButton-colorInherit-100"
+          disabled={false}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          onKeyUp={[Function]}
+          onMouseDown={[Function]}
+          onMouseLeave={[Function]}
+          onMouseUp={[Function]}
+          onTouchEnd={[Function]}
+          onTouchMove={[Function]}
+          onTouchStart={[Function]}
+          tabIndex="0"
+          type="button"
+        >
+          <span
+            className="MuiButton-label-80"
+          >
+            SecondMenu
+            <span
+              aria-hidden="true"
+              className="material-icons MuiIcon-root-108"
+            >
+              arrow_drop_down
+            </span>
+          </span>
+          <span
+            className="MuiTouchRipple-root-117"
+          />
+        </button>
+      </div>
+      <div
+        className="MainAppBar-grow-2"
+      />
+      <h6
+        className="MuiTypography-root-43 MuiTypography-h6-60 MuiTypography-colorInherit-72"
+      >
+        JBrowse
+      </h6>
+    </div>
+  </header>
+</div>
+`;
+
+exports[`app bar renders with no menus 1`] = `
+<div
+  className="MainAppBar-root-1"
+>
+  <header
+    className="MuiPaper-root-12 MuiPaper-elevation4-18 MuiAppBar-root-3 MuiAppBar-positionStatic-7 MuiAppBar-colorPrimary-10"
+  >
+    <div
+      className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
+    >
+      <div
+        className="MainAppBar-grow-2"
+      />
+      <h6
+        className="MuiTypography-root-43 MuiTypography-h6-60 MuiTypography-colorInherit-72"
+      >
+        JBrowse
+      </h6>
+    </div>
+  </header>
+</div>
+`;
+
+exports[`app bar renders with no menus 2`] = `
+<div
+  className="MainAppBar-root-1"
+>
+  <header
+    className="MuiPaper-root-12 MuiPaper-elevation4-18 MuiAppBar-root-3 MuiAppBar-positionStatic-7 MuiAppBar-colorPrimary-10"
+  >
+    <div
+      className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
+    >
+      <div
+        className="MainAppBar-grow-2"
+      />
+      <h6
+        className="MuiTypography-root-43 MuiTypography-h6-60 MuiTypography-colorInherit-72"
+      >
+        JBrowse
+      </h6>
+    </div>
+  </header>
+</div>
+`;

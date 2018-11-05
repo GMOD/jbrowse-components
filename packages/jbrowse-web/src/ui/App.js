@@ -6,8 +6,6 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import Drawer from '@material-ui/core/Drawer'
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
 
-import AppBar from './AppBar'
-
 import Theme from './Theme'
 
 const drawerWidth = Theme.overrides.MuiDrawer.paper.width
