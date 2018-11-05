@@ -13,7 +13,7 @@ import snap1 from '../../test/root.snap.1.json'
 
 describe('configuration saving', () => {
   const Model = ModelFactory(new JBrowse())
-  test('can fetch the config of the whole app', () => {
+  it('can fetch the config of the whole app', () => {
     const model = Model.create(snap1)
     const config = getModelConfig(model)
     expect(config.views.length).toBe(2)
@@ -50,7 +50,7 @@ describe('function string parsing', () => {
 })
 
 describe('configuration schemas', () => {
-  test('can make a schema with a color', () => {
+  it('can make a schema with a color', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Track', {
         backgroundColor: {

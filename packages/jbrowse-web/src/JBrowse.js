@@ -131,7 +131,7 @@ class JBrowse {
 
     this.configured = true
 
-    // console.log(JSON.stringify(getSnapshot(model)))
+    // console.log(JSON.stringify(mst.getSnapshot(this.model)))
 
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.

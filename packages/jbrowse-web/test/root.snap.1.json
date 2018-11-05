@@ -57,5 +57,43 @@
       ],
       "bpPerPx": 1
     }
+  ],
+  "uis": [
+    {
+      "id": "-MunuvAEIQ",
+      "type": "appbar",
+      "menus": [
+        {
+          "name": "FirstMenu",
+          "menuItems": [
+            {
+              "name": "FirstMenuItem1",
+              "icon": "",
+              "callback": "function(model){console.log(model)}"
+            },
+            {
+              "name": "FirstMenuItem2",
+              "icon": "bookmark",
+              "callback": "function(model){console.log(model)}"
+            },
+            {
+              "name": "FirstMenuItem3",
+              "icon": "search",
+              "callback": "function(model){console.log(model)}"
+            }
+          ]
+        },
+        {
+          "name": "SecondMenu",
+          "menuItems": [
+            {
+              "name": "SecondMenuItem1",
+              "icon": "",
+              "callback": "function(model){console.log(model)}"
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
