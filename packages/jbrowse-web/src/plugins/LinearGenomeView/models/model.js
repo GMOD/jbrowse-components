@@ -133,11 +133,18 @@ const LinearGenomeViewState = types
     },
 
     horizontalScroll(distance) {
-      self.offsetPx += distance
-      // Math.max(
-      //   Math.min(, 0),
-      //   self.width - self.totalBlocksWidthPx - self.controlsWidth,
-      // )
+      const leftPadding = 10
+      const rightPadding = 10
+      const displayRegionsTotalPx = self.displayedRegions.reduce(
+        (a, b) => a + (b.end - b.start) / self.bpPerPx,
+        0,
+      )
+      self.offsetPx = Math.min(
+        Math.max(self.offsetPx + distance, -leftPadding),
+        displayRegionsTotalPx -
+          (self.width - self.controlsWidth) +
+          rightPadding,
+      )
     },
   }))
 
