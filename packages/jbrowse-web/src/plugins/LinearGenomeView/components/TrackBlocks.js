@@ -9,6 +9,7 @@ export default class TrackBlocks extends Component {
     offsetPx: PropTypes.number.isRequired,
     bpPerPx: PropTypes.number.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
+    width: PropTypes.number.isRequired,
   }
 
   constructor(props) {
@@ -49,7 +50,7 @@ export default class TrackBlocks extends Component {
       delta.y = -event.detail * 100
     }
 
-    delta.x = Math.round(-delta.x)
+    delta.x = Math.round(delta.x)
     delta.y = Math.round(delta.y)
 
     if (delta.x) onHorizontalScroll(delta.x)
@@ -65,7 +66,7 @@ export default class TrackBlocks extends Component {
     const { mouseDragging } = this.state
     if (mouseDragging && this.previousMouseX !== undefined) {
       const distance = event.clientX - this.previousMouseX
-      if (distance) onHorizontalScroll(distance)
+      if (distance) onHorizontalScroll(-distance)
     }
     this.previousMouseX = event.clientX
   }
@@ -81,7 +82,7 @@ export default class TrackBlocks extends Component {
   }
 
   render() {
-    const { blocks, trackId, offsetPx, bpPerPx, backgroundColor } = this.props
+    const { blocks, trackId, offsetPx, bpPerPx, width } = this.props
     return (
       <div
         className="track-blocks"
@@ -89,7 +90,7 @@ export default class TrackBlocks extends Component {
         style={{
           gridRow: trackId,
           gridColumn: 'blocks',
-          background: backgroundColor,
+          width: `${width}px`,
         }}
         onMouseDown={this.mouseDown}
         onMouseMove={this.mouseMove}
@@ -102,7 +103,9 @@ export default class TrackBlocks extends Component {
           const { refName, start, end } = block
           const comp = (
             <Block
-              {...block}
+              start={block.start}
+              end={block.end}
+              refName={block.ref}
               width={block.widthPx}
               key={`${refName}:${start}..${end}`}
               offset={offsetPx}

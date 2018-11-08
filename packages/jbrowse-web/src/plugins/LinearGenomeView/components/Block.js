@@ -10,7 +10,10 @@ export default function Block({
   bpPerPx,
 }) {
   return (
-    <div style={{ left: `${offset}px`, width: `${width}px` }} className="block">
+    <div
+      style={{ left: `${-offset}px`, width: `${width}px` }}
+      className="block"
+    >
       {children}
     </div>
   )

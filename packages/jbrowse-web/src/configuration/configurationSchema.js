@@ -1,39 +1,4 @@
-import { types, isStateTreeNode, getPropertyMembers } from 'mobx-state-tree'
-
-import { isObservableArray, isObservableObject } from 'mobx'
-
-export function getModelConfig(tree) {
-  // if this is a node
-  if (isStateTreeNode(tree)) {
-    let config
-    if (isObservableObject(tree)) {
-      let keys
-      //   if it has a 'configuration' view, use that as the node instead
-      //   otherwise, just recurse through it normally
-      if (tree.configuration) {
-        tree = tree.configuration
-        keys = Object.keys(tree)
-      } else {
-        keys = Object.keys(getPropertyMembers(tree).properties)
-      }
-      config = {}
-      keys.forEach(key => {
-        config[key] = getModelConfig(tree[key])
-      })
-    } else if (isObservableArray(tree)) {
-      config = tree.map(getModelConfig)
-    }
-
-    return config
-  }
-  return tree
-}
-
-export function getConf(model, slotName, ...args) {
-  const slot = model.configuration[slotName]
-  if (!slot) throw new Error(`no slot "${slotName} found in configuration`)
-  return slot.func.apply(null, args)
-}
+import { types, isType } from 'mobx-state-tree'
 
 export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
 export function stringToFunction(str) {
@@ -42,13 +7,20 @@ export function stringToFunction(str) {
     throw new Error('string does not appear to be a function declaration')
   const paramList = match[1].split(',').map(s => s.trim())
   const code = match[2].replace(/}\s*$/, '')
-  const func = new Function(...paramList, `"use strict"; ${code}`) // eslint-disable-line
+    const func = new Function(...paramList, `"use strict"; ${code}`) // eslint-disable-line
   return func
 }
 
+function isValidColorString(str) {
+  // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
+  return true
+}
+
 const typeModels = {
-  color: types.string, // TODO: refine
+  color: types.refinement('Color', types.string, isValidColorString),
   integer: types.integer,
+  number: types.number,
+  string: types.string,
 }
 
 const FunctionStringType = types.refinement(
@@ -64,8 +36,13 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
+  // if the `type` is something like `color`, then the model name
+  // here will be `ColorConfigSlot`
+  const configSlotModelName = `${type.charAt(0).toUpperCase()}${type.slice(
+    1,
+  )}ConfigSlot`
   const slot = types
-    .model(`${type.charAt(0).toUpperCase()}${type.slice(1)}ConfigSlot`, {
+    .model(configSlotModelName, {
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
@@ -98,11 +75,21 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
 }
 
 export function ConfigurationSchema(modelName, schemaDefinition) {
+  if (typeof modelName !== 'string')
+    throw new Error(
+      'first arg must be string name of the model that this config schema goes with',
+    )
   const modelDefinition = {}
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
-    if (!slotDefinition.type)
-      throw new Error(`no type set for config slot ${slotName}`)
-    modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
+    if (isType(slotDefinition)) {
+      // this is a sub-configuration
+      modelDefinition[slotName] = slotDefinition
+    } else {
+      // this is a slot definition
+      if (!slotDefinition.type)
+        throw new Error(`no type set for config slot ${slotName}`)
+      modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
+    }
   })
 
   return types.optional(

@@ -1,9 +1,14 @@
-import mstModel from './model'
-import ReactComponent from './LinearGenomeView'
+import mstModel from './models/model'
+import ReactComponent from './components/LinearGenomeView'
 
-export default class LinearGenomeViewPlugin {
+import Plugin, { View } from '../../Plugin'
+
+export default class LinearGenomeViewPlugin extends Plugin {
   install(browser) {
+    this.browser = browser
     this.installed = true
-    browser.addViewType('linear', { mstModel, ReactComponent })
+    browser.addViewType(
+      new View({ name: 'linear', stateModel: mstModel, ReactComponent }),
+    )
   }
 }

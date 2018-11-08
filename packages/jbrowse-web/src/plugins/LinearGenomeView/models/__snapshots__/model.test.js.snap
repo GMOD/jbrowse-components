@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`block calculation can calculate some blocks 1 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 800,
+    "offsetPx": 0,
+    "ref": "ctgA",
+    "start": 0,
+    "widthPx": 800,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 1600,
+    "offsetPx": 800,
+    "ref": "ctgA",
+    "start": 800,
+    "widthPx": 800,
+  },
+]
+`;
+
+exports[`block calculation can calculate some blocks 2 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 100,
+    "offsetPx": 0,
+    "ref": "ctgA",
+    "start": 0,
+    "widthPx": 100,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 200,
+    "offsetPx": 200,
+    "ref": "ctgB",
+    "start": 100,
+    "widthPx": 100,
+  },
+]
+`;
+
+exports[`block calculation can calculate some blocks 5 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 5600,
+    "offsetPx": 4800,
+    "ref": "ctgA",
+    "start": 4800,
+    "widthPx": 800,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 6400,
+    "offsetPx": 5600,
+    "ref": "ctgA",
+    "start": 5600,
+    "widthPx": 800,
+  },
+]
+`;
+
+exports[`block calculation can calculate some blocks 6 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 200,
+    "offsetPx": 0,
+    "ref": "ctgA",
+    "start": 0,
+    "widthPx": 200,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 800,
+    "offsetPx": 200,
+    "ref": "ctgB",
+    "start": 0,
+    "widthPx": 800,
+  },
+]
+`;
+
+exports[`block calculation can calculate some blocks 7 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 800,
+    "offsetPx": 200,
+    "ref": "ctgB",
+    "start": 0,
+    "widthPx": 800,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 1000,
+    "offsetPx": 1000,
+    "ref": "ctgB",
+    "start": 800,
+    "widthPx": 200,
+  },
+]
+`;
+
+exports[`block calculation can calculate some blocks 8 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 1600,
+    "offsetPx": 1000,
+    "ref": "ctgB",
+    "start": 800,
+    "widthPx": 800,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 2400,
+    "offsetPx": 1800,
+    "ref": "ctgB",
+    "start": 1600,
+    "widthPx": 800,
+  },
+]
+`;

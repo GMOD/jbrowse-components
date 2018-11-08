@@ -27,6 +27,7 @@
     .track-blocks {
       overflow: hidden;
       background: #333;
+      white-space: nowrap;
     }
 
     .ScaleBar, .track-blocks {
@@ -38,6 +39,7 @@
       position: relative;
       background: #555;
       overflow: hidden;
+      white-space: nowrap;
     }
 
     .drag-handle {

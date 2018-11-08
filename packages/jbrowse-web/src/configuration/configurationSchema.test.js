@@ -1,24 +1,11 @@
-import { types, isType } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import {
-  getModelConfig,
   ConfigurationSchema,
-  getConf,
   stringToFunction,
   functionRegexp,
-} from './configuration'
+} from './configurationSchema'
 
-import ModelFactory from '../RootModelFactory'
-import JBrowse from '../JBrowse'
-import snap1 from '../../test/root.snap.1.json'
-
-describe('configuration saving', () => {
-  const Model = ModelFactory(new JBrowse())
-  test('can fetch the config of the whole app', () => {
-    const model = Model.create(snap1)
-    const config = getModelConfig(model)
-    expect(config.views.length).toBe(2)
-  })
-})
+import { getConf } from './index'
 
 describe('function string parsing', () => {
   it('has working regex', () => {
@@ -81,5 +68,26 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger', 5)).toBe(10)
     model.configuration.someInteger.set(42)
     expect(getConf(model, 'someInteger', 5)).toBe(42)
+  })
+
+  test('can nest configuration schemas', () => {
+    const container = types.model({
+      configuration: ConfigurationSchema('Foo', {
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
+        mySubConfigurations: types.array(
+          ConfigurationSchema('SubObject', {
+            someNumber: {
+              description: 'some number in a subconfiguration',
+              type: 'number',
+              defaultValue: 4.3,
+            },
+          }),
+        ),
+      }),
+    })
   })
 })

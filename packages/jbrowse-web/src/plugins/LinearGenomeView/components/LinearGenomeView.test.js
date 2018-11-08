@@ -1,7 +1,7 @@
 import React from 'react'
 import renderer from 'react-test-renderer'
 import LinearGenomeView from './LinearGenomeView'
-import Model from './model'
+import Model from '../models/model'
 
 describe('linear genome view component', () => {
   it('renders with an empty model', () => {

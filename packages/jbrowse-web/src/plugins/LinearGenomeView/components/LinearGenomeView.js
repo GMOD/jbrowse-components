@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 import { inject, observer, PropTypes } from 'mobx-react'
 
-import { getConf } from '../../util/configuration'
+import { getConf } from '../../../configuration'
 
 import ScaleBar from './ScaleBar'
 import TrackBlocks from './TrackBlocks'
@@ -40,6 +40,11 @@ class LinearGenomeView extends Component {
       controlsWidth,
       offsetPx,
     } = this.props.model
+    // NOTE: offsetPx is the total offset in px of the viewing window into the
+    // whole set of concatenated regions. this number is often quite large.
+    // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
+    // that are *currently* being displayed
+    const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
     const height =
       scaleBarHeight +
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
@@ -66,7 +71,8 @@ class LinearGenomeView extends Component {
           height={scaleBarHeight}
           bpPerPx={bpPerPx}
           blocks={blocks}
-          offsetPx={offsetPx}
+          offsetPx={visibleBlocksOffsetPx}
+          width={width - controlsWidth}
         />
         {tracks.map(track => [
           <div
@@ -81,7 +87,8 @@ class LinearGenomeView extends Component {
             backgroundColor={getConf(track, 'backgroundColor')}
             blocks={blocks}
             trackId={track.id}
-            offsetPx={offsetPx}
+            offsetPx={visibleBlocksOffsetPx}
+            width={width - controlsWidth}
             bpPerPx={bpPerPx}
             onHorizontalScroll={this.props.model.horizontalScroll}
           />,

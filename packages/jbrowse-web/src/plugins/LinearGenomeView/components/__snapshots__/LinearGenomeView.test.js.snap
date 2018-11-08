@@ -33,6 +33,7 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
         "gridColumn": "blocks",
         "gridRow": "scale-bar",
         "height": "22px",
+        "width": "700px",
       }
     }
   />
@@ -57,9 +58,9 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
+        "width": "700px",
       }
     }
   />
@@ -108,38 +109,10 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
         "gridColumn": "blocks",
         "gridRow": "scale-bar",
         "height": "22px",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    >
-      0
-       
-      100
-       
-    </div>
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "800px",
-        }
-      }
-    >
-      1000
-       
-      200
-       
-    </div>
-  </div>
+  />
   <div
     className="controls track-controls"
     style={
@@ -161,31 +134,12 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    />
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "800px",
-        }
-      }
-    />
-  </div>
+  />
   <div
     className="drag-handle drag-handle-horizontal"
     style={
@@ -216,31 +170,12 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "bar",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    />
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "800px",
-        }
-      }
-    />
-  </div>
+  />
   <div
     className="drag-handle drag-handle-horizontal"
     style={
@@ -286,24 +221,10 @@ exports[`linear genome view component renders with an empty model 1`] = `
         "gridColumn": "blocks",
         "gridRow": "scale-bar",
         "height": "22px",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    >
-      0
-       
-      100
-       
-    </div>
-  </div>
+  />
   <div
     className="controls track-controls"
     style={
@@ -325,22 +246,12 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "foo",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    />
-  </div>
+  />
   <div
     className="drag-handle drag-handle-horizontal"
     style={
@@ -371,22 +282,12 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "bar",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    />
-  </div>
+  />
   <div
     className="drag-handle drag-handle-horizontal"
     style={
@@ -417,22 +318,12 @@ exports[`linear genome view component renders with an empty model 1`] = `
     role="presentation"
     style={
       Object {
-        "background": "#eee",
         "gridColumn": "blocks",
         "gridRow": "baz",
+        "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    />
-  </div>
+  />
   <div
     className="drag-handle drag-handle-horizontal"
     style={
