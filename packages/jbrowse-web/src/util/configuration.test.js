@@ -9,7 +9,7 @@ import {
 
 import ModelFactory from '../RootModelFactory'
 import JBrowse from '../JBrowse'
-import snap1 from '../../test/root.snap.1.json'
+import snap1 from '../test/root.snap.1.json'
 
 describe('configuration saving', () => {
   const Model = ModelFactory(new JBrowse())
