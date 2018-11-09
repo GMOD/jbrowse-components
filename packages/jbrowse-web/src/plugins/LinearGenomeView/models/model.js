@@ -2,20 +2,6 @@ import { types, getParent, isStateTreeNode } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
 import { IdType, Region } from '../../../types'
 
-// a Block is just a Region that knows its parent's zoomlevel
-export const Block = types
-  .compose(
-    Region,
-    types.model({
-      bpPerPx: types.number,
-    }),
-  )
-  .views(self => ({
-    get widthPx() {
-      return Math.abs(self.end - self.start) / self.bpPerPx
-    },
-  }))
-
 const minTrackHeight = 20
 export const Track = types.model('Track', {
   id: IdType,

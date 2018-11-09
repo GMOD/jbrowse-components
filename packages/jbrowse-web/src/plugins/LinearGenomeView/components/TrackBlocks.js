@@ -13,7 +13,7 @@ export default class TrackBlocks extends Component {
   constructor(props) {
     super(props)
     const { bpPerPx, blocks } = props
-    this.blockWidths = (blocks || []).map(
+    this.blockWidths = blocks.map(
       ({ start, end }) => Math.abs(end - start) / bpPerPx,
     )
     this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
@@ -23,7 +23,7 @@ export default class TrackBlocks extends Component {
     const { blocks, offsetPx, bpPerPx } = this.props
     return (
       <div className="TrackBlocks">
-        {(blocks || []).map(block => {
+        {blocks.map(block => {
           const { refName, start, end } = block
           const comp = (
             <Block
