@@ -1,19 +1,19 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+import { PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
 import Block from './Block'
 
 export default class TrackBlocks extends Component {
   static propTypes = {
-    blocks: PropTypes.arrayOf(PropTypes.object).isRequired,
-    offsetPx: PropTypes.number.isRequired,
-    bpPerPx: PropTypes.number.isRequired,
-    // width: PropTypes.number.isRequired,
+    offsetPx: ReactPropTypes.number.isRequired,
+    blocks: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
+    bpPerPx: ReactPropTypes.number.isRequired,
   }
 
   constructor(props) {
     super(props)
-    const { bpPerPx } = props
-    this.blockWidths = props.blocks.map(
+    const { bpPerPx, blocks } = props
+    this.blockWidths = (blocks || []).map(
       ({ start, end }) => Math.abs(end - start) / bpPerPx,
     )
     this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
@@ -23,7 +23,7 @@ export default class TrackBlocks extends Component {
     const { blocks, offsetPx, bpPerPx } = this.props
     return (
       <div className="TrackBlocks">
-        {blocks.map(block => {
+        {(blocks || []).map(block => {
           const { refName, start, end } = block
           const comp = (
             <Block

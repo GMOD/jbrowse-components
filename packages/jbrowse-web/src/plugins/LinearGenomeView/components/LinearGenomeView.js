@@ -1,8 +1,5 @@
 import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
-import { inject, observer, PropTypes } from 'mobx-react'
-
-import { getConf } from '../../../configuration'
+import { observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -79,6 +76,7 @@ class LinearGenomeView extends Component {
             onHorizontalScroll={this.props.model.horizontalScroll}
           >
             <TrackBlocks
+              model={track}
               blocks={blocks}
               offsetPx={visibleBlocksOffsetPx}
               bpPerPx={bpPerPx}
