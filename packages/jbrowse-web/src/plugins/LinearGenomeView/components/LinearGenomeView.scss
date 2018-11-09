@@ -45,8 +45,10 @@
     }
 
     .drag-handle {
-      background: #888;
+      background: #ccc;
       cursor: ns-resize;
       width: 100%;
+      box-sizing: border-box;
+      border-top: 1px solid #fafafa;
     }
 }

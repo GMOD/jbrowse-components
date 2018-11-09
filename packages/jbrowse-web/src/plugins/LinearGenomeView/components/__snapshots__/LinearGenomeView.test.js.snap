@@ -6,8 +6,8 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 1px",
-      "height": "43px",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px",
+      "height": "45px",
       "width": "800px",
     }
   }
@@ -66,6 +66,11 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",
@@ -82,8 +87,8 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 1px [bar] 20px [resize-bar] 1px",
-      "height": "64px",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px [bar] 20px [resize-bar] 3px",
+      "height": "68px",
       "width": "800px",
     }
   }
@@ -142,6 +147,11 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",
@@ -178,6 +188,11 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",
@@ -194,8 +209,8 @@ exports[`linear genome view component renders with an empty model 1`] = `
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 1px [bar] 20px [resize-bar] 1px [baz] 20px [resize-baz] 1px",
-      "height": "85px",
+      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px [bar] 20px [resize-bar] 3px [baz] 20px [resize-baz] 3px",
+      "height": "91px",
       "width": "800px",
     }
   }
@@ -254,6 +269,11 @@ exports[`linear genome view component renders with an empty model 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",
@@ -290,6 +310,11 @@ exports[`linear genome view component renders with an empty model 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",
@@ -326,6 +351,11 @@ exports[`linear genome view component renders with an empty model 1`] = `
   />
   <div
     className="drag-handle drag-handle-horizontal"
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    role="presentation"
     style={
       Object {
         "gridColumn": "span 2",

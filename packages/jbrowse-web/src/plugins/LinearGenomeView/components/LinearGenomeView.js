@@ -6,22 +6,11 @@ import { getConf } from '../../../configuration'
 
 import ScaleBar from './ScaleBar'
 import TrackBlocks from './TrackBlocks'
+import TrackResizeHandle from './TrackResizeHandle'
 
 import './LinearGenomeView.scss'
 
-const dragHandleHeight = 1
-function TrackResizeHandle({ trackId }) {
-  return (
-    <div
-      className="drag-handle drag-handle-horizontal"
-      style={{
-        gridRow: `resize-${trackId}`,
-        gridColumn: 'span 2',
-      }}
-    />
-  )
-}
-TrackResizeHandle.propTypes = { trackId: ReactPropTypes.string.isRequired }
+const dragHandleHeight = 3
 
 @observer
 class LinearGenomeView extends Component {
@@ -92,7 +81,11 @@ class LinearGenomeView extends Component {
             bpPerPx={bpPerPx}
             onHorizontalScroll={this.props.model.horizontalScroll}
           />,
-          <TrackResizeHandle key={`handle:${track.id}`} trackId={track.id} />,
+          <TrackResizeHandle
+            key={`handle:${track.id}`}
+            trackId={track.id}
+            onVerticalDrag={this.props.model.resizeTrack}
+          />,
         ])}
       </div>
     )

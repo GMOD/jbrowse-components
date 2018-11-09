@@ -132,6 +132,17 @@ const LinearGenomeViewState = types
       )
     },
 
+    resizeTrack(trackId, distance) {
+      const track = self.tracks.find(t => t.id === trackId)
+      if (track) {
+        try {
+          track.height += distance
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    },
+
     horizontalScroll(distance) {
       const leftPadding = 10
       const rightPadding = 10
