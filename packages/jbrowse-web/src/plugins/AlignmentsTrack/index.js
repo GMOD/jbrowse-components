@@ -3,6 +3,7 @@ import { types } from 'mobx-state-tree'
 import Plugin, { Track } from '../../Plugin'
 import { ConfigurationSchema } from '../../configuration'
 import { IdType } from '../../types'
+import AlignmentsTrack from './components/AlignmentsTrack'
 
 const configSchema = ConfigurationSchema('AlignmentsTrack', {
   defaultView: {
@@ -20,7 +21,12 @@ export default class AlignmentsTrackPlugin extends Plugin {
   install(browser) {
     this.browser = browser
     browser.addTrackType(
-      new Track({ name: 'alignments', configSchema, stateModel }),
+      new Track({
+        name: 'Alignments',
+        configSchema,
+        stateModel,
+        ReactComponent: AlignmentsTrack,
+      }),
     )
   }
 }

@@ -21,12 +21,12 @@ export class PluggableElement {
 }
 
 export class Track extends PluggableElement {
-  // constructor(stuff) {
-  //   super(stuff)
-  //   if (!this.ReactComponent)
-  //     throw new Error(`no ReactComponent defined for track`)
-  //   if (!this.stateModel) throw new Error(`no stateModel defined for track`)
-  // }
+  constructor(stuff) {
+    super(stuff)
+    if (!this.ReactComponent)
+      throw new Error(`no ReactComponent defined for track type ${this.name}`)
+    if (!this.stateModel) throw new Error(`no stateModel defined for track`)
+  }
 }
 
 export class View extends PluggableElement {
