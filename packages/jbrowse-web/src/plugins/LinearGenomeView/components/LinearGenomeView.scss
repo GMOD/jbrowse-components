@@ -19,29 +19,24 @@
       overflow: hidden;
     }
 
-    .track-controls, .track-blocks {
-      border-top: 1px solid gray;
-      box-sizing: content-box;
-    }
     .controls {
       border-right: 1px solid gray;
     }
-    .track-blocks {
+
+    .TrackRenderingContainer {
       overflow: hidden;
       background: #333;
       white-space: nowrap;
     }
 
-    .ScaleBar, .track-blocks {
+    .ScaleBar, .TrackBlocks {
+      white-space: nowrap;
       text-align: left;
-    }
-
-    .ScaleBar {
       width: 100%;
       position: relative;
       background: #555;
       overflow: hidden;
-      white-space: nowrap;
+      height: 100%;
     }
 
     .drag-handle {

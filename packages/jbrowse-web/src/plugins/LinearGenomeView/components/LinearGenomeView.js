@@ -5,6 +5,7 @@ import { inject, observer, PropTypes } from 'mobx-react'
 import { getConf } from '../../../configuration'
 
 import ScaleBar from './ScaleBar'
+import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackBlocks from './TrackBlocks'
 import TrackResizeHandle from './TrackResizeHandle'
 
@@ -71,16 +72,18 @@ class LinearGenomeView extends Component {
           >
             {track.name || track.id}
           </div>,
-          <TrackBlocks
+          <TrackRenderingContainer
             key={`track-blocks:${track.id}`}
-            backgroundColor={getConf(track, 'backgroundColor')}
-            blocks={blocks}
             trackId={track.id}
-            offsetPx={visibleBlocksOffsetPx}
             width={width - controlsWidth}
-            bpPerPx={bpPerPx}
             onHorizontalScroll={this.props.model.horizontalScroll}
-          />,
+          >
+            <TrackBlocks
+              blocks={blocks}
+              offsetPx={visibleBlocksOffsetPx}
+              bpPerPx={bpPerPx}
+            />
+          </TrackRenderingContainer>,
           <TrackResizeHandle
             key={`handle:${track.id}`}
             trackId={track.id}
