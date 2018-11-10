@@ -11,6 +11,7 @@ export default function({ viewTypes, uiTypes }) {
       uis: types.array(
         types.union(...Object.values(uiTypes).map(({ mstModel }) => mstModel)),
       ),
+      tempUi: types.maybe(types.string),
     })
     .actions(self => ({
       addView(typeName, inputData = {}) {
@@ -24,6 +25,12 @@ export default function({ viewTypes, uiTypes }) {
         if (!typeDefinition) throw new Error(`unknown UI type ${typeName}`)
         const data = Object.assign({}, inputData, { type: typeName })
         self.uis.push(typeDefinition.mstModel.create(data))
+      },
+      addTempUi(uiPath) {
+        self.tempUi = uiPath
+      },
+      removeTempUi() {
+        self.tempUi = undefined
       },
     }))
   return RootModel

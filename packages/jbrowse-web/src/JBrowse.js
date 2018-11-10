@@ -113,20 +113,23 @@ class JBrowse {
 
     this.model.addUi('appbar')
     this.model.uis[0].addMenu({
-      name: 'FirstMenu',
-      menuItems: [{ name: 'FirstMenuItem1' }],
-    })
-    this.model.uis[0].menus[0].addMenuItem({
-      name: 'FirstMenuItem2',
-      icon: 'bookmark',
-    })
-    this.model.uis[0].menus[0].addMenuItem({
-      name: 'FirstMenuItem3',
-      icon: 'search',
+      name: 'File',
+      menuItems: [
+        {
+          name: '',
+          callback: 'function(model){console.log(model)}',
+        },
+      ],
     })
     this.model.uis[0].addMenu({
-      name: 'SecondMenu',
-      menuItems: [{ name: 'SecondMenuItem1' }],
+      name: 'Help',
+      menuItems: [
+        {
+          name: 'About',
+          icon: 'info',
+          callback: "function(model){model.addTempUi('ui/AboutModal')}",
+        },
+      ],
     })
 
     this.configured = true

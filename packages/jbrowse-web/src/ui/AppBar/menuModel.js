@@ -1,23 +1,15 @@
 import { types } from 'mobx-state-tree'
+import { stringToFunction } from '../../util/configuration'
 
 const MenuItem = types
   .model('MenuItem', {
     name: types.string,
     icon: types.optional(types.string, ''),
-    callback: types.optional(
-      types.string,
-      'function(model){console.log(model)}',
-    ),
+    callback: types.string,
   })
   .views(self => ({
     get func() {
-      if (/^\s*(?:async )?function\s*\(/.test(self.callback)) {
-        // eslint-disable-next-line
-          return Function(`"use strict";return (${self.callback})`)()
-      }
-      throw new Error(
-        `Can't parse callback function for menu item "${self.name}"`,
-      )
+      return stringToFunction(self.callback)
     },
   }))
 

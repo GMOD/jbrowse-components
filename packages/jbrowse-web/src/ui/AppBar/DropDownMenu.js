@@ -1,5 +1,3 @@
-import React from 'react'
-import PropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
 import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import Grow from '@material-ui/core/Grow'
@@ -10,11 +8,12 @@ import MenuItem from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
-import SvgIcon from '@material-ui/core/SvgIcon'
 import { withStyles } from '@material-ui/core/styles'
-
+import SvgIcon from '@material-ui/core/SvgIcon'
 import { values } from 'mobx'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import PropTypes from 'prop-types'
+import React from 'react'
 
 function EmptyIcon(props) {
   return (
@@ -30,6 +29,7 @@ const styles = {
   },
 }
 
+@inject('rootModel')
 @observer
 class DropDownMenu extends React.Component {
   state = {
@@ -44,12 +44,12 @@ class DropDownMenu extends React.Component {
 
   handleClose = (event, callback) => {
     const { anchorEl } = this.state
-    const { model } = this.props
+    const { rootModel } = this.props
     if (anchorEl.contains(event.target)) {
       return
     }
     this.setState({ anchorEl: null })
-    if (callback) callback(model)
+    if (callback) callback(rootModel)
   }
 
   render() {
@@ -113,8 +113,8 @@ class DropDownMenu extends React.Component {
   }
 }
 
-DropDownMenu.defaultProps = {
-  itemIcons: [],
+DropDownMenu.wrappedComponent.propTypes = {
+  rootModel: MobxPropTypes.observableObject.isRequired,
 }
 
 DropDownMenu.propTypes = {

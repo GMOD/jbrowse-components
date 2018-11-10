@@ -1,11 +1,9 @@
-import React, { Component } from 'react'
-import { observer, inject, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Drawer from '@material-ui/core/Drawer'
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
-
+import { inject, observer, PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 import Theme from './Theme'
 
 const drawerWidth = Theme.overrides.MuiDrawer.paper.width
@@ -28,7 +26,6 @@ const styles = {
 @observer
 class App extends Component {
   static propTypes = {
-    rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
     getUiType: ReactPropTypes.func.isRequired,
     classes: ReactPropTypes.shape({
@@ -38,8 +35,23 @@ class App extends Component {
     }).isRequired,
   }
 
+  static wrappedComponent = {
+    propTypes: {
+      rootModel: PropTypes.observableObject.isRequired,
+    },
+  }
+
   render() {
     const { classes, rootModel, getUiType, getViewType } = this.props
+    let tempUiPlaceholder
+    if (rootModel.tempUi) {
+      const TempComponent = React.lazy(() => import(`../${rootModel.tempUi}`))
+      tempUiPlaceholder = (
+        <React.Suspense fallback={<div />}>
+          <TempComponent onClose={() => rootModel.removeTempUi()} />
+        </React.Suspense>
+      )
+    }
     return (
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
@@ -48,6 +60,7 @@ class App extends Component {
             const { ReactComponent } = getUiType(ui.type)
             return <ReactComponent key={`ui-${ui.id}`} model={ui} />
           })}
+          {tempUiPlaceholder}
           <div className={classes.views}>
             {rootModel.views.map(view => {
               const { ReactComponent } = getViewType(view.type)
