@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { Provider } from 'mobx-react'
 import App from './App'
-import JBrowse from '../JBrowse'
 import RootModelFactory from '../RootModelFactory'
 import snap1 from '../test/root.snap.1.json'
 import LinearGenomeView from '../plugins/LinearGenomeView/LinearGenomeView'
@@ -26,7 +26,9 @@ describe('jbrowse-web app', () => {
     const div = document.createElement('div')
     const model = RootModelFactory({ viewTypes, uiTypes }).create({})
     ReactDOM.render(
-      <App getViewType={getViewType} getUiType={getUiType} rootModel={model} />,
+      <Provider rootModel={model}>
+        <App getViewType={getViewType} getUiType={getUiType} />
+      </Provider>,
       div,
     )
     ReactDOM.unmountComponentAtNode(div)
@@ -35,7 +37,9 @@ describe('jbrowse-web app', () => {
     const div = document.createElement('div')
     const model = RootModelFactory({ viewTypes, uiTypes }).create(snap1)
     ReactDOM.render(
-      <App getViewType={getViewType} getUiType={getUiType} rootModel={model} />,
+      <Provider rootModel={model}>
+        <App getViewType={getViewType} getUiType={getUiType} />
+      </Provider>,
       div,
     )
     ReactDOM.unmountComponentAtNode(div)

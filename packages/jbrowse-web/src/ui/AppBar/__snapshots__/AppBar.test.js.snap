@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`app bar renders one menu with two menu items 1`] = `
+exports[`app bar renders one menu with one menu item 1`] = `
 <div
   className="MainAppBar-root-1"
 >
@@ -11,7 +11,7 @@ exports[`app bar renders one menu with two menu items 1`] = `
       className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
     >
       <div
-        className="DropDownMenu-root-78"
+        className="inject-DropDownMenu-with-rootModel-root-78"
       >
         <button
           aria-haspopup="true"
@@ -61,7 +61,7 @@ exports[`app bar renders one menu with two menu items 1`] = `
 </div>
 `;
 
-exports[`app bar renders two menu with two menu items each 1`] = `
+exports[`app bar renders two menus with two menu items each 1`] = `
 <div
   className="MainAppBar-root-1"
 >
@@ -72,7 +72,7 @@ exports[`app bar renders two menu with two menu items each 1`] = `
       className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
     >
       <div
-        className="DropDownMenu-root-78"
+        className="inject-DropDownMenu-with-rootModel-root-78"
       >
         <button
           aria-haspopup="true"
@@ -110,7 +110,7 @@ exports[`app bar renders two menu with two menu items each 1`] = `
         </button>
       </div>
       <div
-        className="DropDownMenu-root-78"
+        className="inject-DropDownMenu-with-rootModel-root-78"
       >
         <button
           aria-haspopup="true"
@@ -161,29 +161,6 @@ exports[`app bar renders two menu with two menu items each 1`] = `
 `;
 
 exports[`app bar renders with no menus 1`] = `
-<div
-  className="MainAppBar-root-1"
->
-  <header
-    className="MuiPaper-root-12 MuiPaper-elevation4-18 MuiAppBar-root-3 MuiAppBar-positionStatic-7 MuiAppBar-colorPrimary-10"
-  >
-    <div
-      className="MuiToolbar-root-39 MuiToolbar-dense-42 MuiToolbar-gutters-40"
-    >
-      <div
-        className="MainAppBar-grow-2"
-      />
-      <h6
-        className="MuiTypography-root-43 MuiTypography-h6-60 MuiTypography-colorInherit-72"
-      >
-        JBrowse
-      </h6>
-    </div>
-  </header>
-</div>
-`;
-
-exports[`app bar renders with no menus 2`] = `
 <div
   className="MainAppBar-root-1"
 >
