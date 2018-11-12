@@ -2,7 +2,7 @@
   "views": [
     {
       "width": 800,
-      "type": "linear",
+      "type": "LinearGenomeView",
       "offsetPx": 20,
       "controlsWidth": 100,
       "tracks": [
@@ -33,7 +33,7 @@
     },
     {
       "width": 800,
-      "type": "linear",
+      "type": "LinearGenomeView",
       "offsetPx": 0,
       "controlsWidth": 100,
       "tracks": [

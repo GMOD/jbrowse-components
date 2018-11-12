@@ -6,36 +6,37 @@ import Block from './Block'
 export default class TrackBlocks extends Component {
   static propTypes = {
     offsetPx: ReactPropTypes.number.isRequired,
-    blocks: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
+    blockDefinitions: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
+    blockState: ReactPropTypes.objectOf(ReactPropTypes.object).isRequired,
   }
 
   constructor(props) {
     super(props)
-    const { bpPerPx, blocks } = props
-    this.blockWidths = blocks.map(
+    const { bpPerPx, blockDefinitions } = props
+    this.blockWidths = blockDefinitions.map(
       ({ start, end }) => Math.abs(end - start) / bpPerPx,
     )
     this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
   }
 
   render() {
-    const { blocks, offsetPx, bpPerPx } = this.props
+    const { blockDefinitions, offsetPx, bpPerPx, blockState } = this.props
     return (
       <div className="TrackBlocks">
-        {blocks.map(block => {
-          const { refName, start, end } = block
+        {blockDefinitions.map(block => {
+          const state = blockState[block.key]
           const comp = (
             <Block
               start={block.start}
               end={block.end}
-              refName={block.ref}
+              refName={block.refName}
               width={block.widthPx}
-              key={`${refName}:${start}..${end}`}
+              key={block.key}
               offset={offsetPx}
               bpPerPx={bpPerPx}
             >
-              {block.content}
+              {state ? state.content : undefined}
             </Block>
           )
           return comp

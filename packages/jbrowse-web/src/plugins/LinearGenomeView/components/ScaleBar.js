@@ -20,7 +20,7 @@ export default function ScaleBar({
         const { refName, start, end } = block
         return (
           <Block
-            refName={block.ref}
+            refName={block.refName}
             start={block.start}
             end={block.end}
             width={block.widthPx}
@@ -28,7 +28,7 @@ export default function ScaleBar({
             offset={offsetPx}
             bpPerPx={bpPerPx}
           >
-            {block.ref} {block.start} {block.end}{' '}
+            {block.refName} {block.start} {block.end}{' '}
           </Block>
         )
       })}

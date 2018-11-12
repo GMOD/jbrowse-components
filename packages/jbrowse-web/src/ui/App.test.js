@@ -16,7 +16,7 @@ describe('jbrowse-web app', () => {
     )
     ReactDOM.unmountComponentAtNode(div)
   })
-  it('renders a couple of linear views without crashing', () => {
+  it('renders a couple of LinearGenomeView views without crashing', () => {
     const jbrowse = new JBrowse()
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create(snap1)

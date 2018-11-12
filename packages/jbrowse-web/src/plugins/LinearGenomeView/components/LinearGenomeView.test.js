@@ -3,10 +3,10 @@ import renderer from 'react-test-renderer'
 import LinearGenomeView from './LinearGenomeView'
 import Model from '../models/model'
 
-describe('linear genome view component', () => {
+describe('LinearGenomeView genome view component', () => {
   it('renders with an empty model', () => {
     const model = Model.create({
-      type: 'linear',
+      type: 'LinearGenomeView',
       offsetPx: 0,
       bpPerPx: 1,
       blocks: [{ refName: 'ctgA', start: 0, end: 100 }],
@@ -24,7 +24,7 @@ describe('linear genome view component', () => {
   })
   it('renders one track, no blocks', () => {
     const model = Model.create({
-      type: 'linear',
+      type: 'LinearGenomeView',
       offsetPx: 0,
       bpPerPx: 1,
       blocks: [],
@@ -38,7 +38,7 @@ describe('linear genome view component', () => {
   })
   it('renders two tracks, two blocks', () => {
     const model = Model.create({
-      type: 'linear',
+      type: 'LinearGenomeView',
       offsetPx: 0,
       bpPerPx: 1,
       blocks: [

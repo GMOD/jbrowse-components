@@ -10,29 +10,56 @@ import * as webWorkers from './webWorkers'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
-import { View, Track } from './Plugin'
+import { ViewType, TrackType } from './Plugin'
 
 const corePlugins = [LinearGenomeViewPlugin, AlignmentsTrackPlugin]
 
+// keeps groups of callbacks that are then run in a specified order by group
+class PhasedScheduler {
+  phaseCallbacks = {}
+
+  constructor(...phaseOrder) {
+    this.phaseOrder = phaseOrder
+  }
+
+  add(phase, callback) {
+    if (!this.phaseOrder.includes(phase))
+      throw new Error(`unknown phase ${phase}`)
+    if (!this.phaseCallbacks[phase]) this.phaseCallbacks[phase] = []
+    this.phaseCallbacks[phase].push(callback)
+  }
+
+  run() {
+    this.phaseOrder.forEach(phaseName => {
+      this.phaseCallbacks[phaseName].forEach(callback => callback())
+    })
+  }
+}
+
 // the main class used to configure and start a new JBrowse app
 class JBrowse {
-  viewTypes = {}
-
-  trackTypes = {}
-
   plugins = []
+
+  elementTypes = {}
+
+  elementCreationSchedule = new PhasedScheduler('track', 'view')
+
+  typeBaseClasses = { track: TrackType, view: ViewType }
 
   static lib = { 'mobx-state-tree': mst, React }
 
   constructor() {
     this.lib = JBrowse.lib
 
+    this.getViewType = this.getElementType.bind(this, 'view')
+    this.getTrackType = this.getElementType.bind(this, 'track')
+    this.addTrackType = this.addElementType.bind(this, 'track')
+    this.addViewType = this.addElementType.bind(this, 'view')
+
     // add all the core plugins
     corePlugins.forEach(PluginClass => {
       this.addPlugin(new PluginClass())
     })
-
-    this.getViewType = this.getViewType.bind(this)
   }
 
   addPlugin(plugin) {
@@ -43,36 +70,35 @@ class JBrowse {
     return this
   }
 
-  addViewType(element) {
-    if (!(element instanceof View)) throw new Error('element must be a View')
-    return this.addElementType(element)
-  }
+  addElementType(groupName, creationCallback) {
+    if (typeof creationCallback !== 'function')
+      throw new Error('must provide a callback function')
+    const typeBaseClass = this.typeBaseClasses[groupName]
+    if (!typeBaseClass)
+      throw new Error(`unknown pluggable element type ${groupName}, cannot add`)
+    if (!this.elementTypes[groupName]) this.elementTypes[groupName] = {}
 
-  addTrackType(element) {
-    if (!(element instanceof Track)) throw new Error('element must be a Track')
-    return this.addElementType(element)
-  }
+    this.elementCreationSchedule.add(groupName, () => {
+      const element = creationCallback(this)
+      this.elementTypes[groupName][element.name] = element
+    })
 
-  addElementType(element) {
-    if (element instanceof Track) {
-      if (this.trackTypes[element.name])
-        throw new Error(`track type ${element.name} already exists`)
-      this.trackTypes[element.name] = element
-    } else if (element instanceof View) {
-      if (this.viewTypes[element.name])
-        throw new Error(`view type ${element.name} already exists`)
-      this.viewTypes[element.name] = element
-    } else {
-      throw new Error(`unknown pluggable element type, cannot add`)
-    }
     return this
   }
 
-  getViewType(name) {
-    return this.viewTypes[name]
+  getElementType(groupName, typeName) {
+    return (this.elementTypes[groupName] || {})[typeName]
+  }
+
+  getElementTypesInGroup(groupName) {
+    return Object.values(this.elementTypes[groupName] || {})
   }
 
   configure() {
+    // run the creation callbacks for each element type in order.
+    // currently tracks, then views
+    this.elementCreationSchedule.run()
+
     const RootModel = RootModelFactory(this)
     this.model = RootModel.create({})
 

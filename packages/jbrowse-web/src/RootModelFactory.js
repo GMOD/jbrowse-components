@@ -3,34 +3,54 @@ import { ConfigurationSchema } from './configuration'
 
 const isPresent = thing => !!thing
 
-function extractAll(fieldName, typesObject) {
-  return Object.values(typesObject)
-    .map(definition => definition[fieldName])
-    .filter(isPresent)
+function extractAll(fieldName, typesList) {
+  return typesList.map(definition => definition[fieldName]).filter(isPresent)
 }
 
-export default function({ viewTypes, trackTypes }) {
-  if (!trackTypes) {
-    console.warn(
-      'No track types registered, will not be able to display any tracks.',
-    )
-    trackTypes = {}
-  }
+export default function(pluginManager) {
+  // const viewConfigTypes = Object.fromEntries(
+  //   Object.entries(viewTypes).map(([typeName,typeObject]) => [typeName, typeObject.]
+  //   })
+  // Object.entries(viewTypes).forEach(([typeName,typeObject]) => {
+  //   viewConfigTypes
+  // })
+  // TODO: get all config schemas from the view types and make an object of them
+  const viewConfigTypes = {}
 
   const RootModel = types
     .model('JBrowseWebRootModel', {
       browser: types.frozen(this),
-      views: types.array(types.union(...extractAll('stateModel', viewTypes))),
-      tracks: types.array(types.union(...extractAll('stateModel', trackTypes))),
+      views: types.array(
+        types.union(
+          ...extractAll(
+            'stateModel',
+            pluginManager.getElementTypesInGroup('view'),
+          ),
+        ),
+      ),
+      tracks: types.array(
+        types.union(
+          ...extractAll(
+            'stateModel',
+            pluginManager.getElementTypesInGroup('track'),
+          ),
+        ),
+      ),
       configuration: ConfigurationSchema('JBrowseWebRoot', {
+        views: types.optional(types.model(viewConfigTypes), {}),
         tracks: types.array(
-          types.union(...extractAll('configSchema', trackTypes)),
+          types.union(
+            ...extractAll(
+              'configSchema',
+              pluginManager.getElementTypesInGroup('track'),
+            ),
+          ),
         ),
       }),
     })
     .actions(self => ({
       addView(typeName, initialState = {}, configuration = {}) {
-        const typeDefinition = viewTypes[typeName]
+        const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
         const data = Object.assign({}, initialState, {
           type: typeName,

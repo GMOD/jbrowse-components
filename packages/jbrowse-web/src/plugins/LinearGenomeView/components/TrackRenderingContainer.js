@@ -1,13 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import Block from './Block'
 
-export default class TrackBlocks extends Component {
+export default class TrackRenderingContainer extends Component {
   static propTypes = {
-    // blocks: PropTypes.arrayOf(PropTypes.object).isRequired,
     trackId: PropTypes.string.isRequired,
-    // offsetPx: PropTypes.number.isRequired,
-    // bpPerPx: PropTypes.number.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
     width: PropTypes.number.isRequired,
     children: PropTypes.node,

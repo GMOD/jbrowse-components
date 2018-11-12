@@ -11,25 +11,34 @@ export default class Plugin {
   }
 }
 
-export class PluggableElement {
-  constructor(stuff) {
-    Object.assign(this, stuff)
+export class PluggableElementType {
+  constructor(stuff, ...defaults) {
+    Object.assign(
+      this,
+      {
+        configSchema: ConfigurationSchema('Anonymous', {}),
+      },
+      ...defaults,
+      stuff,
+    )
+    Object.freeze(this)
+
     if (!this.name) throw new Error(`no "name" defined for pluggable element`)
-    if (!this.configSchema)
-      this.configSchema = ConfigurationSchema('Anonymous', {})
   }
 }
 
-export class Track extends PluggableElement {
-  constructor(stuff) {
-    super(stuff)
-    if (!this.ReactComponent)
-      throw new Error(`no ReactComponent defined for track type ${this.name}`)
+export class TrackType extends PluggableElementType {
+  constructor(stuff, subClassDefaults = {}) {
+    super(stuff, { compatibleView: 'LinearGenomeView' }, subClassDefaults)
+    if (!this.RenderingComponent)
+      throw new Error(
+        `no RenderingComponent defined for track type ${this.name}`,
+      )
     if (!this.stateModel) throw new Error(`no stateModel defined for track`)
   }
 }
 
-export class View extends PluggableElement {
+export class ViewType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
     if (!this.ReactComponent)

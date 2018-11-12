@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`linear genome view component renders one track, no blocks 1`] = `
+exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -85,7 +85,7 @@ exports[`linear genome view component renders one track, no blocks 1`] = `
 </div>
 `;
 
-exports[`linear genome view component renders two tracks, two blocks 1`] = `
+exports[`LinearGenomeView genome view component renders two tracks, two blocks 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -215,7 +215,7 @@ exports[`linear genome view component renders two tracks, two blocks 1`] = `
 </div>
 `;
 
-exports[`linear genome view component renders with an empty model 1`] = `
+exports[`LinearGenomeView genome view component renders with an empty model 1`] = `
 <div
   className="LinearGenomeView"
   style={
