@@ -19,9 +19,8 @@ const stateModel = types.compose(
 )
 
 export default class AlignmentsTrackPlugin extends Plugin {
-  install(browser) {
-    this.browser = browser
-    browser.addTrackType(
+  install(pluginManager) {
+    pluginManager.addTrackType(
       () =>
         new TrackType({
           name: 'Alignments',

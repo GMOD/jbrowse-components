@@ -15,6 +15,7 @@
     "react/jsx-filename-extension": 0,
     "react/prefer-stateless-function": "warn",
     "react/no-unused-state": "warn",
+    "class-methods-use-this": "warn",
     "react/destructuring-assignment": 0,
     "no-use-before-define": 0,
     "no-param-reassign": 0,
