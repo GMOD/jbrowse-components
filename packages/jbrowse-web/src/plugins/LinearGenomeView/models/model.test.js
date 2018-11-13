@@ -1,14 +1,14 @@
 import { isType } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
-import LinearGenomeModel from './model'
+import { TestStub as LinearGenomeModel } from './model'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const model = LinearGenomeModel.create({
     type: 'LinearGenomeView',
-    tracks: [{ name: 'foo track', type: 'tester' }],
+    tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
   })
   expect(model.tracks[0]).toBeTruthy()
-  expect(getConf(model.tracks[0], 'backgroundColor')).toBe('#eee')
+  expect(getConf(model, 'backgroundColor')).toBe('#eee')
 })
 
 describe('block calculation', () => {

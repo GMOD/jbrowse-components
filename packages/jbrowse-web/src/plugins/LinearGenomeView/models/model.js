@@ -30,7 +30,7 @@ const ViewStateBase = types.model({
 export default function LinearGenomeViewStateFactory(trackTypes) {
   return types
     .compose(
-      'LinearViewModel',
+      'LinearGenomeView',
       ViewStateBase,
       types.model({
         type: types.literal('LinearGenomeView'),
@@ -40,8 +40,8 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         controlsWidth: 100,
         displayedRegions: types.array(Region),
         width: 800,
-        configuration: ConfigurationSchema('LinearView', {
-          bar: { type: 'integer', defaultValue: 0 },
+        configuration: ConfigurationSchema('LinearGenomeView', {
+          backgroundColor: { type: 'color', defaultValue: '#eee' },
         }),
       }),
     )
@@ -151,3 +151,5 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
     }))
 }
+
+export const TestStub = LinearGenomeViewStateFactory([types.frozen()])

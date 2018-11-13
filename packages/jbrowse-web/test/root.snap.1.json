@@ -9,17 +9,17 @@
         {
           "height": 20,
           "name": "Foo Track",
-          "type": "tester"
+          "type": "AlignmentsTrack"
         },
         {
           "height": 20,
           "name": "Bar Track",
-          "type": "tester"
+          "type": "AlignmentsTrack"
         },
         {
           "name": "Baz Track",
           "height": 20,
-          "type": "tester"
+          "type": "AlignmentsTrack"
         }
       ],
       "blocks": [
@@ -40,12 +40,12 @@
         {
           "name": "Bee Track",
           "height": 20,
-          "type": "tester"
+          "type": "AlignmentsTrack"
         },
         {
           "name": "Bonk Track",
           "height": 20,
-          "type": "tester"
+          "type": "AlignmentsTrack"
         }
       ],
       "blocks": [

@@ -7,7 +7,7 @@ import snap1 from '../../test/root.snap.1.json'
 
 describe('jbrowse-web app', () => {
   it('renders an empty model without crashing', () => {
-    const jbrowse = new JBrowse()
+    const jbrowse = new JBrowse().configure()
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create()
     ReactDOM.render(
@@ -17,7 +17,7 @@ describe('jbrowse-web app', () => {
     ReactDOM.unmountComponentAtNode(div)
   })
   it('renders a couple of LinearGenomeView views without crashing', () => {
-    const jbrowse = new JBrowse()
+    const jbrowse = new JBrowse().configure()
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create(snap1)
     ReactDOM.render(

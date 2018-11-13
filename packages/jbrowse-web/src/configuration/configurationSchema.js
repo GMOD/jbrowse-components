@@ -79,7 +79,7 @@ export function ConfigurationSchema(modelName, schemaDefinition) {
     throw new Error(
       'first arg must be string name of the model that this config schema goes with',
     )
-  const modelDefinition = {}
+  const modelDefinition = { type: types.literal(modelName) }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
     if (isType(slotDefinition)) {
       // this is a sub-configuration
@@ -94,6 +94,6 @@ export function ConfigurationSchema(modelName, schemaDefinition) {
 
   return types.optional(
     types.model(`${modelName}ConfigurationSchema`, modelDefinition),
-    {},
+    { type: modelName },
   )
 }

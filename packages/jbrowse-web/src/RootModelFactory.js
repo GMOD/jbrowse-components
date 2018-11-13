@@ -49,7 +49,7 @@ export default function(pluginManager) {
       }),
     })
     .actions(self => ({
-      addView(typeName, initialState = {}, configuration = {}) {
+      addView(typeName, initialState = {}, configuration = { type: typeName }) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
         const data = Object.assign({}, initialState, {
