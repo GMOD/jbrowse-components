@@ -65,8 +65,12 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"
@@ -150,8 +154,12 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"
@@ -195,8 +203,12 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"
@@ -280,8 +292,12 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"
@@ -325,8 +341,12 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"
@@ -370,8 +390,12 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <div
-      className="TrackBlocks"
-    />
+      className="TrackRenderingNotImplemented"
+    >
+      Rendering not implemented for 
+      tester
+       tracks
+    </div>
   </div>
   <div
     className="drag-handle drag-handle-horizontal"

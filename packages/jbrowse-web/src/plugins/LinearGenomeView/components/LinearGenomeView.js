@@ -75,7 +75,7 @@ class LinearGenomeView extends Component {
             width={width - controlsWidth}
             onHorizontalScroll={this.props.model.horizontalScroll}
           >
-            <TrackBlocks
+            <track.RenderingComponent
               model={track}
               blockDefinitions={blocks}
               offsetPx={visibleBlocksOffsetPx}

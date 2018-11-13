@@ -15,7 +15,11 @@ const configSchema = ConfigurationSchema('AlignmentsTrack', {
 const stateModel = types.compose(
   'AlignmentsTrack',
   LinearGenomeTrack,
-  types.model({ type: types.literal('AlignmentsTrack') }),
+  types.model({ type: types.literal('AlignmentsTrack') }).views(self => ({
+    get RenderingComponent() {
+      return AlignmentsTrack
+    },
+  })),
 )
 
 export default class AlignmentsTrackPlugin extends Plugin {

@@ -1,26 +1,37 @@
-import { types, getParent, isStateTreeNode } from 'mobx-state-tree'
+import React from 'react'
+import { types, isStateTreeNode } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
 import { IdType, Region } from '../../../types'
 import { assembleLocString } from '../../../util'
 
 const minTrackHeight = 20
-export const BaseTrack = types.model('BaseTrack', {
-  id: IdType,
-  name: types.string,
-  type: types.string,
-  height: types.optional(
-    types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
-    minTrackHeight,
-  ),
-  subtracks: types.maybe(types.array(types.late(() => BaseTrack))),
-  configuration: ConfigurationSchema('BaseTrack', {
-    backgroundColor: {
-      description: `the track's background color`,
-      type: 'color',
-      defaultValue: '#eee',
+export const BaseTrack = types
+  .model('BaseTrack', {
+    id: IdType,
+    name: types.string,
+    type: types.string,
+    height: types.optional(
+      types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
+      minTrackHeight,
+    ),
+    subtracks: types.literal(undefined),
+    configuration: ConfigurationSchema('BaseTrack', {
+      backgroundColor: {
+        description: `the track's background color`,
+        type: 'color',
+        defaultValue: '#eee',
+      },
+    }),
+  })
+  .views(self => ({
+    get RenderingComponent() {
+      return () => (
+        <div className="TrackRenderingNotImplemented">
+          Rendering not implemented for {self.type} tracks
+        </div>
+      )
     },
-  }),
-})
+  }))
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
@@ -152,4 +163,6 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
     }))
 }
 
-export const TestStub = LinearGenomeViewStateFactory([types.frozen()])
+// a stub linear genome view state model that only accepts base track types.
+// used in unit tests.
+export const TestStub = LinearGenomeViewStateFactory([BaseTrack])

@@ -27,6 +27,13 @@
       overflow: hidden;
       background: #333;
       white-space: nowrap;
+
+
+      .TrackRenderingNotImplemented {
+        color: white;
+        padding: 0 1em;
+        text-align: center;
+      }
     }
 
     .ScaleBar, .TrackBlocks {
