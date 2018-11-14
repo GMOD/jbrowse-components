@@ -7,7 +7,7 @@ export default class BamAdapter {
     // TODO
   }
 
-  async getFeaturesInRegion({ assembly, refName, start, end }) {
+  getFeaturesInRegion({ assembly, refName, start, end }) {
     // TODO
   }
 }

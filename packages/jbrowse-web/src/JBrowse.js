@@ -21,7 +21,8 @@ const corePlugins = [
   AlignmentsTrackPlugin,
 ]
 
-// keeps groups of callbacks that are then run in a specified order by group
+// little helper class that keeps groups of callbacks that are
+// then run in a specified order by group
 class PhasedScheduler {
   phaseCallbacks = {}
 
