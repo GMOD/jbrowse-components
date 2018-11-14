@@ -3,7 +3,11 @@ export default class BamAdapter {
     this.config = config
   }
 
-  async hasDataForRefSeq({ assembly, refName }) {}
+  async hasDataForRefSeq({ assembly, refName }) {
+    // TODO
+  }
 
-  async getFeaturesInRegion({ assembly, refName, start, end }) {}
+  async getFeaturesInRegion({ assembly, refName, start, end }) {
+    // TODO
+  }
 }

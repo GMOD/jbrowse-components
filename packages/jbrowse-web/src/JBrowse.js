@@ -7,13 +7,15 @@ import RootModelFactory from './RootModelFactory'
 import * as serviceWorker from './serviceWorker'
 import * as webWorkers from './webWorkers'
 
+import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
-import { ViewType, TrackType, AdapterType } from './Plugin'
+import { DrawerWidgetType, ViewType, TrackType, AdapterType } from './Plugin'
 
 const corePlugins = [
+  HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
@@ -55,7 +57,12 @@ class JBrowse {
     'view',
   )
 
-  typeBaseClasses = { track: TrackType, view: ViewType, adapter: AdapterType }
+  typeBaseClasses = {
+    'drawer widget': DrawerWidgetType,
+    track: TrackType,
+    view: ViewType,
+    adapter: AdapterType,
+  }
 
   static lib = { 'mobx-state-tree': mst, React }
 

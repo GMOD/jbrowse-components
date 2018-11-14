@@ -34,7 +34,8 @@ export class TrackType extends PluggableElementType {
       throw new Error(
         `no RenderingComponent defined for track type ${this.name}`,
       )
-    if (!this.stateModel) throw new Error(`no stateModel defined for track`)
+    if (!this.stateModel)
+      throw new Error(`no stateModel defined for track ${this.name}`)
   }
 }
 
@@ -50,8 +51,9 @@ export class ViewType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
     if (!this.ReactComponent)
-      throw new Error(`no ReactComponent defined for view`)
-    if (!this.stateModel) throw new Error(`no stateModel defined for view`)
+      throw new Error(`no ReactComponent defined for view ${this.name}`)
+    if (!this.stateModel)
+      throw new Error(`no stateModel defined for view ${this.name}`)
   }
 }
 
@@ -59,7 +61,10 @@ export class DrawerWidgetType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
     if (!this.ReactComponent)
-      throw new Error(`no ReactComponent defined for drawer widget`)
-    if (!this.stateModel) throw new Error(`no stateModel defined for drawer widget`)
+      throw new Error(
+        `no ReactComponent defined for drawer widget ${this.name}`,
+      )
+    if (!this.stateModel)
+      throw new Error(`no stateModel defined for drawer widget ${this.name}`)
   }
 }

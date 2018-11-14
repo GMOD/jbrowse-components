@@ -1,6 +1,7 @@
 import { types } from 'mobx-state-tree'
-import HierarchicalSelector from './components/HierarchicalSelector'
+import HierarchicalSelector from './components/HierarchicalTrackSelector'
 import { ConfigurationSchema } from '../../configuration'
+import Plugin, { DrawerWidgetType } from '../../Plugin'
 
 const stateModel = types.model({
   // ... state for the hierarchical track selector
@@ -20,7 +21,7 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
         name: 'HierarchicalTrackSelectorDrawerWidget',
         configSchema,
         stateModel,
-        RenderingComponent: HierarchicalSelector,
+        ReactComponent: HierarchicalSelector,
       })
     })
   }
