@@ -38,11 +38,28 @@ export class TrackType extends PluggableElementType {
   }
 }
 
+export class AdapterType extends PluggableElementType {
+  constructor(stuff, subClassDefaults = {}) {
+    super(stuff, subClassDefaults)
+    if (!this.AdapterClass)
+      throw new Error(`no AdapterClass defined for adapter type ${this.name}`)
+  }
+}
+
 export class ViewType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
     if (!this.ReactComponent)
       throw new Error(`no ReactComponent defined for view`)
     if (!this.stateModel) throw new Error(`no stateModel defined for view`)
+  }
+}
+
+export class DrawerWidgetType extends PluggableElementType {
+  constructor(stuff) {
+    super(stuff)
+    if (!this.ReactComponent)
+      throw new Error(`no ReactComponent defined for drawer widget`)
+    if (!this.stateModel) throw new Error(`no stateModel defined for drawer widget`)
   }
 }

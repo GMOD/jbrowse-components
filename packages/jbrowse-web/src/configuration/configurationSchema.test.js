@@ -70,7 +70,7 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger', 5)).toBe(42)
   })
 
-  test('can nest configuration schemas', () => {
+  test('can nest an array of configuration schemas', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
         someInteger: {
@@ -78,7 +78,7 @@ describe('configuration schemas', () => {
           type: 'integer',
           defaultValue: 12,
         },
-        mySubConfigurations: types.array(
+        myArrayOfSubConfigurations: types.array(
           ConfigurationSchema('SubObject', {
             someNumber: {
               description: 'some number in a subconfiguration',
@@ -89,5 +89,32 @@ describe('configuration schemas', () => {
         ),
       }),
     })
+
+    const model = container.create()
+    expect(getConf(model, 'someInteger')).toBe(12)
+    // expect(getConf(model, 'myArrayOfSubConfigurations')).toBe(undefined)
+  })
+
+  test('can nest a single subconfiguration schema', () => {
+    const container = types.model({
+      configuration: ConfigurationSchema('Foo', {
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
+        mySubConfiguration: ConfigurationSchema('SubObject', {
+          someNumber: {
+            description: 'some number in a subconfiguration',
+            type: 'number',
+            defaultValue: 4.3,
+          },
+        }),
+      }),
+    })
+
+    const model = container.create()
+    expect(getConf(model, 'someInteger')).toBe(12)
+    // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
   })
 })

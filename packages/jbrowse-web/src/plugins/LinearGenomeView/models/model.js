@@ -1,13 +1,13 @@
 import React from 'react'
 import { types, isStateTreeNode } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
-import { IdType, Region } from '../../../types'
+import { ElementId, Region } from '../../../types'
 import { assembleLocString } from '../../../util'
 
 const minTrackHeight = 20
 export const BaseTrack = types
   .model('BaseTrack', {
-    id: IdType,
+    id: ElementId,
     name: types.string,
     type: types.string,
     height: types.optional(
@@ -35,7 +35,7 @@ export const BaseTrack = types
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
-  id: IdType,
+  id: ElementId,
 })
 
 export default function LinearGenomeViewStateFactory(trackTypes) {

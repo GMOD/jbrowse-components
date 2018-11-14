@@ -1,4 +1,6 @@
-import { types, isType } from 'mobx-state-tree'
+import { types, isModelType, isArrayType, isUnionType } from 'mobx-state-tree'
+
+import { FileLocation } from '../types'
 
 export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
 export function stringToFunction(str) {
@@ -21,6 +23,7 @@ const typeModels = {
   integer: types.integer,
   number: types.number,
   string: types.string,
+  fileLocation: FileLocation,
 }
 
 const FunctionStringType = types.refinement(
@@ -36,6 +39,9 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
+
+  if (defaultValue === undefined) throw new Error(`no 'defaultValue' provided`)
+
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
   const configSlotModelName = `${type.charAt(0).toUpperCase()}${type.slice(
@@ -74,6 +80,14 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
   })
 }
 
+function isConfigurationSchemaType(thing) {
+  return (
+    (isModelType(thing) && !!thing.isJBrowseConfigurationSchema) ||
+    (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
+    (isUnionType(thing) && thing.types.every(t => isConfigurationSchemaType(t)))
+  )
+}
+
 export function ConfigurationSchema(modelName, schemaDefinition) {
   if (typeof modelName !== 'string')
     throw new Error(
@@ -81,19 +95,31 @@ export function ConfigurationSchema(modelName, schemaDefinition) {
     )
   const modelDefinition = { type: types.literal(modelName) }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
-    if (isType(slotDefinition)) {
+    if (isConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
       modelDefinition[slotName] = slotDefinition
-    } else {
+    } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
       if (!slotDefinition.type)
         throw new Error(`no type set for config slot ${slotName}`)
-      modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
+      try {
+        modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
+      } catch (e) {
+        throw new Error(
+          `invalid config slot definition for '${slotName}': ${e.message}`,
+        )
+      }
+    } else {
+      throw new Error(
+        `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition or a nested configuration schema`,
+      )
     }
   })
 
-  return types.optional(
+  const schemaType = types.optional(
     types.model(`${modelName}ConfigurationSchema`, modelDefinition),
     { type: modelName },
   )
+  schemaType.isJBrowseConfigurationSchema = true
+  return schemaType
 }

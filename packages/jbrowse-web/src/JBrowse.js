@@ -7,12 +7,17 @@ import RootModelFactory from './RootModelFactory'
 import * as serviceWorker from './serviceWorker'
 import * as webWorkers from './webWorkers'
 
+import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
-import { ViewType, TrackType } from './Plugin'
+import { ViewType, TrackType, AdapterType } from './Plugin'
 
-const corePlugins = [LinearGenomeViewPlugin, AlignmentsTrackPlugin]
+const corePlugins = [
+  BamAdapterPlugin,
+  LinearGenomeViewPlugin,
+  AlignmentsTrackPlugin,
+]
 
 // keeps groups of callbacks that are then run in a specified order by group
 class PhasedScheduler {
@@ -31,7 +36,8 @@ class PhasedScheduler {
 
   run() {
     this.phaseOrder.forEach(phaseName => {
-      this.phaseCallbacks[phaseName].forEach(callback => callback())
+      if (this.phaseCallbacks[phaseName])
+        this.phaseCallbacks[phaseName].forEach(callback => callback())
     })
   }
 }
@@ -42,9 +48,14 @@ class JBrowse {
 
   elementTypes = {}
 
-  elementCreationSchedule = new PhasedScheduler('track', 'view')
+  elementCreationSchedule = new PhasedScheduler(
+    'drawer widget',
+    'adapter',
+    'track',
+    'view',
+  )
 
-  typeBaseClasses = { track: TrackType, view: ViewType }
+  typeBaseClasses = { track: TrackType, view: ViewType, adapter: AdapterType }
 
   static lib = { 'mobx-state-tree': mst, React }
 
@@ -53,8 +64,12 @@ class JBrowse {
 
     this.getViewType = this.getElementType.bind(this, 'view')
     this.getTrackType = this.getElementType.bind(this, 'track')
+    this.getAdapterType = this.getElementType.bind(this, 'adapter')
+    this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
     this.addTrackType = this.addElementType.bind(this, 'track')
     this.addViewType = this.addElementType.bind(this, 'view')
+    this.addAdapterType = this.addElementType.bind(this, 'adapter')
+    this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
 
     // add all the core plugins
     corePlugins.forEach(PluginClass => {
@@ -65,6 +80,8 @@ class JBrowse {
   addPlugin(plugin) {
     if (this.started)
       throw new Error('JBrowse already configured, cannot add plugins')
+    if (this.plugins.includes(plugin))
+      throw new Error(`plugin already installed`)
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -80,6 +97,13 @@ class JBrowse {
 
     this.elementCreationSchedule.add(groupName, () => {
       const element = creationCallback(this)
+      if (this.elementTypes[groupName][element.name])
+        throw new Error(
+          `${groupName} ${
+            element.name
+          } already registered, cannot register it again`,
+        )
+
       this.elementTypes[groupName][element.name] = element
     })
 
@@ -94,10 +118,15 @@ class JBrowse {
     return Object.values(this.elementTypes[groupName] || {})
   }
 
+  getElementTypeMembers(groupName, memberName) {
+    return this.getElementTypesInGroup(groupName).map(t => t[memberName])
+  }
+
   configure() {
     // run the creation callbacks for each element type in order.
     // currently tracks, then views
     this.elementCreationSchedule.run()
+    delete this.elementCreationSchedule
 
     const RootModel = RootModelFactory(this)
     this.model = RootModel.create({})

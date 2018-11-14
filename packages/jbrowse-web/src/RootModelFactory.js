@@ -37,7 +37,7 @@ export default function(pluginManager) {
         ),
       ),
       configuration: ConfigurationSchema('JBrowseWebRoot', {
-        views: types.optional(types.model(viewConfigTypes), {}),
+        // views: types.optional(types.model(viewConfigTypes), {}),
         tracks: types.array(
           types.union(
             ...extractAll(
