@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { Provider } from 'mobx-react'
 import App from './App'
 import JBrowse from '../JBrowse'
 import RootModelFactory from '../RootModelFactory'
@@ -11,7 +12,12 @@ describe('jbrowse-web app', () => {
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create()
     ReactDOM.render(
-      <App getViewType={jbrowse.getViewType} rootModel={model} />,
+      <Provider rootModel={model}>
+        <App
+          getViewType={jbrowse.getViewType}
+          getDrawerWidgetType={jbrowse.getDrawerWidgetType}
+        />
+      </Provider>,
       div,
     )
     ReactDOM.unmountComponentAtNode(div)
@@ -21,7 +27,12 @@ describe('jbrowse-web app', () => {
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create(snap1)
     ReactDOM.render(
-      <App getViewType={jbrowse.getViewType} rootModel={model} />,
+      <Provider rootModel={model}>
+        <App
+          getViewType={jbrowse.getViewType}
+          getDrawerWidgetType={jbrowse.getDrawerWidgetType}
+        />
+      </Provider>,
       div,
     )
     ReactDOM.unmountComponentAtNode(div)
