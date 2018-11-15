@@ -1,8 +1,6 @@
 import { getSnapshot } from 'mobx-state-tree'
-
-import JBrowse from './JBrowse'
 import 'typeface-roboto'
-import './index.css'
+import JBrowse from './JBrowse'
 
 const jbrowse = new JBrowse()
 
@@ -27,6 +25,8 @@ model.addView('LinearGenomeView')
 model.views[1].showTrack('bee', 'Bee Track', 'AlignmentsTrack')
 model.views[1].showTrack('bonk', 'Bonk Track', 'AlignmentsTrack')
 model.views[1].tracks[0].configuration.backgroundColor.set('red')
+
+model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget')
 
 window.MODEL = model
 window.getSnapshot = getSnapshot
