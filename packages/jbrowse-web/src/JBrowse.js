@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import * as mst from 'mobx-state-tree'
+import { Provider } from 'mobx-react'
 
 import App from './ui/App'
 import RootModelFactory from './RootModelFactory'
@@ -155,7 +156,12 @@ class JBrowse {
     webWorkers.register()
 
     ReactDOM.render(
-      <App getViewType={this.getViewType} rootModel={this.model} />,
+      <Provider rootModel={this.model}>
+        <App
+          getViewType={this.getViewType}
+          getDrawerWidgetType={this.getDrawerWidgetType}
+        />
+      </Provider>,
       document.getElementById('root'),
     )
     return this

@@ -9,4 +9,11 @@ export default createMuiTheme({
   typography: {
     useNextVariants: true,
   },
+  overrides: {
+    MuiDrawer: {
+      paper: {
+        width: '25%',
+      },
+    },
+  },
 })

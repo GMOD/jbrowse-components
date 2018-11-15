@@ -36,6 +36,14 @@ export default function(pluginManager) {
           ),
         ),
       ),
+      drawerWidgets: types.array(
+        types.union(
+          ...extractAll(
+            'stateModel',
+            pluginManager.getElementTypesInGroup('drawer widget'),
+          ),
+        ),
+      ),
       configuration: ConfigurationSchema('JBrowseWebRoot', {
         // views: types.optional(types.model(viewConfigTypes), {}),
         tracks: types.array(
@@ -57,6 +65,23 @@ export default function(pluginManager) {
           configuration,
         })
         self.views.push(typeDefinition.stateModel.create(data))
+      },
+      addDrawerWidget(
+        typeName,
+        initialState = {},
+        configuration = { type: typeName },
+      ) {
+        const typeDefinition = pluginManager.getElementType(
+          'drawer widget',
+          typeName,
+        )
+        if (!typeDefinition)
+          throw new Error(`unknown drawer widget type ${typeName}`)
+        const data = Object.assign({}, initialState, {
+          type: typeName,
+          configuration,
+        })
+        self.drawerWidgets.push(typeDefinition.stateModel.create(data))
       },
     }))
   return RootModel

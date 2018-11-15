@@ -12,15 +12,15 @@
     "browser": true
   },
   "rules": {
-    "react/jsx-filename-extension": 0,
+    "class-methods-use-this": "off",
+    "no-debugger": "warn",
+    "no-param-reassign": "off",
+    "no-unused-vars": "warn",
+    "no-use-before-define": "off",
+    "react/jsx-filename-extension": "off",
     "react/prefer-stateless-function": "warn",
     "react/no-unused-state": "warn",
-    "class-methods-use-this": 0,
-    "react/destructuring-assignment": 0,
-    "no-use-before-define": 0,
-    "no-param-reassign": 0,
-    "no-unused-vars": "warn",
-    "no-debugger": "warn",
+    "react/destructuring-assignment": "off",
     "prettier/prettier": [
       "error",
       {

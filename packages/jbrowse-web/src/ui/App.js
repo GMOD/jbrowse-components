@@ -1,44 +1,55 @@
 import React, { Component } from 'react'
 import { observer, inject, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
+import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
+import Drawer from '@material-ui/core/Drawer'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { MuiThemeProvider } from '@material-ui/core/styles'
 
 import Theme from './Theme'
 
+const styles = {
+  '@global': {
+    html: {
+      'font-family': 'Roboto',
+    },
+  },
+}
+
+@withStyles(styles)
+@inject('rootModel')
 @observer
 class App extends Component {
   static propTypes = {
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
+    getDrawerWidgetType: ReactPropTypes.func.isRequired,
   }
 
   render() {
     return (
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
-        {/* <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header> */}
         {this.props.rootModel.views.map(view => {
           const { ReactComponent } = this.props.getViewType(view.type)
           return <ReactComponent key={`view-${view.id}`} model={view} />
         })}
+        <Drawer variant="permanent" anchor="right">
+          {this.props.rootModel.drawerWidgets.map(drawerWidget => {
+            const { ReactComponent } = this.props.getDrawerWidgetType(
+              drawerWidget.type,
+            )
+            return (
+              <ReactComponent
+                key={`view-${drawerWidget.id}`}
+                model={drawerWidget}
+              />
+            )
+          })}
+        </Drawer>
       </MuiThemeProvider>
     )
   }
 }
 
-export default observer(props => <App {...props} />)
+export default App

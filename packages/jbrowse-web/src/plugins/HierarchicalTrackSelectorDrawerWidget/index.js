@@ -3,9 +3,12 @@ import HierarchicalSelector from './components/HierarchicalTrackSelector'
 import { ConfigurationSchema } from '../../configuration'
 import Plugin, { DrawerWidgetType } from '../../Plugin'
 
-const stateModel = types.model({
-  // ... state for the hierarchical track selector
-})
+const stateModel = types.compose(
+  'HierarchicalTrackSelectorDrawerWidget',
+  types.model({
+    type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
+  }),
+)
 
 export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
   install(pluginManager) {
