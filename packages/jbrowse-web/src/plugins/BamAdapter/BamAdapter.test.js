@@ -1,4 +1,4 @@
-import { count } from 'rxjs/operators'
+import { map, toArray } from 'rxjs/operators'
 
 import Adapter from './BamAdapter'
 
@@ -15,10 +15,15 @@ test('adapter can fetch features from volvox.bam', async () => {
     assembly: 'volvox',
     refName: 'ctgA',
     start: 0,
-    end: 10000,
+    end: 20000,
   })
 
-  const numFeatures = await features.pipe(count()).toPromise()
-
-  expect(numFeatures).toEqual(1860)
+  const featuresJsonArray = await features
+    .pipe(
+      map(f => f.toJSON()),
+      toArray(),
+    )
+    .toPromise()
+  expect(featuresJsonArray.length).toEqual(3809)
+  expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
 })
