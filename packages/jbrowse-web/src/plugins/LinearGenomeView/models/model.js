@@ -1,7 +1,7 @@
 import React from 'react'
 import { types, isStateTreeNode } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
-import { ElementId, Region } from '../../../types'
+import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
 
 const minTrackHeight = 20

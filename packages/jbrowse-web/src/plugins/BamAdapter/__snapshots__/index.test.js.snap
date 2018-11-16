@@ -5,30 +5,12 @@ exports[`plugin in a stock JBrowse 1`] = `"adapter BamAdapter already registered
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "bamLocation": Object {
-    "description": "",
-    "name": "bamLocation",
-    "type": "fileLocation",
-    "value": Object {
-      "uri": "/path/to/my.bam",
-    },
+    "uri": "/path/to/my.bam",
   },
   "index": Object {
-    "indexType": Object {
-      "description": "",
-      "name": "indexType",
-      "type": "string",
-      "value": "BAI",
-    },
     "location": Object {
-      "description": "",
-      "name": "location",
-      "type": "fileLocation",
-      "value": Object {
-        "uri": "/path/to/my.bam.bai",
-      },
+      "uri": "/path/to/my.bam.bai",
     },
-    "type": "BamIndex",
   },
-  "type": "BamAdapter",
 }
 `;

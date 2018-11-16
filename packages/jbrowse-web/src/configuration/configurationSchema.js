@@ -1,6 +1,6 @@
 import { types, isModelType, isArrayType, isUnionType } from 'mobx-state-tree'
 
-import { FileLocation } from '../types'
+import { FileLocation } from '../mst-types'
 
 export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
 export function stringToFunction(str) {
@@ -16,6 +16,18 @@ export function stringToFunction(str) {
 function isValidColorString(str) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
+}
+
+function isEmptyObject(thing) {
+  return (
+    typeof thing === 'object' &&
+    !Array.isArray(thing) &&
+    Object.keys(thing).length === 0
+  )
+}
+
+function isEmptyArray(thing) {
+  return Array.isArray(thing) && thing.length === 0
 }
 
 const typeModels = {
@@ -44,9 +56,9 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
 
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
-  const configSlotModelName = `${type.charAt(0).toUpperCase()}${type.slice(
-    1,
-  )}ConfigSlot`
+  const configSlotModelName = `${slotName
+    .charAt(0)
+    .toUpperCase()}${slotName.slice(1)}ConfigSlot`
   const slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
@@ -66,6 +78,26 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
         return () => self.value
       },
     }))
+    .preProcessSnapshot(
+      val =>
+        typeof val === 'object' && val.name === slotName
+          ? val
+          : {
+              name: slotName,
+              description,
+              type,
+              value: val,
+            },
+      // ({
+      //   name: slotName,
+      //   description,
+      //   type,
+      //   value: val,
+      // }),
+    )
+    .postProcessSnapshot(
+      snap => (snap.value !== defaultValue ? snap.value : undefined),
+    )
     .actions(self => ({
       set(newVal) {
         self.value = newVal
@@ -88,12 +120,13 @@ function isConfigurationSchemaType(thing) {
   )
 }
 
-export function ConfigurationSchema(modelName, schemaDefinition) {
+export function ConfigurationSchema(modelName, schemaDefinition, options = {}) {
   if (typeof modelName !== 'string')
     throw new Error(
       'first arg must be string name of the model that this config schema goes with',
     )
-  const modelDefinition = { type: types.literal(modelName) }
+  const modelDefinition = {}
+  if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
     if (isConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
@@ -116,10 +149,29 @@ export function ConfigurationSchema(modelName, schemaDefinition) {
     }
   })
 
+  const completeModel = types
+    .model(`${modelName}ConfigurationSchema`, modelDefinition)
+    .postProcessSnapshot(snap => {
+      const newSnap = {}
+      let keyCount = 0
+      Object.entries(snap).forEach(([key, value]) => {
+        if (
+          value !== undefined &&
+          !isEmptyObject(value) &&
+          !isEmptyArray(value)
+        ) {
+          keyCount += 1
+          newSnap[key] = value
+        }
+      })
+      return newSnap
+    })
+
   const schemaType = types.optional(
-    types.model(`${modelName}ConfigurationSchema`, modelDefinition),
-    { type: modelName },
+    completeModel,
+    options.explicitlyTyped ? { type: modelName } : {},
   )
+
   schemaType.isJBrowseConfigurationSchema = true
   return schemaType
 }

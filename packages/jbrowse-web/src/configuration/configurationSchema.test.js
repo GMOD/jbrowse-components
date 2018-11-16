@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, getSnapshot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   stringToFunction,
@@ -117,4 +117,111 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger')).toBe(12)
     // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
   })
+
+  test('can snapshot a simple schema', () => {
+    const container = types.model({
+      configuration: ConfigurationSchema('Foo', {
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
+      }),
+    })
+
+    const model = container.create({
+      configuration: { someInteger: 42 },
+    })
+    expect(getConf(model, 'someInteger')).toEqual(42)
+    expect(getSnapshot(model)).toEqual({
+      configuration: { someInteger: 42 },
+    })
+    expect(getConf(model, 'someInteger')).toEqual(42)
+
+    const model2 = container.create({ configuration: {} })
+    expect(getSnapshot(model2)).toEqual({ configuration: {} })
+    expect(getConf(model2, 'someInteger')).toEqual(12)
+  })
+  test('can snapshot a nested schema 1', () => {
+    const container = types.model({
+      configuration: ConfigurationSchema('Foo', {
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
+        mySubConfiguration: ConfigurationSchema('SubObject1', {
+          someNumber: {
+            description: 'some number in a subconfiguration',
+            type: 'number',
+            defaultValue: 4.3,
+          },
+        }),
+        myArrayOfSubConfigurations: types.array(
+          ConfigurationSchema('SubObject2', {
+            someNumber: {
+              description: 'some number in a subconfiguration',
+              type: 'number',
+              defaultValue: 3.5,
+            },
+          }),
+        ),
+      }),
+    })
+
+    const model = container.create({
+      type: 'Foo',
+      configuration: {
+        someInteger: 42,
+        myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+      },
+    })
+    expect(getSnapshot(model)).toEqual({
+      configuration: {
+        someInteger: 42,
+        myArrayOfSubConfigurations: [{}, { someNumber: 11.1 }],
+      },
+    })
+  })
+  test('can snapshot a nested schema 2', () => {
+    const container = types.model({
+      configuration: ConfigurationSchema('Foo', {
+        someInteger: {
+          description: 'an integer slot',
+          type: 'integer',
+          defaultValue: 12,
+        },
+        mySubConfiguration: ConfigurationSchema('SubObject1', {
+          someNumber: {
+            description: 'some number in a subconfiguration',
+            type: 'number',
+            defaultValue: 4.3,
+          },
+        }),
+        myArrayOfSubConfigurations: types.array(
+          ConfigurationSchema('SubObject2', {
+            someNumber: {
+              description: 'some number in a subconfiguration',
+              type: 'number',
+              defaultValue: 3.5,
+            },
+          }),
+        ),
+      }),
+    })
+
+    const model = container.create({
+      type: 'Foo',
+      configuration: {
+        someInteger: 12,
+        mySubConfiguration: { someNumber: 12 },
+      },
+    })
+    expect(getSnapshot(model)).toEqual({
+      configuration: {
+        mySubConfiguration: { someNumber: 12 },
+      },
+    })
+  })
+
 })

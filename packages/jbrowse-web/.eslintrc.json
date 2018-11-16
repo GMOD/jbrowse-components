@@ -20,7 +20,13 @@
     "react/jsx-filename-extension": "off",
     "react/prefer-stateless-function": "warn",
     "react/no-unused-state": "warn",
-    "react/destructuring-assignment": "off",
+    "class-methods-use-this": 0,
+    "react/destructuring-assignment": 0,
+    "no-use-before-define": 0,
+    "no-param-reassign": 0,
+    "no-restricted-syntax": 0,
+    "no-unused-vars": "warn",
+    "no-debugger": "warn",
     "prettier/prettier": [
       "error",
       {
