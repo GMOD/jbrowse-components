@@ -28,14 +28,6 @@ export default function(pluginManager) {
           ),
         ),
       ),
-      tracks: types.array(
-        types.union(
-          ...extractAll(
-            'stateModel',
-            pluginManager.getElementTypesInGroup('track'),
-          ),
-        ),
-      ),
       drawerWidgets: types.array(
         types.union(
           ...extractAll(

@@ -14,6 +14,7 @@ export const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       minTrackHeight,
     ),
+    visible: types.optional(types.boolean, true),
     subtracks: types.literal(undefined),
     configuration: ConfigurationSchema('BaseTrack', {
       backgroundColor: {
@@ -32,6 +33,19 @@ export const BaseTrack = types
       )
     },
   }))
+  .actions(self => ({
+    setHeight(trackHeight) {
+      if (trackHeight >= minTrackHeight) self.height = trackHeight
+    },
+
+    show() {
+      self.visible = true
+    },
+
+    hide() {
+      self.visible = false
+    },
+  }))
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
@@ -47,7 +61,7 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
-        tracks: types.array(types.union(...trackTypes)),
+        tracks: types.map(types.union(...trackTypes)),
         controlsWidth: 100,
         displayedRegions: types.array(Region),
         width: 800,
@@ -122,10 +136,18 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
     }))
     .actions(self => ({
-      showTrack(id, name, type) {
+      addTrack(id, name, type) {
         const TrackType = trackTypes.find(t => t.name === type)
         if (!TrackType) throw new Error(`unknown track type ${type}`)
-        self.tracks.push(TrackType.create({ id, name, type }))
+        self.tracks.set(id, TrackType.create({ id, name, type }))
+      },
+
+      showTrack(trackId) {
+        self.tracks.get(trackId).show()
+      },
+
+      hideTrack(trackId) {
+        self.tracks.get(trackId).hide()
       },
 
       displayRegions(regions) {
@@ -135,15 +157,8 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
 
       resizeTrack(trackId, distance) {
-        const track = self.tracks.find(t => t.id === trackId)
-        if (track) {
-          try {
-            track.height += distance
-          } catch (e) {
-            /* ignore */
-            // TODO: be more precise about what kind of errors to ignore here
-          }
-        }
+        const track = self.tracks.get(trackId)
+        track.setHeight(track.height + distance)
       },
 
       horizontalScroll(distance) {

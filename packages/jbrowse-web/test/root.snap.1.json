@@ -5,23 +5,26 @@
       "type": "LinearGenomeView",
       "offsetPx": 20,
       "controlsWidth": 100,
-      "tracks": [
-        {
+      "tracks": {
+        "foo": {
           "height": 20,
+          "id": "foo",
           "name": "Foo Track",
           "type": "AlignmentsTrack"
         },
-        {
+        "bar": {
           "height": 20,
+          "id": "bar",
           "name": "Bar Track",
           "type": "AlignmentsTrack"
         },
-        {
+        "baz": {
+          "id": "baz",
           "name": "Baz Track",
           "height": 20,
           "type": "AlignmentsTrack"
         }
-      ],
+      },
       "blocks": [
         {
           "refName": "ctgA",
@@ -36,18 +39,20 @@
       "type": "LinearGenomeView",
       "offsetPx": 0,
       "controlsWidth": 100,
-      "tracks": [
-        {
+      "tracks": {
+        "bee": {
+          "id": "bee",
           "name": "Bee Track",
           "height": 20,
           "type": "AlignmentsTrack"
         },
-        {
+        "bonk": {
+          "id": "bonk",
           "name": "Bonk Track",
           "height": 20,
           "type": "AlignmentsTrack"
         }
-      ],
+      },
       "blocks": [
         {
           "refName": "ctgA",

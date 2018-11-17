@@ -40,4 +40,4 @@ class LocalFile {
   }
 }
 
-module.exports = LocalFile
+export default LocalFile

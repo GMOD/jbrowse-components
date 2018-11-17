@@ -10,11 +10,11 @@ describe('LinearGenomeView genome view component', () => {
       offsetPx: 0,
       bpPerPx: 1,
       blocks: [{ refName: 'ctgA', start: 0, end: 100 }],
-      tracks: [
-        { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
-        { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
-        { id: 'baz', name: 'Baz Track', type: 'tester', height: 20 },
-      ],
+      tracks: {
+        foo: { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+        bar: { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+        baz: { id: 'baz', name: 'Baz Track', type: 'tester', height: 20 },
+      },
       controlsWidth: 100,
       width: 800,
     })
@@ -28,7 +28,9 @@ describe('LinearGenomeView genome view component', () => {
       offsetPx: 0,
       bpPerPx: 1,
       blocks: [],
-      tracks: [{ id: 'foo', name: 'Foo Track', type: 'tester', height: 20 }],
+      tracks: {
+        foo: { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+      },
       controlsWidth: 100,
       width: 800,
     })
@@ -45,10 +47,10 @@ describe('LinearGenomeView genome view component', () => {
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 1000, end: 200 },
       ],
-      tracks: [
-        { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
-        { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
-      ],
+      tracks: {
+        foo: { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+        bar: { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+      },
       controlsWidth: 100,
       width: 800,
     })
