@@ -1,22 +1,11 @@
 .LinearGenomeView {
     display: grid;
     background: #eee;
-    border: 1px solid #000000;
+    border: 1px solid hsl(0, 0%, 0%);
     box-sizing: content-box;
 
     .view-controls {
       height: 100%;
-    }
-
-    .block {
-      position: relative;
-      height: 100%;
-      background: white;
-      border-right: 1px solid rgba(0,0,0,0.1);
-      box-sizing: border-box;
-      display: inline-block;
-      white-space: nowrap;
-      overflow: hidden;
     }
 
     .controls {
@@ -36,7 +25,7 @@
       }
     }
 
-    .ScaleBar, .TrackBlocks {
+    .ScaleBar {
       white-space: nowrap;
       text-align: left;
       width: 100%;
@@ -44,6 +33,17 @@
       background: #555;
       overflow: hidden;
       height: 100%;
+
+      .block {
+        position: relative;
+        height: 100%;
+        background: white;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        box-sizing: border-box;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+      }
     }
 
     .drag-handle {

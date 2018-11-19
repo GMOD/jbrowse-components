@@ -3,12 +3,14 @@ import { PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import Block from './Block'
 
+import './TrackBlocks.scss'
+
 export default class TrackBlocks extends Component {
   static propTypes = {
     offsetPx: ReactPropTypes.number.isRequired,
     blockDefinitions: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
-    blockState: ReactPropTypes.objectOf(ReactPropTypes.object).isRequired,
+    blockState: PropTypes.observableMap.isRequired,
   }
 
   constructor(props) {
@@ -25,7 +27,7 @@ export default class TrackBlocks extends Component {
     return (
       <div className="TrackBlocks">
         {blockDefinitions.map(block => {
-          const state = blockState[block.key]
+          const state = blockState.get(block.key)
           const comp = (
             <Block
               start={block.start}
@@ -36,7 +38,7 @@ export default class TrackBlocks extends Component {
               offset={offsetPx}
               bpPerPx={bpPerPx}
             >
-              {state ? state.content : undefined}
+              {state ? state.content : ' '}
             </Block>
           )
           return comp
