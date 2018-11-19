@@ -96,8 +96,8 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       //   value: val,
       // }),
     )
-    .postProcessSnapshot(
-      snap => (snap.value !== defaultValue ? snap.value : undefined),
+    .postProcessSnapshot(snap =>
+      snap.value !== defaultValue ? snap.value : undefined,
     )
     .actions(self => ({
       set(newVal) {
