@@ -7,8 +7,7 @@ const fsOpen = fs && promisify(fs.open)
 const fsRead = fs && promisify(fs.read)
 const fsFStat = fs && promisify(fs.fstat)
 const fsReadFile = fs && promisify(fs.readFile)
-
-class LocalFile {
+export default class LocalFile {
   constructor(source) {
     this.position = 0
     this.filename = source
@@ -39,5 +38,3 @@ class LocalFile {
     return this.statCache
   }
 }
-
-module.exports = LocalFile

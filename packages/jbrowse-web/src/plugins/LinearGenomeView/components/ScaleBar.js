@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Block from './Block'
+import { assembleLocString } from '../../../util'
 
 export default function ScaleBar({
   style,
@@ -17,18 +18,18 @@ export default function ScaleBar({
   return (
     <div style={finalStyle} className="ScaleBar">
       {blocks.map(block => {
-        const { refName, start, end } = block
+        const locString = assembleLocString(block)
         return (
           <Block
             refName={block.refName}
             start={block.start}
             end={block.end}
             width={block.widthPx}
-            key={`${refName}:${start}..${end}`}
+            key={locString}
             offset={offsetPx}
             bpPerPx={bpPerPx}
           >
-            {block.refName} {block.start} {block.end}{' '}
+            {locString}
           </Block>
         )
       })}

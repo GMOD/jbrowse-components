@@ -2,7 +2,7 @@ import { openUrl } from './io/rangeFetcher'
 import LocalFile from './io/localFile'
 
 export function assembleLocString({ assembly, refName, start, end }) {
-  return `${assembly}:${refName}:${start}-${end}`
+  return `${assembly}:${refName}:${start + 1}-${end}`
 }
 
 export function openLocation(location) {
