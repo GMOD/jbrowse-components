@@ -1,7 +1,8 @@
+import { Provider } from 'mobx-react'
 import React from 'react'
 import renderer from 'react-test-renderer'
-import LinearGenomeView from './LinearGenomeView'
 import { TestStub as Model } from '../models/model'
+import LinearGenomeView from './LinearGenomeView'
 
 describe('LinearGenomeView genome view component', () => {
   it('renders with an empty model', () => {
@@ -18,7 +19,11 @@ describe('LinearGenomeView genome view component', () => {
       controlsWidth: 100,
       width: 800,
     })
-    const component = renderer.create(<LinearGenomeView model={model} />)
+    const component = renderer.create(
+      <Provider rootModel={{}}>
+        <LinearGenomeView model={model} />
+      </Provider>,
+    )
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
@@ -34,7 +39,11 @@ describe('LinearGenomeView genome view component', () => {
       controlsWidth: 100,
       width: 800,
     })
-    const component = renderer.create(<LinearGenomeView model={model} />)
+    const component = renderer.create(
+      <Provider rootModel={{}}>
+        <LinearGenomeView model={model} />
+      </Provider>,
+    )
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
@@ -54,7 +63,11 @@ describe('LinearGenomeView genome view component', () => {
       controlsWidth: 100,
       width: 800,
     })
-    const component = renderer.create(<LinearGenomeView model={model} />)
+    const component = renderer.create(
+      <Provider rootModel={{}}>
+        <LinearGenomeView model={model} />
+      </Provider>,
+    )
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })

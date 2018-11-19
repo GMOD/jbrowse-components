@@ -9,6 +9,7 @@ export const BaseTrack = types
   .model('BaseTrack', {
     id: ElementId,
     name: types.string,
+    description: types.optional(types.string, ''),
     type: types.string,
     height: types.optional(
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),

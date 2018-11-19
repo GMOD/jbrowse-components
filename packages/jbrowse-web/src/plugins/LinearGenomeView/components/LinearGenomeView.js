@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { observer, PropTypes } from 'mobx-react'
+import { inject, observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -10,14 +10,22 @@ import './LinearGenomeView.scss'
 
 const dragHandleHeight = 3
 
+@inject('rootModel')
 @observer
 class LinearGenomeView extends Component {
   static propTypes = {
     model: PropTypes.observableObject.isRequired,
   }
 
+  static wrappedComponent = {
+    propTypes: {
+      rootModel: PropTypes.observableObject.isRequired,
+    },
+  }
+
   render() {
     const scaleBarHeight = 22
+    const { model, rootModel } = this.props
     const {
       id,
       blocks,
@@ -26,7 +34,7 @@ class LinearGenomeView extends Component {
       width,
       controlsWidth,
       offsetPx,
-    } = this.props.model
+    } = model
     // NOTE: offsetPx is the total offset in px of the viewing window into the
     // whole set of concatenated regions. this number is often quite large.
     // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -54,7 +62,19 @@ class LinearGenomeView extends Component {
           className="controls view-controls"
           style={{ gridRow: 'scale-bar' }}
         >
-          <button type="button">select tracks</button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!rootModel.drawerWidgets.get(id))
+                rootModel.addDrawerWidget(
+                  'HierarchicalTrackSelectorDrawerWidget',
+                  id,
+                )
+              rootModel.showDrawerWidget(id)
+            }}
+          >
+            select tracks
+          </button>
         </div>
         <ScaleBar
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}

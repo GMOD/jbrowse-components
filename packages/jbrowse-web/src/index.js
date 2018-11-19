@@ -26,8 +26,6 @@ model.views[1].addTrack('bee', 'Bee Track', 'AlignmentsTrack')
 model.views[1].addTrack('bonk', 'Bonk Track', 'AlignmentsTrack')
 model.views[1].tracks.get('bee').configuration.backgroundColor.set('red')
 
-model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget')
-
 window.MODEL = model
 window.getSnapshot = getSnapshot
 

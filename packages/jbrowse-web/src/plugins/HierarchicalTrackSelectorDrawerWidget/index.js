@@ -1,11 +1,16 @@
+import React from 'react'
 import { types } from 'mobx-state-tree'
-import HierarchicalSelector from './components/HierarchicalTrackSelector'
 import { ConfigurationSchema } from '../../configuration'
 import Plugin, { DrawerWidgetType } from '../../Plugin'
+
+const HierarchicalSelector = React.lazy(() =>
+  import('./components/HierarchicalTrackSelector'),
+)
 
 const stateModel = types.compose(
   'HierarchicalTrackSelectorDrawerWidget',
   types.model({
+    id: types.identifier,
     type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
   }),
 )
@@ -16,7 +21,14 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
       const configSchema = ConfigurationSchema(
         'HierarchicalTrackSelectorDrawerWidget',
         {
-          // .. define the configuration schema here
+          allCollapsed: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+          allExpanded: {
+            type: 'boolean',
+            defaultValue: true,
+          },
         },
       )
 
@@ -24,7 +36,7 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
         name: 'HierarchicalTrackSelectorDrawerWidget',
         configSchema,
         stateModel,
-        ReactComponent: HierarchicalSelector,
+        LazyReactComponent: HierarchicalSelector,
       })
     })
   }

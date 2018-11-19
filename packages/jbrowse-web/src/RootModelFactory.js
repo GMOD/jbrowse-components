@@ -28,11 +28,21 @@ export default function(pluginManager) {
           ),
         ),
       ),
-      drawerWidgets: types.array(
+      drawerWidgets: types.map(
         types.union(
           ...extractAll(
             'stateModel',
             pluginManager.getElementTypesInGroup('drawer widget'),
+          ),
+        ),
+      ),
+      selectedDrawerWidget: types.maybe(
+        types.reference(
+          types.union(
+            ...extractAll(
+              'stateModel',
+              pluginManager.getElementTypesInGroup('drawer widget'),
+            ),
           ),
         ),
       ),
@@ -58,8 +68,10 @@ export default function(pluginManager) {
         })
         self.views.push(typeDefinition.stateModel.create(data))
       },
+
       addDrawerWidget(
         typeName,
+        id,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -70,10 +82,19 @@ export default function(pluginManager) {
         if (!typeDefinition)
           throw new Error(`unknown drawer widget type ${typeName}`)
         const data = Object.assign({}, initialState, {
+          id,
           type: typeName,
           configuration,
         })
-        self.drawerWidgets.push(typeDefinition.stateModel.create(data))
+        self.drawerWidgets.set(id, typeDefinition.stateModel.create(data))
+      },
+
+      showDrawerWidget(id) {
+        self.selectedDrawerWidget = id
+      },
+
+      hideAllDrawerWidgets() {
+        self.selectedDrawerWidget = undefined
       },
     }))
   return RootModel

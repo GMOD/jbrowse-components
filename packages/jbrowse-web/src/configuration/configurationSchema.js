@@ -31,6 +31,7 @@ function isEmptyArray(thing) {
 }
 
 const typeModels = {
+  boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
   integer: types.integer,
   number: types.number,

@@ -21,6 +21,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks
@@ -110,6 +111,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks
@@ -248,6 +250,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks
