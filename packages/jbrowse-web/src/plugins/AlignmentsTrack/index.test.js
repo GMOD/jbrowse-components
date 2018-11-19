@@ -1,3 +1,1 @@
-test ('can render a track from a bam adapter', () => {
-
-})
+test('can render a track from a bam adapter', () => {})
