@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { values } from 'mobx'
 import { inject, observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
@@ -42,13 +43,13 @@ class LinearGenomeView extends Component {
     const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
     const height =
       scaleBarHeight +
-      Array.from(tracks.values())
+      values(tracks)
         .filter(t => t.visible)
         .reduce((a, b) => a + b.height + dragHandleHeight, 0)
     const style = {
       width: `${width}px`,
       height: `${height}px`,
-      gridTemplateRows: `[scale-bar] auto ${Array.from(tracks.values())
+      gridTemplateRows: `[scale-bar] auto ${values(tracks)
         .filter(t => t.visible)
         .map(
           t => `[${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -84,7 +85,7 @@ class LinearGenomeView extends Component {
           offsetPx={visibleBlocksOffsetPx}
           width={width - controlsWidth}
         />
-        {Array.from(tracks.values())
+        {values(tracks)
           .filter(t => t.visible)
           .map(track => [
             <div
