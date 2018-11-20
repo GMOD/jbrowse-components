@@ -23,6 +23,16 @@ export const BaseTrack = types
         type: 'color',
         defaultValue: '#eee',
       },
+      description: {
+        description: 'a description of the track',
+        type: 'string',
+        defaultValue: '',
+      },
+      category: {
+        description: 'the category and sub-categories of a track',
+        type: 'stringArray',
+        defaultValue: [],
+      },
     }),
   })
   .views(self => ({
@@ -45,6 +55,11 @@ export const BaseTrack = types
 
     hide() {
       self.visible = false
+    },
+
+    toggle() {
+      if (self.visible) this.hide()
+      else this.show()
     },
   }))
 
