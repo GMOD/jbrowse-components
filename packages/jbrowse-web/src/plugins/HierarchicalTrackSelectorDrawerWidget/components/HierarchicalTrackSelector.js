@@ -23,7 +23,7 @@ const styles = theme => ({
   },
 })
 
-function addTrackToHierarchy(trackHierarchy, track, model) {
+function addTrackToHierarchy(trackHierarchy, track) {
   const numCategories = track.configuration.category.value.length
   if (numCategories === 0)
     trackHierarchy.set(
@@ -32,13 +32,12 @@ function addTrackToHierarchy(trackHierarchy, track, model) {
     )
   else {
     let prunedHierarchy = trackHierarchy
-    track.configuration.category.value.forEach((categ, idx) => {
-      if (!prunedHierarchy.has(categ)) {
-        prunedHierarchy.set(categ, new Map([['uncategorized', []]]))
+    track.configuration.category.value.forEach((category, idx) => {
+      if (!prunedHierarchy.has(category)) {
+        prunedHierarchy.set(category, new Map([['uncategorized', []]]))
       }
-      prunedHierarchy = prunedHierarchy.get(categ)
+      prunedHierarchy = prunedHierarchy.get(category)
       if (idx + 1 === numCategories) {
-        model.addCategory(categ)
         prunedHierarchy.set(
           'uncategorized',
           prunedHierarchy.get('uncategorized').concat([track]),
@@ -121,27 +120,18 @@ class HierarchicalTrackSelector extends React.Component {
     },
   }
 
-  constructor(props) {
-    super(props)
-    const { model, rootModel } = this.props
-
-    this.currView = []
-    rootModel.views.forEach(view => {
-      if (view.id === model.id) this.currView = view
-    })
-    this.trackHierarchy = new Map([['uncategorized', []]])
-
-    values(this.currView.tracks).forEach(track => {
-      addTrackToHierarchy(this.trackHierarchy, track, model)
-    })
-  }
-
   render() {
-    const { classes, model } = this.props
+    const { classes, model, rootModel } = this.props
+    const view = rootModel.views.filter(v => v.id === model.id)[0]
+    const trackHierarchy = new Map([['uncategorized', []]])
+
+    values(view.tracks).forEach(track => {
+      addTrackToHierarchy(trackHierarchy, track)
+    })
 
     return (
       <div className={classes.root}>
-        {generateTrackList(this.trackHierarchy, this.currView, classes, model)}
+        {generateTrackList(trackHierarchy, view, classes, model)}
       </div>
     )
   }
