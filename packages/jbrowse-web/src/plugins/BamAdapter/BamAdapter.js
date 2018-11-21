@@ -156,7 +156,10 @@ class BamSlightlyLazyFeature {
 }
 
 export default class BamAdapter {
-  constructor({ bamLocation, indexLocation, indexType }) {
+  constructor(config) {
+    const { bamLocation } = config
+    const indexLocation = config.index.location
+    const { indexType } = config.index
     const bamOpts = {
       bamFilehandle: openLocation(bamLocation),
     }

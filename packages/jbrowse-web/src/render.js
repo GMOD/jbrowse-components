@@ -23,7 +23,7 @@ export async function renderRegion(
   pluginManager,
   { region, adapterType, adapterConfig, renderType, renderProps },
 ) {
-  const dataAdapterType = pluginManager.getDataAdapterType(adapterType)
+  const dataAdapterType = pluginManager.getAdapterType(adapterType)
   if (!dataAdapterType)
     throw new Error(`unknown data adapter type ${adapterType}`)
   const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)

@@ -7,26 +7,30 @@ import {
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
 
+export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
+  name: {
+    description: 'descriptive name of the track',
+    type: 'string',
+    defaultValue: 'Track',
+  },
+  backgroundColor: {
+    description: `the track's background color`,
+    type: 'color',
+    defaultValue: '#eee',
+  },
+})
+
 const minTrackHeight = 20
 export const BaseTrack = types
   .model('BaseTrack', {
     id: ElementId,
-    name: types.string,
     type: types.string,
     height: types.optional(
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       minTrackHeight,
     ),
     subtracks: types.literal(undefined),
-    configuration: ConfigurationReference(
-      ConfigurationSchema('BaseTrack', {
-        backgroundColor: {
-          description: `the track's background color`,
-          type: 'color',
-          defaultValue: '#eee',
-        },
-      }),
-    ),
+    configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
     get RenderingComponent() {
@@ -127,7 +131,10 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
     }))
     .actions(self => ({
-      showTrack(id, name, type, configuration = {}) {
+      showTrack(configuration) {
+        const { type } = configuration
+        const name = configuration.name.value
+        const id = configuration._configId
         const TrackType = trackTypes.find(t => t.name === type)
         if (!TrackType) throw new Error(`unknown track type ${type}`)
         self.tracks.push(TrackType.create({ id, name, type, configuration }))

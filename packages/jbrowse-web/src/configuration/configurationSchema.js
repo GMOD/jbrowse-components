@@ -120,11 +120,30 @@ function isConfigurationSchemaType(thing) {
   )
 }
 
-export function ConfigurationSchema(modelName, schemaDefinition, options = {}) {
+export function ConfigurationSchema(
+  modelName,
+  inputSchemaDefinition,
+  options = {},
+) {
   if (typeof modelName !== 'string')
     throw new Error(
       'first arg must be string name of the model that this config schema goes with',
     )
+
+  // if we have a base configuration schema that we are extending, grab the slot definitions from that
+  let schemaDefinition = inputSchemaDefinition
+  if (
+    options.baseConfiguration &&
+    options.baseConfiguration.jbrowseSchemaDefinition
+  ) {
+    schemaDefinition = Object.assign(
+      {},
+      options.baseConfiguration.jbrowseSchemaDefinition,
+      schemaDefinition,
+    )
+  }
+
+  // now assemble the MST model of the configuration schema
   const modelDefinition = { _configId: ElementId }
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
@@ -149,30 +168,43 @@ export function ConfigurationSchema(modelName, schemaDefinition, options = {}) {
     }
   })
 
-  const completeModel = types
-    .model(`${modelName}ConfigurationSchema`, modelDefinition)
-    .postProcessSnapshot(snap => {
-      const newSnap = {}
-      let keyCount = 0
-      Object.entries(snap).forEach(([key, value]) => {
-        if (
-          value !== undefined &&
-          !isEmptyObject(value) &&
-          !isEmptyArray(value)
-        ) {
-          keyCount += 1
-          newSnap[key] = value
-        }
-      })
-      return newSnap
+  let completeModel = types.model(
+    `${modelName}ConfigurationSchema`,
+    modelDefinition,
+  )
+  if (options.actions) {
+    completeModel = completeModel.actions(options.actions)
+  }
+  if (options.views) {
+    completeModel = completeModel.views(options.views)
+  }
+  if (options.extend) {
+    completeModel = completeModel.extend(options.extend)
+  }
+  completeModel = completeModel.postProcessSnapshot(snap => {
+    const newSnap = {}
+    let keyCount = 0
+    Object.entries(snap).forEach(([key, value]) => {
+      if (
+        value !== undefined &&
+        !isEmptyObject(value) &&
+        !isEmptyArray(value)
+      ) {
+        keyCount += 1
+        newSnap[key] = value
+      }
     })
+    return newSnap
+  })
 
   const schemaType = types.optional(
     completeModel,
     options.explicitlyTyped ? { type: modelName } : {},
   )
 
+  // save a couple of jbrowse-specific things in the type object. hope nobody gets mad.
   schemaType.isJBrowseConfigurationSchema = true
+  schemaType.jbrowseSchemaDefinition = schemaDefinition
   return schemaType
 }
 

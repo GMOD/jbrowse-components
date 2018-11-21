@@ -6,6 +6,7 @@ export function assembleLocString({ assembly, refName, start, end }) {
 }
 
 export function openLocation(location) {
+  if (!location) throw new Error(`must provide a location to openLocation`)
   if (location.uri) return openUrl(location.uri)
   if (location.path) {
     return new LocalFile(location.path)

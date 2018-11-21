@@ -5,10 +5,12 @@ import Adapter from './BamAdapter'
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter({
     bamLocation: { path: require.resolve('./test_data/volvox-sorted.bam') },
-    indexLocation: {
-      path: require.resolve('./test_data/volvox-sorted.bam.bai'),
+    index: {
+      location: {
+        path: require.resolve('./test_data/volvox-sorted.bam.bai'),
+      },
+      indexType: 'BAI',
     },
-    indexType: 'BAI',
   })
 
   const features = adapter.getFeaturesInRegion({

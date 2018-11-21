@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 
 const isPresent = thing => !!thing
@@ -44,24 +44,41 @@ export default function(pluginManager) {
           ),
         ),
       ),
-      configuration: ConfigurationSchema('JBrowseWebRoot', {
-        views: types.array(
-          types.union(
-            ...extractAll(
-              'configSchema',
-              pluginManager.getElementTypesInGroup('view'),
+      configuration: ConfigurationSchema(
+        'JBrowseWebRoot',
+        {
+          views: types.array(
+            types.union(
+              ...extractAll(
+                'configSchema',
+                pluginManager.getElementTypesInGroup('view'),
+              ),
             ),
           ),
-        ),
-        tracks: types.array(
-          types.union(
-            ...extractAll(
-              'configSchema',
-              pluginManager.getElementTypesInGroup('track'),
+          tracks: types.array(
+            types.union(
+              ...extractAll(
+                'configSchema',
+                pluginManager.getElementTypesInGroup('track'),
+              ),
             ),
           ),
-        ),
-      }),
+        },
+        {
+          actions: self => ({
+            addTrackConf(typeName, data) {
+              const type = getRoot(self).pluginManager.getTrackType(typeName)
+              if (!type) throw new Error(`unknown track type ${typeName}`)
+              const schemaType = type.configSchema
+              const conf = schemaType.create(
+                Object.assign({ type: typeName }, data),
+              )
+              self.tracks.push(conf)
+              return conf
+            },
+          }),
+        },
+      ),
     })
     .volatile(self => ({
       pluginManager,

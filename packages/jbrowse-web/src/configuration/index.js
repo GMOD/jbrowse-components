@@ -1,4 +1,8 @@
-import { isStateTreeNode, getPropertyMembers, types } from 'mobx-state-tree'
+import {
+  isStateTreeNode,
+  getPropertyMembers,
+  getSnapshot,
+} from 'mobx-state-tree'
 import { isObservableArray, isObservableObject } from 'mobx'
 
 import {
@@ -35,8 +39,11 @@ function getModelConfig(tree) {
 
 function getConf(model, slotName, ...args) {
   const slot = model.configuration[slotName]
-  if (!slot) throw new Error(`no slot "${slotName} found in configuration`)
-  return slot.func.apply(null, args)
+  if (!slot) throw new Error(`no slot "${slotName}" found in configuration`)
+  if (slot.func) {
+    return slot.func.apply(null, args)
+  }
+  return getSnapshot(slot)
 }
 
 export { ConfigurationSchema, ConfigurationReference, getModelConfig, getConf }

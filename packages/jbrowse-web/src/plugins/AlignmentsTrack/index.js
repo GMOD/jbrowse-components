@@ -3,11 +3,18 @@ import { types, getSnapshot, getParent, onPatch, flow } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 import Plugin, { TrackType } from '../../Plugin'
-import { ConfigurationSchema } from '../../configuration'
-import { BaseTrack as LinearGenomeTrack } from '../LinearGenomeView/models/model'
+import {
+  ConfigurationSchema,
+  ConfigurationReference,
+  getConf,
+} from '../../configuration'
+import {
+  BaseTrack as LinearGenomeTrack,
+  BaseTrackConfig as LinearGenomeTrackConfig,
+} from '../LinearGenomeView/models/model'
 import AlignmentsTrack from './components/AlignmentsTrack'
-import { Region } from '../../mst-types'
 
+import { Region } from '../../mst-types'
 import { renderRegion } from '../../render'
 
 function delay(time) {
@@ -36,7 +43,7 @@ const BlockState = types
       const { features, html } = yield renderRegion(root.pluginManager, {
         region: self.region,
         adapterType: track.adapterType.name,
-        adapterConfig: track.configuration.adapter,
+        adapterConfig: getConf(track, 'adapter'),
         renderType: track.renderType,
         renderProps: {},
       })
@@ -97,12 +104,27 @@ const BlockBasedTrackState = types.compose(
 export default class AlignmentsTrackPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'AlignmentsTrack',
+        {
+          adapter: types.union(
+            ...pluginManager.getElementTypeMembers('adapter', 'configSchema'),
+          ),
+          defaultView: {
+            type: 'string',
+            defaultValue: 'pileup',
+          },
+        },
+        { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+      )
+
       const stateModel = types.compose(
         'AlignmentsTrack',
         BlockBasedTrackState,
         types
           .model({
             type: types.literal('AlignmentsTrack'),
+            configuration: ConfigurationReference(configSchema),
           })
           .volatile(self => ({
             reactComponent: AlignmentsTrack,
@@ -117,7 +139,8 @@ export default class AlignmentsTrackPlugin extends Plugin {
           // }))
           .views(self => ({
             get adapterType() {
-              const adapterConfig = self.configuration.adapter
+              const adapterConfig = getConf(self, 'adapter')
+              console.log(adapterConfig)
               if (!adapterConfig)
                 throw new Error(
                   `no adapter configuration provided for ${self.type}`,
@@ -140,18 +163,8 @@ export default class AlignmentsTrackPlugin extends Plugin {
           })),
       )
 
-      const configSchema = ConfigurationSchema('AlignmentsTrack', {
-        adapter: types.union(
-          ...pluginManager.getElementTypeMembers('adapter', 'configSchema'),
-        ),
-        defaultView: {
-          type: 'string',
-          defaultValue: 'pileup',
-        },
-      })
-
       return new TrackType({
-        name: 'Alignments',
+        name: 'AlignmentsTrack',
         configSchema,
         stateModel,
         RenderingComponent: AlignmentsTrack,
