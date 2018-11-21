@@ -44,16 +44,19 @@ const stateModel = types.compose(
           },
           true,
         )
-        this.reloadCategories()
+        this.loadCategories()
       },
-      reloadCategories() {
-        self.categories.clear()
+      loadCategories() {
         const view = getRoot(self).views.filter(v => v.id === self.id)[0]
         values(view.tracks).forEach(track => {
           const categories = track.configuration.category.value
           const category = categories[categories.length - 1]
           if (category) this.addCategory(category)
         })
+      },
+      reloadCategories() {
+        self.categories.clear()
+        this.loadCategories()
       },
       addCategory(name) {
         if (!self.categories.has(name))
