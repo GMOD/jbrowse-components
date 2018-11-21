@@ -18,9 +18,12 @@ const styles = theme => ({
     textAlign: 'left',
     padding: theme.spacing.unit,
   },
+  expansionPanelDetails: {
+    display: 'block',
+  },
 })
 
-function addTrackToHierarchy(trackHierarchy, track) {
+function addTrackToHierarchy(trackHierarchy, track, model) {
   const numCategories = track.configuration.category.value.length
   if (numCategories === 0)
     trackHierarchy.set(
@@ -34,45 +37,20 @@ function addTrackToHierarchy(trackHierarchy, track) {
         prunedHierarchy.set(categ, new Map([['uncategorized', []]]))
       }
       prunedHierarchy = prunedHierarchy.get(categ)
-      if (idx + 1 === numCategories)
+      if (idx + 1 === numCategories) {
+        model.addCategory(categ)
         prunedHierarchy.set(
           'uncategorized',
           prunedHierarchy.get('uncategorized').concat([track]),
         )
+      }
     })
   }
 }
 
-function generateExpansionPanel(trackHierarchy, view, classes) {
+function generateTrackList(trackHierarchy, view, classes, model) {
+  const trackList = trackHierarchy.get('uncategorized')
   const elements = [
-    generateFormGroup(trackHierarchy.get('uncategorized'), view),
-  ]
-  trackHierarchy.forEach((value, category) => {
-    if (category !== 'uncategorized') {
-      /* eslint-disable react/no-array-index-key */
-      elements.push(
-        <ExpansionPanel key={category} defaultExpanded>
-          <ExpansionPanelSummary
-            key={category}
-            expandIcon={<Icon>expand_more</Icon>}
-          >
-            <Typography key={category}>{category}</Typography>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails key={category}>
-            <FormGroup key={category}>
-              {generateExpansionPanel(value, view, classes)}
-            </FormGroup>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>,
-      )
-      /* eslint-enable react/no-array-index-key */
-    }
-  })
-  return elements
-}
-
-function generateFormGroup(trackList, currView) {
-  return (
     <FormGroup key={`FormGroup-${trackList.map(track => track.id).join('-')}`}>
       {trackList.map(track => (
         <Tooltip
@@ -87,13 +65,42 @@ function generateFormGroup(trackList, currView) {
             label={track.name}
             checked={track.visible}
             onChange={() => {
-              currView.tracks.get(track.id).toggle()
+              view.tracks.get(track.id).toggle()
             }}
           />
         </Tooltip>
       ))}
-    </FormGroup>
-  )
+    </FormGroup>,
+  ]
+  trackHierarchy.forEach((value, category) => {
+    if (category !== 'uncategorized') {
+      /* eslint-disable react/no-array-index-key */
+      elements.push(
+        <ExpansionPanel
+          key={category}
+          expanded={model.categories.get(category).open}
+          onChange={() => model.categories.get(category).toggle()}
+        >
+          <ExpansionPanelSummary
+            key={category}
+            expandIcon={<Icon>expand_more</Icon>}
+          >
+            <Typography key={category} variant="button">
+              {category}
+            </Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails
+            key={category}
+            className={classes.expansionPanelDetails}
+          >
+            {generateTrackList(value, view, classes, model)}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>,
+      )
+      /* eslint-enable react/no-array-index-key */
+    }
+  })
+  return elements
 }
 
 @withStyles(styles)
@@ -103,6 +110,7 @@ class HierarchicalTrackSelector extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
+      expansionPanelDetails: propTypes.string.isRequired,
     }).isRequired,
     model: MobxPropTypes.observableObject.isRequired,
   }
@@ -113,24 +121,27 @@ class HierarchicalTrackSelector extends React.Component {
     },
   }
 
-  render() {
-    const { classes, model, rootModel } = this.props
+  constructor(props) {
+    super(props)
+    const { model, rootModel } = this.props
 
-    let currView = []
+    this.currView = []
     rootModel.views.forEach(view => {
-      if (view.id === model.id) currView = view
+      if (view.id === model.id) this.currView = view
     })
+    this.trackHierarchy = new Map([['uncategorized', []]])
 
-    const trackHierarchy = new Map([['uncategorized', []]])
-
-    values(currView.tracks).forEach(track => {
-      addTrackToHierarchy(trackHierarchy, track)
+    values(this.currView.tracks).forEach(track => {
+      addTrackToHierarchy(this.trackHierarchy, track, model)
     })
+  }
+
+  render() {
+    const { classes, model } = this.props
 
     return (
       <div className={classes.root}>
-        <Typography variant="h6">Available Tracks</Typography>
-        {generateExpansionPanel(trackHierarchy, currView, classes)}
+        {generateTrackList(this.trackHierarchy, this.currView, classes, model)}
       </div>
     )
   }

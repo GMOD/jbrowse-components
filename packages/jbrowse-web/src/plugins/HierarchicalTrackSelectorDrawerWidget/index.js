@@ -7,12 +7,30 @@ const HierarchicalSelector = React.lazy(() =>
   import('./components/HierarchicalTrackSelector'),
 )
 
+const Category = types
+  .model('Category', {
+    id: types.identifier,
+    open: types.optional(types.boolean, true),
+  })
+  .actions(self => ({
+    toggle() {
+      self.open = !self.open
+    },
+  }))
+
 const stateModel = types.compose(
   'HierarchicalTrackSelectorDrawerWidget',
-  types.model({
-    id: types.identifier,
-    type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
-  }),
+  types
+    .model({
+      id: types.identifier,
+      type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
+      categories: types.map(Category),
+    })
+    .actions(self => ({
+      addCategory(name) {
+        self.categories.set(name, Category.create({ id: name }))
+      },
+    })),
 )
 
 export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
@@ -34,6 +52,7 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
 
       return new DrawerWidgetType({
         name: 'HierarchicalTrackSelectorDrawerWidget',
+        heading: 'Available Tracks',
         configSchema,
         stateModel,
         LazyReactComponent: HierarchicalSelector,

@@ -1,13 +1,15 @@
+import AppBar from '@material-ui/core/AppBar'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Drawer from '@material-ui/core/Drawer'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import Typography from '@material-ui/core/Typography'
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
+import Slide from '@material-ui/core/Slide'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
 import { inject, observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { CombineLatestSubscriber } from 'rxjs/internal/observable/combineLatest'
 import Theme from './Theme'
 
 const styles = theme => ({
@@ -23,6 +25,12 @@ const styles = theme => ({
   defaultDrawer: {
     margin: theme.spacing.unit,
   },
+  drawerToolbar: {
+    paddingLeft: theme.spacing.unit * 2,
+  },
+  drawerToolbarCloseButton: {
+    flexGrow: 1,
+  },
 })
 
 @withStyles(styles)
@@ -32,6 +40,9 @@ class App extends Component {
   static propTypes = {
     classes: ReactPropTypes.shape({
       drawerCloseButton: ReactPropTypes.string.isRequired,
+      defaultDrawer: ReactPropTypes.string.isRequired,
+      drawerToolbar: ReactPropTypes.string.isRequired,
+      drawerToolbarCloseButton: ReactPropTypes.string.isRequired,
     }).isRequired,
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
@@ -43,20 +54,37 @@ class App extends Component {
     const drawerWidget = rootModel.selectedDrawerWidget
     let drawerComponent
     if (drawerWidget) {
-      const { LazyReactComponent } = getDrawerWidgetType(drawerWidget.type)
+      const { LazyReactComponent, heading } = getDrawerWidgetType(
+        drawerWidget.type,
+      )
       drawerComponent = (
-        <div>
-          <IconButton
-            className={classes.drawerCloseButton}
-            aria-label="Close"
-            onClick={() => rootModel.hideAllDrawerWidgets()}
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-          <React.Suspense fallback={<div>Loading...</div>}>
-            <LazyReactComponent model={drawerWidget} />
-          </React.Suspense>
-        </div>
+        <Slide direction="left" in>
+          <div>
+            <AppBar position="static">
+              <Toolbar
+                variant="dense"
+                disableGutters
+                className={classes.drawerToolbar}
+              >
+                <Typography variant="h6" color="inherit">
+                  {heading || ''}
+                </Typography>
+                <div className={classes.drawerToolbarCloseButton} />
+                <IconButton
+                  className={classes.drawerCloseButton}
+                  color="inherit"
+                  aria-label="Close"
+                  onClick={() => rootModel.hideAllDrawerWidgets()}
+                >
+                  <Icon fontSize="small">close</Icon>
+                </IconButton>
+              </Toolbar>
+            </AppBar>
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <LazyReactComponent model={drawerWidget} />
+            </React.Suspense>
+          </div>
+        </Slide>
       )
     } else {
       drawerComponent = (
