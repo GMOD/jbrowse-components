@@ -13,7 +13,13 @@ import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
-import { DrawerWidgetType, ViewType, TrackType, AdapterType } from './Plugin'
+import {
+  DrawerWidgetType,
+  RendererType,
+  ViewType,
+  TrackType,
+  AdapterType,
+} from './Plugin'
 
 const corePlugins = [
   HierarchicalTrackSelectorDrawerWidgetPlugin,
@@ -54,6 +60,7 @@ class JBrowse {
 
   elementCreationSchedule = new PhasedScheduler(
     'drawer widget',
+    'renderer',
     'adapter',
     'track',
     'view',
@@ -61,6 +68,7 @@ class JBrowse {
 
   typeBaseClasses = {
     'drawer widget': DrawerWidgetType,
+    renderer: RendererType,
     track: TrackType,
     view: ViewType,
     adapter: AdapterType,
@@ -75,10 +83,12 @@ class JBrowse {
     this.getTrackType = this.getElementType.bind(this, 'track')
     this.getAdapterType = this.getElementType.bind(this, 'adapter')
     this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
+    this.getRendererType = this.getElementType.bind(this, 'renderer')
     this.addTrackType = this.addElementType.bind(this, 'track')
     this.addViewType = this.addElementType.bind(this, 'view')
     this.addAdapterType = this.addElementType.bind(this, 'adapter')
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
+    this.addRendererType = this.addElementType.bind(this, 'renderer')
 
     // add all the core plugins
     corePlugins.forEach(PluginClass => {

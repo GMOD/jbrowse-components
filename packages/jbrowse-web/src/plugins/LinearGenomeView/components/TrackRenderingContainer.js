@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
+import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 
-export default class TrackRenderingContainer extends Component {
+@observer
+class TrackRenderingContainer extends Component {
   static propTypes = {
     trackId: PropTypes.string.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
@@ -99,3 +101,5 @@ export default class TrackRenderingContainer extends Component {
     )
   }
 }
+
+export default TrackRenderingContainer

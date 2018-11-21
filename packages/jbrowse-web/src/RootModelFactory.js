@@ -45,7 +45,14 @@ export default function(pluginManager) {
         ),
       ),
       configuration: ConfigurationSchema('JBrowseWebRoot', {
-        // views: types.optional(types.model(viewConfigTypes), {}),
+        views: types.array(
+          types.union(
+            ...extractAll(
+              'configSchema',
+              pluginManager.getElementTypesInGroup('view'),
+            ),
+          ),
+        ),
         tracks: types.array(
           types.union(
             ...extractAll(
@@ -56,6 +63,9 @@ export default function(pluginManager) {
         ),
       }),
     })
+    .volatile(self => ({
+      pluginManager,
+    }))
     .actions(self => ({
       addView(typeName, initialState = {}, configuration = { type: typeName }) {
         const typeDefinition = pluginManager.getElementType('view', typeName)

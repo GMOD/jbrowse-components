@@ -57,6 +57,14 @@ export class ViewType extends PluggableElementType {
   }
 }
 
+export class RendererType extends PluggableElementType {
+  constructor(stuff) {
+    super(stuff)
+    if (!this.ReactComponent)
+      throw new Error(`no ReactComponent defined for renderer ${this.name}`)
+  }
+}
+
 export class DrawerWidgetType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)

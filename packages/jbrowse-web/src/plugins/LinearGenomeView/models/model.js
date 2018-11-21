@@ -1,6 +1,9 @@
 import React from 'react'
 import { types, isStateTreeNode } from 'mobx-state-tree'
-import { ConfigurationSchema } from '../../../configuration'
+import {
+  ConfigurationSchema,
+  ConfigurationReference,
+} from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
 
@@ -15,13 +18,15 @@ export const BaseTrack = types
       minTrackHeight,
     ),
     subtracks: types.literal(undefined),
-    configuration: ConfigurationSchema('BaseTrack', {
-      backgroundColor: {
-        description: `the track's background color`,
-        type: 'color',
-        defaultValue: '#eee',
-      },
-    }),
+    configuration: ConfigurationReference(
+      ConfigurationSchema('BaseTrack', {
+        backgroundColor: {
+          description: `the track's background color`,
+          type: 'color',
+          defaultValue: '#eee',
+        },
+      }),
+    ),
   })
   .views(self => ({
     get RenderingComponent() {
@@ -122,10 +127,10 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
     }))
     .actions(self => ({
-      showTrack(id, name, type) {
+      showTrack(id, name, type, configuration = {}) {
         const TrackType = trackTypes.find(t => t.name === type)
         if (!TrackType) throw new Error(`unknown track type ${type}`)
-        self.tracks.push(TrackType.create({ id, name, type }))
+        self.tracks.push(TrackType.create({ id, name, type, configuration }))
       },
 
       displayRegions(regions) {

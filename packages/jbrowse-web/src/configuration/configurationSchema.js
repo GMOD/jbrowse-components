@@ -1,6 +1,6 @@
 import { types, isModelType, isArrayType, isUnionType } from 'mobx-state-tree'
 
-import { FileLocation } from '../mst-types'
+import { FileLocation, ElementId } from '../mst-types'
 
 export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
 export function stringToFunction(str) {
@@ -125,7 +125,7 @@ export function ConfigurationSchema(modelName, schemaDefinition, options = {}) {
     throw new Error(
       'first arg must be string name of the model that this config schema goes with',
     )
-  const modelDefinition = {}
+  const modelDefinition = { _configId: ElementId }
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
     if (isConfigurationSchemaType(slotDefinition)) {
@@ -174,4 +174,11 @@ export function ConfigurationSchema(modelName, schemaDefinition, options = {}) {
 
   schemaType.isJBrowseConfigurationSchema = true
   return schemaType
+}
+
+export function ConfigurationReference(schemaType) {
+  return types.optional(
+    types.union(types.reference(schemaType), types.model({})),
+    {},
+  )
 }

@@ -130,16 +130,20 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create({
-      configuration: { someInteger: 42 },
+      configuration: { _configId: 'fogbat', someInteger: 42 },
     })
     expect(getConf(model, 'someInteger')).toEqual(42)
     expect(getSnapshot(model)).toEqual({
-      configuration: { someInteger: 42 },
+      configuration: { _configId: 'fogbat', someInteger: 42 },
     })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
-    const model2 = container.create({ configuration: {} })
-    expect(getSnapshot(model2)).toEqual({ configuration: {} })
+    const model2 = container.create({
+      configuration: { _configId: 'one' },
+    })
+    expect(getSnapshot(model2)).toEqual({
+      configuration: { _configId: 'one' },
+    })
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
   test('can snapshot a nested schema 1', () => {
@@ -172,14 +176,24 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
+        _configId: 'one',
         someInteger: 42,
-        myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+        mySubConfiguration: { _configId: 'four' },
+        myArrayOfSubConfigurations: [
+          { _configId: 'two', someNumber: 3.5 },
+          { _configId: 'three', someNumber: 11.1 },
+        ],
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
+        _configId: 'one',
         someInteger: 42,
-        myArrayOfSubConfigurations: [{}, { someNumber: 11.1 }],
+        mySubConfiguration: { _configId: 'four' },
+        myArrayOfSubConfigurations: [
+          { _configId: 'two' },
+          { _configId: 'three', someNumber: 11.1 },
+        ],
       },
     })
   })
@@ -213,13 +227,15 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
+        _configId: 'two',
         someInteger: 12,
-        mySubConfiguration: { someNumber: 12 },
+        mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
-        mySubConfiguration: { someNumber: 12 },
+        _configId: 'two',
+        mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })
   })

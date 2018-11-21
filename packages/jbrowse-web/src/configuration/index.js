@@ -1,7 +1,10 @@
 import { isStateTreeNode, getPropertyMembers, types } from 'mobx-state-tree'
 import { isObservableArray, isObservableObject } from 'mobx'
 
-import { ConfigurationSchema } from './configurationSchema'
+import {
+  ConfigurationSchema,
+  ConfigurationReference,
+} from './configurationSchema'
 
 function getModelConfig(tree) {
   // if this is a node
@@ -36,4 +39,4 @@ function getConf(model, slotName, ...args) {
   return slot.func.apply(null, args)
 }
 
-export { ConfigurationSchema, getModelConfig, getConf }
+export { ConfigurationSchema, ConfigurationReference, getModelConfig, getConf }

@@ -39,6 +39,14 @@ Configuration types should always be created by the `ConfigurationSchema` factor
 
 A track is a visible element in the UI that shows some data.
 
-It has a reference to a track configuration certain track configuration, and its state model has a reference back to that track configuration.
+It has a reference to a certain track configuration, and its state model has a reference back to that track configuration.
 
 Each track type needs to list which view types it can be used with in its `compatibleViewTypes` member.
+
+It uses one or more [Renderers] to actually draw the data inside its piece of the UI.
+
+## Renderers
+
+A renderer is a pluggable element that cannot be configured on its own, but is registered with the plugin
+manager for use by tracks to draw data. It is a react component that takes some data in its props, and produces some kind of web-compatible rendering of it.
+

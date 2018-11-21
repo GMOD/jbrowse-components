@@ -24,7 +24,6 @@ model.views[0].showTrack('baz', 'Baz Track', 'AlignmentsTrack')
 model.addView('LinearGenomeView')
 model.views[1].showTrack('bee', 'Bee Track', 'AlignmentsTrack')
 model.views[1].showTrack('bonk', 'Bonk Track', 'AlignmentsTrack')
-model.views[1].tracks[0].configuration.backgroundColor.set('red')
 
 model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget')
 

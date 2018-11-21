@@ -4,10 +4,13 @@ exports[`plugin in a stock JBrowse 1`] = `"adapter BamAdapter already registered
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
+  "_configId": Any<String>,
   "bamLocation": Object {
     "uri": "/path/to/my.bam",
   },
   "index": Object {
+    "_configId": Any<String>,
+    "indexType": undefined,
     "location": Object {
       "uri": "/path/to/my.bam.bai",
     },
