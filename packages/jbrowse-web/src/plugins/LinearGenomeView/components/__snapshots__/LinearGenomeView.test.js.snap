@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
+exports[`LinearGenomeView genome view component renders one track, no displayed regions 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -46,7 +46,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     }
   >
-    Foo Track
+    foo
   </div>
   <div
     className="TrackRenderingContainer"
@@ -89,7 +89,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 </div>
 `;
 
-exports[`LinearGenomeView genome view component renders two tracks, two blocks 1`] = `
+exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -125,7 +125,19 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
         "width": "700px",
       }
     }
-  />
+  >
+    <div
+      className="block"
+      style={
+        Object {
+          "left": "0px",
+          "width": "100px",
+        }
+      }
+    >
+      volvox:ctgA:1-100
+    </div>
+  </div>
   <div
     className="controls track-controls"
     style={
@@ -135,7 +147,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
       }
     }
   >
-    Foo Track
+    foo
   </div>
   <div
     className="TrackRenderingContainer"
@@ -184,7 +196,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two blocks 1
       }
     }
   >
-    Bar Track
+    bar
   </div>
   <div
     className="TrackRenderingContainer"
@@ -233,8 +245,8 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
   style={
     Object {
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px [bar] 20px [resize-bar] 3px [baz] 20px [resize-baz] 3px",
-      "height": "91px",
+      "gridTemplateRows": "[scale-bar] auto ",
+      "height": "22px",
       "width": "800px",
     }
   }
@@ -261,153 +273,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         "gridRow": "scale-bar",
         "height": "22px",
         "width": "700px",
-      }
-    }
-  />
-  <div
-    className="controls track-controls"
-    style={
-      Object {
-        "gridColumn": "controls",
-        "gridRow": "foo",
-      }
-    }
-  >
-    Foo Track
-  </div>
-  <div
-    className="TrackRenderingContainer"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    onWheel={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "blocks",
-        "gridRow": "foo",
-        "width": "700px",
-      }
-    }
-  >
-    <div
-      className="TrackRenderingNotImplemented"
-    >
-      Rendering not implemented for 
-      tester
-       tracks
-    </div>
-  </div>
-  <div
-    className="drag-handle drag-handle-horizontal"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "span 2",
-        "gridRow": "resize-foo",
-      }
-    }
-  />
-  <div
-    className="controls track-controls"
-    style={
-      Object {
-        "gridColumn": "controls",
-        "gridRow": "bar",
-      }
-    }
-  >
-    Bar Track
-  </div>
-  <div
-    className="TrackRenderingContainer"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    onWheel={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "blocks",
-        "gridRow": "bar",
-        "width": "700px",
-      }
-    }
-  >
-    <div
-      className="TrackRenderingNotImplemented"
-    >
-      Rendering not implemented for 
-      tester
-       tracks
-    </div>
-  </div>
-  <div
-    className="drag-handle drag-handle-horizontal"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "span 2",
-        "gridRow": "resize-bar",
-      }
-    }
-  />
-  <div
-    className="controls track-controls"
-    style={
-      Object {
-        "gridColumn": "controls",
-        "gridRow": "baz",
-      }
-    }
-  >
-    Baz Track
-  </div>
-  <div
-    className="TrackRenderingContainer"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    onWheel={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "blocks",
-        "gridRow": "baz",
-        "width": "700px",
-      }
-    }
-  >
-    <div
-      className="TrackRenderingNotImplemented"
-    >
-      Rendering not implemented for 
-      tester
-       tracks
-    </div>
-  </div>
-  <div
-    className="drag-handle drag-handle-horizontal"
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseUp={[Function]}
-    role="presentation"
-    style={
-      Object {
-        "gridColumn": "span 2",
-        "gridRow": "resize-baz",
       }
     }
   />

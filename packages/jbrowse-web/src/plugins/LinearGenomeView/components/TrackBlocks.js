@@ -39,8 +39,8 @@ class TrackBlocks extends Component {
               offset={offsetPx}
               bpPerPx={bpPerPx}
             >
-              {state && state.component ? (
-                <state.component model={block} />
+              {state && state.reactComponent ? (
+                <state.reactComponent model={state} />
               ) : (
                 ' '
               )}

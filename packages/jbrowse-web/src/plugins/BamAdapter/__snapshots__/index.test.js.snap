@@ -15,5 +15,6 @@ Object {
       "uri": "/path/to/my.bam.bai",
     },
   },
+  "type": "BamAdapter",
 }
 `;

@@ -4,7 +4,7 @@ import { Provider } from 'mobx-react'
 import App from './App'
 import JBrowse from '../JBrowse'
 import RootModelFactory from '../RootModelFactory'
-import snap1 from '../../test/root.snap.1.json'
+import snap1 from '../../test_data/root.snap.1.json'
 
 describe('jbrowse-web app', () => {
   it('renders an empty model without crashing', () => {

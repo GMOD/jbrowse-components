@@ -3,8 +3,8 @@ import { observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
-import TrackBlocks from './TrackBlocks'
 import TrackResizeHandle from './TrackResizeHandle'
+import { getConf } from '../../../configuration'
 
 import './LinearGenomeView.scss'
 
@@ -67,7 +67,7 @@ class LinearGenomeView extends Component {
             key={`controls:${track.id}`}
             style={{ gridRow: track.id, gridColumn: 'controls' }}
           >
-            {track.name || track.id}
+            {getConf(track, 'name') || track.id}
           </div>,
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}

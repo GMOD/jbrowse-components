@@ -34,10 +34,13 @@ export const BaseTrack = types
   })
   .views(self => ({
     get RenderingComponent() {
-      return () => (
-        <div className="TrackRenderingNotImplemented">
-          Rendering not implemented for {self.type} tracks
-        </div>
+      return (
+        self.reactComponent ||
+        (() => (
+          <div className="TrackRenderingNotImplemented">
+            Rendering not implemented for {self.type} tracks
+          </div>
+        ))
       )
     },
   }))

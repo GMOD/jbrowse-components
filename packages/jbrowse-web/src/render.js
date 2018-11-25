@@ -21,7 +21,7 @@ export function fog() {}
 
 export async function renderRegion(
   pluginManager,
-  { region, adapterType, adapterConfig, renderType, renderProps },
+  { region, adapterType, adapterConfig, rendererType, renderProps },
 ) {
   const dataAdapterType = pluginManager.getAdapterType(adapterType)
   if (!dataAdapterType)
@@ -32,10 +32,14 @@ export async function renderRegion(
     .pipe(toArray())
     .toPromise()
 
-  const RendererComponent = pluginManager.getRendererType(renderType)
-    .ReactComponent
+  const RendererType = pluginManager.getRendererType(rendererType)
+  if (!RendererType) throw new Error(`renderer "${rendererType} not found`)
+  if (!RendererType.ReactComponent)
+    throw new Error(
+      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+    )
   const html = renderToString(
-    <RendererComponent data={features} {...renderProps} />,
+    <RendererType.ReactComponent data={features} {...renderProps} />,
   )
 
   return { features, html }

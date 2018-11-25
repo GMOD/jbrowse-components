@@ -2,6 +2,7 @@ import {
   isStateTreeNode,
   getPropertyMembers,
   getSnapshot,
+  getType,
 } from 'mobx-state-tree'
 import { isObservableArray, isObservableObject } from 'mobx'
 
@@ -39,7 +40,17 @@ function getModelConfig(tree) {
 
 function getConf(model, slotName, ...args) {
   const slot = model.configuration[slotName]
-  if (!slot) throw new Error(`no slot "${slotName}" found in configuration`)
+  if (!slot) {
+    return undefined
+    // if we want to be very strict about config slots, we could uncomment the below
+    // const modelType = getType(model)
+    // const schemaType = model.configuration && getType(model.configuration)
+    // throw new Error(
+    //   `no slot "${slotName}" found in ${modelType.name} configuration (${
+    //     schemaType.name
+    //   })`,
+    // )
+  }
   if (slot.func) {
     return slot.func.apply(null, args)
   }

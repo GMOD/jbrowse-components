@@ -12,10 +12,13 @@ import {
   BaseTrack as LinearGenomeTrack,
   BaseTrackConfig as LinearGenomeTrackConfig,
 } from '../LinearGenomeView/models/model'
-import AlignmentsTrack from './components/AlignmentsTrack'
+import AlignmentsTrack, {
+  AlignmentsTrackBlock,
+} from './components/AlignmentsTrack'
 
 import { Region } from '../../mst-types'
 import { renderRegion } from '../../render'
+import pileupRenderer from './pileupRenderer'
 
 function delay(time) {
   return new Promise((resolve, reject) => {
@@ -31,6 +34,9 @@ const BlockState = types
   .volatile(self => ({
     alive: true,
     filled: false,
+    reactComponent: AlignmentsTrackBlock,
+    html: '',
+    error: undefined,
   }))
   .actions(self => ({
     afterAttach() {
@@ -40,18 +46,22 @@ const BlockState = types
       const track = getParent(self, 2)
       const view = getParent(track, 2)
       const root = getParent(view, 2)
-      const { features, html } = yield renderRegion(root.pluginManager, {
-        region: self.region,
-        adapterType: track.adapterType.name,
-        adapterConfig: getConf(track, 'adapter'),
-        renderType: track.renderType,
-        renderProps: {},
-      })
-      if (!self.alive) return
-
-      self.reactComponent = () => (
-        <div dangerouslySetInnerHTML={{ __html: html }} />
-      )
+      try {
+        const { features, html } = yield renderRegion(root.pluginManager, {
+          region: self.region,
+          adapterType: track.adapterType.name,
+          adapterConfig: getConf(track, 'adapter'),
+          rendererType: track.rendererType,
+          renderProps: {},
+        })
+        if (!self.alive) return
+        self.filled = true
+        self.html = html
+      } catch (error) {
+        // the rendering failed for some reason
+        console.error(error)
+        self.error = error
+      }
     }),
     beforeDetach() {
       self.alive = false
@@ -125,10 +135,12 @@ export default class AlignmentsTrackPlugin extends Plugin {
           .model({
             type: types.literal('AlignmentsTrack'),
             configuration: ConfigurationReference(configSchema),
+            // the renderer that the user has selected in the UI, empty string
+            // if they have not made any selection
+            selectedView: types.optional(types.string, ''),
           })
           .volatile(self => ({
             reactComponent: AlignmentsTrack,
-            renderType: '',
           }))
           // .actions(self => ({
           //   afterAttach() {
@@ -138,9 +150,18 @@ export default class AlignmentsTrackPlugin extends Plugin {
           //   },
           // }))
           .views(self => ({
+            // the renderer type is based on the "view" selected in the UI: pileup, coverage, etc
+            get rendererType() {
+              const defaultView = getConf(self, 'defaultView')
+              const viewName = self.selectedView || defaultView
+              const rendererType = { pileup: 'PileupRenderer' }[viewName]
+              if (!rendererType)
+                throw new Error(`unknown alignments view name ${viewName}`)
+              return rendererType
+            },
+
             get adapterType() {
               const adapterConfig = getConf(self, 'adapter')
-              console.log(adapterConfig)
               if (!adapterConfig)
                 throw new Error(
                   `no adapter configuration provided for ${self.type}`,
@@ -170,5 +191,7 @@ export default class AlignmentsTrackPlugin extends Plugin {
         RenderingComponent: AlignmentsTrack,
       })
     })
+
+    pluginManager.addRendererType(pileupRenderer)
   }
 }

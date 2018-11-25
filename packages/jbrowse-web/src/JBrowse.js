@@ -130,6 +130,7 @@ class JBrowse {
   }
 
   getElementType(groupName, typeName) {
+    if (!typeName) throw new Error(`invalid type name "${typeName}"`)
     return (this.elementTypes[groupName] || {})[typeName]
   }
 
