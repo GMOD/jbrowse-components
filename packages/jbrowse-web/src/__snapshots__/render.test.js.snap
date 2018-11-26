@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can render a single region with Pileup + BamAdapter 1`] = `"<div class=\\"PileupRendering\\" data-reactroot=\\"\\">93<!-- --> features</div>"`;
