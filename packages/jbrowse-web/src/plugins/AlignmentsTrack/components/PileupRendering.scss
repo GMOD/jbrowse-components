@@ -1,3 +1,13 @@
 .PileupRendering {
   color: black;
+
+    white-space: normal;
+  .feature {
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    content: ' ';
+    margin: 1px;
+    background: blue;
+  }
 }
