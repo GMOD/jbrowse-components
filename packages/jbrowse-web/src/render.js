@@ -1,6 +1,11 @@
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { toArray } from 'rxjs/operators'
+
+import Rpc from '@librpc/web'
+
+import SimpleFeature from './util/feature'
+
 // import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 export function fog() {}
@@ -18,6 +23,19 @@ export function fog() {}
 //   })
 //   return data
 // }
+
+export async function renderRegionWithWorker(pluginManager, args) {
+  const rpcClient = new Rpc.Client({
+    workers: pluginManager.getWorkerGroup('render'),
+  })
+  const result = await rpcClient.call('renderRegion', args, {
+    timeout: 999999999,
+  })
+
+  // convert the feature JSON to SimpleFeature objects
+  result.features = result.featureJSON.map(j => SimpleFeature.fromJSON(j))
+  return result
+}
 
 export async function renderRegion(
   pluginManager,
@@ -49,5 +67,5 @@ export async function renderRegion(
   })
   const html = renderToString(element)
 
-  return { features, html, ...renderResult }
+  return { featureJSON: features.map(f => f.toJSON()), html, ...renderResult }
 }

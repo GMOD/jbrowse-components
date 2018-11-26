@@ -870,6 +870,18 @@
     pako "^1.0.6"
     util.promisify "^1.0.0"
 
+"@librpc/ee@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@librpc/ee/-/ee-1.0.4.tgz#ce73a36279dc4cf93efa43f7e3564ec165947522"
+  integrity sha512-vhPlbRwAKQC80h0k74tsOkMKIidZtqlFSOHRzCvC8n7Va9rzMDwpG26Pm84dAt0ZuGK0g1UEfPzxDiYo9ZQBrg==
+
+"@librpc/web@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@librpc/web/-/web-1.1.0.tgz#d4aec09f9b6f064aa72a118ceda6ec8586612f9f"
+  integrity sha512-uolvU6z3UsB/FoDS7Zh8GmYWC7TK1o3mw+cQa1hVBfrftNaGBucaHMayeNyQNpM07kEYztQubc7iq4kGrYwHjw==
+  dependencies:
+    "@librpc/ee" "1.0.4"
+
 "@material-ui/core@^3.3.2":
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/@material-ui/core/-/core-3.3.2.tgz#ca9ce331ac5a31ef8acc732305967f3e5cfe4934"

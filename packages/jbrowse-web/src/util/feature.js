@@ -80,7 +80,13 @@ export default class SimpleFeature {
 
   toJSON() {
     const d = Object.assign({}, this)
+    d.parentID = d.parent ? d.parent.id() : undefined
     delete d.parent
     return d
+  }
+
+  static fromJSON(json) {
+    const data = Object.assign({}, json)
+    return new SimpleFeature(data)
   }
 }

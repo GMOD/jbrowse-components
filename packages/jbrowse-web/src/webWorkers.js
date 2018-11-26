@@ -1,6 +1,7 @@
 import HelloWorker from './hello.worker'
+import RenderWorker from './render.worker'
 
-export function register() {
+function registerHello() {
   const helloWorker = new HelloWorker()
   let messageCount = 0
 
@@ -19,6 +20,20 @@ export function register() {
         helloWorker.postMessage({ run: false })
       }
     }
+  }
+
+  return helloWorker
+}
+
+function registerRender() {
+  const renderWorker = new RenderWorker()
+  return renderWorker
+}
+
+export function register() {
+  return {
+    // hello: [registerHello()],
+    render: [registerRender()],
   }
 }
 

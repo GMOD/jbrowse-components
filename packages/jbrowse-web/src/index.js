@@ -2,9 +2,15 @@ import { getSnapshot } from 'mobx-state-tree'
 import 'typeface-roboto'
 import JBrowse from './JBrowse'
 
-const jbrowse = new JBrowse()
+import * as serviceWorker from './serviceWorker'
+import * as webWorkers from './webWorkers'
 
-jbrowse.configure()
+const jbrowse = new JBrowse().configure()
+
+serviceWorker.register()
+
+const workerGroups = webWorkers.register()
+jbrowse.addWorkers(workerGroups)
 
 const { model } = jbrowse
 model.addView('LinearGenomeView')

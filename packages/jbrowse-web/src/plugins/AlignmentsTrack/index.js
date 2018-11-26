@@ -24,7 +24,7 @@ import AlignmentsTrack, {
 } from './components/AlignmentsTrack'
 
 import { Region } from '../../mst-types'
-import { renderRegion } from '../../render'
+import { renderRegionWithWorker } from '../../render'
 import pileupRenderer from './pileupRenderer'
 
 function delay(time) {
@@ -79,17 +79,22 @@ const BlockState = types
       const view = getParent(track, 2)
       const root = getParent(view, 2)
       try {
-        const { features, html } = yield renderRegion(root.pluginManager, {
-          region: self.region,
-          adapterType: track.adapterType.name,
-          adapterConfig: getConf(track, 'adapter'),
-          rendererType: track.rendererType,
-          renderProps: {},
-        })
+        // console.log('calling', self.region.toJSON())
+        const { features, html } = yield renderRegionWithWorker(
+          root.pluginManager,
+          {
+            region: self.region,
+            adapterType: track.adapterType.name,
+            adapterConfig: getConf(track, 'adapter'),
+            rendererType: track.rendererType,
+            renderProps: {},
+          },
+        )
         if (!self.alive) return
         self.filled = true
         self.data = features
         self.html = html
+        // console.log('finished', self.region.toJSON(), self.html)
       } catch (error) {
         // the rendering failed for some reason
         console.error(error)

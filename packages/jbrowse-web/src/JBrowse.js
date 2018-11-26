@@ -5,9 +5,6 @@ import { Provider } from 'mobx-react'
 
 import App from './ui/App'
 import RootModelFactory from './RootModelFactory'
-import * as serviceWorker from './serviceWorker'
-import * as webWorkers from './webWorkers'
-
 import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -65,6 +62,8 @@ class JBrowse {
     'track',
     'view',
   )
+
+  workerGroups = {}
 
   typeBaseClasses = {
     'drawer widget': DrawerWidgetType,
@@ -160,13 +159,18 @@ class JBrowse {
     return this
   }
 
-  start() {
-    // If you want your app to work offline and load faster, you can change
-    // unregister() to register() below. Note this comes with some pitfalls.
-    // Learn more about service workers: http://bit.ly/CRA-PWA
-    serviceWorker.register()
-    webWorkers.register()
+  addWorkers(groups) {
+    Object.entries(groups).forEach(([groupName, workers]) => {
+      if (!this.workerGroups[groupName]) this.workerGroups[groupName] = []
+      this.workerGroups[groupName].push(...workers)
+    })
+  }
 
+  getWorkerGroup(name) {
+    return this.workerGroups[name]
+  }
+
+  start() {
     ReactDOM.render(
       <Provider rootModel={this.model}>
         <App
