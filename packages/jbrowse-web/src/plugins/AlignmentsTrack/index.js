@@ -1,5 +1,12 @@
 import React from 'react'
-import { types, getSnapshot, getParent, onPatch, flow } from 'mobx-state-tree'
+import {
+  types,
+  getSnapshot,
+  getParent,
+  getRoot,
+  onPatch,
+  flow,
+} from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 import Plugin, { TrackType } from '../../Plugin'
@@ -30,6 +37,7 @@ const BlockState = types
   .model('BlockState', {
     key: types.string,
     region: Region,
+    data: types.frozen(),
   })
   .volatile(self => ({
     alive: true,
@@ -37,6 +45,30 @@ const BlockState = types
     reactComponent: AlignmentsTrackBlock,
     html: '',
     error: undefined,
+  }))
+  .views(self => ({
+    get rendererType() {
+      const { pluginManager } = getRoot(self)
+      const track = getParent(self, 2)
+      const RendererType = pluginManager.getRendererType(track.rendererType)
+      if (!RendererType)
+        throw new Error(`renderer "${track.rendererType} not found`)
+      if (!RendererType.ReactComponent)
+        throw new Error(
+          `renderer ${
+            track.rendererType
+          } has no ReactComponent, it may not be completely implemented yet`,
+        )
+      return RendererType
+
+      // const html = renderToString(
+      //   <RendererType.ReactComponent data={features} {...renderProps} />,
+      // )
+    },
+
+    get renderProps() {
+      return {}
+    },
   }))
   .actions(self => ({
     afterAttach() {
@@ -56,6 +88,7 @@ const BlockState = types
         })
         if (!self.alive) return
         self.filled = true
+        self.data = features
         self.html = html
       } catch (error) {
         // the rendering failed for some reason
