@@ -21,12 +21,14 @@ export function fog() {}
 
 export async function renderRegion(
   pluginManager,
-  { region, adapterType, adapterConfig, rendererType, renderProps },
+  { region, trackId, adapterType, adapterConfig, rendererType, renderProps },
 ) {
+  // TODO: cache the adapter object
   const dataAdapterType = pluginManager.getAdapterType(adapterType)
   if (!dataAdapterType)
     throw new Error(`unknown data adapter type ${adapterType}`)
   const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
+
   const features = await dataAdapter
     .getFeaturesInRegion(region)
     .pipe(toArray())
@@ -38,9 +40,14 @@ export async function renderRegion(
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
-  const html = renderToString(
-    <RendererType.ReactComponent data={features} {...renderProps} />,
-  )
+  const { element, ...renderResult } = RendererType.render({
+    region,
+    dataAdapter,
+    data: features,
+    trackId,
+    ...renderProps,
+  })
+  const html = renderToString(element)
 
-  return { features, html }
+  return { features, html, ...renderResult }
 }

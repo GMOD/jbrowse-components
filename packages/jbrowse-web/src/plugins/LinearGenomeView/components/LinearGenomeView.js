@@ -36,6 +36,7 @@ class LinearGenomeView extends Component {
       scaleBarHeight +
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
     const style = {
+      display: 'grid',
       width: `${width}px`,
       height: `${height}px`,
       gridTemplateRows: `[scale-bar] auto ${tracks
@@ -61,7 +62,7 @@ class LinearGenomeView extends Component {
           offsetPx={visibleBlocksOffsetPx}
           width={width - controlsWidth}
         />
-        {tracks.map(track => [
+        {tracks.map((track, i) => [
           <div
             className="controls track-controls"
             key={`controls:${track.id}`}

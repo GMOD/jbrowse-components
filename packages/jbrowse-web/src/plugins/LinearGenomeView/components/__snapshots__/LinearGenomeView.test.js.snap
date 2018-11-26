@@ -5,6 +5,7 @@ exports[`LinearGenomeView genome view component renders one track, no displayed 
   className="LinearGenomeView"
   style={
     Object {
+      "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px",
       "height": "45px",
@@ -94,6 +95,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
   className="LinearGenomeView"
   style={
     Object {
+      "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px [bar] 20px [resize-bar] 3px",
       "height": "68px",
@@ -244,6 +246,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
   className="LinearGenomeView"
   style={
     Object {
+      "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto ",
       "height": "22px",

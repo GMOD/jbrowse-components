@@ -26,6 +26,7 @@ test('can render a single region with Pileup + BamAdapter', async () => {
   }
 
   const result = await renderRegion(jbrowse, testprops)
+  expect(Object.keys(result)).toEqual(['features', 'html'])
   expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
 })

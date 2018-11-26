@@ -1,3 +1,4 @@
+import React from 'react'
 import { ConfigurationSchema } from './configuration'
 
 export default class Plugin {
@@ -62,6 +63,10 @@ export class RendererType extends PluggableElementType {
     super(stuff)
     if (!this.ReactComponent)
       throw new Error(`no ReactComponent defined for renderer ${this.name}`)
+  }
+
+  render(props) {
+    return { element: React.createElement(this.ReactComponent, props, null) }
   }
 }
 

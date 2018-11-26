@@ -18,7 +18,7 @@ ErrorMessage.propTypes = {
 }
 
 @observer
-class Block extends Component {
+class BlockContent extends Component {
   static propTypes = {
     model: PropTypes.observableObject.isRequired,
   }
@@ -38,7 +38,11 @@ class Block extends Component {
       const domNode = findDOMNode(this) // eslint-disable-line react/no-find-dom-node
       domNode.innerHTML = html
       hydrate(
-        <rendererType.ReactComponent data={data} renderProps={renderProps} />,
+        React.createElement(
+          rendererType.ReactComponent,
+          { data, ...renderProps },
+          null,
+        ),
         domNode,
       )
     }
@@ -48,11 +52,11 @@ class Block extends Component {
     const { model } = this.props
     if (model.error) return <ErrorMessage error={model.error} />
     if (!model.filled) return <LoadingMessage />
-    return <div className="ssr-placeholder" />
+    return <div className="ssr-container" />
   }
 }
 
-export const AlignmentsTrackBlock = Block
+export const AlignmentsTrackBlock = BlockContent
 
 const AlignmentsTrack = observer(props => {
   const { blockState } = props.model

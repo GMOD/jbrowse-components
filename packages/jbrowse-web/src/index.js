@@ -13,7 +13,7 @@ model.views[0].displayRegions([
     assembly: 'volvox',
     refName: 'ctgA',
     start: 0,
-    end: 10000,
+    end: 50000,
   },
   { assembly: 'volvox', refName: 'ctgB', start: 0, end: 100000000 },
 ])
