@@ -26,6 +26,7 @@ const stateModel = types.compose(
       id: types.identifier,
       type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
       categories: types.map(Category),
+      filterText: types.optional(types.string, ''),
     })
     .actions(self => ({
       afterAttach() {
@@ -61,6 +62,9 @@ const stateModel = types.compose(
       addCategory(name) {
         if (!self.categories.has(name))
           self.categories.set(name, Category.create({ id: name }))
+      },
+      updateFilterText(filterText) {
+        self.filterText = filterText.toLowerCase()
       },
     })),
 )
