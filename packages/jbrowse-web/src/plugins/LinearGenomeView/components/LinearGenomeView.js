@@ -99,7 +99,7 @@ class LinearGenomeView extends Component {
               key={`track-rendering:${track.id}`}
               trackId={track.id}
               width={width - controlsWidth}
-              onHorizontalScroll={this.props.model.horizontalScroll}
+              onHorizontalScroll={model.horizontalScroll}
             >
               <track.RenderingComponent
                 model={track}
@@ -112,7 +112,7 @@ class LinearGenomeView extends Component {
             <TrackResizeHandle
               key={`handle:${track.id}`}
               trackId={track.id}
-              onVerticalDrag={this.props.model.resizeTrack}
+              onVerticalDrag={model.resizeTrack}
             />,
           ])}
       </div>

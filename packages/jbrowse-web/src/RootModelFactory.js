@@ -17,9 +17,15 @@ export default function(pluginManager) {
   // TODO: get all config schemas from the view types and make an object of them
   const viewConfigTypes = {}
 
+  const minViewsWidth = 150
+  const minDrawerWidth = 100
   const RootModel = types
     .model('JBrowseWebRootModel', {
       browser: types.frozen(this),
+      drawerWidth: types.optional(
+        types.integer,
+        Math.round(window.innerWidth * 0.25),
+      ),
       views: types.array(
         types.union(
           ...extractAll(
@@ -58,7 +64,26 @@ export default function(pluginManager) {
         ),
       }),
     })
+    .views(self => ({
+      get viewsWidth() {
+        return window.innerWidth - self.drawerWidth - 7
+      },
+    }))
     .actions(self => ({
+      setDrawerWidth(drawerWidth) {
+        if (drawerWidth >= minDrawerWidth) {
+          if (window.innerWidth - drawerWidth - 7 >= minViewsWidth)
+            self.drawerWidth = drawerWidth
+        }
+        return self.drawerWidth
+      },
+
+      resizeDrawer(distance) {
+        const drawerWidthBefore = self.drawerWidth
+        this.setDrawerWidth(self.drawerWidth - distance)
+        return drawerWidthBefore - self.drawerWidth
+      },
+
       addView(typeName, initialState = {}, configuration = { type: typeName }) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
