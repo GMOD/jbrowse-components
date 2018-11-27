@@ -20,7 +20,7 @@ class DrawerResizeHandle extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = { mouseDragging: false }
+    this.state = { mouseDragging: false, throttling: false }
 
     this.mouseUp = this.mouseUp.bind(this)
     this.mouseDown = this.mouseDown.bind(this)
@@ -37,16 +37,24 @@ class DrawerResizeHandle extends React.Component {
 
   mouseMove(event) {
     event.preventDefault()
-    const { onHorizontalDrag } = this.props
-    const { mouseDragging } = this.state
-    if (mouseDragging && this.previousMouseX !== undefined) {
-      const distance = event.clientX - this.previousMouseX
-      if (distance) {
-        const distMoved = onHorizontalDrag(distance)
-        if (!distMoved) return
-      }
+    const { throttling } = this.state
+    if (!throttling) {
+      this.setState({ throttling: true })
+      const { clientX } = event
+      setTimeout(() => {
+        this.setState({ throttling: false })
+        const { onHorizontalDrag } = this.props
+        const { mouseDragging } = this.state
+        if (mouseDragging && this.previousMouseX !== undefined) {
+          const distance = clientX - this.previousMouseX
+          if (distance) {
+            const distMoved = onHorizontalDrag(distance)
+            if (!distMoved) return
+          }
+        }
+        this.previousMouseX = clientX
+      }, 132)
     }
-    this.previousMouseX = event.clientX
   }
 
   mouseUp() {
