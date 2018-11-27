@@ -59,6 +59,12 @@ class App extends Component {
     getDrawerWidgetType: ReactPropTypes.func.isRequired,
   }
 
+  constructor(props) {
+    super(props)
+    const { rootModel } = this.props
+    window.addEventListener('resize', () => rootModel.updateWindowWidth())
+  }
+
   render() {
     const { classes, getDrawerWidgetType, getViewType, rootModel } = this.props
     const drawerWidget = rootModel.selectedDrawerWidget
