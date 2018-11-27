@@ -147,11 +147,17 @@ class HierarchicalTrackSelector extends React.Component {
       addTrackToHierarchy(trackHierarchy, track)
     })
 
+    const filterError =
+      values(view.tracks).filter(track => trackFilter(track, model)).length ===
+      0
+
     return (
       <div className={classes.root}>
         <TextField
           label="Filter Tracks"
           value={model.filterText}
+          error={filterError}
+          helperText={filterError ? 'No matches' : ''}
           onChange={this.handleInputChange}
           InputProps={{
             startAdornment: (
