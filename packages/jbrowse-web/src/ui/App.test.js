@@ -1,16 +1,18 @@
+import { Provider } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Provider } from 'mobx-react'
-import App from './App'
+import snap1 from '../../test/root.snap.1.json'
 import JBrowse from '../JBrowse'
 import RootModelFactory from '../RootModelFactory'
-import snap1 from '../../test/root.snap.1.json'
+import App from './App'
 
 describe('jbrowse-web app', () => {
   it('renders an empty model without crashing', () => {
     const jbrowse = new JBrowse().configure()
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create()
+    expect(getSnapshot(model)).toMatchSnapshot()
     ReactDOM.render(
       <Provider rootModel={model}>
         <App
@@ -26,6 +28,7 @@ describe('jbrowse-web app', () => {
     const jbrowse = new JBrowse().configure()
     const div = document.createElement('div')
     const model = RootModelFactory(jbrowse).create(snap1)
+    expect(getSnapshot(model)).toMatchSnapshot()
     ReactDOM.render(
       <Provider rootModel={model}>
         <App
