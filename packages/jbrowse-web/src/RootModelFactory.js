@@ -75,7 +75,7 @@ export default function(pluginManager) {
       function afterCreate() {
         if (self.drawerWidth < minDrawerWidth) self.drawerWidth = minDrawerWidth
         if (self.drawerWidth > windowWidth - (minViewsWidth + 7))
-          self.width = windowWidth - (minViewsWidth + 7)
+          self.drawerWidth = windowWidth - (minViewsWidth + 7)
       }
 
       function updateWindowWidth() {
