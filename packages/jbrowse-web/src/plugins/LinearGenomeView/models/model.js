@@ -1,5 +1,5 @@
+import { getEnv, getRoot, isStateTreeNode, types } from 'mobx-state-tree'
 import React from 'react'
-import { types, isStateTreeNode } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
@@ -80,13 +80,15 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         tracks: types.map(types.union(...trackTypes)),
         controlsWidth: 100,
         displayedRegions: types.array(Region),
-        width: 800,
         configuration: ConfigurationSchema('LinearGenomeView', {
           backgroundColor: { type: 'color', defaultValue: '#eee' },
         }),
       }),
     )
     .views(self => ({
+      get width() {
+        return getEnv(self).testEnv ? 800 : getRoot(self).viewsWidth
+      },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)
       },

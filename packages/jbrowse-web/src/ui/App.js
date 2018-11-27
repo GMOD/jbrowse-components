@@ -1,15 +1,16 @@
 import AppBar from '@material-ui/core/AppBar'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import Drawer from '@material-ui/core/Drawer'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
+import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { inject, observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
+import DrawerResizeHandle from './DrawerResizeHandle'
 import Theme from './Theme'
 
 const styles = theme => ({
@@ -17,6 +18,13 @@ const styles = theme => ({
     html: {
       'font-family': 'Roboto',
     },
+  },
+  root: {
+    height: '100vh',
+    display: 'flex',
+  },
+  components: {
+    overflowY: 'auto',
   },
   drawerCloseButton: {
     margin: theme.spacing.unit,
@@ -39,6 +47,8 @@ const styles = theme => ({
 class App extends Component {
   static propTypes = {
     classes: ReactPropTypes.shape({
+      root: ReactPropTypes.string.isRequired,
+      components: ReactPropTypes.string.isRequired,
       drawerCloseButton: ReactPropTypes.string.isRequired,
       defaultDrawer: ReactPropTypes.string.isRequired,
       drawerToolbar: ReactPropTypes.string.isRequired,
@@ -47,6 +57,12 @@ class App extends Component {
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
     getDrawerWidgetType: ReactPropTypes.func.isRequired,
+  }
+
+  constructor(props) {
+    super(props)
+    const { rootModel } = this.props
+    window.addEventListener('resize', () => rootModel.updateWindowWidth())
   }
 
   render() {
@@ -101,13 +117,25 @@ class App extends Component {
     return (
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
-        {rootModel.views.map(view => {
-          const { ReactComponent } = getViewType(view.type)
-          return <ReactComponent key={`view-${view.id}`} model={view} />
-        })}
-        <Drawer variant="permanent" anchor="right">
-          {drawerComponent}
-        </Drawer>
+        <div className={classes.root}>
+          <div className={classes.components}>
+            {rootModel.views.map(view => {
+              const { ReactComponent } = getViewType(view.type)
+              return <ReactComponent key={`view-${view.id}`} model={view} />
+            })}
+          </div>
+          <DrawerResizeHandle
+            onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
+          />
+          <Paper
+            className={classes.components}
+            style={{
+              width: rootModel.drawerWidth,
+            }}
+          >
+            {drawerComponent}
+          </Paper>
+        </div>
       </MuiThemeProvider>
     )
   }

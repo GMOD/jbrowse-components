@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`jbrowse-web app renders a couple of LinearGenomeView views without crashing 1`] = `
+Object {
+  "browser": undefined,
+  "configuration": Object {},
+  "drawerWidgets": Object {},
+  "drawerWidth": 256,
+  "selectedDrawerWidget": undefined,
+  "views": Array [
+    Object {
+      "bpPerPx": 1,
+      "configuration": Object {},
+      "controlsWidth": 100,
+      "displayedRegions": Array [],
+      "id": "Y-WM9HwhV",
+      "offsetPx": 20,
+      "tracks": Object {
+        "bar": Object {
+          "blockState": Object {},
+          "configuration": Object {},
+          "description": "",
+          "height": 20,
+          "id": "bar",
+          "name": "Bar Track",
+          "subtracks": undefined,
+          "type": "AlignmentsTrack",
+          "visible": true,
+        },
+        "baz": Object {
+          "blockState": Object {},
+          "configuration": Object {},
+          "description": "",
+          "height": 20,
+          "id": "baz",
+          "name": "Baz Track",
+          "subtracks": undefined,
+          "type": "AlignmentsTrack",
+          "visible": true,
+        },
+        "foo": Object {
+          "blockState": Object {},
+          "configuration": Object {},
+          "description": "",
+          "height": 20,
+          "id": "foo",
+          "name": "Foo Track",
+          "subtracks": undefined,
+          "type": "AlignmentsTrack",
+          "visible": true,
+        },
+      },
+      "type": "LinearGenomeView",
+    },
+    Object {
+      "bpPerPx": 1,
+      "configuration": Object {},
+      "controlsWidth": 100,
+      "displayedRegions": Array [],
+      "id": "1YKfbpmZoU",
+      "offsetPx": 0,
+      "tracks": Object {
+        "bee": Object {
+          "blockState": Object {},
+          "configuration": Object {},
+          "description": "",
+          "height": 20,
+          "id": "bee",
+          "name": "Bee Track",
+          "subtracks": undefined,
+          "type": "AlignmentsTrack",
+          "visible": true,
+        },
+        "bonk": Object {
+          "blockState": Object {},
+          "configuration": Object {},
+          "description": "",
+          "height": 20,
+          "id": "bonk",
+          "name": "Bonk Track",
+          "subtracks": undefined,
+          "type": "AlignmentsTrack",
+          "visible": true,
+        },
+      },
+      "type": "LinearGenomeView",
+    },
+  ],
+}
+`;
+
+exports[`jbrowse-web app renders an empty model without crashing 1`] = `
+Object {
+  "browser": undefined,
+  "configuration": Object {},
+  "drawerWidgets": Object {},
+  "drawerWidth": 256,
+  "selectedDrawerWidget": undefined,
+  "views": Array [],
+}
+`;
