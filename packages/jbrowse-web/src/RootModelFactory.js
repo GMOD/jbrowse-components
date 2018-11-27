@@ -66,10 +66,16 @@ export default function(pluginManager) {
     })
     .views(self => ({
       get viewsWidth() {
-        return window.innerWidth - self.drawerWidth - 7
+        return window.innerWidth - (self.drawerWidth + 7)
       },
     }))
     .actions(self => ({
+      afterCreate() {
+        if (self.drawerWidth < minDrawerWidth) self.drawerWidth = minDrawerWidth
+        if (self.drawerWidth > window.innerWidth - (minViewsWidth + 7))
+          self.width = window.innerWidth - (minViewsWidth + 7)
+      },
+
       setDrawerWidth(drawerWidth) {
         if (drawerWidth >= minDrawerWidth) {
           if (window.innerWidth - drawerWidth - 7 >= minViewsWidth)
