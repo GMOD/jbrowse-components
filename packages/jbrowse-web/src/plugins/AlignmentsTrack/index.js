@@ -88,6 +88,8 @@ const BlockState = types
             adapterConfig: getConf(track, 'adapter'),
             rendererType: track.rendererType,
             renderProps: {},
+            sessionId: track.id,
+            timeout: 10000,
           },
         )
         if (!self.alive) return

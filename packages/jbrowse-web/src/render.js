@@ -1,9 +1,3 @@
-import React from 'react'
-import { renderToString } from 'react-dom/server'
-import { toArray } from 'rxjs/operators'
-
-import jsonStableStringify from 'json-stable-stringify'
-
 import Rpc from '@librpc/web'
 
 import SimpleFeature from './util/feature'
@@ -26,12 +20,14 @@ export function fog() {}
 //   return data
 // }
 
-export async function renderRegionWithWorker(pluginManager, args) {
-  const rpcClient = new Rpc.Client({
+const getClient = pluginManager =>
+  new Rpc.Client({
     workers: pluginManager.getWorkerGroup('render'),
   })
-  const result = await rpcClient.call('renderRegion', args, {
-    timeout: 999999999,
+
+export async function renderRegionWithWorker(pluginManager, args) {
+  const result = await getClient(pluginManager).call('renderRegion', args, {
+    timeout: args.timeout,
   })
 
   // convert the feature JSON to SimpleFeature objects
@@ -39,43 +35,6 @@ export async function renderRegionWithWorker(pluginManager, args) {
   return result
 }
 
-const adapterCache = {}
-function getAdapter(pluginManager, adapterType, adapterConfig) {
-  // cache the adapter object
-  const cacheKey = `${adapterType}|${jsonStableStringify(adapterConfig)}`
-  if (!adapterCache[cacheKey]) {
-    const dataAdapterType = pluginManager.getAdapterType(adapterType)
-    if (!dataAdapterType)
-      throw new Error(`unknown data adapter type ${adapterType}`)
-    adapterCache[cacheKey] = new dataAdapterType.AdapterClass(adapterConfig)
-  }
-  return adapterCache[cacheKey]
-}
-
-export async function renderRegion(
-  pluginManager,
-  { region, trackId, adapterType, adapterConfig, rendererType, renderProps },
-) {
-  const dataAdapter = getAdapter(pluginManager, adapterType, adapterConfig)
-  const features = await dataAdapter
-    .getFeaturesInRegion(region)
-    .pipe(toArray())
-    .toPromise()
-
-  const RendererType = pluginManager.getRendererType(rendererType)
-  if (!RendererType) throw new Error(`renderer "${rendererType} not found`)
-  if (!RendererType.ReactComponent)
-    throw new Error(
-      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
-    )
-  const { element, ...renderResult } = RendererType.render({
-    region,
-    dataAdapter,
-    data: features,
-    trackId,
-    ...renderProps,
-  })
-  const html = renderToString(element)
-
-  return { featureJSON: features.map(f => f.toJSON()), html, ...renderResult }
+export async function freeSessionResourcesInWorker(pluginManager, sessionId) {
+  return getClient(pluginManager).call('freeSessionResources', sessionId)
 }
