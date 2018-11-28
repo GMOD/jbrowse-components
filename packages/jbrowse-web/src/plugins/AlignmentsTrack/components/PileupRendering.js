@@ -10,7 +10,11 @@ function Feature({ feature, layout, bpPerPx, region, flipped }) {
   // const endbp = (fRect.l + fRect.w) * bpPerPx + leftBase
   // const top = layout.addRect(feature.id(), startbp, endbp, fRect.h, feature)
 
-  return <div className="feature" data-feature-id={feature.id()} style={{}} />
+  return (
+    <div className="feature" data-feature-id={feature.id()} style={{}}>
+      {feature.id()}
+    </div>
+  )
 }
 
 Feature.propTypes = {
