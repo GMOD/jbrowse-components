@@ -2,6 +2,8 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { toArray } from 'rxjs/operators'
 
+import jsonStableStringify from 'json-stable-stringify'
+
 import Rpc from '@librpc/web'
 
 import SimpleFeature from './util/feature'
@@ -37,16 +39,24 @@ export async function renderRegionWithWorker(pluginManager, args) {
   return result
 }
 
+const adapterCache = {}
+function getAdapter(pluginManager, adapterType, adapterConfig) {
+  // cache the adapter object
+  const cacheKey = `${adapterType}|${jsonStableStringify(adapterConfig)}`
+  if (!adapterCache[cacheKey]) {
+    const dataAdapterType = pluginManager.getAdapterType(adapterType)
+    if (!dataAdapterType)
+      throw new Error(`unknown data adapter type ${adapterType}`)
+    adapterCache[cacheKey] = new dataAdapterType.AdapterClass(adapterConfig)
+  }
+  return adapterCache[cacheKey]
+}
+
 export async function renderRegion(
   pluginManager,
   { region, trackId, adapterType, adapterConfig, rendererType, renderProps },
 ) {
-  // TODO: cache the adapter object
-  const dataAdapterType = pluginManager.getAdapterType(adapterType)
-  if (!dataAdapterType)
-    throw new Error(`unknown data adapter type ${adapterType}`)
-  const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
-
+  const dataAdapter = getAdapter(pluginManager, adapterType, adapterConfig)
   const features = await dataAdapter
     .getFeaturesInRegion(region)
     .pipe(toArray())
