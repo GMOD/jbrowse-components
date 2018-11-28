@@ -4,8 +4,6 @@ import SimpleFeature from './util/feature'
 
 // import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
-export function fog() {}
-
 // // given an object of things that might be MST models, snapshots any of them
 // // that are not already snapshots
 // function ensureSnapshots(things) {
