@@ -142,7 +142,6 @@ class HierarchicalTrackSelector extends React.Component {
     const { classes, model, rootModel } = this.props
     const view = rootModel.views.filter(v => v.id === model.id)[0]
     const trackHierarchy = new Map([['uncategorized', []]])
-    console.log(model)
 
     values(view.tracks).forEach(track => {
       addTrackToHierarchy(trackHierarchy, track)
