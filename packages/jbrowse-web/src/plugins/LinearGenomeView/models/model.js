@@ -1,5 +1,5 @@
+import { getEnv, getRoot, isStateTreeNode, types } from 'mobx-state-tree'
 import React from 'react'
-import { types, isStateTreeNode } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
@@ -18,6 +18,16 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
     type: 'color',
     defaultValue: '#eee',
   },
+  description: {
+    description: 'a description of the track',
+    type: 'string',
+    defaultValue: '',
+  },
+  category: {
+    description: 'the category and sub-categories of a track',
+    type: 'stringArray',
+    defaultValue: [],
+  },
 })
 
 const minTrackHeight = 20
@@ -29,6 +39,7 @@ export const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       minTrackHeight,
     ),
+    visible: types.optional(types.boolean, true),
     subtracks: types.literal(undefined),
     configuration: ConfigurationReference(BaseTrackConfig),
   })
@@ -42,6 +53,24 @@ export const BaseTrack = types
           </div>
         ))
       )
+    },
+  }))
+  .actions(self => ({
+    setHeight(trackHeight) {
+      if (trackHeight >= minTrackHeight) self.height = trackHeight
+    },
+
+    show() {
+      self.visible = true
+    },
+
+    hide() {
+      self.visible = false
+    },
+
+    toggle() {
+      if (self.visible) this.hide()
+      else this.show()
     },
   }))
 
@@ -59,16 +88,18 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
-        tracks: types.array(types.union(...trackTypes)),
+        tracks: types.map(types.union(...trackTypes)),
         controlsWidth: 100,
         displayedRegions: types.array(Region),
-        width: 800,
         configuration: ConfigurationSchema('LinearGenomeView', {
           backgroundColor: { type: 'color', defaultValue: '#eee' },
         }),
       }),
     )
     .views(self => ({
+      get width() {
+        return getEnv(self).testEnv ? 800 : getRoot(self).viewsWidth
+      },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)
       },
@@ -143,6 +174,10 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         self.tracks.push(TrackType.create({ id, name, type, configuration }))
       },
 
+      hideTrack(trackId) {
+        self.tracks.get(trackId).hide()
+      },
+
       displayRegions(regions) {
         self.displayedRegions = regions.map(
           r => (isStateTreeNode(r) ? r : Region.create(r)),
@@ -150,15 +185,8 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
 
       resizeTrack(trackId, distance) {
-        const track = self.tracks.find(t => t.id === trackId)
-        if (track) {
-          try {
-            track.height += distance
-          } catch (e) {
-            /* ignore */
-            // TODO: be more precise about what kind of errors to ignore here
-          }
-        }
+        const track = self.tracks.get(trackId)
+        track.setHeight(track.height + distance)
       },
 
       horizontalScroll(distance) {

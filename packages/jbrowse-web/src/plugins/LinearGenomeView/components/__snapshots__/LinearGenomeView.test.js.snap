@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`LinearGenomeView genome view component renders one track, no displayed regions 1`] = `
+exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -22,6 +22,7 @@ exports[`LinearGenomeView genome view component renders one track, no displayed 
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks
@@ -90,7 +91,7 @@ exports[`LinearGenomeView genome view component renders one track, no displayed 
 </div>
 `;
 
-exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
+exports[`LinearGenomeView genome view component renders two tracks, two blocks 1`] = `
 <div
   className="LinearGenomeView"
   style={
@@ -112,6 +113,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks
@@ -127,19 +129,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         "width": "700px",
       }
     }
-  >
-    <div
-      className="block"
-      style={
-        Object {
-          "left": "0px",
-          "width": "100px",
-        }
-      }
-    >
-      volvox:ctgA:1-100
-    </div>
-  </div>
+  />
   <div
     className="controls track-controls"
     style={
@@ -263,6 +253,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <button
+      onClick={[Function]}
       type="button"
     >
       select tracks

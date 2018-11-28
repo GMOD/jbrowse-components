@@ -26,6 +26,7 @@ model.views[0].displayRegions([
 
 const conf = model.configuration.addTrackConf('AlignmentsTrack', {
   name: 'Alignments Test',
+  category: ['Bar Category', 'Baz Category'],
   adapter: {
     type: 'BamAdapter',
     bamLocation: { uri: '/test_data/volvox-sorted.bam' },

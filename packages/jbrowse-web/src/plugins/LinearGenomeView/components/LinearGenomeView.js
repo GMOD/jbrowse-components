@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { observer, PropTypes } from 'mobx-react'
+import { values } from 'mobx'
+import { inject, observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -10,14 +11,22 @@ import './LinearGenomeView.scss'
 
 const dragHandleHeight = 3
 
+@inject('rootModel')
 @observer
 class LinearGenomeView extends Component {
   static propTypes = {
     model: PropTypes.observableObject.isRequired,
   }
 
+  static wrappedComponent = {
+    propTypes: {
+      rootModel: PropTypes.observableObject.isRequired,
+    },
+  }
+
   render() {
     const scaleBarHeight = 22
+    const { model, rootModel } = this.props
     const {
       id,
       blocks,
@@ -26,7 +35,7 @@ class LinearGenomeView extends Component {
       width,
       controlsWidth,
       offsetPx,
-    } = this.props.model
+    } = model
     // NOTE: offsetPx is the total offset in px of the viewing window into the
     // whole set of concatenated regions. this number is often quite large.
     // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -34,12 +43,15 @@ class LinearGenomeView extends Component {
     const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
     const height =
       scaleBarHeight +
-      tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
+      values(tracks)
+        .filter(t => t.visible)
+        .reduce((a, b) => a + b.height + dragHandleHeight, 0)
     const style = {
       display: 'grid',
       width: `${width}px`,
       height: `${height}px`,
-      gridTemplateRows: `[scale-bar] auto ${tracks
+      gridTemplateRows: `[scale-bar] auto ${values(tracks)
+        .filter(t => t.visible)
         .map(
           t => `[${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
         )
@@ -52,7 +64,19 @@ class LinearGenomeView extends Component {
           className="controls view-controls"
           style={{ gridRow: 'scale-bar' }}
         >
-          <button type="button">select tracks</button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!rootModel.drawerWidgets.get(id))
+                rootModel.addDrawerWidget(
+                  'HierarchicalTrackSelectorDrawerWidget',
+                  id,
+                )
+              rootModel.showDrawerWidget(id)
+            }}
+          >
+            select tracks
+          </button>
         </div>
         <ScaleBar
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
@@ -62,34 +86,36 @@ class LinearGenomeView extends Component {
           offsetPx={visibleBlocksOffsetPx}
           width={width - controlsWidth}
         />
-        {tracks.map((track, i) => [
-          <div
-            className="controls track-controls"
-            key={`controls:${track.id}`}
-            style={{ gridRow: track.id, gridColumn: 'controls' }}
-          >
-            {getConf(track, 'name') || track.id}
-          </div>,
-          <TrackRenderingContainer
-            key={`track-rendering:${track.id}`}
-            trackId={track.id}
-            width={width - controlsWidth}
-            onHorizontalScroll={this.props.model.horizontalScroll}
-          >
-            <track.RenderingComponent
-              model={track}
-              blockDefinitions={blocks}
-              offsetPx={visibleBlocksOffsetPx}
-              bpPerPx={bpPerPx}
-              blockState={{}}
-            />
-          </TrackRenderingContainer>,
-          <TrackResizeHandle
-            key={`handle:${track.id}`}
-            trackId={track.id}
-            onVerticalDrag={this.props.model.resizeTrack}
-          />,
-        ])}
+        {values(tracks)
+          .filter(t => t.visible)
+          .map(track => [
+            <div
+              className="controls track-controls"
+              key={`controls:${track.id}`}
+              style={{ gridRow: track.id, gridColumn: 'controls' }}
+            >
+              {track.name || track.id}
+            </div>,
+            <TrackRenderingContainer
+              key={`track-rendering:${track.id}`}
+              trackId={track.id}
+              width={width - controlsWidth}
+              onHorizontalScroll={model.horizontalScroll}
+            >
+              <track.RenderingComponent
+                model={track}
+                blockDefinitions={blocks}
+                offsetPx={visibleBlocksOffsetPx}
+                bpPerPx={bpPerPx}
+                blockState={{}}
+              />
+            </TrackRenderingContainer>,
+            <TrackResizeHandle
+              key={`handle:${track.id}`}
+              trackId={track.id}
+              onVerticalDrag={model.resizeTrack}
+            />,
+          ])}
       </div>
     )
   }

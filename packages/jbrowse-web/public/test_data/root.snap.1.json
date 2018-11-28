@@ -1,61 +1,79 @@
 {
+  "drawerWidth": 256,
   "views": [
     {
-      "width": 800,
+      "id": "Y-WM9HwhV",
       "type": "LinearGenomeView",
       "offsetPx": 20,
-      "controlsWidth": 100,
-      "tracks": [
-        {
-          "height": 20,
+      "bpPerPx": 1,
+      "tracks": {
+        "foo": {
+          "id": "foo",
           "name": "Foo Track",
-          "type": "AlignmentsTrack"
-        },
-        {
+          "description": "",
+          "type": "AlignmentsTrack",
           "height": 20,
+          "visible": true,
+          "configuration": {},
+          "blockState": {}
+        },
+        "bar": {
+          "id": "bar",
           "name": "Bar Track",
-          "type": "AlignmentsTrack"
-        },
-        {
-          "name": "Baz Track",
+          "description": "",
+          "type": "AlignmentsTrack",
           "height": 20,
-          "type": "AlignmentsTrack"
+          "visible": true,
+          "configuration": {},
+          "blockState": {}
+        },
+        "baz": {
+          "id": "baz",
+          "name": "Baz Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "visible": true,
+          "configuration": {},
+          "blockState": {}
         }
-      ],
-      "blocks": [
-        {
-          "refName": "ctgA",
-          "end": 100,
-          "start": 0
-        }
-      ],
-      "bpPerPx": 1
+      },
+      "controlsWidth": 100,
+      "displayedRegions": [],
+      "configuration": {}
     },
     {
-      "width": 800,
+      "id": "1YKfbpmZoU",
       "type": "LinearGenomeView",
       "offsetPx": 0,
-      "controlsWidth": 100,
-      "tracks": [
-        {
+      "bpPerPx": 1,
+      "tracks": {
+        "bee": {
+          "id": "bee",
           "name": "Bee Track",
+          "description": "",
+          "type": "AlignmentsTrack",
           "height": 20,
-          "type": "AlignmentsTrack"
+          "visible": true,
+          "configuration": {},
+          "blockState": {}
         },
-        {
+        "bonk": {
+          "id": "bonk",
           "name": "Bonk Track",
+          "description": "",
+          "type": "AlignmentsTrack",
           "height": 20,
-          "type": "AlignmentsTrack"
+          "visible": true,
+          "configuration": {},
+          "blockState": {}
         }
-      ],
-      "blocks": [
-        {
-          "refName": "ctgA",
-          "end": 100,
-          "start": 0
-        }
-      ],
-      "bpPerPx": 1
+      },
+      "controlsWidth": 100,
+      "displayedRegions": [],
+      "configuration": {}
     }
-  ]
+  ],
+  "drawerWidgets": {},
+  "configuration": {}
 }

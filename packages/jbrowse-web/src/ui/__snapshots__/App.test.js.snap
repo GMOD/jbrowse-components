@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`jbrowse-web app renders a couple of LinearGenomeView views without crashing 1`] = `
+Object {
+  "browser": undefined,
+  "configuration": Object {
+    "_configId": Any<String>,
+  },
+  "drawerWidgets": Object {},
+  "drawerWidth": 256,
+  "selectedDrawerWidget": undefined,
+  "views": Array [
+    Object {
+      "configuration": Object {
+        "_configId": Any<String>,
+      },
+    },
+    Object {
+      "configuration": Object {
+        "_configId": Any<String>,
+      },
+    },
+  ],
+}
+`;
+
+exports[`jbrowse-web app renders an empty model without crashing 1`] = `
+Object {
+  "browser": undefined,
+  "configuration": Object {
+    "_configId": Any<String>,
+  },
+  "drawerWidgets": Object {},
+  "drawerWidth": 256,
+  "selectedDrawerWidget": undefined,
+  "views": Array [],
+}
+`;

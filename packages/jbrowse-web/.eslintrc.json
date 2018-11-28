@@ -14,7 +14,9 @@
   "rules": {
     "class-methods-use-this": "off",
     "no-param-reassign": "off",
+    "no-restricted-syntax": "off",
     "no-underscore-dangle": "warn",
+    "no-unused-vars": "warn",
     "no-use-before-define": "off",
     "react/destructuring-assignment": "warn",
     "react/jsx-filename-extension": "off",

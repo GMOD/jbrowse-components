@@ -73,9 +73,9 @@ export class RendererType extends PluggableElementType {
 export class DrawerWidgetType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
-    if (!this.ReactComponent)
+    if (!this.LazyReactComponent)
       throw new Error(
-        `no ReactComponent defined for drawer widget ${this.name}`,
+        `no LazyReactComponent defined for drawer widget ${this.name}`,
       )
     if (!this.stateModel)
       throw new Error(`no stateModel defined for drawer widget ${this.name}`)
