@@ -86,7 +86,7 @@ function generateTrackList(trackHierarchy, view, classes, model) {
       elements.push(
         <ExpansionPanel
           key={category}
-          expanded={model.categories.get(category).open}
+          expanded={model.categories.get(category).expanded}
           onChange={() => model.categories.get(category).toggle()}
         >
           <ExpansionPanelSummary
@@ -142,6 +142,7 @@ class HierarchicalTrackSelector extends React.Component {
     const { classes, model, rootModel } = this.props
     const view = rootModel.views.filter(v => v.id === model.id)[0]
     const trackHierarchy = new Map([['uncategorized', []]])
+    console.log(model)
 
     values(view.tracks).forEach(track => {
       addTrackToHierarchy(trackHierarchy, track)

@@ -11,11 +11,11 @@ const HierarchicalSelector = React.lazy(() =>
 const Category = types
   .model('Category', {
     id: types.identifier,
-    open: types.optional(types.boolean, true),
+    expanded: types.optional(types.boolean, true),
   })
   .actions(self => ({
     toggle() {
-      self.open = !self.open
+      self.expanded = !self.expanded
     },
   }))
 
@@ -81,7 +81,7 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
           },
           allExpanded: {
             type: 'boolean',
-            defaultValue: true,
+            defaultValue: false,
           },
         },
       )
