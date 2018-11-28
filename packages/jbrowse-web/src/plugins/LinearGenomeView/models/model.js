@@ -179,8 +179,8 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
 
       displayRegions(regions) {
-        self.displayedRegions = regions.map(
-          r => (isStateTreeNode(r) ? r : Region.create(r)),
+        self.displayedRegions = regions.map(r =>
+          isStateTreeNode(r) ? r : Region.create(r),
         )
       },
 
