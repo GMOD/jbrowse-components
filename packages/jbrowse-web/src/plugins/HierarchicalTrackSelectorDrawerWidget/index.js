@@ -19,7 +19,7 @@ const Category = types
     },
   }))
 
-const stateModel = types.compose(
+export const stateModel = types.compose(
   'HierarchicalTrackSelectorDrawerWidget',
   types
     .model({
@@ -74,16 +74,18 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
     pluginManager.addDrawerWidgetType(() => {
       const configSchema = ConfigurationSchema(
         'HierarchicalTrackSelectorDrawerWidget',
-        {
-          allCollapsed: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-          allExpanded: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-        },
+        {},
+        // TODO: Implement these configs
+        // {
+        //   allCollapsed: {
+        //     type: 'boolean',
+        //     defaultValue: false,
+        //   },
+        //   allExpanded: {
+        //     type: 'boolean',
+        //     defaultValue: false,
+        //   },
+        // },
       )
 
       return new DrawerWidgetType({
