@@ -1,6 +1,6 @@
 import { getSnapshot } from 'mobx-state-tree'
-import MyPlugin from './index'
 import JBrowse from '../../JBrowse'
+import MyPlugin from './index'
 
 test.only('plugin in a stock JBrowse', () => {
   // adding this plugin should fail because it is core

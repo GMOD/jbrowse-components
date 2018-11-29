@@ -1,10 +1,10 @@
 import { Provider } from 'mobx-react'
-import React from 'react'
 import { types } from 'mobx-state-tree'
+import React from 'react'
 import renderer from 'react-test-renderer'
-import HierarchicalTrackSelector from './HierarchicalTrackSelector'
-import { stateModel as Model } from '../index'
 import { BaseTrack } from '../../LinearGenomeView/models/model'
+import { stateModel as Model } from '../index'
+import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 const testModel = types.model('Category', {
   views: types.array(
