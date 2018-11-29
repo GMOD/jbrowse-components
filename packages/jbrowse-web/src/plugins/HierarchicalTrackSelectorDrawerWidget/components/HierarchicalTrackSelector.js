@@ -54,6 +54,17 @@ function trackFilter(track, model) {
   return track.name.toLowerCase().includes(model.filterText)
 }
 
+// Gets number of non-filtered tracks including those in sub-categories
+function getTrackCount(trackHierarchy, model) {
+  let numTracks = 0
+  trackHierarchy.forEach((value, category) => {
+    if (category === 'uncategorized')
+      numTracks += value.filter(track => trackFilter(track, model)).length
+    else numTracks += getTrackCount(value, model)
+  })
+  return numTracks
+}
+
 function generateTrackList(trackHierarchy, view, classes, model) {
   const trackList = trackHierarchy.get('uncategorized')
   const elements = [
@@ -94,11 +105,7 @@ function generateTrackList(trackHierarchy, view, classes, model) {
             expandIcon={<Icon>expand_more</Icon>}
           >
             <Typography key={category} variant="button">
-              {`${category} (${
-                value
-                  .get('uncategorized')
-                  .filter(track => trackFilter(track, model)).length
-              })`}
+              {`${category} (${getTrackCount(value, model)})`}
             </Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails
