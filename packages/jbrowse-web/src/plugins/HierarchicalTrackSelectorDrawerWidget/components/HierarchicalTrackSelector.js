@@ -1,3 +1,4 @@
+import { IconButton } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
@@ -5,7 +6,9 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
+import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { values } from 'mobx'
@@ -47,28 +50,45 @@ function addTrackToHierarchy(trackHierarchy, track) {
   }
 }
 
+function trackFilter(track, model) {
+  return track.name.toLowerCase().includes(model.filterText)
+}
+
+// Gets number of non-filtered tracks including those in sub-categories
+function getTrackCount(trackHierarchy, model) {
+  let numTracks = 0
+  trackHierarchy.forEach((value, category) => {
+    if (category === 'uncategorized')
+      numTracks += value.filter(track => trackFilter(track, model)).length
+    else numTracks += getTrackCount(value, model)
+  })
+  return numTracks
+}
+
 function generateTrackList(trackHierarchy, view, classes, model) {
   const trackList = trackHierarchy.get('uncategorized')
   const elements = [
     <FormGroup key={`FormGroup-${trackList.map(track => track.id).join('-')}`}>
-      {trackList.map(track => (
-        <Tooltip
-          key={track.id}
-          title={track.configuration.description.value}
-          placement="left"
-          enterDelay={500}
-        >
-          <FormControlLabel
+      {trackList
+        .filter(track => trackFilter(track, model))
+        .map(track => (
+          <Tooltip
             key={track.id}
-            control={<Checkbox />}
-            label={track.name}
-            checked={track.visible}
-            onChange={() => {
-              view.tracks.get(track.id).toggle()
-            }}
-          />
-        </Tooltip>
-      ))}
+            title={track.configuration.description.value}
+            placement="left"
+            enterDelay={500}
+          >
+            <FormControlLabel
+              key={track.id}
+              control={<Checkbox />}
+              label={track.name}
+              checked={track.visible}
+              onChange={() => {
+                view.tracks.get(track.id).toggle()
+              }}
+            />
+          </Tooltip>
+        ))}
     </FormGroup>,
   ]
   trackHierarchy.forEach((value, category) => {
@@ -77,7 +97,7 @@ function generateTrackList(trackHierarchy, view, classes, model) {
       elements.push(
         <ExpansionPanel
           key={category}
-          expanded={model.categories.get(category).open}
+          expanded={model.categories.get(category).expanded}
           onChange={() => model.categories.get(category).toggle()}
         >
           <ExpansionPanelSummary
@@ -85,7 +105,7 @@ function generateTrackList(trackHierarchy, view, classes, model) {
             expandIcon={<Icon>expand_more</Icon>}
           >
             <Typography key={category} variant="button">
-              {category}
+              {`${category} (${getTrackCount(value, model)})`}
             </Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails
@@ -120,6 +140,11 @@ class HierarchicalTrackSelector extends React.Component {
     },
   }
 
+  handleInputChange = event => {
+    const { model } = this.props
+    model.updateFilterText(event.target.value)
+  }
+
   render() {
     const { classes, model, rootModel } = this.props
     const view = rootModel.views.filter(v => v.id === model.id)[0]
@@ -129,8 +154,33 @@ class HierarchicalTrackSelector extends React.Component {
       addTrackToHierarchy(trackHierarchy, track)
     })
 
+    const filterError =
+      values(view.tracks).filter(track => trackFilter(track, model)).length ===
+      0
+
     return (
       <div className={classes.root}>
+        <TextField
+          label="Filter Tracks"
+          value={model.filterText}
+          error={filterError}
+          helperText={filterError ? 'No matches' : ''}
+          onChange={this.handleInputChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon>search</Icon>
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="start">
+                <IconButton onClick={() => model.updateFilterText('')}>
+                  <Icon>clear</Icon>
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
         {generateTrackList(trackHierarchy, view, classes, model)}
       </div>
     )

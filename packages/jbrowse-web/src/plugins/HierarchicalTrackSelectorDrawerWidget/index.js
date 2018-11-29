@@ -11,21 +11,22 @@ const HierarchicalSelector = React.lazy(() =>
 const Category = types
   .model('Category', {
     id: types.identifier,
-    open: types.optional(types.boolean, true),
+    expanded: types.optional(types.boolean, true),
   })
   .actions(self => ({
     toggle() {
-      self.open = !self.open
+      self.expanded = !self.expanded
     },
   }))
 
-const stateModel = types.compose(
+export const stateModel = types.compose(
   'HierarchicalTrackSelectorDrawerWidget',
   types
     .model({
       id: types.identifier,
       type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
       categories: types.map(Category),
+      filterText: types.optional(types.string, ''),
     })
     .actions(self => ({
       afterAttach() {
@@ -62,6 +63,9 @@ const stateModel = types.compose(
         if (!self.categories.has(name))
           self.categories.set(name, Category.create({ id: name }))
       },
+      updateFilterText(filterText) {
+        self.filterText = filterText.toLowerCase()
+      },
     })),
 )
 
@@ -70,16 +74,18 @@ export default class HierarchicalTrackSelectorDrawerWidget extends Plugin {
     pluginManager.addDrawerWidgetType(() => {
       const configSchema = ConfigurationSchema(
         'HierarchicalTrackSelectorDrawerWidget',
-        {
-          allCollapsed: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-          allExpanded: {
-            type: 'boolean',
-            defaultValue: true,
-          },
-        },
+        {},
+        // TODO: Implement these configs
+        // {
+        //   allCollapsed: {
+        //     type: 'boolean',
+        //     defaultValue: false,
+        //   },
+        //   allExpanded: {
+        //     type: 'boolean',
+        //     defaultValue: false,
+        //   },
+        // },
       )
 
       return new DrawerWidgetType({
