@@ -8,7 +8,7 @@ import {
   readConfObject,
 } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
-import { assembleLocString } from '../../../util'
+import { assembleLocString, clamp } from '../../../util'
 import PluginManager from '../../../PluginManager'
 import { TrackType } from '../../../Plugin'
 
@@ -236,12 +236,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           (a, b) => a + (b.end - b.start) / self.bpPerPx,
           0,
         )
-        self.offsetPx = Math.min(
-          Math.max(self.offsetPx + distance, -leftPadding),
-          displayRegionsTotalPx -
-            (self.width - self.controlsWidth) +
-            rightPadding,
-        )
+
+        const minOffset = -(self.width - self.controlsWidth - rightPadding)
+        const maxOffset = displayRegionsTotalPx - leftPadding
+        self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },
     }))
 }
