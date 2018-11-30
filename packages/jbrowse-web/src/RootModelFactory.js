@@ -43,17 +43,15 @@ export default app => {
         },
       ),
     })
-    .volatile(self => ({
+    .volatile(() => ({
       app,
       pluginManager,
+      windowWidth: window.innerWidth,
     }))
     .views(self => ({
       get viewsWidth() {
         return window.innerWidth - (self.drawerWidth + 7)
       },
-    }))
-    .volatile(() => ({
-      windowWidth: window.innerWidth,
     }))
     .actions(self => ({
       afterCreate() {
