@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
+// import ReactPropTypes from 'prop-types'
 
 import './PileupRendering.scss'
 
-function Feature({ feature, layout, bpPerPx, region, flipped }) {
+function Feature({ feature /* , layout, bpPerPx, region, flipped */ }) {
   // const leftBase = region.start
   // const startbp = fRect.l * bpPerPx + leftBase
   // const endbp = (fRect.l + fRect.w) * bpPerPx + leftBase
@@ -19,20 +19,20 @@ function Feature({ feature, layout, bpPerPx, region, flipped }) {
 
 Feature.propTypes = {
   feature: PropTypes.objectOrObservableObject.isRequired,
-  layout: PropTypes.objectOrObservableObject.isRequired,
-  region: PropTypes.objectOrObservableObject.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  flipped: PropTypes.boolean,
+  // layout: PropTypes.objectOrObservableObject.isRequired,
+  // region: PropTypes.objectOrObservableObject.isRequired,
+  // bpPerPx: ReactPropTypes.number.isRequired,
+  // flipped: PropTypes.boolean,
 }
 
-Feature.defaultProps = { flipped: false }
+// Feature.defaultProps = { flipped: false }
 
 @observer
 class PileupRendering extends Component {
   static propTypes = {
     data: PropTypes.arrayOrObservableArrayOf(PropTypes.objectOrObservableObject)
       .isRequired,
-    layout: PropTypes.objectOrObservableObject.isRequired,
+    // layout: PropTypes.objectOrObservableObject.isRequired,
     region: PropTypes.objectOrObservableObject.isRequired,
   }
 
