@@ -24,7 +24,7 @@ export default function(pluginManager) {
       browser: types.frozen(this),
       drawerWidth: types.optional(
         types.integer,
-        Math.round(window.innerWidth * 0.25),
+        Math.round((window.innerWidth || 0) * 0.25),
       ),
       views: types.array(
         types.union(
@@ -162,7 +162,8 @@ export default function(pluginManager) {
           type: typeName,
           configuration,
         })
-        self.drawerWidgets.set(id, typeDefinition.stateModel.create(data))
+        const model = typeDefinition.stateModel.create(data)
+        self.drawerWidgets.set(model.id, model)
       }
 
       function showDrawerWidget(id) {

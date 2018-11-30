@@ -1,13 +1,22 @@
-import { getEnv, getRoot, isStateTreeNode, types } from 'mobx-state-tree'
+import {
+  getEnv,
+  getRoot,
+  isStateTreeNode,
+  types,
+  isIdentifierType,
+} from 'mobx-state-tree'
 import React from 'react'
 import {
   ConfigurationSchema,
   ConfigurationReference,
+  getConf,
+  readConfObject,
 } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
+  viewType: 'LinearGenomeView',
   name: {
     description: 'descriptive name of the track',
     type: 'string',
@@ -85,6 +94,7 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       'LinearGenomeView',
       ViewStateBase,
       types.model({
+        id: ElementId,
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
@@ -93,6 +103,10 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         displayedRegions: types.array(Region),
         configuration: ConfigurationSchema('LinearGenomeView', {
           backgroundColor: { type: 'color', defaultValue: '#eee' },
+          trackSelectorType: {
+            type: 'string',
+            defaultValue: 'hierarchical',
+          },
         }),
       }),
     )
@@ -167,21 +181,47 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
     .actions(self => ({
       showTrack(configuration) {
         const { type } = configuration
-        const name = configuration.name.value
-        const id = configuration._configId
+        const name = readConfObject(configuration, 'name')
         const TrackType = trackTypes.find(t => t.name === type)
         if (!TrackType) throw new Error(`unknown track type ${type}`)
-        self.tracks.push(TrackType.create({ id, name, type, configuration }))
+        const track = TrackType.create({ name, type, configuration })
+        self.tracks.set(track.id, track)
       },
 
-      hideTrack(trackId) {
-        self.tracks.get(trackId).hide()
+      hideTrack(configuration) {
+        // TODO
+      },
+
+      toggleTrack(configuration) {
+        // TODO
+        // if we have any tracks with that configuration, turn them off
+        // otherwise, turn on a track with that configuration
       },
 
       displayRegions(regions) {
         self.displayedRegions = regions.map(r =>
           isStateTreeNode(r) ? r : Region.create(r),
         )
+      },
+
+      activateTrackSelector() {
+        const trackSelectorType = getConf(self, 'trackSelectorType')
+        if (trackSelectorType === 'hierarchical') {
+          const rootModel = getRoot(self)
+          if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
+            rootModel.addDrawerWidget(
+              'HierarchicalTrackSelectorDrawerWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+          const selector = rootModel.drawerWidgets.get(
+            'hierarchicalTrackSelector',
+          )
+          selector.setView(self)
+          rootModel.showDrawerWidget(selector)
+        } else {
+          throw new Error(`invalid track selector type ${trackSelectorType}`)
+        }
       },
 
       resizeTrack(trackId, distance) {

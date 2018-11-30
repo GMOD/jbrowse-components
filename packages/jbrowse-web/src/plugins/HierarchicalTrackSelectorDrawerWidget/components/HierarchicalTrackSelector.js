@@ -8,10 +8,15 @@ import Icon from '@material-ui/core/Icon'
 import { withStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import { values } from 'mobx'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import {
+  inject,
+  observer,
+  PropTypes as MobxPropTypes,
+  Provider,
+} from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
+import { getConf, readConfObject } from '../../../configuration'
 
 const styles = theme => ({
   root: {
@@ -23,89 +28,76 @@ const styles = theme => ({
   },
 })
 
-function addTrackToHierarchy(trackHierarchy, track) {
-  const numCategories = track.configuration.category.value.length
-  if (numCategories === 0)
-    trackHierarchy.set(
-      'uncategorized',
-      trackHierarchy.get('uncategorized').concat([track]),
+const Category = inject('model', 'classes')(
+  observer(({ name, category, model, classes, path = '' }) => {
+    const pathName = [...path, name].join('|')
+    return (
+      <ExpansionPanel
+        expanded={!model.collapsed.get(pathName)}
+        onChange={() => model.toggleCategory(pathName)}
+      >
+        <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+          <Typography variant="button">{name}</Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.expansionPanelDetails}>
+          <Contents path={path.concat([name])} category={category} />
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
     )
-  else {
-    let prunedHierarchy = trackHierarchy
-    track.configuration.category.value.forEach((category, idx) => {
-      if (!prunedHierarchy.has(category)) {
-        prunedHierarchy.set(category, new Map([['uncategorized', []]]))
-      }
-      prunedHierarchy = prunedHierarchy.get(category)
-      if (idx + 1 === numCategories) {
-        prunedHierarchy.set(
-          'uncategorized',
-          prunedHierarchy.get('uncategorized').concat([track]),
-        )
-      }
-    })
-  }
+  }),
+)
+
+Category.propTypes = {
+  name: propTypes.string.isRequired,
+  category: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-function generateTrackList(trackHierarchy, view, classes, model) {
-  const trackList = trackHierarchy.get('uncategorized')
-  const elements = [
-    <FormGroup key={`FormGroup-${trackList.map(track => track.id).join('-')}`}>
-      {trackList.map(track => (
-        <Tooltip
-          key={track.id}
-          title={track.configuration.description.value}
-          placement="left"
-          enterDelay={500}
-        >
-          <FormControlLabel
-            key={track.id}
-            control={<Checkbox />}
-            label={track.name}
-            checked={track.visible}
-            onChange={() => {
-              view.tracks.get(track.id).toggle()
-            }}
-          />
-        </Tooltip>
-      ))}
-    </FormGroup>,
-  ]
-  trackHierarchy.forEach((value, category) => {
-    if (category !== 'uncategorized') {
-      /* eslint-disable react/no-array-index-key */
-      elements.push(
-        <ExpansionPanel
-          key={category}
-          expanded={model.categories.get(category).open}
-          onChange={() => model.categories.get(category).toggle()}
-        >
-          <ExpansionPanelSummary
-            key={category}
-            expandIcon={<Icon>expand_more</Icon>}
-          >
-            <Typography key={category} variant="button">
-              {category}
-            </Typography>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails
-            key={category}
-            className={classes.expansionPanelDetails}
-          >
-            {generateTrackList(value, view, classes, model)}
-          </ExpansionPanelDetails>
-        </ExpansionPanel>,
-      )
-      /* eslint-enable react/no-array-index-key */
-    }
-  })
-  return elements
+const Contents = inject('model')(
+  observer(({ category, model }) => {
+    const categories = []
+    const trackConfigurations = []
+    Object.entries(category).forEach(([name, contents], i) => {
+      if (contents._configId) {
+        trackConfigurations.push([name, contents])
+      } else {
+        categories.push([name, contents])
+      }
+    })
+    return (
+      <div className="contents">
+        {categories.map(([name, contents]) => (
+          <Category key={name} name={name} category={contents} />
+        ))}
+        <FormGroup>
+          {trackConfigurations.map(([name, trackConf]) => (
+            <Tooltip
+              key={trackConf._configId}
+              title={readConfObject(trackConf, 'description')}
+              placement="left"
+              enterDelay={500}
+            >
+              <FormControlLabel
+                control={<Checkbox />}
+                label={readConfObject(trackConf, 'name')}
+                checked={[...model.view.tracks.values()].some(
+                  t => t.configuration === trackConf,
+                )}
+                onChange={() => model.view.toggleTrack(trackConf)}
+              />
+            </Tooltip>
+          ))}
+        </FormGroup>
+      </div>
+    )
+  }),
+)
+Contents.propTypes = {
+  category: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 @withStyles(styles)
-@inject('rootModel')
 @observer
-class HierarchicalTrackSelector extends React.Component {
+class HierarchicaltrackConfigurationselector extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
@@ -114,27 +106,17 @@ class HierarchicalTrackSelector extends React.Component {
     model: MobxPropTypes.observableObject.isRequired,
   }
 
-  static wrappedComponent = {
-    propTypes: {
-      rootModel: MobxPropTypes.observableObject.isRequired,
-    },
-  }
-
   render() {
-    const { classes, model, rootModel } = this.props
-    const view = rootModel.views.filter(v => v.id === model.id)[0]
-    const trackHierarchy = new Map([['uncategorized', []]])
-
-    values(view.tracks).forEach(track => {
-      addTrackToHierarchy(trackHierarchy, track)
-    })
+    const { classes, model } = this.props
 
     return (
-      <div className={classes.root}>
-        {generateTrackList(trackHierarchy, view, classes, model)}
-      </div>
+      <Provider model={model} classes={classes}>
+        <div className={classes.root}>
+          <Contents category={model.hierarchy} />
+        </div>
+      </Provider>
     )
   }
 }
 
-export default HierarchicalTrackSelector
+export default HierarchicaltrackConfigurationselector

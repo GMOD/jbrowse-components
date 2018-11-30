@@ -56,11 +56,11 @@ class JBrowse {
   elementTypes = {}
 
   elementCreationSchedule = new PhasedScheduler(
-    'drawer widget',
     'renderer',
     'adapter',
     'track',
     'view',
+    'drawer widget',
   )
 
   workerGroups = {}

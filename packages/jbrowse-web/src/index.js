@@ -33,12 +33,19 @@ const conf = model.configuration.addTrackConf('AlignmentsTrack', {
     index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
   },
 })
+const conf2 = model.configuration.addTrackConf('AlignmentsTrack', {
+  name: 'Foo Test',
+  category: ['Bee Category', 'Boo Category'],
+  adapter: {
+    type: 'BamAdapter',
+    bamLocation: { uri: '/test_data/volvox-sorted.bam' },
+    index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+  },
+})
+// TODO: what tracks are available in a given view? how do we represent that and have it work with a track selector?
 model.views[0].showTrack(conf)
-// model.views[0].showTrack('foo', 'Foo Track', 'AlignmentsTrack')
-// model.views[0].showTrack('bar', 'Bar Track', 'AlignmentsTrack')
-// model.views[0].showTrack('baz', 'Baz Track', 'AlignmentsTrack')
 model.addView('LinearGenomeView')
-model.views[1].showTrack(conf)
+model.views[1].showTrack(conf2)
 model.views[1].displayRegions([
   {
     assembly: 'volvox',
@@ -52,7 +59,9 @@ model.views[1].displayRegions([
 // model.views[1].showTrack('bee', 'Bee Track', 'AlignmentsTrack')
 // model.views[1].showTrack('bonk', 'Bonk Track', 'AlignmentsTrack')
 
-model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget')
+model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget', undefined, {
+  view: model.views[0],
+})
 
 window.MODEL = model
 window.getSnapshot = getSnapshot

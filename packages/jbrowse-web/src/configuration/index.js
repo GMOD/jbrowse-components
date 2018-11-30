@@ -38,8 +38,14 @@ function getModelConfig(tree) {
   return tree
 }
 
-function getConf(model, slotName, ...args) {
-  const slot = model.configuration[slotName]
+function getConf(model, slotName, args) {
+  if (!model.configuration)
+    throw new Error(`cannot getConf on this model, it has no configuration`)
+  return readConfObject(model.configuration, slotName, args)
+}
+
+function readConfObject(confObject, slotName, args) {
+  const slot = confObject[slotName]
   if (!slot) {
     return undefined
     // if we want to be very strict about config slots, we could uncomment the below
@@ -57,4 +63,10 @@ function getConf(model, slotName, ...args) {
   return getSnapshot(slot)
 }
 
-export { ConfigurationSchema, ConfigurationReference, getModelConfig, getConf }
+export {
+  ConfigurationSchema,
+  ConfigurationReference,
+  getModelConfig,
+  getConf,
+  readConfObject,
+}

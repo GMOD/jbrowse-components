@@ -18,15 +18,9 @@ class LinearGenomeView extends Component {
     model: PropTypes.observableObject.isRequired,
   }
 
-  static wrappedComponent = {
-    propTypes: {
-      rootModel: PropTypes.observableObject.isRequired,
-    },
-  }
-
   render() {
     const scaleBarHeight = 22
-    const { model, rootModel } = this.props
+    const { model } = this.props
     const {
       id,
       blocks,
@@ -58,23 +52,14 @@ class LinearGenomeView extends Component {
         .join(' ')}`,
       gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
     }
+    // console.log(style)
     return (
       <div className="LinearGenomeView" key={`view-${id}`} style={style}>
         <div
           className="controls view-controls"
           style={{ gridRow: 'scale-bar' }}
         >
-          <button
-            type="button"
-            onClick={() => {
-              if (!rootModel.drawerWidgets.get(id))
-                rootModel.addDrawerWidget(
-                  'HierarchicalTrackSelectorDrawerWidget',
-                  id,
-                )
-              rootModel.showDrawerWidget(id)
-            }}
-          >
+          <button type="button" onClick={model.activateTrackSelector}>
             select tracks
           </button>
         </div>
@@ -94,7 +79,7 @@ class LinearGenomeView extends Component {
               key={`controls:${track.id}`}
               style={{ gridRow: track.id, gridColumn: 'controls' }}
             >
-              {track.name || track.id}
+              {getConf(track, 'name') || track.id}
             </div>,
             <TrackRenderingContainer
               key={`track-rendering:${track.id}`}

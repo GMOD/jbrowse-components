@@ -147,7 +147,10 @@ export function ConfigurationSchema(
 
   // now assemble the MST model of the configuration schema
   const modelDefinition = { _configId: ElementId }
+
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
+
+  const volatileConstants = {}
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
     if (isConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
@@ -163,9 +166,14 @@ export function ConfigurationSchema(
           `invalid config slot definition for '${slotName}': ${e.message}`,
         )
       }
+    } else if (
+      typeof slotDefinition === 'string' ||
+      typeof slotDefinition === 'number'
+    ) {
+      volatileConstants[slotName] = slotDefinition
     } else {
       throw new Error(
-        `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition or a nested configuration schema`,
+        `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition, a constant, or a nested configuration schema`,
       )
     }
   })
@@ -174,6 +182,9 @@ export function ConfigurationSchema(
     `${modelName}ConfigurationSchema`,
     modelDefinition,
   )
+  if (Object.keys(volatileConstants).length) {
+    completeModel = completeModel.volatile(self => volatileConstants)
+  }
   if (options.actions) {
     completeModel = completeModel.actions(options.actions)
   }
@@ -185,14 +196,14 @@ export function ConfigurationSchema(
   }
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap = {}
-    let keyCount = 0
+    // let keyCount = 0
     Object.entries(snap).forEach(([key, value]) => {
       if (
         value !== undefined &&
         !isEmptyObject(value) &&
         !isEmptyArray(value)
       ) {
-        keyCount += 1
+        // keyCount += 1
         newSnap[key] = value
       }
     })
