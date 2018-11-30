@@ -3,44 +3,24 @@ import { types } from 'mobx-state-tree'
 import React from 'react'
 import renderer from 'react-test-renderer'
 
-import HierarchicalTrackSelectorPlugin from '../index'
-import LinearGenomeView from '../../LinearGenomeView'
-
-import PluginManager from '../../../PluginManager'
-
-import modelFactory from '../model'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
+import JBrowse from '../../../JBrowse'
 
-const pluginManager = new PluginManager([
-  LinearGenomeView,
-  HierarchicalTrackSelectorPlugin,
-]).configure()
-
-const Model = modelFactory(pluginManager)
-
-const testModel = types.model('FakeRoot', {
-  views: types.array(
-    types.model('view', {
-      id: types.identifier,
-      tracks: types.map(pluginManager.pluggableMstType('track', 'stateModel')),
-    }),
-  ),
-  drawerWidgets: types.map(Model),
-})
+const jbrowse = new JBrowse().configure()
 
 describe('HierarchicalTrackSelector drawer widget', () => {
   it('renders with just the required model elements', () => {
-    const rootModel = testModel.create({
+    const rootModel = jbrowse.modelType.create({
       views: [
         {
-          id: 'testId',
-          tracks: {},
+          id: 'view1',
+          type: 'LinearGenomeView',
         },
       ],
       drawerWidgets: {
         testId: {
           type: 'HierarchicalTrackSelectorDrawerWidget',
-          view: 'testId',
+          view: 'view1',
         },
       },
     })
@@ -56,18 +36,25 @@ describe('HierarchicalTrackSelector drawer widget', () => {
   })
 
   it('renders with a couple of uncategorized tracks', () => {
-    const rootModel = testModel.create({
+    const rootModel = jbrowse.modelType.create({
       views: [
         {
           id: 'testId',
-          tracks: {
-            foo: { id: 'foo', name: 'Foo Track', type: 'AlignmentsTrack' },
-            bar: { id: 'bar', name: 'Bar Track', type: 'AlignmentsTrack' },
-          },
+          type: 'LinearGenomeView',
+          tracks: [
+            { id: 'foo', type: 'AlignmentsTrack', configuration: 'fooC' },
+            { id: 'bar', type: 'AlignmentsTrack', configuration: 'barC' },
+          ],
         },
       ],
       drawerWidgets: {
         testId: { id: 'testId', type: 'HierarchicalTrackSelectorDrawerWidget' },
+      },
+      configuration: {
+        tracks: [
+          { _configId: 'fooC', type: 'AlignmentsTrack' },
+          { _configId: 'barC', type: 'AlignmentsTrack' },
+        ],
       },
     })
     const component = renderer.create(
@@ -82,18 +69,25 @@ describe('HierarchicalTrackSelector drawer widget', () => {
   })
 
   it('renders with a couple of categorized tracks', () => {
-    const rootModel = testModel.create({
+    const rootModel = jbrowse.modelType.create({
       views: [
         {
           id: 'testId',
-          tracks: {
-            foo: { id: 'foo', name: 'Foo Track', type: 'AlignmentsTrack' },
-            bar: { id: 'bar', name: 'Bar Track', type: 'AlignmentsTrack' },
-          },
+          type: 'LinearGenomeView',
+          tracks: [
+            { id: 'foo', type: 'AlignmentsTrack', configuration: 'fooC' },
+            { id: 'bar', type: 'AlignmentsTrack', configuration: 'barC' },
+          ],
         },
       ],
       drawerWidgets: {
         testId: { id: 'testId', type: 'HierarchicalTrackSelectorDrawerWidget' },
+      },
+      configuration: {
+        tracks: [
+          { _configId: 'fooC', type: 'AlignmentsTrack' },
+          { _configId: 'barC', type: 'AlignmentsTrack' },
+        ],
       },
     })
     rootModel.views[0].tracks[0].configuration.category.set(['Foo Category'])

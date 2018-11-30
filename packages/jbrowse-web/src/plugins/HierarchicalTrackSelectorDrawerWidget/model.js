@@ -32,8 +32,8 @@ export default pluginManager =>
         type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
         collapsed: types.map(types.boolean), // map of category path -> boolean of whether it is collapsed
         filterText: '',
-        view: types.reference(
-          pluginManager.pluggableMstType('view', 'stateModel'),
+        view: types.maybe(
+          types.reference(pluginManager.pluggableMstType('view', 'stateModel')),
         ),
       })
       .actions(self => ({
@@ -55,6 +55,7 @@ export default pluginManager =>
       }))
       .views(self => ({
         get trackConfigurations() {
+          if (!self.view) return []
           const root = getRoot(self)
           const trackConfigurations = root.configuration.tracks
           const relevantTrackConfigurations = trackConfigurations.filter(
