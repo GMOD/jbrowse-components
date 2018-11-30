@@ -5,7 +5,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-3"
+    className="MuiFormControl-root-3 MuiFormControl-fullWidth-6"
   >
     <label
       className="MuiFormLabel-root-18 MuiFormLabel-error-21 MuiInputLabel-error-10 MuiInputLabel-root-7 MuiInputLabel-formControl-12 MuiInputLabel-animated-15 MuiInputLabel-shrink-14"
@@ -14,7 +14,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
+      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-fullWidth-47 MuiInput-fullWidth-32 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
       onClick={[Function]}
     >
       <div
@@ -39,7 +39,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         value=""
       />
       <div
-        className="MuiInputAdornment-root-55 MuiInputAdornment-positionStart-57"
+        className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
           className="MuiButtonBase-root-74 MuiIconButton-root-68"
@@ -80,9 +80,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       No matches
     </p>
   </div>
-  <div
-    className="contents"
-  >
+  <div>
     <div
       className="MuiFormGroup-root-85"
     />
@@ -95,7 +93,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-3"
+    className="MuiFormControl-root-3 MuiFormControl-fullWidth-6"
   >
     <label
       className="MuiFormLabel-root-18 MuiFormLabel-error-21 MuiInputLabel-error-10 MuiInputLabel-root-7 MuiInputLabel-formControl-12 MuiInputLabel-animated-15 MuiInputLabel-shrink-14"
@@ -104,7 +102,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
+      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-fullWidth-47 MuiInput-fullWidth-32 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
       onClick={[Function]}
     >
       <div
@@ -129,7 +127,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         value=""
       />
       <div
-        className="MuiInputAdornment-root-55 MuiInputAdornment-positionStart-57"
+        className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
           className="MuiButtonBase-root-74 MuiIconButton-root-68"
@@ -170,9 +168,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       No matches
     </p>
   </div>
-  <div
-    className="contents"
-  >
+  <div>
     <div
       className="MuiFormGroup-root-85"
     />
@@ -185,7 +181,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-3"
+    className="MuiFormControl-root-3 MuiFormControl-fullWidth-6"
   >
     <label
       className="MuiFormLabel-root-18 MuiFormLabel-error-21 MuiInputLabel-error-10 MuiInputLabel-root-7 MuiInputLabel-formControl-12 MuiInputLabel-animated-15 MuiInputLabel-shrink-14"
@@ -194,7 +190,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
+      className="MuiInputBase-root-38 MuiInput-root-25 MuiInput-underline-29 MuiInputBase-error-44 MuiInput-error-30 MuiInputBase-fullWidth-47 MuiInput-fullWidth-32 MuiInputBase-formControl-39 MuiInput-formControl-26 MuiInputBase-adornedStart-42 MuiInputBase-adornedEnd-43"
       onClick={[Function]}
     >
       <div
@@ -219,7 +215,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
         value=""
       />
       <div
-        className="MuiInputAdornment-root-55 MuiInputAdornment-positionStart-57"
+        className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
           className="MuiButtonBase-root-74 MuiIconButton-root-68"
@@ -260,9 +256,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       No matches
     </p>
   </div>
-  <div
-    className="contents"
-  >
+  <div>
     <div
       className="MuiFormGroup-root-85"
     />

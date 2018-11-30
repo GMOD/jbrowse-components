@@ -35,17 +35,15 @@ const Category = inject('model', 'classes')(
   observer(({ name, category, model, classes, path = [] }) => {
     const pathName = path.join('|')
 
-    if (pathName.toLowerCase() === 'uncategorized') {
-      return <Contents path={path} category={category} />
-    }
-
     return (
       <ExpansionPanel
         expanded={!model.collapsed.get(pathName)}
         onChange={() => model.toggleCategory(pathName)}
       >
         <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
-          <Typography variant="button">{name}</Typography>
+          <Typography variant="button">{`${name} (${
+            Object.keys(model.allTracksInCategoryPath(path)).length
+          })`}</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.expansionPanelDetails}>
           <Contents path={path} category={category} />
@@ -64,7 +62,7 @@ const Contents = inject('model', 'filterPredicate')(
   observer(({ category, model, filterPredicate, path = [] }) => {
     const categories = []
     const trackConfigurations = []
-    Object.entries(category).forEach(([name, contents], i) => {
+    Object.entries(category).forEach(([name, contents]) => {
       if (contents._configId) {
         trackConfigurations.push(contents)
       } else {
@@ -72,15 +70,7 @@ const Contents = inject('model', 'filterPredicate')(
       }
     })
     return (
-      <div className="contents">
-        {categories.map(([name, contents]) => (
-          <Category
-            key={name}
-            path={path.concat([name])}
-            name={name}
-            category={contents}
-          />
-        ))}
+      <div>
         <FormGroup>
           {trackConfigurations.filter(filterPredicate).map(trackConf => (
             <Tooltip
@@ -100,6 +90,14 @@ const Contents = inject('model', 'filterPredicate')(
             </Tooltip>
           ))}
         </FormGroup>
+        {categories.map(([name, contents]) => (
+          <Category
+            key={name}
+            path={path.concat([name])}
+            name={name}
+            category={contents}
+          />
+        ))}
       </div>
     )
   }),
@@ -107,17 +105,6 @@ const Contents = inject('model', 'filterPredicate')(
 Contents.propTypes = {
   category: MobxPropTypes.objectOrObservableObject.isRequired,
 }
-
-// // Gets number of non-filtered tracks including those in sub-categories
-// function getTrackCount(trackHierarchy, model) {
-//   let numTracks = 0
-//   trackHierarchy.forEach((value, category) => {
-//     if (category === 'uncategorized')
-//       numTracks += value.filter(track => trackFilter(track, model)).length
-//     else numTracks += getTrackCount(value, model)
-//   })
-//   return numTracks
-// }
 
 @withStyles(styles)
 @observer
@@ -139,8 +126,7 @@ class HierarchicalTrackSelector extends React.Component {
     const { model } = this.props
     if (!model.filterText) return true
     const name = readConfObject(trackConfig, 'name')
-    if (!name) debugger
-    return name.toLowerCase().includes(model.filterText)
+    return name.toLowerCase().includes(model.filterText.toLowerCase())
   }
 
   render() {
@@ -158,6 +144,7 @@ class HierarchicalTrackSelector extends React.Component {
             error={filterError}
             helperText={filterError ? 'No matches' : ''}
             onChange={this.handleInputChange}
+            fullWidth
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -165,7 +152,7 @@ class HierarchicalTrackSelector extends React.Component {
                 </InputAdornment>
               ),
               endAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position="end">
                   <IconButton onClick={model.clearFilterText}>
                     <Icon>clear</Icon>
                   </IconButton>

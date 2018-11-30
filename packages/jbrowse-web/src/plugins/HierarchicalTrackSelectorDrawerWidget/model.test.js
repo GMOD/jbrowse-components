@@ -14,6 +14,6 @@ test('can generate hierarchy correctly', () => {
       bee: trackConfigurations[2],
       Baz: { zonker: trackConfigurations[0] },
     },
-    uncategorized: { zoo: trackConfigurations[1] },
+    zoo: trackConfigurations[1],
   })
 })
