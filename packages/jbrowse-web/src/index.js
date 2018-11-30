@@ -27,6 +27,17 @@ model.views[0].displayRegions([
 const conf = model.configuration.addTrackConf('AlignmentsTrack', {
   name: 'Alignments Test',
   category: ['Bar Category', 'Baz Category'],
+  description:
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam aliquet ' +
+    'leo sed magna porta, a luctus velit euismod. Suspendisse id nisl ut ' +
+    'tellus egestas facilisis vel sit amet nunc. Nulla dolor nunc, feugiat ' +
+    'ac auctor eu, lacinia in dui. Phasellus sed magna consectetur, mattis ' +
+    'lacus at, porta nisi. Etiam et facilisis augue, ut elementum velit. ' +
+    'Maecenas lacinia nulla vitae lacus rhoncus, in pharetra erat fermentum. ' +
+    'Nullam ultrices congue neque, vel blandit urna pellentesque quis. ' +
+    'Vivamus rutrum purus nunc. Integer et nisi congue, pharetra orci id, ' +
+    'vehicula arcu. Integer luctus eros augue. Etiam sed leo turpis. Donec ' +
+    'vehicula vehicula velit, in.',
   adapter: {
     type: 'BamAdapter',
     bamLocation: { uri: '/test_data/volvox-sorted.bam' },
@@ -58,10 +69,6 @@ model.views[1].displayRegions([
 
 // model.views[1].showTrack('bee', 'Bee Track', 'AlignmentsTrack')
 // model.views[1].showTrack('bonk', 'Bonk Track', 'AlignmentsTrack')
-
-model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget', undefined, {
-  view: model.views[0],
-})
 
 model.views[0].activateTrackSelector()
 
