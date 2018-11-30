@@ -7,9 +7,12 @@ import Slide from '@material-ui/core/Slide'
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
+
 import { inject, observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
+import { getSnapshot } from 'mobx-state-tree'
+
 import DrawerResizeHandle from './DrawerResizeHandle'
 import Theme from './Theme'
 
@@ -123,6 +126,18 @@ class App extends Component {
               const { ReactComponent } = getViewType(view.type)
               return <ReactComponent key={`view-${view.id}`} model={view} />
             })}
+            <button
+              type="button"
+              onClick={() =>
+                rootModel.addView('LinearGenomeView', {
+                  displayedRegions: getSnapshot(
+                    rootModel.views[0].displayedRegions,
+                  ),
+                })
+              }
+            >
+              Add linear view
+            </button>
           </div>
           <DrawerResizeHandle
             onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
