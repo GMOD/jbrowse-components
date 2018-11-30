@@ -95,6 +95,10 @@ const BlockBasedTrackState = types.compose(
     })
     .actions(self => {
       let blockWatchDisposer
+      function disposeBlockWatch() {
+        if (blockWatchDisposer) blockWatchDisposer()
+        blockWatchDisposer = undefined
+      }
       return {
         afterAttach() {
           const view = getParent(self, 2)
@@ -119,9 +123,8 @@ const BlockBasedTrackState = types.compose(
             })
           })
         },
-        beforeDetach() {
-          if (blockWatchDisposer) blockWatchDisposer()
-        },
+        beforeDetach: disposeBlockWatch,
+        beforeDestroy: disposeBlockWatch,
       }
     }),
 )
