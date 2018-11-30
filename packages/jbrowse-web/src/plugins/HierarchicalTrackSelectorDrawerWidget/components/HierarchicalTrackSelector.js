@@ -1,3 +1,4 @@
+import { IconButton } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
@@ -5,7 +6,9 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
+import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import {
@@ -16,7 +19,7 @@ import {
 } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
-import { getConf, readConfObject } from '../../../configuration'
+import { readConfObject } from '../../../configuration'
 
 const styles = theme => ({
   root: {
@@ -52,13 +55,13 @@ Category.propTypes = {
   category: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-const Contents = inject('model')(
-  observer(({ category, model }) => {
+const Contents = inject('model', 'filterPredicate')(
+  observer(({ category, model, filterPredicate }) => {
     const categories = []
     const trackConfigurations = []
     Object.entries(category).forEach(([name, contents], i) => {
       if (contents._configId) {
-        trackConfigurations.push([name, contents])
+        trackConfigurations.push(contents)
       } else {
         categories.push([name, contents])
       }
@@ -69,7 +72,7 @@ const Contents = inject('model')(
           <Category key={name} name={name} category={contents} />
         ))}
         <FormGroup>
-          {trackConfigurations.map(([name, trackConf]) => (
+          {trackConfigurations.filter(filterPredicate).map(trackConf => (
             <Tooltip
               key={trackConf._configId}
               title={readConfObject(trackConf, 'description')}
@@ -79,7 +82,7 @@ const Contents = inject('model')(
               <FormControlLabel
                 control={<Checkbox />}
                 label={readConfObject(trackConf, 'name')}
-                checked={[...model.view.tracks.values()].some(
+                checked={model.view.tracks.some(
                   t => t.configuration === trackConf,
                 )}
                 onChange={() => model.view.toggleTrack(trackConf)}
@@ -95,9 +98,20 @@ Contents.propTypes = {
   category: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
+// // Gets number of non-filtered tracks including those in sub-categories
+// function getTrackCount(trackHierarchy, model) {
+//   let numTracks = 0
+//   trackHierarchy.forEach((value, category) => {
+//     if (category === 'uncategorized')
+//       numTracks += value.filter(track => trackFilter(track, model)).length
+//     else numTracks += getTrackCount(value, model)
+//   })
+//   return numTracks
+// }
+
 @withStyles(styles)
 @observer
-class HierarchicaltrackConfigurationselector extends React.Component {
+class HierarchicalTrackSelector extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
@@ -106,12 +120,49 @@ class HierarchicaltrackConfigurationselector extends React.Component {
     model: MobxPropTypes.observableObject.isRequired,
   }
 
+  handleInputChange = event => {
+    const { model } = this.props
+    model.setFilterText(event.target.value)
+  }
+
+  filter = trackConfig => {
+    const { model } = this.props
+    if (!model.filterText) return true
+    const name = readConfObject(trackConfig, 'name')
+    if (!name) debugger
+    return name.toLowerCase().includes(model.filterText)
+  }
+
   render() {
     const { classes, model } = this.props
 
+    const filterError =
+      model.trackConfigurations.filter(this.filter).length === 0
+
     return (
-      <Provider model={model} classes={classes}>
+      <Provider model={model} classes={classes} filterPredicate={this.filter}>
         <div className={classes.root}>
+          <TextField
+            label="Filter Tracks"
+            value={model.filterText}
+            error={filterError}
+            helperText={filterError ? 'No matches' : ''}
+            onChange={this.handleInputChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Icon>search</Icon>
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="start">
+                  <IconButton onClick={model.clearFilterText}>
+                    <Icon>clear</Icon>
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
           <Contents category={model.hierarchy} />
         </div>
       </Provider>
@@ -119,4 +170,4 @@ class HierarchicaltrackConfigurationselector extends React.Component {
   }
 }
 
-export default HierarchicaltrackConfigurationselector
+export default HierarchicalTrackSelector

@@ -96,6 +96,10 @@ export async function renderRegion(
 
 // eslint-disable-next-line no-restricted-globals
 self.rpcServer = new RpcServer.Server({
-  renderRegion: renderRegion.bind(null, jbrowse),
+  renderRegion: args =>
+    renderRegion(jbrowse.pluginManager, args).catch(e => {
+      console.error(e)
+      throw e
+    }),
   freeSessionResources,
 })

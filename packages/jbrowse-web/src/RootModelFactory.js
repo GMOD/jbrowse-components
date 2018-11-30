@@ -1,22 +1,8 @@
 import { types, getRoot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 
-const isPresent = thing => !!thing
-
-function extractAll(fieldName, typesList) {
-  return typesList.map(definition => definition[fieldName]).filter(isPresent)
-}
-
-export default function(pluginManager) {
-  // const viewConfigTypes = Object.fromEntries(
-  //   Object.entries(viewTypes).map(([typeName,typeObject]) => [typeName, typeObject.]
-  //   })
-  // Object.entries(viewTypes).forEach(([typeName,typeObject]) => {
-  //   viewConfigTypes
-  // })
-  // TODO: get all config schemas from the view types and make an object of them
-  const viewConfigTypes = {}
-
+export default app => {
+  const { pluginManager } = app
   const minViewsWidth = 150
   const minDrawerWidth = 100
   const RootModel = types
@@ -26,51 +12,20 @@ export default function(pluginManager) {
         types.integer,
         Math.round((window.innerWidth || 0) * 0.25),
       ),
-      views: types.array(
-        types.union(
-          ...extractAll(
-            'stateModel',
-            pluginManager.getElementTypesInGroup('view'),
-          ),
-        ),
-      ),
+      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
       drawerWidgets: types.map(
-        types.union(
-          ...extractAll(
-            'stateModel',
-            pluginManager.getElementTypesInGroup('drawer widget'),
-          ),
-        ),
+        pluginManager.pluggableMstType('drawer widget', 'stateModel'),
       ),
       selectedDrawerWidget: types.maybe(
         types.reference(
-          types.union(
-            ...extractAll(
-              'stateModel',
-              pluginManager.getElementTypesInGroup('drawer widget'),
-            ),
-          ),
+          pluginManager.pluggableMstType('drawer widget', 'stateModel'),
         ),
       ),
       configuration: ConfigurationSchema(
         'JBrowseWebRoot',
         {
-          views: types.array(
-            types.union(
-              ...extractAll(
-                'configSchema',
-                pluginManager.getElementTypesInGroup('view'),
-              ),
-            ),
-          ),
-          tracks: types.array(
-            types.union(
-              ...extractAll(
-                'configSchema',
-                pluginManager.getElementTypesInGroup('track'),
-              ),
-            ),
-          ),
+          views: types.array(pluginManager.pluggableConfigSchemaType('view')),
+          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
         },
         {
           actions: self => ({
@@ -89,6 +44,7 @@ export default function(pluginManager) {
       ),
     })
     .volatile(self => ({
+      app,
       pluginManager,
     }))
     .views(self => ({
@@ -96,46 +52,43 @@ export default function(pluginManager) {
         return window.innerWidth - (self.drawerWidth + 7)
       },
     }))
-    .actions(self => {
-      let windowWidth = window.innerWidth
-
-      function afterCreate() {
+    .volatile(() => ({
+      windowWidth: window.innerWidth,
+    }))
+    .actions(self => ({
+      afterCreate() {
         if (self.drawerWidth < minDrawerWidth) self.drawerWidth = minDrawerWidth
-        if (self.drawerWidth > windowWidth - (minViewsWidth + 7))
-          self.drawerWidth = windowWidth - (minViewsWidth + 7)
-      }
+        if (self.drawerWidth > self.windowWidth - (minViewsWidth + 7))
+          self.drawerWidth = self.windowWidth - (minViewsWidth + 7)
+      },
 
-      function updateWindowWidth() {
-        const drawerRelativeWidth = self.drawerWidth / windowWidth
-        windowWidth = window.innerWidth
+      updateWindowWidth() {
+        const drawerRelativeWidth = self.drawerWidth / self.windowWidth
+        self.windowWidth = window.innerWidth
         self.drawerWidth = Math.min(
           Math.max(
-            Math.round(drawerRelativeWidth * windowWidth),
+            Math.round(drawerRelativeWidth * self.windowWidth),
             minDrawerWidth,
           ),
-          windowWidth - (minViewsWidth + 7),
+          self.windowWidth - (minViewsWidth + 7),
         )
-      }
+      },
 
-      function setDrawerWidth(drawerWidth) {
+      setDrawerWidth(drawerWidth) {
         if (drawerWidth >= minDrawerWidth) {
-          if (windowWidth - drawerWidth - 7 >= minViewsWidth)
+          if (self.windowWidth - drawerWidth - 7 >= minViewsWidth)
             self.drawerWidth = drawerWidth
         }
         return self.drawerWidth
-      }
+      },
 
-      function resizeDrawer(distance) {
+      resizeDrawer(distance) {
         const drawerWidthBefore = self.drawerWidth
         this.setDrawerWidth(self.drawerWidth - distance)
         return drawerWidthBefore - self.drawerWidth
-      }
+      },
 
-      function addView(
-        typeName,
-        initialState = {},
-        configuration = { type: typeName },
-      ) {
+      addView(typeName, initialState = {}, configuration = { type: typeName }) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
         const data = Object.assign({}, initialState, {
@@ -143,9 +96,9 @@ export default function(pluginManager) {
           configuration,
         })
         self.views.push(typeDefinition.stateModel.create(data))
-      }
+      },
 
-      function addDrawerWidget(
+      addDrawerWidget(
         typeName,
         id,
         initialState = {},
@@ -164,27 +117,16 @@ export default function(pluginManager) {
         })
         const model = typeDefinition.stateModel.create(data)
         self.drawerWidgets.set(model.id, model)
-      }
+      },
 
-      function showDrawerWidget(id) {
+      showDrawerWidget(id) {
         self.selectedDrawerWidget = id
-      }
+      },
 
-      function hideAllDrawerWidgets() {
+      hideAllDrawerWidgets() {
         self.selectedDrawerWidget = undefined
-      }
-
-      return {
-        afterCreate,
-        updateWindowWidth,
-        setDrawerWidth,
-        resizeDrawer,
-        addView,
-        addDrawerWidget,
-        showDrawerWidget,
-        hideAllDrawerWidgets,
-      }
-    })
+      },
+    }))
   return RootModel
 }
 

@@ -11,7 +11,7 @@ describe('LinearGenomeView genome view component', () => {
         type: 'LinearGenomeView',
         offsetPx: 0,
         bpPerPx: 1,
-        tracks: {},
+        tracks: [],
         controlsWidth: 100,
       },
       {
@@ -33,9 +33,7 @@ describe('LinearGenomeView genome view component', () => {
         offsetPx: 0,
         bpPerPx: 1,
         blocks: [],
-        tracks: {
-          foo: { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
-        },
+        tracks: [{ id: 'foo', name: 'Foo Track', type: 'tester', height: 20 }],
         controlsWidth: 100,
       },
       {
@@ -50,20 +48,20 @@ describe('LinearGenomeView genome view component', () => {
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
-  it('renders two tracks, two blocks', () => {
+  it('renders two tracks, two regions', () => {
     const model = Model.create(
       {
         type: 'LinearGenomeView',
         offsetPx: 0,
         bpPerPx: 1,
-        blocks: [
-          { refName: 'ctgA', start: 0, end: 100 },
-          { refName: 'ctgB', start: 1000, end: 200 },
+        displayedRegions: [
+          { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+          { assembly: 'volvox', refName: 'ctgB', start: 1000, end: 200 },
         ],
-        tracks: {
-          foo: { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
-          bar: { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
-        },
+        tracks: [
+          { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
+          { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+        ],
         controlsWidth: 100,
       },
       {

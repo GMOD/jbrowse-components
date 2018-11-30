@@ -63,6 +63,8 @@ model.addDrawerWidget('HierarchicalTrackSelectorDrawerWidget', undefined, {
   view: model.views[0],
 })
 
+model.views[0].activateTrackSelector()
+
 window.MODEL = model
 window.getSnapshot = getSnapshot
 

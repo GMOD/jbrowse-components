@@ -5,9 +5,9 @@ import { TestStub as LinearGenomeModel } from './model'
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const model = LinearGenomeModel.create({
     type: 'LinearGenomeView',
-    tracks: { foo: { id: 'foo', name: 'foo track', type: 'AlignmentsTrack' } },
+    tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
   })
-  expect(model.tracks.get('foo')).toBeTruthy()
+  expect(model.tracks[0]).toBeTruthy()
   expect(getConf(model, 'backgroundColor')).toBe('#eee')
 })
 
@@ -16,7 +16,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
         ],
@@ -31,7 +31,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 30,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
@@ -49,7 +49,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 1000,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
@@ -67,7 +67,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: -1000,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
@@ -85,7 +85,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 5000,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
@@ -103,7 +103,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 0,
         displayedRegions: [
           {
@@ -126,7 +126,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 801,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 200 },
@@ -144,7 +144,7 @@ describe('block calculation', () => {
     const model = LinearGenomeModel.create(
       {
         type: 'LinearGenomeView',
-        tracks: { foo: { id: 'foo', name: 'foo track', type: 'tester' } },
+        tracks: [{ name: 'foo track', type: 'tester' }],
         offsetPx: 1600,
         displayedRegions: [
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 200 },

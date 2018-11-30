@@ -1,4 +1,11 @@
-import { types, getSnapshot, getParent, getRoot, flow } from 'mobx-state-tree'
+import {
+  types,
+  getSnapshot,
+  getParent,
+  getRoot,
+  flow,
+  isAlive,
+} from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 import { ConfigurationReference, getConf } from '../../configuration'
@@ -18,7 +25,6 @@ const BlockState = types
     data: types.frozen(),
   })
   .volatile(self => ({
-    alive: true,
     filled: false,
     reactComponent: AlignmentsTrackBlock,
     html: '',
@@ -58,19 +64,16 @@ const BlockState = types
       const root = getParent(view, 2)
       try {
         // console.log('calling', self.region.toJSON())
-        const { features, html } = yield renderRegionWithWorker(
-          root.pluginManager,
-          {
-            region: self.region,
-            adapterType: track.adapterType.name,
-            adapterConfig: getConf(track, 'adapter'),
-            rendererType: track.rendererType,
-            renderProps: {},
-            sessionId: track.id,
-            timeout: 10000,
-          },
-        )
-        if (!self.alive) return
+        const { features, html } = yield renderRegionWithWorker(root.app, {
+          region: self.region,
+          adapterType: track.adapterType.name,
+          adapterConfig: getConf(track, 'adapter'),
+          rendererType: track.rendererType,
+          renderProps: {},
+          sessionId: track.id,
+          timeout: 10000,
+        })
+        if (!isAlive(self)) return
         self.filled = true
         self.data = features
         self.html = html
@@ -81,12 +84,6 @@ const BlockState = types
         self.error = error
       }
     }),
-    beforeDetach() {
-      self.alive = false
-    },
-    beforeDestroy() {
-      self.alive = false
-    },
   }))
 
 const BlockBasedTrackState = types.compose(

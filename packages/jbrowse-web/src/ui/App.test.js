@@ -1,22 +1,24 @@
+import fs from 'fs-extra'
+
 import { Provider } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import JBrowse from '../JBrowse'
+import PluginManager from '../PluginManager'
 import RootModelFactory from '../RootModelFactory'
-import snap1 from '../../test_data/root.snap.1.json'
 import App from './App'
+import JBrowse from '../JBrowse'
 
 describe('jbrowse-web app', () => {
-  const jbrowse = new JBrowse().configure()
+  const pluginManager = new PluginManager()
   const div = document.createElement('div')
 
-  function render(model) {
+  function render(model, mgr = pluginManager) {
     ReactDOM.render(
       <Provider rootModel={model}>
         <App
-          getViewType={jbrowse.getViewType}
-          getDrawerWidgetType={jbrowse.getDrawerWidgetType}
+          getViewType={mgr.getViewType}
+          getDrawerWidgetType={mgr.getDrawerWidgetType}
         />
       </Provider>,
       div,
@@ -25,27 +27,14 @@ describe('jbrowse-web app', () => {
   }
 
   it('renders an empty model without crashing', () => {
-    const model = RootModelFactory(jbrowse).create()
+    const model = RootModelFactory({ pluginManager }).create()
     expect(getSnapshot(model)).toMatchSnapshot({
       configuration: { _configId: expect.any(String) },
     })
     render(model)
   })
-
-  it('renders a couple of LinearGenomeView views without crashing', () => {
-    const model = RootModelFactory(jbrowse).create(snap1)
-    expect(getSnapshot(model)).toMatchSnapshot({
-      configuration: { _configId: expect.any(String) },
-      views: [
-        { configuration: { _configId: expect.any(String) } },
-        { configuration: { _configId: expect.any(String) } },
-      ],
-    })
-    render(model)
-  })
-
   it('accepts a custom drawer width', () => {
-    const model = RootModelFactory(jbrowse).create({
+    const model = RootModelFactory({ pluginManager }).create({
       drawerWidth: 256,
     })
     expect(model.drawerWidth).toBe(256)
@@ -54,7 +43,7 @@ describe('jbrowse-web app', () => {
   })
 
   it('expands a drawer width that is too small', () => {
-    const model = RootModelFactory(jbrowse).create({
+    const model = RootModelFactory({ pluginManager }).create({
       drawerWidth: 50,
     })
     expect(model.drawerWidth).toBe(100)
@@ -62,10 +51,30 @@ describe('jbrowse-web app', () => {
   })
 
   it('shrinks a drawer width that is too big', () => {
-    const model = RootModelFactory(jbrowse).create({
+    const model = RootModelFactory({ pluginManager }).create({
       drawerWidth: 4096,
     })
     expect(model.drawerWidth).toBe(867)
     render(model)
+  })
+
+  describe('restoring and rendering from snapshots', () => {
+    ;['root.snap.1.json'].forEach(snapName => {
+      it(`renders ${snapName} without crashing`, async () => {
+        const jbrowse = new JBrowse().configure()
+        const snap = JSON.parse(
+          await fs.readFile(require.resolve(`../../test_data/${snapName}`)),
+        )
+        const model = jbrowse.modelType.create(snap)
+        expect(getSnapshot(model)).toMatchSnapshot({
+          configuration: { _configId: expect.any(String) },
+          views: [
+            { configuration: { _configId: expect.any(String) } },
+            { configuration: { _configId: expect.any(String) } },
+          ],
+        })
+        render(model, jbrowse.pluginManager)
+      })
+    })
   })
 })

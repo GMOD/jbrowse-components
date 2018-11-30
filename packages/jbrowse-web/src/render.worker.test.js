@@ -1,4 +1,3 @@
-import { ExpansionPanelActions } from '@material-ui/core'
 import JBrowse from './JBrowse'
 import { renderRegion, freeSessionResources } from './render.worker'
 
@@ -26,7 +25,7 @@ test('can render a single region with Pileup + BamAdapter', async () => {
     renderProps: {},
   }
 
-  const result = await renderRegion(jbrowse, testprops)
+  const result = await renderRegion(jbrowse.pluginManager, testprops)
   expect(Object.keys(result)).toEqual(['featureJSON', 'html'])
   expect(result.featureJSON.length).toBe(93)
   expect(result.html).toMatchSnapshot()

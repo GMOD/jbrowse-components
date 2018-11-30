@@ -18,13 +18,13 @@ import SimpleFeature from './util/feature'
 //   return data
 // }
 
-const getClient = pluginManager =>
+const getClient = app =>
   new Rpc.Client({
-    workers: pluginManager.getWorkerGroup('render'),
+    workers: app.getWorkerGroup('render'),
   })
 
-export async function renderRegionWithWorker(pluginManager, args) {
-  const result = await getClient(pluginManager).call('renderRegion', args, {
+export async function renderRegionWithWorker(app, args) {
+  const result = await getClient(app).call('renderRegion', args, {
     timeout: args.timeout,
   })
 

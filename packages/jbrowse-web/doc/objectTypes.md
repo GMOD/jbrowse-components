@@ -39,7 +39,7 @@ Configuration types should always be created by the `ConfigurationSchema` factor
 
 A track is a visible element in the UI that shows some data.
 
-It has a reference to a certain track configuration, and its state model has a reference back to that track configuration.
+It has a certain track configuration schema, and its state model has a reference back to that track configuration.
 
 Each track type needs to list which view types it can be used with in its `compatibleViewTypes` member.
 

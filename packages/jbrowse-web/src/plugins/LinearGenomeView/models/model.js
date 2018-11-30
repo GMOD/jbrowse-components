@@ -1,10 +1,5 @@
-import {
-  getEnv,
-  getRoot,
-  isStateTreeNode,
-  types,
-  isIdentifierType,
-} from 'mobx-state-tree'
+import { transaction } from 'mobx'
+import { getEnv, getRoot, isStateTreeNode, types } from 'mobx-state-tree'
 import React from 'react'
 import {
   ConfigurationSchema,
@@ -14,6 +9,8 @@ import {
 } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString } from '../../../util'
+import PluginManager from '../../../PluginManager'
+import { TrackType } from '../../../Plugin'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -39,6 +36,11 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   },
 })
 
+// these MST models only exist for tracks that are *shown*.
+// they should contain only UI state for the track, and have
+// a reference to a track configuration (stored under root.configuration.tracks).
+
+// note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 export const BaseTrack = types
   .model('BaseTrack', {
@@ -48,7 +50,6 @@ export const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       minTrackHeight,
     ),
-    visible: types.optional(types.boolean, true),
     subtracks: types.literal(undefined),
     configuration: ConfigurationReference(BaseTrackConfig),
   })
@@ -68,19 +69,6 @@ export const BaseTrack = types
     setHeight(trackHeight) {
       if (trackHeight >= minTrackHeight) self.height = trackHeight
     },
-
-    show() {
-      self.visible = true
-    },
-
-    hide() {
-      self.visible = false
-    },
-
-    toggle() {
-      if (self.visible) this.hide()
-      else this.show()
-    },
   }))
 
 const ViewStateBase = types.model({
@@ -88,7 +76,7 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
-export default function LinearGenomeViewStateFactory(trackTypes) {
+export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
     .compose(
       'LinearGenomeView',
@@ -98,7 +86,11 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
-        tracks: types.map(types.union(...trackTypes)),
+        // we use an array for the tracks because the tracks are displayed in a specific
+        // order that we need to keep.
+        tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        ),
         controlsWidth: 100,
         displayedRegions: types.array(Region),
         configuration: ConfigurationSchema('LinearGenomeView', {
@@ -182,20 +174,26 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       showTrack(configuration) {
         const { type } = configuration
         const name = readConfObject(configuration, 'name')
-        const TrackType = trackTypes.find(t => t.name === type)
-        if (!TrackType) throw new Error(`unknown track type ${type}`)
-        const track = TrackType.create({ name, type, configuration })
-        self.tracks.set(track.id, track)
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) throw new Error(`unknown track type ${type}`)
+        const track = trackType.stateModel.create({ name, type, configuration })
+        self.tracks.push(track)
       },
 
       hideTrack(configuration) {
-        // TODO
+        // if we have any tracks with that configuration, turn them off
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        return shownTracks.length
       },
 
       toggleTrack(configuration) {
-        // TODO
         // if we have any tracks with that configuration, turn them off
-        // otherwise, turn on a track with that configuration
+        const hiddenCount = self.hideTrack(configuration)
+        // if none had that configuration, turn one on
+        if (!hiddenCount) self.showTrack(configuration)
       },
 
       displayRegions(regions) {
@@ -225,8 +223,8 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
       },
 
       resizeTrack(trackId, distance) {
-        const track = self.tracks.get(trackId)
-        track.setHeight(track.height + distance)
+        const track = self.tracks.find(t => t.id === trackId)
+        if (track) track.setHeight(track.height + distance)
       },
 
       horizontalScroll(distance) {
@@ -248,4 +246,14 @@ export default function LinearGenomeViewStateFactory(trackTypes) {
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
-export const TestStub = LinearGenomeViewStateFactory([BaseTrack])
+const stubManager = new PluginManager()
+stubManager.addTrackType(
+  () =>
+    new TrackType({
+      name: 'Base',
+      stateModel: BaseTrack,
+      RenderingComponent: true,
+    }),
+)
+stubManager.configure()
+export const TestStub = LinearGenomeViewStateFactory(stubManager)
