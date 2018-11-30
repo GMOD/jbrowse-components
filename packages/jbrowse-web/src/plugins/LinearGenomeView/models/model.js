@@ -171,12 +171,14 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
     }))
     .actions(self => ({
-      showTrack(configuration) {
+      showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
         if (!trackType) throw new Error(`unknown track type ${type}`)
-        const track = trackType.stateModel.create({ name, type, configuration })
+        const track = trackType.stateModel.create(
+          Object.assign({}, initialSnapshot, { name, type, configuration }),
+        )
         self.tracks.push(track)
       },
 

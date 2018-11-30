@@ -43,9 +43,9 @@ const conf2 = model.configuration.addTrackConf('AlignmentsTrack', {
   },
 })
 // TODO: what tracks are available in a given view? how do we represent that and have it work with a track selector?
-model.views[0].showTrack(conf)
+model.views[0].showTrack(conf, { height: 200 })
 model.addView('LinearGenomeView')
-model.views[1].showTrack(conf2)
+model.views[1].showTrack(conf2, { height: 100 })
 model.views[1].displayRegions([
   {
     assembly: 'volvox',
