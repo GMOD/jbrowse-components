@@ -32,8 +32,13 @@ const styles = theme => ({
 })
 
 const Category = inject('model', 'classes')(
-  observer(({ name, category, model, classes, path = '' }) => {
-    const pathName = [...path, name].join('|')
+  observer(({ name, category, model, classes, path = [] }) => {
+    const pathName = path.join('|')
+
+    if (pathName.toLowerCase() === 'uncategorized') {
+      return <Contents path={path} category={category} />
+    }
+
     return (
       <ExpansionPanel
         expanded={!model.collapsed.get(pathName)}
@@ -43,7 +48,7 @@ const Category = inject('model', 'classes')(
           <Typography variant="button">{name}</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.expansionPanelDetails}>
-          <Contents path={path.concat([name])} category={category} />
+          <Contents path={path} category={category} />
         </ExpansionPanelDetails>
       </ExpansionPanel>
     )
@@ -56,7 +61,7 @@ Category.propTypes = {
 }
 
 const Contents = inject('model', 'filterPredicate')(
-  observer(({ category, model, filterPredicate }) => {
+  observer(({ category, model, filterPredicate, path = [] }) => {
     const categories = []
     const trackConfigurations = []
     Object.entries(category).forEach(([name, contents], i) => {
@@ -69,7 +74,12 @@ const Contents = inject('model', 'filterPredicate')(
     return (
       <div className="contents">
         {categories.map(([name, contents]) => (
-          <Category key={name} name={name} category={contents} />
+          <Category
+            key={name}
+            path={path.concat([name])}
+            name={name}
+            category={contents}
+          />
         ))}
         <FormGroup>
           {trackConfigurations.filter(filterPredicate).map(trackConf => (
