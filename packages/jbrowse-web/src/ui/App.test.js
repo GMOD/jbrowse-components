@@ -5,7 +5,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import PluginManager from '../PluginManager'
-import RootModelFactory from '../RootModelFactory'
+import RootModelFactory from '../rootModel'
 import App from './App'
 import JBrowse from '../JBrowse'
 

@@ -5,7 +5,7 @@ import { Provider } from 'mobx-react'
 import PluginManager from './PluginManager'
 
 import App from './ui/App'
-import RootModelFactory from './RootModelFactory'
+import RootModelFactory from './rootModel'
 import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -26,11 +26,15 @@ class JBrowse {
     this.pluginManager = new PluginManager(corePlugins)
   }
 
-  configure() {
+  configure(initialConfig) {
     this.pluginManager.configure()
 
     this.modelType = RootModelFactory(this)
     this.model = this.modelType.create({})
+
+    if (initialConfig) {
+      this.model.configure(initialConfig)
+    }
 
     this.configured = true
     return this

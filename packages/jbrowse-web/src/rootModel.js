@@ -1,4 +1,4 @@
-import { types, getRoot } from 'mobx-state-tree'
+import { types, getRoot, applySnapshot, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 
 export default app => {
@@ -60,6 +60,10 @@ export default app => {
           self.drawerWidth = self.windowWidth - (minViewsWidth + 7)
       },
 
+      configure(configSnapshot) {
+        self.configuration = getType(self.configuration).create(configSnapshot)
+      },
+
       updateWindowWidth() {
         const drawerRelativeWidth = self.drawerWidth / self.windowWidth
         self.windowWidth = window.innerWidth
@@ -82,7 +86,7 @@ export default app => {
 
       resizeDrawer(distance) {
         const drawerWidthBefore = self.drawerWidth
-        this.setDrawerWidth(self.drawerWidth - distance)
+        self.setDrawerWidth(self.drawerWidth - distance)
         return drawerWidthBefore - self.drawerWidth
       },
 

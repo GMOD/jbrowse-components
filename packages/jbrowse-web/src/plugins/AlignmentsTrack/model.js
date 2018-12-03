@@ -140,6 +140,7 @@ export default (pluginManager, configSchema) =>
         // the renderer that the user has selected in the UI, empty string
         // if they have not made any selection
         selectedView: types.optional(types.string, ''),
+        height: types.optional(types.integer, 100),
       })
       .volatile(self => ({
         reactComponent: AlignmentsTrack,
