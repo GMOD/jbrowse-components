@@ -2,11 +2,12 @@ import React from 'react'
 import * as mst from 'mobx-state-tree'
 
 import {
-  DrawerWidgetType,
   RendererType,
-  ViewType,
-  TrackType,
   AdapterType,
+  TrackType,
+  ViewType,
+  DrawerWidgetType,
+  MenuBarType,
 } from './Plugin'
 import { ConfigurationSchema } from './configuration'
 
@@ -45,14 +46,16 @@ export default class PluginManager {
     'track',
     'view',
     'drawer widget',
+    'menu bar',
   )
 
   typeBaseClasses = {
-    'drawer widget': DrawerWidgetType,
     renderer: RendererType,
+    adapter: AdapterType,
     track: TrackType,
     view: ViewType,
-    adapter: AdapterType,
+    'drawer widget': DrawerWidgetType,
+    'menu bar': MenuBarType,
   }
 
   static lib = { 'mobx-state-tree': mst, React }
@@ -60,16 +63,18 @@ export default class PluginManager {
   constructor(initialPlugins = []) {
     this.lib = PluginManager.lib
 
-    this.getViewType = this.getElementType.bind(this, 'view')
-    this.getTrackType = this.getElementType.bind(this, 'track')
-    this.getAdapterType = this.getElementType.bind(this, 'adapter')
-    this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
     this.getRendererType = this.getElementType.bind(this, 'renderer')
+    this.getAdapterType = this.getElementType.bind(this, 'adapter')
+    this.getTrackType = this.getElementType.bind(this, 'track')
+    this.getViewType = this.getElementType.bind(this, 'view')
+    this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
+    this.getMenuBarType = this.getElementType.bind(this, 'menu bar')
+    this.addRendererType = this.addElementType.bind(this, 'renderer')
+    this.addAdapterType = this.addElementType.bind(this, 'adapter')
     this.addTrackType = this.addElementType.bind(this, 'track')
     this.addViewType = this.addElementType.bind(this, 'view')
-    this.addAdapterType = this.addElementType.bind(this, 'adapter')
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
-    this.addRendererType = this.addElementType.bind(this, 'renderer')
+    this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
     // add all the initial plugins
     initialPlugins.forEach(PluginClass => {

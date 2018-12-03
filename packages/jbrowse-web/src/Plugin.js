@@ -81,3 +81,13 @@ export class DrawerWidgetType extends PluggableElementType {
       throw new Error(`no stateModel defined for drawer widget ${this.name}`)
   }
 }
+
+export class MenuBarType extends PluggableElementType {
+  constructor(stuff) {
+    super(stuff)
+    if (!this.LazyReactComponent)
+      throw new Error(`no LazyReactComponent defined for menu bar ${this.name}`)
+    if (!this.stateModel)
+      throw new Error(`no stateModel defined for menu bar ${this.name}`)
+  }
+}

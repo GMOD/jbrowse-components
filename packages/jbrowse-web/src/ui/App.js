@@ -26,11 +26,14 @@ const styles = theme => ({
     height: '100vh',
     display: 'flex',
   },
+  menuBarsAndComponents: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
   components: {
     overflowY: 'auto',
   },
   drawerCloseButton: {
-    margin: theme.spacing.unit,
     float: 'right',
   },
   defaultDrawer: {
@@ -60,6 +63,7 @@ class App extends Component {
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
     getDrawerWidgetType: ReactPropTypes.func.isRequired,
+    getMenuBarType: ReactPropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -69,7 +73,13 @@ class App extends Component {
   }
 
   render() {
-    const { classes, getDrawerWidgetType, getViewType, rootModel } = this.props
+    const {
+      classes,
+      getDrawerWidgetType,
+      getViewType,
+      getMenuBarType,
+      rootModel,
+    } = this.props
     const drawerWidget = rootModel.selectedDrawerWidget
     let drawerComponent
     if (drawerWidget) {
@@ -121,23 +131,41 @@ class App extends Component {
       <MuiThemeProvider theme={Theme}>
         <CssBaseline />
         <div className={classes.root}>
-          <div className={classes.components}>
-            {rootModel.views.map(view => {
-              const { ReactComponent } = getViewType(view.type)
-              return <ReactComponent key={`view-${view.id}`} model={view} />
-            })}
-            <button
-              type="button"
-              onClick={() =>
-                rootModel.addView('LinearGenomeView', {
-                  displayedRegions: getSnapshot(
-                    rootModel.views[0].displayedRegions,
-                  ),
-                })
-              }
-            >
-              Add linear view
-            </button>
+          <div className={classes.menuBarsAndComponents}>
+            <div>
+              {rootModel.menuBars.map(menuBar => {
+                const { LazyReactComponent } = getMenuBarType(menuBar.type)
+                return (
+                  <React.Suspense
+                    key={`view-${menuBar.id}`}
+                    fallback={<div>Loading...</div>}
+                  >
+                    <LazyReactComponent
+                      key={`view-${menuBar.id}`}
+                      model={menuBar}
+                    />
+                  </React.Suspense>
+                )
+              })}
+            </div>
+            <div className={classes.components}>
+              {rootModel.views.map(view => {
+                const { ReactComponent } = getViewType(view.type)
+                return <ReactComponent key={`view-${view.id}`} model={view} />
+              })}
+              <button
+                type="button"
+                onClick={() =>
+                  rootModel.addView('LinearGenomeView', {
+                    displayedRegions: getSnapshot(
+                      rootModel.views[0].displayedRegions,
+                    ),
+                  })
+                }
+              >
+                Add linear view
+              </button>
+            </div>
           </div>
           <DrawerResizeHandle
             onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
