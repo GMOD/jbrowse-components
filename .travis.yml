@@ -5,9 +5,11 @@ sudo: false
 matrix:
     include:
         - env: PROJECT=packages/jbrowse-web
+        - env: PROJECT=packages/generator-jbrowse
 cache:
     - node_modules
     - packages/jbrowse-web/node_modules
+    - packages/generator-jbrowse/node_modules
 install:
     - npm install -g yarn
     - yarn
