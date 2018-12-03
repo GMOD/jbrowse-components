@@ -12,8 +12,9 @@
   ],
   "devDependencies": {
     "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^3.3.0",
-    "eslint-config-xo": "^0.25.0",
+    "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^3.0.0",
     "jest": "^23.5.0",
     "prettier": "^1.15.2",
@@ -27,22 +28,6 @@
   },
   "jest": {
     "testEnvironment": "node"
-  },
-  "eslintConfig": {
-    "extends": [
-      "xo",
-      "prettier"
-    ],
-    "env": {
-      "jest": true,
-      "node": true
-    },
-    "rules": {
-      "prettier/prettier": "error"
-    },
-    "plugins": [
-      "prettier"
-    ]
   },
   "scripts": {
     "pretest": "eslint .",
