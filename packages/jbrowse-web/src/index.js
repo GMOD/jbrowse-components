@@ -5,7 +5,15 @@ import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
 import * as webWorkers from './webWorkers'
 
-const jbrowse = new JBrowse().configure({
+const jbrowse = new JBrowse()
+
+// this is the main process, so start and register our service worker and web workers
+serviceWorker.register()
+const workerGroups = webWorkers.register()
+jbrowse.addWorkers(workerGroups)
+
+// add the initial configuration
+jbrowse.configure({
   tracks: [
     {
       type: 'AlignmentsTrack',
@@ -30,12 +38,8 @@ const jbrowse = new JBrowse().configure({
   ],
 })
 
-serviceWorker.register()
-const workerGroups = webWorkers.register()
-jbrowse.addWorkers(workerGroups)
-
+// poke some things for testing (this stuff will eventually be removed)
 const { model } = jbrowse
-
 model.addView('LinearGenomeView')
 model.views[0].displayRegions([
   {
@@ -66,4 +70,5 @@ model.views[0].activateTrackSelector()
 window.MODEL = model
 window.getSnapshot = getSnapshot
 
+// finally, start the app
 jbrowse.start()
