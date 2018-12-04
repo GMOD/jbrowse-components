@@ -2,6 +2,7 @@
 const Generator = require('yeoman-generator')
 const chalk = require('chalk')
 const yosay = require('yosay')
+const path = require('path')
 
 module.exports = class extends Generator {
   async prompting() {
@@ -65,8 +66,8 @@ module.exports = class extends Generator {
     const pluginFiles = ['components/HelloWorld.js', 'index.js', 'model.js']
     pluginFiles.forEach(pluginFile =>
       this.fs.copy(
-        this.templatePath(pluginFile),
-        this.destinationPath(pluginFile),
+        this.templatePath(path.join('HelloWorldMenuBar', pluginFile)),
+        this.destinationPath(path.join('HelloWorldMenuBar', pluginFile)),
       ),
     )
   }

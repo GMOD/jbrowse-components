@@ -16,7 +16,11 @@ describe('generator-jbrowse:app', () => {
       .run(path.join(__dirname, '.'))
       .withPrompts({ correctDir: true, type: 'helloWorldMenuBar' })
       .then(() =>
-        assert.file(['components/HelloWorld.js', 'index.js', 'model.js']),
+        assert.file([
+          'HelloWorldMenuBar/components/HelloWorld.js',
+          'HelloWorldMenuBar/index.js',
+          'HelloWorldMenuBar/model.js',
+        ]),
       ))
 
   it('throws when trying to create an unimplemented plugin', async () =>
