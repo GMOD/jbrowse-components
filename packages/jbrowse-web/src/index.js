@@ -1,4 +1,4 @@
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import 'typeface-roboto'
 import JBrowse from './JBrowse'
 
@@ -14,6 +14,9 @@ jbrowse.addWorkers(workerGroups)
 
 // add the initial configuration
 jbrowse.configure({
+  views: {
+    LinearGenomeView: {},
+  },
   tracks: [
     {
       type: 'AlignmentsTrack',
@@ -40,22 +43,27 @@ jbrowse.configure({
 
 // poke some things for testing (this stuff will eventually be removed)
 const { model } = jbrowse
-model.addView('LinearGenomeView')
-model.views[0].displayRegions([
+window.jbrowse = jbrowse
+window.MODEL = model
+window.getSnapshot = getSnapshot
+window.resolveIdentifier = resolveIdentifier
+
+const firstView = model.addView('LinearGenomeView')
+firstView.displayRegions([
   {
     assembly: 'volvox',
     refName: 'ctgA',
     start: 0,
-
     end: 50000,
   },
-  { assembly: 'volvox', refName: 'ctgB', start: 0, end: 100000000 },
+  { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
-model.views[0].showTrack(model.configuration.tracks[0], { height: 200 })
-model.addView('LinearGenomeView')
-model.views[1].showTrack(model.configuration.tracks[1], { height: 100 })
-model.views[1].displayRegions([
+firstView.showTrack(model.configuration.tracks[0], { height: 200 })
+
+const secondView = model.addView('LinearGenomeView')
+secondView.showTrack(model.configuration.tracks[1], { height: 100 })
+secondView.displayRegions([
   {
     assembly: 'volvox',
     refName: 'ctgB',
@@ -65,10 +73,7 @@ model.views[1].displayRegions([
   { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
 ])
 
-model.views[0].activateTrackSelector()
-
-window.MODEL = model
-window.getSnapshot = getSnapshot
+firstView.activateTrackSelector()
 
 // finally, start the app
 jbrowse.start()

@@ -205,6 +205,15 @@ describe('configuration schemas', () => {
           type: 'integer',
           defaultValue: 12,
         },
+        myConfigurationMap: types.map(
+          ConfigurationSchema('MappedConfiguration', {
+            mappedValue: {
+              description: 'something in a mapped configuration',
+              type: 'number',
+              defaultValue: 101,
+            },
+          }),
+        ),
         mySubConfiguration: ConfigurationSchema('SubObject1', {
           someNumber: {
             description: 'some number in a subconfiguration',
@@ -229,12 +238,16 @@ describe('configuration schemas', () => {
       configuration: {
         _configId: 'two',
         someInteger: 12,
+        myConfigurationMap: {
+          nog: { _configId: 'nog' },
+        },
         mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
         _configId: 'two',
+        myConfigurationMap: { nog: { _configId: 'nog' }},
         mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })

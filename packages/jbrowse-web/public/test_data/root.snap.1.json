@@ -37,7 +37,7 @@
       ],
       "controlsWidth": 100,
       "displayedRegions": [],
-      "configuration": {}
+      "configuration": "LinearGenomeView"
     },
     {
       "id": "1YKfbpmZoU",
@@ -70,5 +70,5 @@
     }
   ],
   "drawerWidgets": {},
-  "configuration": {}
+  "configuration": { "views": { "LinearGenomeView": { "_configId": "LinearGenomeView"}}}
 }

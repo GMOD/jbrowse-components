@@ -1,13 +1,33 @@
-import { isType } from 'mobx-state-tree'
+import { isType, types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
+import configSchema from './configSchema'
 import { TestStub as LinearGenomeModel } from './model'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
-  const model = LinearGenomeModel.create({
-    type: 'LinearGenomeView',
-    tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-  })
-  expect(model.tracks[0]).toBeTruthy()
+  const root = types
+    .model({
+      view: types.maybe(LinearGenomeModel),
+      config: configSchema,
+    })
+    .actions(self => ({
+      setView(view) {
+        self.view = view
+        return view
+      },
+    }))
+    .create({
+      config: {},
+    })
+
+  const model = root.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      configuration: root.config,
+    }),
+  )
+
+  expect(root.view.tracks[0]).toBeTruthy()
   expect(getConf(model, 'backgroundColor')).toBe('#eee')
 })
 
@@ -150,6 +170,7 @@ describe('block calculation', () => {
           { assembly: 'volvox', refName: 'ctgA', start: 0, end: 200 },
           { assembly: 'volvox', refName: 'ctgB', start: 0, end: 10000000 },
         ],
+        configuration: 'fakeReference',
       },
       {
         testEnv: true,

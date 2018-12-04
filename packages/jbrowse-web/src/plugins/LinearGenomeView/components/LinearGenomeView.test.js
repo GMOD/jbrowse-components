@@ -13,6 +13,7 @@ describe('LinearGenomeView genome view component', () => {
         bpPerPx: 1,
         tracks: [],
         controlsWidth: 100,
+        configuration: 'fakereference',
       },
       {
         testEnv: true,
@@ -33,8 +34,17 @@ describe('LinearGenomeView genome view component', () => {
         offsetPx: 0,
         bpPerPx: 1,
         blocks: [],
-        tracks: [{ id: 'foo', name: 'Foo Track', type: 'tester', height: 20 }],
+        tracks: [
+          {
+            id: 'foo',
+            name: 'Foo Track',
+            type: 'tester',
+            height: 20,
+            configuration: { name: 'foo' },
+          },
+        ],
         controlsWidth: 100,
+        configuration: 'fakeViewConf',
       },
       {
         testEnv: true,
@@ -59,8 +69,19 @@ describe('LinearGenomeView genome view component', () => {
           { assembly: 'volvox', refName: 'ctgB', start: 1000, end: 200 },
         ],
         tracks: [
-          { id: 'foo', name: 'Foo Track', type: 'tester', height: 20 },
-          { id: 'bar', name: 'Bar Track', type: 'tester', height: 20 },
+          {
+            id: 'foo',
+            type: 'tester',
+            height: 20,
+            configuration: { name: 'foo' },
+          },
+          {
+            id: 'bar',
+            name: 'Bar Track',
+            type: 'tester',
+            height: 20,
+            configuration: { name: 'bar' },
+          },
         ],
         controlsWidth: 100,
       },

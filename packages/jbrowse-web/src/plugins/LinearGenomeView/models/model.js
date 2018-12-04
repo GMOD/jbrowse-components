@@ -1,5 +1,11 @@
 import { transaction } from 'mobx'
-import { getEnv, getRoot, isStateTreeNode, types } from 'mobx-state-tree'
+import {
+  getEnv,
+  getRoot,
+  isStateTreeNode,
+  types,
+  getType,
+} from 'mobx-state-tree'
 import React from 'react'
 import {
   ConfigurationSchema,
@@ -11,6 +17,8 @@ import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString, clamp } from '../../../util'
 import PluginManager from '../../../PluginManager'
 import { TrackType } from '../../../Plugin'
+
+import LinearGenomeViewConfigSchema from './configSchema'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -93,13 +101,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         ),
         controlsWidth: 100,
         displayedRegions: types.array(Region),
-        configuration: ConfigurationSchema('LinearGenomeView', {
-          backgroundColor: { type: 'color', defaultValue: '#eee' },
-          trackSelectorType: {
-            type: 'string',
-            defaultValue: 'hierarchical',
-          },
-        }),
+        configuration: ConfigurationReference(LinearGenomeViewConfigSchema),
       }),
     )
     .views(self => ({
@@ -205,6 +207,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       activateTrackSelector() {
+        if (getType(self.configuration).name === 'AnonymousModel') debugger
         const trackSelectorType = getConf(self, 'trackSelectorType')
         if (trackSelectorType === 'hierarchical') {
           const rootModel = getRoot(self)

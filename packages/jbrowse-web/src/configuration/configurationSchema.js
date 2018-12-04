@@ -1,4 +1,10 @@
-import { types, isModelType, isArrayType, isUnionType } from 'mobx-state-tree'
+import {
+  types,
+  isModelType,
+  isArrayType,
+  isUnionType,
+  isMapType,
+} from 'mobx-state-tree'
 
 import { FileLocation, ElementId } from '../mst-types'
 
@@ -118,7 +124,9 @@ function isConfigurationSchemaType(thing) {
   return (
     (isModelType(thing) && !!thing.isJBrowseConfigurationSchema) ||
     (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
-    (isUnionType(thing) && thing.types.every(t => isConfigurationSchemaType(t)))
+    (isUnionType(thing) &&
+      thing.types.every(t => isConfigurationSchemaType(t))) ||
+    (isMapType(thing) && isConfigurationSchemaType(thing.subType))
   )
 }
 
@@ -222,8 +230,5 @@ export function ConfigurationSchema(
 }
 
 export function ConfigurationReference(schemaType) {
-  return types.optional(
-    types.union(types.reference(schemaType), types.model({})),
-    {},
-  )
+  return types.union(types.reference(schemaType), schemaType)
 }
