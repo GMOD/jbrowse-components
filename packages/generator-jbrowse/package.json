@@ -10,17 +10,6 @@
   "keywords": [
     "yeoman-generator"
   ],
-  "devDependencies": {
-    "eslint": "^5.9.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-config-prettier": "^3.3.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "jest": "^23.5.0",
-    "prettier": "^1.15.2",
-    "yeoman-assert": "^3.1.0",
-    "yeoman-test": "^1.7.0"
-  },
   "dependencies": {
     "chalk": "^2.1.0",
     "yeoman-generator": "^2.0.1",
