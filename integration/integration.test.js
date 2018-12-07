@@ -1,9 +1,8 @@
 /* eslint-disable global-require */
+const fs = require('fs')
 
-xtest('can import JBrowse Web', () => {
-  // eslint-disable-next-line import/no-unresolved
-  const jbrowseWeb = require('../packages/jbrowse-web')
-  console.log(jbrowseWeb)
+test('JBrowse Web built', () => {
+  expect(fs.existsSync('packages/jbrowse-web/build/index.html')).toBeTruthy()
 })
 
 test('can import JBrowse Generator', () => {
