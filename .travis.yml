@@ -2,16 +2,9 @@ language: node_js
 node_js: stable
 sudo: false
 
-# matrix:
-#     include:
-#         - env: PROJECT=packages/jbrowse-web
-#         - env: PROJECT=packages/generator-jbrowse
 cache:
     - node_modules
-install:
-    - npm install -g yarn
     - yarn
-    - node_modules/.bin/lerna bootstrap
 script:
     - set -e
     - yarn lint
