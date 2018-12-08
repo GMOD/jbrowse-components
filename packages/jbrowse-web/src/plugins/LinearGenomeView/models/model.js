@@ -76,6 +76,12 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
+function clamp(val, min, max) {
+  if (val < min) return min
+  if (val > max) return max
+  return val
+}
+
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
     .compose(
@@ -234,12 +240,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           (a, b) => a + (b.end - b.start) / self.bpPerPx,
           0,
         )
-        self.offsetPx = Math.min(
-          Math.max(self.offsetPx + distance, -leftPadding),
-          displayRegionsTotalPx -
-            (self.width - self.controlsWidth) +
-            rightPadding,
-        )
+        const maxOffset = displayRegionsTotalPx - leftPadding
+        const displayWidth = self.width - self.controlsWidth
+        const minOffset = -displayWidth + rightPadding
+        self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },
     }))
 }
