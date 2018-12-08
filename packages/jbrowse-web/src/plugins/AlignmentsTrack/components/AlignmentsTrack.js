@@ -34,17 +34,15 @@ class BlockContent extends Component {
   doHydrate() {
     const { model } = this.props
     if (model.filled) {
-      const { data, html, rendererType, renderProps } = model
+      const { data, region, html, rendererType, renderProps } = model
       const domNode = findDOMNode(this) // eslint-disable-line react/no-find-dom-node
       domNode.innerHTML = html
-      hydrate(
-        React.createElement(
-          rendererType.ReactComponent,
-          { data, ...renderProps },
-          null,
-        ),
-        domNode,
+      const mainThreadRendering = React.createElement(
+        rendererType.ReactComponent,
+        { ...data, region, ...renderProps },
+        null,
       )
+      hydrate(mainThreadRendering, domNode)
     }
   }
 

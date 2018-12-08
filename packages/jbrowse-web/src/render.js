@@ -1,6 +1,6 @@
 import Rpc from '@librpc/web'
 
-import SimpleFeature from './util/feature'
+import SimpleFeature from './util/simpleFeature'
 
 // import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
