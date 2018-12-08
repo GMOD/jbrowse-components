@@ -239,9 +239,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           (a, b) => a + (b.end - b.start) / self.bpPerPx,
           0,
         )
-
-        const minOffset = -(self.width - self.controlsWidth - rightPadding)
         const maxOffset = displayRegionsTotalPx - leftPadding
+        const displayWidth = self.width - self.controlsWidth
+        const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },
     }))

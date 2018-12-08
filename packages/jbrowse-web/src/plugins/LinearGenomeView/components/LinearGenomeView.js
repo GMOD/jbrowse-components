@@ -44,7 +44,10 @@ class LinearGenomeView extends Component {
       height: `${height}px`,
       gridTemplateRows: `[scale-bar] auto ${tracks
         .map(
-          t => `[${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
+          t =>
+            `[track-${t.id}] ${t.height}px [resize-${
+              t.id
+            }] ${dragHandleHeight}px`,
         )
         .join(' ')}`,
       gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
@@ -72,7 +75,7 @@ class LinearGenomeView extends Component {
           <div
             className="controls track-controls"
             key={`controls:${track.id}`}
-            style={{ gridRow: track.id, gridColumn: 'controls' }}
+            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
           >
             {getConf(track, 'name') || track.id}
           </div>,

@@ -5,6 +5,7 @@ import {
   getRoot,
   flow,
   isAlive,
+  setLivelinessChecking,
 } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
@@ -18,14 +19,16 @@ import AlignmentsTrack, {
   AlignmentsTrackBlock,
 } from './components/AlignmentsTrack'
 
+setLivelinessChecking('error')
+
 const BlockState = types
   .model('BlockState', {
     key: types.string,
     region: Region,
-    data: types.frozen(),
   })
-  .volatile(self => ({
+  .volatile(() => ({
     filled: false,
+    data: undefined,
     reactComponent: AlignmentsTrackBlock,
     html: '',
     error: undefined,
@@ -44,14 +47,11 @@ const BlockState = types
           } has no ReactComponent, it may not be completely implemented yet`,
         )
       return RendererType
-
-      // const html = renderToString(
-      //   <RendererType.ReactComponent data={features} {...renderProps} />,
-      // )
     },
 
     get renderProps() {
-      return {}
+      const view = getParent(self, 4) // view -> [tracks] -> [blocks]
+      return { bpPerPx: view.bpPerPx }
     },
   }))
   .actions(self => ({
@@ -59,23 +59,24 @@ const BlockState = types
       self.render()
     },
     render: flow(function* renderBlock() {
+      if (!isAlive(self)) return
       const track = getParent(self, 2)
       const view = getParent(track, 2)
       const root = getParent(view, 2)
       try {
         // console.log('calling', self.region.toJSON())
-        const { features, html } = yield renderRegionWithWorker(root.app, {
+        const { html, ...data } = yield renderRegionWithWorker(root.app, {
           region: self.region,
           adapterType: track.adapterType.name,
           adapterConfig: getConf(track, 'adapter'),
           rendererType: track.rendererType,
-          renderProps: {},
+          renderProps: self.renderProps,
           sessionId: track.id,
           timeout: 10000,
         })
         if (!isAlive(self)) return
         self.filled = true
-        self.data = features
+        self.data = data
         self.html = html
         // console.log('finished', self.region.toJSON(), self.html)
       } catch (error) {

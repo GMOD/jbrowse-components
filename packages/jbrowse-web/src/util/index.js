@@ -15,5 +15,7 @@ export function openLocation(location) {
 }
 
 export function clamp(val, min, max) {
-  return Math.max(Math.min(val, max), min)
+  if (val < min) return min
+  if (val > max) return max
+  return val
 }

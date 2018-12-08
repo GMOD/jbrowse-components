@@ -243,18 +243,10 @@ export default class GranularRectLayout {
    * @param args.maxHeight  maximum layout height, default Infinity (no max)
    */
   constructor(args) {
+    this.id = Math.random().toString(36)
+    // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
-
-    this.displayMode = args.displayMode
-
-    // reduce the pitchY to try and pack the features tighter
-    if (this.displayMode === 'compact') {
-      this.pitchY = Math.round(this.pitchY / 4) || 1
-      this.pitchX = Math.round(this.pitchX / 4) || 1
-    }
-
-    // console.log(`pitch: ${this.pitchX} / ${this.pitchY}`)
 
     this.bitmap = []
     this.rectangles = {}
@@ -267,6 +259,7 @@ export default class GranularRectLayout {
    */
   addRect(id, left, right, height, data) {
     // if we have already laid it out, return its layout
+    // console.log(`${this.id} add ${id}`)
     if (id in this.rectangles) {
       const storedRec = this.rectangles[id]
       if (storedRec.top === null) return null
@@ -306,8 +299,6 @@ export default class GranularRectLayout {
   }
 
   collides(rect, top) {
-    if (this.displayMode === 'collapsed') return false
-
     const { bitmap } = this
     // var mY = top + rect.h/2; // Y midpoint: ( top+height  + top ) / 2
 
@@ -399,5 +390,16 @@ export default class GranularRectLayout {
 
   getTotalHeight() {
     return this.pTotalHeight * this.pitchY
+  }
+
+  toJSON() {
+    const data = {}
+    // let count = 0
+    Object.entries(this.rectangles).forEach(([id, rect]) => {
+      data[id] = rect.top * this.pitchY
+      // count += 1
+    })
+    // console.log(`${this.id} toJSON - ${count}`)
+    return data
   }
 }

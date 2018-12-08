@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 
 import { BamFile } from '@gmod/bam'
 
-import Feature from '../../util/feature'
+import Feature from '../../util/simpleFeature'
 
 import { openLocation } from '../../util'
 
@@ -199,4 +199,11 @@ export default class BamAdapter {
       observer.complete()
     })
   }
+
+  /**
+   * called to provide a hint that data tied to a certain region
+   * will not be needed for the forseeable future and can be purged
+   * from caches, etc
+   */
+  freeResources({ region }) {}
 }

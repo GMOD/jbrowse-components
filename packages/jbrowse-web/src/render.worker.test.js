@@ -1,5 +1,5 @@
 import JBrowse from './JBrowse'
-import { renderRegion, freeSessionResources } from './render.worker'
+import { renderRegion, freeResources } from './render.worker'
 
 const jbrowse = new JBrowse().configure()
 
@@ -22,13 +22,24 @@ test('can render a single region with Pileup + BamAdapter', async () => {
       },
     },
     rendererType: 'PileupRenderer',
-    renderProps: {},
+    renderProps: { bpPerPx: 1 },
   }
 
   const result = await renderRegion(jbrowse.pluginManager, testprops)
-  expect(Object.keys(result)).toEqual(['featureJSON', 'html'])
+  expect(Object.keys(result)).toEqual(['featureJSON', 'html', 'layout'])
   expect(result.featureJSON.length).toBe(93)
   expect(result.html).toMatchSnapshot()
+  expect(result.layout).toMatchSnapshot()
 
-  expect(freeSessionResources('knickers the cow')).toBe(1)
+  expect(
+    freeResources(jbrowse.pluginManager, {
+      sessionId: 'knickers the cow',
+    }),
+  ).toBe(2)
+
+  expect(
+    freeResources(jbrowse.pluginManager, {
+      sessionId: 'fozzy bear',
+    }),
+  ).toBe(0)
 })

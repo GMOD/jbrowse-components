@@ -7,12 +7,13 @@ import jsonStableStringify from 'json-stable-stringify'
 
 import RpcServer from '@librpc/web'
 
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable'
 import JBrowse from './JBrowse'
 
 const jbrowse = new JBrowse().configure()
 
 const adapterCache = {}
-function getAdapter(pluginManager, trackId, adapterType, adapterConfig) {
+function getAdapter(pluginManager, sessionId, adapterType, adapterConfig) {
   // cache the adapter object
   const cacheKey = `${adapterType}|${jsonStableStringify(adapterConfig)}`
   if (!adapterCache[cacheKey]) {
@@ -21,11 +22,11 @@ function getAdapter(pluginManager, trackId, adapterType, adapterConfig) {
       throw new Error(`unknown data adapter type ${adapterType}`)
     adapterCache[cacheKey] = {
       adapter: new dataAdapterType.AdapterClass(adapterConfig),
-      trackIds: new Set([trackId]),
+      sessionIds: new Set([sessionId]),
     }
   }
   const cacheEntry = adapterCache[cacheKey]
-  cacheEntry.trackIds.add(trackId)
+  cacheEntry.sessionIds.add(sessionId)
 
   return cacheEntry.adapter
 }
@@ -36,15 +37,36 @@ function getAdapter(pluginManager, trackId, adapterType, adapterConfig) {
  *
  * returns number of objects deleted
  */
-export function freeSessionResources(trackId) {
+export function freeResources(pluginManager, specification) {
   let deleteCount = 0
-  Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
-    cacheEntry.trackIds.delete(trackId)
-    if (cacheEntry.trackIds.size === 0) {
-      deleteCount += 1
-      delete adapterCache[cacheKey]
-    }
+
+  const specKeys = Object.keys(specification)
+
+  // if we don't specify a range, delete any adapters that are
+  // only associated with that session
+  if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
+    const { sessionId } = specification
+    Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
+      cacheEntry.sessionIds.delete(sessionId)
+      if (cacheEntry.sessionIds.size === 0) {
+        deleteCount += 1
+        delete adapterCache[cacheKey]
+      }
+    })
+  }
+  // otherwise call freeResources on all the cached data adapters
+  else {
+    Object.values(adapterCache).forEach(cacheEntry => {
+      cacheEntry.adapter.freeResources(specification)
+    })
+  }
+
+  // pass the freeResources hint along to all the renderers as well
+  pluginManager.getElementTypesInGroup('renderer').forEach(renderer => {
+    const count = renderer.freeResources(specification)
+    if (count) deleteCount += count
   })
+
   return deleteCount
 }
 
@@ -85,21 +107,39 @@ export async function renderRegion(
   const { element, ...renderResult } = RendererType.render({
     region,
     dataAdapter,
-    data: features,
+    features,
     sessionId,
     ...renderProps,
   })
   const html = renderToString(element)
 
-  return { featureJSON: features.map(f => f.toJSON()), html, ...renderResult }
+  // before returning data, convert all we can to plain objects
+  Object.entries(renderResult).forEach(([key, value]) => {
+    if (value.toJSON) {
+      renderResult[key] = value.toJSON()
+    }
+  })
+
+  return {
+    featureJSON: features.map(f => f.toJSON()),
+    html,
+    ...renderResult,
+  }
+}
+
+function wrapForRpc(func) {
+  return args => {
+    const result = func(jbrowse.pluginManager, args).catch(e => {
+      console.error(e)
+      throw e
+    })
+    // result.then(r => console.log(r))
+    return result
+  }
 }
 
 // eslint-disable-next-line no-restricted-globals
 self.rpcServer = new RpcServer.Server({
-  renderRegion: args =>
-    renderRegion(jbrowse.pluginManager, args).catch(e => {
-      console.error(e)
-      throw e
-    }),
-  freeSessionResources,
+  renderRegion: wrapForRpc(renderRegion),
+  freeResources: wrapForRpc(freeResources),
 })
