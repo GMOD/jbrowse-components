@@ -6,6 +6,43 @@ import { Region } from '../../../mst-types'
 import { renderRegionWithWorker } from '../../../render'
 
 import { AlignmentsTrackBlock } from '../components/AlignmentsTrack'
+import PrecomputedLayout from '../../../util/PrecomputedLayout'
+
+// MST flow that calls the render worker to render the block content
+export function flowRenderBlock(self) {
+  return flow(function* renderBlock() {
+    if (!isAlive(self)) return
+    const track = getParent(self, 2)
+    const view = getParent(track, 2)
+    const root = getParent(view, 2)
+    try {
+      // console.log('calling', self.region.toJSON())
+      const { html, ...data } = yield renderRegionWithWorker(root.app, {
+        region: self.region,
+        adapterType: track.adapterType.name,
+        adapterConfig: getConf(track, 'adapter'),
+        rendererType: track.rendererTypeName,
+        renderProps: self.renderProps,
+        sessionId: track.id,
+        timeout: 10000,
+      })
+      if (!isAlive(self)) return
+
+      // if the remote render returned a layout, helpfully inflate it to a precomputed layout
+      if (data.layout && !data.layout.addRect)
+        data.layout = new PrecomputedLayout(data.layout)
+
+      self.filled = true
+      self.data = data
+      self.html = html
+      // console.log('finished', self.region.toJSON(), self.html)
+    } catch (error) {
+      // the rendering failed for some reason
+      console.error(error)
+      self.error = error
+    }
+  })
+}
 
 // the MST state of a single server-side-rendered block in a track
 export default types
@@ -22,18 +59,8 @@ export default types
   }))
   .views(self => ({
     get rendererType() {
-      const { pluginManager } = getRoot(self)
       const track = getParent(self, 2)
-      const RendererType = pluginManager.getRendererType(track.rendererType)
-      if (!RendererType)
-        throw new Error(`renderer "${track.rendererType} not found`)
-      if (!RendererType.ReactComponent)
-        throw new Error(
-          `renderer ${
-            track.rendererType
-          } has no ReactComponent, it may not be completely implemented yet`,
-        )
-      return RendererType
+      return track.rendererType
     },
 
     get renderProps() {
@@ -45,31 +72,5 @@ export default types
     afterAttach() {
       self.render()
     },
-    render: flow(function* renderBlock() {
-      if (!isAlive(self)) return
-      const track = getParent(self, 2)
-      const view = getParent(track, 2)
-      const root = getParent(view, 2)
-      try {
-        // console.log('calling', self.region.toJSON())
-        const { html, ...data } = yield renderRegionWithWorker(root.app, {
-          region: self.region,
-          adapterType: track.adapterType.name,
-          adapterConfig: getConf(track, 'adapter'),
-          rendererType: track.rendererType,
-          renderProps: self.renderProps,
-          sessionId: track.id,
-          timeout: 10000,
-        })
-        if (!isAlive(self)) return
-        self.filled = true
-        self.data = data
-        self.html = html
-        // console.log('finished', self.region.toJSON(), self.html)
-      } catch (error) {
-        // the rendering failed for some reason
-        console.error(error)
-        self.error = error
-      }
-    }),
+    render: flowRenderBlock(self),
   }))

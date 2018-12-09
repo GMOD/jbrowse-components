@@ -1,15 +1,15 @@
-import { types, getSnapshot } from 'mobx-state-tree'
+import { types, getSnapshot, getParent, getRoot } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../../configuration'
 
 import AlignmentsTrack from '../components/AlignmentsTrack'
 
-import BlockBasedTrackState from './blockBasedTrack'
+import BlockBasedTrack from './blockBasedTrack'
 
 export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
-    BlockBasedTrackState,
+    BlockBasedTrack,
     types
       .model({
         type: types.literal('AlignmentsTrack'),
@@ -30,14 +30,32 @@ export default (pluginManager, configSchema) =>
       //   },
       // }))
       .views(self => ({
-        // the renderer type is based on the "view" selected in the UI: pileup, coverage, etc
-        get rendererType() {
+        // the renderer type name is based on the "view"
+        // selected in the UI: pileup, coverage, etc
+        get rendererTypeName() {
           const defaultView = getConf(self, 'defaultView')
           const viewName = self.selectedView || defaultView
           const rendererType = { pileup: 'PileupRenderer' }[viewName]
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
           return rendererType
+        },
+
+        // gets the actual renderer type object
+        get rendererType() {
+          const track = getParent(self, 2)
+          const RendererType = pluginManager.getRendererType(
+            self.rendererTypeName,
+          )
+          if (!RendererType)
+            throw new Error(`renderer "${track.rendererTypeName} not found`)
+          if (!RendererType.ReactComponent)
+            throw new Error(
+              `renderer ${
+                track.rendererTypeName
+              } has no ReactComponent, it may not be completely implemented yet`,
+            )
+          return RendererType
         },
 
         get adapterType() {
@@ -53,7 +71,6 @@ export default (pluginManager, configSchema) =>
         },
 
         get adapter() {
-          // TODO: refactor this someplace else to make this code shareable
           const adapter = new self.adapterType.AdapterClass(
             getSnapshot(self.configuration.adapter),
           )
