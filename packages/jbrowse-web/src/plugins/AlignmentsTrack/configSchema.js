@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '../../configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/model'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/model'
 
 export default pluginManager =>
   ConfigurationSchema(
