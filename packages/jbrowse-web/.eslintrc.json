@@ -1,6 +1,7 @@
 {
   "parser": "babel-eslint",
   "extends": [
+    "react-app",
     "airbnb",
     "prettier",
     "prettier/react"
@@ -13,18 +14,12 @@
   },
   "rules": {
     "class-methods-use-this": "off",
+    "no-debugger": "warn",
     "no-param-reassign": "off",
     "no-restricted-syntax": "off",
     "no-underscore-dangle": "warn",
     "no-unused-vars": "warn",
     "no-use-before-define": "off",
-    "react/destructuring-assignment": "warn",
-    "react/jsx-filename-extension": "off",
-    "react/prefer-stateless-function": "warn",
-    "react/no-unused-state": "warn",
-    "no-restricted-syntax": 0,
-    "no-unused-vars": "warn",
-    "no-debugger": "warn",
     "prettier/prettier": [
       "error",
       {
@@ -32,7 +27,11 @@
         "semi": false,
         "trailingComma": "all"
       }
-    ]
+    ],
+    "react/destructuring-assignment": "warn",
+    "react/jsx-filename-extension": "off",
+    "react/prefer-stateless-function": "warn",
+    "react/no-unused-state": "warn"
   },
   "overrides": [
     {
@@ -43,7 +42,7 @@
         "self": true
       },
       "rules": {
-        "no-restricted-globals": 0
+        "no-restricted-globals": "off"
       }
     },
     {
@@ -60,7 +59,8 @@
         "test": true
       },
       "rules": {
-        "no-restricted-globals": 0
+        "import/no-extraneous-dependencies": "off",
+        "no-restricted-globals": "off"
       }
     }
   ]

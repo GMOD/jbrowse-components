@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "airbnb-base",
+    "prettier",
+    "plugin:monorepo/recommended"
+  ],
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "plugins": [
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "all"
+      }
+    ]
+  }
+}

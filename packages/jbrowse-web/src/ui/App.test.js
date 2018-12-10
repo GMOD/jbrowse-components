@@ -19,6 +19,7 @@ describe('jbrowse-web app', () => {
         <App
           getViewType={mgr.getViewType}
           getDrawerWidgetType={mgr.getDrawerWidgetType}
+          getMenuBarType={mgr.getMenuBarType}
         />
       </Provider>,
       div,

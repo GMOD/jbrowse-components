@@ -57,6 +57,7 @@ class JBrowse {
         <App
           getViewType={this.pluginManager.getViewType}
           getDrawerWidgetType={this.pluginManager.getDrawerWidgetType}
+          getMenuBarType={this.pluginManager.getMenuBarType}
         />
       </Provider>,
       document.getElementById('root'),

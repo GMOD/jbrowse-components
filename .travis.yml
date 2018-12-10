@@ -2,16 +2,12 @@ language: node_js
 node_js: stable
 sudo: false
 
-matrix:
-    include:
-        - env: PROJECT=packages/jbrowse-web
 cache:
     - node_modules
-    - packages/jbrowse-web/node_modules
-install:
-    - npm install -g yarn
     - yarn
-    - node_modules/.bin/lerna bootstrap --npm-client yarn
 script:
     - set -e
-    - if .travis/build-condition.sh $TRAVIS_COMMIT_RANGE $PROJECT; then cd $PROJECT && . .travis.sh; else echo "$PROJECT is NOT being built"; fi
+    - yarn lint
+    - yarn build
+    - yarn test-ci
+    # - if .travis/build-condition.sh $TRAVIS_COMMIT_RANGE $PROJECT; then cd $PROJECT && . .travis.sh; else echo "$PROJECT is NOT being built"; fi
