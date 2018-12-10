@@ -25,11 +25,19 @@ describe('generator-jbrowse:app', () => {
         ]),
       ))
 
-  it('throws when trying to create an unimplemented plugin', async () =>
-    expect(
-      helpers.run(path.join(__dirname, '.'), { tmpdir: false }).withPrompts({
+  it('creates a "Hello World" menu bar and drawer widget', () =>
+    helpers
+      .run(path.join(__dirname, '.'), { tmpdir: false })
+      .withPrompts({
         correctDir: true,
         type: 'helloWorldMenuBarAndDrawerWidget',
-      }),
-    ).rejects.toThrow(/Exiting now/))
+      })
+      .then(() =>
+        assert.file([
+          'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldDrawerWidget.js',
+          'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldMenuBar.js',
+          'HelloWorldMenuBarAndDrawerWidget/index.js',
+          'HelloWorldMenuBarAndDrawerWidget/model.js',
+        ]),
+      ))
 })
