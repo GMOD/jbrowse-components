@@ -5,7 +5,7 @@ export default class PrecomputedLayout {
 
   addRect(id) {
     if (!(id in this.data)) {
-      debugger
+      // debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     return this.data[id]

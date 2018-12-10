@@ -85,9 +85,11 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": [
-    "last 1 Chrome version"
-  ],
+  "browserslist": {
+    "development": [
+      "last 1 Chrome version"
+    ]
+  },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}"
