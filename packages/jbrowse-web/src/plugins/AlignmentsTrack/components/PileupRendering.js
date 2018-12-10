@@ -14,7 +14,7 @@ const Feature = observer(
       feature.id(),
       feature.get('start'),
       feature.get('end'),
-      10, // height
+      17, // height
       feature,
     )
 
