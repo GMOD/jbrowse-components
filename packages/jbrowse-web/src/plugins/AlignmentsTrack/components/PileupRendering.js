@@ -5,23 +5,23 @@ import ReactPropTypes from 'prop-types'
 import './PileupRendering.scss'
 import SsrCanvas from './SsrCanvas'
 
-const layoutFeature = ({
+function layoutFeature({
   feature,
   layout,
   bpPerPx,
   region,
   horizontallyFlipped = false,
-}) => {
-  if (horizontallyFlipped)
-    throw new Error('horizontallyFlipped not yet supported')
+}) {
   const leftBase = region.start
   const startPx = (feature.get('start') - leftBase) / bpPerPx
   const endPx = (feature.get('end') - leftBase) / bpPerPx
+  // if (Number.isNaN(startPx)) debugger
+  // if (Number.isNaN(endPx)) debugger
   const topPx = layout.addRect(
     feature.id(),
     feature.get('start'),
     feature.get('end'),
-    10, // height
+    17, // height
     feature,
   )
 

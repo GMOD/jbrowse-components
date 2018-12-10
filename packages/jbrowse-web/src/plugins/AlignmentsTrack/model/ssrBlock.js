@@ -1,12 +1,10 @@
-import { types, getParent, getRoot, flow, isAlive } from 'mobx-state-tree'
+import { types, getParent, flow, isAlive } from 'mobx-state-tree'
 
 import { getConf } from '../../../configuration'
 
 import { Region } from '../../../mst-types'
-import { renderRegionWithWorker } from '../../../render'
 
 import { AlignmentsTrackBlock } from '../components/AlignmentsTrack'
-import PrecomputedLayout from '../../../util/PrecomputedLayout'
 
 // MST flow that calls the render worker to render the block content
 export function flowRenderBlock(self) {
@@ -17,20 +15,19 @@ export function flowRenderBlock(self) {
     const root = getParent(view, 2)
     try {
       // console.log('calling', self.region.toJSON())
-      const { html, ...data } = yield renderRegionWithWorker(root.app, {
-        region: self.region,
-        adapterType: track.adapterType.name,
-        adapterConfig: getConf(track, 'adapter'),
-        rendererType: track.rendererTypeName,
-        renderProps: self.renderProps,
-        sessionId: track.id,
-        timeout: 10000,
-      })
+      const { html, ...data } = yield track.rendererType.renderInClient(
+        root.app,
+        {
+          region: self.region,
+          adapterType: track.adapterType.name,
+          adapterConfig: getConf(track, 'adapter'),
+          rendererType: track.rendererTypeName,
+          renderProps: self.renderProps,
+          sessionId: track.id,
+          timeout: 10000,
+        },
+      )
       if (!isAlive(self)) return
-
-      // if the remote render returned a layout, helpfully inflate it to a precomputed layout
-      if (data.layout && !data.layout.addRect)
-        data.layout = new PrecomputedLayout(data.layout)
 
       self.filled = true
       self.data = data
