@@ -85,7 +85,7 @@ class TrackRenderingContainer extends Component {
         className="TrackRenderingContainer"
         key={`rendering:${trackId}`}
         style={{
-          gridRow: trackId,
+          gridRow: `track-${trackId}`,
           gridColumn: 'blocks',
           width: `${width}px`,
         }}

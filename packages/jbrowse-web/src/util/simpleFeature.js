@@ -17,9 +17,13 @@ export default class SimpleFeature {
    * which will be inflated to more instances of this class.
    */
   constructor(args = {}) {
-    this.data = args.data || {}
+    this.data = args.data || args
     this.parent = args.parent
     this.uniqueID = args.id || this.data.uniqueID || generateId(this)
+
+    if (!(this.data.end - this.data.start >= 0)) {
+      throw new Error(`invalid feature data`)
+    }
 
     // inflate any subfeatures that are not already feature objects
     const { subfeatures } = this.data
@@ -79,7 +83,7 @@ export default class SimpleFeature {
   }
 
   toJSON() {
-    const d = Object.assign({}, this)
+    const d = Object.assign({}, this.data)
     d.parentID = d.parent ? d.parent.id() : undefined
     delete d.parent
     return d

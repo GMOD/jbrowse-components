@@ -1,7 +1,7 @@
 import { isType, types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
 import configSchema from './configSchema'
-import { TestStub as LinearGenomeModel } from './model'
+import { TestStub as LinearGenomeModel } from '.'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types

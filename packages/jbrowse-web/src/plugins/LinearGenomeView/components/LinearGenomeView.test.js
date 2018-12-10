@@ -1,7 +1,7 @@
 import { Provider } from 'mobx-react'
 import React from 'react'
 import renderer from 'react-test-renderer'
-import { TestStub as Model } from '../models/model'
+import { TestStub as Model } from '../model'
 import LinearGenomeView from './LinearGenomeView'
 
 describe('LinearGenomeView genome view component', () => {

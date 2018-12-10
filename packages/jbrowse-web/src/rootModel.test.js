@@ -1,6 +1,5 @@
-import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
 import JBrowse from './JBrowse'
-import rootModel from './rootModel'
 
 test('can load configuration with the configure() action and resolve references to view configurations', () => {
   const jbrowse = new JBrowse().configure()

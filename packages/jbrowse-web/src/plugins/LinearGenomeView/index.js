@@ -1,4 +1,4 @@
-import modelFactory from './models/model'
+import modelFactory from './model'
 import ReactComponent from './components/LinearGenomeView'
 
 import Plugin, { ViewType } from '../../Plugin'

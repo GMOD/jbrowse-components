@@ -7,7 +7,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     Object {
       "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px",
+      "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px",
       "height": "45px",
       "width": "800px",
     }
@@ -44,7 +44,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     style={
       Object {
         "gridColumn": "controls",
-        "gridRow": "foo",
+        "gridRow": "track-foo",
       }
     }
   >
@@ -61,7 +61,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     style={
       Object {
         "gridColumn": "blocks",
-        "gridRow": "foo",
+        "gridRow": "track-foo",
         "width": "700px",
       }
     }
@@ -98,7 +98,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     Object {
       "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
-      "gridTemplateRows": "[scale-bar] auto [foo] 20px [resize-foo] 3px [bar] 20px [resize-bar] 3px",
+      "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px",
       "height": "68px",
       "width": "800px",
     }
@@ -147,7 +147,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     style={
       Object {
         "gridColumn": "controls",
-        "gridRow": "foo",
+        "gridRow": "track-foo",
       }
     }
   >
@@ -164,7 +164,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     style={
       Object {
         "gridColumn": "blocks",
-        "gridRow": "foo",
+        "gridRow": "track-foo",
         "width": "700px",
       }
     }
@@ -196,7 +196,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     style={
       Object {
         "gridColumn": "controls",
-        "gridRow": "bar",
+        "gridRow": "track-bar",
       }
     }
   >
@@ -213,7 +213,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     style={
       Object {
         "gridColumn": "blocks",
-        "gridRow": "bar",
+        "gridRow": "track-bar",
         "width": "700px",
       }
     }
