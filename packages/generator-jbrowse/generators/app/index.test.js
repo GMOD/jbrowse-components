@@ -2,12 +2,17 @@ const path = require('path')
 const assert = require('yeoman-assert')
 const helpers = require('yeoman-test')
 
-// Be sure to use { tmpdir: false } with helpers.run(), since otherwise it will
-// use process.chdir() and could mess up other tests in the suite
 describe('generator-jbrowse:app', () => {
+  let originalWorkingDirectory
+  beforeAll(() => {
+    originalWorkingDirectory = process.cwd()
+  })
+
+  afterEach(() => process.chdir(originalWorkingDirectory))
+
   it('throws when not in the plugins directory', async () =>
     expect(
-      helpers.run(path.join(__dirname, '.'), { tmpdir: false }).withPrompts({
+      helpers.run(path.join(__dirname, '.')).withPrompts({
         correctDir: false,
         type: 'helloWorldMenuBar',
       }),
@@ -15,7 +20,7 @@ describe('generator-jbrowse:app', () => {
 
   it('creates a "Hello World" menu bar', () =>
     helpers
-      .run(path.join(__dirname, '.'), { tmpdir: false })
+      .run(path.join(__dirname, '.'))
       .withPrompts({ correctDir: true, type: 'helloWorldMenuBar' })
       .then(() =>
         assert.file([
@@ -27,7 +32,7 @@ describe('generator-jbrowse:app', () => {
 
   it('creates a "Hello World" menu bar and drawer widget', () =>
     helpers
-      .run(path.join(__dirname, '.'), { tmpdir: false })
+      .run(path.join(__dirname, '.'))
       .withPrompts({
         correctDir: true,
         type: 'helloWorldMenuBarAndDrawerWidget',
