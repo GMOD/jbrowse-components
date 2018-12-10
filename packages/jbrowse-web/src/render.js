@@ -30,6 +30,7 @@ export async function renderRegionWithWorker(app, args) {
 
   // convert the feature JSON to SimpleFeature objects
   result.features = result.featureJSON.map(j => SimpleFeature.fromJSON(j))
+  delete result.featureJSON
   return result
 }
 
