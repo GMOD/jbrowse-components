@@ -247,7 +247,7 @@ describe('configuration schemas', () => {
     expect(getSnapshot(model)).toEqual({
       configuration: {
         _configId: 'two',
-        myConfigurationMap: { nog: { _configId: 'nog' }},
+        myConfigurationMap: { nog: { _configId: 'nog' } },
         mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })
