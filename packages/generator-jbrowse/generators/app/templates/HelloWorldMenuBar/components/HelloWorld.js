@@ -15,7 +15,7 @@ const styles = {
   },
 }
 
-function MainAppBar(props) {
+function HelloWorld(props) {
   const { classes, model } = props
 
   return (
@@ -33,7 +33,7 @@ function MainAppBar(props) {
   )
 }
 
-MainAppBar.propTypes = {
+HelloWorld.propTypes = {
   classes: PropTypes.shape({
     grow: PropTypes.shape.isRequired,
     root: PropTypes.shape.isRequired,
@@ -41,4 +41,4 @@ MainAppBar.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(MainAppBar))
+export default withStyles(styles)(observer(HelloWorld))
