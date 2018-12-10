@@ -73,11 +73,21 @@ module.exports = class extends Generator {
   }
 
   _writeHelloWorldMenuBarAndDrawerWidget() {
-    this.log.error(
-      chalk.red(
-        'The "Hello World" Menu Bar and Drawer Widget sample plugin has not been implemented yet',
+    const pluginFiles = [
+      'components/HelloWorldDrawerWidget.js',
+      'components/HelloWorldMenuBar.js',
+      'index.js',
+      'model.js',
+    ]
+    pluginFiles.forEach(pluginFile =>
+      this.fs.copy(
+        this.templatePath(
+          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
+        ),
+        this.destinationPath(
+          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
+        ),
       ),
     )
-    this.env.error('Exiting now')
   }
 }
