@@ -10,6 +10,8 @@ const Feature = observer(
     const leftBase = region.start
     const startPx = (feature.get('start') - leftBase) / bpPerPx
     const endPx = (feature.get('end') - leftBase) / bpPerPx
+    // if (Number.isNaN(startPx)) debugger
+    // if (Number.isNaN(endPx)) debugger
     const top = layout.addRect(
       feature.id(),
       feature.get('start'),

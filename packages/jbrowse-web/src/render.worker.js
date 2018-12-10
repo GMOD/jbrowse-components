@@ -1,8 +1,5 @@
 import './workerPolyfill'
 
-import { renderToString } from 'react-dom/server'
-import { toArray } from 'rxjs/operators'
-
 import jsonStableStringify from 'json-stable-stringify'
 
 import RpcServer from '@librpc/web'
@@ -93,10 +90,6 @@ export async function renderRegion(
     adapterType,
     adapterConfig,
   )
-  const features = await dataAdapter
-    .getFeaturesInRegion(region)
-    .pipe(toArray())
-    .toPromise()
 
   const RendererType = pluginManager.getRendererType(rendererType)
   if (!RendererType) throw new Error(`renderer "${rendererType} not found`)
@@ -104,27 +97,13 @@ export async function renderRegion(
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
-  const { element, ...renderResult } = RendererType.render({
-    region,
-    dataAdapter,
-    features,
-    sessionId,
+
+  return RendererType.renderInWorker({
     ...renderProps,
+    sessionId,
+    dataAdapter,
+    region,
   })
-  const html = renderToString(element)
-
-  // before returning data, convert all we can to plain objects
-  Object.entries(renderResult).forEach(([key, value]) => {
-    if (value.toJSON) {
-      renderResult[key] = value.toJSON()
-    }
-  })
-
-  return {
-    featureJSON: features.map(f => f.toJSON()),
-    html,
-    ...renderResult,
-  }
 }
 
 function wrapForRpc(func) {
