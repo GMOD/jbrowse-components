@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 
-import { ImageBitmap } from '../offscreenCanvasPonyfill'
+import { ImageBitmapType } from '../offscreenCanvasPonyfill'
 
 export default class PrerenderedCanvas extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
-    imageData: ReactPropTypes.instanceOf(ImageBitmap),
+    imageData: ReactPropTypes.instanceOf(ImageBitmapType),
   }
 
   static defaultProps = { imageData: undefined }

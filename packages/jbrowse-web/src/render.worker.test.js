@@ -37,7 +37,8 @@ test('can render a single region with Pileup + BamAdapter', async () => {
   expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
-  expect(result.imageData.length).toBeGreaterThan(10000)
+  expect(result.imageData.width).toBe(800)
+  expect(result.imageData.height).toBe(result.layout.totalHeight)
   expect(result.width).toBe(800)
   expect(result.height).toBe(result.layout.totalHeight)
 
