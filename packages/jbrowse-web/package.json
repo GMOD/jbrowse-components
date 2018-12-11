@@ -16,6 +16,7 @@
     "babel-preset-mobx": "^2.0.0",
     "babel-preset-react-app": "^5.0.3",
     "bfj": "6.1.1",
+    "canvas": "^2.2.0",
     "case-sensitive-paths-webpack-plugin": "2.1.2",
     "chalk": "2.4.1",
     "css-loader": "1.0.0",
