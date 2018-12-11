@@ -1,18 +1,23 @@
 export default class PrecomputedLayout {
-  constructor({ records, totalHeight }) {
-    this.records = records
+  constructor({ rectangles, totalHeight }) {
+    this.rectangles = rectangles // of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
   }
 
   addRect(id) {
-    if (!(id in this.records)) {
+    if (!(id in this.rectangles)) {
       // debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
-    return this.records[id]
+    // left, top, right, bottom
+    return this.rectangles[id][1]
+  }
+
+  getRectangles() {
+    return this.rectangles
   }
 
   toJSON() {
-    return { records: this.records, totalHeight: this.totalHeight }
+    return { rectangles: this.records, totalHeight: this.totalHeight }
   }
 }

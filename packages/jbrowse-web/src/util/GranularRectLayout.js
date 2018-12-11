@@ -273,8 +273,15 @@ export default class GranularRectLayout {
     const pRight = Math.floor(right / this.pitchX)
     const pHeight = Math.ceil(height / this.pitchY)
 
-    const midX = Math.floor((pLeft + pRight) / 2)
-    const rectangle = { id, l: pLeft, r: pRight, mX: midX, h: pHeight }
+    // const midX = Math.floor((pLeft + pRight) / 2)
+    const rectangle = {
+      id,
+      l: pLeft,
+      r: pRight,
+      // mX: midX,
+      h: pHeight,
+      originalHeight: height,
+    }
     if (data) rectangle.data = data
 
     const maxTop = this.maxHeight - pHeight
@@ -392,14 +399,22 @@ export default class GranularRectLayout {
     return this.pTotalHeight * this.pitchY
   }
 
-  toJSON() {
+  getRectangles() {
     const data = {}
     // let count = 0
     Object.entries(this.rectangles).forEach(([id, rect]) => {
-      data[id] = rect.top * this.pitchY
+      const { l, r, originalHeight, top } = rect
+      const t = top * this.pitchY
+      const b = t + originalHeight
+      data[id] = [l, t, r, b] // left, top, right, bottom
       // count += 1
     })
+    return data
+  }
+
+  toJSON() {
+    const rectangles = this.getRectangles()
     // console.log(`${this.id} toJSON - ${count}`)
-    return { records: data, totalHeight: this.getTotalHeight() }
+    return { rectangles, totalHeight: this.getTotalHeight() }
   }
 }
