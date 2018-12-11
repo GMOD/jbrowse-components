@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can record commands and replay them 1`] = `
+Object {
+  "state": Object {
+    "operations": Array [
+      Array [
+        0,
+        "getContext",
+        "2d",
+        1,
+      ],
+      Array [
+        0,
+        "getContext",
+        "2d",
+        2,
+      ],
+    ],
+  },
+  "type": "RecordingCanvas",
+}
+`;
