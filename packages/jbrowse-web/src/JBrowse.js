@@ -6,12 +6,14 @@ import PluginManager from './PluginManager'
 
 import App from './ui/App'
 import RootModelFactory from './rootModel'
+import MainMenuBarPlugin from './plugins/MainMenuBar'
 import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
 const corePlugins = [
+  MainMenuBarPlugin,
   HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
   LinearGenomeViewPlugin,

@@ -48,6 +48,20 @@ window.MODEL = model
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
+model.addMenuBar('MainMenuBar')
+model.menuBars[0].addMenu({
+  name: 'Another Menu',
+  menuItems: [
+    { name: 'Item 1' },
+    {
+      name: 'Item 2',
+      icon: 'code',
+      callback:
+        'function(model){console.log("You clicked Item 2");console.log(model)}',
+    },
+  ],
+})
+
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
