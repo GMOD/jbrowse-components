@@ -31,6 +31,8 @@ function registerRender() {
 }
 
 export function register() {
+  // we can't do more than 1 render worker right
+  // now because of caches, layout, and sessions
   return {
     // hello: [registerHello()],
     render: [registerRender()],
