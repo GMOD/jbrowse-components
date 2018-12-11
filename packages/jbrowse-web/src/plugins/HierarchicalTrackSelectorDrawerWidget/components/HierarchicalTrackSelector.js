@@ -3,10 +3,13 @@ import Checkbox from '@material-ui/core/Checkbox'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import Fab from '@material-ui/core/Fab'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
 import InputAdornment from '@material-ui/core/InputAdornment'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
@@ -17,6 +20,7 @@ import {
   PropTypes as MobxPropTypes,
   Provider,
 } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
@@ -28,6 +32,13 @@ const styles = theme => ({
   },
   expansionPanelDetails: {
     display: 'block',
+  },
+  fab: {
+    float: 'right',
+    position: 'sticky',
+    'margin-top': theme.spacing.unit * 2,
+    bottom: theme.spacing.unit * 2,
+    right: theme.spacing.unit * 2,
   },
 })
 
@@ -113,13 +124,37 @@ class HierarchicalTrackSelector extends React.Component {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
       expansionPanelDetails: propTypes.string.isRequired,
+      fab: propTypes.string.isRequired,
     }).isRequired,
     model: MobxPropTypes.observableObject.isRequired,
+  }
+
+  state = {
+    anchorEl: null,
+  }
+
+  handleFabClick = event => {
+    this.setState({ anchorEl: event.currentTarget })
+  }
+
+  handleFabClose = () => {
+    this.setState({ anchorEl: null })
   }
 
   handleInputChange = event => {
     const { model } = this.props
     model.setFilterText(event.target.value)
+  }
+
+  addDataHub = () => {
+    this.handleFabClose()
+    const { model } = this.props
+    const rootModel = getRoot(model)
+    if (!rootModel.drawerWidgets.get('dataHubDrawerWidget'))
+      rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
+    rootModel.showDrawerWidget(
+      rootModel.drawerWidgets.get('dataHubDrawerWidget'),
+    )
   }
 
   filter = trackConfig => {
@@ -130,6 +165,7 @@ class HierarchicalTrackSelector extends React.Component {
   }
 
   render() {
+    const { anchorEl } = this.state
     const { classes, model } = this.props
 
     const filterError =
@@ -161,6 +197,21 @@ class HierarchicalTrackSelector extends React.Component {
             }}
           />
           <Contents category={model.hierarchy} />
+          <Fab
+            color="secondary"
+            className={classes.fab}
+            onClick={this.handleFabClick}
+          >
+            <Icon>add</Icon>
+          </Fab>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={this.handleFabClose}
+          >
+            <MenuItem onClick={this.addDataHub}>Add Data Hub</MenuItem>
+          </Menu>
         </div>
       </Provider>
     )
