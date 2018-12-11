@@ -5,7 +5,10 @@
 export let createCanvas
 export let createImageBitmap
 export let ImageBitmapType
-if (typeof __webpack_require__ === 'function') {
+if (
+  typeof __webpack_require__ === 'function' &&
+  typeof OffscreenCanvas === 'function'
+) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
