@@ -27,13 +27,18 @@ export default class PrerenderedCanvas extends Component {
 
   draw() {
     const { imageData } = this.props
+    if (!imageData) return
     if (imageData instanceof ImageBitmap) {
       const canvas = this.featureCanvas.current
       const context = canvas.getContext('2d')
       // console.log('got image data', imageData)
       context.drawImage(imageData, 0, 0)
+    } else {
+      // TODO: add support for replay-based image data here
+      throw new Error(
+        'unsupported imageData type. do you need to add support for it?',
+      )
     }
-    // TODO: add support for replay-based image data here
   }
 
   render() {
