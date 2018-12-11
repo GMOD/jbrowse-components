@@ -44,23 +44,37 @@ function getConf(model, slotName, args) {
   return readConfObject(model.configuration, slotName, args)
 }
 
-function readConfObject(confObject, slotName, args) {
-  const slot = confObject[slotName]
-  if (!slot) {
-    return undefined
-    // if we want to be very strict about config slots, we could uncomment the below
-    // const modelType = getType(model)
-    // const schemaType = model.configuration && getType(model.configuration)
-    // throw new Error(
-    //   `no slot "${slotName}" found in ${modelType.name} configuration (${
-    //     schemaType.name
-    //   })`,
-    // )
+function readConfObject(confObject, slotPath, args) {
+  if (typeof slotPath === 'string') {
+    const slotName = typeof slotPath === 'string' ? slotPath : slotPath[0]
+    const slot = confObject[slotName]
+    if (!slot) {
+      return undefined
+      // if we want to be very strict about config slots, we could uncomment the below
+      // instead of returning undefine
+      //
+      // const modelType = getType(model)
+      // const schemaType = model.configuration && getType(model.configuration)
+      // throw new Error(
+      //   `no slot "${slotName}" found in ${modelType.name} configuration (${
+      //     schemaType.name
+      //   })`,
+      // )
+    }
+    if (slot.func) {
+      return slot.func.apply(null, args)
+    }
+    return getSnapshot(slot)
   }
-  if (slot.func) {
-    return slot.func.apply(null, args)
+
+  const slotName = slotPath[0]
+  if (slotPath.length > 1) {
+    const newPath = slotPath.slice(1)
+    const subConf = confObject[slotName]
+    if (!subConf) return undefined
+    return readConfObject(subConf, newPath, args)
   }
-  return getSnapshot(slot)
+  return readConfObject(confObject, slotName, args)
 }
 
 export {
