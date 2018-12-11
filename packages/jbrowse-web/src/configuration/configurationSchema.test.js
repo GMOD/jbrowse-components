@@ -5,7 +5,7 @@ import {
   functionRegexp,
 } from './configurationSchema'
 
-import { getConf } from './index'
+import { getConf, readConfObject } from './index'
 
 describe('function string parsing', () => {
   it('has working regex', () => {
@@ -251,5 +251,7 @@ describe('configuration schemas', () => {
         mySubConfiguration: { _configId: 'one', someNumber: 12 },
       },
     })
+
+    expect(getConf(model, ['mySubConfiguration', 'someNumber'])).toEqual(12)
   })
 })

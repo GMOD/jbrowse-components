@@ -61,8 +61,14 @@ export default types
     },
 
     get renderProps() {
-      const view = getParent(self, 4) // view -> [tracks] -> [blocks]
-      return { bpPerPx: view.bpPerPx }
+      // view -> [tracks] -> [blocks]
+      const track = getParent(self, 2)
+      const view = getParent(track, 2)
+      const config = getConf(track, ['renderers', track.rendererTypeName])
+      return {
+        bpPerPx: view.bpPerPx,
+        config,
+      }
     },
   }))
   .actions(self => ({

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import { hydrate, findDOMNode } from 'react-dom'
+import { hydrate } from 'react-dom'
 
 function LoadingMessage() {
   return <div className="loading">Loading ...</div>
@@ -19,6 +19,11 @@ class ServerSideRenderedBlockContent extends Component {
     model: PropTypes.observableObject.isRequired,
   }
 
+  constructor(props) {
+    super(props)
+    this.ssrContainerNode = React.createRef()
+  }
+
   componentDidMount() {
     this.doHydrate()
   }
@@ -31,7 +36,7 @@ class ServerSideRenderedBlockContent extends Component {
     const { model } = this.props
     if (model.filled) {
       const { data, region, html, rendererType, renderProps } = model
-      const domNode = findDOMNode(this) // eslint-disable-line react/no-find-dom-node
+      const domNode = this.ssrContainerNode.current
       domNode.innerHTML = html
       const mainThreadRendering = React.createElement(
         rendererType.ReactComponent,
@@ -46,7 +51,7 @@ class ServerSideRenderedBlockContent extends Component {
     const { model } = this.props
     if (model.error) return <ErrorMessage error={model.error} />
     if (!model.filled) return <LoadingMessage />
-    return <div className="ssr-container" />
+    return <div ref={this.ssrContainerNode} className="ssr-container" />
   }
 }
 

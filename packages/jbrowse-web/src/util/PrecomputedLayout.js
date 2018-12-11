@@ -1,17 +1,18 @@
 export default class PrecomputedLayout {
-  constructor(json) {
-    this.data = json
+  constructor({ records, totalHeight }) {
+    this.records = records
+    this.totalHeight = totalHeight
   }
 
   addRect(id) {
-    if (!(id in this.data)) {
+    if (!(id in this.records)) {
       // debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
-    return this.data[id]
+    return this.records[id]
   }
 
   toJSON() {
-    return this.data
+    return { records: this.records, totalHeight: this.totalHeight }
   }
 }

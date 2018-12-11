@@ -16,7 +16,7 @@ export default (pluginManager, configSchema) =>
         configuration: ConfigurationReference(configSchema),
         // the renderer that the user has selected in the UI, empty string
         // if they have not made any selection
-        selectedView: types.optional(types.string, ''),
+        selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
       })
       .volatile(self => ({
@@ -33,8 +33,8 @@ export default (pluginManager, configSchema) =>
         // the renderer type name is based on the "view"
         // selected in the UI: pileup, coverage, etc
         get rendererTypeName() {
-          const defaultView = getConf(self, 'defaultView')
-          const viewName = self.selectedView || defaultView
+          const defaultRendering = getConf(self, 'defaultRendering')
+          const viewName = self.selectedRendering || defaultRendering
           const rendererType = { pileup: 'PileupRenderer' }[viewName]
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)

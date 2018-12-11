@@ -400,6 +400,6 @@ export default class GranularRectLayout {
       // count += 1
     })
     // console.log(`${this.id} toJSON - ${count}`)
-    return data
+    return { records: data, totalHeight: this.getTotalHeight() }
   }
 }
