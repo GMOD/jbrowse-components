@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 
-import { ImageBitmapType } from '../offscreenCanvasPonyfill'
+import { ImageBitmapType } from '../../../util/offscreenCanvasPonyfill'
 
 export default class PrerenderedCanvas extends Component {
   static propTypes = {

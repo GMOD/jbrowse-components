@@ -2,7 +2,6 @@ import {
   isStateTreeNode,
   getPropertyMembers,
   getSnapshot,
-  getType,
 } from 'mobx-state-tree'
 import { isObservableArray, isObservableObject } from 'mobx'
 

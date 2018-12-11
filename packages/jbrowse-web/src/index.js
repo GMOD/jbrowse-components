@@ -37,6 +37,7 @@ jbrowse.configure({
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
       },
+      renderers: { PileupRenderer: { alignmentColor: 'blue' } },
     },
   ],
 })
@@ -68,9 +69,9 @@ secondView.displayRegions([
     assembly: 'volvox',
     refName: 'ctgB',
     start: 0,
-    end: 200,
+    end: 2000,
   },
-  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
 ])
 
 firstView.activateTrackSelector()

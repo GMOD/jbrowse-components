@@ -6,7 +6,10 @@ import { renderRegionWithWorker } from '../../render'
 
 import { RendererType } from '../../Plugin'
 
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
+import {
+  createCanvas,
+  createImageBitmap,
+} from '../../util/offscreenCanvasPonyfill'
 
 import PileupRendering from './components/PileupRendering'
 import GranularRectLayout from '../../util/GranularRectLayout'
@@ -14,6 +17,7 @@ import GranularRectLayout from '../../util/GranularRectLayout'
 import PrecomputedLayout from '../../util/PrecomputedLayout'
 
 import SimpleFeature from '../../util/simpleFeature'
+import { ConfigurationSchema, readConfObject } from '../../configuration'
 
 class PileupSession {
   update(props) {
@@ -23,7 +27,7 @@ class PileupSession {
   get layout() {
     const pitchX = this.bpPerPx
     if (!this.cachedLayout || this.cachedLayout.pitchX !== pitchX) {
-      this.cachedLayout = new GranularRectLayout({ pitchX, pitchY: 10 })
+      this.cachedLayout = new GranularRectLayout({ pitchX, pitchY: 3 })
     }
     return this.cachedLayout
   }
@@ -51,13 +55,20 @@ class PileupRenderer extends RendererType {
     return 0
   }
 
-  layoutFeature(feature, layout, bpPerPx, region, horizontallyFlipped = false) {
+  layoutFeature(
+    feature,
+    layout,
+    config,
+    bpPerPx,
+    region,
+    horizontallyFlipped = false,
+  ) {
     if (horizontallyFlipped)
       throw new Error('horizontal flipping not yet implemented')
     const leftBase = region.start
     const startPx = (feature.get('start') - leftBase) / bpPerPx
     const endPx = (feature.get('end') - leftBase) / bpPerPx
-    const heightPx = 17
+    const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
     const topPx = layout.addRect(
@@ -80,6 +91,7 @@ class PileupRenderer extends RendererType {
   async makeImageData({
     features,
     layout,
+    config,
     region,
     bpPerPx,
     horizontallyFlipped,
@@ -88,7 +100,14 @@ class PileupRenderer extends RendererType {
     if (!layout.addRect) throw new Error('invalid layout')
 
     const layoutRecords = features.map(feature =>
-      this.layoutFeature(feature, layout, bpPerPx, region, horizontallyFlipped),
+      this.layoutFeature(
+        feature,
+        layout,
+        config,
+        bpPerPx,
+        region,
+        horizontallyFlipped,
+      ),
     )
 
     const width = (region.end - region.start) / bpPerPx
@@ -97,8 +116,8 @@ class PileupRenderer extends RendererType {
 
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = 'gray'
     layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
+      ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
     })
 
@@ -125,8 +144,11 @@ class PileupRenderer extends RendererType {
       .pipe(toArray())
       .toPromise()
 
+    // inflate our configuration
+    const config = this.configSchema.create(args.config || {})
+
     const session = this.getWorkerSession(args)
-    const renderProps = { ...args, features, layout: session.layout }
+    const renderProps = { ...args, features, layout: session.layout, config }
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
@@ -149,8 +171,22 @@ class PileupRenderer extends RendererType {
   }
 }
 
+export const ConfigSchema = ConfigurationSchema('PileupRenderer', {
+  alignmentColor: {
+    type: 'color',
+    description: 'the color of each feature in a pileup alignment',
+    defaultValue: `function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }`,
+  },
+  alignmentHeight: {
+    type: 'integer',
+    description: 'the height of each feature in a pileup alignment',
+    defaultValue: 5,
+  },
+})
+
 export default pluginManager =>
   new PileupRenderer({
     name: 'PileupRenderer',
     ReactComponent: PileupRendering,
+    configSchema: ConfigSchema,
   })
