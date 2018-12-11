@@ -6,7 +6,7 @@ export default pluginManager =>
     'AlignmentsTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      defaultView: {
+      defaultRendering: {
         type: 'string',
         defaultValue: 'pileup',
       },
