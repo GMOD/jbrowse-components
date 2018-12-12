@@ -157,7 +157,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
                 region.start + (blockNum + 1) * blockSizeBp,
               ),
               offsetPx:
-                (regionBpOffset + region.start + blockNum * blockSizeBp) *
+                (regionBpOffset + region.start + blockNum * blockSizeBp) /
                 self.bpPerPx,
             }
             newBlock.key = assembleLocString(newBlock)
