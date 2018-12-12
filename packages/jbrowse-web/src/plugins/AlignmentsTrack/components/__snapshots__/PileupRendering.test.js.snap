@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`one 1`] = `
+<div
+  className="PileupRendering"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+>
+  <PrerenderedCanvas
+    bpPerPx={3}
+    height={500}
+    horizontallyFlipped={false}
+    layout={
+      Object {
+        "rectangles": Object {},
+        "totalHeight": 20,
+      }
+    }
+    onFeatureClick={[Function]}
+    onFeatureMouseDown={[Function]}
+    onFeatureMouseEnter={[Function]}
+    onFeatureMouseLeave={[Function]}
+    onFeatureMouseMove={[Function]}
+    onFeatureMouseOut={[Function]}
+    onFeatureMouseOver={[Function]}
+    onFeatureMouseUp={[Function]}
+    region={
+      Object {
+        "assembly": "toaster",
+        "end": 3,
+        "refName": "zonk",
+        "start": 1,
+      }
+    }
+    width={500}
+  />
+  <canvas
+    className="highlightOverlayCanvas"
+    height={500}
+    onBlur={[Function]}
+    onFocus={[Function]}
+    onMouseDown={[Function]}
+    onMouseEnter={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseOut={[Function]}
+    onMouseOver={[Function]}
+    onMouseUp={[Function]}
+    style={
+      Object {
+        "left": 0,
+        "position": "absolute",
+        "top": 0,
+      }
+    }
+    width={500}
+  />
+</div>
+`;
