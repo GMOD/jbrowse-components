@@ -227,6 +227,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         }
       },
 
+      zoomTo(newBpPerPx) {
+        self.bpPerPx = newBpPerPx
+      },
+
       resizeTrack(trackId, distance) {
         const track = self.tracks.find(t => t.id === trackId)
         if (track) track.setHeight(track.height + distance)

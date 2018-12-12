@@ -1,3 +1,9 @@
+import fromEntries from 'object.fromentries'
+
+if (!Object.fromEntries) {
+  fromEntries.shim()
+}
+
 /**
  * Rectangle-layout manager that lays out rectangles using bitmaps at
  * resolution that, for efficiency, may be somewhat lower than that of
@@ -400,20 +406,19 @@ export default class GranularRectLayout {
   }
 
   getRectangles() {
-    const data = {}
-    // let count = 0
-    Object.entries(this.rectangles).forEach(([id, rect]) => {
-      const { l, r, originalHeight, top } = rect
-      const t = top * this.pitchY
-      const b = t + originalHeight
-      data[id] = [l, t, r, b] // left, top, right, bottom
-      // count += 1
-    })
-    return data
+    return new Map(
+      Object.entries(this.rectangles).map(([id, rect]) => {
+        const { l, r, originalHeight, top } = rect
+        const t = top * this.pitchY
+        const b = t + originalHeight
+        return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
+        // count += 1
+      }),
+    )
   }
 
   toJSON() {
-    const rectangles = this.getRectangles()
+    const rectangles = Object.fromEntries(this.getRectangles())
     // console.log(`${this.id} toJSON - ${count}`)
     return { rectangles, totalHeight: this.getTotalHeight() }
   }

@@ -1,23 +1,34 @@
+import fromEntries from 'object.fromentries'
+
+if (!Object.fromEntries) {
+  fromEntries.shim()
+}
 export default class PrecomputedLayout {
   constructor({ rectangles, totalHeight }) {
-    this.rectangles = rectangles // of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
+    this.rectangles = new Map(Object.entries(rectangles)) // of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
   }
 
   addRect(id) {
-    if (!(id in this.rectangles)) {
+    if (!this.rectangles.has(id)) {
       // debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom
-    return this.rectangles[id][1]
+    return this.rectangles.get(id)[1]
   }
 
+  /**
+   * returns a Map of feature id -> rectangle
+   */
   getRectangles() {
     return this.rectangles
   }
 
   toJSON() {
-    return { rectangles: this.records, totalHeight: this.totalHeight }
+    return {
+      rectangles: Object.fromEntries(this.rectangles),
+      totalHeight: this.totalHeight,
+    }
   }
 }

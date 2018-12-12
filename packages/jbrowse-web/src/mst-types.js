@@ -1,8 +1,20 @@
 import shortid from 'shortid'
 import { types } from 'mobx-state-tree'
+import propTypes from 'prop-types'
+
 import { assembleLocString } from './util'
 
 export const ElementId = types.optional(types.identifier, shortid.generate)
+
+// PropTypes that are useful when working with instances of these in react components
+export const PropTypes = {
+  Region: propTypes.shape({
+    assembly: propTypes.string.isRequired,
+    refName: propTypes.string.isRequired,
+    start: propTypes.number.isRequired,
+    end: propTypes.number.isRequired,
+  }),
+}
 
 export const Region = types
   .model('Region', {

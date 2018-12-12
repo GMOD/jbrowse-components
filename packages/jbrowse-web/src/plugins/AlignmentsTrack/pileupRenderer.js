@@ -18,6 +18,7 @@ import PrecomputedLayout from '../../util/PrecomputedLayout'
 
 import SimpleFeature from '../../util/simpleFeature'
 import { ConfigurationSchema, readConfObject } from '../../configuration'
+import { bpToPx } from '../../util'
 
 class PileupSession {
   update(props) {
@@ -66,8 +67,18 @@ class PileupRenderer extends RendererType {
     if (horizontallyFlipped)
       throw new Error('horizontal flipping not yet implemented')
     const leftBase = region.start
-    const startPx = (feature.get('start') - leftBase) / bpPerPx
-    const endPx = (feature.get('end') - leftBase) / bpPerPx
+    const startPx = bpToPx(
+      feature.get('start'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const endPx = bpToPx(
+      feature.get('end'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
