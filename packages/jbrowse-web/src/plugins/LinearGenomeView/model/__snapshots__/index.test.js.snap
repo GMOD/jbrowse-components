@@ -137,3 +137,26 @@ Array [
   },
 ]
 `;
+
+exports[`block calculation can calculate some blocks 9 1`] = `
+Array [
+  Object {
+    "assembly": "volvox",
+    "end": 3200,
+    "key": "volvox:ctgA:1601-3200",
+    "offsetPx": 800,
+    "refName": "ctgA",
+    "start": 1600,
+    "widthPx": 800,
+  },
+  Object {
+    "assembly": "volvox",
+    "end": 4800,
+    "key": "volvox:ctgA:3201-4800",
+    "offsetPx": 1600,
+    "refName": "ctgA",
+    "start": 3200,
+    "widthPx": 800,
+  },
+]
+`;

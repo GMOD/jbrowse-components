@@ -40,7 +40,14 @@ class ServerSideRenderedBlockContent extends Component {
       domNode.innerHTML = html
       const mainThreadRendering = React.createElement(
         rendererType.ReactComponent,
-        { ...data, region, ...renderProps },
+        {
+          ...data,
+          region,
+          ...renderProps,
+          onFeatureClick: (featureId, event) => {
+            console.log(`clicked ${featureId}`)
+          },
+        },
         null,
       )
       hydrate(mainThreadRendering, domNode)

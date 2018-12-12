@@ -157,7 +157,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
                 region.start + (blockNum + 1) * blockSizeBp,
               ),
               offsetPx:
-                (regionBpOffset + region.start + blockNum * blockSizeBp) *
+                (regionBpOffset + region.start + blockNum * blockSizeBp) /
                 self.bpPerPx,
             }
             newBlock.key = assembleLocString(newBlock)
@@ -225,6 +225,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         } else {
           throw new Error(`invalid track selector type ${trackSelectorType}`)
         }
+      },
+
+      zoomTo(newBpPerPx) {
+        self.bpPerPx = newBpPerPx
       },
 
       resizeTrack(trackId, distance) {
