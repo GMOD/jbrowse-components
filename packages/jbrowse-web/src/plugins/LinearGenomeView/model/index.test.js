@@ -178,4 +178,29 @@ describe('block calculation', () => {
     )
     expect(model.blocks).toMatchSnapshot()
   })
+
+  it('can calculate some blocks 9', () => {
+    const model = LinearGenomeModel.create(
+      {
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo track', type: 'tester' }],
+        offsetPx: 1069,
+        bpPerPx: 2,
+        displayedRegions: [
+          {
+            assembly: 'volvox',
+            refName: 'ctgA',
+            start: 0,
+            end: 50000,
+          },
+          { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
+        ],
+        configuration: 'fakeReference',
+      },
+      {
+        testEnv: true,
+      },
+    )
+    expect(model.blocks).toMatchSnapshot()
+  })
 })
