@@ -13,10 +13,10 @@ import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import propTypes from 'prop-types'
 import React from 'react'
+import TrackHubRegistrySelect from './TrackHubRegistrySelect'
 
 const styles = theme => ({
   root: {
-    width: '90%',
     'margin-top': theme.spacing.unit,
   },
   button: {
@@ -33,13 +33,14 @@ const styles = theme => ({
 
 const steps = [
   'Select a Data Hub Type',
+  'Select a Data Hub Source',
   'Select a Data Hub',
   'Confirm Selection',
 ]
 
-const dataHubDescriptions = {
+const hubTypeDescriptions = {
   ucsc: (
-    <div>
+    <FormHelperText>
       A track or assembly hub in the{' '}
       <a
         href="http://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
@@ -49,57 +50,141 @@ const dataHubDescriptions = {
         Track Hub
       </a>{' '}
       format
-    </div>
+    </FormHelperText>
   ),
   jbrowse1: (
-    <div>
+    <FormHelperText>
       A{' '}
       <a href="https://jbrowse.org/" rel="noopener noreferrer" target="_blank">
         JBrowse 1
       </a>{' '}
       data directory
-    </div>
+    </FormHelperText>
+  ),
+}
+
+const hubSourceDescriptions = {
+  trackhubregistry: (
+    <FormHelperText>
+      Search{' '}
+      <a
+        href="https://trackhubregistry.org/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        The Track Hub Registry
+      </a>
+    </FormHelperText>
+  ),
+  ucsccustom: <FormHelperText>User-provided track hub URL</FormHelperText>,
+  jbrowseregistry: (
+    <FormHelperText>As-yet-unimplemented JBrowse data registry</FormHelperText>
+  ),
+  jbrowsecustom: (
+    <FormHelperText>User-provided JBrowse 1 data directory URL</FormHelperText>
   ),
 }
 
 function HubTypeSelector(props) {
-  const { hubType, handleStateSelect } = props
+  const { hubType, setHubType } = props
+  const hubTypes = [
+    { value: 'ucsc', label: 'Track or Assembly Hub' },
+    { value: 'jbrowse1', label: 'JBrowse Hub' },
+  ]
   return (
     <FormControl component="fieldset">
-      <RadioGroup value={hubType} onChange={handleStateSelect}>
-        <FormControlLabel
-          value="ucsc"
-          control={<Radio />}
-          label="Track or Assembly Hub"
-        />
-        <FormControlLabel
-          value="jbrowse1"
-          control={<Radio />}
-          label="JBrowse Hub"
-        />
+      <RadioGroup value={hubType} onChange={setHubType}>
+        {hubTypes.map(entry => (
+          <FormControlLabel
+            key={entry.value}
+            control={<Radio />}
+            value={entry.value}
+            label={entry.label}
+          />
+        ))}
       </RadioGroup>
-      <FormHelperText>{dataHubDescriptions[hubType]}</FormHelperText>
+      {hubTypeDescriptions[hubType]}
     </FormControl>
   )
 }
 
-HubTypeSelector.propTypes = {
-  hubType: propTypes.string.isRequired,
-  handleStateSelect: propTypes.func.isRequired,
+HubTypeSelector.defaultProps = {
+  hubType: undefined,
 }
 
-function getStepContent(step, hubType, handleStateSelect) {
+HubTypeSelector.propTypes = {
+  hubType: propTypes.string,
+  setHubType: propTypes.func.isRequired,
+}
+
+function HubSourceSelector(props) {
+  const { hubSource, setHubSource, hubType } = props
+  let hubSources = []
+  if (hubType === 'ucsc')
+    hubSources = [
+      { value: 'trackhubregistry', label: 'The Track Hub Registry' },
+      { value: 'ucsccustom', label: 'Track Hub URL' },
+    ]
+  return (
+    <FormControl component="fieldset">
+      <RadioGroup value={hubSource} onChange={setHubSource}>
+        {hubSources.map(entry => (
+          <FormControlLabel
+            key={entry.value}
+            control={<Radio />}
+            value={entry.value}
+            label={entry.label}
+          />
+        ))}
+      </RadioGroup>
+      {hubSourceDescriptions[hubSource]}
+    </FormControl>
+  )
+}
+
+HubSourceSelector.defaultProps = {
+  hubSource: undefined,
+  hubType: undefined,
+}
+
+HubSourceSelector.propTypes = {
+  hubSource: propTypes.string,
+  hubType: propTypes.string,
+  setHubSource: propTypes.func.isRequired,
+}
+
+function HubSelector(props) {
+  const { hubType } = props
+  switch (hubType) {
+    case 'ucsc':
+      return <Typography>Some UCSC Hubs</Typography>
+    case 'jbrowse1':
+      return (
+        <Typography>
+          Adding JBrowse hubs has not yet been implemented
+        </Typography>
+      )
+    default:
+      return <Typography>Unknown hub type</Typography>
+  }
+}
+
+function getStepContent(step, hubType, setHubType, hubSource, setHubSource) {
   switch (step) {
     case 0:
+      return <HubTypeSelector hubType={hubType} setHubType={setHubType} />
+    case 1:
       return (
-        <HubTypeSelector
+        <HubSourceSelector
           hubType={hubType}
-          handleStateSelect={handleStateSelect}
+          hubSource={hubSource}
+          setHubSource={setHubSource}
         />
       )
-    case 1:
-      return <Typography>List of known data hubs of selected type</Typography>
     case 2:
+      return <TrackHubRegistrySelect />
+    // return <HubSelector hubType={hubType} />
+    case 3:
       return <Typography>Confimation dialog</Typography>
     default:
       return <Typography>Unknown step</Typography>
@@ -118,6 +203,7 @@ class DataHubDrawerWidget extends React.Component {
 
   state = {
     activeStep: 0,
+    hubSource: undefined,
     hubType: undefined,
   }
 
@@ -139,22 +225,53 @@ class DataHubDrawerWidget extends React.Component {
     })
   }
 
-  handleHubSelect = event => {
+  setHubType = event => {
     this.setState({ hubType: event.target.value })
+  }
+
+  setHubSource = event => {
+    this.setState({ hubSource: event.target.value })
+  }
+
+  isNextDisabled = () => {
+    const { activeStep, hubType } = this.state
+    switch (activeStep) {
+      case 0:
+        return !hubType
+      case 1:
+        if (hubType === 'ucsc') return false
+        return true
+      case 2:
+        return false
+      default:
+        return true
+    }
   }
 
   render() {
     const { classes } = this.props
-    const { activeStep, hubType } = this.state
+    const { activeStep, hubSource, hubType } = this.state
 
     return (
       <div className={classes.root}>
         <Stepper activeStep={activeStep} orientation="vertical">
           {steps.map((label, index) => (
             <Step key={label}>
-              <StepLabel>{label}</StepLabel>
+              <StepLabel
+                StepIconProps={{
+                  error: index === 2 && activeStep === 2 && hubType !== 'ucsc',
+                }}
+              >
+                {label}
+              </StepLabel>
               <StepContent>
-                {getStepContent(index, hubType, this.handleHubSelect)}
+                {getStepContent(
+                  index,
+                  hubType,
+                  this.setHubType,
+                  hubSource,
+                  this.setHubSource,
+                )}
                 <div className={classes.actionsContainer}>
                   <Button
                     disabled={activeStep === 0}
@@ -164,6 +281,7 @@ class DataHubDrawerWidget extends React.Component {
                     Back
                   </Button>
                   <Button
+                    disabled={this.isNextDisabled()}
                     variant="contained"
                     color="primary"
                     onClick={this.handleNext}
