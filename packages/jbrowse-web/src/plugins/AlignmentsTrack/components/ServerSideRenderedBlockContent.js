@@ -44,9 +44,6 @@ class ServerSideRenderedBlockContent extends Component {
           ...data,
           region,
           ...renderProps,
-          onFeatureClick: (featureId, event) => {
-            console.log(`clicked ${featureId}`)
-          },
         },
         null,
       )

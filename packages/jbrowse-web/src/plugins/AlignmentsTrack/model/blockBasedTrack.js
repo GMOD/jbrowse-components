@@ -13,6 +13,15 @@ export default types.compose(
     .model({
       blockState: types.map(BlockState),
     })
+    .views(self => ({
+      get renderProps() {
+        // view -> [tracks] -> [blocks]
+        const view = getParent(self, 2)
+        return {
+          bpPerPx: view.bpPerPx,
+        }
+      },
+    }))
     .actions(self => {
       let blockWatchDisposer
       function disposeBlockWatch() {

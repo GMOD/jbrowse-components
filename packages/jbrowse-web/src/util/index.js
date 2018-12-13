@@ -1,5 +1,11 @@
+import fromEntries from 'object.fromentries'
+
 import { openUrl } from './io/rangeFetcher'
 import LocalFile from './io/localFile'
+
+if (!Object.fromEntries) {
+  fromEntries.shim()
+}
 
 export function assembleLocString({ assembly, refName, start, end }) {
   return `${assembly}:${refName}:${start + 1}-${end}`
@@ -26,3 +32,5 @@ export function bpToPx(bp, region, bpPerPx, flipped = false) {
   }
   return (bp - region.start) / bpPerPx
 }
+
+export const objectFromEntries = Object.fromEntries.bind(Object)

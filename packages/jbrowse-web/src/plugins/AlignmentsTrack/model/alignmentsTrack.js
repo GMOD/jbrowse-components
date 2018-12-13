@@ -58,6 +58,19 @@ export default (pluginManager, configSchema) =>
           return RendererType
         },
 
+        get renderProps() {
+          // view -> [tracks] -> [blocks]
+          const view = getParent(self, 2)
+          const config = getConf(self, ['renderers', self.rendererTypeName])
+          return {
+            bpPerPx: view.bpPerPx,
+            config,
+            onFeatureClick(featureId) {
+              console.log('clicked', featureId)
+            },
+          }
+        },
+
         get adapterType() {
           const adapterConfig = getConf(self, 'adapter')
           if (!adapterConfig)
