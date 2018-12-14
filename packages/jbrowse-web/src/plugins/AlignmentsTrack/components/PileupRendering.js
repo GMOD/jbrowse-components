@@ -176,8 +176,17 @@ class PileupRendering extends Component {
         if (id === selectedFeatureId) {
           const leftPx = bpToPx(leftBp, region, bpPerPx, horizontallyFlipped)
           const rightPx = bpToPx(rightBp, region, bpPerPx, horizontallyFlipped)
-          ctx.fillStyle = 'rgba(0,0,0,0.5)'
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx, bottomPx - topPx)
+          ctx.shadowColor = '#222266'
+          ctx.shadowBlur = 10
+          ctx.lineJoin = 'bevel'
+          ctx.lineWidth = 2
+          ctx.strokeStyle = '#00b8ff'
+          ctx.strokeRect(
+            Math.round(leftPx - 2),
+            Math.round(topPx - 2),
+            Math.round(rightPx - leftPx + 4),
+            Math.round(bottomPx - topPx + 4),
+          )
           return
         }
       }
