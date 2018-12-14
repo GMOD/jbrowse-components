@@ -87,7 +87,7 @@ export default function Ruler(props) {
         data-bp={tick.base}
       >
         {tick.type === 'major' ? (
-          <div className="label">{tick.base}</div>
+          <div className="label">{Number(tick.base).toLocaleString()}</div>
         ) : null}
       </div>,
     )
