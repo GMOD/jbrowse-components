@@ -15,6 +15,10 @@
     background: white;
     z-index: 10;
     height: 100%;
+
+    &.floating {
+      z-index: 11;
+    }
   }
 
   .block {

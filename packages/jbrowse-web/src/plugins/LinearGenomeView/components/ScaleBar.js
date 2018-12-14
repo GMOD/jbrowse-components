@@ -7,6 +7,15 @@ import Ruler from './Ruler'
 
 import './ScaleBar.scss'
 
+function findBlockContainingLeftSideOfView(offsetPx, blocks) {
+  const pxSoFar = 0
+  for (let i = 0; i < blocks.length; i += 1) {
+    const block = blocks[i]
+    if (block.widthPx + pxSoFar > offsetPx && pxSoFar <= offsetPx) return block
+  }
+  return undefined
+}
+
 export default function ScaleBar({
   style,
   height,
@@ -20,8 +29,20 @@ export default function ScaleBar({
     height: `${height}px`,
     width: `${width}px`,
   })
+
+  const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
+    offsetPx,
+    blocks,
+  )
+
   return (
     <div style={finalStyle} className="ScaleBar">
+      {// put in a floating ref label
+      blockContainingLeftEndOfView ? (
+        <div className="refLabel floating">
+          {blockContainingLeftEndOfView.refName}
+        </div>
+      ) : null}
       {blocks.map(block => {
         const locString = assembleLocString(block)
         return (
