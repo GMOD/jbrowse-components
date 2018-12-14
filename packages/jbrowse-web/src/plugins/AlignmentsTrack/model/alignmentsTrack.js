@@ -6,6 +6,8 @@ import AlignmentsTrack from '../components/AlignmentsTrack'
 
 import BlockBasedTrack from './blockBasedTrack'
 
+import CompositeMap from '../../../util/compositeMap'
+
 export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
@@ -19,7 +21,7 @@ export default (pluginManager, configSchema) =>
         selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
       })
-      .volatile(self => ({
+      .volatile(() => ({
         reactComponent: AlignmentsTrack,
       }))
       // .actions(self => ({
@@ -67,8 +69,21 @@ export default (pluginManager, configSchema) =>
             config,
             onFeatureClick(featureId) {
               console.log('clicked', featureId)
+              // try to find the feature in our layout
+              console.log(self.features.get(featureId))
             },
           }
+        },
+
+        get features() {
+          // a composite map of featureId -> feature obj that
+          // just looks in all the block data for that feature
+          const featureMaps = []
+          for (const block of self.blockState.values()) {
+            if (block.data && block.data.features)
+              featureMaps.push(block.data.features)
+          }
+          return new CompositeMap(featureMaps)
         },
 
         get adapterType() {

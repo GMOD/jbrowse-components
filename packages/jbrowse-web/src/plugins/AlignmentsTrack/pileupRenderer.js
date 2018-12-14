@@ -142,7 +142,9 @@ class PileupRenderer extends RendererType {
 
     // deserialize some of the results that came back from the worker
     result.layout = new PrecomputedLayout(result.layout)
-    result.features = result.features.map(j => SimpleFeature.fromJSON(j))
+    result.features = new Map(
+      result.features.map(j => [String(j.id), SimpleFeature.fromJSON(j)]),
+    )
 
     return result
   }
