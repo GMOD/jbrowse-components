@@ -32,8 +32,10 @@ export default (pluginManager, configSchema) =>
       //   },
       // }))
       .views(self => ({
-        // the renderer type name is based on the "view"
-        // selected in the UI: pileup, coverage, etc
+        /**
+         * the renderer type name is based on the "view"
+         * selected in the UI: pileup, coverage, etc
+         */
         get rendererTypeName() {
           const defaultRendering = getConf(self, 'defaultRendering')
           const viewName = self.selectedRendering || defaultRendering
@@ -43,7 +45,10 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
-        // gets the actual renderer type object
+        /**
+         * the pluggable element type object for this track's
+         * renderer
+         */
         get rendererType() {
           const track = getParent(self, 2)
           const RendererType = pluginManager.getRendererType(
@@ -60,6 +65,10 @@ export default (pluginManager, configSchema) =>
           return RendererType
         },
 
+        /**
+         * the react props that are passed to the Renderer when data
+         * is rendered in this track
+         */
         get renderProps() {
           // view -> [tracks] -> [blocks]
           const view = getParent(self, 2)
@@ -74,8 +83,10 @@ export default (pluginManager, configSchema) =>
           }
         },
 
-        // a CompositeMap of featureId -> feature obj that
-        // just looks in all the block data for that feature
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
         get features() {
           const featureMaps = []
           for (const block of self.blockState.values()) {
@@ -85,6 +96,9 @@ export default (pluginManager, configSchema) =>
           return new CompositeMap(featureMaps)
         },
 
+        /**
+         * the PluggableElementType for the currently defined adapter
+         */
         get adapterType() {
           const adapterConfig = getConf(self, 'adapter')
           if (!adapterConfig)
@@ -97,6 +111,9 @@ export default (pluginManager, configSchema) =>
           return adapterType
         },
 
+        /**
+         * the Adapter that this track uses to fetch data
+         */
         get adapter() {
           const adapter = new self.adapterType.AdapterClass(
             getSnapshot(self.configuration.adapter),
