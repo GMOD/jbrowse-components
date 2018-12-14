@@ -1,4 +1,4 @@
-import { objectFromEntries } from './index'
+import { objectFromEntries } from '../index'
 
 export default class PrecomputedLayout {
   constructor({ rectangles, totalHeight }) {

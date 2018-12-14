@@ -12,13 +12,14 @@ import {
 } from '../../util/offscreenCanvasPonyfill'
 
 import PileupRendering from './components/PileupRendering'
-import GranularRectLayout from '../../util/GranularRectLayout'
+import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 
-import PrecomputedLayout from '../../util/PrecomputedLayout'
+import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
 
 import SimpleFeature from '../../util/simpleFeature'
 import { ConfigurationSchema, readConfObject } from '../../configuration'
 import { bpToPx } from '../../util'
+import MultiLayout from '../../util/layouts/MultiLayout'
 
 class PileupSession {
   update(props) {
@@ -27,8 +28,14 @@ class PileupSession {
 
   get layout() {
     const pitchX = this.bpPerPx
-    if (!this.cachedLayout || this.cachedLayout.pitchX !== pitchX) {
-      this.cachedLayout = new GranularRectLayout({ pitchX, pitchY: 3 })
+    if (
+      !this.cachedLayout ||
+      this.cachedLayout.subLayoutConstructorArgs.pitchX !== pitchX
+    ) {
+      this.cachedLayout = new MultiLayout(GranularRectLayout, {
+        pitchX,
+        pitchY: 3,
+      })
     }
     return this.cachedLayout
   }
@@ -53,12 +60,13 @@ class PileupRenderer extends RendererType {
       delete sessions[sessionId]
       return 1
     }
+    // TODO: implement freeing for regions
     return 0
   }
 
   layoutFeature(
     feature,
-    layout,
+    subLayout,
     config,
     bpPerPx,
     region,
@@ -82,7 +90,15 @@ class PileupRenderer extends RendererType {
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
-    const topPx = layout.addRect(
+    if (feature.get('seq_id') !== region.refName) {
+      debugger
+      throw new Error(
+        `feature ${feature.id()} is not on the current region's reference sequence ${
+          region.refName
+        }`,
+      )
+    }
+    const topPx = subLayout.addRect(
       feature.id(),
       feature.get('start'),
       feature.get('end'),
@@ -108,7 +124,7 @@ class PileupRenderer extends RendererType {
     horizontallyFlipped,
   }) {
     if (!layout) throw new Error(`layout required`)
-    if (!layout.addRect) throw new Error('invalid layout')
+    if (!layout.addRect) throw new Error('invalid layout object')
 
     const layoutRecords = features.map(feature =>
       this.layoutFeature(
@@ -159,9 +175,11 @@ class PileupRenderer extends RendererType {
 
     // inflate our configuration
     const config = this.configSchema.create(args.config || {})
-
     const session = this.getWorkerSession(args)
-    const renderProps = { ...args, features, layout: session.layout, config }
+    const subLayout = session.layout.getSublayout(
+      `${region.assembly}:${region.refName}`,
+    )
+    const renderProps = { ...args, features, layout: subLayout, config }
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
@@ -176,7 +194,7 @@ class PileupRenderer extends RendererType {
     return {
       features: features.map(f => f.toJSON()),
       html,
-      layout: session.layout.toJSON(),
+      layout: subLayout.toJSON(),
       height,
       width,
       imageData,

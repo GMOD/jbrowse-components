@@ -4,6 +4,7 @@ import Adapter from './BamAdapter'
 
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter({
+    assemblyName: 'volvox',
     bamLocation: { path: require.resolve('./test_data/volvox-sorted.bam') },
     index: {
       location: {
@@ -20,12 +21,16 @@ test('adapter can fetch features from volvox.bam', async () => {
     end: 20000,
   })
 
-  const featuresJsonArray = await features
-    .pipe(
-      map(f => f.toJSON()),
-      toArray(),
-    )
-    .toPromise()
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  expect(featuresArray[0].get('seq_id')).toBe('ctgA')
+  const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(3809)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
+
+  expect(await adapter.refIdToName(0)).toBe('ctgA')
+  expect(await adapter.refIdToName(1)).toBe(undefined)
+
+  expect(
+    await adapter.hasDataForRefSeq({ assembly: 'volvox', refName: 'ctgA' }),
+  ).toBe(true)
 })
