@@ -50,6 +50,10 @@
           position: absolute;
           top: 100%;
           left: -0.2em;
+
+          &.first {
+            display: none;
+          }
         }
       }
       &.minor {

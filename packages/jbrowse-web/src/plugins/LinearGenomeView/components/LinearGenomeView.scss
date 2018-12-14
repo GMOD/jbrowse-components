@@ -7,6 +7,15 @@
       height: 100%;
     }
 
+    .block {
+      &.left-side {
+        border-left: 2px solid #333
+      }
+      &.right-side {
+        border-right: 2px solid #333
+      }
+    }
+
     .controls {
       border-right: 1px solid gray;
       overflow: hidden;

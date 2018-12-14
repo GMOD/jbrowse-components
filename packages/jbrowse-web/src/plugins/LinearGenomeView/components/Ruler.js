@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
+import classnames from 'classnames'
 import { PropTypes } from '../../../mst-types'
 
 /**
@@ -65,13 +66,19 @@ function* makeTicks(
   }
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
+  let index = 0
   for (
     let base = Math.ceil(minBase / iterPitch) * iterPitch;
     base < maxBase;
     base += iterPitch
   ) {
-    if (emitMinor && base % gridPitch.majorPitch) yield { type: 'minor', base }
-    else if (emitMajor) yield { type: 'major', base }
+    if (emitMinor && base % gridPitch.majorPitch) {
+      yield { type: 'minor', base, index }
+      index += 1
+    } else if (emitMajor) {
+      yield { type: 'major', base, index }
+      index += 1
+    }
   }
 }
 
@@ -87,7 +94,9 @@ export default function Ruler(props) {
         data-bp={tick.base}
       >
         {tick.type === 'major' ? (
-          <div className="label">{Number(tick.base).toLocaleString()}</div>
+          <div className={classnames('label', tick.index === 0 && 'first')}>
+            {Number(tick.base).toLocaleString()}
+          </div>
         ) : null}
       </div>,
     )

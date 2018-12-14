@@ -47,6 +47,8 @@ export default function ScaleBar({
         const locString = assembleLocString(block)
         return (
           <Block
+            leftBorder={block.isLeftEndOfDisplayedRegion}
+            rightBorder={block.isRightEndOfDisplayedRegion}
             refName={block.refName}
             start={block.start}
             end={block.end}
