@@ -20,7 +20,6 @@ export default (pluginManager, configSchema) =>
         // if they have not made any selection
         selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
-        selectedFeatureId: types.optional(types.string, ''),
       })
       .volatile(() => ({
         reactComponent: AlignmentsTrack,
@@ -34,10 +33,12 @@ export default (pluginManager, configSchema) =>
       // }))
       .actions(self => ({
         selectFeature(feature) {
-          self.selectedFeatureId = String(feature.id())
+          const root = getRoot(self)
+          root.setSelection(feature)
         },
         clearFeatureSelection() {
-          self.selectedFeatureId = ''
+          const root = getRoot(self)
+          root.clearSelection()
         },
       }))
       .views(self => ({
@@ -54,6 +55,25 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
 
+        /**
+         * returns a string feature ID if the globally-selected object
+         * is probably a feature
+         */
+        get selectedFeatureId() {
+          const root = getRoot(self)
+          if (!root) return undefined
+          const { selection } = root
+          // does it quack like a feature?
+          if (
+            selection &&
+            typeof selection.get === 'function' &&
+            typeof selection.id === 'function'
+          ) {
+            // probably is a feature
+            return selection.id()
+          }
+          return undefined
+        },
         /**
          * the pluggable element type object for this track's
          * renderer
