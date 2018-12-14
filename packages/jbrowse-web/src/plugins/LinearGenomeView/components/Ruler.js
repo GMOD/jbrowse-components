@@ -85,7 +85,11 @@ export default function Ruler(props) {
         style={{ left: `${(tick.base - region.start) / bpPerPx}px` }}
         className={`tick ${tick.type}`}
         data-bp={tick.base}
-      />,
+      >
+        {tick.type === 'major' ? (
+          <div className="label">{tick.base}</div>
+        ) : null}
+      </div>,
     )
   }
 

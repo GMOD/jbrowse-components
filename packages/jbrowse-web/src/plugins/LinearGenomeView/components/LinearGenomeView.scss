@@ -27,27 +27,6 @@
       }
     }
 
-    .ScaleBar {
-      white-space: nowrap;
-      text-align: left;
-      width: 100%;
-      position: relative;
-      background: #555;
-      overflow: hidden;
-      height: 100%;
-
-      .block {
-        position: relative;
-        height: 100%;
-        background: white;
-        border-right: 1px solid rgba(0,0,0,0.1);
-        box-sizing: border-box;
-        display: inline-block;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-    }
-
     .drag-handle {
       background: #ccc;
       cursor: ns-resize;
