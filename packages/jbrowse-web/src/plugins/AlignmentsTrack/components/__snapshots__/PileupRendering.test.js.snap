@@ -27,6 +27,7 @@ exports[`one 1`] = `
         "start": 1,
       }
     }
+    trackModel={Object {}}
     width={500}
   />
   <canvas

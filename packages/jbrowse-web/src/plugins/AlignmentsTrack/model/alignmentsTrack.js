@@ -20,6 +20,7 @@ export default (pluginManager, configSchema) =>
         // if they have not made any selection
         selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
+        selectedFeatureId: types.optional(types.string, ''),
       })
       .volatile(() => ({
         reactComponent: AlignmentsTrack,
@@ -31,6 +32,14 @@ export default (pluginManager, configSchema) =>
       //     })
       //   },
       // }))
+      .actions(self => ({
+        selectFeature(feature) {
+          self.selectedFeatureId = String(feature.id())
+        },
+        clearFeatureSelection() {
+          self.selectedFeatureId = ''
+        },
+      }))
       .views(self => ({
         /**
          * the renderer type name is based on the "view"
@@ -76,9 +85,14 @@ export default (pluginManager, configSchema) =>
           return {
             bpPerPx: view.bpPerPx,
             config,
-            onFeatureClick(featureId) {
+            trackModel: self,
+            onFeatureClick(event, featureId) {
               // try to find the feature in our layout
-              console.log(self.features.get(featureId))
+              const feature = self.features.get(featureId)
+              self.selectFeature(feature)
+            },
+            onMouseUp(event, featureId) {
+              if (!featureId) self.clearFeatureSelection()
             },
           }
         },
