@@ -83,7 +83,16 @@ class TrackHubRegistrySelect extends React.Component {
       selectedAssembly: '',
       allHubsRetrieved: false,
     }
+    this.mounted = false
+  }
+
+  componentDidMount() {
+    this.mounted = true
     this.getRegistryStatus()
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
   }
 
   async getRegistryStatus() {
@@ -91,10 +100,10 @@ class TrackHubRegistrySelect extends React.Component {
       'https://www.trackhubregistry.org/api/info/ping',
     )
     if (!response || response.ping !== 1) {
-      this.setState({ registryStatus: 'fail' })
+      this.wrappedSetState({ registryStatus: 'fail' })
       return
     }
-    this.setState({ registryStatus: 'pass' })
+    this.wrappedSetState({ registryStatus: 'pass' })
     this.getAssemblies()
   }
 
@@ -102,11 +111,11 @@ class TrackHubRegistrySelect extends React.Component {
     const response = await this.doGet(
       'https://www.trackhubregistry.org/api/info/assemblies',
     )
-    if (response) this.setState({ assemblies: response })
+    if (response) this.wrappedSetState({ assemblies: response })
   }
 
-  async getHubs(reset) {
-    const { hubs, selectedAssembly } = this.state
+  async getHubs(selectedAssembly, reset) {
+    const { hubs } = this.state
     if (reset) hubs.length = 0
     const page = Math.floor(hubs.length / 5) + 1
     const response = await this.doPost(
@@ -117,23 +126,39 @@ class TrackHubRegistrySelect extends React.Component {
     if (response) {
       hubs.push(...response.items)
       const allHubsRetrieved = hubs.length === response.total_entries
-      this.setState({ hubs, allHubsRetrieved })
-      if (!allHubsRetrieved) this.getHubs()
+      this.wrappedSetState({ hubs, allHubsRetrieved })
+      if (!allHubsRetrieved) this.getHubs(selectedAssembly)
     }
   }
 
-  handleSelect = item => event => this.setState({ [item]: event.target.value })
+  handleSelectSpecies = event => {
+    this.wrappedSetState({
+      selectedSpecies: event.target.value,
+      selectedAssembly: '',
+    })
+  }
+
+  handleSelectAssembly = event => {
+    this.wrappedSetState({ selectedAssembly: event.target.value })
+    this.getHubs(event.target.value, true)
+  }
+
+  // Since there's a lot of async stuff going on, this keeps React from
+  // complaning about the component trying to update state after unmounting
+  wrappedSetState(...args) {
+    if (this.mounted) this.setState(...args)
+  }
 
   async doGet(url) {
     let rawResponse
     try {
       rawResponse = await fetch(url)
     } catch {
-      this.setState({ networkStatus: 'fail' })
+      this.wrappedSetState({ networkStatus: 'fail' })
       return null
     }
     if (!rawResponse.ok) {
-      this.setState({ registryStatus: 'fail' })
+      this.wrappedSetState({ registryStatus: 'fail' })
       return null
     }
     return rawResponse.json()
@@ -150,11 +175,11 @@ class TrackHubRegistrySelect extends React.Component {
         body: JSON.stringify(data),
       })
     } catch {
-      this.setState({ networkStatus: 'fail' })
+      this.wrappedSetState({ networkStatus: 'fail' })
       return null
     }
     if (!rawResponse.ok) {
-      this.setState({ registryStatus: 'fail' })
+      this.wrappedSetState({ registryStatus: 'fail' })
       return null
     }
     return rawResponse.json()
@@ -215,10 +240,7 @@ class TrackHubRegistrySelect extends React.Component {
         key="speciesselect"
         selectList={speciesList}
         selectedItem={selectedSpecies}
-        handleSelect={event => {
-          this.setState({ selectedAssembly: '' })
-          this.handleSelect('selectedSpecies')(event)
-        }}
+        handleSelect={this.handleSelectSpecies}
         label="Species"
         helpText="Select a species"
       />,
@@ -230,10 +252,7 @@ class TrackHubRegistrySelect extends React.Component {
           key="assemblyselect"
           selectList={assemblies[selectedSpecies]}
           selectedItem={selectedAssembly}
-          handleSelect={event => {
-            this.handleSelect('selectedAssembly')(event)
-            this.getHubs(true)
-          }}
+          handleSelect={this.handleSelectAssembly}
           label="Assembly"
           helpText="Select an assembly"
         />,
