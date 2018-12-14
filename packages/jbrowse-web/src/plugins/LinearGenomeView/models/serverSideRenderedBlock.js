@@ -46,6 +46,8 @@ export default types
   .model('BlockState', {
     key: types.string,
     region: Region,
+    isLeftEndOfDisplayedRegion: false,
+    isRightEndOfDisplayedRegion: false,
   })
   .volatile(() => ({
     filled: false,

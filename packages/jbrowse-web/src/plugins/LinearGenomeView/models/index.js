@@ -94,6 +94,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
+        flipped: false,
         // we use an array for the tracks because the tracks are displayed in a specific
         // order that we need to keep.
         tracks: types.array(
@@ -163,6 +164,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             newBlock.key = assembleLocString(newBlock)
             newBlock.widthPx =
               Math.abs(newBlock.end - newBlock.start) / self.bpPerPx
+            newBlock.isLeftEndOfDisplayedRegion =
+              newBlock.start === region.start
+            newBlock.isRightEndOfDisplayedRegion = newBlock.end === region.end
             blocks.push(newBlock)
           }
 
