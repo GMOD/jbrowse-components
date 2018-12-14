@@ -74,9 +74,9 @@ export default (pluginManager, configSchema) =>
           }
         },
 
+        // a CompositeMap of featureId -> feature obj that
+        // just looks in all the block data for that feature
         get features() {
-          // a composite map of featureId -> feature obj that
-          // just looks in all the block data for that feature
           const featureMaps = []
           for (const block of self.blockState.values()) {
             if (block.data && block.data.features)

@@ -43,15 +43,15 @@ class PileupRendering extends Component {
   static defaultProps = {
     horizontallyFlipped: false,
 
-    onFeatureMouseDown: () => {},
-    onFeatureMouseEnter: () => {},
-    onFeatureMouseOut: () => {},
-    onFeatureMouseOver: () => {},
-    onFeatureMouseUp: () => {},
-    onFeatureMouseLeave: () => {},
-    onFeatureMouseMove: () => {},
+    onFeatureMouseDown: undefined,
+    onFeatureMouseEnter: undefined,
+    onFeatureMouseOut: undefined,
+    onFeatureMouseOver: undefined,
+    onFeatureMouseUp: undefined,
+    onFeatureMouseLeave: undefined,
+    onFeatureMouseMove: undefined,
 
-    onFeatureClick: () => {},
+    onFeatureClick: undefined,
   }
 
   constructor(props) {
@@ -157,7 +157,9 @@ class PileupRendering extends Component {
 
   callFeatureMouseHandler(handlerName, event, always = false) {
     if (always || this.featureUnderMouse) {
-      this.props[handlerName](this.featureUnderMouse, event)
+      // eslint-disable-next-line react/destructuring-assignment
+      const handler = this.props[handlerName]
+      if (handler) handler(this.featureUnderMouse, event)
     }
   }
 

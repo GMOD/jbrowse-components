@@ -19,14 +19,6 @@ exports[`one 1`] = `
         "totalHeight": 20,
       }
     }
-    onFeatureClick={[Function]}
-    onFeatureMouseDown={[Function]}
-    onFeatureMouseEnter={[Function]}
-    onFeatureMouseLeave={[Function]}
-    onFeatureMouseMove={[Function]}
-    onFeatureMouseOut={[Function]}
-    onFeatureMouseOver={[Function]}
-    onFeatureMouseUp={[Function]}
     region={
       Object {
         "assembly": "toaster",

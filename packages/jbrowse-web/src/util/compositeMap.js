@@ -1,4 +1,4 @@
-// takes an Iterable (array or Map probably) of Maps
+// takes an array or Map of Maps
 // and lets you query them as one Map
 export default class CompositeMap {
   constructor(submaps) {
