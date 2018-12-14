@@ -1,4 +1,4 @@
-import { isType, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
 import configSchema from './configSchema'
 import { TestStub as LinearGenomeModel } from '.'

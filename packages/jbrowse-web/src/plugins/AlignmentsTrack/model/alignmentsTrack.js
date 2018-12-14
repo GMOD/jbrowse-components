@@ -4,7 +4,7 @@ import { ConfigurationReference, getConf } from '../../../configuration'
 
 import AlignmentsTrack from '../components/AlignmentsTrack'
 
-import BlockBasedTrack from './blockBasedTrack'
+import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
 import CompositeMap from '../../../util/compositeMap'
 

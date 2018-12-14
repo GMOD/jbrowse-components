@@ -66,7 +66,7 @@ class PileupRenderer extends RendererType {
   ) {
     if (horizontallyFlipped)
       throw new Error('horizontal flipping not yet implemented')
-    const leftBase = region.start
+    // const leftBase = region.start
     const startPx = bpToPx(
       feature.get('start'),
       region,
@@ -197,7 +197,7 @@ export const ConfigSchema = ConfigurationSchema('PileupRenderer', {
   },
 })
 
-export default pluginManager =>
+export default (/* pluginManager */) =>
   new PileupRenderer({
     name: 'PileupRenderer',
     ReactComponent: PileupRendering,

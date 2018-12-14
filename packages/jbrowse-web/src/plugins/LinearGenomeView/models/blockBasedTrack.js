@@ -2,9 +2,9 @@ import { types, getParent } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
-import { BaseTrack as LinearGenomeTrack } from '../../LinearGenomeView/model'
+import { BaseTrack as LinearGenomeTrack } from '.'
 
-import BlockState from './ssrBlock'
+import BlockState from './serverSideRenderedBlock'
 
 export default types.compose(
   'BlockBasedTrackState',

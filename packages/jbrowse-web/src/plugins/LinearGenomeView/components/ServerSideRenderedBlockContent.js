@@ -16,6 +16,10 @@ ErrorMessage.propTypes = {
   error: PropTypes.objectOrObservableObject.isRequired,
 }
 
+/**
+ * A block whose content is rendered outside of the main thread and hydrated by this
+ * component.
+ */
 @observer
 class ServerSideRenderedBlockContent extends Component {
   static propTypes = {

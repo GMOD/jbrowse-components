@@ -1,10 +1,4 @@
-import {
-  types,
-  getRoot,
-  applySnapshot,
-  getType,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { types, getRoot, getType, getSnapshot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 
 export default app => {
