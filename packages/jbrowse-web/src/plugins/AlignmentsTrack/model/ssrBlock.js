@@ -4,7 +4,7 @@ import { getConf } from '../../../configuration'
 
 import { Region } from '../../../mst-types'
 
-import { AlignmentsTrackBlock } from '../components/AlignmentsTrack'
+import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // MST flow that calls the render worker to render the block content
 export function flowRenderBlock(self) {
@@ -50,7 +50,7 @@ export default types
   .volatile(() => ({
     filled: false,
     data: undefined,
-    reactComponent: AlignmentsTrackBlock,
+    reactComponent: ServerSideRenderedBlockContent,
     html: '',
     error: undefined,
   }))
@@ -63,12 +63,7 @@ export default types
     get renderProps() {
       // view -> [tracks] -> [blocks]
       const track = getParent(self, 2)
-      const view = getParent(track, 2)
-      const config = getConf(track, ['renderers', track.rendererTypeName])
-      return {
-        bpPerPx: view.bpPerPx,
-        config,
-      }
+      return track.renderProps
     },
   }))
   .actions(self => ({

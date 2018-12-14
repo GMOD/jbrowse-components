@@ -1,8 +1,4 @@
-import fromEntries from 'object.fromentries'
-
-if (!Object.fromEntries) {
-  fromEntries.shim()
-}
+import { objectFromEntries } from './index'
 
 /**
  * Rectangle-layout manager that lays out rectangles using bitmaps at
@@ -418,7 +414,7 @@ export default class GranularRectLayout {
   }
 
   toJSON() {
-    const rectangles = Object.fromEntries(this.getRectangles())
+    const rectangles = objectFromEntries(this.getRectangles())
     // console.log(`${this.id} toJSON - ${count}`)
     return { rectangles, totalHeight: this.getTotalHeight() }
   }

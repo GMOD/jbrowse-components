@@ -19,7 +19,7 @@ export default class SimpleFeature {
   constructor(args = {}) {
     this.data = args.data || args
     this.parent = args.parent
-    this.uniqueID = args.id || this.data.uniqueID || generateId(this)
+    this.uniqueID = String(args.id || this.data.uniqueID || generateId(this))
 
     if (!(this.data.end - this.data.start >= 0)) {
       throw new Error(`invalid feature data`)

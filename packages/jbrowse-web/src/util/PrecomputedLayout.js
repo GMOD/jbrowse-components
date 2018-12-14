@@ -1,8 +1,5 @@
-import fromEntries from 'object.fromentries'
+import { objectFromEntries } from './index'
 
-if (!Object.fromEntries) {
-  fromEntries.shim()
-}
 export default class PrecomputedLayout {
   constructor({ rectangles, totalHeight }) {
     this.rectangles = new Map(Object.entries(rectangles)) // of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
@@ -27,7 +24,7 @@ export default class PrecomputedLayout {
 
   toJSON() {
     return {
-      rectangles: Object.fromEntries(this.rectangles),
+      rectangles: objectFromEntries(this.rectangles),
       totalHeight: this.totalHeight,
     }
   }

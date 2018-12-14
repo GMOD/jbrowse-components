@@ -28,6 +28,11 @@ class PileupRendering extends Component {
     bpPerPx: ReactPropTypes.number.isRequired,
     horizontallyFlipped: ReactPropTypes.bool,
 
+    trackModel: ReactPropTypes.shape({
+      /** id of the currently selected feature, if any */
+      selectedFeatureId: ReactPropTypes.string,
+    }),
+
     onFeatureMouseDown: ReactPropTypes.func,
     onFeatureMouseEnter: ReactPropTypes.func,
     onFeatureMouseOut: ReactPropTypes.func,
@@ -38,20 +43,36 @@ class PileupRendering extends Component {
 
     // synthesized from mouseup and mousedown
     onFeatureClick: ReactPropTypes.func,
+
+    onMouseDown: ReactPropTypes.func,
+    onMouseUp: ReactPropTypes.func,
+    onMouseEnter: ReactPropTypes.func,
+    onMouseLeave: ReactPropTypes.func,
+    onMouseOver: ReactPropTypes.func,
+    onMouseOut: ReactPropTypes.func,
   }
 
   static defaultProps = {
     horizontallyFlipped: false,
 
-    onFeatureMouseDown: () => {},
-    onFeatureMouseEnter: () => {},
-    onFeatureMouseOut: () => {},
-    onFeatureMouseOver: () => {},
-    onFeatureMouseUp: () => {},
-    onFeatureMouseLeave: () => {},
-    onFeatureMouseMove: () => {},
+    trackModel: {},
 
-    onFeatureClick: () => {},
+    onFeatureMouseDown: undefined,
+    onFeatureMouseEnter: undefined,
+    onFeatureMouseOut: undefined,
+    onFeatureMouseOver: undefined,
+    onFeatureMouseUp: undefined,
+    onFeatureMouseLeave: undefined,
+    onFeatureMouseMove: undefined,
+
+    onFeatureClick: undefined,
+
+    onMouseDown: undefined,
+    onMouseUp: undefined,
+    onMouseEnter: undefined,
+    onMouseLeave: undefined,
+    onMouseOver: undefined,
+    onMouseOut: undefined,
   }
 
   constructor(props) {
@@ -59,8 +80,16 @@ class PileupRendering extends Component {
     this.highlightOverlayCanvas = React.createRef()
   }
 
+  componentDidMount() {
+    this.updateSelectionHighlight()
+  }
+
+  componentDidUpdate() {
+    this.updateSelectionHighlight()
+  }
+
   onMouseDown = event => {
-    this.callFeatureMouseHandler('onFeatureMouseDown', event)
+    this.callMouseHandler('MouseDown', event)
     if (this.featureUnderMouse) {
       this.lastFeatureMouseDown = {
         featureId: this.featureUnderMouse,
@@ -73,21 +102,21 @@ class PileupRendering extends Component {
   }
 
   onMouseEnter = event => {
-    this.callFeatureMouseHandler('onFeatureMouseEnter', event)
+    this.callMouseHandler('MouseEnter', event)
   }
 
   onMouseOut = event => {
-    this.callFeatureMouseHandler('onFeatureMouseOut', event)
-    this.callFeatureMouseHandler('onFeatureMouseLeave', event)
+    this.callMouseHandler('MouseOut', event)
+    this.callMouseHandler('MouseLeave', event)
     this.featureUnderMouse = undefined
   }
 
   onMouseOver = event => {
-    this.callFeatureMouseHandler('onFeatureMouseOver', event)
+    this.callMouseHandler('MouseOver', event)
   }
 
   onMouseUp = event => {
-    this.callFeatureMouseHandler('onFeatureMouseUp', event)
+    this.callMouseHandler('MouseUp', event)
 
     // synthesize a featureClick event if we are on a feature
     // and it's close to the last mouse down
@@ -98,30 +127,60 @@ class PileupRendering extends Component {
         this.featureUnderMouse === featureId &&
         distance(x, y, clientX, clientY) <= 2
       ) {
-        this.callFeatureMouseHandler('onFeatureClick', event)
+        this.callMouseHandler('Click', event)
         this.lastFeatureMouseDown = undefined
       }
     }
   }
 
   onMouseLeave = event => {
-    this.callFeatureMouseHandler('onFeatureMouseOut', event)
-    this.callFeatureMouseHandler('onFeatureMouseLeave', event)
+    this.callMouseHandler('MouseOut', event)
+    this.callMouseHandler('MouseLeave', event)
     this.featureUnderMouse = undefined
   }
 
   onMouseMove = event => {
     const featureIdCurrentlyUnderMouse = this.findFeatureIdUnderMouse(event)
     if (this.featureUnderMouse === featureIdCurrentlyUnderMouse) {
-      this.callFeatureMouseHandler('onFeatureMouseMove', event)
+      this.callMouseHandler('MouseMove', event)
     } else {
       if (this.featureUnderMouse) {
-        this.callFeatureMouseHandler('onFeatureMouseOut', event)
-        this.callFeatureMouseHandler('onFeatureMouseLeave', event)
+        this.callMouseHandler('MouseOut', event)
+        this.callMouseHandler('MouseLeave', event)
       }
       this.featureUnderMouse = featureIdCurrentlyUnderMouse
-      this.callFeatureMouseHandler('onFeatureMouseOver', event)
-      this.callFeatureMouseHandler('onFeatureMouseEnter', event)
+      this.callMouseHandler('MouseOver', event)
+      this.callMouseHandler('MouseEnter', event)
+    }
+  }
+
+  updateSelectionHighlight() {
+    const {
+      trackModel,
+      region,
+      bpPerPx,
+      layout,
+      horizontallyFlipped,
+    } = this.props
+    const { selectedFeatureId } = trackModel
+
+    const canvas = this.highlightOverlayCanvas.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    if (selectedFeatureId) {
+      for (const [
+        id,
+        [leftBp, topPx, rightBp, bottomPx],
+      ] of layout.getRectangles()) {
+        if (id === selectedFeatureId) {
+          const leftPx = bpToPx(leftBp, region, bpPerPx, horizontallyFlipped)
+          const rightPx = bpToPx(rightBp, region, bpPerPx, horizontallyFlipped)
+          ctx.fillStyle = 'rgba(0,0,0,0.5)'
+          ctx.fillRect(leftPx, topPx, rightPx - leftPx, bottomPx - topPx)
+          return
+        }
+      }
     }
   }
 
@@ -155,14 +214,28 @@ class PileupRendering extends Component {
     return undefined
   }
 
-  callFeatureMouseHandler(handlerName, event, always = false) {
-    if (always || this.featureUnderMouse) {
-      this.props[handlerName](this.featureUnderMouse, event)
+  /**
+   * @param {string} handlerName
+   * @param {*} event - the actual mouse event
+   * @param {bool} always - call this handler even if there is no feature
+   */
+  callMouseHandler(handlerName, event, always = false) {
+    // eslint-disable-next-line react/destructuring-assignment
+    const featureHandler = this.props[`onFeature${handlerName}`]
+    // eslint-disable-next-line react/destructuring-assignment
+    const canvasHandler = this.props[`on${handlerName}`]
+    if (featureHandler && (always || this.featureUnderMouse)) {
+      featureHandler(event, this.featureUnderMouse)
+    } else if (canvasHandler) {
+      canvasHandler(event, this.featureUnderMouse)
     }
   }
 
   render() {
-    const { layout, width, height } = this.props
+    const { width, height } = this.props
+
+    // need to call this in render so we get the right observer behavior
+    this.updateSelectionHighlight()
     return (
       <div className="PileupRendering" style={{ position: 'relative' }}>
         <PrerenderedCanvas {...this.props} />

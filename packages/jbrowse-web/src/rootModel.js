@@ -59,6 +59,13 @@ export default app => {
       app,
       pluginManager,
       windowWidth: window.innerWidth,
+
+      /**
+       * this is the globally "selected" object. can be anything.
+       * code that wants to deal with this should examine it to see what
+       * kind of thing it is.
+       */
+      selection: undefined,
     }))
     .views(self => ({
       get viewsWidth() {
@@ -170,6 +177,14 @@ export default app => {
         })
         const model = typeDefinition.stateModel.create(data)
         self.menuBars.push(model)
+      },
+
+      setSelection(thing) {
+        self.selection = thing
+      },
+
+      clearSelection() {
+        self.selection = undefined
       },
     }))
   return RootModel
