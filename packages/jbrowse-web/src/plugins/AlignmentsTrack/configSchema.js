@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '../../configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/model'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models'
 
 import { ConfigSchema as PileupRendererConfigSchema } from './pileupRenderer'
 

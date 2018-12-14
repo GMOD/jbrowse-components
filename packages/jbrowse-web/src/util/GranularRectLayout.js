@@ -1,3 +1,5 @@
+import { objectFromEntries } from './index'
+
 /**
  * Rectangle-layout manager that lays out rectangles using bitmaps at
  * resolution that, for efficiency, may be somewhat lower than that of
@@ -273,8 +275,15 @@ export default class GranularRectLayout {
     const pRight = Math.floor(right / this.pitchX)
     const pHeight = Math.ceil(height / this.pitchY)
 
-    const midX = Math.floor((pLeft + pRight) / 2)
-    const rectangle = { id, l: pLeft, r: pRight, mX: midX, h: pHeight }
+    // const midX = Math.floor((pLeft + pRight) / 2)
+    const rectangle = {
+      id,
+      l: pLeft,
+      r: pRight,
+      // mX: midX,
+      h: pHeight,
+      originalHeight: height,
+    }
     if (data) rectangle.data = data
 
     const maxTop = this.maxHeight - pHeight
@@ -392,14 +401,21 @@ export default class GranularRectLayout {
     return this.pTotalHeight * this.pitchY
   }
 
+  getRectangles() {
+    return new Map(
+      Object.entries(this.rectangles).map(([id, rect]) => {
+        const { l, r, originalHeight, top } = rect
+        const t = top * this.pitchY
+        const b = t + originalHeight
+        return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
+        // count += 1
+      }),
+    )
+  }
+
   toJSON() {
-    const data = {}
-    // let count = 0
-    Object.entries(this.rectangles).forEach(([id, rect]) => {
-      data[id] = rect.top * this.pitchY
-      // count += 1
-    })
+    const rectangles = objectFromEntries(this.getRectangles())
     // console.log(`${this.id} toJSON - ${count}`)
-    return { records: data, totalHeight: this.getTotalHeight() }
+    return { rectangles, totalHeight: this.getTotalHeight() }
   }
 }

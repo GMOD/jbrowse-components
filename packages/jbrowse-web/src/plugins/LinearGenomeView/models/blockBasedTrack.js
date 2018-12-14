@@ -2,9 +2,9 @@ import { types, getParent } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
-import { BaseTrack as LinearGenomeTrack } from '../../LinearGenomeView/model'
+import { BaseTrack as LinearGenomeTrack } from '.'
 
-import BlockState from './ssrBlock'
+import BlockState from './serverSideRenderedBlock'
 
 export default types.compose(
   'BlockBasedTrackState',
@@ -13,6 +13,15 @@ export default types.compose(
     .model({
       blockState: types.map(BlockState),
     })
+    .views(self => ({
+      get renderProps() {
+        // view -> [tracks] -> [blocks]
+        const view = getParent(self, 2)
+        return {
+          bpPerPx: view.bpPerPx,
+        }
+      },
+    }))
     .actions(self => {
       let blockWatchDisposer
       function disposeBlockWatch() {

@@ -18,6 +18,7 @@ import PrecomputedLayout from '../../util/PrecomputedLayout'
 
 import SimpleFeature from '../../util/simpleFeature'
 import { ConfigurationSchema, readConfObject } from '../../configuration'
+import { bpToPx } from '../../util'
 
 class PileupSession {
   update(props) {
@@ -65,9 +66,19 @@ class PileupRenderer extends RendererType {
   ) {
     if (horizontallyFlipped)
       throw new Error('horizontal flipping not yet implemented')
-    const leftBase = region.start
-    const startPx = (feature.get('start') - leftBase) / bpPerPx
-    const endPx = (feature.get('end') - leftBase) / bpPerPx
+    // const leftBase = region.start
+    const startPx = bpToPx(
+      feature.get('start'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const endPx = bpToPx(
+      feature.get('end'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
@@ -131,7 +142,9 @@ class PileupRenderer extends RendererType {
 
     // deserialize some of the results that came back from the worker
     result.layout = new PrecomputedLayout(result.layout)
-    result.features = result.features.map(j => SimpleFeature.fromJSON(j))
+    result.features = new Map(
+      result.features.map(j => [String(j.id), SimpleFeature.fromJSON(j)]),
+    )
 
     return result
   }
@@ -184,7 +197,7 @@ export const ConfigSchema = ConfigurationSchema('PileupRenderer', {
   },
 })
 
-export default pluginManager =>
+export default (/* pluginManager */) =>
   new PileupRenderer({
     name: 'PileupRenderer',
     ReactComponent: PileupRendering,

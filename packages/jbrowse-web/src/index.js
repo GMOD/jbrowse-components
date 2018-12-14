@@ -20,7 +20,7 @@ jbrowse.configure({
   tracks: [
     {
       type: 'AlignmentsTrack',
-      name: 'Alignments Test',
+      name: 'volvox-sorted red/blue',
       category: ['Bar Category', 'Baz Category'],
       adapter: {
         type: 'BamAdapter',
@@ -30,14 +30,14 @@ jbrowse.configure({
     },
     {
       type: 'AlignmentsTrack',
-      name: 'Foo Test',
+      name: 'volvox-sorted all green',
       category: ['Bee Category', 'Boo Category'],
       adapter: {
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
       },
-      renderers: { PileupRenderer: { alignmentColor: 'blue' } },
+      renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
 })
@@ -74,18 +74,19 @@ firstView.displayRegions([
   { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
+firstView.zoomTo(2) // bpPerPx
 firstView.showTrack(model.configuration.tracks[0], { height: 200 })
 
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
 secondView.displayRegions([
+  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
   {
     assembly: 'volvox',
     refName: 'ctgB',
     start: 0,
     end: 2000,
   },
-  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
 ])
 
 firstView.activateTrackSelector()

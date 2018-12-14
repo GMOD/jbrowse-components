@@ -1,13 +1,9 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
 
 import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
 
-import ServerSideRenderedBlockContent from './ServerSideRenderedBlockContent'
-
 import './AlignmentsTrack.scss'
-
-export const AlignmentsTrackBlock = ServerSideRenderedBlockContent
 
 const AlignmentsTrack = observer(props => {
   const { blockState } = props.model

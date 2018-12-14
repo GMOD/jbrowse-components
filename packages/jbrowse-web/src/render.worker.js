@@ -2,10 +2,13 @@ import './workerPolyfill'
 
 import jsonStableStringify from 'json-stable-stringify'
 
+import { useStaticRendering } from 'mobx-react'
+
 import RpcServer from '@librpc/web'
 
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable'
 import JBrowse from './JBrowse'
+
+useStaticRendering(true)
 
 const jbrowse = new JBrowse().configure()
 

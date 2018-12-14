@@ -94,6 +94,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         type: types.literal('LinearGenomeView'),
         offsetPx: 0,
         bpPerPx: 1,
+        flipped: false,
         // we use an array for the tracks because the tracks are displayed in a specific
         // order that we need to keep.
         tracks: types.array(
@@ -157,12 +158,15 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
                 region.start + (blockNum + 1) * blockSizeBp,
               ),
               offsetPx:
-                (regionBpOffset + region.start + blockNum * blockSizeBp) *
+                (regionBpOffset + region.start + blockNum * blockSizeBp) /
                 self.bpPerPx,
             }
             newBlock.key = assembleLocString(newBlock)
             newBlock.widthPx =
               Math.abs(newBlock.end - newBlock.start) / self.bpPerPx
+            newBlock.isLeftEndOfDisplayedRegion =
+              newBlock.start === region.start
+            newBlock.isRightEndOfDisplayedRegion = newBlock.end === region.end
             blocks.push(newBlock)
           }
 
@@ -207,7 +211,8 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       activateTrackSelector() {
-        if (getType(self.configuration).name === 'AnonymousModel') debugger
+        if (getType(self.configuration).name === 'AnonymousModel')
+          throw new Error('this view should have a real configuration')
         const trackSelectorType = getConf(self, 'trackSelectorType')
         if (trackSelectorType === 'hierarchical') {
           const rootModel = getRoot(self)
@@ -225,6 +230,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         } else {
           throw new Error(`invalid track selector type ${trackSelectorType}`)
         }
+      },
+
+      zoomTo(newBpPerPx) {
+        self.bpPerPx = newBpPerPx
       },
 
       resizeTrack(trackId, distance) {

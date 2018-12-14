@@ -31,6 +31,8 @@ class TrackBlocks extends Component {
           const state = blockState.get(block.key)
           const comp = (
             <Block
+              leftBorder={block.isLeftEndOfDisplayedRegion}
+              rightBorder={block.isRightEndOfDisplayedRegion}
               start={block.start}
               end={block.end}
               refName={block.refName}

@@ -2,6 +2,9 @@ import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 
+/**
+ * mostly does UI gestures: drag scrolling, etc
+ */
 @observer
 class TrackRenderingContainer extends Component {
   static propTypes = {

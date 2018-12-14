@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import { hydrate } from 'react-dom'
+import { hydrate, unmountComponentAtNode } from 'react-dom'
+import { setLivelinessChecking } from 'mobx-state-tree'
+
+setLivelinessChecking('error')
 
 function LoadingMessage() {
   return <div className="loading">Loading ...</div>
@@ -13,6 +16,10 @@ ErrorMessage.propTypes = {
   error: PropTypes.objectOrObservableObject.isRequired,
 }
 
+/**
+ * A block whose content is rendered outside of the main thread and hydrated by this
+ * component.
+ */
 @observer
 class ServerSideRenderedBlockContent extends Component {
   static propTypes = {
@@ -32,6 +39,10 @@ class ServerSideRenderedBlockContent extends Component {
     this.doHydrate()
   }
 
+  componentWillUnmount() {
+    if (this.hydrated) unmountComponentAtNode(this.ssrContainerNode.current)
+  }
+
   doHydrate() {
     const { model } = this.props
     if (model.filled) {
@@ -40,10 +51,15 @@ class ServerSideRenderedBlockContent extends Component {
       domNode.innerHTML = html
       const mainThreadRendering = React.createElement(
         rendererType.ReactComponent,
-        { ...data, region, ...renderProps },
+        {
+          ...data,
+          region,
+          ...renderProps,
+        },
         null,
       )
       hydrate(mainThreadRendering, domNode)
+      this.hydrated = true
     }
   }
 
