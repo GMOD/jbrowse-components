@@ -20,7 +20,7 @@ jbrowse.configure({
   tracks: [
     {
       type: 'AlignmentsTrack',
-      name: 'Alignments Test',
+      name: 'volvox-sorted red/blue',
       category: ['Bar Category', 'Baz Category'],
       adapter: {
         type: 'BamAdapter',
@@ -30,14 +30,14 @@ jbrowse.configure({
     },
     {
       type: 'AlignmentsTrack',
-      name: 'Foo Test',
+      name: 'volvox-sorted all green',
       category: ['Bee Category', 'Boo Category'],
       adapter: {
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
       },
-      renderers: { PileupRenderer: { alignmentColor: 'blue' } },
+      renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
 })
