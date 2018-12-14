@@ -1,0 +1,21 @@
+.ScaleBar {
+  .Ruler {
+    position: relative;
+    height: 30%;
+    .tick {
+      position: absolute;
+      &.major {
+        width: 1px;
+        height: 100%;
+        top: 0;
+        background: #555;
+      }
+      &.minor {
+        width: 1px;
+        height: 80%;
+        top: 0;
+        background: #999;
+      }
+    }
+  }
+}

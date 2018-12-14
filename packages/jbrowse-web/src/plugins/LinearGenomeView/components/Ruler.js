@@ -1,5 +1,6 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+import React from 'react'
+import ReactPropTypes from 'prop-types'
+import { PropTypes } from '../../../mst-types'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major
@@ -37,43 +38,70 @@ function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
   return { majorPitch, minorPitch }
 }
 
-function forEachTickMark(block, majorCallback, minorCallback) {
-  const projectionBlock = block.getProjectionBlock()
-  const aRange = projectionBlock.getValidRangeA()
-  const scale = projectionBlock.getScale()
-  const blockDims = block.getDims()
+function* makeTicks(
+  region,
+  bpPerPx,
+  flipped,
+  emitMajor = true,
+  emitMinor = true,
+) {
+  const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
 
-  const gridPitch = Ruler.chooseGridPitch(scale, 60, 15)
-
-  let minBase = projectionBlock.projectPoint(blockDims.l)
-  let maxBase = projectionBlock.projectPoint(blockDims.r)
+  let minBase = region.start
+  let maxBase = region.end
   if (minBase === null || maxBase === null) return
 
-  if (scale < 0) {
-    // swap if negative
-    const tmp = minBase
-    minBase = maxBase
-    maxBase = tmp
+  if (bpPerPx < 0 || flipped) {
+    ;[minBase, maxBase] = [maxBase, minBase]
   }
 
   // apply left and right margins
-  if (scale > 0) {
-    if (blockDims.leftEdge) minBase += Math.abs(10 * scale)
-    if (blockDims.rightEdge) maxBase -= Math.abs(10 * scale)
+  if (bpPerPx > 0) {
+    if (region.leftEdge) minBase += Math.abs(10 * bpPerPx)
+    if (region.rightEdge) maxBase -= Math.abs(10 * bpPerPx)
   } else {
-    if (blockDims.rightEdge) minBase += Math.abs(10 * scale)
-    if (blockDims.leftEdge) maxBase -= Math.abs(10 * scale)
+    if (region.rightEdge) minBase += Math.abs(10 * bpPerPx)
+    if (region.leftEdge) maxBase -= Math.abs(10 * bpPerPx)
   }
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   for (
-    let b = Math.ceil(minBase / iterPitch) * iterPitch;
-    b < maxBase;
-    b += iterPitch
+    let base = Math.ceil(minBase / iterPitch) * iterPitch;
+    base < maxBase;
+    base += iterPitch
   ) {
-    if (minorCallback && b % gridPitch.majorPitch) minorCallback(b)
-    else if (majorCallback) majorCallback(b)
+    if (emitMinor && base % gridPitch.majorPitch) yield { type: 'minor', base }
+    else if (emitMajor) yield { type: 'major', base }
   }
 }
 
-export default function Ruler(props) {}
+export default function Ruler(props) {
+  const { region, bpPerPx, flipped, major, minor } = props
+  const ticks = []
+  for (const tick of makeTicks(region, bpPerPx, flipped, major, minor)) {
+    ticks.push(
+      <div
+        key={tick.base}
+        style={{ left: `${(tick.base - region.start) / bpPerPx}px` }}
+        className={`tick ${tick.type}`}
+        data-bp={tick.base}
+      />,
+    )
+  }
+
+  return <div className="Ruler">{ticks}</div>
+}
+
+Ruler.propTypes = {
+  region: PropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  flipped: ReactPropTypes.bool,
+  major: ReactPropTypes.bool,
+  minor: ReactPropTypes.bool,
+}
+
+Ruler.defaultProps = {
+  flipped: false,
+  major: true,
+  minor: true,
+}
