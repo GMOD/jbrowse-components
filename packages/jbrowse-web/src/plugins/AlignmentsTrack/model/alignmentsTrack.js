@@ -68,7 +68,6 @@ export default (pluginManager, configSchema) =>
             bpPerPx: view.bpPerPx,
             config,
             onFeatureClick(featureId) {
-              console.log('clicked', featureId)
               // try to find the feature in our layout
               console.log(self.features.get(featureId))
             },
