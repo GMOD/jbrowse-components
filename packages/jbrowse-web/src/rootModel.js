@@ -175,10 +175,12 @@ export default app => {
 
       setSelection(thing) {
         self.selection = thing
+        console.log('selected', thing)
       },
 
       clearSelection() {
         self.selection = undefined
+        console.log('selection cleared')
       },
     }))
   return RootModel
