@@ -5,6 +5,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 800,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:1-800",
     "offsetPx": 0,
     "refName": "ctgA",
@@ -14,6 +16,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 1600,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:801-1600",
     "offsetPx": 800,
     "refName": "ctgA",
@@ -28,6 +32,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 100,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgA:1-100",
     "offsetPx": 0,
     "refName": "ctgA",
@@ -37,6 +43,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 200,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgB:101-200",
     "offsetPx": 200,
     "refName": "ctgB",
@@ -51,6 +59,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 5600,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:4801-5600",
     "offsetPx": 4800,
     "refName": "ctgA",
@@ -60,6 +70,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 6400,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:5601-6400",
     "offsetPx": 5600,
     "refName": "ctgA",
@@ -74,6 +86,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 200,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgA:1-200",
     "offsetPx": 0,
     "refName": "ctgA",
@@ -83,6 +97,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 800,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1-800",
     "offsetPx": 200,
     "refName": "ctgB",
@@ -97,6 +113,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 800,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1-800",
     "offsetPx": 200,
     "refName": "ctgB",
@@ -106,6 +124,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 1000,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgB:801-1000",
     "offsetPx": 1000,
     "refName": "ctgB",
@@ -120,6 +140,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 1600,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:801-1600",
     "offsetPx": 1000,
     "refName": "ctgB",
@@ -129,6 +151,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 2400,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1601-2400",
     "offsetPx": 1800,
     "refName": "ctgB",
@@ -143,6 +167,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 3200,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:1601-3200",
     "offsetPx": 800,
     "refName": "ctgA",
@@ -152,6 +178,8 @@ Array [
   Object {
     "assembly": "volvox",
     "end": 4800,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:3201-4800",
     "offsetPx": 1600,
     "refName": "ctgA",
