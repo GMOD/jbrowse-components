@@ -1,10 +1,12 @@
 import { ConfigurationSchema } from '../../configuration'
 import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models'
 
-import { ConfigSchema as PileupRendererConfigSchema } from './pileupRenderer'
+export default pluginManager => {
+  const PileupRendererConfigSchema = pluginManager.getRendererType(
+    'PileupRenderer',
+  ).configSchema
 
-export default pluginManager =>
-  ConfigurationSchema(
+  return ConfigurationSchema(
     'AlignmentsTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
@@ -23,3 +25,4 @@ export default pluginManager =>
     },
     { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
   )
+}

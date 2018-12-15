@@ -11,6 +11,7 @@ import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalT
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
+import PileupRendererPlugin from './plugins/PileupRenderer'
 
 const corePlugins = [
   MainMenuBarPlugin,
@@ -18,6 +19,7 @@ const corePlugins = [
   BamAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
+  PileupRendererPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app
