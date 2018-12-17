@@ -73,7 +73,6 @@ class TextFields extends React.Component {
   validateUrl = async () => {
     let { url } = this.state
     if (url.endsWith('/')) url += 'hub.txt'
-    const { enableNext } = this.props
     const resp = await this.doGet(url)
     const resolvedUrl = new URL(resp.url)
     const hubTxt = await resp.text()
@@ -129,7 +128,6 @@ class TextFields extends React.Component {
       })
       return
     }
-    enableNext()
     this.setState({
       url,
       resolvedUrl,
@@ -154,7 +152,7 @@ class TextFields extends React.Component {
   }
 
   render() {
-    const { classes } = this.props
+    const { classes, enableNext } = this.props
     const { url, hubTxt, hubTxtIsValid, resolvedUrl } = this.state
 
     return (
@@ -194,7 +192,11 @@ class TextFields extends React.Component {
           Validate URL
         </Button>
         {resolvedUrl ? (
-          <GenomeSelector hubTxtUrl={resolvedUrl} hubTxt={hubTxt} />
+          <GenomeSelector
+            hubTxtUrl={resolvedUrl}
+            hubTxt={hubTxt}
+            enableNext={enableNext}
+          />
         ) : null}
       </div>
     )
