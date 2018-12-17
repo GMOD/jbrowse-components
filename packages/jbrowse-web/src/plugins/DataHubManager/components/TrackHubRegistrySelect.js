@@ -9,11 +9,13 @@ import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const styles = {
+const styles = theme => ({
   formControl: {
-    minWidth: 120,
+    minWidth: 192,
+    marginLeft: theme.spacing.unit * 2,
+    marginRight: theme.spacing.unit * 2,
   },
-}
+})
 
 function QueryStatus(props) {
   const { status } = props

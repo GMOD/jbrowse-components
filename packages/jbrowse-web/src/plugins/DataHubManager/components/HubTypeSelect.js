@@ -52,6 +52,7 @@ function HubTypeSelect(props) {
             control={<Radio />}
             value={entry.value}
             label={entry.label}
+            disabled={entry.value === 'jbrowse1'}
           />
         ))}
       </RadioGroup>

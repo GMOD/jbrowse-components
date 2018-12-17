@@ -11,6 +11,7 @@ import React from 'react'
 import HubSourceSelect from './HubSourceSelect'
 import HubTypeSelect from './HubTypeSelect'
 import TrackHubRegistrySelect from './TrackHubRegistrySelect'
+import UrlInput from './UrlInput'
 
 const styles = theme => ({
   root: {
@@ -93,7 +94,19 @@ class DataHubDrawerWidget extends React.Component {
           />
         )
       case 2:
-        return <TrackHubRegistrySelect />
+        if (hubSource === 'ucsccustom')
+          return (
+            <UrlInput
+              enableNext={() => {
+                this.setState({ nextEnabledThroughStep: activeStep })
+              }}
+              disableNext={() => {
+                this.setState({ nextEnabledThroughStep: activeStep - 1 })
+              }}
+            />
+          )
+        if (hubSource === 'trackhubregistry') return <TrackHubRegistrySelect />
+        return <Typography color="error">Unknown Data Hub Source</Typography>
       // return <HubSelector hubType={hubType} />
       case 3:
         return <Typography>Confimation dialog</Typography>
