@@ -26,6 +26,9 @@ const styles = theme => ({
     height: '100vh',
     display: 'flex',
   },
+  menuBars: {
+    marginBottom: theme.spacing.unit,
+  },
   menuBarsAndComponents: {
     display: 'flex',
     flexDirection: 'column',
@@ -132,7 +135,7 @@ class App extends Component {
         <CssBaseline />
         <div className={classes.root}>
           <div className={classes.menuBarsAndComponents}>
-            <div>
+            <div className={classes.menuBars}>
               {rootModel.menuBars.map(menuBar => {
                 const { LazyReactComponent } = getMenuBarType(menuBar.type)
                 return (
