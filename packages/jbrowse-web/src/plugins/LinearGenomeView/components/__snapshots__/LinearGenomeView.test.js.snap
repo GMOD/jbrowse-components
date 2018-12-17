@@ -131,7 +131,12 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <div
-      className="block"
+      className="refLabel floating"
+    >
+      ctgA
+    </div>
+    <div
+      className="block left-side right-side"
       style={
         Object {
           "left": "0px",
@@ -139,7 +144,66 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
     >
-      volvox:ctgA:1-100
+      <div
+        className="refLabel"
+      >
+        ctgA
+      </div>
+      <div
+        className="Ruler"
+      >
+        <div
+          className="tick major"
+          data-bp={0}
+          style={
+            Object {
+              "left": "0px",
+            }
+          }
+        >
+          <div
+            className="label first"
+          >
+            0
+          </div>
+        </div>
+        <div
+          className="tick minor"
+          data-bp={20}
+          style={
+            Object {
+              "left": "20px",
+            }
+          }
+        />
+        <div
+          className="tick minor"
+          data-bp={40}
+          style={
+            Object {
+              "left": "40px",
+            }
+          }
+        />
+        <div
+          className="tick minor"
+          data-bp={60}
+          style={
+            Object {
+              "left": "60px",
+            }
+          }
+        />
+        <div
+          className="tick minor"
+          data-bp={80}
+          style={
+            Object {
+              "left": "80px",
+            }
+          }
+        />
+      </div>
     </div>
   </div>
   <div
