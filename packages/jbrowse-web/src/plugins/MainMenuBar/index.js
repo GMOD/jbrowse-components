@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '../../configuration'
-import Plugin, { DrawerWidgetType, MenuBarType } from '../../Plugin'
+import Plugin from '../../Plugin'
+import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
+import MenuBarType from '../../pluggableElementTypes/MenuBarType'
+
 import {
   AboutDrawerWidgetModel,
   HelpDrawerWidgetModel,

@@ -1,5 +1,6 @@
 import { types } from 'mobx-state-tree'
-import Plugin, { AdapterType } from '../../Plugin'
+import Plugin from '../../Plugin'
+import AdapterType from '../../pluggableElementTypes/AdapterType'
 import { ConfigurationSchema } from '../../configuration'
 import AdapterClass from './BamAdapter'
 

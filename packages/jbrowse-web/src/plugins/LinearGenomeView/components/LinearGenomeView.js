@@ -77,7 +77,7 @@ class LinearGenomeView extends Component {
             key={`controls:${track.id}`}
             style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
           >
-            {getConf(track, 'name') || track.id}
+            <track.ControlsComponent track={track} view={model} />
           </div>,
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}

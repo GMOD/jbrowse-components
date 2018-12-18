@@ -1,4 +1,5 @@
-import Plugin, { TrackType } from '../../Plugin'
+import Plugin from '../../Plugin'
+import TrackType from '../../pluggableElementTypes/TrackType'
 
 import AlignmentsTrack from './components/AlignmentsTrack'
 import configSchemaFactory from './configSchema'

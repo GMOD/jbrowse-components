@@ -4,7 +4,7 @@ import { toArray } from 'rxjs/operators'
 
 import { renderRegionWithWorker } from '../../render'
 
-import { RendererType } from '../../Plugin'
+import RendererType from '../../pluggableElementTypes/RendererType'
 
 import {
   createCanvas,
@@ -41,12 +41,16 @@ class PileupSession {
   }
 }
 
-const sessions = {}
 class PileupRenderer extends RendererType {
+  constructor(stuff) {
+    super({ ...stuff, sessions: {} })
+  }
+
   getWorkerSession(props) {
     const { sessionId } = props
-    if (!sessions[sessionId]) sessions[sessionId] = this.createSession()
-    const session = sessions[sessionId]
+    if (!this.sessions[sessionId])
+      this.sessions[sessionId] = this.createSession()
+    const session = this.sessions[sessionId]
     session.update(props)
     return session
   }
@@ -56,8 +60,8 @@ class PileupRenderer extends RendererType {
   }
 
   freeResources({ sessionId, region }) {
-    if (!region && sessions[sessionId]) {
-      delete sessions[sessionId]
+    if (!region && this.sessions[sessionId]) {
+      delete this.sessions[sessionId]
       return 1
     }
     // TODO: implement freeing for regions

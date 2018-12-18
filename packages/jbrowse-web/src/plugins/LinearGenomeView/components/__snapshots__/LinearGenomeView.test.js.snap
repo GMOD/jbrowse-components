@@ -48,7 +48,16 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     }
   >
-    foo
+    <div
+      className="track-name"
+    >
+      foo
+      <button
+        type="button"
+      >
+        configure
+      </button>
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -215,7 +224,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     }
   >
-    foo
+    <div
+      className="track-name"
+    >
+      foo
+      <button
+        type="button"
+      >
+        configure
+      </button>
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -264,7 +282,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     }
   >
-    bar
+    <div
+      className="track-name"
+    >
+      bar
+      <button
+        type="button"
+      >
+        configure
+      </button>
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
