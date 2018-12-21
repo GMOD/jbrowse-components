@@ -26,6 +26,11 @@ exports[`one feature 1`] = `
 >
   <rect
     height={10}
+    style={
+      Object {
+        "fill": "goldenrod",
+      }
+    }
     title="one"
     width={0.6666666666666667}
     x={0.3333333333333333}

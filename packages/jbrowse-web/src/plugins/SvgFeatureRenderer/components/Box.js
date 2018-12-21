@@ -26,6 +26,8 @@ export default class Box extends Component {
       heightPx: ReactPropTypes.number.isRequired,
       topPx: ReactPropTypes.number.isRequired,
     }).isRequired,
+
+    config: CommonPropTypes.ConfigSchema.isRequired,
   }
 
   static defaultProps = {
@@ -70,6 +72,7 @@ export default class Box extends Component {
     const {
       feature,
       horizontallyFlipped,
+      config,
       layoutRecord: { startPx, endPx, heightPx, topPx },
     } = this.props
     // ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
@@ -83,6 +86,7 @@ export default class Box extends Component {
         y={topPx}
         width={endPx - startPx}
         height={heightPx}
+        style={{ fill: readConfObject(config, 'color1') }}
       />
     )
   }
