@@ -53,6 +53,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     >
       foo
       <button
+        onClick={[Function]}
         type="button"
       >
         configure
@@ -229,6 +230,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       foo
       <button
+        onClick={[Function]}
         type="button"
       >
         configure
@@ -287,6 +289,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       bar
       <button
+        onClick={[Function]}
         type="button"
       >
         configure

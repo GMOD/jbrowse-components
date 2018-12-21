@@ -12,7 +12,7 @@ export default pluginManager => {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'string',
-        defaultValue: 'pileup',
+        defaultValue: 'features',
       },
       category: {
         type: 'stringArray',

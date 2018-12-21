@@ -113,7 +113,9 @@ export default (pluginManager, configSchema) =>
         get renderProps() {
           // view -> [tracks] -> [blocks]
           const view = getParent(self, 2)
-          const config = getConf(self, ['renderers', self.rendererTypeName])
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', self.rendererTypeName]) || {},
+          )
           return {
             bpPerPx: view.bpPerPx,
             config,

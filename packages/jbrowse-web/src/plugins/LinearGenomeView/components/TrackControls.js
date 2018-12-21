@@ -19,5 +19,5 @@ TrackControls.propTypes = {
   onConfigureClick: PropTypes.func,
 }
 TrackControls.defaultProps = {
-  onConfigureClick: undefined,
+  onConfigureClick: () => {},
 }

@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`a couple of features 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="20px"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="333.3333333333333px"
+/>
+`;
+
+exports[`no features 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="20px"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="100px"
+/>
+`;

@@ -22,6 +22,10 @@ export default class PrecomputedLayout {
     return this.rectangles
   }
 
+  getTotalHeight() {
+    return this.totalHeight
+  }
+
   toJSON() {
     return {
       rectangles: objectFromEntries(this.rectangles),
