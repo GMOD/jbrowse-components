@@ -13,6 +13,10 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 function renderBlock(self) {
   // console.log(getParent(self, 2).rendererType)
   if (!isAlive(self)) return
+  self.filled = false
+  self.html = ''
+  self.data = undefined
+  self.error = undefined
   try {
     const track = getParent(self, 2)
     const view = getParent(track, 2)

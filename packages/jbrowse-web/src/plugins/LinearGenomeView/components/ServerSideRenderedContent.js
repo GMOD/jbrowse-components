@@ -36,6 +36,7 @@ class ServerSideRenderedContent extends Component {
     const domNode = this.ssrContainerNode.current
     if (domNode && model.filled) {
       if (this.hydrated) unmountComponentAtNode(domNode.firstChild)
+      domNode.innerHTML = `<div className="ssr-container-inner"></div>`
       domNode.firstChild.innerHTML = html
       const mainThreadRendering = React.createElement(
         rendererType.ReactComponent,
@@ -59,9 +60,7 @@ class ServerSideRenderedContent extends Component {
         data-renderer-type={model.rendererType.name}
         data-html-size={model.html.length}
         className="ssr-container"
-      >
-        <div className="ssr-container-inner" />
-      </div>
+      />
     )
   }
 }
