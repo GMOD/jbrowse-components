@@ -9,6 +9,12 @@ import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 import CompositeMap from '../../../util/compositeMap'
 import TrackControls from '../components/TrackControls'
 
+// using a map because it preserves order
+const rendererTypes = new Map([
+  ['pileup', 'PileupRenderer'],
+  ['svg', 'SvgFeatureRenderer'],
+])
+
 export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
@@ -24,7 +30,7 @@ export default (pluginManager, configSchema) =>
       })
       .volatile(() => ({
         reactComponent: AlignmentsTrack,
-        rendererTypeChoices: ['pileup', 'features'],
+        rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       // .actions(self => ({
       //   afterAttach() {
@@ -54,10 +60,7 @@ export default (pluginManager, configSchema) =>
         get rendererTypeName() {
           const defaultRendering = getConf(self, 'defaultRendering')
           const viewName = self.selectedRendering || defaultRendering
-          const rendererType = {
-            pileup: 'PileupRenderer',
-            features: 'SvgFeatureRenderer',
-          }[viewName]
+          const rendererType = rendererTypes.get(viewName)
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
           return rendererType
