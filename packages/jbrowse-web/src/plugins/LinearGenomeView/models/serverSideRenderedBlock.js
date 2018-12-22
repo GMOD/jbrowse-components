@@ -13,15 +13,11 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 function renderBlock(self) {
   // console.log(getParent(self, 2).rendererType)
   if (!isAlive(self)) return
-  self.filled = false
-  self.html = ''
-  self.data = undefined
-  self.error = undefined
+  self.setLoading()
   try {
     const track = getParent(self, 2)
     const view = getParent(track, 2)
     const root = getParent(view, 2)
-    // console.log('calling', self.region.toJSON())
     track.rendererType
       .renderInClient(root.app, {
         region: self.region,
@@ -73,7 +69,13 @@ export default types
     let renderDisposer
     return {
       afterAttach() {
-        renderDisposer = autorun(() => renderBlock(self))
+        renderDisposer = autorun(() => renderBlock(self), { delay: 50 })
+      },
+      setLoading() {
+        self.filled = false
+        self.html = ''
+        self.data = undefined
+        self.error = undefined
       },
       setRendered(data, html) {
         self.filled = true
