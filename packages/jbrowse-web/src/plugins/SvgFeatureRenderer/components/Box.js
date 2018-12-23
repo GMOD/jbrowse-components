@@ -34,14 +34,9 @@ export default class Box extends Component {
     horizontallyFlipped: false,
   }
 
-  static layout({
-    feature,
-    horizontallyFlipped,
-    bpPerPx,
-    region,
-    config,
-    layout,
-  }) {
+  static layout(args) {
+    const { feature, horizontallyFlipped, bpPerPx, region, layout } = args
+
     // ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
     if (horizontallyFlipped)
       throw new Error('horizontal flipping not yet implemented')
@@ -54,7 +49,7 @@ export default class Box extends Component {
     )
     let endPx = bpToPx(feature.get('end'), region, bpPerPx, horizontallyFlipped)
     if (horizontallyFlipped) [startPx, endPx] = [endPx, startPx]
-    const heightPx = readConfObject(config, 'height', [feature])
+    const heightPx = readConfObject(args.config, 'height', [feature])
     if (!heightPx) debugger
 
     const topPx = layout.addRect(

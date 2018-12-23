@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
+import { isAlive } from 'mobx-state-tree'
+
+import { requestIdleCallback } from 'request-idle-callback'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
@@ -32,23 +35,30 @@ class ServerSideRenderedContent extends Component {
 
   doHydrate() {
     const { model } = this.props
-    const { data, region, html, rendererType, renderProps } = model
+    const { data, region, html, renderProps, renderingComponent } = model
     const domNode = this.ssrContainerNode.current
     if (domNode && model.filled) {
       if (this.hydrated) unmountComponentAtNode(domNode.firstChild)
       domNode.innerHTML = `<div className="ssr-container-inner"></div>`
       domNode.firstChild.innerHTML = html
-      const mainThreadRendering = React.createElement(
-        rendererType.ReactComponent,
-        {
-          ...data,
-          region,
-          ...renderProps,
-        },
-        null,
-      )
-      hydrate(mainThreadRendering, domNode.firstChild)
-      this.hydrated = true
+      // defer main-thread rendering and hydration for when
+      // we have some free time. helps keep the framerate up.
+      requestIdleCallback(() => {
+        if (!isAlive(model)) return
+        const mainThreadRendering = React.createElement(
+          renderingComponent,
+          {
+            ...data,
+            region,
+            ...renderProps,
+          },
+          null,
+        )
+        // console.log(rendererType.name, html.slice(0, 20))
+        if (!isAlive(model)) return
+        hydrate(mainThreadRendering, domNode.firstChild)
+        this.hydrated = true
+      })
     }
   }
 
@@ -57,7 +67,6 @@ class ServerSideRenderedContent extends Component {
     return (
       <div
         ref={this.ssrContainerNode}
-        data-renderer-type={model.rendererType.name}
         data-html-size={model.html.length}
         className="ssr-container"
       />
