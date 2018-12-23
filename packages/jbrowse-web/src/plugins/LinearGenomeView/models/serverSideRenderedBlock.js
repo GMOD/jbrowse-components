@@ -1,44 +1,44 @@
-import { types, getParent, flow, isAlive } from 'mobx-state-tree'
+import { types, getParent, isAlive } from 'mobx-state-tree'
 
+import { autorun } from 'mobx'
 import { getConf } from '../../../configuration'
 
 import { Region } from '../../../mst-types'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+import { assembleLocString } from '../../../util'
 
-// MST flow that calls the render worker to render the block content
-export function flowRenderBlock(self) {
-  return flow(function* renderBlock() {
-    if (!isAlive(self)) return
+// calls the render worker to render the block content
+// not using a flow for this, because the flow doesn't
+// work with autorun
+function renderBlock(self) {
+  // console.log(getParent(self, 2).rendererType)
+  if (!isAlive(self)) return
+  self.setLoading()
+  try {
     const track = getParent(self, 2)
     const view = getParent(track, 2)
     const root = getParent(view, 2)
-    try {
-      // console.log('calling', self.region.toJSON())
-      const { html, ...data } = yield track.rendererType.renderInClient(
-        root.app,
-        {
-          region: self.region,
-          adapterType: track.adapterType.name,
-          adapterConfig: getConf(track, 'adapter'),
-          rendererType: track.rendererTypeName,
-          renderProps: self.renderProps,
-          sessionId: track.id,
-          timeout: 10000,
-        },
-      )
-      if (!isAlive(self)) return
-
-      self.filled = true
-      self.data = data
-      self.html = html
-      // console.log('finished', self.region.toJSON(), self.html)
-    } catch (error) {
-      // the rendering failed for some reason
-      console.error(error)
-      self.error = error
-    }
-  })
+    const renderProps = { ...track.renderProps }
+    const { rendererType } = track
+    rendererType
+      .renderInClient(root.app, {
+        region: self.region,
+        adapterType: track.adapterType.name,
+        adapterConfig: getConf(track, 'adapter'),
+        rendererType: rendererType.name,
+        renderProps,
+        sessionId: track.id,
+        timeout: 10000,
+      })
+      .then(({ html, ...data }) => {
+        if (!isAlive(self)) return
+        self.setRendered(data, html, rendererType.ReactComponent, renderProps)
+      })
+      .catch(self.setError)
+  } catch (error) {
+    self.setError(error)
+  }
 }
 
 // the MST state of a single server-side-rendered block in a track
@@ -49,28 +49,54 @@ export default types
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })
+  // NOTE: all this stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
     filled: false,
     data: undefined,
-    reactComponent: ServerSideRenderedBlockContent,
     html: '',
     error: undefined,
+    reactComponent: ServerSideRenderedBlockContent,
+    renderingComponent: undefined,
+    renderProps: undefined,
   }))
-  .views(self => ({
-    get rendererType() {
-      const track = getParent(self, 2)
-      return track.rendererType
-    },
-
-    get renderProps() {
-      // view -> [tracks] -> [blocks]
-      const track = getParent(self, 2)
-      return track.renderProps
-    },
-  }))
-  .actions(self => ({
-    afterAttach() {
-      self.render()
-    },
-    render: flowRenderBlock(self),
-  }))
+  .actions(self => {
+    let renderDisposer
+    return {
+      afterAttach() {
+        renderDisposer = autorun(() => renderBlock(self), {
+          name: `${assembleLocString(self.region)} rendering`,
+          delay: 50,
+        })
+      },
+      setLoading() {
+        self.filled = false
+        self.html = ''
+        self.data = undefined
+        self.error = undefined
+      },
+      setRendered(data, html, renderingComponent, renderProps) {
+        self.filled = true
+        self.data = data
+        self.html = html
+        self.renderingComponent = renderingComponent
+        self.renderProps = renderProps
+      },
+      setError(error) {
+        // the rendering failed for some reason
+        console.error(error)
+        self.error = error
+      },
+      beforeDetach() {
+        if (renderDisposer) {
+          renderDisposer()
+          renderDisposer = undefined
+        }
+      },
+      beforeDestroy() {
+        if (renderDisposer) {
+          renderDisposer()
+          renderDisposer = undefined
+        }
+      },
+    }
+  })

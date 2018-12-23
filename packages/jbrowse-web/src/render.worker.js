@@ -95,7 +95,7 @@ export async function renderRegion(
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
-  if (!RendererType) throw new Error(`renderer "${rendererType} not found`)
+  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
   if (!RendererType.ReactComponent)
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,

@@ -7,6 +7,13 @@ import AlignmentsTrack from '../components/AlignmentsTrack'
 import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
 import CompositeMap from '../../../util/compositeMap'
+import TrackControls from '../components/TrackControls'
+
+// using a map because it preserves order
+const rendererTypes = new Map([
+  ['pileup', 'PileupRenderer'],
+  ['svg', 'SvgFeatureRenderer'],
+])
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -23,6 +30,7 @@ export default (pluginManager, configSchema) =>
       })
       .volatile(() => ({
         reactComponent: AlignmentsTrack,
+        rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       // .actions(self => ({
       //   afterAttach() {
@@ -40,6 +48,9 @@ export default (pluginManager, configSchema) =>
           const root = getRoot(self)
           root.clearSelection()
         },
+        setRenderer(newRenderer) {
+          self.selectedRendering = newRenderer
+        },
       }))
       .views(self => ({
         /**
@@ -49,10 +60,14 @@ export default (pluginManager, configSchema) =>
         get rendererTypeName() {
           const defaultRendering = getConf(self, 'defaultRendering')
           const viewName = self.selectedRendering || defaultRendering
-          const rendererType = { pileup: 'PileupRenderer' }[viewName]
+          const rendererType = rendererTypes.get(viewName)
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
           return rendererType
+        },
+
+        get ControlsComponent() {
+          return TrackControls
         },
 
         /**
@@ -84,7 +99,7 @@ export default (pluginManager, configSchema) =>
             self.rendererTypeName,
           )
           if (!RendererType)
-            throw new Error(`renderer "${track.rendererTypeName} not found`)
+            throw new Error(`renderer "${track.rendererTypeName}" not found`)
           if (!RendererType.ReactComponent)
             throw new Error(
               `renderer ${
@@ -101,7 +116,9 @@ export default (pluginManager, configSchema) =>
         get renderProps() {
           // view -> [tracks] -> [blocks]
           const view = getParent(self, 2)
-          const config = getConf(self, ['renderers', self.rendererTypeName])
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', self.rendererTypeName]) || {},
+          )
           return {
             bpPerPx: view.bpPerPx,
             config,

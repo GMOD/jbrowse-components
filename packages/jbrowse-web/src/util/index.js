@@ -34,3 +34,14 @@ export function bpToPx(bp, region, bpPerPx, flipped = false) {
 }
 
 export const objectFromEntries = Object.fromEntries.bind(Object)
+
+// do an array map of an iterable
+export function iterMap(iterable, func, sizeHint) {
+  const results = sizeHint ? new Array(sizeHint) : []
+  let counter = 0
+  for (const item of iterable) {
+    results[counter] = func(item)
+    counter += 1
+  }
+  return results
+}

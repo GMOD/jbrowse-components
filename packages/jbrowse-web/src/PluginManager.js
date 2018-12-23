@@ -1,14 +1,13 @@
 import React from 'react'
 import * as mst from 'mobx-state-tree'
 
-import {
-  RendererType,
-  AdapterType,
-  TrackType,
-  ViewType,
-  DrawerWidgetType,
-  MenuBarType,
-} from './Plugin'
+import RendererType from './pluggableElementTypes/RendererType'
+import AdapterType from './pluggableElementTypes/AdapterType'
+import TrackType from './pluggableElementTypes/TrackType'
+import ViewType from './pluggableElementTypes/ViewType'
+import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
+import MenuBarType from './pluggableElementTypes/MenuBarType'
+
 import { ConfigurationSchema } from './configuration'
 
 // little helper class that keeps groups of callbacks that are

@@ -1,7 +1,7 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { setLivelinessChecking } from 'mobx-state-tree'
+import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 setLivelinessChecking('error')
 
@@ -16,59 +16,10 @@ ErrorMessage.propTypes = {
   error: PropTypes.objectOrObservableObject.isRequired,
 }
 
-/**
- * A block whose content is rendered outside of the main thread and hydrated by this
- * component.
- */
-@observer
-class ServerSideRenderedBlockContent extends Component {
-  static propTypes = {
-    model: PropTypes.observableObject.isRequired,
-  }
-
-  constructor(props) {
-    super(props)
-    this.ssrContainerNode = React.createRef()
-  }
-
-  componentDidMount() {
-    this.doHydrate()
-  }
-
-  componentDidUpdate() {
-    this.doHydrate()
-  }
-
-  componentWillUnmount() {
-    if (this.hydrated) unmountComponentAtNode(this.ssrContainerNode.current)
-  }
-
-  doHydrate() {
-    const { model } = this.props
-    if (model.filled) {
-      const { data, region, html, rendererType, renderProps } = model
-      const domNode = this.ssrContainerNode.current
-      domNode.innerHTML = html
-      const mainThreadRendering = React.createElement(
-        rendererType.ReactComponent,
-        {
-          ...data,
-          region,
-          ...renderProps,
-        },
-        null,
-      )
-      hydrate(mainThreadRendering, domNode)
-      this.hydrated = true
-    }
-  }
-
-  render() {
-    const { model } = this.props
-    if (model.error) return <ErrorMessage error={model.error} />
-    if (!model.filled) return <LoadingMessage />
-    return <div ref={this.ssrContainerNode} className="ssr-container" />
-  }
-}
+const ServerSideRenderedBlockContent = observer(({ model }) => {
+  if (model.error) return <ErrorMessage error={model.error} />
+  if (!model.filled) return <LoadingMessage />
+  return <ServerSideRenderedContent model={model} />
+})
 
 export default ServerSideRenderedBlockContent
