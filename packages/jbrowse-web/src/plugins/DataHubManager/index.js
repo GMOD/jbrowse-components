@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '../../configuration'
-import Plugin, { DrawerWidgetType } from '../../Plugin'
+import Plugin from '../../Plugin'
+import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
 import DataHubDrawerWidgetModel from './model'
 
 const DataHubDrawerWidgetComponent = lazy(() =>
