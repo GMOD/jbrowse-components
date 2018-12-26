@@ -1,4 +1,4 @@
-import { objectFromEntries } from './index'
+import { objectFromEntries } from '../index'
 
 /**
  * Rectangle-layout manager that lays out rectangles using bitmaps at

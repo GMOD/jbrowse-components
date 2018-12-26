@@ -5,6 +5,7 @@ exports[`plugin in a stock JBrowse 1`] = `"(intermediate value).addPlugin is not
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "_configId": Any<String>,
+  "assemblyName": undefined,
   "bamLocation": Object {
     "uri": "/path/to/my.bam",
   },

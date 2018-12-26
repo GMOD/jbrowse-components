@@ -5,164 +5,18 @@ import { BamFile } from '@gmod/bam'
 import Feature from '../../util/simpleFeature'
 
 import { openLocation } from '../../util'
-
-class BamSlightlyLazyFeature {
-  uncachedGetType() {
-    return 'match'
-  }
-
-  uncachedGetScore() {
-    return this.record._get('mq')
-  }
-
-  uncachedGetMappingQuality() {
-    return this.record.mappingQuality
-  }
-
-  uncachedGetFlags() {
-    return `0x${this.record.flags.toString(16)}`
-  }
-
-  uncachedGetstrand() {
-    return this.record.isReverseComplemented() ? -1 : 1
-  }
-
-  uncachedGetReadGroupId() {
-    return this.record.readGroupId
-  }
-
-  uncachedGetSeqId() {
-    return this.adapter.RefIdToName(this.record._refID)
-  }
-
-  uncachedGetQcFailed() {
-    return this.record.isFailedQc()
-  }
-
-  uncachedGetduplicate() {
-    return this.record.isDuplicate()
-  }
-
-  uncachedGetSecondaryAlignment() {
-    return this.record.isSecondary()
-  }
-
-  uncachedGetSupplementaryAlignment() {
-    return this.record.isSupplementary()
-  }
-
-  uncachedGetMultiSegmentTemplate() {
-    return this.record.isPaired()
-  }
-
-  uncachedGetMultiSegmentAllCorrectlyAligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  uncachedGetMultiSegmentAllAligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  uncachedGetMultiSegmentNextSegmentUnmapped() {
-    return this.record.isMateUnmapped()
-  }
-
-  uncachedGetMultiSegmentFirst() {
-    return this.record.isRead1()
-  }
-
-  uncachedGetMultiSegmentLast() {
-    return this.record.isRead2()
-  }
-
-  uncachedGetMultiSegmentNextSegmentReversed() {
-    return this.record.isMateReverseComplemented()
-  }
-
-  uncachedGetPairOrientation() {
-    return this.record.getPairOrientation()
-  }
-
-  uncachedGetunmapped() {
-    return this.record.isSegmentUnmapped()
-  }
-
-  uncachedGetNextSeqId() {
-    return this.record.isPaired()
-      ? this.adapter.refIdToName(this.record._next_refid())
-      : undefined
-  }
-
-  uncachedGetNextPos() {
-    return this.record.isPaired() ? this.record._next_pos() : undefined
-  }
-
-  uncachedGetNextSegmentPosition() {
-    return this.record.isPaired()
-      ? `${this.adapter.refIdToName(
-          this.record._next_refid(),
-        )}:${this.record._next_pos() + 1}`
-      : undefined
-  }
-
-  uncachedGetTags() {
-    return this.record._tags()
-  }
-
-  uncachedGetseq() {
-    return this.record.getReadBases()
-  }
-
-  constructor(record, adapter) {
-    this.record = record
-    this.adapter = adapter
-  }
-
-  tags() {
-    return this.uncachedGetTags()
-  }
-
-  id() {
-    return this.record.get('id')
-  }
-
-  _get(field) {
-    const methodName = `uncachedGet${field}`
-    if (this[methodName]) return this[methodName]()
-    return this.record._get(field)
-  }
-
-  get(field) {
-    const methodName = `uncachedGet${field.toLowerCase()}`
-    if (this[methodName]) return this[methodName]()
-    return this.record.get(field)
-  }
-
-  parent() {}
-
-  children() {}
-
-  pairedFeature() {
-    return false
-  }
-
-  toJSON() {
-    const plain = {}
-    this.tags().forEach(t => {
-      plain[t] = this.get(t)
-    })
-    return plain
-  }
-}
+import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 export default class BamAdapter {
   constructor(config) {
-    const { bamLocation } = config
+    const { bamLocation, assemblyName } = config
     const indexLocation = config.index.location
     const { indexType } = config.index
     const bamOpts = {
       bamFilehandle: openLocation(bamLocation),
     }
+
+    this.assemblyName = assemblyName
 
     const indexFile = openLocation(indexLocation)
     if (indexType === 'CSI') {
@@ -172,15 +26,53 @@ export default class BamAdapter {
     }
 
     this.bam = new BamFile(bamOpts)
-    this.gotBamHeader = this.bam.getHeader()
+    this.gotBamHeader = this.bam
+      .getHeader()
+      .then(header => this.loadSamHeader(header))
   }
 
   async hasDataForRefSeq({ assembly, refName }) {
-    // TODO
+    if (this.assemblyName !== assembly) return false
+    await this.gotBamHeader
+    return this.samHeader.refSeqNameToId[refName] !== undefined
   }
 
   bamRecordToFeature(record) {
     return new BamSlightlyLazyFeature(record, this)
+  }
+
+  // process the parsed SAM header from the bam file
+  loadSamHeader(samHeader) {
+    this.samHeader = {}
+
+    // use the @SQ lines in the header to figure out the
+    // mapping between ref seq ID numbers and names
+    const refSeqIdToName = []
+    const refSeqNameToId = {}
+    const sqLines = samHeader.filter(l => l.tag === 'SQ')
+    sqLines.forEach((sqLine, seqId) => {
+      sqLine.data.forEach(item => {
+        if (item.tag === 'SN') {
+          // this is the seq name
+          const seqName = item.value
+          refSeqNameToId[seqName] = seqId
+          refSeqIdToName[seqId] = seqName
+        }
+      })
+    })
+    if (refSeqIdToName.length) {
+      this.samHeader.refSeqIdToName = refSeqIdToName
+      this.samHeader.refSeqNameToId = refSeqNameToId
+    }
+  }
+
+  refIdToName(refId) {
+    // use info from the SAM header if possible, but fall back to using
+    // the ref seq order from when the browser's refseqs were loaded
+    if (this.samHeader.refSeqIdToName) {
+      return this.samHeader.refSeqIdToName[refId]
+    }
+    return undefined
   }
 
   /**

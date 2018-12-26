@@ -1,4 +1,4 @@
-import { objectFromEntries } from './index'
+import { objectFromEntries } from '../index'
 
 export default class PrecomputedLayout {
   constructor({ rectangles, totalHeight }) {
@@ -20,6 +20,10 @@ export default class PrecomputedLayout {
    */
   getRectangles() {
     return this.rectangles
+  }
+
+  getTotalHeight() {
+    return this.totalHeight
   }
 
   toJSON() {

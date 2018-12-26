@@ -174,10 +174,21 @@ class PileupRendering extends Component {
         [leftBp, topPx, rightBp, bottomPx],
       ] of layout.getRectangles()) {
         if (id === selectedFeatureId) {
-          const leftPx = bpToPx(leftBp, region, bpPerPx, horizontallyFlipped)
-          const rightPx = bpToPx(rightBp, region, bpPerPx, horizontallyFlipped)
-          ctx.fillStyle = 'rgba(0,0,0,0.5)'
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx, bottomPx - topPx)
+          const leftPx = Math.round(
+            bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+          )
+          const rightPx = Math.round(
+            bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+          )
+          const top = Math.round(topPx)
+          const height = Math.round(bottomPx - topPx)
+          ctx.shadowColor = '#222266'
+          ctx.shadowBlur = 10
+          ctx.lineJoin = 'bevel'
+          ctx.lineWidth = 2
+          ctx.strokeStyle = '#00b8ff'
+          ctx.strokeRect(leftPx - 2, top - 2, rightPx - leftPx + 4, height + 4)
+          ctx.clearRect(leftPx, top, rightPx - leftPx, height)
           return
         }
       }

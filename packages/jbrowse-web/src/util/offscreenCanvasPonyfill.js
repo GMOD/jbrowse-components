@@ -2,18 +2,25 @@
 /* eslint-disable camelcase */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
+
+// This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
 export let createImageBitmap
 export let ImageBitmapType
-if (
-  typeof __webpack_require__ === 'function' &&
-  typeof OffscreenCanvas === 'function'
-) {
-  createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
+// sniff environments
+const weHave = {
+  realOffscreenCanvas:
+    typeof __webpack_require__ === 'function' &&
+    typeof OffscreenCanvas === 'function',
+  node: typeof process === 'object',
+}
+
+if (weHave.realOffscreenCanvas) {
+  createCanvas = (width, height) => new OffscreenCanvas(width, height)
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
-} else if (typeof process === 'object') {
+} else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   const { createCanvas: nodeCreateCanvas, Image } = require('canvas')
   createCanvas = nodeCreateCanvas

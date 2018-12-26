@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="20px"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="100px"
+/>
+`;
+
+exports[`one feature 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="10px"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="333.3333333333333px"
+>
+  <rect
+    height={10}
+    style={
+      Object {
+        "fill": "goldenrod",
+      }
+    }
+    title="one"
+    width={0.6666666666666667}
+    x={0.3333333333333333}
+    y={0}
+  />
+</svg>
+`;

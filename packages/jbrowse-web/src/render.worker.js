@@ -1,35 +1,16 @@
 import './workerPolyfill'
 
-import jsonStableStringify from 'json-stable-stringify'
-
 import { useStaticRendering } from 'mobx-react'
 
 import RpcServer from '@librpc/web'
 
 import JBrowse from './JBrowse'
+import { freeAdapterResources, getAdapter } from './util/workerDataAdapterCache'
 
+// prevent mobx-react from doing funny things when we render in the worker
 useStaticRendering(true)
 
 const jbrowse = new JBrowse().configure()
-
-const adapterCache = {}
-function getAdapter(pluginManager, sessionId, adapterType, adapterConfig) {
-  // cache the adapter object
-  const cacheKey = `${adapterType}|${jsonStableStringify(adapterConfig)}`
-  if (!adapterCache[cacheKey]) {
-    const dataAdapterType = pluginManager.getAdapterType(adapterType)
-    if (!dataAdapterType)
-      throw new Error(`unknown data adapter type ${adapterType}`)
-    adapterCache[cacheKey] = {
-      adapter: new dataAdapterType.AdapterClass(adapterConfig),
-      sessionIds: new Set([sessionId]),
-    }
-  }
-  const cacheEntry = adapterCache[cacheKey]
-  cacheEntry.sessionIds.add(sessionId)
-
-  return cacheEntry.adapter
-}
 
 /**
  * free up any resources (e.g. cached adapter objects)
@@ -40,26 +21,7 @@ function getAdapter(pluginManager, sessionId, adapterType, adapterConfig) {
 export function freeResources(pluginManager, specification) {
   let deleteCount = 0
 
-  const specKeys = Object.keys(specification)
-
-  // if we don't specify a range, delete any adapters that are
-  // only associated with that session
-  if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
-    const { sessionId } = specification
-    Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
-      cacheEntry.sessionIds.delete(sessionId)
-      if (cacheEntry.sessionIds.size === 0) {
-        deleteCount += 1
-        delete adapterCache[cacheKey]
-      }
-    })
-  }
-  // otherwise call freeResources on all the cached data adapters
-  else {
-    Object.values(adapterCache).forEach(cacheEntry => {
-      cacheEntry.adapter.freeResources(specification)
-    })
-  }
+  deleteCount += freeAdapterResources(specification)
 
   // pass the freeResources hint along to all the renderers as well
   pluginManager.getElementTypesInGroup('renderer').forEach(renderer => {
@@ -95,7 +57,7 @@ export async function renderRegion(
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
-  if (!RendererType) throw new Error(`renderer "${rendererType} not found`)
+  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
   if (!RendererType.ReactComponent)
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,

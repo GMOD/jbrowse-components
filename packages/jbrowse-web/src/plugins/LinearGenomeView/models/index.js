@@ -16,9 +16,10 @@ import {
 import { ElementId, Region } from '../../../mst-types'
 import { assembleLocString, clamp } from '../../../util'
 import PluginManager from '../../../PluginManager'
-import { TrackType } from '../../../Plugin'
+import TrackType from '../../../pluggableElementTypes/TrackType'
 
 import LinearGenomeViewConfigSchema from './configSchema'
+import TrackControls from '../components/TrackControls'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -62,6 +63,10 @@ export const BaseTrack = types
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
+    get ControlsComponent() {
+      return TrackControls
+    },
+
     get RenderingComponent() {
       return (
         self.reactComponent ||

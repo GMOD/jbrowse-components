@@ -1,6 +1,7 @@
 import shortid from 'shortid'
 import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
+import { PropTypes as MxPropTypes } from 'mobx-react'
 
 import { assembleLocString } from './util'
 
@@ -14,6 +15,7 @@ export const PropTypes = {
     start: propTypes.number.isRequired,
     end: propTypes.number.isRequired,
   }),
+  ConfigSchema: MxPropTypes.objectOrObservableObject,
 }
 
 export const Region = types
