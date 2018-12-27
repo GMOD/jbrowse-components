@@ -102,6 +102,7 @@ export default function Ruler(props) {
         <text
           x={x - 3}
           y={7}
+          key={`label-${tick.base}`}
           alignmentBaseline="hanging"
           style={{ fontSize: '11px' }}
           className={classnames('label', tick.index === 0 && 'first')}
