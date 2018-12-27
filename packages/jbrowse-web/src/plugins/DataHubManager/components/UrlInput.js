@@ -1,3 +1,4 @@
+import { RaStanza } from '@gmod/ucsc-hub'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import InputAdornment from '@material-ui/core/InputAdornment'
@@ -37,7 +38,7 @@ class TextFields extends React.Component {
     urlIsValid: null,
     hubTxtIsValid: null,
     errorMessage: '',
-    hubTxt: {},
+    hubTxt: new Map(),
     resolvedUrl: null,
   }
 
@@ -65,7 +66,7 @@ class TextFields extends React.Component {
       urlIsValid: null,
       hubTxtIsValid: null,
       errorMessage: '',
-      hubTxt: {},
+      hubTxt: new Map(),
       resolvedUrl: null,
     })
   }
@@ -75,8 +76,9 @@ class TextFields extends React.Component {
     if (url.endsWith('/')) url += 'hub.txt'
     const resp = await this.doGet(url)
     const resolvedUrl = new URL(resp.url)
-    const hubTxt = await resp.text()
-    if (!hubTxt.startsWith('hub ')) {
+    const respText = await resp.text()
+    const hubTxt = new RaStanza(respText)
+    if (hubTxt.nameKey !== 'hub') {
       this.setState({
         url,
         hubTxtIsValid: false,
@@ -93,29 +95,23 @@ class TextFields extends React.Component {
       'email',
       'descriptionUrl',
     ]
-    const hubTxtParsed = {}
-    try {
-      hubTxt.split(/[\r\n]+/).forEach(line => {
-        if (line) {
-          const sep = line.indexOf(' ')
-          if (sep === -1) throw new Error(`Invalid line in hub.txt:\n${line}`)
-          const lineKey = line.slice(0, sep)
-          if (!hubTxtFields.includes(lineKey))
-            throw new Error(`Invalid line in hub.txt:\n${line}`)
-          hubTxtParsed[lineKey] = line.slice(sep + 1)
-        }
-      })
-    } catch (e) {
+    const extraFields = []
+    for (const key of hubTxt.keys()) {
+      if (!hubTxtFields.includes(key)) extraFields.push(key)
+    }
+    if (extraFields.length > 0) {
       this.setState({
         url,
         hubTxtIsValid: false,
-        errorMessage: e.message || '',
+        errorMessage: `hub.txt had invalid entr${
+          extraFields.length === 1 ? 'y' : 'ies'
+        }: ${extraFields.join(', ')}`,
       })
       return
     }
     const missingFields = []
     hubTxtFields.forEach(field => {
-      if (field !== 'descriptionUrl' && !hubTxtParsed[field])
+      if (field !== 'descriptionUrl' && !hubTxt.get(field))
         missingFields.push(field)
     })
     if (missingFields.length > 0) {
@@ -131,7 +127,7 @@ class TextFields extends React.Component {
     this.setState({
       url,
       resolvedUrl,
-      hubTxt: hubTxtParsed,
+      hubTxt,
       hubTxtIsValid: true,
     })
   }

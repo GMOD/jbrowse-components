@@ -1,3 +1,4 @@
+import { RaFile } from '@gmod/ucsc-hub'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
@@ -16,15 +17,8 @@ import React from 'react'
 
 class GenomeSelector extends React.Component {
   static propTypes = {
-    hubTxtUrl: PropTypes.shape().isRequired,
-    hubTxt: PropTypes.shape({
-      hub: PropTypes.string.isRequired,
-      shortLabel: PropTypes.string.isRequired,
-      longLabel: PropTypes.string.isRequired,
-      genomesFile: PropTypes.string.isRequired,
-      email: PropTypes.string.isRequired,
-      descriptionUrl: PropTypes.string,
-    }).isRequired,
+    hubTxtUrl: PropTypes.instanceOf(URL).isRequired,
+    hubTxt: PropTypes.instanceOf(Map).isRequired,
     enableNext: PropTypes.func,
   }
 
@@ -37,7 +31,7 @@ class GenomeSelector extends React.Component {
     urlIsValid: null,
     genomesFileIsValid: null,
     errorMessage: '',
-    genomesFile: [],
+    genomesFile: new Map(),
     selectedGenome: '',
   }
 
@@ -59,14 +53,14 @@ class GenomeSelector extends React.Component {
       return (
         <Typography color="error">
           Network error. Cannot reach{' '}
-          {new URL(hubTxt.genomesFile, hubTxtUrl).href}
+          {new URL(hubTxt.get('genomesFile'), hubTxtUrl).href}
         </Typography>
       )
     if (urlIsValid === false)
       return (
         <Typography color="error">
           Could not find genomes file:{'\n'}
-          {new URL(hubTxt.genomesFile, hubTxtUrl).href}
+          {new URL(hubTxt.get('genomesFile'), hubTxtUrl).href}
         </Typography>
       )
     if (genomesFileIsValid === false)
@@ -74,61 +68,45 @@ class GenomeSelector extends React.Component {
         <Typography color="error">
           {errorMessage ||
             `Not a valid genomes file:\n${
-              new URL(hubTxt.genomesFile, hubTxtUrl).href
+              new URL(hubTxt.get('genomesFile'), hubTxtUrl).href
             }`}
         </Typography>
       )
-    if (genomesFile.length > 0)
+    if (genomesFile.size > 0) {
+      const menuItems = []
+      genomesFile.forEach(genome => {
+        const genomeName = genome.get('genome')
+        menuItems.push(
+          <MenuItem key={genomeName} value={genomeName}>
+            {genomeName}
+          </MenuItem>,
+        )
+      })
       return (
         <FormControl>
           <InputLabel>Genome</InputLabel>
           <Select value={selectedGenome} onChange={this.handleSelect}>
-            {genomesFile.map(genome => (
-              <MenuItem key={genome.genome} value={genome.genome}>
-                {genome.genome}
-              </MenuItem>
-            ))}
+            {menuItems}
           </Select>
           <FormHelperText>Genomes available in this hub</FormHelperText>
         </FormControl>
       )
+    }
     return <LinearProgress variant="query" />
   }
 
   async getGenomesFile() {
     const { hubTxt, hubTxtUrl } = this.props
-    const genomesFile = await this.doGet(new URL(hubTxt.genomesFile, hubTxtUrl))
-    if (!genomesFile) return
-    if (!genomesFile.startsWith('genome ')) {
+    const response = await this.doGet(
+      new URL(hubTxt.get('genomesFile'), hubTxtUrl),
+    )
+    if (!response) return
+    const genomesFile = new RaFile(response)
+    if (genomesFile.nameKey !== 'genome') {
       this.setState({
         genomesFileIsValid: false,
         errorMessage:
           'Genomes file must begin with a line like "genome <genome_name>"',
-      })
-      return
-    }
-    const genomeFileParsed = []
-    try {
-      genomesFile.split(/(?:\r?\n){2,}/).forEach((genome, index) => {
-        if (!genome.startsWith)
-          throw new Error(
-            `Each stanza in a genomes file must begin with a line like "genome <genome_name>"`,
-          )
-        genomeFileParsed.push({})
-        genome.split(/[\r\n]+/).forEach(line => {
-          if (line) {
-            const sep = line.indexOf(' ')
-            if (sep === -1)
-              throw new Error(`Invalid line in genomes file:\n${line}`)
-            const lineKey = line.slice(0, sep)
-            genomeFileParsed[index][lineKey] = line.slice(sep + 1)
-          }
-        })
-      })
-    } catch (e) {
-      this.setState({
-        genomesFileIsValid: false,
-        errorMessage: e.message || '',
       })
       return
     }
@@ -140,10 +118,10 @@ class GenomeSelector extends React.Component {
       // 'groups',
     ]
     try {
-      genomeFileParsed.forEach(genome => {
+      genomesFile.forEach(genome => {
         const missingFields = []
         requiredFields.forEach(field => {
-          if (!genome[field]) missingFields.push(field)
+          if (!genome.get(field)) missingFields.push(field)
         })
         if (missingFields.length > 0)
           throw new Error(
@@ -158,7 +136,7 @@ class GenomeSelector extends React.Component {
         errorMessage: e.message || '',
       })
     }
-    this.setState({ genomesFileIsValid: true, genomesFile: genomeFileParsed })
+    this.setState({ genomesFileIsValid: true, genomesFile })
   }
 
   handleSelect = event => {
@@ -186,19 +164,22 @@ class GenomeSelector extends React.Component {
     const { hubTxtUrl, hubTxt } = this.props
     return (
       <Card>
-        <CardHeader title={hubTxt.shortLabel} subheader={hubTxt.longLabel} />
+        <CardHeader
+          title={hubTxt.get('shortLabel')}
+          subheader={hubTxt.get('longLabel')}
+        />
         <CardContent>{this.getCardContent()}</CardContent>
         <CardActions>
           <IconButton
-            href={`mailto:${hubTxt.email}`}
+            href={`mailto:${hubTxt.get('email')}`}
             rel="noopener noreferrer"
             target="_blank"
           >
             <Icon>email</Icon>
           </IconButton>
-          {hubTxt.descriptionUrl ? (
+          {hubTxt.get('descriptionUrl') ? (
             <IconButton
-              href={new URL(hubTxt.descriptionUrl, hubTxtUrl).href}
+              href={new URL(hubTxt.get('descriptionUrl'), hubTxtUrl).href}
               rel="noopener noreferrer"
               target="_blank"
             >
