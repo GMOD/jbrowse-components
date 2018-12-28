@@ -1,4 +1,4 @@
-import { RaStanza } from '@gmod/ucsc-hub'
+import { HubFile } from '@gmod/ucsc-hub'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import InputAdornment from '@material-ui/core/InputAdornment'
@@ -30,11 +30,13 @@ class TextFields extends React.Component {
     }).isRequired,
     enableNext: PropTypes.func.isRequired,
     disableNext: PropTypes.func.isRequired,
+    setTrackDbUrl: PropTypes.func.isRequired,
+    setAssemblyName: PropTypes.func.isRequired,
   }
 
   state = {
     networkAvailable: null,
-    url: '',
+    url: 'hub.txt',
     urlIsValid: null,
     hubTxtIsValid: null,
     errorMessage: '',
@@ -72,58 +74,25 @@ class TextFields extends React.Component {
   }
 
   validateUrl = async () => {
+    const { setHubName } = this.props
     let { url } = this.state
     if (url.endsWith('/')) url += 'hub.txt'
     const resp = await this.doGet(url)
+    if (!resp) return
     const resolvedUrl = new URL(resp.url)
     const respText = await resp.text()
-    const hubTxt = new RaStanza(respText)
-    if (hubTxt.nameKey !== 'hub') {
+    let hubTxt
+    try {
+      hubTxt = new HubFile(respText)
+    } catch (error) {
       this.setState({
         url,
         hubTxtIsValid: false,
-        errorMessage:
-          'hub.txt file must begin with a line like "hub <hub_name>"',
+        errorMessage: `Could not parse hub.txt file:\n${error.message}`,
       })
       return
     }
-    const hubTxtFields = [
-      'hub',
-      'shortLabel',
-      'longLabel',
-      'genomesFile',
-      'email',
-      'descriptionUrl',
-    ]
-    const extraFields = []
-    for (const key of hubTxt.keys()) {
-      if (!hubTxtFields.includes(key)) extraFields.push(key)
-    }
-    if (extraFields.length > 0) {
-      this.setState({
-        url,
-        hubTxtIsValid: false,
-        errorMessage: `hub.txt had invalid entr${
-          extraFields.length === 1 ? 'y' : 'ies'
-        }: ${extraFields.join(', ')}`,
-      })
-      return
-    }
-    const missingFields = []
-    hubTxtFields.forEach(field => {
-      if (field !== 'descriptionUrl' && !hubTxt.get(field))
-        missingFields.push(field)
-    })
-    if (missingFields.length > 0) {
-      this.setState({
-        url,
-        hubTxtIsValid: false,
-        errorMessage: `hub.txt is missing required entr${
-          missingFields.length === 1 ? 'y' : 'ies'
-        }: ${missingFields.join(', ')}`,
-      })
-      return
-    }
+    setHubName(hubTxt.get('shortLabel'))
     this.setState({
       url,
       resolvedUrl,
@@ -148,7 +117,7 @@ class TextFields extends React.Component {
   }
 
   render() {
-    const { classes, enableNext } = this.props
+    const { classes, enableNext, setTrackDbUrl, setAssemblyName } = this.props
     const { url, hubTxt, hubTxtIsValid, resolvedUrl } = this.state
 
     return (
@@ -161,7 +130,7 @@ class TextFields extends React.Component {
             value={url}
             onChange={this.handleChange}
             helperText='This is usually a URL that leads to a "hub.txt" file'
-            error={hubTxtIsValid === false}
+            error={this.getLabel() !== 'Track Hub URL'}
             type="url"
             onKeyUp={event => {
               if (event.keyCode === 13) this.validateUrl()
@@ -192,6 +161,8 @@ class TextFields extends React.Component {
             hubTxtUrl={resolvedUrl}
             hubTxt={hubTxt}
             enableNext={enableNext}
+            setTrackDbUrl={setTrackDbUrl}
+            setAssemblyName={setAssemblyName}
           />
         ) : null}
       </div>

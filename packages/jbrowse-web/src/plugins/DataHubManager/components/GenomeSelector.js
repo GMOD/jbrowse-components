@@ -1,4 +1,4 @@
-import { RaFile } from '@gmod/ucsc-hub'
+import { GenomesFile } from '@gmod/ucsc-hub'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
@@ -20,6 +20,8 @@ class GenomeSelector extends React.Component {
     hubTxtUrl: PropTypes.instanceOf(URL).isRequired,
     hubTxt: PropTypes.instanceOf(Map).isRequired,
     enableNext: PropTypes.func,
+    setTrackDbUrl: PropTypes.func.isRequired,
+    setAssemblyName: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
@@ -101,47 +103,35 @@ class GenomeSelector extends React.Component {
       new URL(hubTxt.get('genomesFile'), hubTxtUrl),
     )
     if (!response) return
-    const genomesFile = new RaFile(response)
-    if (genomesFile.nameKey !== 'genome') {
+    let genomesFile
+    try {
+      genomesFile = new GenomesFile(response)
+    } catch (error) {
       this.setState({
         genomesFileIsValid: false,
-        errorMessage:
-          'Genomes file must begin with a line like "genome <genome_name>"',
+        errorMessage: `Could not parse genomes file:\n${error.message}`,
       })
       return
-    }
-    // TODO: check if genome is hosted by UCSC an if not, require twoBitPath and groups
-    const requiredFields = [
-      'genome',
-      'trackDb',
-      // 'twoBitPath',
-      // 'groups',
-    ]
-    try {
-      genomesFile.forEach(genome => {
-        const missingFields = []
-        requiredFields.forEach(field => {
-          if (!genome.get(field)) missingFields.push(field)
-        })
-        if (missingFields.length > 0)
-          throw new Error(
-            `hub.txt is missing required entr${
-              missingFields.length === 1 ? 'y' : 'ies'
-            }: ${missingFields.join(', ')}`,
-          )
-      })
-    } catch (e) {
-      this.setState({
-        genomesFileIsValid: false,
-        errorMessage: e.message || '',
-      })
     }
     this.setState({ genomesFileIsValid: true, genomesFile })
   }
 
   handleSelect = event => {
-    const { enableNext } = this.props
-    this.setState({ selectedGenome: event.target.value })
+    const { genomesFile } = this.state
+    const {
+      enableNext,
+      hubTxt,
+      hubTxtUrl,
+      setTrackDbUrl,
+      setAssemblyName,
+    } = this.props
+    const selectedGenome = event.target.value
+    this.setState({ selectedGenome })
+    const trackDbUrl = genomesFile.get(event.target.value).get('trackDb')
+    setTrackDbUrl(
+      new URL(trackDbUrl, new URL(hubTxt.get('genomesFile'), hubTxtUrl)),
+    )
+    setAssemblyName(genomesFile.get(event.target.value).get('genome'))
     enableNext()
   }
 
