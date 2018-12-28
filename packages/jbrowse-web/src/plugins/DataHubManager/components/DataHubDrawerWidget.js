@@ -1,5 +1,4 @@
 import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
 import StepLabel from '@material-ui/core/StepLabel'
@@ -12,6 +11,7 @@ import HubSourceSelect from './HubSourceSelect'
 import HubTypeSelect from './HubTypeSelect'
 import TrackHubRegistrySelect from './TrackHubRegistrySelect'
 import UrlInput from './UrlInput'
+import ConfirmationDialog from './ConfirmationDialog'
 
 const styles = theme => ({
   root: {
@@ -36,22 +36,6 @@ const steps = [
   'Confirm Selection',
 ]
 
-function HubSelector(props) {
-  const { hubType } = props
-  switch (hubType) {
-    case 'ucsc':
-      return <Typography>Some UCSC Hubs</Typography>
-    case 'jbrowse1':
-      return (
-        <Typography>
-          Adding JBrowse hubs has not yet been implemented
-        </Typography>
-      )
-    default:
-      return <Typography>Unknown hub type</Typography>
-  }
-}
-
 class DataHubDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
@@ -67,10 +51,20 @@ class DataHubDrawerWidget extends React.Component {
     hubSource: undefined,
     hubType: undefined,
     nextEnabledThroughStep: -1,
+    hubName: '',
+    assemblyName: '',
+    trackDbUrl: '',
   }
 
   getStepContent() {
-    const { activeStep, hubType, hubSource } = this.state
+    const {
+      activeStep,
+      hubType,
+      hubSource,
+      trackDbUrl,
+      hubName,
+      assemblyName,
+    } = this.state
     switch (activeStep) {
       case 0:
         return (
@@ -97,19 +91,30 @@ class DataHubDrawerWidget extends React.Component {
         if (hubSource === 'ucsccustom')
           return (
             <UrlInput
-              enableNext={() => {
+              enableNext={() =>
                 this.setState({ nextEnabledThroughStep: activeStep })
-              }}
-              disableNext={() => {
+              }
+              disableNext={() =>
                 this.setState({ nextEnabledThroughStep: activeStep - 1 })
-              }}
+              }
+              setTrackDbUrl={newUrl => this.setState({ trackDbUrl: newUrl })}
+              setHubName={newHubName => this.setState({ hubName: newHubName })}
+              setAssemblyName={newAssemblyName =>
+                this.setState({ assemblyName: newAssemblyName })
+              }
             />
           )
         if (hubSource === 'trackhubregistry') return <TrackHubRegistrySelect />
         return <Typography color="error">Unknown Data Hub Source</Typography>
       // return <HubSelector hubType={hubType} />
       case 3:
-        return <Typography>Confimation dialog</Typography>
+        return (
+          <ConfirmationDialog
+            hubName={hubName}
+            assemblyName={assemblyName}
+            trackDbUrl={trackDbUrl}
+          />
+        )
       default:
         return <Typography>Unknown step</Typography>
     }
@@ -132,12 +137,6 @@ class DataHubDrawerWidget extends React.Component {
         nextEnabledThroughStep: newStep,
         hubSource,
       }
-    })
-  }
-
-  handleReset = () => {
-    this.setState({
-      activeStep: 0,
     })
   }
 
@@ -194,14 +193,6 @@ class DataHubDrawerWidget extends React.Component {
             </Step>
           ))}
         </Stepper>
-        {activeStep === steps.length && (
-          <Paper square elevation={0} className={classes.resetContainer}>
-            <Typography>All steps completed - you&apos;re finished</Typography>
-            <Button onClick={this.handleReset} className={classes.button}>
-              Reset
-            </Button>
-          </Paper>
-        )}
       </div>
     )
   }
