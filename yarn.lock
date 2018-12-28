@@ -895,6 +895,11 @@
     long "^4.0.0"
     pako "^1.0.6"
 
+"@gmod/ucsc-hub@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.0.tgz#6a797780c5ec31edec3c6c0e825dfa082bdc87a0"
+  integrity sha512-8Spj7SofxwFGXvddvPBqGgjmeLk7n73WwXlpzcWzMzbgFrJWPZIJ7izjqktyzf9u/qPf0knThYIv1DR6ffnPoA==
+
 "@lerna/add@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-3.6.0.tgz#eea53efff0b3237774ddac6eaa84957140e89238"
