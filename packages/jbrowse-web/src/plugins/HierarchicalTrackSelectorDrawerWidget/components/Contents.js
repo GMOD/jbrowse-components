@@ -20,7 +20,8 @@ const styles = {
 }
 
 const Category = withStyles(styles)(
-  observer(({ name, category, model, classes, path = [], filterPredicate }) => {
+  observer(props => {
+    const { name, category, model, filterPredicate, path, classes } = props
     const pathName = path.join('|')
 
     return (
@@ -46,12 +47,20 @@ const Category = withStyles(styles)(
   }),
 )
 
+Category.defaultProps = {
+  path: [],
+}
+
 Category.propTypes = {
   name: propTypes.string.isRequired,
   category: MobxPropTypes.objectOrObservableObject.isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
+  filterPredicate: propTypes.func.isRequired,
+  path: propTypes.arrayOf(propTypes.string),
 }
 
-const Contents = observer(({ category, model, filterPredicate, path = [] }) => {
+const Contents = observer(props => {
+  const { category, model, filterPredicate, path } = props
   const categories = []
   const trackConfigurations = []
   Object.entries(category).forEach(([name, contents]) => {
@@ -96,8 +105,15 @@ const Contents = observer(({ category, model, filterPredicate, path = [] }) => {
   )
 })
 
+Contents.defaultProps = {
+  path: [],
+}
+
 Contents.propTypes = {
   category: MobxPropTypes.objectOrObservableObject.isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
+  filterPredicate: propTypes.func.isRequired,
+  path: propTypes.arrayOf(propTypes.string),
 }
 
 export default Contents
