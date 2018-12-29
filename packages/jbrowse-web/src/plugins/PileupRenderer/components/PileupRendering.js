@@ -50,6 +50,8 @@ class PileupRendering extends Component {
     onMouseLeave: ReactPropTypes.func,
     onMouseOver: ReactPropTypes.func,
     onMouseOut: ReactPropTypes.func,
+
+    onClick: ReactPropTypes.func,
   }
 
   static defaultProps = {
@@ -73,6 +75,8 @@ class PileupRendering extends Component {
     onMouseLeave: undefined,
     onMouseOver: undefined,
     onMouseOut: undefined,
+
+    onClick: undefined,
   }
 
   constructor(props) {
@@ -117,20 +121,10 @@ class PileupRendering extends Component {
 
   onMouseUp = event => {
     this.callMouseHandler('MouseUp', event)
+  }
 
-    // synthesize a featureClick event if we are on a feature
-    // and it's close to the last mouse down
-    if (this.featureUnderMouse && this.lastFeatureMouseDown) {
-      const { featureId, x, y } = this.lastFeatureMouseDown
-      const { clientX, clientY } = event
-      if (
-        this.featureUnderMouse === featureId &&
-        distance(x, y, clientX, clientY) <= 2
-      ) {
-        this.callMouseHandler('Click', event)
-        this.lastFeatureMouseDown = undefined
-      }
-    }
+  onClick = event => {
+    this.callMouseHandler('Click', event)
   }
 
   onMouseLeave = event => {
@@ -265,6 +259,7 @@ class PileupRendering extends Component {
           onMouseMove={this.onMouseMove}
           onFocus={() => {}}
           onBlur={() => {}}
+          onClick={this.onClick}
         />
       </div>
     )

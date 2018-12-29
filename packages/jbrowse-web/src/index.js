@@ -22,6 +22,7 @@ jbrowse.configure({
       type: 'AlignmentsTrack',
       name: 'volvox-sorted red/blue',
       category: ['Bar Category', 'Baz Category'],
+      defaultRendering: 'svg',
       adapter: {
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },

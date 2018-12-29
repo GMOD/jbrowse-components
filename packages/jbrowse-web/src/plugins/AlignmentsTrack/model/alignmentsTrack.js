@@ -128,8 +128,8 @@ export default (pluginManager, configSchema) =>
               const feature = self.features.get(featureId)
               self.selectFeature(feature)
             },
-            onMouseUp(event, featureId) {
-              if (!featureId) self.clearFeatureSelection()
+            onClick() {
+              self.clearFeatureSelection()
             },
           }
         },

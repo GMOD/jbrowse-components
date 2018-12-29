@@ -4,6 +4,15 @@ exports[`no features 1`] = `
 <svg
   className="SvgFeatureRendering"
   height="20px"
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
   style={
     Object {
       "position": "relative",
@@ -17,6 +26,15 @@ exports[`one feature 1`] = `
 <svg
   className="SvgFeatureRendering"
   height="10px"
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
   style={
     Object {
       "position": "relative",
@@ -26,6 +44,16 @@ exports[`one feature 1`] = `
 >
   <rect
     height={10}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onMouseDown={[Function]}
+    onMouseEnter={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseOut={[Function]}
+    onMouseOver={[Function]}
+    onMouseUp={[Function]}
     style={
       Object {
         "fill": "goldenrod",

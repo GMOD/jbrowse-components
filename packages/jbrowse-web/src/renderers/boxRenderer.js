@@ -60,9 +60,21 @@ export default class BoxRenderer extends RendererType {
     return 0
   }
 
+  processArgsForWorker(args) {
+    const result = { ...args }
+    if (result.trackModel)
+      result.trackModel = {
+        selectedFeatureId: result.trackModel.selectedFeatureId,
+      }
+    return result
+  }
+
   // render method called on the client. should call the worker render
   async renderInClient(app, args) {
-    const result = await renderRegionWithWorker(app, args)
+    const result = await renderRegionWithWorker(
+      app,
+      this.processArgsForWorker(args),
+    )
 
     // deserialize some of the results that came back from the worker
     result.layout = new PrecomputedLayout(result.layout)
