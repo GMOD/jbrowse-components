@@ -63,8 +63,9 @@ export default types
     let renderDisposer
     return {
       afterAttach() {
+        const track = getParent(self, 2)
         renderDisposer = autorun(() => renderBlock(self), {
-          name: `${assembleLocString(self.region)} rendering`,
+          name: `${track.id}/${assembleLocString(self.region)} rendering`,
           delay: 50,
         })
       },
