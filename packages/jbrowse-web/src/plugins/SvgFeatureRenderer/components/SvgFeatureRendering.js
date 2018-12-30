@@ -93,7 +93,7 @@ class SvgFeatureRendering extends Component {
     return handler(event)
   }
 
-  chooseGlyphComponent(feature) {
+  chooseGlyphComponent(/* feature */) {
     return Box
   }
 

@@ -1,6 +1,6 @@
 import { types, getParent, isAlive } from 'mobx-state-tree'
 
-import { autorun, reaction } from 'mobx'
+import { reaction } from 'mobx'
 import { getConf } from '../../../configuration'
 
 import { Region } from '../../../mst-types'

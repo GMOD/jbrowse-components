@@ -11,7 +11,6 @@ import PrecomputedLayout from '../util/layouts/PrecomputedLayout'
 
 import SimpleFeature from '../util/simpleFeature'
 import MultiLayout from '../util/layouts/MultiLayout'
-import { iterMap } from '../util'
 
 class LayoutSession {
   update(props) {
@@ -90,7 +89,7 @@ export default class BoxRenderer extends RendererType {
    * inflate arguments as necessary. called in the worker process.
    * @param {object} args the converted arguments to modify
    */
-  deserializeArgsInWorker(args) {}
+  deserializeArgsInWorker() {}
 
   // render method called on the client. should call the worker render
   async renderInClient(app, args) {
