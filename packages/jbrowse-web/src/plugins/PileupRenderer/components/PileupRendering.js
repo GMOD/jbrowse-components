@@ -167,7 +167,7 @@ class PileupRendering extends Component {
         id,
         [leftBp, topPx, rightBp, bottomPx],
       ] of layout.getRectangles()) {
-        if (id === selectedFeatureId) {
+        if (String(id) === String(selectedFeatureId)) {
           const leftPx = Math.round(
             bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
           )

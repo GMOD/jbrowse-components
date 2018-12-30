@@ -60,20 +60,43 @@ export default class BoxRenderer extends RendererType {
     return 0
   }
 
-  processArgsForWorker(args) {
-    const result = { ...args }
-    if (result.trackModel)
-      result.trackModel = {
-        selectedFeatureId: result.trackModel.selectedFeatureId,
+  /**
+   * filter/convert the render arguments to prepare
+   * them to be serialized and sent to the worker.
+   *
+   * the base class replaces the `renderProps.trackModel` param
+   * (which on the client is a MST model) with a stub
+   * that only contains the `selectedFeature`, since
+   * this is the only part of the track model that most
+   * renderers read.
+   *
+   * @param {object} args the arguments passed to render, not modified
+   * @returns {object} the converted arguments
+   */
+  serializeArgsForWorker(args) {
+    if (args.renderProps.trackModel) {
+      const result = Object.assign({}, args)
+      result.renderProps = Object.assign({}, result.renderProps)
+      result.renderProps.trackModel = {
+        selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
       }
-    return result
+      return result
+    }
+    return args
   }
+
+  /**
+   * directly modifies the passed arguments object to
+   * inflate arguments as necessary. called in the worker process.
+   * @param {object} args the converted arguments to modify
+   */
+  deserializeArgsInWorker(args) {}
 
   // render method called on the client. should call the worker render
   async renderInClient(app, args) {
     const result = await renderRegionWithWorker(
       app,
-      this.processArgsForWorker(args),
+      this.serializeArgsForWorker(args),
     )
 
     // deserialize some of the results that came back from the worker
@@ -94,6 +117,7 @@ export default class BoxRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args) {
+    this.deserializeArgsInWorker(args)
     const { dataAdapter, region } = args
     const features = new Map()
     await dataAdapter

@@ -1,6 +1,5 @@
 import Rpc from '@librpc/web'
 
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { objectFromEntries } from './util'
 
 const getClient = app =>

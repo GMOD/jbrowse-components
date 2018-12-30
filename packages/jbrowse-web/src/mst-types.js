@@ -16,6 +16,10 @@ export const PropTypes = {
     end: propTypes.number.isRequired,
   }),
   ConfigSchema: MxPropTypes.objectOrObservableObject,
+  Feature: propTypes.shape({
+    get: propTypes.func.isRequired,
+    id: propTypes.func.isRequired,
+  }),
 }
 
 export const Region = types

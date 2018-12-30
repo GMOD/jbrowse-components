@@ -150,7 +150,7 @@ export default class Box extends Component {
       throw new Error('horizontal flipping not yet implemented')
 
     const style = { fill: readConfObject(config, 'color1') }
-    if (selectedFeatureId === feature.id()) {
+    if (String(selectedFeatureId) === String(feature.id())) {
       style.fill = 'red'
     }
 
