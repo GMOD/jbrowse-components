@@ -74,7 +74,7 @@ export async function renderRegion(
 function wrapForRpc(func) {
   return args => {
     const result = func(jbrowse.pluginManager, args).catch(e => {
-      console.error(e)
+      // console.error(e)
       throw e
     })
     // result.then(r => console.log(r))

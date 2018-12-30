@@ -19,6 +19,7 @@
     "no-restricted-syntax": "off",
     "no-underscore-dangle": "warn",
     "no-unused-vars": "warn",
+    "no-console": "off",
     "no-use-before-define": "off",
     "prettier/prettier": [
       "error",

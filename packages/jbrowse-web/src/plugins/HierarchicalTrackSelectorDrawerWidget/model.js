@@ -1,4 +1,4 @@
-import { getRoot, onPatch, types } from 'mobx-state-tree'
+import { getRoot, types } from 'mobx-state-tree'
 import { readConfObject } from '../../configuration'
 import { ElementId } from '../../mst-types'
 
