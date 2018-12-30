@@ -1,5 +1,6 @@
 import React from 'react'
 import { PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
 
 import { getConf } from '../../../configuration'
 
@@ -16,7 +17,7 @@ export default function TrackControls({ track, onConfigureClick }) {
 
 TrackControls.propTypes = {
   track: PropTypes.objectOrObservableObject.isRequired,
-  onConfigureClick: PropTypes.func,
+  onConfigureClick: ReactPropTypes.func,
 }
 TrackControls.defaultProps = {
   onConfigureClick: () => {},
