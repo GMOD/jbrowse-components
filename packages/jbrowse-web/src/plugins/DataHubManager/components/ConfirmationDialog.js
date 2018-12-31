@@ -14,7 +14,12 @@ function generateModel(trackDb, categoryName) {
 
   trackDb.forEach((track, trackName) => {
     const trackKeys = Array.from(track.keys())
-    const parentTrackKeys = ['superTrack', 'compositeTrack', 'container']
+    const parentTrackKeys = [
+      'superTrack',
+      'compositeTrack',
+      'container',
+      'view',
+    ]
     if (trackKeys.some(key => parentTrackKeys.includes(key))) return
     const parentTracks = []
     let currentTrackName = trackName
@@ -25,6 +30,7 @@ function generateModel(trackDb, categoryName) {
         parentTracks.push(trackDb.get(currentTrackName).get('shortLabel'))
       }
     } while (currentTrackName)
+    parentTracks.reverse()
     const categories = [categoryName].concat(parentTracks)
     rootModel.configuration.addTrackConf('AlignmentsTrack', {
       name: track.get('shortLabel'),
@@ -66,7 +72,13 @@ class ConfirmationDialog extends React.Component {
     } catch (error) {
       console.log(error)
       this.setState({
-        errorMessage: `Could not parse trackDb.txt file:\n${error.message}`,
+        errorMessage: (
+          <span>
+            <b>Could not parse trackDb.txt file</b>
+            <br />
+            {error.message}
+          </span>
+        ),
       })
       return
     }
@@ -80,11 +92,19 @@ class ConfirmationDialog extends React.Component {
     try {
       rawResponse = await fetch(url)
     } catch {
-      this.setState({ errorMessage: 'Network Error' })
+      this.setState({ errorMessage: <b>Network Error</b> })
       return null
     }
     if (!rawResponse.ok) {
-      this.setState({ errorMessage: `URL is invalid: ${url.href}` })
+      this.setState({
+        errorMessage: (
+          <span>
+            <b>URL is invalid</b>
+            <br />
+            {url.href}
+          </span>
+        ),
+      })
       return null
     }
     return rawResponse.text()
