@@ -63,7 +63,7 @@ const Contents = observer(props => {
   const { category, model, filterPredicate, path } = props
   const categories = []
   const trackConfigurations = []
-  Object.entries(category).forEach(([name, contents]) => {
+  category.forEach((contents, name) => {
     if (contents._configId) {
       trackConfigurations.push(contents)
     } else {
