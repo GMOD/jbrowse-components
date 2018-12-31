@@ -56,14 +56,9 @@ function* makeTicks(
     ;[minBase, maxBase] = [maxBase, minBase]
   }
 
-  // apply left and right margins
-  if (bpPerPx > 0) {
-    if (region.leftEdge) minBase += Math.abs(10 * bpPerPx)
-    if (region.rightEdge) maxBase -= Math.abs(10 * bpPerPx)
-  } else {
-    if (region.rightEdge) minBase += Math.abs(10 * bpPerPx)
-    if (region.leftEdge) maxBase -= Math.abs(10 * bpPerPx)
-  }
+  // add 10px additional on the right to allow for
+  // labels sitting a little leftward
+  maxBase += Math.abs(10 * bpPerPx)
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
@@ -85,24 +80,42 @@ function* makeTicks(
 export default function Ruler(props) {
   const { region, bpPerPx, flipped, major, minor } = props
   const ticks = []
+  const labels = []
   for (const tick of makeTicks(region, bpPerPx, flipped, major, minor)) {
+    const x = (tick.base - region.start) / bpPerPx
     ticks.push(
-      <div
+      <line
         key={tick.base}
-        style={{ left: `${(tick.base - region.start) / bpPerPx}px` }}
+        x1={x}
+        x2={x}
+        y1={0}
+        y2={tick.type === 'major' ? 6 : 4}
+        strokeWidth={1}
+        stroke={tick.type === 'major' ? '#555' : '#999'}
         className={`tick ${tick.type}`}
         data-bp={tick.base}
-      >
-        {tick.type === 'major' ? (
-          <div className={classnames('label', tick.index === 0 && 'first')}>
-            {Number(tick.base).toLocaleString()}
-          </div>
-        ) : null}
-      </div>,
+      />,
     )
+
+    if (tick.type === 'major')
+      labels.push(
+        <text
+          x={x - 3}
+          y={7}
+          key={`label-${tick.base}`}
+          alignmentBaseline="hanging"
+          style={{ fontSize: '11px' }}
+          className={classnames('label', tick.index === 0 && 'first')}
+        >
+          {Number(tick.base).toLocaleString()}
+        </text>,
+      )
   }
 
-  return <div className="Ruler">{ticks}</div>
+  // svg painting is based on the document order,
+  // so the labels need to come after the ticks in the
+  // doc, so that they draw over them.
+  return [...ticks, ...labels]
 }
 
 Ruler.propTypes = {

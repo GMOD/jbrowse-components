@@ -2,8 +2,6 @@ import { Observable } from 'rxjs'
 
 import { BamFile } from '@gmod/bam'
 
-import Feature from '../../util/simpleFeature'
-
 import { openLocation } from '../../util'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
@@ -80,7 +78,7 @@ export default class BamAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeaturesInRegion({ assembly, refName, start, end }) {
+  getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
     // TODO
     return Observable.create(async observer => {
       await this.gotBamHeader
@@ -97,5 +95,5 @@ export default class BamAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources({ region }) {}
+  freeResources(/* { region } */) {}
 }

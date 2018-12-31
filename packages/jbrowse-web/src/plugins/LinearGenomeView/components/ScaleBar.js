@@ -57,14 +57,16 @@ export default function ScaleBar({
             offset={offsetPx}
             bpPerPx={bpPerPx}
           >
-            {block.isLeftEndOfDisplayedRegion ? (
-              <div className="refLabel">{block.refName}</div>
-            ) : null}
-            <Ruler
-              region={block}
-              bpPerPx={bpPerPx}
-              flipped={horizontallyFlipped}
-            />
+            <svg height={height} width={block.widthPx}>
+              {/* {block.isLeftEndOfDisplayedRegion ? (
+                <div className="refLabel">{block.refName}</div>
+              ) : null} */}
+              <Ruler
+                region={block}
+                bpPerPx={bpPerPx}
+                flipped={horizontallyFlipped}
+              />
+            </svg>
           </Block>
         )
       })}

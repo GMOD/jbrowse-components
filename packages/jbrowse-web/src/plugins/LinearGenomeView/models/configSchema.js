@@ -1,4 +1,3 @@
-import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../../configuration'
 
 export default ConfigurationSchema('LinearGenomeView', {

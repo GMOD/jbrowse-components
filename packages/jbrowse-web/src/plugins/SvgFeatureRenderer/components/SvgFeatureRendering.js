@@ -15,15 +15,7 @@ class SvgFeatureRendering extends Component {
       addRect: ReactPropTypes.func.isRequired,
       getTotalHeight: ReactPropTypes.func.isRequired,
     }).isRequired,
-    // layoutRecords: ReactPropTypes.arrayOf(
-    //   ReactPropTypes.shape({
-    //     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired }),
-    //     startPx: ReactPropTypes.number.isRequired,
-    //     endPx: ReactPropTypes.number.isRequired,
-    //     topPx: ReactPropTypes.number.isRequired,
-    //     heightPx: ReactPropTypes.number.isRequired,
-    //   }),
-    // ).isRequired,
+
     region: CommonPropTypes.Region.isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
     horizontallyFlipped: ReactPropTypes.bool,
@@ -34,23 +26,13 @@ class SvgFeatureRendering extends Component {
       selectedFeatureId: ReactPropTypes.string,
     }),
 
-    // onFeatureMouseDown: ReactPropTypes.func,
-    // onFeatureMouseEnter: ReactPropTypes.func,
-    // onFeatureMouseOut: ReactPropTypes.func,
-    // onFeatureMouseOver: ReactPropTypes.func,
-    // onFeatureMouseUp: ReactPropTypes.func,
-    // onFeatureMouseLeave: ReactPropTypes.func,
-    // onFeatureMouseMove: ReactPropTypes.func,
-
-    // // synthesized from mouseup and mousedown
-    // onFeatureClick: ReactPropTypes.func,
-
-    // onMouseDown: ReactPropTypes.func,
-    // onMouseUp: ReactPropTypes.func,
-    // onMouseEnter: ReactPropTypes.func,
-    // onMouseLeave: ReactPropTypes.func,
-    // onMouseOver: ReactPropTypes.func,
-    // onMouseOut: ReactPropTypes.func,
+    onMouseDown: ReactPropTypes.func,
+    onMouseUp: ReactPropTypes.func,
+    onMouseEnter: ReactPropTypes.func,
+    onMouseLeave: ReactPropTypes.func,
+    onMouseOver: ReactPropTypes.func,
+    onMouseOut: ReactPropTypes.func,
+    onClick: ReactPropTypes.func,
   }
 
   static defaultProps = {
@@ -60,25 +42,58 @@ class SvgFeatureRendering extends Component {
 
     features: new Map(),
 
-    // onFeatureMouseDown: undefined,
-    // onFeatureMouseEnter: undefined,
-    // onFeatureMouseOut: undefined,
-    // onFeatureMouseOver: undefined,
-    // onFeatureMouseUp: undefined,
-    // onFeatureMouseLeave: undefined,
-    // onFeatureMouseMove: undefined,
-
-    // onFeatureClick: undefined,
-
-    // onMouseDown: undefined,
-    // onMouseUp: undefined,
-    // onMouseEnter: undefined,
-    // onMouseLeave: undefined,
-    // onMouseOver: undefined,
-    // onMouseOut: undefined,
+    onMouseDown: undefined,
+    onMouseUp: undefined,
+    onMouseEnter: undefined,
+    onMouseLeave: undefined,
+    onMouseOver: undefined,
+    onMouseOut: undefined,
+    onClick: undefined,
   }
 
-  chooseGlyphComponent(feature) {
+  onMouseDown = event => {
+    const { onMouseDown: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onMouseUp = event => {
+    const { onMouseUp: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onMouseEnter = event => {
+    const { onMouseEnter: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onMouseLeave = event => {
+    const { onMouseLeave: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onMouseOver = event => {
+    const { onMouseOver: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onMouseOut = event => {
+    const { onMouseOut: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  onClick = event => {
+    const { onClick: handler } = this.props
+    if (!handler) return undefined
+    return handler(event)
+  }
+
+  chooseGlyphComponent(/* feature */) {
     return Box
   }
 
@@ -90,6 +105,7 @@ class SvgFeatureRendering extends Component {
       horizontallyFlipped,
       config,
       features,
+      trackModel: { selectedFeatureId },
     } = this.props
 
     const featuresRendered = []
@@ -109,6 +125,7 @@ class SvgFeatureRendering extends Component {
           layoutRecord={layoutRecord}
           feature={feature}
           key={feature.id()}
+          selectedFeatureId={selectedFeatureId}
         />,
       )
     }
@@ -124,6 +141,15 @@ class SvgFeatureRendering extends Component {
         style={{
           position: 'relative',
         }}
+        onMouseDown={this.onMouseDown}
+        onMouseUp={this.onMouseUp}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
+        onMouseOver={this.onMouseOver}
+        onMouseOut={this.onMouseOut}
+        onFocus={this.onMouseEnter}
+        onBlur={this.onMouseLeave}
+        onClick={this.onClick}
       >
         {featuresRendered}
       </svg>

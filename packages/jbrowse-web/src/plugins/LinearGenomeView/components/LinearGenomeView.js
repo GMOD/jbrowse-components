@@ -1,11 +1,9 @@
 import React, { Component } from 'react'
-import { values } from 'mobx'
 import { inject, observer, PropTypes } from 'mobx-react'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
-import { getConf } from '../../../configuration'
 
 import './LinearGenomeView.scss'
 

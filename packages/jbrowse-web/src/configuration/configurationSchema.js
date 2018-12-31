@@ -19,7 +19,7 @@ export function stringToFunction(str) {
   return func
 }
 
-function isValidColorString(str) {
+function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
 }
@@ -191,7 +191,7 @@ export function ConfigurationSchema(
     modelDefinition,
   )
   if (Object.keys(volatileConstants).length) {
-    completeModel = completeModel.volatile(self => volatileConstants)
+    completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }
   if (options.actions) {
     completeModel = completeModel.actions(options.actions)

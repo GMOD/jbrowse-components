@@ -31,40 +31,4 @@
     white-space: nowrap;
     overflow: normal;
   }
-
-  // funny thing: tweak the position of the first major tick
-  // in blocks that abut the left side of the displayed region
-  // to avoid the label overflowing into the padding area
-  .block.left-side .tick.major .label.first {
-    left: 0;
-  }
-
-  .Ruler {
-    position: relative;
-    height: 30%;
-
-    .tick {
-      position: absolute;
-
-      &.major {
-        width: 1px;
-        height: 100%;
-        top: 0;
-        background: #555;
-
-        .label {
-          font-size: 70%;
-          position: absolute;
-          top: 100%;
-          left: -0.2em;
-        }
-      }
-      &.minor {
-        width: 1px;
-        height: 80%;
-        top: 0;
-        background: #999;
-      }
-    }
-  }
 }

@@ -31,7 +31,7 @@ function fetchBinaryRange(url, start, end) {
     retries: 5,
     retryDelay: 1000, // 1 sec, 2 sec, 3 sec
     retryStatus: [500, 404, 503],
-    onRetry: ({ retriesLeft, retryDelay }) => {
+    onRetry: ({ retriesLeft /* , retryDelay */ }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )
@@ -61,7 +61,7 @@ function fetchBinaryRange(url, start, end) {
             headers['content-range'] = `${start}-${end}/${stats.size}`
           }
         } catch (e) {
-          console.error('Could not get size of file', url, e)
+          console.warn('Could not get size of file', url, e)
         }
       } else if (res.status === 200) {
         throw new Error(

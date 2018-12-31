@@ -8,12 +8,6 @@ import PrerenderedCanvas from './PrerenderedCanvas'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { bpToPx } from '../../../util'
 
-function distance(x1, y1, x2, y2) {
-  const dx = x1 - x2
-  const dy = y1 - y2
-  return Math.sqrt(dx * dx + dy * dy)
-}
-
 const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,
 })
@@ -50,6 +44,8 @@ class PileupRendering extends Component {
     onMouseLeave: ReactPropTypes.func,
     onMouseOver: ReactPropTypes.func,
     onMouseOut: ReactPropTypes.func,
+
+    onClick: ReactPropTypes.func,
   }
 
   static defaultProps = {
@@ -73,6 +69,8 @@ class PileupRendering extends Component {
     onMouseLeave: undefined,
     onMouseOver: undefined,
     onMouseOut: undefined,
+
+    onClick: undefined,
   }
 
   constructor(props) {
@@ -117,20 +115,10 @@ class PileupRendering extends Component {
 
   onMouseUp = event => {
     this.callMouseHandler('MouseUp', event)
+  }
 
-    // synthesize a featureClick event if we are on a feature
-    // and it's close to the last mouse down
-    if (this.featureUnderMouse && this.lastFeatureMouseDown) {
-      const { featureId, x, y } = this.lastFeatureMouseDown
-      const { clientX, clientY } = event
-      if (
-        this.featureUnderMouse === featureId &&
-        distance(x, y, clientX, clientY) <= 2
-      ) {
-        this.callMouseHandler('Click', event)
-        this.lastFeatureMouseDown = undefined
-      }
-    }
+  onClick = event => {
+    this.callMouseHandler('Click', event)
   }
 
   onMouseLeave = event => {
@@ -173,7 +161,7 @@ class PileupRendering extends Component {
         id,
         [leftBp, topPx, rightBp, bottomPx],
       ] of layout.getRectangles()) {
-        if (id === selectedFeatureId) {
+        if (String(id) === String(selectedFeatureId)) {
           const leftPx = Math.round(
             bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
           )
@@ -265,6 +253,7 @@ class PileupRendering extends Component {
           onMouseMove={this.onMouseMove}
           onFocus={() => {}}
           onBlur={() => {}}
+          onClick={this.onClick}
         />
       </div>
     )

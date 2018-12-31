@@ -34,6 +34,7 @@ exports[`one 1`] = `
     className="highlightOverlayCanvas"
     height={500}
     onBlur={[Function]}
+    onClick={[Function]}
     onFocus={[Function]}
     onMouseDown={[Function]}
     onMouseEnter={[Function]}

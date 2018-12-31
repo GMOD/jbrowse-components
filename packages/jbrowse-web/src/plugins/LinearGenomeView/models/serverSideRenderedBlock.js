@@ -1,6 +1,6 @@
 import { types, getParent, isAlive } from 'mobx-state-tree'
 
-import { autorun } from 'mobx'
+import { reaction } from 'mobx'
 import { getConf } from '../../../configuration'
 
 import { Region } from '../../../mst-types'
@@ -11,26 +11,38 @@ import { assembleLocString } from '../../../util'
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun
-function renderBlock(self) {
+function renderBlockData(self) {
+  const track = getParent(self, 2)
+  const view = getParent(track, 2)
+  const root = getParent(view, 2)
+  const renderProps = { ...track.renderProps }
+  const { rendererType } = track
+
+  return {
+    rendererType,
+    app: root.app,
+    renderProps,
+    renderArgs: {
+      region: self.region,
+      adapterType: track.adapterType.name,
+      adapterConfig: getConf(track, 'adapter'),
+      rendererType: rendererType.name,
+      renderProps,
+      sessionId: track.id,
+      timeout: 10000,
+    },
+  }
+}
+function renderBlockEffect(
+  self,
+  { rendererType, renderProps, app, renderArgs },
+) {
   // console.log(getParent(self, 2).rendererType)
   if (!isAlive(self)) return
   self.setLoading()
   try {
-    const track = getParent(self, 2)
-    const view = getParent(track, 2)
-    const root = getParent(view, 2)
-    const renderProps = { ...track.renderProps }
-    const { rendererType } = track
     rendererType
-      .renderInClient(root.app, {
-        region: self.region,
-        adapterType: track.adapterType.name,
-        adapterConfig: getConf(track, 'adapter'),
-        rendererType: rendererType.name,
-        renderProps,
-        sessionId: track.id,
-        timeout: 10000,
-      })
+      .renderInClient(app, renderArgs)
       .then(({ html, ...data }) => {
         if (!isAlive(self)) return
         self.setRendered(data, html, rendererType.ReactComponent, renderProps)
@@ -63,10 +75,16 @@ export default types
     let renderDisposer
     return {
       afterAttach() {
-        renderDisposer = autorun(() => renderBlock(self), {
-          name: `${assembleLocString(self.region)} rendering`,
-          delay: 50,
-        })
+        const track = getParent(self, 2)
+        renderDisposer = reaction(
+          () => renderBlockData(self),
+          data => renderBlockEffect(self, data),
+          {
+            name: `${track.id}/${assembleLocString(self.region)} rendering`,
+            delay: 50,
+            fireImmediately: true,
+          },
+        )
       },
       setLoading() {
         self.filled = false
