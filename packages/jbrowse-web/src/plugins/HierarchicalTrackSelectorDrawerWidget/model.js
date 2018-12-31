@@ -70,7 +70,7 @@ export default pluginManager =>
         let tracks = {}
         Object.entries(currentHier).forEach(([name, contents]) => {
           if (contents._configId) {
-            tracks[name] = contents
+            tracks[contents._configId] = contents
           } else {
             tracks = Object.assign(
               tracks,
