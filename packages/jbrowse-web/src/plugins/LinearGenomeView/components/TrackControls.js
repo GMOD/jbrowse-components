@@ -1,17 +1,23 @@
 import React from 'react'
-import { PropTypes } from 'mobx-react'
+import Button from '@material-ui/core/Button'
+import { PropTypes, observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
 import { getConf } from '../../../configuration'
 
-export default function TrackControls({ track, onConfigureClick }) {
+function TrackControls({ track, onConfigureClick }) {
   return (
-    <div className="track-name">
-      {getConf(track, 'name') || track.id}
-      <button type="button" onClick={onConfigureClick}>
+    <>
+      <div className="track-name">{getConf(track, 'name') || track.id}</div>
+      <Button
+        type="button"
+        onClick={onConfigureClick}
+        size="small"
+        color="secondary"
+      >
         configure
-      </button>
-    </div>
+      </Button>
+    </>
   )
 }
 
@@ -20,5 +26,7 @@ TrackControls.propTypes = {
   onConfigureClick: ReactPropTypes.func,
 }
 TrackControls.defaultProps = {
-  onConfigureClick: () => {},
+  onConfigureClick: undefined,
 }
+
+export default observer(TrackControls)

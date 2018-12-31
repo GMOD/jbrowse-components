@@ -13,6 +13,7 @@ import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 import PileupRendererPlugin from './plugins/PileupRenderer'
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
+import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 
 const corePlugins = [
   MainMenuBarPlugin,
@@ -22,6 +23,7 @@ const corePlugins = [
   AlignmentsTrackPlugin,
   PileupRendererPlugin,
   SvgFeaturePlugin,
+  ConfigurationEditorPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app

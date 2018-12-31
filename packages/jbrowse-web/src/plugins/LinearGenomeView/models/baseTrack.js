@@ -1,10 +1,12 @@
 import React from 'react'
-import { types } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
 } from '../../../configuration'
 import { ElementId } from '../../../mst-types'
+
+import TrackControls from '../components/TrackControls'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -35,6 +37,8 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // a reference to a track configuration (stored under root.configuration.tracks).
 
 // note that multiple displayed tracks could use the same configuration.
+
+// note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 const BaseTrack = types
   .model('BaseTrack', {
@@ -48,6 +52,10 @@ const BaseTrack = types
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
+    get ControlsComponent() {
+      return TrackControls
+    },
+
     get RenderingComponent() {
       return (
         self.reactComponent ||
@@ -63,5 +71,19 @@ const BaseTrack = types
     setHeight(trackHeight) {
       if (trackHeight >= minTrackHeight) self.height = trackHeight
     },
+
+    activateConfigurationUI() {
+      const rootModel = getRoot(self)
+      if (!rootModel.drawerWidgets.get('configEditor'))
+        rootModel.addDrawerWidget(
+          'ConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: self.configuration },
+        )
+      const editor = rootModel.drawerWidgets.get('configEditor')
+      editor.setTarget(self.configuration)
+      rootModel.showDrawerWidget(editor)
+    },
   }))
+
 export default BaseTrack

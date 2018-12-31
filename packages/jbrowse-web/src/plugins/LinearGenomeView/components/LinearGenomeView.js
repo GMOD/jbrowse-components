@@ -79,9 +79,7 @@ class LinearGenomeView extends Component {
               track={track}
               key={track.id}
               view={model}
-              onConfigureClick={() => {
-                /* TODO */
-              }}
+              onConfigureClick={track.activateConfigurationUI}
             />
           </div>,
           <TrackRenderingContainer

@@ -6,7 +6,6 @@ import {
   types,
   getType,
 } from 'mobx-state-tree'
-import React from 'react'
 import {
   ConfigurationSchema,
   ConfigurationReference,
@@ -19,70 +18,12 @@ import PluginManager from '../../../PluginManager'
 import TrackType from '../../../pluggableElementTypes/TrackType'
 
 import LinearGenomeViewConfigSchema from './configSchema'
-import TrackControls from '../components/TrackControls'
 
-export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
-  viewType: 'LinearGenomeView',
-  name: {
-    description: 'descriptive name of the track',
-    type: 'string',
-    defaultValue: 'Track',
-  },
-  backgroundColor: {
-    description: `the track's background color`,
-    type: 'color',
-    defaultValue: '#eee',
-  },
-  description: {
-    description: 'a description of the track',
-    type: 'string',
-    defaultValue: '',
-  },
-  category: {
-    description: 'the category and sub-categories of a track',
-    type: 'stringArray',
-    defaultValue: [],
-  },
-})
+import BaseTrack from './baseTrack'
 
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
 // a reference to a track configuration (stored under root.configuration.tracks).
-
-// note that multiple displayed tracks could use the same configuration.
-const minTrackHeight = 20
-export const BaseTrack = types
-  .model('BaseTrack', {
-    id: ElementId,
-    type: types.string,
-    height: types.optional(
-      types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
-      minTrackHeight,
-    ),
-    subtracks: types.literal(undefined),
-    configuration: ConfigurationReference(BaseTrackConfig),
-  })
-  .views(self => ({
-    get ControlsComponent() {
-      return TrackControls
-    },
-
-    get RenderingComponent() {
-      return (
-        self.reactComponent ||
-        (() => (
-          <div className="TrackRenderingNotImplemented">
-            Rendering not implemented for {self.type} tracks
-          </div>
-        ))
-      )
-    },
-  }))
-  .actions(self => ({
-    setHeight(trackHeight) {
-      if (trackHeight >= minTrackHeight) self.height = trackHeight
-    },
-  }))
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
@@ -231,6 +172,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             'hierarchicalTrackSelector',
           )
           selector.setView(self)
+          rootModel.setSelection(self)
           rootModel.showDrawerWidget(selector)
         } else {
           throw new Error(`invalid track selector type ${trackSelectorType}`)

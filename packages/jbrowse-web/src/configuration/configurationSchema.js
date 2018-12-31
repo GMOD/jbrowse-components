@@ -46,6 +46,22 @@ const typeModels = {
   fileLocation: FileLocation,
 }
 
+// custom actions for modifying the value models
+const typeModelActions = {
+  // special actions for working with stringArray slots
+  stringArray: self => ({
+    add(val) {
+      self.value.push(val)
+    },
+    removeAtIndex(idx) {
+      self.value.splice(idx, 1)
+    },
+    setAtIndex(idx, val) {
+      self.value[idx] = val
+    },
+  }),
+}
+
 const FunctionStringType = types.refinement(
   'FunctionString',
   types.string,
@@ -59,6 +75,9 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
+
+  // these are any custom actions
+  const modelCustomActions = typeModelActions[type] || (() => ({}))
 
   if (defaultValue === undefined) throw new Error(`no 'defaultValue' provided`)
 
@@ -107,20 +126,23 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       snap.value !== defaultValue ? snap.value : undefined,
     )
     .actions(self => ({
+      ...modelCustomActions(self),
       set(newVal) {
         self.value = newVal
       },
     }))
 
-  return types.optional(slot, {
+  const completeModel = types.optional(slot, {
     name: slotName,
     type,
     description,
     value: defaultValue,
   })
+  completeModel.isJBrowseConfigurationSlot = true
+  return completeModel
 }
 
-function isConfigurationSchemaType(thing) {
+export function isConfigurationSchemaType(thing) {
   return (
     (isModelType(thing) && !!thing.isJBrowseConfigurationSchema) ||
     (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
@@ -128,6 +150,10 @@ function isConfigurationSchemaType(thing) {
       thing.types.every(t => isConfigurationSchemaType(t))) ||
     (isMapType(thing) && isConfigurationSchemaType(thing.subType))
   )
+}
+
+export function isConfigurationSlotType(thing) {
+  return !!thing.isJBrowseConfigurationSlot
 }
 
 export function ConfigurationSchema(
