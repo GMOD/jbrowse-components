@@ -137,11 +137,7 @@ export default app => {
         )
         if (!typeDefinition)
           throw new Error(`unknown drawer widget type ${typeName}`)
-        const data = Object.assign({}, initialState, {
-          id,
-          type: typeName,
-          configuration,
-        })
+        const data = { ...initialState, id, type: typeName, configuration }
         const model = typeDefinition.stateModel.create(data)
         self.drawerWidgets.set(model.id, model)
       },
@@ -173,11 +169,19 @@ export default app => {
         self.menuBars.push(model)
       },
 
+      /**
+       * set the global selection, i.e. the globally-selected object.
+       * can be a feature, a view, just about anything
+       * @param {object} thing
+       */
       setSelection(thing) {
         self.selection = thing
         console.log('selected', thing)
       },
 
+      /**
+       * clears the global selection
+       */
       clearSelection() {
         self.selection = undefined
         console.log('selection cleared')

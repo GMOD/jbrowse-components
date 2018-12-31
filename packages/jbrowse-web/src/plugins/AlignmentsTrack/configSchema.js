@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '../../configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/baseTrack'
 
 export default pluginManager => {
   const PileupRendererConfigSchema = pluginManager.getRendererType(

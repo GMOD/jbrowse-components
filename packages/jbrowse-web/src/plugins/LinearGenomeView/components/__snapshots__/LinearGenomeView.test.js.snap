@@ -52,13 +52,33 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       className="track-name"
     >
       foo
-      <button
-        onClick={[Function]}
-        type="button"
+    </div>
+    <button
+      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex="0"
+      type="button"
+    >
+      <span
+        className="MuiButton-label-2"
       >
         configure
-      </button>
-    </div>
+      </span>
+      <span
+        className="MuiTouchRipple-root-30"
+      />
+    </button>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -260,13 +280,33 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       className="track-name"
     >
       foo
-      <button
-        onClick={[Function]}
-        type="button"
+    </div>
+    <button
+      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex="0"
+      type="button"
+    >
+      <span
+        className="MuiButton-label-2"
       >
         configure
-      </button>
-    </div>
+      </span>
+      <span
+        className="MuiTouchRipple-root-30"
+      />
+    </button>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -319,13 +359,33 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       className="track-name"
     >
       bar
-      <button
-        onClick={[Function]}
-        type="button"
+    </div>
+    <button
+      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex="0"
+      type="button"
+    >
+      <span
+        className="MuiButton-label-2"
       >
         configure
-      </button>
-    </div>
+      </span>
+      <span
+        className="MuiTouchRipple-root-30"
+      />
+    </button>
   </div>
   <div
     className="TrackRenderingContainer"

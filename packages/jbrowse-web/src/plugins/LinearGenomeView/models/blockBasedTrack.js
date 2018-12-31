@@ -2,7 +2,7 @@ import { types, getParent } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
-import { BaseTrack as LinearGenomeTrack } from '.'
+import LinearGenomeTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
 
