@@ -1,10 +1,6 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
 
-const valueComponents = {
-  string: StringValueComponent,
-}
-
 const StringValueComponent = observer(({ slot, slotSchema }) => (
   <input
     type="text"
@@ -12,6 +8,10 @@ const StringValueComponent = observer(({ slot, slotSchema }) => (
     onChange={evt => slot.set(evt.target.value)}
   />
 ))
+
+const valueComponents = {
+  string: StringValueComponent,
+}
 
 const FunctionEditor = observer(({ slot, slotSchema }) => (
   <textarea value={slot.value} onChange={evt => slot.set(evt.target.value)} />

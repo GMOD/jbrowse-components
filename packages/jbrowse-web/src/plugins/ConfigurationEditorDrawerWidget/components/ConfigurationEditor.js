@@ -40,12 +40,8 @@ const styles = theme => ({
     color: '#666',
     fontSize: '80%',
   },
-  subSchemaName: {
-    fontWeight: 'bold',
-  },
-  slotName: {
-    fontWeight: 'bold',
-  },
+  subSchemaName: {},
+  slotName: {},
   slotContainer: {
     marginBottom: '0.5em',
   },
@@ -94,7 +90,7 @@ class ConfigurationEditor extends React.Component {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
     }).isRequired,
-    model: MobxPropTypes.observableObject.isRequired,
+    model: MobxPropTypes.objectOrObservableObject.isRequired,
   }
 
   render() {

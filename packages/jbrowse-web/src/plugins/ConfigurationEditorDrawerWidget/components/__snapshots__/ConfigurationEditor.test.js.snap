@@ -1,25 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConfigurationEditor drawer widget renders with a couple of categorized tracks 1`] = `
-<div
-  className="ConfigurationEditor-root-1"
->
-  oh hi
-</div>
-`;
-
-exports[`ConfigurationEditor drawer widget renders with a couple of uncategorized tracks 1`] = `
-<div
-  className="ConfigurationEditor-root-1"
->
-  oh hi
-</div>
-`;
-
 exports[`ConfigurationEditor drawer widget renders with just the required model elements 1`] = `
 <div
   className="ConfigurationEditor-root-1"
 >
-  oh hi
+  <div
+    className="ConfigurationEditor-slotContainer-6"
+  >
+    <div
+      className="ConfigurationEditor-slotName-5"
+    >
+      foo
+    </div>
+    <div
+      className="ConfigurationEditor-description-3"
+    >
+      
+    </div>
+    <input
+      onChange={[Function]}
+      type="text"
+      value="bar"
+    />
+  </div>
 </div>
 `;
