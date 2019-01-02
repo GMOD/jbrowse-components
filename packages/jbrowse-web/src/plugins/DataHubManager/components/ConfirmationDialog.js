@@ -8,9 +8,7 @@ import JBrowse from '../../../JBrowse'
 import Contents from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
 function generateModel(trackDb, categoryName) {
-  const jbrowse = new JBrowse().configure()
-
-  const { model: rootModel } = jbrowse
+  const tracks = []
 
   trackDb.forEach((track, trackName) => {
     const trackKeys = Array.from(track.keys())
@@ -32,16 +30,27 @@ function generateModel(trackDb, categoryName) {
     } while (currentTrackName)
     parentTracks.reverse()
     const categories = [categoryName].concat(parentTracks)
-    rootModel.configuration.addTrackConf('AlignmentsTrack', {
+    tracks.push({
+      type: 'AlignmentsTrack',
       name: track.get('shortLabel'),
       description: track.get('longLabel'),
       category: categories,
     })
   })
 
+  const jbrowse = new JBrowse()
+
+  jbrowse.configure({
+    views: {
+      LinearGenomeView: {},
+    },
+    tracks,
+  })
+
+  const { model: rootModel } = jbrowse
+
   const firstView = rootModel.addView('LinearGenomeView')
   firstView.activateTrackSelector()
-
   return rootModel.drawerWidgets.get('hierarchicalTrackSelector')
 }
 
