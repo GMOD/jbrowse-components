@@ -46,6 +46,22 @@ const typeModels = {
   fileLocation: FileLocation,
 }
 
+// custom actions for modifying the value models
+const typeModelActions = {
+  // special actions for working with stringArray slots
+  stringArray: self => ({
+    add(val) {
+      self.value.push(val)
+    },
+    deleteAtIndex(idx) {
+      self.value.splice(idx, 1)
+    },
+    setAtIndex(idx, val) {
+      self.value[idx] = val
+    },
+  }),
+}
+
 const FunctionStringType = types.refinement(
   'FunctionString',
   types.string,
@@ -59,6 +75,9 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
+
+  // these are any custom actions
+  const modelCustomActions = typeModelActions[type] || (() => ({}))
 
   if (defaultValue === undefined) throw new Error(`no 'defaultValue' provided`)
 
@@ -107,6 +126,7 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       snap.value !== defaultValue ? snap.value : undefined,
     )
     .actions(self => ({
+      ...modelCustomActions(self),
       set(newVal) {
         self.value = newVal
       },
