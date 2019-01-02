@@ -11,69 +11,77 @@ import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes, Provider } from 'mobx-react'
+import {
+  observer,
+  PropTypes as MobxPropTypes,
+  Provider,
+  inject,
+} from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
 import { getMembers } from 'mobx-state-tree'
-import { readConfObject } from '../../../configuration'
 import { iterMap } from '../../../util'
+
+import SlotEditor from './SlotEditor'
+import {
+  isConfigurationSlotType,
+  isConfigurationSchemaType,
+} from '../../../configuration/configurationSchema'
 
 const styles = theme => ({
   root: {
     textAlign: 'left',
     padding: theme.spacing.unit,
   },
-  expansionPanelDetails: {
-    display: 'block',
+  subSchemaContainer: {
+    marginLeft: '1em',
+  },
+  description: {
+    color: '#666',
+    fontSize: '80%',
+  },
+  subSchemaName: {
+    fontWeight: 'bold',
+  },
+  slotName: {
+    fontWeight: 'bold',
+  },
+  slotContainer: {
+    marginBottom: '0.5em',
   },
 })
 
-const valueComponents = {
-  string: StringValueComponent,
-}
+const Member = inject('classes')(
+  observer(({ slotName, slotSchema, schema, classes, rootConfig }) => {
+    const slot = schema[slotName]
 
-const StringValueComponent = observer(({ slot, slotSchema }) => (
-  <input
-    type="text"
-    value={slot.value}
-    onChange={evt => slot.set(evt.target.value)}
-  />
-))
+    if (isConfigurationSchemaType(slotSchema)) {
+      return (
+        <>
+          <div className={classes.subSchemaName}>{slotName}</div>
+          <div className={classes.subSchemaContainer}>
+            <Schema rootConfig={rootConfig} schema={slot} />
+          </div>
+        </>
+      )
+    }
 
-const FunctionEditor = StringValueComponent
+    if (isConfigurationSlotType(slotSchema)) {
+      // this is a regular config slot
+      return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
+    }
 
-const Slot = observer(({ slotName, slot, slotSchema, rootConfig }) => {
-  if (typeof slot !== 'object') return null
-  if (slotSchema.isJBrowseConfigurationSchema)
-    return (
-      <div className="subSchemaContainer">
-        <div className="name">{slotName}</div>
-        <Schema rootConfig={rootConfig} schema={slot} />
-      </div>
-    )
-  const { name, description, type, value } = slot
-  const ValueComponent = /^\s*function\s*\(/.test(value)
-    ? FunctionEditor
-    : valueComponents[type] || StringValueComponent
-  return (
-    <div className="slotContainer">
-      <div className="name">{name}</div>
-      <div className="description">{description}</div>
-      <ValueComponent slot={slot} slotSchema={slotSchema} />
-    </div>
-  )
-})
+    return null
+  }),
+)
 
-const Schema = observer(({ rootConfig, schema }) =>
+const Schema = observer(({ rootConfig, schema, classes }) =>
   iterMap(
     Object.entries(getMembers(schema).properties),
     ([slotName, slotSchema]) => (
-      <Slot
+      <Member
         key={slotName}
-        rootConfig={rootConfig}
-        slotName={slotName}
-        slotSchema={slotSchema}
-        slot={schema[slotName]}
+        {...{ slotName, slotSchema, schema, rootConfig }}
       />
     ),
   ),
@@ -85,7 +93,6 @@ class ConfigurationEditor extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
-      expansionPanelDetails: propTypes.string.isRequired,
     }).isRequired,
     model: MobxPropTypes.observableObject.isRequired,
   }

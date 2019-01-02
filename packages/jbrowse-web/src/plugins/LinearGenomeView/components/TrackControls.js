@@ -26,7 +26,7 @@ TrackControls.propTypes = {
   onConfigureClick: ReactPropTypes.func,
 }
 TrackControls.defaultProps = {
-  onConfigureClick: () => {},
+  onConfigureClick: undefined,
 }
 
 export default observer(TrackControls)

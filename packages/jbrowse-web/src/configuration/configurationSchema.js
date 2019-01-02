@@ -112,15 +112,17 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       },
     }))
 
-  return types.optional(slot, {
+  const completeModel = types.optional(slot, {
     name: slotName,
     type,
     description,
     value: defaultValue,
   })
+  completeModel.isJBrowseConfigurationSlot = true
+  return completeModel
 }
 
-function isConfigurationSchemaType(thing) {
+export function isConfigurationSchemaType(thing) {
   return (
     (isModelType(thing) && !!thing.isJBrowseConfigurationSchema) ||
     (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
@@ -128,6 +130,10 @@ function isConfigurationSchemaType(thing) {
       thing.types.every(t => isConfigurationSchemaType(t))) ||
     (isMapType(thing) && isConfigurationSchemaType(thing.subType))
   )
+}
+
+export function isConfigurationSlotType(thing) {
+  return !!thing.isJBrowseConfigurationSlot
 }
 
 export function ConfigurationSchema(
