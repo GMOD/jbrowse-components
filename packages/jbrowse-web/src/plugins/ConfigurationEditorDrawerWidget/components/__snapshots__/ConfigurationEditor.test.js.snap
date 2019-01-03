@@ -355,11 +355,37 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
-            <input
-              onChange={[Function]}
-              type="number"
-              value={5}
-            />
+            <div
+              className="MuiFormControl-root-7"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                alignmentHeight
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37 MuiInputBase-inputType-55 MuiInput-inputType-40"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="number"
+                  value={5}
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-59 MuiFormHelperText-filled-65"
+              >
+                the height of each feature in a pileup alignment
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -512,11 +538,37 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
-            <input
-              onChange={[Function]}
-              type="text"
-              value={10}
-            />
+            <div
+              className="MuiFormControl-root-7"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                height
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37 MuiInputBase-inputType-55 MuiInput-inputType-40"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="number"
+                  value={10}
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-59 MuiFormHelperText-filled-65"
+              >
+                height in pixels of the main body of each feature
+              </p>
+            </div>
           </div>
         </div>
       </div>
