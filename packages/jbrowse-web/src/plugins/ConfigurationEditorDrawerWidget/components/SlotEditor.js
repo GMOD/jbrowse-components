@@ -52,6 +52,17 @@ const NumberEditor = observer(({ slot, slotSchema }) => (
   />
 ))
 
+const IntegerEditor = observer(({ slot, slotSchema }) => (
+  <input
+    type="number"
+    value={slot.value}
+    onChange={evt => {
+      const num = Number(evt.target.value)
+      if (!Number.isNaN(num)) slot.set(num)
+    }}
+  />
+))
+
 const FileLocationEditor = observer(({ slot }) => {
   // TODO: this can only edit URIs right now, need to make this an actual
   // good file selector
@@ -75,7 +86,7 @@ const valueComponents = {
   fileLocation: FileLocationEditor,
   stringArray: StringArrayEditor,
   number: NumberEditor,
-  integer: NumberEditor,
+  integer: IntegerEditor,
 }
 
 const SlotEditor = inject('classes')(
