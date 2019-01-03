@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
+import ColorEditor from './ColorEditor'
 
 const StringEditor = observer(({ slot, slotSchema }) => (
   <input
@@ -87,6 +88,7 @@ const valueComponents = {
   stringArray: StringArrayEditor,
   number: NumberEditor,
   integer: IntegerEditor,
+  color: ColorEditor,
 }
 
 const SlotEditor = inject('classes')(
