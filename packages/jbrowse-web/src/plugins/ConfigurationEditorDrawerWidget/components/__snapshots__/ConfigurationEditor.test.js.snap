@@ -241,17 +241,38 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
                 onClick={[Function]}
               >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-52 MuiInput-input-37"
-                  disabled={false}
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="text"
-                  value="BAI"
-                />
+                <div
+                  className="MuiSelect-root-129"
+                >
+                  <div
+                    aria-haspopup="true"
+                    aria-pressed="false"
+                    className="MuiSelect-select-130 MuiSelect-selectMenu-133 MuiInputBase-input-52 MuiInput-input-37"
+                    onBlur={[Function]}
+                    onClick={[Function]}
+                    onFocus={[Function]}
+                    onKeyDown={[Function]}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    BAI
+                  </div>
+                  <input
+                    type="hidden"
+                    value="BAI"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    className="MuiSvgIcon-root-136 MuiSelect-icon-135"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M7 10l5 5 5-5z"
+                    />
+                  </svg>
+                </div>
               </div>
               
             </div>

@@ -17,8 +17,8 @@ const configSchema = ConfigurationSchema(
     },
     index: ConfigurationSchema('BamIndex', {
       indexType: {
-        model: types.union(types.literal('BAI'), types.literal('CSI')),
-        type: 'string',
+        model: types.enumeration('IndexType', ['BAI', 'CSI']),
+        type: 'stringEnum',
         defaultValue: 'BAI',
       },
       location: {
