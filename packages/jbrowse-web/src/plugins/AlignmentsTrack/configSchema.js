@@ -1,3 +1,4 @@
+import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/baseTrack'
 
@@ -14,7 +15,8 @@ export default pluginManager => {
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
-        type: 'string',
+        type: 'stringEnum',
+        model: types.enumeration('Rendering', ['pileup', 'svg']),
         defaultValue: 'pileup',
       },
       category: {
