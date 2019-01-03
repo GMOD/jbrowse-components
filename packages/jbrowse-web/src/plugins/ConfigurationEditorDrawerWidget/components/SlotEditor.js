@@ -1,6 +1,12 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
-import { TextField, InputLabel, FormHelperText } from '@material-ui/core'
+import {
+  TextField,
+  InputLabel,
+  FormHelperText,
+  MenuItem,
+} from '@material-ui/core'
+import { getPropertyMembers } from 'mobx-state-tree'
 import ColorEditor from './ColorEditor'
 
 const StringEditor = observer(({ slot, slotSchema }) => (
@@ -97,6 +103,29 @@ const FunctionEditor = observer(({ slot, slotSchema }) => (
   <textarea value={slot.value} onChange={evt => slot.set(evt.target.value)} />
 ))
 
+const stringEnumEditor = observer(({ slot, slotSchema }) => {
+  const p = getPropertyMembers(slotSchema.type)
+  const choices = p.properties.value.type.types[1].types.map(t => t.value)
+
+  return (
+    <TextField
+      value={slot.value}
+      label={slot.name}
+      select
+      // error={filterError}
+      helperText={slot.description}
+      fullWidth
+      onChange={evt => slot.set(evt.target.value)}
+    >
+      {choices.map(str => (
+        <MenuItem key={str} value={str}>
+          {str}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+})
+
 const valueComponents = {
   string: StringEditor,
   fileLocation: FileLocationEditor,
@@ -104,6 +133,7 @@ const valueComponents = {
   number: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
+  stringEnum: stringEnumEditor,
 }
 
 const SlotEditor = inject('classes')(
