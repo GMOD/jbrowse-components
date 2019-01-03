@@ -1,10 +1,14 @@
 import React from 'react'
 import { observer, inject } from 'mobx-react'
+import { TextField, InputLabel, FormHelperText } from '@material-ui/core'
 import ColorEditor from './ColorEditor'
 
 const StringEditor = observer(({ slot, slotSchema }) => (
-  <input
-    type="text"
+  <TextField
+    label={slot.name}
+    // error={filterError}
+    helperText={slot.description}
+    fullWidth
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
   />
@@ -12,40 +16,46 @@ const StringEditor = observer(({ slot, slotSchema }) => (
 
 const StringArrayEditor = inject('classes')(
   observer(({ slot, slotSchema, classes }) => (
-    <div className={classes.stringArrayEditor}>
-      {slot.value.map((val, idx) => (
-        <div key={val} className={classes.stringArrayItem}>
-          <input
-            type="text"
-            value={val}
-            onChange={evt => {
-              slot.setAtIndex(idx, evt.target.value)
-            }}
-          />
-          <button
-            className={classes.stringArrayEditorDelete}
-            type="button"
-            onClick={() => slot.removeAtIndex(idx)}
-          >
-            remove
-          </button>
-        </div>
-      ))}
-      <button
-        className={classes.stringArrayEditorAdd}
-        type="button"
-        onClick={() => slot.add('')}
-      >
-        add
-      </button>
-    </div>
+    <>
+      <InputLabel>{slot.name}</InputLabel>
+      <div className={classes.stringArrayEditor}>
+        {slot.value.map((val, idx) => (
+          <div key={val} className={classes.stringArrayItem}>
+            <input
+              type="text"
+              value={val}
+              onChange={evt => {
+                slot.setAtIndex(idx, evt.target.value)
+              }}
+            />
+            <button
+              className={classes.stringArrayEditorDelete}
+              type="button"
+              onClick={() => slot.removeAtIndex(idx)}
+            >
+              remove
+            </button>
+          </div>
+        ))}
+        <button
+          className={classes.stringArrayEditorAdd}
+          type="button"
+          onClick={() => slot.add('')}
+        >
+          add
+        </button>
+      </div>
+      <FormHelperText>{slot.description}</FormHelperText>
+    </>
   )),
 )
 
-const NumberEditor = observer(({ slot, slotSchema }) => (
-  <input
-    type="text"
+const NumberEditor = observer(({ slot }) => (
+  <TextField
+    label={slot.name}
+    helperText={slot.description}
     value={slot.value}
+    type="number"
     onChange={evt => {
       const num = Number(evt.target.value)
       if (!Number.isNaN(num)) slot.set(num)
@@ -53,13 +63,15 @@ const NumberEditor = observer(({ slot, slotSchema }) => (
   />
 ))
 
-const IntegerEditor = observer(({ slot, slotSchema }) => (
-  <input
-    type="number"
+const IntegerEditor = observer(({ slot }) => (
+  <TextField
+    label={slot.name}
+    helperText={slot.description}
     value={slot.value}
+    type="number"
     onChange={evt => {
       const num = Number(evt.target.value)
-      if (!Number.isNaN(num)) slot.set(num)
+      if (!Number.isNaN(num)) slot.set(Math.round(num))
     }}
   />
 ))
@@ -70,9 +82,12 @@ const FileLocationEditor = observer(({ slot }) => {
   const { value } = slot
   if (!value.uri) throw new Error('local files not yet supported')
   return (
-    <input
-      type="text"
+    <TextField
       value={slot.value.uri}
+      label={slot.name}
+      // error={filterError}
+      helperText={slot.description}
+      fullWidth
       onChange={evt => slot.set({ uri: evt.target.value })}
     />
   )
@@ -100,8 +115,8 @@ const SlotEditor = inject('classes')(
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
       <div className={classes.slotContainer}>
-        <div className={classes.slotName}>{name}</div>
-        <div className={classes.description}>{description}</div>
+        {/* <div className={classes.slotName}>{name}</div>
+        <div className={classes.description}>{description}</div> */}
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
     )

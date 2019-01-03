@@ -8,72 +8,125 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="ConfigurationEditor-slotName-5"
+      className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
     >
-      name
+      <label
+        className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+        data-shrink={true}
+      >
+        name
+      </label>
+      <div
+        className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+        onClick={[Function]}
+      >
+        <input
+          aria-invalid={false}
+          className="MuiInputBase-input-52 MuiInput-input-37"
+          disabled={false}
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          required={false}
+          type="text"
+          value="Track"
+        />
+      </div>
+      <p
+        className="MuiFormHelperText-root-59 MuiFormHelperText-filled-65"
+      >
+        descriptive name of the track
+      </p>
     </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
-      descriptive name of the track
-    </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value="Track"
-    />
   </div>
   <div
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="ConfigurationEditor-slotName-5"
+      className="MuiFormControl-root-67 MuiFormControl-fullWidth-70"
+      onClick={[Function]}
     >
-      backgroundColor
+      <label
+        className="MuiFormLabel-root-82 MuiFormLabel-filled-86 MuiInputLabel-root-71 MuiInputLabel-formControl-76 MuiInputLabel-animated-79 MuiInputLabel-shrink-78"
+        data-shrink={true}
+      >
+        backgroundColor
+      </label>
+      <div
+        className="MuiInputBase-root-102 MuiInput-root-89 MuiInput-underline-93 MuiInputBase-fullWidth-111 MuiInput-fullWidth-96 MuiInputBase-formControl-103 MuiInput-formControl-90"
+        onClick={[Function]}
+        style={
+          Object {
+            "borderRightColor": "#eee",
+            "borderRightStyle": "solid",
+            "borderRightWidth": "25px",
+            "color": "#eee",
+          }
+        }
+      >
+        <input
+          aria-invalid={false}
+          className="MuiInputBase-input-112 MuiInput-input-97"
+          disabled={false}
+          name="color"
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          required={false}
+          type="text"
+          value="#eee"
+        />
+      </div>
+      <p
+        className="MuiFormHelperText-root-119 MuiFormHelperText-filled-125"
+      >
+        the track's background color
+      </p>
     </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
-      the track's background color
-    </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value="#eee"
-    />
   </div>
   <div
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="ConfigurationEditor-slotName-5"
+      className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
     >
-      description
+      <label
+        className="MuiFormLabel-root-22 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19"
+        data-shrink={false}
+      >
+        description
+      </label>
+      <div
+        className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+        onClick={[Function]}
+      >
+        <input
+          aria-invalid={false}
+          className="MuiInputBase-input-52 MuiInput-input-37"
+          disabled={false}
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          required={false}
+          type="text"
+          value=""
+        />
+      </div>
+      <p
+        className="MuiFormHelperText-root-59"
+      >
+        a description of the track
+      </p>
     </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
-      a description of the track
-    </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value=""
-    />
   </div>
   <div
     className="ConfigurationEditor-slotContainer-6"
   >
-    <div
-      className="ConfigurationEditor-slotName-5"
+    <label
+      className="MuiFormLabel-root-22 MuiInputLabel-root-11 MuiInputLabel-animated-19"
     >
       category
-    </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
-      
-    </div>
+    </label>
     <div>
       <button
         onClick={[Function]}
@@ -82,98 +135,159 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         add
       </button>
     </div>
+    <p
+      className="MuiFormHelperText-root-59"
+    >
+      
+    </p>
   </div>
-  <div
-    className="ConfigurationEditor-subSchemaName-4"
+  <label
+    className="MuiFormLabel-root-22"
   >
     adapter
-  </div>
+  </label>
   <div
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="ConfigurationEditor-slotContainer-6"
-    >
-      <div
-        className="ConfigurationEditor-slotName-5"
-      >
-        bamLocation
-      </div>
-      <div
-        className="ConfigurationEditor-description-3"
-      >
-        
-      </div>
-      <input
-        onChange={[Function]}
-        type="text"
-        value="/path/to/my.bam"
-      />
-    </div>
-    <div
-      className="ConfigurationEditor-slotContainer-6"
-    >
-      <div
-        className="ConfigurationEditor-slotName-5"
-      >
-        assemblyName
-      </div>
-      <div
-        className="ConfigurationEditor-description-3"
-      >
-        
-      </div>
-      <input
-        onChange={[Function]}
-        type="text"
-        value=""
-      />
-    </div>
-    <div
-      className="ConfigurationEditor-subSchemaName-4"
-    >
-      index
-    </div>
-    <div
-      className="ConfigurationEditor-subSchemaContainer-2"
+      className="MuiFormGroup-root-127"
     >
       <div
         className="ConfigurationEditor-slotContainer-6"
       >
         <div
-          className="ConfigurationEditor-slotName-5"
+          className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
         >
-          indexType
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
+          <label
+            className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+            data-shrink={true}
+          >
+            bamLocation
+          </label>
+          <div
+            className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+            onClick={[Function]}
+          >
+            <input
+              aria-invalid={false}
+              className="MuiInputBase-input-52 MuiInput-input-37"
+              disabled={false}
+              onBlur={[Function]}
+              onChange={[Function]}
+              onFocus={[Function]}
+              required={false}
+              type="text"
+              value="/path/to/my.bam"
+            />
+          </div>
           
         </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="BAI"
-        />
       </div>
       <div
         className="ConfigurationEditor-slotContainer-6"
       >
         <div
-          className="ConfigurationEditor-slotName-5"
+          className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
         >
-          location
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
+          <label
+            className="MuiFormLabel-root-22 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19"
+            data-shrink={false}
+          >
+            assemblyName
+          </label>
+          <div
+            className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+            onClick={[Function]}
+          >
+            <input
+              aria-invalid={false}
+              className="MuiInputBase-input-52 MuiInput-input-37"
+              disabled={false}
+              onBlur={[Function]}
+              onChange={[Function]}
+              onFocus={[Function]}
+              required={false}
+              type="text"
+              value=""
+            />
+          </div>
           
         </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="/path/to/my.bam.bai"
-        />
+      </div>
+      <label
+        className="MuiFormLabel-root-22"
+      >
+        index
+      </label>
+      <div
+        className="ConfigurationEditor-subSchemaContainer-2"
+      >
+        <div
+          className="MuiFormGroup-root-127"
+        >
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                indexType
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="text"
+                  value="BAI"
+                />
+              </div>
+              
+            </div>
+          </div>
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                location
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="text"
+                  value="/path/to/my.bam.bai"
+                />
+              </div>
+              
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -181,158 +295,282 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="ConfigurationEditor-slotName-5"
+      className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
     >
-      defaultRendering
-    </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
+      <label
+        className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+        data-shrink={true}
+      >
+        defaultRendering
+      </label>
+      <div
+        className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+        onClick={[Function]}
+      >
+        <input
+          aria-invalid={false}
+          className="MuiInputBase-input-52 MuiInput-input-37"
+          disabled={false}
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          required={false}
+          type="text"
+          value="pileup"
+        />
+      </div>
       
     </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value="pileup"
-    />
   </div>
-  <div
-    className="ConfigurationEditor-subSchemaName-4"
+  <label
+    className="MuiFormLabel-root-22"
   >
     renderers
-  </div>
+  </label>
   <div
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="ConfigurationEditor-subSchemaName-4"
+      className="MuiFormGroup-root-127"
     >
-      PileupRenderer
-    </div>
-    <div
-      className="ConfigurationEditor-subSchemaContainer-2"
-    >
+      <label
+        className="MuiFormLabel-root-22"
+      >
+        PileupRenderer
+      </label>
       <div
-        className="ConfigurationEditor-slotContainer-6"
+        className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="ConfigurationEditor-slotName-5"
+          className="MuiFormGroup-root-127"
         >
-          alignmentColor
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <textarea
+              onChange={[Function]}
+              value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
+            />
+          </div>
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-7"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                alignmentHeight
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37 MuiInputBase-inputType-55 MuiInput-inputType-40"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="number"
+                  value={5}
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-59 MuiFormHelperText-filled-65"
+              >
+                the height of each feature in a pileup alignment
+              </p>
+            </div>
+          </div>
         </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          the color of each feature in a pileup alignment
-        </div>
-        <textarea
-          onChange={[Function]}
-          value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
-        />
       </div>
+      <label
+        className="MuiFormLabel-root-22"
+      >
+        SvgFeatureRenderer
+      </label>
       <div
-        className="ConfigurationEditor-slotContainer-6"
+        className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="ConfigurationEditor-slotName-5"
+          className="MuiFormGroup-root-127"
         >
-          alignmentHeight
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-67 MuiFormControl-fullWidth-70"
+              onClick={[Function]}
+            >
+              <label
+                className="MuiFormLabel-root-82 MuiFormLabel-filled-86 MuiInputLabel-root-71 MuiInputLabel-formControl-76 MuiInputLabel-animated-79 MuiInputLabel-shrink-78"
+                data-shrink={true}
+              >
+                color1
+              </label>
+              <div
+                className="MuiInputBase-root-102 MuiInput-root-89 MuiInput-underline-93 MuiInputBase-fullWidth-111 MuiInput-fullWidth-96 MuiInputBase-formControl-103 MuiInput-formControl-90"
+                onClick={[Function]}
+                style={
+                  Object {
+                    "borderRightColor": "goldenrod",
+                    "borderRightStyle": "solid",
+                    "borderRightWidth": "25px",
+                    "color": "goldenrod",
+                  }
+                }
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-112 MuiInput-input-97"
+                  disabled={false}
+                  name="color"
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="text"
+                  value="goldenrod"
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-119 MuiFormHelperText-filled-125"
+              >
+                the main color of each feature
+              </p>
+            </div>
+          </div>
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-67 MuiFormControl-fullWidth-70"
+              onClick={[Function]}
+            >
+              <label
+                className="MuiFormLabel-root-82 MuiFormLabel-filled-86 MuiInputLabel-root-71 MuiInputLabel-formControl-76 MuiInputLabel-animated-79 MuiInputLabel-shrink-78"
+                data-shrink={true}
+              >
+                color2
+              </label>
+              <div
+                className="MuiInputBase-root-102 MuiInput-root-89 MuiInput-underline-93 MuiInputBase-fullWidth-111 MuiInput-fullWidth-96 MuiInputBase-formControl-103 MuiInput-formControl-90"
+                onClick={[Function]}
+                style={
+                  Object {
+                    "borderRightColor": "black",
+                    "borderRightStyle": "solid",
+                    "borderRightWidth": "25px",
+                    "color": "black",
+                  }
+                }
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-112 MuiInput-input-97"
+                  disabled={false}
+                  name="color"
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="text"
+                  value="black"
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-119 MuiFormHelperText-filled-125"
+              >
+                the secondary color of each feature, used for connecting lines, etc
+              </p>
+            </div>
+          </div>
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-67 MuiFormControl-fullWidth-70"
+              onClick={[Function]}
+            >
+              <label
+                className="MuiFormLabel-root-82 MuiFormLabel-filled-86 MuiInputLabel-root-71 MuiInputLabel-formControl-76 MuiInputLabel-animated-79 MuiInputLabel-shrink-78"
+                data-shrink={true}
+              >
+                color3
+              </label>
+              <div
+                className="MuiInputBase-root-102 MuiInput-root-89 MuiInput-underline-93 MuiInputBase-fullWidth-111 MuiInput-fullWidth-96 MuiInputBase-formControl-103 MuiInput-formControl-90"
+                onClick={[Function]}
+                style={
+                  Object {
+                    "borderRightColor": "#357089",
+                    "borderRightStyle": "solid",
+                    "borderRightWidth": "25px",
+                    "color": "#357089",
+                  }
+                }
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-112 MuiInput-input-97"
+                  disabled={false}
+                  name="color"
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="text"
+                  value="#357089"
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-119 MuiFormHelperText-filled-125"
+              >
+                the tertiary color of each feature, often used for contrasting fills, like on UTRs
+              </p>
+            </div>
+          </div>
+          <div
+            className="ConfigurationEditor-slotContainer-6"
+          >
+            <div
+              className="MuiFormControl-root-7"
+            >
+              <label
+                className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+                data-shrink={true}
+              >
+                height
+              </label>
+              <div
+                className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-formControl-43 MuiInput-formControl-30"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-52 MuiInput-input-37 MuiInputBase-inputType-55 MuiInput-inputType-40"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  type="number"
+                  value={10}
+                />
+              </div>
+              <p
+                className="MuiFormHelperText-root-59 MuiFormHelperText-filled-65"
+              >
+                height in pixels of the main body of each feature
+              </p>
+            </div>
+          </div>
         </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          the height of each feature in a pileup alignment
-        </div>
-        <input
-          onChange={[Function]}
-          type="number"
-          value={5}
-        />
-      </div>
-    </div>
-    <div
-      className="ConfigurationEditor-subSchemaName-4"
-    >
-      SvgFeatureRenderer
-    </div>
-    <div
-      className="ConfigurationEditor-subSchemaContainer-2"
-    >
-      <div
-        className="ConfigurationEditor-slotContainer-6"
-      >
-        <div
-          className="ConfigurationEditor-slotName-5"
-        >
-          color1
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          the main color of each feature
-        </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="goldenrod"
-        />
-      </div>
-      <div
-        className="ConfigurationEditor-slotContainer-6"
-      >
-        <div
-          className="ConfigurationEditor-slotName-5"
-        >
-          color2
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          the secondary color of each feature, used for connecting lines, etc
-        </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="black"
-        />
-      </div>
-      <div
-        className="ConfigurationEditor-slotContainer-6"
-      >
-        <div
-          className="ConfigurationEditor-slotName-5"
-        >
-          color3
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          the tertiary color of each feature, often used for contrasting fills, like on UTRs
-        </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="#357089"
-        />
-      </div>
-      <div
-        className="ConfigurationEditor-slotContainer-6"
-      >
-        <div
-          className="ConfigurationEditor-slotName-5"
-        >
-          height
-        </div>
-        <div
-          className="ConfigurationEditor-description-3"
-        >
-          height in pixels of the main body of each feature
-        </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value={10}
-        />
       </div>
     </div>
   </div>
@@ -347,20 +585,32 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="ConfigurationEditor-slotName-5"
+      className="MuiFormControl-root-7 MuiFormControl-fullWidth-10"
     >
-      foo
-    </div>
-    <div
-      className="ConfigurationEditor-description-3"
-    >
+      <label
+        className="MuiFormLabel-root-22 MuiFormLabel-filled-26 MuiInputLabel-root-11 MuiInputLabel-formControl-16 MuiInputLabel-animated-19 MuiInputLabel-shrink-18"
+        data-shrink={true}
+      >
+        foo
+      </label>
+      <div
+        className="MuiInputBase-root-42 MuiInput-root-29 MuiInput-underline-33 MuiInputBase-fullWidth-51 MuiInput-fullWidth-36 MuiInputBase-formControl-43 MuiInput-formControl-30"
+        onClick={[Function]}
+      >
+        <input
+          aria-invalid={false}
+          className="MuiInputBase-input-52 MuiInput-input-37"
+          disabled={false}
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          required={false}
+          type="text"
+          value="bar"
+        />
+      </div>
       
     </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value="bar"
-    />
   </div>
 </div>
 `;

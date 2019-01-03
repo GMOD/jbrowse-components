@@ -1,4 +1,4 @@
-import { IconButton } from '@material-ui/core'
+import { IconButton, FormLabel } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
@@ -32,6 +32,7 @@ const styles = theme => ({
   root: {
     textAlign: 'left',
     padding: theme.spacing.unit,
+    background: '#eeeeee',
   },
   subSchemaContainer: {
     marginLeft: '1em',
@@ -43,7 +44,13 @@ const styles = theme => ({
   subSchemaName: {},
   slotName: {},
   slotContainer: {
-    marginBottom: '0.5em',
+    marginBottom: '13px',
+    marginRight: '0.8em',
+    background: 'white',
+    padding: '3px 3px 6px 3px',
+    boxShadow:
+      '0px 1px 3px 0px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 2px 1px -1px rgba(0,0,0,0.12)',
+    borderRadius: '4px',
   },
 })
 
@@ -54,9 +61,11 @@ const Member = inject('classes')(
     if (isConfigurationSchemaType(slotSchema)) {
       return (
         <>
-          <div className={classes.subSchemaName}>{slotName}</div>
+          <FormLabel>{slotName}</FormLabel>
           <div className={classes.subSchemaContainer}>
-            <Schema rootConfig={rootConfig} schema={slot} />
+            <FormGroup>
+              <Schema rootConfig={rootConfig} schema={slot} />
+            </FormGroup>
           </div>
         </>
       )
