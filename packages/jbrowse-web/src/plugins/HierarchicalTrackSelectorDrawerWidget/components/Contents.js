@@ -48,6 +48,7 @@ const Category = withStyles(styles)(
 )
 
 Category.defaultProps = {
+  filterPredicate: () => true,
   path: [],
 }
 
@@ -55,7 +56,7 @@ Category.propTypes = {
   name: propTypes.string.isRequired,
   category: MobxPropTypes.objectOrObservableObject.isRequired,
   model: MobxPropTypes.observableObject.isRequired,
-  filterPredicate: propTypes.func.isRequired,
+  filterPredicate: propTypes.func,
   path: propTypes.arrayOf(propTypes.string),
 }
 
