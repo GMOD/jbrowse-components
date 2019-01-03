@@ -245,7 +245,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         </div>
         <input
           onChange={[Function]}
-          type="text"
+          type="number"
           value={5}
         />
       </div>

@@ -53,7 +53,7 @@ const typeModelActions = {
     add(val) {
       self.value.push(val)
     },
-    deleteAtIndex(idx) {
+    removeAtIndex(idx) {
       self.value.splice(idx, 1)
     },
     setAtIndex(idx, val) {

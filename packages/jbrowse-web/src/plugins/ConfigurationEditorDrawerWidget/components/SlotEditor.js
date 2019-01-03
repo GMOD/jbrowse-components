@@ -24,9 +24,9 @@ const StringArrayEditor = inject('classes')(
           <button
             className={classes.stringArrayEditorDelete}
             type="button"
-            onClick={() => slot.deleteAtIndex(idx)}
+            onClick={() => slot.removeAtIndex(idx)}
           >
-            delete
+            remove
           </button>
         </div>
       ))}
