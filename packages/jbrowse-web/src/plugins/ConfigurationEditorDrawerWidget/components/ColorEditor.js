@@ -1,11 +1,10 @@
 import React, { Component } from 'react'
-import { observer, inject } from 'mobx-react'
+import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
 import ColorPicker from 'material-ui-color-picker'
 
 @observer
-@inject('classes')
 class ColorEditor extends Component {
   static propTypes = {
     slot: ReactPropTypes.shape({

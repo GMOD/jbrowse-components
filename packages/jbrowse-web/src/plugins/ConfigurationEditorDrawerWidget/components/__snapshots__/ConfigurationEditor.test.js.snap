@@ -36,11 +36,53 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       the track's background color
     </div>
-    <input
-      onChange={[Function]}
-      type="text"
-      value="#eee"
-    />
+    <div
+      style={
+        Object {
+          "position": "relative",
+        }
+      }
+    >
+      <div
+        className="MuiFormControl-root-7"
+        onClick={[Function]}
+      >
+        <div
+          className="MuiInputBase-root-24 MuiInput-root-11 MuiInput-underline-15 MuiInputBase-formControl-25 MuiInput-formControl-12"
+          onClick={[Function]}
+          style={
+            Object {
+              "color": "#eee",
+            }
+          }
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-34 MuiInput-input-19"
+            disabled={false}
+            name="color"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="#eee"
+          />
+        </div>
+      </div>
+      <div
+        style={
+          Object {
+            "background": "#eee",
+            "height": "100%",
+            "left": "10.8em",
+            "position": "absolute",
+            "top": 0,
+            "width": "2em",
+          }
+        }
+      />
+    </div>
   </div>
   <div
     className="ConfigurationEditor-slotContainer-6"
@@ -271,11 +313,53 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           the main color of each feature
         </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="goldenrod"
-        />
+        <div
+          style={
+            Object {
+              "position": "relative",
+            }
+          }
+        >
+          <div
+            className="MuiFormControl-root-7"
+            onClick={[Function]}
+          >
+            <div
+              className="MuiInputBase-root-24 MuiInput-root-11 MuiInput-underline-15 MuiInputBase-formControl-25 MuiInput-formControl-12"
+              onClick={[Function]}
+              style={
+                Object {
+                  "color": "goldenrod",
+                }
+              }
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-34 MuiInput-input-19"
+                disabled={false}
+                name="color"
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="goldenrod"
+              />
+            </div>
+          </div>
+          <div
+            style={
+              Object {
+                "background": "goldenrod",
+                "height": "100%",
+                "left": "10.8em",
+                "position": "absolute",
+                "top": 0,
+                "width": "2em",
+              }
+            }
+          />
+        </div>
       </div>
       <div
         className="ConfigurationEditor-slotContainer-6"
@@ -290,11 +374,53 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           the secondary color of each feature, used for connecting lines, etc
         </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="black"
-        />
+        <div
+          style={
+            Object {
+              "position": "relative",
+            }
+          }
+        >
+          <div
+            className="MuiFormControl-root-7"
+            onClick={[Function]}
+          >
+            <div
+              className="MuiInputBase-root-24 MuiInput-root-11 MuiInput-underline-15 MuiInputBase-formControl-25 MuiInput-formControl-12"
+              onClick={[Function]}
+              style={
+                Object {
+                  "color": "black",
+                }
+              }
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-34 MuiInput-input-19"
+                disabled={false}
+                name="color"
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="black"
+              />
+            </div>
+          </div>
+          <div
+            style={
+              Object {
+                "background": "black",
+                "height": "100%",
+                "left": "10.8em",
+                "position": "absolute",
+                "top": 0,
+                "width": "2em",
+              }
+            }
+          />
+        </div>
       </div>
       <div
         className="ConfigurationEditor-slotContainer-6"
@@ -309,11 +435,53 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           the tertiary color of each feature, often used for contrasting fills, like on UTRs
         </div>
-        <input
-          onChange={[Function]}
-          type="text"
-          value="#357089"
-        />
+        <div
+          style={
+            Object {
+              "position": "relative",
+            }
+          }
+        >
+          <div
+            className="MuiFormControl-root-7"
+            onClick={[Function]}
+          >
+            <div
+              className="MuiInputBase-root-24 MuiInput-root-11 MuiInput-underline-15 MuiInputBase-formControl-25 MuiInput-formControl-12"
+              onClick={[Function]}
+              style={
+                Object {
+                  "color": "#357089",
+                }
+              }
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-34 MuiInput-input-19"
+                disabled={false}
+                name="color"
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="#357089"
+              />
+            </div>
+          </div>
+          <div
+            style={
+              Object {
+                "background": "#357089",
+                "height": "100%",
+                "left": "10.8em",
+                "position": "absolute",
+                "top": 0,
+                "width": "2em",
+              }
+            }
+          />
+        </div>
       </div>
       <div
         className="ConfigurationEditor-slotContainer-6"
