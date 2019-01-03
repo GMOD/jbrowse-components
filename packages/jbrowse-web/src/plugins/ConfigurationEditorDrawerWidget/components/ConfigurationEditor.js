@@ -35,13 +35,18 @@ const styles = theme => ({
     background: '#eeeeee',
   },
   subSchemaContainer: {
-    marginLeft: '1em',
+    marginLeft: '5px',
+    borderLeft: '1px solid #557ba5',
+    paddingLeft: '8px',
+    marginBottom: '3px',
   },
   description: {
     color: '#666',
     fontSize: '80%',
   },
-  subSchemaName: {},
+  subSchemaName: {
+    marginBottom: '4px',
+  },
   slotName: {},
   slotContainer: {
     marginBottom: '13px',
