@@ -50,10 +50,12 @@ const StringArrayEditor = inject('classes')(
   )),
 )
 
-const NumberEditor = observer(({ slot, slotSchema }) => (
-  <input
-    type="text"
+const NumberEditor = observer(({ slot }) => (
+  <TextField
+    label={slot.name}
+    helperText={slot.description}
     value={slot.value}
+    type="number"
     onChange={evt => {
       const num = Number(evt.target.value)
       if (!Number.isNaN(num)) slot.set(num)
@@ -61,13 +63,15 @@ const NumberEditor = observer(({ slot, slotSchema }) => (
   />
 ))
 
-const IntegerEditor = observer(({ slot, slotSchema }) => (
-  <input
-    type="number"
+const IntegerEditor = observer(({ slot }) => (
+  <TextField
+    label={slot.name}
+    helperText={slot.description}
     value={slot.value}
+    type="number"
     onChange={evt => {
       const num = Number(evt.target.value)
-      if (!Number.isNaN(num)) slot.set(num)
+      if (!Number.isNaN(num)) slot.set(Math.round(num))
     }}
   />
 ))
