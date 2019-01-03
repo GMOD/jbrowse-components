@@ -2,9 +2,7 @@ import React, { Component } from 'react'
 import { observer, inject } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
-import 'rc-color-picker/assets/index.css'
-
-import ColorPicker from 'rc-color-picker'
+import ColorPicker from 'material-ui-color-picker'
 
 @observer
 @inject('classes')
@@ -16,7 +14,7 @@ class ColorEditor extends Component {
     }).isRequired,
   }
 
-  onPickerChange = ({ color, alpha }) => {
+  onPickerChange = color => {
     this.props.slot.set(color)
   }
 
@@ -27,13 +25,22 @@ class ColorEditor extends Component {
   render() {
     const { slot } = this.props
     return (
-      <div>
-        <input type="text" value={slot.value} onChange={this.onTextChange} />
+      <div style={{ position: 'relative' }}>
         <ColorPicker
-          animation="slide-up"
-          color={slot.value}
+          name="color"
+          defaultValue="#000"
+          value={slot.value}
           onChange={this.onPickerChange}
-          defaultColor="#000"
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: '10.8em',
+            top: 0,
+            background: slot.value,
+            height: '100%',
+            width: '2em',
+          }}
         />
       </div>
     )
