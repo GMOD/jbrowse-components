@@ -145,8 +145,6 @@ const SlotEditor = inject('classes')(
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
       <div className={classes.slotContainer}>
-        {/* <div className={classes.slotName}>{name}</div>
-        <div className={classes.description}>{description}</div> */}
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
     )
