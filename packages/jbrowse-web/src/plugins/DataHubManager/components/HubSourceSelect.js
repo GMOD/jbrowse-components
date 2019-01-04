@@ -7,7 +7,7 @@ import propTypes from 'prop-types'
 import React from 'react'
 
 const hubSourceDescriptions = {
-  trackhubregistry: (
+  trackHubRegistry: (
     <FormHelperText>
       Search{' '}
       <a
@@ -19,11 +19,11 @@ const hubSourceDescriptions = {
       </a>
     </FormHelperText>
   ),
-  ucsccustom: <FormHelperText>User-provided track hub URL</FormHelperText>,
-  jbrowseregistry: (
+  ucscCustom: <FormHelperText>User-provided track hub URL</FormHelperText>,
+  jbrowseRegistry: (
     <FormHelperText>As-yet-unimplemented JBrowse data registry</FormHelperText>
   ),
-  jbrowsecustom: (
+  jbrowseCustom: (
     <FormHelperText>User-provided JBrowse 1 data directory URL</FormHelperText>
   ),
 }
@@ -33,8 +33,8 @@ function HubSourceSelect(props) {
   let hubSources = []
   if (hubType === 'ucsc')
     hubSources = [
-      { value: 'trackhubregistry', label: 'The Track Hub Registry' },
-      { value: 'ucsccustom', label: 'Track Hub URL' },
+      { value: 'trackHubRegistry', label: 'The Track Hub Registry' },
+      { value: 'ucscCustom', label: 'Track Hub URL' },
     ]
   return (
     <FormControl component="fieldset">

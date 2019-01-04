@@ -77,8 +77,7 @@ class TrackHubRegistrySelect extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      networkStatus: null,
-      registryStatus: null,
+      errorMessage: null,
       assemblies: null,
       hubs: [],
       selectedSpecies: '',
@@ -90,30 +89,27 @@ class TrackHubRegistrySelect extends React.Component {
 
   componentDidMount() {
     this.mounted = true
-    this.getRegistryStatus()
+    this.getAssemblies()
   }
 
   componentWillUnmount() {
     this.mounted = false
   }
 
-  async getRegistryStatus() {
-    const response = await this.doGet(
+  async getAssemblies() {
+    const pingResponse = await this.doGet(
       'https://www.trackhubregistry.org/api/info/ping',
     )
-    if (!response || response.ping !== 1) {
-      this.wrappedSetState({ registryStatus: 'fail' })
+    if (!pingResponse) return
+    if (pingResponse.ping !== 1) {
+      this.wrappedSetState({ errorMessage: 'Registry is not available' })
       return
     }
-    this.wrappedSetState({ registryStatus: 'pass' })
-    this.getAssemblies()
-  }
-
-  async getAssemblies() {
-    const response = await this.doGet(
+    const assembliesResponse = await this.doGet(
       'https://www.trackhubregistry.org/api/info/assemblies',
     )
-    if (response) this.wrappedSetState({ assemblies: response })
+    if (assembliesResponse)
+      this.wrappedSetState({ assemblies: assembliesResponse })
   }
 
   async getHubs(selectedAssembly, reset) {
@@ -155,12 +151,28 @@ class TrackHubRegistrySelect extends React.Component {
     let rawResponse
     try {
       rawResponse = await fetch(url)
-    } catch {
-      this.wrappedSetState({ networkStatus: 'fail' })
+    } catch (error) {
+      this.wrappedSetState({
+        errorMessage: (
+          <span>
+            <strong>Network connection error.</strong> <br />
+            {error.message} <br />
+            {url}
+          </span>
+        ),
+      })
       return null
     }
     if (!rawResponse.ok) {
-      this.wrappedSetState({ registryStatus: 'fail' })
+      this.wrappedSetState({
+        errorMessage: (
+          <span>
+            <strong>Error connecting to the URL.</strong> <br />
+            {rawResponse.status}: {rawResponse.statusText} <br />
+            {url}
+          </span>
+        ),
+      })
       return null
     }
     return rawResponse.json()
@@ -176,12 +188,28 @@ class TrackHubRegistrySelect extends React.Component {
         method: 'POST',
         body: JSON.stringify(data),
       })
-    } catch {
-      this.wrappedSetState({ networkStatus: 'fail' })
+    } catch (error) {
+      this.wrappedSetState({
+        errorMessage: (
+          <span>
+            <strong>Network connection error.</strong> <br />
+            {error.message} <br />
+            {url}
+          </span>
+        ),
+      })
       return null
     }
     if (!rawResponse.ok) {
-      this.wrappedSetState({ registryStatus: 'fail' })
+      this.wrappedSetState({
+        errorMessage: (
+          <span>
+            <strong>Error connecting to the URL.</strong> <br />
+            {rawResponse.status}: {rawResponse.statusText} <br />
+            {url}
+          </span>
+        ),
+      })
       return null
     }
     return rawResponse.json()
@@ -189,13 +217,12 @@ class TrackHubRegistrySelect extends React.Component {
 
   render() {
     const {
-      networkStatus,
-      registryStatus,
       assemblies,
       selectedSpecies,
       selectedAssembly,
       hubs,
       allHubsRetrieved,
+      errorMessage,
     } = this.state
 
     const renderItems = [
@@ -204,38 +231,23 @@ class TrackHubRegistrySelect extends React.Component {
       </Typography>,
     ]
 
-    if (networkStatus === 'fail') {
+    if (errorMessage) {
       renderItems.push(
-        <Typography key="networkerror" color="error">
-          Network connection error
-        </Typography>,
-      )
-      return <div>{renderItems}</div>
-    }
-
-    if (registryStatus === 'fail') {
-      renderItems.push(
-        <Typography key="registryerror" color="error">
-          Error connecting to the registry
+        <Typography key="errorMessage" color="error">
+          {errorMessage}
         </Typography>,
       )
       return <div>{renderItems}</div>
     }
 
     if (!assemblies) {
-      let status
-      if (!networkStatus) status = 'Connecting to network...'
-      else if (!registryStatus) status = 'Connecting to registry...'
-      else if (networkStatus === 'pass' && registryStatus === 'pass')
-        status = 'Connected'
-      else status = 'Connection status unknown'
-      renderItems.push(<QueryStatus key="querystatus" status={status} />)
+      renderItems.push(
+        <QueryStatus key="querystatus" status="Connecting to registry..." />,
+      )
       return <div>{renderItems}</div>
     }
 
-    const speciesList = Object.keys(assemblies)
-      .sort()
-      .slice(0, 5)
+    const speciesList = Object.keys(assemblies).sort()
 
     renderItems.push(
       <SelectBox

@@ -35,28 +35,11 @@ class TextFields extends React.Component {
   }
 
   state = {
-    networkAvailable: null,
-    url: 'hub.txt',
-    urlIsValid: null,
-    hubTxtIsValid: null,
-    errorMessage: '',
-    hubTxt: new Map(),
+    url: '',
     resolvedUrl: null,
-  }
-
-  getLabel() {
-    const {
-      networkAvailable,
-      urlIsValid,
-      hubTxtIsValid,
-      errorMessage,
-    } = this.state
-    if (networkAvailable === false) return 'Network error'
-    if (urlIsValid === false) return 'Could not access the URL'
-    if (hubTxtIsValid === false)
-      if (errorMessage) return errorMessage
-      else return 'Not a valid hub.txt file'
-    return 'Track Hub URL'
+    hubTxt: null,
+    errorMessage: null,
+    errorHelperMessage: null,
   }
 
   handleChange = event => {
@@ -64,12 +47,10 @@ class TextFields extends React.Component {
     disableNext()
     this.setState({
       url: event.target.value,
-      networkAvailable: null,
-      urlIsValid: null,
-      hubTxtIsValid: null,
-      errorMessage: '',
-      hubTxt: new Map(),
       resolvedUrl: null,
+      hubTxt: null,
+      errorMessage: null,
+      errorHelperMessage: null,
     })
   }
 
@@ -77,18 +58,33 @@ class TextFields extends React.Component {
     const { setHubName } = this.props
     let { url } = this.state
     if (url.endsWith('/')) url += 'hub.txt'
-    const resp = await this.doGet(url)
-    if (!resp) return
-    const resolvedUrl = new URL(resp.url)
-    const respText = await resp.text()
+    let response
+    try {
+      response = await fetch(url)
+    } catch (error) {
+      this.setState({
+        errorMessage: 'Network error',
+        errorHelperMessage: error.message,
+      })
+      return
+    }
+    if (!response.ok) {
+      this.setState({
+        errorMessage: 'Could not access the URL',
+        errorHelperMessage: `${response.status}: ${response.statusText}`,
+      })
+      return
+    }
+    const resolvedUrl = new URL(response.url)
+    const responseText = await response.text()
     let hubTxt
     try {
-      hubTxt = new HubFile(respText)
+      hubTxt = new HubFile(responseText)
     } catch (error) {
       this.setState({
         url,
-        hubTxtIsValid: false,
-        errorMessage: `Could not parse hub.txt file:\n${error.message}`,
+        errorMessage: 'Could not parse hub.txt file',
+        errorHelperMessage: error.message,
       })
       return
     }
@@ -97,46 +93,40 @@ class TextFields extends React.Component {
       url,
       resolvedUrl,
       hubTxt,
-      hubTxtIsValid: true,
     })
-  }
-
-  async doGet(url) {
-    let rawResponse
-    try {
-      rawResponse = await fetch(url)
-    } catch {
-      this.setState({ networkAvailable: false })
-      return null
-    }
-    if (!rawResponse.ok) {
-      this.setState({ urlIsValid: false })
-      return null
-    }
-    return rawResponse
   }
 
   render() {
     const { classes, enableNext, setTrackDbUrl, setAssemblyName } = this.props
-    const { url, hubTxt, hubTxtIsValid, resolvedUrl } = this.state
+    const {
+      url,
+      hubTxt,
+      resolvedUrl,
+      errorMessage,
+      errorHelperMessage,
+    } = this.state
 
     return (
       <div>
         <div>
           <TextField
             autoFocus
-            label={this.getLabel()}
+            label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
             className={classes.textField}
             value={url}
             onChange={this.handleChange}
-            helperText='This is usually a URL that leads to a "hub.txt" file'
-            error={this.getLabel() !== 'Track Hub URL'}
+            helperText={
+              errorMessage
+                ? errorHelperMessage
+                : 'This is usually a URL that leads to a "hub.txt" file'
+            }
+            error={Boolean(errorMessage)}
             type="url"
             onKeyUp={event => {
               if (event.keyCode === 13) this.validateUrl()
             }}
             InputProps={
-              hubTxtIsValid
+              resolvedUrl
                 ? {
                     endAdornment: (
                       <InputAdornment disableTypography position="end">
@@ -151,7 +141,7 @@ class TextFields extends React.Component {
         <Button
           variant="contained"
           onClick={this.validateUrl}
-          disabled={hubTxtIsValid !== null}
+          disabled={Boolean(errorMessage)}
           className={classes.validateButton}
         >
           Validate URL

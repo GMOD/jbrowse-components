@@ -29,11 +29,8 @@ class GenomeSelector extends React.Component {
   }
 
   state = {
-    networkAvailable: null,
-    urlIsValid: null,
-    genomesFileIsValid: null,
-    errorMessage: '',
-    genomesFile: new Map(),
+    errorMessage: null,
+    genomesFile: null,
     selectedGenome: '',
   }
 
@@ -41,79 +38,52 @@ class GenomeSelector extends React.Component {
     this.getGenomesFile()
   }
 
-  getCardContent() {
-    const {
-      networkAvailable,
-      urlIsValid,
-      genomesFileIsValid,
-      errorMessage,
-      genomesFile,
-      selectedGenome,
-    } = this.state
-    const { hubTxt, hubTxtUrl } = this.props
-    if (networkAvailable === false)
-      return (
-        <Typography color="error">
-          Network error. Cannot reach{' '}
-          {new URL(hubTxt.get('genomesFile'), hubTxtUrl).href}
-        </Typography>
-      )
-    if (urlIsValid === false)
-      return (
-        <Typography color="error">
-          Could not find genomes file:{'\n'}
-          {new URL(hubTxt.get('genomesFile'), hubTxtUrl).href}
-        </Typography>
-      )
-    if (genomesFileIsValid === false)
-      return (
-        <Typography color="error">
-          {errorMessage ||
-            `Not a valid genomes file:\n${
-              new URL(hubTxt.get('genomesFile'), hubTxtUrl).href
-            }`}
-        </Typography>
-      )
-    if (genomesFile.size > 0) {
-      const menuItems = []
-      genomesFile.forEach(genome => {
-        const genomeName = genome.get('genome')
-        menuItems.push(
-          <MenuItem key={genomeName} value={genomeName}>
-            {genomeName}
-          </MenuItem>,
-        )
-      })
-      return (
-        <FormControl>
-          <InputLabel>Genome</InputLabel>
-          <Select value={selectedGenome} onChange={this.handleSelect}>
-            {menuItems}
-          </Select>
-          <FormHelperText>Genomes available in this hub</FormHelperText>
-        </FormControl>
-      )
-    }
-    return <LinearProgress variant="query" />
-  }
-
   async getGenomesFile() {
     const { hubTxt, hubTxtUrl } = this.props
-    const response = await this.doGet(
-      new URL(hubTxt.get('genomesFile'), hubTxtUrl),
-    )
-    if (!response) return
-    let genomesFile
+    const genomesFileUrl = new URL(hubTxt.get('genomesFile'), hubTxtUrl)
+    let response
     try {
-      genomesFile = new GenomesFile(response)
+      response = await fetch(genomesFileUrl)
     } catch (error) {
       this.setState({
-        genomesFileIsValid: false,
-        errorMessage: `Could not parse genomes file:\n${error.message}`,
+        errorMessage: (
+          <span>
+            <strong>Network error.</strong> {error.message} <br />
+            {genomesFileUrl.href}
+          </span>
+        ),
       })
       return
     }
-    this.setState({ genomesFileIsValid: true, genomesFile })
+    if (!response.ok) {
+      this.setState({
+        errorMessage: (
+          <span>
+            <strong>Could not accesss genomes file:</strong> <br />
+            {genomesFileUrl.href} <br />
+            {response.status}: {response.statusText}
+          </span>
+        ),
+      })
+      return
+    }
+    const responseText = await response.text()
+    let genomesFile
+    try {
+      genomesFile = new GenomesFile(responseText)
+    } catch (error) {
+      this.setState({
+        errorMessage: (
+          <span>
+            <strong>Could not parse genomes file:</strong> <br />
+            {error.message} <br />
+            {genomesFileUrl.href}
+          </span>
+        ),
+      })
+      return
+    }
+    this.setState({ genomesFile })
   }
 
   handleSelect = event => {
@@ -135,50 +105,61 @@ class GenomeSelector extends React.Component {
     enableNext()
   }
 
-  async doGet(url) {
-    let rawResponse
-    try {
-      rawResponse = await fetch(url)
-    } catch {
-      this.setState({ networkAvailable: false })
-      return null
-    }
-    if (!rawResponse.ok) {
-      this.setState({ urlIsValid: false })
-      return null
-    }
-    return rawResponse.text()
-  }
-
   render() {
+    const { errorMessage, genomesFile, selectedGenome } = this.state
     const { hubTxtUrl, hubTxt } = this.props
-    return (
-      <Card>
-        <CardHeader
-          title={hubTxt.get('shortLabel')}
-          subheader={hubTxt.get('longLabel')}
-        />
-        <CardContent>{this.getCardContent()}</CardContent>
-        <CardActions>
-          <IconButton
-            href={`mailto:${hubTxt.get('email')}`}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <Icon>email</Icon>
-          </IconButton>
-          {hubTxt.get('descriptionUrl') ? (
+    if (errorMessage)
+      return (
+        <Card>
+          <CardContent>
+            <Typography color="error">{errorMessage}</Typography>
+          </CardContent>
+        </Card>
+      )
+    if (genomesFile)
+      return (
+        <Card>
+          <CardHeader
+            title={hubTxt.get('shortLabel')}
+            subheader={hubTxt.get('longLabel')}
+          />
+          <CardContent>
+            <FormControl>
+              <InputLabel>Genome</InputLabel>
+              <Select value={selectedGenome} onChange={this.handleSelect}>
+                {Array.from(genomesFile.values()).map(genome => {
+                  const genomeName = genome.get('genome')
+                  return (
+                    <MenuItem key={genomeName} value={genomeName}>
+                      {genomeName}
+                    </MenuItem>
+                  )
+                })}
+              </Select>
+              <FormHelperText>Genomes available in this hub</FormHelperText>
+            </FormControl>
+          </CardContent>
+          <CardActions>
             <IconButton
-              href={new URL(hubTxt.get('descriptionUrl'), hubTxtUrl).href}
+              href={`mailto:${hubTxt.get('email')}`}
               rel="noopener noreferrer"
               target="_blank"
             >
-              <Icon>open_in_new</Icon>
+              <Icon>email</Icon>
             </IconButton>
-          ) : null}
-        </CardActions>
-      </Card>
-    )
+            {hubTxt.get('descriptionUrl') ? (
+              <IconButton
+                href={new URL(hubTxt.get('descriptionUrl'), hubTxtUrl).href}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon>open_in_new</Icon>
+              </IconButton>
+            ) : null}
+          </CardActions>
+        </Card>
+      )
+    return <LinearProgress variant="query" />
   }
 }
 

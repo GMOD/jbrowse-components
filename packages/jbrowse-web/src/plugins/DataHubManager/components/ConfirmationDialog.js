@@ -1,7 +1,7 @@
 import { TrackDbFile } from '@gmod/ucsc-hub'
-import { observer } from 'mobx-react'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
+import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import JBrowse from '../../../JBrowse'
@@ -73,19 +73,44 @@ class ConfirmationDialog extends React.Component {
 
   async getTrackDb() {
     const { trackDbUrl } = this.props
-    const resp = await this.doGet(trackDbUrl)
-    if (!resp) return
+    let response
+    try {
+      response = await fetch(trackDbUrl)
+    } catch (error) {
+      this.setState({
+        errorMessage: (
+          <span>
+            <strong>Network error.</strong> {error.message} <br />
+            {trackDbUrl.href}
+          </span>
+        ),
+      })
+      return
+    }
+    if (!response.ok) {
+      this.setState({
+        errorMessage: (
+          <span>
+            <strong>Could not access TrackDb file</strong> <br />
+            {trackDbUrl.href} <br />
+            {response.status}: {response.statusText}
+          </span>
+        ),
+      })
+      return
+    }
+    const responseText = await response.text()
     let trackDb
     try {
-      trackDb = new TrackDbFile(resp)
+      trackDb = new TrackDbFile(responseText)
     } catch (error) {
       console.log(error)
       this.setState({
         errorMessage: (
           <span>
-            <b>Could not parse trackDb.txt file</b>
-            <br />
-            {error.message}
+            <strong>Could not parse trackDb.txt file</strong> <br />
+            {error.message} <br />
+            {trackDbUrl.href}
           </span>
         ),
       })
@@ -94,22 +119,26 @@ class ConfirmationDialog extends React.Component {
     this.setState({ trackDb })
   }
 
-  filter = () => true
-
   async doGet(url) {
     let rawResponse
     try {
       rawResponse = await fetch(url)
-    } catch {
-      this.setState({ errorMessage: <b>Network Error</b> })
+    } catch (error) {
+      this.setState({
+        errorMessage: (
+          <span>
+            <strong>Network error.</strong> {error.message} <br />
+            {url.href}
+          </span>
+        ),
+      })
       return null
     }
     if (!rawResponse.ok) {
       this.setState({
         errorMessage: (
           <span>
-            <b>URL is invalid</b>
-            <br />
+            <strong>URL is invalid</strong> <br />
             {url.href}
           </span>
         ),
@@ -127,13 +156,7 @@ class ConfirmationDialog extends React.Component {
     if (!trackDb) return <LinearProgress variant="query" />
     const categoryName = `${hubName}: ${assemblyName}`
     const model = generateModel(trackDb, categoryName)
-    return (
-      <Contents
-        model={model}
-        category={model.hierarchy}
-        filterPredicate={this.filter}
-      />
-    )
+    return <Contents model={model} category={model.hierarchy} />
   }
 }
 
