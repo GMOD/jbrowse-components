@@ -39,17 +39,21 @@ function renderBlockEffect(
 ) {
   // console.log(getParent(self, 2).rendererType)
   if (!isAlive(self)) return
-  self.setLoading()
+  if (self.renderInFlight) self.renderInFlight.cancelled = true
+  const inProgress = {}
+  self.setLoading(inProgress)
   try {
     rendererType
       .renderInClient(app, renderArgs)
       .then(({ html, ...data }) => {
-        if (!isAlive(self)) return
+        if (!isAlive(self) || inProgress.cancelled) return
         self.setRendered(data, html, rendererType.ReactComponent, renderProps)
       })
-      .catch(self.setError)
+      .catch(error => {
+        if (isAlive(self) && !inProgress.cancelled) self.setError(error)
+      })
   } catch (error) {
-    self.setError(error)
+    if (isAlive(self) && !inProgress.cancelled) self.setError(error)
   }
 }
 
@@ -70,6 +74,7 @@ export default types
     reactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined,
     renderProps: undefined,
+    renderInFlight: undefined,
   }))
   .actions(self => {
     let renderDisposer
@@ -86,11 +91,12 @@ export default types
           },
         )
       },
-      setLoading() {
+      setLoading(inProgressRecord) {
         self.filled = false
         self.html = ''
         self.data = undefined
         self.error = undefined
+        self.renderInProgress = inProgressRecord
       },
       setRendered(data, html, renderingComponent, renderProps) {
         self.filled = true
