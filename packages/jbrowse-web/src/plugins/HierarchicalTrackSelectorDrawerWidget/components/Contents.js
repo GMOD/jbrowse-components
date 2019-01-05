@@ -107,13 +107,14 @@ const Contents = observer(props => {
 })
 
 Contents.defaultProps = {
+  filterPredicate: () => true,
   path: [],
 }
 
 Contents.propTypes = {
   category: MobxPropTypes.objectOrObservableObject.isRequired,
   model: MobxPropTypes.observableObject.isRequired,
-  filterPredicate: propTypes.func.isRequired,
+  filterPredicate: propTypes.func,
   path: propTypes.arrayOf(propTypes.string),
 }
 

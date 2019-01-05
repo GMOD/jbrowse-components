@@ -31,6 +31,7 @@ class TextFields extends React.Component {
     enableNext: PropTypes.func.isRequired,
     disableNext: PropTypes.func.isRequired,
     setTrackDbUrl: PropTypes.func.isRequired,
+    setHubName: PropTypes.func.isRequired,
     setAssemblyName: PropTypes.func.isRequired,
   }
 

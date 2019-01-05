@@ -1,21 +1,23 @@
+import Card from '@material-ui/core/Card'
+import CardContent from '@material-ui/core/CardContent'
+import CardHeader from '@material-ui/core/CardHeader'
+import Collapse from '@material-ui/core/Collapse'
+import Fade from '@material-ui/core/Fade'
 import FormControl from '@material-ui/core/FormControl'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import InputLabel from '@material-ui/core/InputLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import MenuItem from '@material-ui/core/MenuItem'
+import Radio from '@material-ui/core/Radio'
+import RadioGroup from '@material-ui/core/RadioGroup'
 import Select from '@material-ui/core/Select'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React from 'react'
-
-const styles = theme => ({
-  formControl: {
-    minWidth: 192,
-    marginLeft: theme.spacing.unit * 2,
-    marginRight: theme.spacing.unit * 2,
-  },
-})
 
 function QueryStatus(props) {
   const { status } = props
@@ -31,7 +33,15 @@ QueryStatus.propTypes = {
   status: PropTypes.string.isRequired,
 }
 
-const SelectBox = withStyles(styles)(props => {
+const sbStyles = theme => ({
+  formControl: {
+    minWidth: 192,
+    marginLeft: theme.spacing.unit * 2,
+    marginRight: theme.spacing.unit * 2,
+  },
+})
+
+const SelectBox = withStyles(sbStyles)(props => {
   const {
     classes,
     selectList,
@@ -73,16 +83,37 @@ SelectBox.propTypes = {
   helpText: PropTypes.string.isRequired,
 }
 
+const styles = theme => ({
+  card: {
+    width: 300,
+    marginBottom: theme.spacing.unit,
+  },
+})
+
+@withStyles(styles)
 class TrackHubRegistrySelect extends React.Component {
+  static propTypes = {
+    classes: PropTypes.shape({
+      card: PropTypes.string.isRequired,
+    }).isRequired,
+    enableNext: PropTypes.func.isRequired,
+    disableNext: PropTypes.func.isRequired,
+    setTrackDbUrl: PropTypes.func.isRequired,
+    setHubName: PropTypes.func.isRequired,
+    setAssemblyName: PropTypes.func.isRequired,
+  }
+
   constructor(props) {
     super(props)
     this.state = {
       errorMessage: null,
       assemblies: null,
-      hubs: [],
+      hubs: new Map(),
       selectedSpecies: '',
       selectedAssembly: '',
+      selectedHub: '',
       allHubsRetrieved: false,
+      hubCardExpanded: {},
     }
     this.mounted = false
   }
@@ -114,31 +145,74 @@ class TrackHubRegistrySelect extends React.Component {
 
   async getHubs(selectedAssembly, reset) {
     const { hubs } = this.state
-    if (reset) hubs.length = 0
-    const page = Math.floor(hubs.length / 5) + 1
+    if (reset) hubs.clear()
+    const page = Math.floor(hubs.size / 5) + 1
     const response = await this.doPost(
       'https://www.trackhubregistry.org/api/search',
       { assembly: selectedAssembly },
       { page, entries_per_page: 5 },
     )
     if (response) {
-      hubs.push(...response.items)
-      const allHubsRetrieved = hubs.length === response.total_entries
+      response.items.forEach(item => {
+        hubs.set(item.id, item)
+      })
+      const allHubsRetrieved = hubs.size === response.total_entries
       this.wrappedSetState({ hubs, allHubsRetrieved })
       if (!allHubsRetrieved) this.getHubs(selectedAssembly)
     }
   }
 
+  async getTrackDbUrl(hub) {
+    const fullHub = await this.doGet(
+      `https://www.trackhubregistry.org/api/search/trackdb/${hub.id}`,
+    )
+    if (fullHub) return fullHub.source.url
+    return null
+  }
+
   handleSelectSpecies = event => {
+    const { disableNext } = this.props
     this.wrappedSetState({
       selectedSpecies: event.target.value,
       selectedAssembly: '',
+      selectedHub: '',
+      hubCardExpanded: {},
     })
+    disableNext()
   }
 
   handleSelectAssembly = event => {
-    this.wrappedSetState({ selectedAssembly: event.target.value })
+    const { disableNext, setAssemblyName } = this.props
+    this.wrappedSetState({
+      selectedAssembly: event.target.value,
+      selectedHub: '',
+      hubCardExpanded: {},
+    })
+    disableNext()
+    setAssemblyName(event.target.value)
     this.getHubs(event.target.value, true)
+  }
+
+  handleSelectHub = async event => {
+    const { hubs } = this.state
+    const { enableNext, setHubName, setTrackDbUrl } = this.props
+    this.wrappedSetState({
+      selectedHub: event.target.value,
+      hubCardExpanded: {},
+    })
+    const selectedHubObj = hubs.get(event.target.value)
+    setHubName(selectedHubObj.hub.shortLabel)
+    const trackDbUrl = await this.getTrackDbUrl(selectedHubObj)
+    if (!trackDbUrl) return
+    setTrackDbUrl(new URL(trackDbUrl))
+    enableNext()
+  }
+
+  handleHubCardExpand = hub => {
+    const { hubCardExpanded } = this.state
+    if (!hubCardExpanded[hub]) hubCardExpanded[hub] = true
+    else hubCardExpanded[hub] = false
+    this.wrappedSetState({ hubCardExpanded })
   }
 
   // Since there's a lot of async stuff going on, this keeps React from
@@ -147,10 +221,13 @@ class TrackHubRegistrySelect extends React.Component {
     if (this.mounted) this.setState(...args)
   }
 
-  async doGet(url) {
+  async doGet(url, params = {}) {
     let rawResponse
+    const urlParams = Object.keys(params)
+      .map(param => `${param}=${params[param]}`)
+      .join(';')
     try {
-      rawResponse = await fetch(url)
+      rawResponse = await fetch(`${url}${urlParams ? `?${urlParams}` : ''}`)
     } catch (error) {
       this.wrappedSetState({
         errorMessage: (
@@ -178,13 +255,13 @@ class TrackHubRegistrySelect extends React.Component {
     return rawResponse.json()
   }
 
-  async doPost(url, data, params) {
+  async doPost(url, data = {}, params = {}) {
     let rawResponse
     const urlParams = Object.keys(params)
       .map(param => `${param}=${params[param]}`)
       .join(';')
     try {
-      rawResponse = await fetch(`${url}?${urlParams}`, {
+      rawResponse = await fetch(`${url}${urlParams ? `?${urlParams}` : ''}`, {
         method: 'POST',
         body: JSON.stringify(data),
       })
@@ -220,10 +297,14 @@ class TrackHubRegistrySelect extends React.Component {
       assemblies,
       selectedSpecies,
       selectedAssembly,
+      selectedHub,
       hubs,
       allHubsRetrieved,
       errorMessage,
+      hubCardExpanded,
     } = this.state
+
+    const { classes } = this.props
 
     const renderItems = [
       <Typography key="heading" variant="h6">
@@ -277,11 +358,54 @@ class TrackHubRegistrySelect extends React.Component {
       renderItems.push(
         <div key="hubselect">
           <Typography>Hubs:</Typography>
-          <ul>
-            {hubs.map(hub => (
-              <li key={hub.id}>{hub.hub.name}</li>
+          <RadioGroup value={selectedHub} onChange={this.handleSelectHub}>
+            {Array.from(hubs.values()).map(hub => (
+              <FormControlLabel
+                key={hub.id}
+                value={hub.id}
+                label={
+                  <Fade in>
+                    <Card
+                      className={classes.card}
+                      raised={hub.id === selectedHub}
+                    >
+                      <CardHeader
+                        title={hub.hub.shortLabel}
+                        titleTypographyProps={{ variant: 'body1' }}
+                        action={
+                          <IconButton
+                            onClick={() => this.handleHubCardExpand(hub.id)}
+                          >
+                            <Icon>
+                              {hub.id === selectedHub || hubCardExpanded[hub.id]
+                                ? 'expand_less'
+                                : 'expand_more'}
+                            </Icon>
+                          </IconButton>
+                        }
+                      />
+                      <Collapse
+                        in={hub.id === selectedHub || hubCardExpanded[hub.id]}
+                        unmountOnExit
+                      >
+                        <CardContent>
+                          <Typography paragraph>{hub.hub.longLabel}</Typography>
+                        </CardContent>
+                      </Collapse>
+                    </Card>
+                  </Fade>
+                }
+                control={<Radio />}
+              />
+              // <li key={hub.id}>
+              //   {hub.hub.name} <br />
+              //   {hub.hub.shortLabel} <br />
+              //   {hub.hub.shortLabel} <br />
+              //   {hub.assembly.name} <br />
+              //   {hub.assembly.synonyms} <br />
+              // </li>
             ))}
-          </ul>
+          </RadioGroup>
         </div>,
       )
       if (!allHubsRetrieved)

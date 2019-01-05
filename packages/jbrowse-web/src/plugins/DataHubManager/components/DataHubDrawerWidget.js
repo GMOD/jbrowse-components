@@ -36,6 +36,7 @@ const steps = [
   'Confirm Selection',
 ]
 
+@withStyles(styles)
 class DataHubDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
@@ -114,7 +115,22 @@ class DataHubDrawerWidget extends React.Component {
               }
             />
           )
-        if (hubSource === 'trackHubRegistry') return <TrackHubRegistrySelect />
+        if (hubSource === 'trackHubRegistry')
+          return (
+            <TrackHubRegistrySelect
+              enableNext={() =>
+                this.setState({ nextEnabledThroughStep: activeStep })
+              }
+              disableNext={() =>
+                this.setState({ nextEnabledThroughStep: activeStep - 1 })
+              }
+              setTrackDbUrl={newUrl => this.setState({ trackDbUrl: newUrl })}
+              setHubName={newHubName => this.setState({ hubName: newHubName })}
+              setAssemblyName={newAssemblyName =>
+                this.setState({ assemblyName: newAssemblyName })
+              }
+            />
+          )
         return <Typography color="error">Unknown Data Hub Source</Typography>
       case 3:
         return (
@@ -188,4 +204,4 @@ class DataHubDrawerWidget extends React.Component {
   }
 }
 
-export default withStyles(styles)(DataHubDrawerWidget)
+export default DataHubDrawerWidget
