@@ -84,9 +84,10 @@ class GenomeSelector extends React.Component {
       return
     }
     this.setState({ genomesFile })
+    this.handleSelect(Array.from(genomesFile.values())[0].get('genome'))
   }
 
-  handleSelect = event => {
+  handleSelect = genomeName => {
     const { genomesFile } = this.state
     const {
       enableNext,
@@ -95,13 +96,13 @@ class GenomeSelector extends React.Component {
       setTrackDbUrl,
       setAssemblyName,
     } = this.props
-    const selectedGenome = event.target.value
+    const selectedGenome = genomeName
     this.setState({ selectedGenome })
-    const trackDbUrl = genomesFile.get(event.target.value).get('trackDb')
+    const trackDbUrl = genomesFile.get(genomeName).get('trackDb')
     setTrackDbUrl(
       new URL(trackDbUrl, new URL(hubTxt.get('genomesFile'), hubTxtUrl)),
     )
-    setAssemblyName(genomesFile.get(event.target.value).get('genome'))
+    setAssemblyName(genomesFile.get(genomeName).get('genome'))
     enableNext()
   }
 
@@ -126,7 +127,10 @@ class GenomeSelector extends React.Component {
           <CardContent>
             <FormControl>
               <InputLabel>Genome</InputLabel>
-              <Select value={selectedGenome} onChange={this.handleSelect}>
+              <Select
+                value={selectedGenome}
+                onChange={event => this.handleSelect(event.target.value)}
+              >
                 {Array.from(genomesFile.values()).map(genome => {
                   const genomeName = genome.get('genome')
                   return (
