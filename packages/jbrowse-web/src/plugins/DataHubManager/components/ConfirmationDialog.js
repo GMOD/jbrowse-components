@@ -1,4 +1,6 @@
 import { TrackDbFile } from '@gmod/ucsc-hub'
+import Button from '@material-ui/core/Button'
+import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
@@ -7,51 +9,61 @@ import React from 'react'
 import JBrowse from '../../../JBrowse'
 import Contents from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
-function generateModel(trackDb, categoryName) {
-  const tracks = []
+const supportedTrackTypes = [
+  'bam',
+  // 'bed',
+  // 'bed5FloatScore',
+  // 'bedGraph',
+  // 'bedRnaElements',
+  // 'bigBarChart',
+  // 'bigBed',
+  // 'bigChain',
+  // 'bigInteract',
+  // 'bigMaf',
+  // 'bigPsl',
+  // 'bigWig',
+  // 'broadPeak',
+  // 'coloredExon',
+  // 'gvf',
+  // 'ld2',
+  // 'narrowPeak',
+  // 'peptideMapping',
+  // 'vcfTabix',
+  // 'wig',
+  // 'wigMaf',
+]
 
-  trackDb.forEach((track, trackName) => {
-    const trackKeys = Array.from(track.keys())
-    const parentTrackKeys = [
-      'superTrack',
-      'compositeTrack',
-      'container',
-      'view',
-    ]
-    if (trackKeys.some(key => parentTrackKeys.includes(key))) return
-    const parentTracks = []
-    let currentTrackName = trackName
-    do {
-      currentTrackName = trackDb.get(currentTrackName).get('parent')
-      if (currentTrackName) {
-        ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.get(currentTrackName).get('shortLabel'))
+function makeTrackConfig(track, categories, ignoreUnsupported) {
+  const trackType = track.get('type')
+  const baseTrackType = trackType.split(' ')[0]
+  switch (baseTrackType) {
+    case 'bam':
+      return {
+        type: 'AlignmentsTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BamAdapter',
+          bamLocation: { uri: track.get('bigDataUrl') },
+          index: {
+            location: {
+              uri:
+                track.get('bigDataIndex') || `${track.get('bigDataUrl')}.bai`,
+            },
+          },
+        },
       }
-    } while (currentTrackName)
-    parentTracks.reverse()
-    const categories = [categoryName].concat(parentTracks)
-    tracks.push({
-      type: 'AlignmentsTrack',
-      name: track.get('shortLabel'),
-      description: track.get('longLabel'),
-      category: categories,
-    })
-  })
-
-  const jbrowse = new JBrowse()
-
-  jbrowse.configure({
-    views: {
-      LinearGenomeView: {},
-    },
-    tracks,
-  })
-
-  const { model: rootModel } = jbrowse
-
-  const firstView = rootModel.addView('LinearGenomeView')
-  firstView.activateTrackSelector()
-  return rootModel.drawerWidgets.get('hierarchicalTrackSelector')
+    default:
+      if (ignoreUnsupported)
+        return {
+          type: 'AlignmentsTrack',
+          name: track.get('shortLabel'),
+          description: track.get('longLabel'),
+          category: categories,
+        }
+      throw new Error(`Unsupported track type: ${baseTrackType}`)
+  }
 }
 
 @observer
@@ -65,6 +77,10 @@ class ConfirmationDialog extends React.Component {
   state = {
     errorMessage: '',
     trackDb: new Map(),
+    model: null,
+    unsupportedTrackTypes: new Set(),
+    unsupportedTrackTypeModels: new Map(),
+    renderUnsupportedTrackTypes: false,
   }
 
   componentDidMount() {
@@ -116,7 +132,85 @@ class ConfirmationDialog extends React.Component {
       })
       return
     }
-    this.setState({ trackDb })
+    const model = this.generateModel(trackDb)
+    this.setState({ model, trackDb })
+  }
+
+  toggleUnsupported = () => {
+    const {
+      renderUnsupportedTrackTypes,
+      unsupportedTrackTypeModels,
+    } = this.state
+    if (!renderUnsupportedTrackTypes && unsupportedTrackTypeModels.size === 0)
+      this.generateUnsupportedTrackTypeModels()
+    this.setState({ renderUnsupportedTrackTypes: !renderUnsupportedTrackTypes })
+  }
+
+  generateUnsupportedTrackTypeModels() {
+    const {
+      unsupportedTrackTypes,
+      trackDb,
+      unsupportedTrackTypeModels,
+    } = this.state
+    unsupportedTrackTypes.forEach(trackType => {
+      const model = this.generateModel(trackDb, trackType)
+      unsupportedTrackTypeModels.set(trackType, model)
+    })
+    this.setState({ unsupportedTrackTypeModels })
+  }
+
+  generateModel(trackDb, trackType) {
+    const { unsupportedTrackTypes } = this.state
+    const { assemblyName, hubName } = this.props
+    const categoryName = `${hubName}: ${assemblyName}`
+
+    const tracks = []
+
+    trackDb.forEach((track, trackName) => {
+      const trackKeys = Array.from(track.keys())
+      const parentTrackKeys = [
+        'superTrack',
+        'compositeTrack',
+        'container',
+        'view',
+      ]
+      if (trackKeys.some(key => parentTrackKeys.includes(key))) return
+      const ucscTrackType = track.get('type').split(' ')[0]
+      if (trackType && trackType !== ucscTrackType) return
+      if (!trackType && !supportedTrackTypes.includes(ucscTrackType)) {
+        unsupportedTrackTypes.add(ucscTrackType)
+        return
+      }
+      const parentTracks = []
+      let currentTrackName = trackName
+      do {
+        currentTrackName = trackDb.get(currentTrackName).get('parent')
+        if (currentTrackName) {
+          ;[currentTrackName] = currentTrackName.split(' ')
+          parentTracks.push(trackDb.get(currentTrackName).get('shortLabel'))
+        }
+      } while (currentTrackName)
+      parentTracks.reverse()
+      const categories = [categoryName].concat(parentTracks)
+      tracks.push(makeTrackConfig(track, categories, !!trackType))
+    })
+
+    this.setState({ unsupportedTrackTypes })
+
+    const jbrowse = new JBrowse()
+
+    jbrowse.configure({
+      views: {
+        LinearGenomeView: {},
+      },
+      tracks,
+    })
+
+    const { model: rootModel } = jbrowse
+
+    const firstView = rootModel.addView('LinearGenomeView')
+    firstView.activateTrackSelector()
+    return rootModel.drawerWidgets.get('hierarchicalTrackSelector')
   }
 
   async doGet(url) {
@@ -149,14 +243,54 @@ class ConfirmationDialog extends React.Component {
   }
 
   render() {
-    const { errorMessage, trackDb } = this.state
-    const { assemblyName, hubName } = this.props
+    const {
+      errorMessage,
+      model,
+      unsupportedTrackTypes,
+      unsupportedTrackTypeModels,
+      renderUnsupportedTrackTypes,
+    } = this.state
     if (errorMessage)
       return <Typography color="error">{errorMessage}</Typography>
-    if (!trackDb) return <LinearProgress variant="query" />
-    const categoryName = `${hubName}: ${assemblyName}`
-    const model = generateModel(trackDb, categoryName)
-    return <Contents model={model} category={model.hierarchy} />
+    if (!model) return <LinearProgress variant="query" />
+    const confirmationContents = [
+      <Contents key="mainContent" model={model} category={model.hierarchy} />,
+    ]
+    if (unsupportedTrackTypes.size) {
+      confirmationContents.push(
+        <div key="unsupportedMessage">
+          <br />
+          <Icon style={{ color: 'red' }}>warning</Icon>
+          <Typography>
+            Some track types in this hub are not currently supported by JBrowse
+            and cannot be imported.
+          </Typography>
+          <Button variant="outlined" onClick={this.toggleUnsupported}>
+            {renderUnsupportedTrackTypes ? 'Hide' : 'Show'} unsupported tracks
+          </Button>
+        </div>,
+      )
+      if (renderUnsupportedTrackTypes)
+        confirmationContents.push(
+          <div key="unsupportedList">
+            {Array.from(unsupportedTrackTypes.values()).map(trackType => (
+              <div key={trackType}>
+                <Typography variant="h6">{trackType}</Typography>
+                {unsupportedTrackTypeModels.get(trackType) ? (
+                  <Contents
+                    key="mainContent"
+                    model={unsupportedTrackTypeModels.get(trackType)}
+                    category={
+                      unsupportedTrackTypeModels.get(trackType).hierarchy
+                    }
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>,
+        )
+    }
+    return confirmationContents
   }
 }
 
