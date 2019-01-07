@@ -275,22 +275,35 @@ module.exports = {
           // Process WebWorkder JS with Babel.
           // The preset includes JSX, Flow, and some ESnext features.
           {
-            test: /\.worker\.(js|jsx|mjs)$/,
+            test: /\.worker\.(js|mjs|ts)$/,
             include: paths.appSrc,
             use: [
               require.resolve('worker-loader'),
-              // This loader parallelizes code compilation, it is optional but
-              // improves compile time on larger projects
-              require.resolve('thread-loader'),
               {
                 loader: require.resolve('babel-loader'),
                 options: {
-                  // @remove-on-eject-begin
-                  babelrc: false,
-                  presets: [require.resolve('babel-preset-react-app')],
-                  // @remove-on-eject-end
-                  compact: true,
-                  highlightCode: true,
+                  customize: require.resolve(
+                    'babel-preset-react-app/webpack-overrides'
+                  ),
+                  plugins: [
+                    [
+                      require.resolve('babel-plugin-named-asset-import'),
+                      {
+                        loaderMap: {
+                          svg: {
+                            ReactComponent:
+                              '@svgr/webpack?-prettier,-svgo![path]',
+                          },
+                        },
+                      },
+                    ],
+                  ],
+                  // This is a feature of `babel-loader` for webpack (not Babel itself).
+                  // It enables caching results in ./node_modules/.cache/babel-loader/
+                  // directory for faster rebuilds.
+                  cacheDirectory: true,
+                  cacheCompression: false,
+                  compact: false,
                 },
               },
             ],
