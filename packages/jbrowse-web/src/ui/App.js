@@ -36,6 +36,7 @@ const styles = theme => ({
   },
   components: {
     overflowY: 'auto',
+    backgroundColor: theme.palette.background.default,
   },
   drawerCloseButton: {
     float: 'right',

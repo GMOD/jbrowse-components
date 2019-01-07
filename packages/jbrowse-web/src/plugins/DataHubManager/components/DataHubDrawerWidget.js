@@ -17,6 +17,9 @@ const styles = theme => ({
   root: {
     marginTop: theme.spacing.unit,
   },
+  stepper: {
+    backgroundColor: theme.palette.background.default,
+  },
   button: {
     marginTop: theme.spacing.unit,
     marginRight: theme.spacing.unit,
@@ -171,7 +174,11 @@ class DataHubDrawerWidget extends React.Component {
 
     return (
       <div className={classes.root}>
-        <Stepper activeStep={activeStep} orientation="vertical">
+        <Stepper
+          className={classes.stepper}
+          activeStep={activeStep}
+          orientation="vertical"
+        >
           {steps.map((label, index) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
