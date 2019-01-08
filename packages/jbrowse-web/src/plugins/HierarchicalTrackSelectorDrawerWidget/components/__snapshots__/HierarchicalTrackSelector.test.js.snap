@@ -80,11 +80,9 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
-    />
-  </div>
+  <div
+    className="MuiFormGroup-root-85"
+  />
   <button
     className="MuiButtonBase-root-74 MuiFab-root-87 MuiFab-secondary-90 HierarchicalTrackSelector-fab-2"
     disabled={false}
@@ -199,11 +197,9 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
-    />
-  </div>
+  <div
+    className="MuiFormGroup-root-85"
+  />
   <button
     className="MuiButtonBase-root-74 MuiFab-root-87 MuiFab-secondary-90 HierarchicalTrackSelector-fab-2"
     disabled={false}
@@ -318,11 +314,9 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
-    />
-  </div>
+  <div
+    className="MuiFormGroup-root-85"
+  />
   <button
     className="MuiButtonBase-root-74 MuiFab-root-87 MuiFab-secondary-90 HierarchicalTrackSelector-fab-2"
     disabled={false}
