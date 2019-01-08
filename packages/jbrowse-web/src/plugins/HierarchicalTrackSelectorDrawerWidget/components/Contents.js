@@ -60,62 +60,73 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
 }
 
-const Contents = observer(props => {
-  const { category, model, filterPredicate, path } = props
-  const categories = []
-  const trackConfigurations = []
-  category.forEach((contents, name) => {
-    if (contents._configId) {
-      trackConfigurations.push(contents)
-    } else {
-      categories.push([name, contents])
-    }
-  })
-  return (
-    <div>
-      <FormGroup>
-        {trackConfigurations.filter(filterPredicate).map(trackConf => (
-          <Tooltip
-            key={trackConf._configId}
-            title={readConfObject(trackConf, 'description')}
-            placement="left"
-            enterDelay={500}
-          >
-            <FormControlLabel
-              control={<Checkbox />}
-              label={readConfObject(trackConf, 'name')}
-              checked={model.view.tracks.some(
-                t => t.configuration === trackConf,
-              )}
-              onChange={() => model.view.toggleTrack(trackConf)}
-            />
-          </Tooltip>
+@observer
+class Contents extends React.Component {
+  static propTypes = {
+    category: MobxPropTypes.objectOrObservableObject.isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
+    filterPredicate: propTypes.func,
+    path: propTypes.arrayOf(propTypes.string),
+  }
+
+  static defaultProps = {
+    filterPredicate: () => true,
+    path: [],
+  }
+
+  state = {
+    numTracksRendered: 0,
+  }
+
+  componentDidMount() {
+    console.log('howdy')
+  }
+
+  render() {
+    const { category, model, filterPredicate, path } = this.props
+    const categories = []
+    const trackConfigurations = []
+    category.forEach((contents, name) => {
+      if (contents._configId) {
+        trackConfigurations.push(contents)
+      } else {
+        categories.push([name, contents])
+      }
+    })
+    return (
+      <div>
+        <FormGroup>
+          {trackConfigurations.filter(filterPredicate).map(trackConf => (
+            <Tooltip
+              key={trackConf._configId}
+              title={readConfObject(trackConf, 'description')}
+              placement="left"
+              enterDelay={500}
+            >
+              <FormControlLabel
+                control={<Checkbox />}
+                label={readConfObject(trackConf, 'name')}
+                checked={model.view.tracks.some(
+                  t => t.configuration === trackConf,
+                )}
+                onChange={() => model.view.toggleTrack(trackConf)}
+              />
+            </Tooltip>
+          ))}
+        </FormGroup>
+        {categories.map(([name, contents]) => (
+          <Category
+            key={name}
+            path={path.concat([name])}
+            name={name}
+            category={contents}
+            filterPredicate={filterPredicate}
+            model={model}
+          />
         ))}
-      </FormGroup>
-      {categories.map(([name, contents]) => (
-        <Category
-          key={name}
-          path={path.concat([name])}
-          name={name}
-          category={contents}
-          filterPredicate={filterPredicate}
-          model={model}
-        />
-      ))}
-    </div>
-  )
-})
-
-Contents.defaultProps = {
-  filterPredicate: () => true,
-  path: [],
-}
-
-Contents.propTypes = {
-  category: MobxPropTypes.objectOrObservableObject.isRequired,
-  model: MobxPropTypes.observableObject.isRequired,
-  filterPredicate: propTypes.func,
-  path: propTypes.arrayOf(propTypes.string),
+      </div>
+    )
+  }
 }
 
 export default Contents
