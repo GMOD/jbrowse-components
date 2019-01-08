@@ -35,9 +35,12 @@ const supportedTrackTypes = [
   // 'wigMaf',
 ]
 
-function makeTrackConfig(track, categories, ignoreUnsupported) {
+function makeTrackConfig(track, categories, trackDbUrl, ignoreUnsupported) {
   const trackType = track.get('type')
   const baseTrackType = trackType.split(' ')[0]
+  const bigDataUrl = new URL(track.get('bigDataUrl'), trackDbUrl)
+  const bigDataIndex =
+    track.get('bigDataIndex') && new URL(track.get('bigDataIndex'), trackDbUrl)
   switch (baseTrackType) {
     case 'bam':
       return {
@@ -47,11 +50,10 @@ function makeTrackConfig(track, categories, ignoreUnsupported) {
         category: categories,
         adapter: {
           type: 'BamAdapter',
-          bamLocation: { uri: track.get('bigDataUrl') },
+          bamLocation: { uri: bigDataUrl.href },
           index: {
             location: {
-              uri:
-                track.get('bigDataIndex') || `${track.get('bigDataUrl')}.bai`,
+              uri: bigDataIndex ? bigDataIndex.href : `${bigDataUrl.href}.bai`,
             },
           },
         },
@@ -166,7 +168,7 @@ class ConfirmationDialog extends React.Component {
 
   generateModel(trackDb, trackType) {
     const { unsupportedTrackTypes } = this.state
-    const { assemblyName, hubName, setPatches } = this.props
+    const { assemblyName, hubName, setPatches, trackDbUrl } = this.props
     const categoryName = `${hubName}: ${assemblyName}`
 
     const tracks = []
@@ -197,7 +199,7 @@ class ConfirmationDialog extends React.Component {
       } while (currentTrackName)
       parentTracks.reverse()
       const categories = [categoryName].concat(parentTracks)
-      tracks.push(makeTrackConfig(track, categories, !!trackType))
+      tracks.push(makeTrackConfig(track, categories, trackDbUrl, !!trackType))
     })
 
     const jbrowse = new JBrowse().configure()
