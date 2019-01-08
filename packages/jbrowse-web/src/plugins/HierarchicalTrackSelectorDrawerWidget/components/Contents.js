@@ -24,7 +24,15 @@ const styles = {
 
 const Category = withStyles(styles)(
   observer(props => {
-    const { name, category, model, filterPredicate, path, classes } = props
+    const {
+      name,
+      category,
+      model,
+      filterPredicate,
+      path,
+      classes,
+      disabled,
+    } = props
     const pathName = path.join('|')
 
     return (
@@ -43,6 +51,7 @@ const Category = withStyles(styles)(
             category={category}
             filterPredicate={filterPredicate}
             model={model}
+            disabled={disabled}
           />
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -53,6 +62,7 @@ const Category = withStyles(styles)(
 Category.defaultProps = {
   filterPredicate: () => true,
   path: [],
+  disabled: false,
 }
 
 Category.propTypes = {
@@ -61,6 +71,7 @@ Category.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
   filterPredicate: propTypes.func,
   path: propTypes.arrayOf(propTypes.string),
+  disabled: propTypes.bool,
 }
 
 @observer
@@ -70,11 +81,13 @@ class Contents extends React.Component {
     model: MobxPropTypes.observableObject.isRequired,
     filterPredicate: propTypes.func,
     path: propTypes.arrayOf(propTypes.string),
+    disabled: propTypes.bool,
   }
 
   static defaultProps = {
     filterPredicate: () => true,
     path: [],
+    disabled: false,
   }
 
   state = {
@@ -110,7 +123,7 @@ class Contents extends React.Component {
 
   render() {
     const { categories, trackConfigurations } = this.state
-    const { category, model, filterPredicate, path } = this.props
+    const { category, model, filterPredicate, path, disabled } = this.props
     return (
       <>
         <FormGroup>
@@ -128,6 +141,7 @@ class Contents extends React.Component {
                     t => t.configuration === trackConf,
                   )}
                   onChange={() => model.view.toggleTrack(trackConf)}
+                  disabled={disabled}
                 />
               </Tooltip>
             </Fade>
@@ -144,6 +158,7 @@ class Contents extends React.Component {
             category={contents}
             filterPredicate={filterPredicate}
             model={model}
+            disabled={disabled}
           />
         ))}
       </>

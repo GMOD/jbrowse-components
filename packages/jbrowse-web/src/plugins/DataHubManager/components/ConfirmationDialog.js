@@ -286,11 +286,11 @@ class ConfirmationDialog extends React.Component {
                 <Typography variant="h6">{trackType}</Typography>
                 {unsupportedTrackTypeModels.get(trackType) ? (
                   <Contents
-                    key="mainContent"
                     model={unsupportedTrackTypeModels.get(trackType)}
                     category={
                       unsupportedTrackTypeModels.get(trackType).hierarchy
                     }
+                    disabled
                   />
                 ) : null}
               </div>
