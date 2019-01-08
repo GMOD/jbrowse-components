@@ -3,7 +3,9 @@ import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
+import { onPatch } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import JBrowse from '../../../JBrowse'
@@ -72,6 +74,8 @@ class ConfirmationDialog extends React.Component {
     trackDbUrl: PropTypes.instanceOf(URL).isRequired,
     assemblyName: PropTypes.string.isRequired,
     hubName: PropTypes.string.isRequired,
+    setPatches: PropTypes.func.isRequired,
+    enableNext: PropTypes.func.isRequired,
   }
 
   state = {
@@ -88,7 +92,7 @@ class ConfirmationDialog extends React.Component {
   }
 
   async getTrackDb() {
-    const { trackDbUrl } = this.props
+    const { trackDbUrl, enableNext } = this.props
     let response
     try {
       response = await fetch(trackDbUrl)
@@ -134,6 +138,7 @@ class ConfirmationDialog extends React.Component {
     }
     const model = this.generateModel(trackDb)
     this.setState({ model, trackDb })
+    enableNext()
   }
 
   toggleUnsupported = () => {
@@ -161,7 +166,7 @@ class ConfirmationDialog extends React.Component {
 
   generateModel(trackDb, trackType) {
     const { unsupportedTrackTypes } = this.state
-    const { assemblyName, hubName } = this.props
+    const { assemblyName, hubName, setPatches } = this.props
     const categoryName = `${hubName}: ${assemblyName}`
 
     const tracks = []
@@ -195,19 +200,20 @@ class ConfirmationDialog extends React.Component {
       tracks.push(makeTrackConfig(track, categories, !!trackType))
     })
 
-    this.setState({ unsupportedTrackTypes })
-
-    const jbrowse = new JBrowse()
-
-    jbrowse.configure({
-      views: {
-        LinearGenomeView: {},
-      },
-      tracks,
-    })
+    const jbrowse = new JBrowse().configure()
 
     const { model: rootModel } = jbrowse
+    const patches = []
+    onPatch(rootModel.configuration.tracks, patch => patches.push(patch))
 
+    transaction(() => {
+      tracks.forEach(track =>
+        rootModel.configuration.addTrackConf(track.type, track),
+      )
+    })
+
+    setPatches(patches)
+    this.setState({ unsupportedTrackTypes })
     const firstView = rootModel.addView('LinearGenomeView')
     firstView.activateTrackSelector()
     return rootModel.drawerWidgets.get('hierarchicalTrackSelector')

@@ -5,6 +5,8 @@ import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { applyPatch } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import ConfirmationDialog from './ConfirmationDialog'
@@ -40,6 +42,8 @@ const steps = [
 ]
 
 @withStyles(styles)
+@inject('rootModel')
+@observer
 class DataHubDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
@@ -48,6 +52,7 @@ class DataHubDrawerWidget extends React.Component {
       actionsContainer: propTypes.string.isRequired,
       resetContainer: propTypes.string.isRequired,
     }).isRequired,
+    rootModel: MobxPropTypes.observableObject.isRequired,
   }
 
   state = {
@@ -60,7 +65,7 @@ class DataHubDrawerWidget extends React.Component {
     hubName: '',
     assemblyName: '',
     // Step 3
-    tracksToAdd: [],
+    patches: [],
 
     activeStep: 0,
     nextEnabledThroughStep: -1,
@@ -141,6 +146,10 @@ class DataHubDrawerWidget extends React.Component {
             hubName={hubName}
             assemblyName={assemblyName}
             trackDbUrl={trackDbUrl}
+            setPatches={patches => this.setState({ patches })}
+            enableNext={() =>
+              this.setState({ nextEnabledThroughStep: activeStep + 1 })
+            }
           />
         )
       default:
@@ -149,6 +158,11 @@ class DataHubDrawerWidget extends React.Component {
   }
 
   handleNext = () => {
+    const { activeStep } = this.state
+    if (activeStep === steps.length - 1) {
+      this.finish()
+      return
+    }
     this.setState(state => ({
       activeStep: state.activeStep + 1,
     }))
@@ -166,6 +180,13 @@ class DataHubDrawerWidget extends React.Component {
         hubSource,
       }
     })
+  }
+
+  finish() {
+    const { patches } = this.state
+    const { rootModel } = this.props
+    patches.forEach(patch => applyPatch(rootModel.configuration.tracks, patch))
+    rootModel.hideAllDrawerWidgets()
   }
 
   render() {
