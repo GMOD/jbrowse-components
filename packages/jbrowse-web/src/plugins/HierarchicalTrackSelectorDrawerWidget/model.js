@@ -14,10 +14,7 @@ export function generateHierarchy(trackConfigurations) {
       if (!currLevel.has(category)) currLevel.set(category, new Map())
       currLevel = currLevel.get(category)
     }
-    currLevel.set(
-      readConfObject(trackConf, 'name') || trackConf._configId,
-      trackConf,
-    )
+    currLevel.set(trackConf._configId, trackConf)
   })
   return hierarchy
 }
