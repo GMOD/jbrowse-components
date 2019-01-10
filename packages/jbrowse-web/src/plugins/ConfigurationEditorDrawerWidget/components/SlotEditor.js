@@ -5,6 +5,7 @@ import {
   InputLabel,
   FormHelperText,
   MenuItem,
+  Icon,
 } from '@material-ui/core'
 import { getPropertyMembers } from 'mobx-state-tree'
 import ColorEditor from './ColorEditor'
@@ -146,6 +147,18 @@ const SlotEditor = inject('classes')(
     return (
       <div className={classes.slotContainer}>
         <ValueComponent slot={slot} slotSchema={slotSchema} />
+        <button
+          className={classes.slotModeSwitch}
+          onClick={() =>
+            slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+          }
+          title={
+            slot.isCallback ? 'convert to regular value' : 'convert to callback'
+          }
+          type="button"
+        >
+          <Icon>{slot.isCallback ? 'details' : 'functions'}</Icon>
+        </button>
       </div>
     )
   }),

@@ -49,13 +49,25 @@ const styles = theme => ({
   },
   slotName: {},
   slotContainer: {
+    position: 'relative',
     marginBottom: '13px',
     marginRight: '0.8em',
     background: 'white',
-    padding: '3px 3px 6px 3px',
+    padding: '3px 28px 6px 3px',
     boxShadow:
       '0px 1px 3px 0px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 2px 1px -1px rgba(0,0,0,0.12)',
     borderRadius: '4px',
+  },
+  slotModeSwitch: {
+    position: 'absolute',
+    display: 'inline',
+    height: '100%',
+    width: '25px',
+    top: 0,
+    right: 0,
+    border: 0,
+    background: '#b9c1ca',
+    padding: 0,
   },
 })
 

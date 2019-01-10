@@ -8,7 +8,7 @@ import {
 
 import { FileLocation, ElementId } from '../mst-types'
 
-export const functionRegexp = /^\s*function\s*\(([^)]+)\)\s*{([\w\W]*)/
+export const functionRegexp = /^\s*function\s*\(([^)]*)\)\s*{([\w\W]*)/
 export function stringToFunction(str) {
   const match = functionRegexp.exec(str)
   if (!match)
@@ -98,11 +98,14 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
     })
     .views(self => ({
       get func() {
-        if (/^\s*function\s*\(/.test(self.value)) {
+        if (self.isCallback) {
           // compile this as a function
           return stringToFunction(String(self.value))
         }
         return () => self.value
+      },
+      get isCallback() {
+        return /^\s*function\s*\(/.test(self.value)
       },
     }))
     .preProcessSnapshot(
@@ -129,6 +132,33 @@ function ConfigSlot(slotName, { description = '', model, type, defaultValue }) {
       ...modelCustomActions(self),
       set(newVal) {
         self.value = newVal
+      },
+      convertToCallback() {
+        if (self.isCallback) return
+        // TODO: implement proper stringification of all the different
+        // config slot types
+        const valString =
+          self.value && self.value.toJSON
+            ? self.value.toJSON()
+            : `'${self.value}'`
+        self.value = `function() {
+  return ${valString}
+}
+`
+      },
+      convertToValue() {
+        if (!self.isCallback) return
+        // try calling it with no arguments
+        try {
+          const funcResult = self.func()
+          if (funcResult !== undefined) {
+            self.value = funcResult
+            return
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        self.value = defaultValue
       },
     }))
 

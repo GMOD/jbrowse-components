@@ -22,6 +22,16 @@ describe('function string parsing', () => {
     expect(paramList).toEqual(' a, b,c')
     expect(remainder).toEqual('\nreturn a+b+c+5 }')
   })
+  it('has working regex 3', () => {
+    const result = functionRegexp.exec(`function() {
+  return 'volvox-sorted red/blue'
+}
+    `)
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual('')
+    expect(remainder).toContain('volvox-sorted red/blue')
+  })
   ;[
     'function(a,b,c) { return a+b+c+5}',
     'function(a, b,c){return a+b+c+5 }',
