@@ -152,12 +152,10 @@ const SlotEditor = inject('classes')(
           onClick={() =>
             slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
           }
-          title={
-            slot.isCallback ? 'convert to regular value' : 'convert to callback'
-          }
+          title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
           type="button"
         >
-          <Icon>{slot.isCallback ? 'details' : 'functions'}</Icon>
+          <Icon>{slot.isCallback ? 'radio_button_unchecked' : 'code'}</Icon>
         </button>
       </div>
     )
