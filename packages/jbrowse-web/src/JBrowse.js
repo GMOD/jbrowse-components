@@ -8,24 +8,38 @@ import App from './ui/App'
 import RootModelFactory from './rootModel'
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
+
+// adapters
 import BamAdapterPlugin from './plugins/BamAdapter'
+import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
+
+// tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
+import SequenceTrackPlugin from './plugins/SequenceTrack'
+
+// views
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
+
+// renderers
 import PileupRendererPlugin from './plugins/PileupRenderer'
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
+import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 
 const corePlugins = [
   MainMenuBarPlugin,
   HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
+  TwoBitAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,
+  ConfigurationEditorPlugin,
+  SequenceTrackPlugin,
   PileupRendererPlugin,
   SvgFeaturePlugin,
-  ConfigurationEditorPlugin,
+  DivSequenceRendererPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app
