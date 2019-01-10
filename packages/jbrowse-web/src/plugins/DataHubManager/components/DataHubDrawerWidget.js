@@ -6,7 +6,7 @@ import Stepper from '@material-ui/core/Stepper'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { applyPatch } from 'mobx-state-tree'
+import { applySnapshot, getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import ConfirmationDialog from './ConfirmationDialog'
@@ -65,7 +65,7 @@ class DataHubDrawerWidget extends React.Component {
     hubName: '',
     assemblyName: '',
     // Step 3
-    patches: [],
+    backupRootModel: null,
 
     activeStep: 0,
     nextEnabledThroughStep: -1,
@@ -146,7 +146,6 @@ class DataHubDrawerWidget extends React.Component {
             hubName={hubName}
             assemblyName={assemblyName}
             trackDbUrl={trackDbUrl}
-            setPatches={patches => this.setState({ patches })}
             enableNext={() =>
               this.setState({ nextEnabledThroughStep: activeStep + 1 })
             }
@@ -159,9 +158,14 @@ class DataHubDrawerWidget extends React.Component {
 
   handleNext = () => {
     const { activeStep } = this.state
+    const { rootModel } = this.props
     if (activeStep === steps.length - 1) {
-      this.finish()
+      rootModel.hideAllDrawerWidgets()
       return
+    }
+    if (activeStep === steps.length - 2) {
+      const backupRootModel = getSnapshot(rootModel)
+      this.setState({ backupRootModel })
     }
     this.setState(state => ({
       activeStep: state.activeStep + 1,
@@ -169,24 +173,23 @@ class DataHubDrawerWidget extends React.Component {
   }
 
   handleBack = () => {
-    this.setState(state => {
-      let { hubSource } = state
+    this.setState((state, props) => {
+      let { hubSource, backupRootModel } = state
+      const { rootModel } = props
       const { activeStep } = state
+      if (activeStep === steps.length - 1) {
+        applySnapshot(rootModel, backupRootModel)
+        backupRootModel = null
+      }
       const newStep = activeStep - 1
       if (newStep < 1) hubSource = null
       return {
         activeStep: newStep,
         nextEnabledThroughStep: newStep,
         hubSource,
+        backupRootModel,
       }
     })
-  }
-
-  finish() {
-    const { patches } = this.state
-    const { rootModel } = this.props
-    patches.forEach(patch => applyPatch(rootModel.configuration.tracks, patch))
-    rootModel.hideAllDrawerWidgets()
   }
 
   render() {

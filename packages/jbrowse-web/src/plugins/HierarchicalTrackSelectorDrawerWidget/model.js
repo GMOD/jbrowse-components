@@ -63,7 +63,7 @@ export default pluginManager =>
       allTracksInCategoryPath(path) {
         let currentHier = self.hierarchy
         path.forEach(pathItem => {
-          currentHier = currentHier.get(pathItem)
+          currentHier = currentHier.get(pathItem) || new Map()
         })
         let tracks = {}
         currentHier.forEach((contents, name) => {

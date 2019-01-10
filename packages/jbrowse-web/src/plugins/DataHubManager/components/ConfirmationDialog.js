@@ -4,12 +4,13 @@ import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { transaction } from 'mobx'
-import { observer } from 'mobx-react'
-import { onPatch } from 'mobx-state-tree'
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
+import { withStyles } from '@material-ui/core'
 import JBrowse from '../../../JBrowse'
-import Contents from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
+import { Category } from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
 const supportedTrackTypes = [
   'bam',
@@ -70,31 +71,46 @@ function makeTrackConfig(track, categories, trackDbUrl, ignoreUnsupported) {
   }
 }
 
+const styles = theme => ({
+  unsupportedHeader: { marginTop: theme.spacing.unit * 4 },
+})
+
+@withStyles(styles)
+@inject('rootModel')
 @observer
 class ConfirmationDialog extends React.Component {
   static propTypes = {
     trackDbUrl: PropTypes.instanceOf(URL).isRequired,
     assemblyName: PropTypes.string.isRequired,
     hubName: PropTypes.string.isRequired,
-    setPatches: PropTypes.func.isRequired,
+    rootModel: MobxPropTypes.observableObject.isRequired,
     enableNext: PropTypes.func.isRequired,
+    classes: PropTypes.shape({ unsupportedHeader: PropTypes.string })
+      .isRequired,
   }
 
   state = {
     errorMessage: '',
     trackDb: new Map(),
-    model: null,
+    tracks: [],
     unsupportedTrackTypes: new Set(),
     unsupportedTrackTypeModels: new Map(),
     renderUnsupportedTrackTypes: false,
   }
 
-  componentDidMount() {
-    this.getTrackDb()
+  async componentDidMount() {
+    console.log('mounted')
+    const { enableNext } = this.props
+    const trackDb = await this.getTrackDb()
+    if (!trackDb) return
+    const tracks = this.generateTracks(trackDb)
+    this.addTracksToModel(tracks)
+    this.setState({ trackDb, tracks })
+    enableNext()
   }
 
   async getTrackDb() {
-    const { trackDbUrl, enableNext } = this.props
+    const { trackDbUrl } = this.props
     let response
     try {
       response = await fetch(trackDbUrl)
@@ -107,7 +123,7 @@ class ConfirmationDialog extends React.Component {
           </span>
         ),
       })
-      return
+      return undefined
     }
     if (!response.ok) {
       this.setState({
@@ -119,14 +135,13 @@ class ConfirmationDialog extends React.Component {
           </span>
         ),
       })
-      return
+      return undefined
     }
     const responseText = await response.text()
     let trackDb
     try {
       trackDb = new TrackDbFile(responseText)
     } catch (error) {
-      console.log(error)
       this.setState({
         errorMessage: (
           <span>
@@ -136,11 +151,9 @@ class ConfirmationDialog extends React.Component {
           </span>
         ),
       })
-      return
+      return undefined
     }
-    const model = this.generateModel(trackDb)
-    this.setState({ model, trackDb })
-    enableNext()
+    return trackDb
   }
 
   toggleUnsupported = () => {
@@ -153,24 +166,10 @@ class ConfirmationDialog extends React.Component {
     this.setState({ renderUnsupportedTrackTypes: !renderUnsupportedTrackTypes })
   }
 
-  generateUnsupportedTrackTypeModels() {
-    const {
-      unsupportedTrackTypes,
-      trackDb,
-      unsupportedTrackTypeModels,
-    } = this.state
-    unsupportedTrackTypes.forEach(trackType => {
-      const model = this.generateModel(trackDb, trackType)
-      unsupportedTrackTypeModels.set(trackType, model)
-    })
-    this.setState({ unsupportedTrackTypeModels })
-  }
-
-  generateModel(trackDb, trackType) {
+  generateTracks(trackDb, trackType) {
     const { unsupportedTrackTypes } = this.state
-    const { assemblyName, hubName, setPatches, trackDbUrl } = this.props
+    const { assemblyName, hubName, trackDbUrl } = this.props
     const categoryName = `${hubName}: ${assemblyName}`
-
     const tracks = []
 
     trackDb.forEach((track, trackName) => {
@@ -202,23 +201,52 @@ class ConfirmationDialog extends React.Component {
       tracks.push(makeTrackConfig(track, categories, trackDbUrl, !!trackType))
     })
 
-    const jbrowse = new JBrowse().configure()
+    return tracks
+  }
 
-    const { model: rootModel } = jbrowse
-    const patches = []
-    onPatch(rootModel.configuration.tracks, patch => patches.push(patch))
-
-    transaction(() => {
-      tracks.forEach(track =>
-        rootModel.configuration.addTrackConf(track.type, track),
-      )
+  generateUnsupportedTrackTypeModels() {
+    const {
+      unsupportedTrackTypes,
+      trackDb,
+      unsupportedTrackTypeModels,
+    } = this.state
+    unsupportedTrackTypes.forEach(trackType => {
+      const tracks = this.generateTracks(trackDb, trackType)
+      const jbrowse = new JBrowse().configure()
+      const { model: rootModel } = jbrowse
+      this.addTracksToModel(tracks, rootModel)
+      const firstView = rootModel.addView('LinearGenomeView')
+      firstView.activateTrackSelector()
+      const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
+      unsupportedTrackTypeModels.set(trackType, model)
     })
+    this.setState({ unsupportedTrackTypeModels })
+  }
 
-    setPatches(patches)
-    this.setState({ unsupportedTrackTypes })
-    const firstView = rootModel.addView('LinearGenomeView')
-    firstView.activateTrackSelector()
-    return rootModel.drawerWidgets.get('hierarchicalTrackSelector')
+  addTracksToModel(tracks, model) {
+    const { rootModel } = this.props
+    const currentModel = model || rootModel
+    transaction(() => {
+      tracks.forEach(track => {
+        // For now prevent a track from getting added multiple times
+        // TODO: Have "remote" tracks live somewhere separate from other tracks
+        // so you don't have to worry about duplication.
+        const currentTracks = currentModel.configuration.tracks
+        if (
+          !currentTracks.some(currentTrack => {
+            const currentTrackSnap = getSnapshot(currentTrack)
+            return (
+              track.category.some(
+                (v, i) => v === currentTrackSnap.category[i],
+              ) &&
+              track.name === currentTrackSnap.name &&
+              track.type === currentTrackSnap.type
+            )
+          })
+        )
+          currentModel.configuration.addTrackConf(track.type, track)
+      })
+    })
   }
 
   async doGet(url) {
@@ -234,7 +262,7 @@ class ConfirmationDialog extends React.Component {
           </span>
         ),
       })
-      return null
+      return undefined
     }
     if (!rawResponse.ok) {
       this.setState({
@@ -245,7 +273,7 @@ class ConfirmationDialog extends React.Component {
           </span>
         ),
       })
-      return null
+      return undefined
     }
     return rawResponse.text()
   }
@@ -253,16 +281,23 @@ class ConfirmationDialog extends React.Component {
   render() {
     const {
       errorMessage,
-      model,
+      tracks,
       unsupportedTrackTypes,
       unsupportedTrackTypeModels,
       renderUnsupportedTrackTypes,
     } = this.state
+    const { rootModel, hubName, assemblyName, classes } = this.props
+    const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
     if (errorMessage)
       return <Typography color="error">{errorMessage}</Typography>
-    if (!model) return <LinearProgress variant="query" />
+    if (!(tracks.length || unsupportedTrackTypes.size))
+      return <LinearProgress variant="query" />
     const confirmationContents = [
-      <Contents key="mainContent" model={model} category={model.hierarchy} />,
+      <Category
+        key="mainContent"
+        model={model}
+        path={[`${hubName}: ${assemblyName}`]}
+      />,
     ]
     if (unsupportedTrackTypes.size) {
       confirmationContents.push(
@@ -283,13 +318,13 @@ class ConfirmationDialog extends React.Component {
           <div key="unsupportedList">
             {Array.from(unsupportedTrackTypes.values()).map(trackType => (
               <div key={trackType}>
-                <Typography variant="h6">{trackType}</Typography>
+                <Typography className={classes.unsupportedHeader} variant="h6">
+                  {trackType}
+                </Typography>
                 {unsupportedTrackTypeModels.get(trackType) ? (
-                  <Contents
+                  <Category
                     model={unsupportedTrackTypeModels.get(trackType)}
-                    category={
-                      unsupportedTrackTypeModels.get(trackType).hierarchy
-                    }
+                    path={[`${hubName}: ${assemblyName}`]}
                     disabled
                   />
                 ) : null}
