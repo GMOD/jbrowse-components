@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
-import { requestIdleCallback } from 'request-idle-callback'
+import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
 const styles = {
@@ -83,10 +83,16 @@ class Contents extends React.Component {
     categories: [],
     trackConfigurations: [],
     doneLoading: false,
+    handle: undefined,
   }
 
   componentDidMount() {
     this.loadMoreTracks()
+  }
+
+  componentWillUnmount() {
+    const { handle } = this.state
+    cancelIdleCallback(handle)
   }
 
   loadMoreTracks() {
@@ -96,7 +102,7 @@ class Contents extends React.Component {
       const { model, path } = props
       let { hierarchy } = model
       path.forEach(pathEntry => {
-        hierarchy = hierarchy.get(pathEntry)
+        hierarchy = hierarchy.get(pathEntry) || new Map()
       })
       const numLoaded = categories.length + trackConfigurations.length
       Array.from(hierarchy)
@@ -108,12 +114,13 @@ class Contents extends React.Component {
             categories.push([name, contents])
           }
         })
-      if (categories.length + trackConfigurations.length !== hierarchy.size)
-        requestIdleCallback(() => {
+      let handle
+      if (categories.length + trackConfigurations.length !== hierarchy.size) {
+        handle = requestIdleCallback(() => {
           this.loadMoreTracks()
         })
-      else doneLoading = true
-      return { categories, trackConfigurations, doneLoading }
+      } else doneLoading = true
+      return { categories, trackConfigurations, doneLoading, handle }
     })
   }
 
