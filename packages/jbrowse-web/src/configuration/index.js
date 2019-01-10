@@ -45,8 +45,7 @@ function getConf(model, slotName, args) {
 
 function readConfObject(confObject, slotPath, args) {
   if (typeof slotPath === 'string') {
-    const slotName = typeof slotPath === 'string' ? slotPath : slotPath[0]
-    const slot = confObject[slotName]
+    const slot = confObject[slotPath]
     if (!slot) {
       return undefined
       // if we want to be very strict about config slots, we could uncomment the below
@@ -61,9 +60,12 @@ function readConfObject(confObject, slotPath, args) {
       // )
     }
     if (slot.func) {
-      return slot.func.apply(null, args)
+      const appliedFunc = slot.func.apply(null, args)
+      if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
+      return appliedFunc
     }
-    return getSnapshot(slot)
+    if (isStateTreeNode(slot)) return getSnapshot(slot)
+    return slot
   }
 
   const slotName = slotPath[0]
