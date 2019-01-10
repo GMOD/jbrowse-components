@@ -24,16 +24,9 @@ const styles = {
 
 const Category = withStyles(styles)(
   observer(props => {
-    const {
-      name,
-      category,
-      model,
-      filterPredicate,
-      path,
-      classes,
-      disabled,
-    } = props
+    const { model, path, filterPredicate, disabled, classes } = props
     const pathName = path.join('|')
+    const name = path[path.length - 1]
 
     return (
       <ExpansionPanel
@@ -47,10 +40,9 @@ const Category = withStyles(styles)(
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.expansionPanelDetails}>
           <Contents
-            path={path}
-            category={category}
-            filterPredicate={filterPredicate}
             model={model}
+            path={path}
+            filterPredicate={filterPredicate}
             disabled={disabled}
           />
         </ExpansionPanelDetails>
@@ -66,21 +58,18 @@ Category.defaultProps = {
 }
 
 Category.propTypes = {
-  name: propTypes.string.isRequired,
-  category: MobxPropTypes.objectOrObservableObject.isRequired,
   model: MobxPropTypes.observableObject.isRequired,
-  filterPredicate: propTypes.func,
   path: propTypes.arrayOf(propTypes.string),
+  filterPredicate: propTypes.func,
   disabled: propTypes.bool,
 }
 
 @observer
 class Contents extends React.Component {
   static propTypes = {
-    category: MobxPropTypes.objectOrObservableObject.isRequired,
     model: MobxPropTypes.observableObject.isRequired,
-    filterPredicate: propTypes.func,
     path: propTypes.arrayOf(propTypes.string),
+    filterPredicate: propTypes.func,
     disabled: propTypes.bool,
   }
 
@@ -93,6 +82,7 @@ class Contents extends React.Component {
   state = {
     categories: [],
     trackConfigurations: [],
+    doneLoading: false,
   }
 
   componentDidMount() {
@@ -102,9 +92,14 @@ class Contents extends React.Component {
   loadMoreTracks() {
     this.setState((state, props) => {
       const { categories, trackConfigurations } = state
-      const { category } = props
+      let { doneLoading } = state
+      const { model, path } = props
+      let { hierarchy } = model
+      path.forEach(pathEntry => {
+        hierarchy = hierarchy.get(pathEntry)
+      })
       const numLoaded = categories.length + trackConfigurations.length
-      Array.from(category)
+      Array.from(hierarchy)
         .slice(numLoaded, numLoaded + 10)
         .forEach(([name, contents]) => {
           if (contents._configId) {
@@ -113,17 +108,18 @@ class Contents extends React.Component {
             categories.push([name, contents])
           }
         })
-      if (categories.length + trackConfigurations.length !== category.size)
+      if (categories.length + trackConfigurations.length !== hierarchy.size)
         requestIdleCallback(() => {
           this.loadMoreTracks()
         })
-      return { categories, trackConfigurations }
+      else doneLoading = true
+      return { categories, trackConfigurations, doneLoading }
     })
   }
 
   render() {
-    const { categories, trackConfigurations } = this.state
-    const { category, model, filterPredicate, path, disabled } = this.props
+    const { categories, trackConfigurations, doneLoading } = this.state
+    const { model, path, filterPredicate, disabled } = this.props
     return (
       <>
         <FormGroup>
@@ -147,17 +143,13 @@ class Contents extends React.Component {
             </Fade>
           ))}
         </FormGroup>
-        {categories.length + trackConfigurations.length !== category.size ? (
-          <CircularProgress />
-        ) : null}
+        {doneLoading ? null : <CircularProgress />}
         {categories.map(([name, contents]) => (
           <Category
             key={name}
-            path={path.concat([name])}
-            name={name}
-            category={contents}
-            filterPredicate={filterPredicate}
             model={model}
+            path={path.concat([name])}
+            filterPredicate={filterPredicate}
             disabled={disabled}
           />
         ))}
@@ -167,3 +159,4 @@ class Contents extends React.Component {
 }
 
 export default Contents
+export { Category }
