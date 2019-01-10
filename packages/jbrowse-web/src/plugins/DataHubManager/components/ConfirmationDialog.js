@@ -1,14 +1,14 @@
 import { TrackDbFile } from '@gmod/ucsc-hub'
+import { withStyles } from '@material-ui/core'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { transaction } from 'mobx'
 import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { withStyles } from '@material-ui/core'
+import { readConfObject } from '../../../configuration'
 import JBrowse from '../../../JBrowse'
 import { Category } from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
@@ -233,16 +233,14 @@ class ConfirmationDialog extends React.Component {
         // so you don't have to worry about duplication.
         const currentTracks = currentModel.configuration.tracks
         if (
-          !currentTracks.some(currentTrack => {
-            const currentTrackSnap = getSnapshot(currentTrack)
-            return (
+          !currentTracks.some(
+            currentTrack =>
               track.category.some(
-                (v, i) => v === currentTrackSnap.category[i],
+                (v, i) => v === readConfObject(currentTrack, 'category')[i],
               ) &&
-              track.name === currentTrackSnap.name &&
-              track.type === currentTrackSnap.type
-            )
-          })
+              track.name === readConfObject(currentTrack, 'name') &&
+              track.type === readConfObject(currentTrack, 'type'),
+          )
         )
           currentModel.configuration.addTrackConf(track.type, track)
       })
