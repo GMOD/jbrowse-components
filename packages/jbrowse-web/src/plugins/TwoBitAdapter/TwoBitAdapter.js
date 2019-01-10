@@ -8,18 +8,12 @@ export default class TwoBitAdapter {
   constructor(config) {
     const { twoBitLocation, assemblyName } = config
     const twoBitOpts = {
-      twoBitFilehandle: openLocation(twoBitLocation),
+      filehandle: openLocation(twoBitLocation),
     }
 
     this.assemblyName = assemblyName
     this.twobit = new TwoBitFile(twoBitOpts)
     this.gotTwoBitHeader = this.twobit.getHeader()
-  }
-
-  async hasDataForRefSeq({ assembly, refName }) {
-    if (this.assemblyName !== assembly) return false
-    await this.gotBamHeader
-    return this.samHeader.refSeqNameToId[refName] !== undefined
   }
 
   /**

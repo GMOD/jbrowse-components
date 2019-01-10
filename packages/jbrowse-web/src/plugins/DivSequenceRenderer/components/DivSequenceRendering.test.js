@@ -1,10 +1,10 @@
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
-import Rendering from './SvgFeatureRendering'
+import Rendering from './DivSequenceRendering'
 import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
 import SimpleFeature from '../../../util/simpleFeature'
 import GranularRectLayout from '../../../util/layouts/GranularRectLayout'
-import SvgRendererConfigSchema from '../configSchema'
+import DivRenderingConfigSchema from '../configSchema'
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {
   const renderer = TestRenderer.create(
@@ -32,7 +32,7 @@ test('one feature', () => {
       features={
         new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={DivRenderingConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
