@@ -7,7 +7,7 @@ import AdapterClass from './TwoBitAdapter'
 const configSchema = ConfigurationSchema(
   'TwoBitAdapter',
   {
-    twoBitAdapter: {
+    twoBitLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.2bit' },
     },
