@@ -1,6 +1,6 @@
 import { getRoot, types } from 'mobx-state-tree'
 import { ElementId } from '../../mst-types'
-import { stringToFunction } from '../../configuration/configurationSchema'
+import { stringToFunction } from '../../util/functionStrings'
 
 const MenuItemModel = types
   .model('MenuItemModel', {
