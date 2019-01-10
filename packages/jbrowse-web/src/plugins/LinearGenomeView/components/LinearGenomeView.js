@@ -89,6 +89,7 @@ class LinearGenomeView extends Component {
             <Icon fontSize="small">line_style</Icon>
           </ToggleButton>{' '}
         </div>
+
         <ScaleBar
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
           height={scaleBarHeight}
