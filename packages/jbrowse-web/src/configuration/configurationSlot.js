@@ -16,18 +16,43 @@ const typeModels = {
   fileLocation: FileLocation,
 }
 
+const literalJSON = self => ({
+  views: {
+    get valueJSON() {
+      return self.value
+    },
+  },
+})
+
 // custom actions for modifying the value models
-const typeModelActions = {
+const typeModelExtensions = {
+  fileLocation: self => ({
+    views: {
+      get valueJSON() {
+        return JSON.stringify(self.value)
+      },
+    },
+  }),
+  number: literalJSON,
+  integer: literalJSON,
+  boolean: literalJSON,
   // special actions for working with stringArray slots
   stringArray: self => ({
-    add(val) {
-      self.value.push(val)
+    views: {
+      get valueJSON() {
+        return JSON.stringify(self.value)
+      },
     },
-    removeAtIndex(idx) {
-      self.value.splice(idx, 1)
-    },
-    setAtIndex(idx, val) {
-      self.value[idx] = val
+    actions: {
+      add(val) {
+        self.value.push(val)
+      },
+      removeAtIndex(idx) {
+        self.value.splice(idx, 1)
+      },
+      setAtIndex(idx, val) {
+        self.value[idx] = val
+      },
     },
   }),
 }
@@ -38,6 +63,16 @@ const FunctionStringType = types.refinement(
   str => /^\s*function\s*\(/.test(str),
 )
 
+/**
+ * builds a MST model for a configuration slot
+ *
+ * @param {*} slotName
+ * @param {object} param1
+ * @param {string} param1.description?
+ * @param {object} param1.model? custom base MST model for the slot's value
+ * @param {string} type name of the type of slot, e.g. "string", "number", "stringArray"
+ * @param {*} defaultValue default value of the slot
+ */
 export default function ConfigSlot(
   slotName,
   { description = '', model, type, defaultValue },
@@ -49,9 +84,6 @@ export default function ConfigSlot(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
 
-  // these are any custom actions
-  const modelCustomActions = typeModelActions[type] || (() => ({}))
-
   if (defaultValue === undefined) throw new Error(`no 'defaultValue' provided`)
 
   // if the `type` is something like `color`, then the model name
@@ -59,7 +91,7 @@ export default function ConfigSlot(
   const configSlotModelName = `${slotName
     .charAt(0)
     .toUpperCase()}${slotName.slice(1)}ConfigSlot`
-  const slot = types
+  let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
       description: types.literal(description),
@@ -79,6 +111,16 @@ export default function ConfigSlot(
       },
       get isCallback() {
         return /^\s*function\s*\(/.test(self.value)
+      },
+
+      // JS representation of the value of this slot, suitable
+      // for embedding in either JSON or a JS function string.
+      // many of the data types override this in typeModelExtensions
+      get valueJSON() {
+        if (self.isCallback) return undefined
+        return self.value && self.value.toJSON
+          ? self.value.toJSON()
+          : `'${self.value}'`
       },
     }))
     .preProcessSnapshot(
@@ -102,20 +144,13 @@ export default function ConfigSlot(
       snap.value !== defaultValue ? snap.value : undefined,
     )
     .actions(self => ({
-      ...modelCustomActions(self),
       set(newVal) {
         self.value = newVal
       },
       convertToCallback() {
         if (self.isCallback) return
-        // TODO: implement proper stringification of all the different
-        // config slot types
-        const valString =
-          self.value && self.value.toJSON
-            ? self.value.toJSON()
-            : `'${self.value}'`
         self.value = `function() {
-  return ${valString}
+  return ${self.valueJSON}
 }
 `
       },
@@ -134,6 +169,12 @@ export default function ConfigSlot(
         self.value = defaultValue
       },
     }))
+
+  // if there are any type-specific extensions (views or actions)
+  //  to the slot, add those in
+  if (typeModelExtensions[type]) {
+    slot = slot.extend(typeModelExtensions[type])
+  }
 
   const completeModel = types.optional(slot, {
     name: slotName,

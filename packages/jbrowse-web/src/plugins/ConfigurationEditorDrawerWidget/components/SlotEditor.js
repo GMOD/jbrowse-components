@@ -156,7 +156,7 @@ const SlotEditor = inject('classes')(
           title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
           type="button"
         >
-          {slot.isCallback ? (
+          {!slot.isCallback ? (
             <Icon>radio_button_unchecked</Icon>
           ) : (
             <SvgIcon>
