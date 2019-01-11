@@ -58,6 +58,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
+      onContextMenu={[Function]}
       onFocus={[Function]}
       onKeyDown={[Function]}
       onKeyUp={[Function]}
@@ -286,6 +287,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
+      onContextMenu={[Function]}
       onFocus={[Function]}
       onKeyDown={[Function]}
       onKeyUp={[Function]}
@@ -365,6 +367,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
+      onContextMenu={[Function]}
       onFocus={[Function]}
       onKeyDown={[Function]}
       onKeyUp={[Function]}

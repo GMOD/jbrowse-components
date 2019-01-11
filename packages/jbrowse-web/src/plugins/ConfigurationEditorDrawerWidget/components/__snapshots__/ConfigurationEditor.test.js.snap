@@ -56,17 +56,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
+      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
       onClick={[Function]}
     >
       <label
-        className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
+        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
         data-shrink={true}
       >
         backgroundColor
       </label>
       <div
-        className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
+        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
         onClick={[Function]}
         style={
           Object {
@@ -79,7 +79,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       >
         <input
           aria-invalid={false}
-          className="MuiInputBase-input-123 MuiInput-input-108"
+          className="MuiInputBase-input-54 MuiInput-input-39"
           disabled={false}
           name="color"
           onBlur={[Function]}
@@ -91,7 +91,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </div>
       <p
-        className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
+        className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
       >
         the track's background color
       </p>
@@ -202,7 +202,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-138"
+      className="MuiFormGroup-root-78"
     >
       <div
         className="ConfigurationEditor-slotContainer-6"
@@ -301,7 +301,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-138"
+          className="MuiFormGroup-root-78"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
@@ -320,12 +320,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 onClick={[Function]}
               >
                 <div
-                  className="MuiSelect-root-140"
+                  className="MuiSelect-root-80"
                 >
                   <div
                     aria-haspopup="true"
                     aria-pressed="false"
-                    className="MuiSelect-select-141 MuiSelect-selectMenu-144 MuiInputBase-input-54 MuiInput-input-39"
+                    className="MuiSelect-select-81 MuiSelect-selectMenu-84 MuiInputBase-input-54 MuiInput-input-39"
                     onBlur={[Function]}
                     onClick={[Function]}
                     onFocus={[Function]}
@@ -341,7 +341,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   />
                   <svg
                     aria-hidden="true"
-                    className="MuiSvgIcon-root-147 MuiSelect-icon-146"
+                    className="MuiSvgIcon-root-87 MuiSelect-icon-86"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -433,12 +433,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         onClick={[Function]}
       >
         <div
-          className="MuiSelect-root-140"
+          className="MuiSelect-root-80"
         >
           <div
             aria-haspopup="true"
             aria-pressed="false"
-            className="MuiSelect-select-141 MuiSelect-selectMenu-144 MuiInputBase-input-54 MuiInput-input-39"
+            className="MuiSelect-select-81 MuiSelect-selectMenu-84 MuiInputBase-input-54 MuiInput-input-39"
             onBlur={[Function]}
             onClick={[Function]}
             onFocus={[Function]}
@@ -454,7 +454,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           />
           <svg
             aria-hidden="true"
-            className="MuiSvgIcon-root-147 MuiSelect-icon-146"
+            className="MuiSvgIcon-root-87 MuiSelect-icon-86"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -490,7 +490,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-138"
+      className="MuiFormGroup-root-78"
     >
       <label
         className="MuiFormLabel-root-24"
@@ -501,7 +501,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-138"
+          className="MuiFormGroup-root-78"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
@@ -510,56 +510,147 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               className="MuiFormControl-root-9 ConfigurationEditor-callbackEditor-8"
             >
               <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
+                className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
                 htmlFor="callback-editor"
               >
                 alignmentColor
               </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32 MuiInputBase-multiline-52 MuiInput-multiline-37"
-                onClick={[Function]}
+                style={
+                  Object {
+                    "borderBottom": "1px solid rgba(0,0,0,0.42)",
+                    "marginTop": "16px",
+                  }
+                }
               >
                 <div
-                  className="MuiPrivateTextarea-root-160"
+                  style={
+                    Object {
+                      "boxSizing": "border-box",
+                      "fontFamily": "\\"Fira code\\", \\"Fira Mono\\", monospace",
+                      "fontSize": "90%",
+                      "padding": 0,
+                      "position": "relative",
+                      "textAlign": "left",
+                      "whiteSpace": "pre-wrap",
+                      "wordBreak": "keep-all",
+                    }
+                  }
                 >
                   <textarea
-                    aria-hidden="true"
-                    className="MuiPrivateTextarea-textarea-161 MuiPrivateTextarea-shadow-162"
-                    readOnly={true}
-                    rows="1"
-                    tabIndex={-1}
-                    value=""
-                  />
-                  <textarea
-                    aria-hidden="true"
-                    className="MuiPrivateTextarea-textarea-161 MuiPrivateTextarea-shadow-162"
-                    readOnly={true}
-                    rows={1}
-                    tabIndex={-1}
-                    value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
-                  />
-                  <textarea
-                    aria-invalid={false}
-                    className="MuiPrivateTextarea-textarea-161 MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputMultiline-56 MuiInput-inputMultiline-41"
-                    disabled={false}
-                    id="callback-editor"
-                    onBlur={[Function]}
+                    autoCapitalize="off"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    className="npm__react-simple-code-editor__textarea "
+                    data-gramm={false}
                     onChange={[Function]}
-                    onFocus={[Function]}
-                    required={false}
-                    rows={1}
+                    onKeyDown={[Function]}
+                    spellCheck={false}
                     style={
                       Object {
-                        "height": 19,
+                        "MozOsxFontSmoothing": "grayscale",
+                        "WebkitFontSmoothing": "antialiased",
+                        "WebkitTextFillColor": "transparent",
+                        "background": "none",
+                        "border": 0,
+                        "boxSizing": "inherit",
+                        "color": "inherit",
+                        "display": "inherit",
+                        "fontFamily": "inherit",
+                        "fontSize": "inherit",
+                        "fontStyle": "inherit",
+                        "fontVariantLigatures": "inherit",
+                        "fontWeight": "inherit",
+                        "height": "100%",
+                        "left": 0,
+                        "letterSpacing": "inherit",
+                        "lineHeight": "inherit",
+                        "margin": 0,
+                        "overflow": "hidden",
+                        "paddingBottom": 10,
+                        "paddingLeft": 10,
+                        "paddingRight": 10,
+                        "paddingTop": 10,
+                        "position": "absolute",
+                        "resize": "none",
+                        "tabSize": "inherit",
+                        "textIndent": "inherit",
+                        "textRendering": "inherit",
+                        "textTransform": "inherit",
+                        "top": 0,
+                        "whiteSpace": "inherit",
+                        "width": "100%",
+                        "wordBreak": "inherit",
                       }
                     }
                     value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
                   />
+                  <pre
+                    aria-hidden="true"
+                    dangerouslySetInnerHTML={
+                      Object {
+                        "__html": "<span class=\\"token keyword\\">function</span><span class=\\"token punctuation\\">(</span>feature<span class=\\"token punctuation\\">)</span> <span class=\\"token punctuation\\">{</span> <span class=\\"token keyword\\">var</span> s <span class=\\"token operator\\">=</span> feature<span class=\\"token punctuation\\">.</span><span class=\\"token keyword\\">get</span><span class=\\"token punctuation\\">(</span><span class=\\"token string\\">'strand'</span><span class=\\"token punctuation\\">)</span><span class=\\"token punctuation\\">;</span> <span class=\\"token keyword\\">return</span> s <span class=\\"token operator\\">===</span> <span class=\\"token string\\">'-'</span> <span class=\\"token operator\\">||</span> s <span class=\\"token operator\\">===</span> <span class=\\"token operator\\">-</span><span class=\\"token number\\">1</span> <span class=\\"token operator\\">?</span> <span class=\\"token string\\">'blue'</span><span class=\\"token punctuation\\">:</span> <span class=\\"token string\\">'red'</span> <span class=\\"token punctuation\\">}</span><br />",
+                      }
+                    }
+                    style={
+                      Object {
+                        "border": 0,
+                        "boxSizing": "inherit",
+                        "display": "inherit",
+                        "fontFamily": "inherit",
+                        "fontSize": "inherit",
+                        "fontStyle": "inherit",
+                        "fontVariantLigatures": "inherit",
+                        "fontWeight": "inherit",
+                        "letterSpacing": "inherit",
+                        "lineHeight": "inherit",
+                        "margin": 0,
+                        "paddingBottom": 10,
+                        "paddingLeft": 10,
+                        "paddingRight": 10,
+                        "paddingTop": 10,
+                        "pointerEvents": "none",
+                        "position": "relative",
+                        "tabSize": "inherit",
+                        "textIndent": "inherit",
+                        "textRendering": "inherit",
+                        "textTransform": "inherit",
+                        "whiteSpace": "inherit",
+                        "wordBreak": "inherit",
+                      }
+                    }
+                  />
+                  <style
+                    type="text/css"
+                  >
+                    
+/**
+ * Reset the text fill color so that placeholder is visible
+ */
+.npm__react-simple-code-editor__textarea:empty {
+  -webkit-text-fill-color: inherit !important;
+}
+
+/**
+ * IE doesn't support '-webkit-text-fill-color'
+ * So we use 'color: transparent' to make the text transparent on IE
+ * Unlike other browsers, it doesn't affect caret color in IE
+ */
+.npm__react-simple-code-editor__textarea-ie {
+  color: transparent !important;
+}
+
+.npm__react-simple-code-editor__textarea-ie::selection {
+  background-color: #accef7 !important;
+  color: transparent !important;
+}
+
+                  </style>
                 </div>
               </div>
               <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
+                className="MuiFormHelperText-root-70"
               >
                 the color of each feature in a pileup alignment
               </p>
@@ -572,7 +663,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <svg
                 aria-hidden="true"
-                className="MuiSvgIcon-root-147"
+                className="MuiSvgIcon-root-87"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -642,23 +733,23 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-138"
+          className="MuiFormGroup-root-78"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
+              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 color1
               </label>
               <div
-                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
                 style={
                   Object {
@@ -671,7 +762,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-123 MuiInput-input-108"
+                  className="MuiInputBase-input-54 MuiInput-input-39"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -683,7 +774,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
               >
                 the main color of each feature
               </p>
@@ -706,17 +797,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
+              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 color2
               </label>
               <div
-                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
                 style={
                   Object {
@@ -729,7 +820,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-123 MuiInput-input-108"
+                  className="MuiInputBase-input-54 MuiInput-input-39"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -741,7 +832,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
               >
                 the secondary color of each feature, used for connecting lines, etc
               </p>
@@ -764,17 +855,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
+              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 color3
               </label>
               <div
-                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
                 style={
                   Object {
@@ -787,7 +878,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-123 MuiInput-input-108"
+                  className="MuiInputBase-input-54 MuiInput-input-39"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -799,7 +890,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
               >
                 the tertiary color of each feature, often used for contrasting fills, like on UTRs
               </p>
