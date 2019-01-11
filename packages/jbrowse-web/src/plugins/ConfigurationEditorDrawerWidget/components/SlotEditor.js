@@ -163,17 +163,6 @@ const slotEditorStyles = theme => ({
   slotModeIcon: {
     width: 25,
   },
-  slotModeSwitchOld: {
-    position: 'absolute',
-    display: 'inline',
-    height: '100%',
-    width: '25px',
-    top: 0,
-    right: 0,
-    border: 0,
-    background: '#b9c1ca',
-    padding: 0,
-  },
 })
 
 const SlotEditor = withStyles(slotEditorStyles)(
