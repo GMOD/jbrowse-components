@@ -4,7 +4,10 @@ export default ConfigurationSchema('PileupRenderer', {
   alignmentColor: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue: `function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }`,
+    defaultValue: `function(feature) {
+  var s = feature.get('strand');
+  return s === '-' || s === -1 ? 'blue': 'red'
+}`,
   },
   alignmentHeight: {
     type: 'integer',
