@@ -8,21 +8,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
     >
       <label
-        className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
         data-shrink={true}
       >
         name
       </label>
       <div
-        className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
         onClick={[Function]}
       >
         <input
           aria-invalid={false}
-          className="MuiInputBase-input-53 MuiInput-input-38"
+          className="MuiInputBase-input-54 MuiInput-input-39"
           disabled={false}
           onBlur={[Function]}
           onChange={[Function]}
@@ -33,7 +33,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </div>
       <p
-        className="MuiFormHelperText-root-69 MuiFormHelperText-filled-75"
+        className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
       >
         descriptive name of the track
       </p>
@@ -46,7 +46,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
@@ -56,17 +56,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-77 MuiFormControl-fullWidth-80"
+      className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
       onClick={[Function]}
     >
       <label
-        className="MuiFormLabel-root-92 MuiFormLabel-filled-96 MuiInputLabel-root-81 MuiInputLabel-formControl-86 MuiInputLabel-animated-89 MuiInputLabel-shrink-88"
+        className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
         data-shrink={true}
       >
         backgroundColor
       </label>
       <div
-        className="MuiInputBase-root-112 MuiInput-root-99 MuiInput-underline-103 MuiInputBase-fullWidth-121 MuiInput-fullWidth-106 MuiInputBase-formControl-113 MuiInput-formControl-100"
+        className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
         onClick={[Function]}
         style={
           Object {
@@ -79,7 +79,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       >
         <input
           aria-invalid={false}
-          className="MuiInputBase-input-122 MuiInput-input-107"
+          className="MuiInputBase-input-123 MuiInput-input-108"
           disabled={false}
           name="color"
           onBlur={[Function]}
@@ -91,7 +91,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </div>
       <p
-        className="MuiFormHelperText-root-129 MuiFormHelperText-filled-135"
+        className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
       >
         the track's background color
       </p>
@@ -104,7 +104,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
@@ -114,21 +114,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
     >
       <label
-        className="MuiFormLabel-root-23 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20"
+        className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21"
         data-shrink={false}
       >
         description
       </label>
       <div
-        className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
         onClick={[Function]}
       >
         <input
           aria-invalid={false}
-          className="MuiInputBase-input-53 MuiInput-input-38"
+          className="MuiInputBase-input-54 MuiInput-input-39"
           disabled={false}
           onBlur={[Function]}
           onChange={[Function]}
@@ -139,7 +139,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </div>
       <p
-        className="MuiFormHelperText-root-69"
+        className="MuiFormHelperText-root-70"
       >
         a description of the track
       </p>
@@ -152,7 +152,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
@@ -162,7 +162,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <label
-      className="MuiFormLabel-root-23 MuiInputLabel-root-12 MuiInputLabel-animated-20"
+      className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-animated-21"
     >
       category
     </label>
@@ -175,7 +175,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </button>
     </div>
     <p
-      className="MuiFormHelperText-root-69"
+      className="MuiFormHelperText-root-70"
     >
       
     </p>
@@ -187,14 +187,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
     </button>
   </div>
   <label
-    className="MuiFormLabel-root-23"
+    className="MuiFormLabel-root-24"
   >
     adapter
   </label>
@@ -202,27 +202,27 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-137"
+      className="MuiFormGroup-root-138"
     >
       <div
         className="ConfigurationEditor-slotContainer-6"
       >
         <div
-          className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+          className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
         >
           <label
-            className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+            className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
             data-shrink={true}
           >
             bamLocation
           </label>
           <div
-            className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+            className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
             onClick={[Function]}
           >
             <input
               aria-invalid={false}
-              className="MuiInputBase-input-53 MuiInput-input-38"
+              className="MuiInputBase-input-54 MuiInput-input-39"
               disabled={false}
               onBlur={[Function]}
               onChange={[Function]}
@@ -242,7 +242,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-60"
+            className="material-icons MuiIcon-root-61"
           >
             radio_button_unchecked
           </span>
@@ -252,21 +252,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-slotContainer-6"
       >
         <div
-          className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+          className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
         >
           <label
-            className="MuiFormLabel-root-23 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20"
+            className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21"
             data-shrink={false}
           >
             assemblyName
           </label>
           <div
-            className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+            className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
             onClick={[Function]}
           >
             <input
               aria-invalid={false}
-              className="MuiInputBase-input-53 MuiInput-input-38"
+              className="MuiInputBase-input-54 MuiInput-input-39"
               disabled={false}
               onBlur={[Function]}
               onChange={[Function]}
@@ -286,14 +286,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-60"
+            className="material-icons MuiIcon-root-61"
           >
             radio_button_unchecked
           </span>
         </button>
       </div>
       <label
-        className="MuiFormLabel-root-23"
+        className="MuiFormLabel-root-24"
       >
         index
       </label>
@@ -301,31 +301,31 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-137"
+          className="MuiFormGroup-root-138"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
             >
               <label
-                className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 indexType
               </label>
               <div
-                className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
               >
                 <div
-                  className="MuiSelect-root-139"
+                  className="MuiSelect-root-140"
                 >
                   <div
                     aria-haspopup="true"
                     aria-pressed="false"
-                    className="MuiSelect-select-140 MuiSelect-selectMenu-143 MuiInputBase-input-53 MuiInput-input-38"
+                    className="MuiSelect-select-141 MuiSelect-selectMenu-144 MuiInputBase-input-54 MuiInput-input-39"
                     onBlur={[Function]}
                     onClick={[Function]}
                     onFocus={[Function]}
@@ -341,7 +341,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   />
                   <svg
                     aria-hidden="true"
-                    className="MuiSvgIcon-root-146 MuiSelect-icon-145"
+                    className="MuiSvgIcon-root-147 MuiSelect-icon-146"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -362,7 +362,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -372,21 +372,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
             >
               <label
-                className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 location
               </label>
               <div
-                className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-53 MuiInput-input-38"
+                  className="MuiInputBase-input-54 MuiInput-input-39"
                   disabled={false}
                   onBlur={[Function]}
                   onChange={[Function]}
@@ -406,7 +406,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -420,25 +420,25 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
     >
       <label
-        className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
         data-shrink={true}
       >
         defaultRendering
       </label>
       <div
-        className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
         onClick={[Function]}
       >
         <div
-          className="MuiSelect-root-139"
+          className="MuiSelect-root-140"
         >
           <div
             aria-haspopup="true"
             aria-pressed="false"
-            className="MuiSelect-select-140 MuiSelect-selectMenu-143 MuiInputBase-input-53 MuiInput-input-38"
+            className="MuiSelect-select-141 MuiSelect-selectMenu-144 MuiInputBase-input-54 MuiInput-input-39"
             onBlur={[Function]}
             onClick={[Function]}
             onFocus={[Function]}
@@ -454,7 +454,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           />
           <svg
             aria-hidden="true"
-            className="MuiSvgIcon-root-146 MuiSelect-icon-145"
+            className="MuiSvgIcon-root-147 MuiSelect-icon-146"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -475,14 +475,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
     </button>
   </div>
   <label
-    className="MuiFormLabel-root-23"
+    className="MuiFormLabel-root-24"
   >
     renderers
   </label>
@@ -490,10 +490,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-137"
+      className="MuiFormGroup-root-138"
     >
       <label
-        className="MuiFormLabel-root-23"
+        className="MuiFormLabel-root-24"
       >
         PileupRenderer
       </label>
@@ -501,15 +501,69 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-137"
+          className="MuiFormGroup-root-138"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
-            <textarea
-              onChange={[Function]}
-              value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
-            />
+            <div
+              className="MuiFormControl-root-9 ConfigurationEditor-callbackEditor-8"
+            >
+              <label
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
+                data-shrink={true}
+                htmlFor="callback-editor"
+              >
+                alignmentColor
+              </label>
+              <div
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32 MuiInputBase-multiline-52 MuiInput-multiline-37"
+                onClick={[Function]}
+              >
+                <div
+                  className="MuiPrivateTextarea-root-160"
+                >
+                  <textarea
+                    aria-hidden="true"
+                    className="MuiPrivateTextarea-textarea-161 MuiPrivateTextarea-shadow-162"
+                    readOnly={true}
+                    rows="1"
+                    tabIndex={-1}
+                    value=""
+                  />
+                  <textarea
+                    aria-hidden="true"
+                    className="MuiPrivateTextarea-textarea-161 MuiPrivateTextarea-shadow-162"
+                    readOnly={true}
+                    rows={1}
+                    tabIndex={-1}
+                    value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
+                  />
+                  <textarea
+                    aria-invalid={false}
+                    className="MuiPrivateTextarea-textarea-161 MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputMultiline-56 MuiInput-inputMultiline-41"
+                    disabled={false}
+                    id="callback-editor"
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    rows={1}
+                    style={
+                      Object {
+                        "height": 19,
+                      }
+                    }
+                    value="function(feature) { var s = feature.get('strand'); return s === '-' || s === -1 ? 'blue': 'red' }"
+                  />
+                </div>
+              </div>
+              <p
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
+              >
+                the color of each feature in a pileup alignment
+              </p>
+            </div>
             <button
               className="ConfigurationEditor-slotModeSwitch-7"
               onClick={[Function]}
@@ -518,7 +572,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <svg
                 aria-hidden="true"
-                className="MuiSvgIcon-root-146"
+                className="MuiSvgIcon-root-147"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -533,21 +587,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-8"
+              className="MuiFormControl-root-9"
             >
               <label
-                className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 alignmentHeight
               </label>
               <div
-                className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-formControl-44 MuiInput-formControl-31"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-53 MuiInput-input-38 MuiInputBase-inputType-56 MuiInput-inputType-41"
+                  className="MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputType-57 MuiInput-inputType-42"
                   disabled={false}
                   onBlur={[Function]}
                   onChange={[Function]}
@@ -558,7 +612,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-69 MuiFormHelperText-filled-75"
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
               >
                 the height of each feature in a pileup alignment
               </p>
@@ -571,7 +625,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -580,7 +634,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         </div>
       </div>
       <label
-        className="MuiFormLabel-root-23"
+        className="MuiFormLabel-root-24"
       >
         SvgFeatureRenderer
       </label>
@@ -588,23 +642,23 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-137"
+          className="MuiFormGroup-root-138"
         >
           <div
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-77 MuiFormControl-fullWidth-80"
+              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-92 MuiFormLabel-filled-96 MuiInputLabel-root-81 MuiInputLabel-formControl-86 MuiInputLabel-animated-89 MuiInputLabel-shrink-88"
+                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
                 data-shrink={true}
               >
                 color1
               </label>
               <div
-                className="MuiInputBase-root-112 MuiInput-root-99 MuiInput-underline-103 MuiInputBase-fullWidth-121 MuiInput-fullWidth-106 MuiInputBase-formControl-113 MuiInput-formControl-100"
+                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
                 onClick={[Function]}
                 style={
                   Object {
@@ -617,7 +671,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-122 MuiInput-input-107"
+                  className="MuiInputBase-input-123 MuiInput-input-108"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -629,7 +683,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-129 MuiFormHelperText-filled-135"
+                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
               >
                 the main color of each feature
               </p>
@@ -642,7 +696,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -652,17 +706,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-77 MuiFormControl-fullWidth-80"
+              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-92 MuiFormLabel-filled-96 MuiInputLabel-root-81 MuiInputLabel-formControl-86 MuiInputLabel-animated-89 MuiInputLabel-shrink-88"
+                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
                 data-shrink={true}
               >
                 color2
               </label>
               <div
-                className="MuiInputBase-root-112 MuiInput-root-99 MuiInput-underline-103 MuiInputBase-fullWidth-121 MuiInput-fullWidth-106 MuiInputBase-formControl-113 MuiInput-formControl-100"
+                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
                 onClick={[Function]}
                 style={
                   Object {
@@ -675,7 +729,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-122 MuiInput-input-107"
+                  className="MuiInputBase-input-123 MuiInput-input-108"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -687,7 +741,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-129 MuiFormHelperText-filled-135"
+                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
               >
                 the secondary color of each feature, used for connecting lines, etc
               </p>
@@ -700,7 +754,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -710,17 +764,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-77 MuiFormControl-fullWidth-80"
+              className="MuiFormControl-root-78 MuiFormControl-fullWidth-81"
               onClick={[Function]}
             >
               <label
-                className="MuiFormLabel-root-92 MuiFormLabel-filled-96 MuiInputLabel-root-81 MuiInputLabel-formControl-86 MuiInputLabel-animated-89 MuiInputLabel-shrink-88"
+                className="MuiFormLabel-root-93 MuiFormLabel-filled-97 MuiInputLabel-root-82 MuiInputLabel-formControl-87 MuiInputLabel-animated-90 MuiInputLabel-shrink-89"
                 data-shrink={true}
               >
                 color3
               </label>
               <div
-                className="MuiInputBase-root-112 MuiInput-root-99 MuiInput-underline-103 MuiInputBase-fullWidth-121 MuiInput-fullWidth-106 MuiInputBase-formControl-113 MuiInput-formControl-100"
+                className="MuiInputBase-root-113 MuiInput-root-100 MuiInput-underline-104 MuiInputBase-fullWidth-122 MuiInput-fullWidth-107 MuiInputBase-formControl-114 MuiInput-formControl-101"
                 onClick={[Function]}
                 style={
                   Object {
@@ -733,7 +787,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-122 MuiInput-input-107"
+                  className="MuiInputBase-input-123 MuiInput-input-108"
                   disabled={false}
                   name="color"
                   onBlur={[Function]}
@@ -745,7 +799,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-129 MuiFormHelperText-filled-135"
+                className="MuiFormHelperText-root-130 MuiFormHelperText-filled-136"
               >
                 the tertiary color of each feature, often used for contrasting fills, like on UTRs
               </p>
@@ -758,7 +812,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -768,21 +822,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             className="ConfigurationEditor-slotContainer-6"
           >
             <div
-              className="MuiFormControl-root-8"
+              className="MuiFormControl-root-9"
             >
               <label
-                className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
                 data-shrink={true}
               >
                 height
               </label>
               <div
-                className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-formControl-44 MuiInput-formControl-31"
+                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32"
                 onClick={[Function]}
               >
                 <input
                   aria-invalid={false}
-                  className="MuiInputBase-input-53 MuiInput-input-38 MuiInputBase-inputType-56 MuiInput-inputType-41"
+                  className="MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputType-57 MuiInput-inputType-42"
                   disabled={false}
                   onBlur={[Function]}
                   onChange={[Function]}
@@ -793,7 +847,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </div>
               <p
-                className="MuiFormHelperText-root-69 MuiFormHelperText-filled-75"
+                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
               >
                 height in pixels of the main body of each feature
               </p>
@@ -806,7 +860,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-60"
+                className="material-icons MuiIcon-root-61"
               >
                 radio_button_unchecked
               </span>
@@ -827,21 +881,21 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
     className="ConfigurationEditor-slotContainer-6"
   >
     <div
-      className="MuiFormControl-root-8 MuiFormControl-fullWidth-11"
+      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
     >
       <label
-        className="MuiFormLabel-root-23 MuiFormLabel-filled-27 MuiInputLabel-root-12 MuiInputLabel-formControl-17 MuiInputLabel-animated-20 MuiInputLabel-shrink-19"
+        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
         data-shrink={true}
       >
         foo
       </label>
       <div
-        className="MuiInputBase-root-43 MuiInput-root-30 MuiInput-underline-34 MuiInputBase-fullWidth-52 MuiInput-fullWidth-37 MuiInputBase-formControl-44 MuiInput-formControl-31"
+        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
         onClick={[Function]}
       >
         <input
           aria-invalid={false}
-          className="MuiInputBase-input-53 MuiInput-input-38"
+          className="MuiInputBase-input-54 MuiInput-input-39"
           disabled={false}
           onBlur={[Function]}
           onChange={[Function]}
@@ -861,7 +915,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-60"
+        className="material-icons MuiIcon-root-61"
       >
         radio_button_unchecked
       </span>
