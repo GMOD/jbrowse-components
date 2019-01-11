@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
 import { FileLocation } from '../mst-types'
-import { stringToFunction } from '../util/functionStrings'
+import { stringToFunction, functionRegexp } from '../util/functionStrings'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
@@ -14,6 +14,17 @@ const typeModels = {
   number: types.number,
   string: types.string,
   fileLocation: FileLocation,
+}
+
+// default values we use if the defaultValue is malformed or does not work
+const fallbackDefaults = {
+  stringArray: [],
+  boolean: true,
+  color: 'black',
+  integer: 1,
+  number: 1,
+  string: '',
+  fileLocation: { uri: '/path/to/resource.txt' },
 }
 
 const literalJSON = self => ({
@@ -60,7 +71,7 @@ const typeModelExtensions = {
 const FunctionStringType = types.refinement(
   'FunctionString',
   types.string,
-  str => /^\s*function\s*\(/.test(str),
+  str => functionRegexp.test(str),
 )
 
 /**
@@ -167,6 +178,13 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
+        // if it is still a callback (happens if the defaultValue is a callback),
+        // then use the last-resort fallback default
+        if (self.isCallback) {
+          if (!(type in fallbackDefaults))
+            throw new Error(`no fallbackDefault defined for type ${type}`)
+          self.value = fallbackDefaults[type]
+        }
       },
     }))
 

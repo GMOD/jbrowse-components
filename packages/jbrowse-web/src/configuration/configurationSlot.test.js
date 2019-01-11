@@ -38,3 +38,20 @@ test('can convert a stringArray slot to and from a callback', () => {
   expect(instance.func()).toEqual(['foo', 'bar'])
   expect(instance.value).toEqual(['foo', 'bar'])
 })
+
+test('can convert a slot with a default function value to a scalar value', () => {
+  const model = ConfigSlot('tester', {
+    type: 'string',
+    defaultValue: 'function(f) { var x = f.get("foo"); return "foo" }',
+  })
+  const instance = model.create()
+  expect(instance.value).toContain('function')
+  expect(() => instance.func()).toThrow()
+  instance.convertToCallback()
+  expect(instance.value).toContain('function')
+  expect(() => instance.func()).toThrow()
+  instance.convertToValue()
+  expect(instance.value).not.toContain('function')
+  expect(instance.value).toBe('')
+  expect(instance.func()).toEqual('')
+})

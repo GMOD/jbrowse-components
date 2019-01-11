@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core'
 import { getPropertyMembers } from 'mobx-state-tree'
 import ColorEditor from './ColorEditor'
+import CallbackEditor from './CallbackEditor'
 
 const StringEditor = observer(({ slot, slotSchema }) => (
   <TextField
@@ -101,10 +102,6 @@ const FileLocationEditor = observer(({ slot }) => {
   )
 })
 
-const FunctionEditor = observer(({ slot, slotSchema }) => (
-  <textarea value={slot.value} onChange={evt => slot.set(evt.target.value)} />
-))
-
 const stringEnumEditor = observer(({ slot, slotSchema }) => {
   const p = getPropertyMembers(slotSchema.type)
   const choices = p.properties.value.type.types[1].types.map(t => t.value)
@@ -141,8 +138,8 @@ const valueComponents = {
 const SlotEditor = inject('classes')(
   observer(({ slot, slotSchema, classes }) => {
     const { name, description, type, value } = slot
-    const ValueComponent = /^\s*function\s*\(/.test(value)
-      ? FunctionEditor
+    const ValueComponent = slot.isCallback
+      ? CallbackEditor
       : valueComponents[type] || StringEditor
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (

@@ -69,6 +69,7 @@ const styles = theme => ({
     background: '#b9c1ca',
     padding: 0,
   },
+  callbackEditor: {},
 })
 
 const Member = inject('classes')(
