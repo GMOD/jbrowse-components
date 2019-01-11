@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
+import ColorPicker from 'material-ui-color-picker'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-
-import ColorPicker from 'material-ui-color-picker'
+import React, { Component } from 'react'
 
 @observer
 class ColorEditor extends Component {

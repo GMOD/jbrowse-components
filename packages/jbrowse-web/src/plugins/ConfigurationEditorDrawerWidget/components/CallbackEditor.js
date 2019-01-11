@@ -1,17 +1,22 @@
-import React, { Component } from 'react'
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  withStyles,
+} from '@material-ui/core'
+import debounce from 'debounce'
+import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import { FormHelperText, FormControl, InputLabel } from '@material-ui/core'
-import { observer, inject, PropTypes } from 'mobx-react'
-
+import React, { Component } from 'react'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
 
-import debounce from 'debounce'
+const styles = { callbackEditor: {} }
 
-@inject('classes')
+@withStyles(styles)
 @observer
 class CallbackEditor extends Component {
   static propTypes = {

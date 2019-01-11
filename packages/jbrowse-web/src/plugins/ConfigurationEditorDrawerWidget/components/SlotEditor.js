@@ -1,16 +1,20 @@
-import React from 'react'
-import { observer, inject } from 'mobx-react'
 import {
-  TextField,
-  InputLabel,
+  Card,
   FormHelperText,
-  MenuItem,
   Icon,
+  InputLabel,
+  MenuItem,
   SvgIcon,
+  TextField,
+  withStyles,
+  CardContent,
+  IconButton,
 } from '@material-ui/core'
+import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
-import ColorEditor from './ColorEditor'
+import React from 'react'
 import CallbackEditor from './CallbackEditor'
+import ColorEditor from './ColorEditor'
 
 const StringEditor = observer(({ slot, slotSchema }) => (
   <TextField
@@ -23,7 +27,14 @@ const StringEditor = observer(({ slot, slotSchema }) => (
   />
 ))
 
-const StringArrayEditor = inject('classes')(
+const stringArrayEditorStyles = {
+  stringArrayEditor: {},
+  stringArrayItem: {},
+  stringArrayEditorDelete: {},
+  stringArrayEditorAdd: {},
+}
+
+const StringArrayEditor = withStyles(stringArrayEditorStyles)(
   observer(({ slot, slotSchema, classes }) => (
     <>
       <InputLabel>{slot.name}</InputLabel>
@@ -135,7 +146,37 @@ const valueComponents = {
   stringEnum: stringEnumEditor,
 }
 
-const SlotEditor = inject('classes')(
+const slotEditorStyles = theme => ({
+  card: {
+    display: 'flex',
+    marginBottom: 16,
+  },
+  cardContent: {
+    flex: 'auto',
+    padding: theme.spacing.unit,
+  },
+  slotModeSwitch: {
+    width: 25,
+    background: theme.palette.secondary.light,
+    display: 'flex',
+  },
+  slotModeIcon: {
+    width: 25,
+  },
+  slotModeSwitchOld: {
+    position: 'absolute',
+    display: 'inline',
+    height: '100%',
+    width: '25px',
+    top: 0,
+    right: 0,
+    border: 0,
+    background: '#b9c1ca',
+    padding: 0,
+  },
+})
+
+const SlotEditor = withStyles(slotEditorStyles)(
   observer(({ slot, slotSchema, classes }) => {
     const { name, description, type, value } = slot
     const ValueComponent = slot.isCallback
@@ -143,25 +184,30 @@ const SlotEditor = inject('classes')(
       : valueComponents[type] || StringEditor
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
-      <div className={classes.slotContainer}>
-        <ValueComponent slot={slot} slotSchema={slotSchema} />
-        <button
-          className={classes.slotModeSwitch}
-          onClick={() =>
-            slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
-          }
-          title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
-          type="button"
-        >
-          {!slot.isCallback ? (
-            <Icon>radio_button_unchecked</Icon>
-          ) : (
-            <SvgIcon>
-              <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
-            </SvgIcon>
-          )}
-        </button>
-      </div>
+      <Card className={classes.card}>
+        <CardContent className={classes.cardContent}>
+          <ValueComponent slot={slot} slotSchema={slotSchema} />
+        </CardContent>
+        <div className={classes.slotModeSwitch}>
+          <IconButton
+            className={classes.slotModeIcon}
+            onClick={() =>
+              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+            }
+            title={`convert to ${
+              slot.isCallback ? 'regular value' : 'callback'
+            }`}
+          >
+            {!slot.isCallback ? (
+              <Icon>radio_button_unchecked</Icon>
+            ) : (
+              <SvgIcon>
+                <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
+              </SvgIcon>
+            )}
+          </IconButton>
+        </div>
+      </Card>
     )
   }),
 )

@@ -1,75 +1,36 @@
-import { IconButton, FormLabel } from '@material-ui/core'
-import Checkbox from '@material-ui/core/Checkbox'
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
+import { FormLabel } from '@material-ui/core'
 import FormGroup from '@material-ui/core/FormGroup'
-import Icon from '@material-ui/core/Icon'
-import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
 import {
+  inject,
   observer,
   PropTypes as MobxPropTypes,
   Provider,
-  inject,
 } from 'mobx-react'
+import { getMembers } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
-import { getMembers } from 'mobx-state-tree'
-import { iterMap } from '../../../util'
-
-import SlotEditor from './SlotEditor'
 import {
-  isConfigurationSlotType,
   isConfigurationSchemaType,
+  isConfigurationSlotType,
 } from '../../../configuration/configurationSchema'
+import { iterMap } from '../../../util'
+import SlotEditor from './SlotEditor'
 
 const styles = theme => ({
   root: {
     textAlign: 'left',
-    padding: theme.spacing.unit,
-    background: '#eeeeee',
+    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 3}px ${
+      theme.spacing.unit
+    }px ${theme.spacing.unit}px`,
+    background: theme.palette.background.default,
   },
   subSchemaContainer: {
-    marginLeft: '5px',
-    borderLeft: '1px solid #557ba5',
-    paddingLeft: '8px',
-    marginBottom: '3px',
+    marginLeft: theme.spacing.unit,
+    borderLeft: `1px solid ${theme.palette.secondary.main}`,
+    paddingLeft: theme.spacing.unit,
+    marginBottom: theme.spacing.unit,
   },
-  description: {
-    color: '#666',
-    fontSize: '80%',
-  },
-  subSchemaName: {
-    marginBottom: '4px',
-  },
-  slotName: {},
-  slotContainer: {
-    position: 'relative',
-    marginBottom: '13px',
-    marginRight: '0.8em',
-    background: 'white',
-    padding: '3px 28px 6px 3px',
-    boxShadow:
-      '0px 1px 3px 0px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 2px 1px -1px rgba(0,0,0,0.12)',
-    borderRadius: '4px',
-  },
-  slotModeSwitch: {
-    position: 'absolute',
-    display: 'inline',
-    height: '100%',
-    width: '25px',
-    top: 0,
-    right: 0,
-    border: 0,
-    background: '#b9c1ca',
-    padding: 0,
-  },
-  callbackEditor: {},
 })
 
 const Member = inject('classes')(
