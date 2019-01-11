@@ -46,6 +46,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -134,6 +135,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -222,6 +224,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
