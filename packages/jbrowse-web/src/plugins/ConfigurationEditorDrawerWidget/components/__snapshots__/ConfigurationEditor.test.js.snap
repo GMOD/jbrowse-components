@@ -5,196 +5,311 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
   className="ConfigurationEditor-root-1"
 >
   <div
-    className="ConfigurationEditor-slotContainer-6"
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+      className="MuiCardContent-root-35 _class-cardContent-4"
     >
-      <label
-        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-        data-shrink={true}
-      >
-        name
-      </label>
       <div
-        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-        onClick={[Function]}
+        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
       >
-        <input
-          aria-invalid={false}
-          className="MuiInputBase-input-54 MuiInput-input-39"
-          disabled={false}
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          required={false}
-          type="text"
-          value="Track"
-        />
+        <label
+          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+          data-shrink={true}
+        >
+          name
+        </label>
+        <div
+          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-81 MuiInput-input-66"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="Track"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+        >
+          descriptive name of the track
+        </p>
       </div>
-      <p
-        className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-      >
-        descriptive name of the track
-      </p>
     </div>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
-    >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
-      >
-        radio_button_unchecked
-      </span>
-    </button>
-  </div>
-  <div
-    className="ConfigurationEditor-slotContainer-6"
-  >
     <div
-      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
-      onClick={[Function]}
+      className="_class-slotModeSwitch-5"
     >
-      <label
-        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-        data-shrink={true}
-      >
-        backgroundColor
-      </label>
-      <div
-        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-        onClick={[Function]}
-        style={
-          Object {
-            "borderRightColor": "#eee",
-            "borderRightStyle": "solid",
-            "borderRightWidth": "25px",
-            "color": "#eee",
-          }
-        }
-      >
-        <input
-          aria-invalid={false}
-          className="MuiInputBase-input-54 MuiInput-input-39"
-          disabled={false}
-          name="color"
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          required={false}
-          type="text"
-          value="#eee"
-        />
-      </div>
-      <p
-        className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-      >
-        the track's background color
-      </p>
-    </div>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
-    >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
-      >
-        radio_button_unchecked
-      </span>
-    </button>
-  </div>
-  <div
-    className="ConfigurationEditor-slotContainer-6"
-  >
-    <div
-      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
-    >
-      <label
-        className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21"
-        data-shrink={false}
-      >
-        description
-      </label>
-      <div
-        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-        onClick={[Function]}
-      >
-        <input
-          aria-invalid={false}
-          className="MuiInputBase-input-54 MuiInput-input-39"
-          disabled={false}
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          required={false}
-          type="text"
-          value=""
-        />
-      </div>
-      <p
-        className="MuiFormHelperText-root-70"
-      >
-        a description of the track
-      </p>
-    </div>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
-    >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
-      >
-        radio_button_unchecked
-      </span>
-    </button>
-  </div>
-  <div
-    className="ConfigurationEditor-slotContainer-6"
-  >
-    <label
-      className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-animated-21"
-    >
-      category
-    </label>
-    <div>
       <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
         type="button"
       >
-        add
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
       </button>
     </div>
-    <p
-      className="MuiFormHelperText-root-70"
+  </div>
+  <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+  >
+    <div
+      className="MuiCardContent-root-35 _class-cardContent-4"
     >
-      
-    </p>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
-    >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+      <div
+        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+        onClick={[Function]}
       >
-        radio_button_unchecked
-      </span>
-    </button>
+        <label
+          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+          data-shrink={true}
+        >
+          backgroundColor
+        </label>
+        <div
+          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          onClick={[Function]}
+          style={
+            Object {
+              "borderRightColor": "#eee",
+              "borderRightStyle": "solid",
+              "borderRightWidth": "25px",
+              "color": "#eee",
+            }
+          }
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-81 MuiInput-input-66"
+            disabled={false}
+            name="color"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="#eee"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+        >
+          the track's background color
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+  >
+    <div
+      className="MuiCardContent-root-35 _class-cardContent-4"
+    >
+      <div
+        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+      >
+        <label
+          className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48"
+          data-shrink={false}
+        >
+          description
+        </label>
+        <div
+          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-81 MuiInput-input-66"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value=""
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-113"
+        >
+          a description of the track
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+  >
+    <div
+      className="MuiCardContent-root-35 _class-cardContent-4"
+    >
+      <label
+        className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-animated-48"
+      >
+        category
+      </label>
+      <div
+        className="_class-stringArrayEditor-121"
+      >
+        <button
+          className="_class-stringArrayEditorAdd-124"
+          onClick={[Function]}
+          type="button"
+        >
+          add
+        </button>
+      </div>
+      <p
+        className="MuiFormHelperText-root-113"
+      >
+        
+      </p>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
   </div>
   <label
-    className="MuiFormLabel-root-24"
+    className="MuiFormLabel-root-51"
   >
     adapter
   </label>
@@ -202,98 +317,154 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-78"
+      className="MuiFormGroup-root-125"
     >
       <div
-        className="ConfigurationEditor-slotContainer-6"
+        className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
       >
         <div
-          className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+          className="MuiCardContent-root-35 _class-cardContent-4"
         >
-          <label
-            className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-            data-shrink={true}
-          >
-            bamLocation
-          </label>
           <div
-            className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-            onClick={[Function]}
+            className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
           >
-            <input
-              aria-invalid={false}
-              className="MuiInputBase-input-54 MuiInput-input-39"
-              disabled={false}
-              onBlur={[Function]}
-              onChange={[Function]}
-              onFocus={[Function]}
-              required={false}
-              type="text"
-              value="/path/to/my.bam"
-            />
+            <label
+              className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+              data-shrink={true}
+            >
+              bamLocation
+            </label>
+            <div
+              className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+              onClick={[Function]}
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-81 MuiInput-input-66"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="/path/to/my.bam"
+              />
+            </div>
+            
           </div>
-          
         </div>
-        <button
-          className="ConfigurationEditor-slotModeSwitch-7"
-          onClick={[Function]}
-          title="convert to callback"
-          type="button"
+        <div
+          className="_class-slotModeSwitch-5"
         >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-61"
+          <button
+            className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+            disabled={false}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onContextMenu={[Function]}
+            onFocus={[Function]}
+            onKeyDown={[Function]}
+            onKeyUp={[Function]}
+            onMouseDown={[Function]}
+            onMouseLeave={[Function]}
+            onMouseUp={[Function]}
+            onTouchEnd={[Function]}
+            onTouchMove={[Function]}
+            onTouchStart={[Function]}
+            tabIndex="0"
+            title="convert to callback"
+            type="button"
           >
-            radio_button_unchecked
-          </span>
-        </button>
+            <span
+              className="MuiIconButton-label-93"
+            >
+              <span
+                aria-hidden="true"
+                className="material-icons MuiIcon-root-97"
+              >
+                radio_button_unchecked
+              </span>
+            </span>
+            <span
+              className="MuiTouchRipple-root-106"
+            />
+          </button>
+        </div>
       </div>
       <div
-        className="ConfigurationEditor-slotContainer-6"
+        className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
       >
         <div
-          className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+          className="MuiCardContent-root-35 _class-cardContent-4"
         >
-          <label
-            className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21"
-            data-shrink={false}
-          >
-            assemblyName
-          </label>
           <div
-            className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-            onClick={[Function]}
+            className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
           >
-            <input
-              aria-invalid={false}
-              className="MuiInputBase-input-54 MuiInput-input-39"
-              disabled={false}
-              onBlur={[Function]}
-              onChange={[Function]}
-              onFocus={[Function]}
-              required={false}
-              type="text"
-              value=""
-            />
+            <label
+              className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48"
+              data-shrink={false}
+            >
+              assemblyName
+            </label>
+            <div
+              className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+              onClick={[Function]}
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-81 MuiInput-input-66"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value=""
+              />
+            </div>
+            
           </div>
-          
         </div>
-        <button
-          className="ConfigurationEditor-slotModeSwitch-7"
-          onClick={[Function]}
-          title="convert to callback"
-          type="button"
+        <div
+          className="_class-slotModeSwitch-5"
         >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-61"
+          <button
+            className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+            disabled={false}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onContextMenu={[Function]}
+            onFocus={[Function]}
+            onKeyDown={[Function]}
+            onKeyUp={[Function]}
+            onMouseDown={[Function]}
+            onMouseLeave={[Function]}
+            onMouseUp={[Function]}
+            onTouchEnd={[Function]}
+            onTouchMove={[Function]}
+            onTouchStart={[Function]}
+            tabIndex="0"
+            title="convert to callback"
+            type="button"
           >
-            radio_button_unchecked
-          </span>
-        </button>
+            <span
+              className="MuiIconButton-label-93"
+            >
+              <span
+                aria-hidden="true"
+                className="material-icons MuiIcon-root-97"
+              >
+                radio_button_unchecked
+              </span>
+            </span>
+            <span
+              className="MuiTouchRipple-root-106"
+            />
+          </button>
+        </div>
       </div>
       <label
-        className="MuiFormLabel-root-24"
+        className="MuiFormLabel-root-51"
       >
         index
       </label>
@@ -301,188 +472,272 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-78"
+          className="MuiFormGroup-root-125"
         >
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                indexType
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-                onClick={[Function]}
+                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
               >
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  indexType
+                </label>
                 <div
-                  className="MuiSelect-root-80"
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
                 >
                   <div
-                    aria-haspopup="true"
-                    aria-pressed="false"
-                    className="MuiSelect-select-81 MuiSelect-selectMenu-84 MuiInputBase-input-54 MuiInput-input-39"
-                    onBlur={[Function]}
-                    onClick={[Function]}
-                    onFocus={[Function]}
-                    onKeyDown={[Function]}
-                    role="button"
-                    tabIndex={0}
+                    className="MuiSelect-root-127"
                   >
-                    BAI
-                  </div>
-                  <input
-                    type="hidden"
-                    value="BAI"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    className="MuiSvgIcon-root-87 MuiSelect-icon-86"
-                    focusable="false"
-                    role="presentation"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
+                    <div
+                      aria-haspopup="true"
+                      aria-pressed="false"
+                      className="MuiSelect-select-128 MuiSelect-selectMenu-131 MuiInputBase-input-81 MuiInput-input-66"
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      BAI
+                    </div>
+                    <input
+                      type="hidden"
+                      value="BAI"
                     />
-                  </svg>
+                    <svg
+                      aria-hidden="true"
+                      className="MuiSvgIcon-root-134 MuiSelect-icon-133"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
+                  </div>
                 </div>
+                
               </div>
-              
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                location
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-                onClick={[Function]}
+                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
               >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39"
-                  disabled={false}
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="text"
-                  value="/path/to/my.bam.bai"
-                />
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  location
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="/path/to/my.bam.bai"
+                  />
+                </div>
+                
               </div>
-              
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
   <div
-    className="ConfigurationEditor-slotContainer-6"
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+      className="MuiCardContent-root-35 _class-cardContent-4"
     >
-      <label
-        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-        data-shrink={true}
-      >
-        defaultRendering
-      </label>
       <div
-        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-        onClick={[Function]}
+        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
       >
+        <label
+          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+          data-shrink={true}
+        >
+          defaultRendering
+        </label>
         <div
-          className="MuiSelect-root-80"
+          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          onClick={[Function]}
         >
           <div
-            aria-haspopup="true"
-            aria-pressed="false"
-            className="MuiSelect-select-81 MuiSelect-selectMenu-84 MuiInputBase-input-54 MuiInput-input-39"
-            onBlur={[Function]}
-            onClick={[Function]}
-            onFocus={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={0}
+            className="MuiSelect-root-127"
           >
-            pileup
-          </div>
-          <input
-            type="hidden"
-            value="pileup"
-          />
-          <svg
-            aria-hidden="true"
-            className="MuiSvgIcon-root-87 MuiSelect-icon-86"
-            focusable="false"
-            role="presentation"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M7 10l5 5 5-5z"
+            <div
+              aria-haspopup="true"
+              aria-pressed="false"
+              className="MuiSelect-select-128 MuiSelect-selectMenu-131 MuiInputBase-input-81 MuiInput-input-66"
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              role="button"
+              tabIndex={0}
+            >
+              pileup
+            </div>
+            <input
+              type="hidden"
+              value="pileup"
             />
-          </svg>
+            <svg
+              aria-hidden="true"
+              className="MuiSvgIcon-root-134 MuiSelect-icon-133"
+              focusable="false"
+              role="presentation"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 10l5 5 5-5z"
+              />
+            </svg>
+          </div>
         </div>
+        
       </div>
-      
     </div>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
+    <div
+      className="_class-slotModeSwitch-5"
     >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+      <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
       >
-        radio_button_unchecked
-      </span>
-    </button>
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
   </div>
   <label
-    className="MuiFormLabel-root-24"
+    className="MuiFormLabel-root-51"
   >
     renderers
   </label>
@@ -490,10 +745,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-78"
+      className="MuiFormGroup-root-125"
     >
       <label
-        className="MuiFormLabel-root-24"
+        className="MuiFormLabel-root-51"
       >
         PileupRenderer
       </label>
@@ -501,136 +756,139 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-78"
+          className="MuiFormGroup-root-125"
         >
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 ConfigurationEditor-callbackEditor-8"
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-                htmlFor="callback-editor"
-              >
-                alignmentColor
-              </label>
               <div
-                style={
-                  Object {
-                    "borderBottom": "1px solid rgba(0,0,0,0.42)",
-                    "marginTop": "16px",
-                  }
-                }
+                className="MuiFormControl-root-36 CallbackEditor-callbackEditor-147"
               >
+                <label
+                  className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                  htmlFor="callback-editor"
+                >
+                  alignmentColor
+                </label>
                 <div
                   style={
                     Object {
-                      "boxSizing": "border-box",
-                      "fontFamily": "\\"Fira code\\", \\"Fira Mono\\", monospace",
-                      "fontSize": "90%",
-                      "padding": 0,
-                      "position": "relative",
-                      "textAlign": "left",
-                      "whiteSpace": "pre-wrap",
-                      "wordBreak": "keep-all",
+                      "borderBottom": "1px solid rgba(0,0,0,0.42)",
+                      "marginTop": "16px",
                     }
                   }
                 >
-                  <textarea
-                    autoCapitalize="off"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    className="npm__react-simple-code-editor__textarea "
-                    data-gramm={false}
-                    onChange={[Function]}
-                    onKeyDown={[Function]}
-                    spellCheck={false}
+                  <div
                     style={
                       Object {
-                        "MozOsxFontSmoothing": "grayscale",
-                        "WebkitFontSmoothing": "antialiased",
-                        "WebkitTextFillColor": "transparent",
-                        "background": "none",
-                        "border": 0,
-                        "boxSizing": "inherit",
-                        "color": "inherit",
-                        "display": "inherit",
-                        "fontFamily": "inherit",
-                        "fontSize": "inherit",
-                        "fontStyle": "inherit",
-                        "fontVariantLigatures": "inherit",
-                        "fontWeight": "inherit",
-                        "height": "100%",
-                        "left": 0,
-                        "letterSpacing": "inherit",
-                        "lineHeight": "inherit",
-                        "margin": 0,
-                        "overflow": "hidden",
-                        "paddingBottom": 10,
-                        "paddingLeft": 10,
-                        "paddingRight": 10,
-                        "paddingTop": 10,
-                        "position": "absolute",
-                        "resize": "none",
-                        "tabSize": "inherit",
-                        "textIndent": "inherit",
-                        "textRendering": "inherit",
-                        "textTransform": "inherit",
-                        "top": 0,
-                        "whiteSpace": "inherit",
-                        "width": "100%",
-                        "wordBreak": "inherit",
+                        "boxSizing": "border-box",
+                        "fontFamily": "\\"Fira code\\", \\"Fira Mono\\", monospace",
+                        "fontSize": "90%",
+                        "padding": 0,
+                        "position": "relative",
+                        "textAlign": "left",
+                        "whiteSpace": "pre-wrap",
+                        "wordBreak": "keep-all",
                       }
                     }
-                    value="function(feature) {
+                  >
+                    <textarea
+                      autoCapitalize="off"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      className="npm__react-simple-code-editor__textarea "
+                      data-gramm={false}
+                      onChange={[Function]}
+                      onKeyDown={[Function]}
+                      spellCheck={false}
+                      style={
+                        Object {
+                          "MozOsxFontSmoothing": "grayscale",
+                          "WebkitFontSmoothing": "antialiased",
+                          "WebkitTextFillColor": "transparent",
+                          "background": "none",
+                          "border": 0,
+                          "boxSizing": "inherit",
+                          "color": "inherit",
+                          "display": "inherit",
+                          "fontFamily": "inherit",
+                          "fontSize": "inherit",
+                          "fontStyle": "inherit",
+                          "fontVariantLigatures": "inherit",
+                          "fontWeight": "inherit",
+                          "height": "100%",
+                          "left": 0,
+                          "letterSpacing": "inherit",
+                          "lineHeight": "inherit",
+                          "margin": 0,
+                          "overflow": "hidden",
+                          "paddingBottom": 10,
+                          "paddingLeft": 10,
+                          "paddingRight": 10,
+                          "paddingTop": 10,
+                          "position": "absolute",
+                          "resize": "none",
+                          "tabSize": "inherit",
+                          "textIndent": "inherit",
+                          "textRendering": "inherit",
+                          "textTransform": "inherit",
+                          "top": 0,
+                          "whiteSpace": "inherit",
+                          "width": "100%",
+                          "wordBreak": "inherit",
+                        }
+                      }
+                      value="function(feature) {
   var s = feature.get('strand');
   return s === '-' || s === -1 ? 'blue': 'red'
 }"
-                  />
-                  <pre
-                    aria-hidden="true"
-                    dangerouslySetInnerHTML={
-                      Object {
-                        "__html": "<span class=\\"token keyword\\">function</span><span class=\\"token punctuation\\">(</span>feature<span class=\\"token punctuation\\">)</span> <span class=\\"token punctuation\\">{</span>
+                    />
+                    <pre
+                      aria-hidden="true"
+                      dangerouslySetInnerHTML={
+                        Object {
+                          "__html": "<span class=\\"token keyword\\">function</span><span class=\\"token punctuation\\">(</span>feature<span class=\\"token punctuation\\">)</span> <span class=\\"token punctuation\\">{</span>
   <span class=\\"token keyword\\">var</span> s <span class=\\"token operator\\">=</span> feature<span class=\\"token punctuation\\">.</span><span class=\\"token keyword\\">get</span><span class=\\"token punctuation\\">(</span><span class=\\"token string\\">'strand'</span><span class=\\"token punctuation\\">)</span><span class=\\"token punctuation\\">;</span>
   <span class=\\"token keyword\\">return</span> s <span class=\\"token operator\\">===</span> <span class=\\"token string\\">'-'</span> <span class=\\"token operator\\">||</span> s <span class=\\"token operator\\">===</span> <span class=\\"token operator\\">-</span><span class=\\"token number\\">1</span> <span class=\\"token operator\\">?</span> <span class=\\"token string\\">'blue'</span><span class=\\"token punctuation\\">:</span> <span class=\\"token string\\">'red'</span>
 <span class=\\"token punctuation\\">}</span><br />",
+                        }
                       }
-                    }
-                    style={
-                      Object {
-                        "border": 0,
-                        "boxSizing": "inherit",
-                        "display": "inherit",
-                        "fontFamily": "inherit",
-                        "fontSize": "inherit",
-                        "fontStyle": "inherit",
-                        "fontVariantLigatures": "inherit",
-                        "fontWeight": "inherit",
-                        "letterSpacing": "inherit",
-                        "lineHeight": "inherit",
-                        "margin": 0,
-                        "paddingBottom": 10,
-                        "paddingLeft": 10,
-                        "paddingRight": 10,
-                        "paddingTop": 10,
-                        "pointerEvents": "none",
-                        "position": "relative",
-                        "tabSize": "inherit",
-                        "textIndent": "inherit",
-                        "textRendering": "inherit",
-                        "textTransform": "inherit",
-                        "whiteSpace": "inherit",
-                        "wordBreak": "inherit",
+                      style={
+                        Object {
+                          "border": 0,
+                          "boxSizing": "inherit",
+                          "display": "inherit",
+                          "fontFamily": "inherit",
+                          "fontSize": "inherit",
+                          "fontStyle": "inherit",
+                          "fontVariantLigatures": "inherit",
+                          "fontWeight": "inherit",
+                          "letterSpacing": "inherit",
+                          "lineHeight": "inherit",
+                          "margin": 0,
+                          "paddingBottom": 10,
+                          "paddingLeft": 10,
+                          "paddingRight": 10,
+                          "paddingTop": 10,
+                          "pointerEvents": "none",
+                          "position": "relative",
+                          "tabSize": "inherit",
+                          "textIndent": "inherit",
+                          "textRendering": "inherit",
+                          "textTransform": "inherit",
+                          "whiteSpace": "inherit",
+                          "wordBreak": "inherit",
+                        }
                       }
-                    }
-                  />
-                  <style
-                    type="text/css"
-                  >
-                    
+                    />
+                    <style
+                      type="text/css"
+                    >
+                      
 /**
  * Reset the text fill color so that placeholder is visible
  */
@@ -652,86 +910,139 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
   color: transparent !important;
 }
 
-                  </style>
+                    </style>
+                  </div>
                 </div>
+                <p
+                  className="MuiFormHelperText-root-113"
+                >
+                  the color of each feature in a pileup alignment
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70"
-              >
-                the color of each feature in a pileup alignment
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to regular value"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <svg
-                aria-hidden="true"
-                className="MuiSvgIcon-root-87"
-                focusable="false"
-                role="presentation"
-                viewBox="0 0 24 24"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to regular value"
+                type="button"
               >
-                <path
-                  d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <svg
+                    aria-hidden="true"
+                    className="MuiSvgIcon-root-134"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
                 />
-              </svg>
-            </button>
+              </button>
+            </div>
           </div>
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9"
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                alignmentHeight
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32"
-                onClick={[Function]}
+                className="MuiFormControl-root-36"
               >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputType-57 MuiInput-inputType-42"
-                  disabled={false}
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="number"
-                  value={5}
-                />
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  alignmentHeight
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66 MuiInputBase-inputType-84 MuiInput-inputType-69"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="number"
+                    value={5}
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  the height of each feature in a pileup alignment
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-              >
-                the height of each feature in a pileup alignment
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
       <label
-        className="MuiFormLabel-root-24"
+        className="MuiFormLabel-root-51"
       >
         SvgFeatureRenderer
       </label>
@@ -739,229 +1050,341 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-78"
+          className="MuiFormGroup-root-125"
         >
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
-              onClick={[Function]}
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                color1
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
+                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
                 onClick={[Function]}
-                style={
-                  Object {
-                    "borderRightColor": "goldenrod",
-                    "borderRightStyle": "solid",
-                    "borderRightWidth": "25px",
-                    "color": "goldenrod",
+              >
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  color1
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                  style={
+                    Object {
+                      "borderRightColor": "goldenrod",
+                      "borderRightStyle": "solid",
+                      "borderRightWidth": "25px",
+                      "color": "goldenrod",
+                    }
                   }
-                }
-              >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39"
-                  disabled={false}
-                  name="color"
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="text"
-                  value="goldenrod"
-                />
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    disabled={false}
+                    name="color"
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="goldenrod"
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  the main color of each feature
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-              >
-                the main color of each feature
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
-              onClick={[Function]}
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                color2
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
+                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
                 onClick={[Function]}
-                style={
-                  Object {
-                    "borderRightColor": "black",
-                    "borderRightStyle": "solid",
-                    "borderRightWidth": "25px",
-                    "color": "black",
+              >
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  color2
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                  style={
+                    Object {
+                      "borderRightColor": "black",
+                      "borderRightStyle": "solid",
+                      "borderRightWidth": "25px",
+                      "color": "black",
+                    }
                   }
-                }
-              >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39"
-                  disabled={false}
-                  name="color"
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="text"
-                  value="black"
-                />
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    disabled={false}
+                    name="color"
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="black"
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  the secondary color of each feature, used for connecting lines, etc
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-              >
-                the secondary color of each feature, used for connecting lines, etc
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
-              onClick={[Function]}
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                color3
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
+                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
                 onClick={[Function]}
-                style={
-                  Object {
-                    "borderRightColor": "#357089",
-                    "borderRightStyle": "solid",
-                    "borderRightWidth": "25px",
-                    "color": "#357089",
+              >
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  color3
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                  style={
+                    Object {
+                      "borderRightColor": "#357089",
+                      "borderRightStyle": "solid",
+                      "borderRightWidth": "25px",
+                      "color": "#357089",
+                    }
                   }
-                }
-              >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39"
-                  disabled={false}
-                  name="color"
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="text"
-                  value="#357089"
-                />
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    disabled={false}
+                    name="color"
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="#357089"
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  the tertiary color of each feature, often used for contrasting fills, like on UTRs
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-              >
-                the tertiary color of each feature, often used for contrasting fills, like on UTRs
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
           <div
-            className="ConfigurationEditor-slotContainer-6"
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiFormControl-root-9"
+              className="MuiCardContent-root-35 _class-cardContent-4"
             >
-              <label
-                className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-                data-shrink={true}
-              >
-                height
-              </label>
               <div
-                className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-formControl-45 MuiInput-formControl-32"
-                onClick={[Function]}
+                className="MuiFormControl-root-36"
               >
-                <input
-                  aria-invalid={false}
-                  className="MuiInputBase-input-54 MuiInput-input-39 MuiInputBase-inputType-57 MuiInput-inputType-42"
-                  disabled={false}
-                  onBlur={[Function]}
-                  onChange={[Function]}
-                  onFocus={[Function]}
-                  required={false}
-                  type="number"
-                  value={10}
-                />
+                <label
+                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  data-shrink={true}
+                >
+                  height
+                </label>
+                <div
+                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-81 MuiInput-input-66 MuiInputBase-inputType-84 MuiInput-inputType-69"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="number"
+                    value={10}
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  height in pixels of the main body of each feature
+                </p>
               </div>
-              <p
-                className="MuiFormHelperText-root-70 MuiFormHelperText-filled-76"
-              >
-                height in pixels of the main body of each feature
-              </p>
             </div>
-            <button
-              className="ConfigurationEditor-slotModeSwitch-7"
-              onClick={[Function]}
-              title="convert to callback"
-              type="button"
+            <div
+              className="_class-slotModeSwitch-5"
             >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-61"
+              <button
+                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
               >
-                radio_button_unchecked
-              </span>
-            </button>
+                <span
+                  className="MuiIconButton-label-93"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-97"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -975,48 +1398,76 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
   className="ConfigurationEditor-root-1"
 >
   <div
-    className="ConfigurationEditor-slotContainer-6"
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiFormControl-root-9 MuiFormControl-fullWidth-12"
+      className="MuiCardContent-root-35 _class-cardContent-4"
     >
-      <label
-        className="MuiFormLabel-root-24 MuiFormLabel-filled-28 MuiInputLabel-root-13 MuiInputLabel-formControl-18 MuiInputLabel-animated-21 MuiInputLabel-shrink-20"
-        data-shrink={true}
-      >
-        foo
-      </label>
       <div
-        className="MuiInputBase-root-44 MuiInput-root-31 MuiInput-underline-35 MuiInputBase-fullWidth-53 MuiInput-fullWidth-38 MuiInputBase-formControl-45 MuiInput-formControl-32"
-        onClick={[Function]}
+        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
       >
-        <input
-          aria-invalid={false}
-          className="MuiInputBase-input-54 MuiInput-input-39"
-          disabled={false}
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          required={false}
-          type="text"
-          value="bar"
-        />
+        <label
+          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+          data-shrink={true}
+        >
+          foo
+        </label>
+        <div
+          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-81 MuiInput-input-66"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="bar"
+          />
+        </div>
+        
       </div>
-      
     </div>
-    <button
-      className="ConfigurationEditor-slotModeSwitch-7"
-      onClick={[Function]}
-      title="convert to callback"
-      type="button"
+    <div
+      className="_class-slotModeSwitch-5"
     >
-      <span
-        aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+      <button
+        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
       >
-        radio_button_unchecked
-      </span>
-    </button>
+        <span
+          className="MuiIconButton-label-93"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-97"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
   </div>
 </div>
 `;
