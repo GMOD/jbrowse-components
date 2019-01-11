@@ -1,37 +1,68 @@
-import React from 'react'
-import {
-  FormHelperText,
-  FormControl,
-  InputLabel,
-  Input,
-} from '@material-ui/core'
-import { observer, inject } from 'mobx-react'
-// import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
+import ReactPropTypes from 'prop-types'
+import { FormHelperText, FormControl, InputLabel } from '@material-ui/core'
+import { observer, inject, PropTypes } from 'mobx-react'
 
-// import Highlight from 'react-highlight.js'
+import Editor from 'react-simple-code-editor'
+import { highlight, languages } from 'prismjs/components/prism-core'
+import 'prismjs/components/prism-clike'
+import 'prismjs/components/prism-javascript'
+import 'prismjs/themes/prism.css'
 
-// const Highlighter = props => {
-//   const { value } = props
+import debounce from 'debounce'
 
-//   return <Highlight language="js">{value}</Highlight>
-// }
-// Highlighter.propTypes = {
-//   value: ReactPropTypes.string.isRequired,
-// }
+@inject('classes')
+@observer
+class CallbackEditor extends Component {
+  static propTypes = {
+    slot: PropTypes.objectOrObservableObject.isRequired,
+    classes: ReactPropTypes.shape({
+      callbackEditor: ReactPropTypes.string.isRequired,
+    }).isRequired,
+  }
 
-const CallbackEditor = inject('classes')(
-  observer(({ slot, slotSchema, classes }) => (
-    <FormControl className={classes.callbackEditor}>
-      <InputLabel htmlFor="callback-editor">{slot.name}</InputLabel>
-      <Input
-        value={slot.value}
-        id="callback-editor"
-        multiline
-        onChange={evt => slot.set(evt.target.value)}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </FormControl>
-  )),
-)
+  constructor(props) {
+    super(props)
+    const { slot } = props
+    this.state = { code: slot.value }
+
+    this.updateSlot = debounce(code => slot.set(code), 400)
+  }
+
+  render() {
+    const { slot, classes } = this.props
+    const { code } = this.state
+    return (
+      <FormControl className={classes.callbackEditor}>
+        <InputLabel shrink htmlFor="callback-editor">
+          {slot.name}
+        </InputLabel>
+        <div
+          style={{
+            marginTop: '16px',
+            borderBottom: '1px solid rgba(0,0,0,0.42)',
+          }}
+        >
+          <Editor
+            value={code}
+            onValueChange={newCode => {
+              this.setState({ code: newCode })
+              this.updateSlot(newCode)
+            }}
+            highlight={newCode =>
+              highlight(newCode, languages.javascript, 'javascript')
+            }
+            padding={10}
+            style={{
+              fontFamily: '"Fira code", "Fira Mono", monospace',
+              fontSize: '90%',
+            }}
+          />
+        </div>
+        <FormHelperText>{slot.description}</FormHelperText>
+      </FormControl>
+    )
+  }
+}
 
 export default CallbackEditor
