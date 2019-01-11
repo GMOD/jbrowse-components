@@ -32,6 +32,15 @@ const styles = {
 
 @observer
 class DropDownMenu extends React.Component {
+  static propTypes = {
+    classes: PropTypes.shape({
+      root: PropTypes.shape.isRequired,
+    }).isRequired,
+    menuTitle: PropTypes.string.isRequired,
+    menuItems: MobxPropTypes.observableArray.isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
+  }
+
   state = {
     anchorEl: null,
   }
@@ -110,19 +119,6 @@ class DropDownMenu extends React.Component {
       </div>
     )
   }
-}
-
-DropDownMenu.defaultProps = {
-  itemIcons: [],
-}
-
-DropDownMenu.propTypes = {
-  classes: PropTypes.shape({
-    root: PropTypes.shape.isRequired,
-  }).isRequired,
-  menuTitle: PropTypes.string.isRequired,
-  menuItems: MobxPropTypes.observableArray.isRequired,
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(DropDownMenu)
