@@ -48,6 +48,7 @@ class DataHubDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
       root: propTypes.string.isRequired,
+      stepper: propTypes.string.isRequired,
       button: propTypes.string.isRequired,
       actionsContainer: propTypes.string.isRequired,
       resetContainer: propTypes.string.isRequired,
@@ -71,6 +72,17 @@ class DataHubDrawerWidget extends React.Component {
     nextEnabledThroughStep: -1,
   }
 
+  setHubType = event => this.setState({ hubType: event.target.value })
+
+  setHubSource = event => this.setState({ hubSource: event.target.value })
+
+  setTrackDbUrl = newUrl => this.setState({ trackDbUrl: newUrl })
+
+  setHubName = newHubName => this.setState({ hubName: newHubName })
+
+  setAssemblyName = newAssemblyName =>
+    this.setState({ assemblyName: newAssemblyName })
+
   get stepContent() {
     const {
       activeStep,
@@ -80,17 +92,14 @@ class DataHubDrawerWidget extends React.Component {
       hubName,
       assemblyName,
     } = this.state
+    let StepComponent
     switch (activeStep) {
       case 0:
         return (
           <HubTypeSelect
             hubType={hubType}
-            setHubType={event => {
-              this.setState({ hubType: event.target.value })
-            }}
-            enableNext={() => {
-              this.setState({ nextEnabledThroughStep: activeStep })
-            }}
+            setHubType={this.setHubType}
+            enableNext={() => this.enableNextThrough(activeStep)}
           />
         )
       case 1:
@@ -98,63 +107,40 @@ class DataHubDrawerWidget extends React.Component {
           <HubSourceSelect
             hubType={hubType}
             hubSource={hubSource}
-            setHubSource={event => {
-              this.setState({ hubSource: event.target.value })
-            }}
-            enableNext={() => {
-              this.setState({ nextEnabledThroughStep: activeStep })
-            }}
+            setHubSource={this.setHubSource}
+            enableNext={() => this.enableNextThrough(activeStep)}
           />
         )
       case 2:
-        if (hubSource === 'ucscCustom')
-          return (
-            <UrlInput
-              enableNext={() =>
-                this.setState({ nextEnabledThroughStep: activeStep })
-              }
-              disableNext={() =>
-                this.setState({ nextEnabledThroughStep: activeStep - 1 })
-              }
-              setTrackDbUrl={newUrl => this.setState({ trackDbUrl: newUrl })}
-              setHubName={newHubName => this.setState({ hubName: newHubName })}
-              setAssemblyName={newAssemblyName =>
-                this.setState({ assemblyName: newAssemblyName })
-              }
-            />
-          )
-        if (hubSource === 'trackHubRegistry')
-          return (
-            <TrackHubRegistrySelect
-              enableNext={() =>
-                this.setState({ nextEnabledThroughStep: activeStep })
-              }
-              disableNext={() =>
-                this.setState({ nextEnabledThroughStep: activeStep - 1 })
-              }
-              setTrackDbUrl={newUrl => this.setState({ trackDbUrl: newUrl })}
-              setHubName={newHubName => this.setState({ hubName: newHubName })}
-              setAssemblyName={newAssemblyName =>
-                this.setState({ assemblyName: newAssemblyName })
-              }
-            />
-          )
-        return <Typography color="error">Unknown Data Hub Source</Typography>
+        if (hubSource === 'ucscCustom') StepComponent = UrlInput
+        else if (hubSource === 'trackHubRegistry')
+          StepComponent = TrackHubRegistrySelect
+        else
+          return <Typography color="error">Unknown Data Hub Source</Typography>
+        return (
+          <StepComponent
+            enableNext={() => this.enableNextThrough(activeStep)}
+            disableNext={() => this.enableNextThrough(activeStep - 1)}
+            setTrackDbUrl={this.setTrackDbUrl}
+            setHubName={this.setHubName}
+            setAssemblyName={this.setAssemblyName}
+          />
+        )
       case 3:
         return (
           <ConfirmationDialog
             hubName={hubName}
             assemblyName={assemblyName}
             trackDbUrl={trackDbUrl}
-            enableNext={() =>
-              this.setState({ nextEnabledThroughStep: activeStep + 1 })
-            }
+            enableNext={() => this.enableNextThrough(activeStep)}
           />
         )
       default:
         return <Typography>Unknown step</Typography>
     }
   }
+
+  enableNextThrough = step => this.setState({ nextEnabledThroughStep: step })
 
   handleNext = () => {
     const { activeStep } = this.state
