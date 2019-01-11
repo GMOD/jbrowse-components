@@ -1,7 +1,10 @@
 module.exports = {
   collectCoverageFrom: ['src/**/*.{js,jsx}'],
   resolver: 'jest-pnp-resolver',
-  setupFiles: ['react-app-polyfill/jsdom'],
+  setupFiles: [
+    'react-app-polyfill/jsdom',
+    '<rootDir>/config/jest/enzymeSetup.js',
+  ],
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
     '<rootDir>/src/**/?(*.)(spec|test).{js,jsx}',
@@ -22,4 +25,5 @@ module.exports = {
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
   },
   moduleFileExtensions: ['web.js', 'js', 'json', 'web.jsx', 'jsx', 'node'],
+  snapshotSerializers: ['enzyme-to-json/serializer'],
 }

@@ -29,9 +29,6 @@ const styles = theme => ({
   actionsContainer: {
     marginBottom: theme.spacing.unit * 2,
   },
-  resetContainer: {
-    padding: theme.spacing.unit * 3,
-  },
 })
 
 const steps = [
@@ -51,7 +48,6 @@ class DataHubDrawerWidget extends React.Component {
       stepper: propTypes.string.isRequired,
       button: propTypes.string.isRequired,
       actionsContainer: propTypes.string.isRequired,
-      resetContainer: propTypes.string.isRequired,
     }).isRequired,
     rootModel: MobxPropTypes.observableObject.isRequired,
   }
