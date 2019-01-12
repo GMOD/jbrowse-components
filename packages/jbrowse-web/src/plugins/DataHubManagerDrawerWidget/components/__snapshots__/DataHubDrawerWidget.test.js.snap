@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DataHubManager drawer widget can handle a custom UCSC URL 1`] = `
+exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
 <div
   className="inject-DataHubDrawerWidget-with-rootModel-root-1"
 >
@@ -149,7 +149,7 @@ exports[`DataHubManager drawer widget can handle a custom UCSC URL 1`] = `
 </div>
 `;
 
-exports[`DataHubManager drawer widget can handle a custom UCSC URL 2`] = `
+exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
 <div
   className="inject-DataHubDrawerWidget-with-rootModel-root-1"
 >
@@ -302,7 +302,7 @@ exports[`DataHubManager drawer widget can handle a custom UCSC URL 2`] = `
 </div>
 `;
 
-exports[`DataHubManager drawer widget renders 1`] = `
+exports[`<DataHubDrawerWidget /> renders 1`] = `
 <div
   className="inject-DataHubDrawerWidget-with-rootModel-root-1"
 >

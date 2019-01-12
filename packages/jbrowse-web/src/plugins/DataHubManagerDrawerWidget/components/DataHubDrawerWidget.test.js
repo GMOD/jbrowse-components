@@ -3,7 +3,7 @@ import React from 'react'
 import JBrowse from '../../../JBrowse'
 import DataHubDrawerWidget from './DataHubDrawerWidget'
 
-describe('DataHubManager drawer widget', () => {
+describe('<DataHubDrawerWidget />', () => {
   let shallow
   let classes
   let jbrowse

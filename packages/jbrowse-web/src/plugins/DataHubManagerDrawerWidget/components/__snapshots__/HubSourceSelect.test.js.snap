@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HubSourceSelect /> renders and selects a hub 1`] = `
+<WithStyles(FormControl)
+  component="fieldset"
+>
+  <RadioGroup
+    onChange={[Function]}
+  />
+</WithStyles(FormControl)>
+`;
