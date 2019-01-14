@@ -6,7 +6,7 @@ test('can convert a string slot to and from a callback', () => {
   expect(instance.value).toBe('foo')
   expect(instance.func()).toBe('foo')
   instance.convertToCallback()
-  expect(instance.value).toContain('function')
+  expect(instance.value).toContain('function()')
   expect(instance.func()).toBe('foo')
   instance.convertToValue()
   expect(instance.value).toBe('foo')
@@ -14,12 +14,16 @@ test('can convert a string slot to and from a callback', () => {
 })
 
 test('can convert a numeric slot to and from a callback', () => {
-  const model = ConfigSlot('tester', { type: 'number', defaultValue: 12 })
+  const model = ConfigSlot('tester', {
+    type: 'number',
+    defaultValue: 12,
+    functionSignature: ['something'],
+  })
   const instance = model.create()
   expect(instance.value).toBe(12)
   expect(instance.func()).toBe(12)
   instance.convertToCallback()
-  expect(instance.value).toContain('function')
+  expect(instance.value).toContain('function(something)')
   expect(instance.func()).toBe(12)
 })
 

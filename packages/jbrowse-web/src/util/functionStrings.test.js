@@ -1,4 +1,5 @@
 import { stringToFunction, functionRegexp } from './functionStrings'
+import { inDevelopment } from './index'
 
 describe('function string parsing', () => {
   it('has working regex', () => {
@@ -34,8 +35,12 @@ describe('function string parsing', () => {
     '  function( a, b,c){\nreturn a+b+c+5; \n ;\n}',
   ].forEach(funcStr => {
     it(`can parse '${funcStr}'`, () => {
-      const func = stringToFunction(funcStr)
+      const func = stringToFunction(funcStr, {
+        verifyFunctionSignature: ['a', 'b', 'c'],
+      })
       expect(func(5, 10, 15)).toBe(35)
+      // should throw an exception if the signature verification failed
+      expect(() => func(42)).toThrow()
     })
   })
 })

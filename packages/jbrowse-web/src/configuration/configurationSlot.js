@@ -1,6 +1,7 @@
 import { types } from 'mobx-state-tree'
 import { FileLocation } from '../mst-types'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
+import { inDevelopment } from '../util'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
@@ -86,7 +87,7 @@ const FunctionStringType = types.refinement(
  */
 export default function ConfigSlot(
   slotName,
-  { description = '', model, type, defaultValue },
+  { description = '', model, type, defaultValue, functionSignature = [] },
 ) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]
@@ -112,11 +113,18 @@ export default function ConfigSlot(
         defaultValue,
       ),
     })
+    .volatile(() => ({
+      functionSignature,
+    }))
     .views(self => ({
       get func() {
         if (self.isCallback) {
           // compile this as a function
-          return stringToFunction(String(self.value))
+          return stringToFunction(String(self.value), {
+            verifyFunctionSignature: inDevelopment
+              ? functionSignature
+              : undefined,
+          })
         }
         return () => self.value
       },
@@ -160,7 +168,7 @@ export default function ConfigSlot(
       },
       convertToCallback() {
         if (self.isCallback) return
-        self.value = `function() {
+        self.value = `function(${self.functionSignature.join(', ')}) {
   return ${self.valueJSON}
 }
 `

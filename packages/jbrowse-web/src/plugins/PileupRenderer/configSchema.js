@@ -13,5 +13,6 @@ export default ConfigurationSchema('PileupRenderer', {
     type: 'integer',
     description: 'the height of each feature in a pileup alignment',
     defaultValue: 5,
+    functionSignature: ['feature'],
   },
 })

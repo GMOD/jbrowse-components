@@ -45,3 +45,10 @@ export function iterMap(iterable, func, sizeHint) {
   }
   return results
 }
+
+export const inDevelopment =
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_ENV === 'development'
+
+export const inProduction = !inDevelopment
