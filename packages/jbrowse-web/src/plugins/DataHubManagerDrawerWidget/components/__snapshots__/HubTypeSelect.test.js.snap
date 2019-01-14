@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<HubTypeSelect /> renders and selects a hub 1`] = `
+exports[`<HubTypeSelect /> renders 1`] = `
 <WithStyles(FormControl)
   component="fieldset"
 >

@@ -9,14 +9,14 @@ describe('<HubSourceSelect />', () => {
     shallow = createShallow()
   })
 
-  it('renders and selects a hub', () => {
+  it('renders', () => {
     const wrapper = shallow(
       <HubSourceSelect setHubSource={() => {}} enableNext={() => {}} />,
     )
     expect(wrapper).toMatchSnapshot()
   })
 
-  it('selects a hub type', () => {
+  it('selects a hub source', () => {
     const setHubSource = jest.fn(event => event.target.value)
     const enableNext = jest.fn(() => true)
     const wrapper = shallow(

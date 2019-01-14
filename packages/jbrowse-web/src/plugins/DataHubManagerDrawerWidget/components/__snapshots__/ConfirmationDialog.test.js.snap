@@ -1,0 +1,202 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ConfirmationDialog /> mounts 1`] = `
+<WithStyles(inject-ConfirmationDialog-with-rootModel)
+  assemblyName="hg38"
+  enableNext={[Function]}
+  hubName="TestHub"
+  rootModel={
+    Object {
+      "configuration": Object {
+        "_configId": "testing",
+        "views": Object {
+          "LinearGenomeView": Object {
+            "_configId": "LinearGenomeView",
+          },
+        },
+      },
+      "drawerWidgets": Object {
+        "hierarchicalTrackSelector": Object {
+          "collapsed": Object {},
+          "filterText": "",
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "view": "viewTestingId",
+        },
+      },
+      "drawerWidth": 256,
+      "menuBars": Array [],
+      "selectedDrawerWidget": "hierarchicalTrackSelector",
+      "views": Array [
+        Object {
+          "bpPerPx": 1,
+          "configuration": Object {
+            "_configId": "LinearGenomeView",
+          },
+          "controlsWidth": 100,
+          "displayedRegions": Array [],
+          "flipped": false,
+          "id": "viewTestingId",
+          "offsetPx": 0,
+          "tracks": Array [],
+          "type": "LinearGenomeView",
+        },
+      ],
+    }
+  }
+  trackDbUrl={"http://test.com/trackDb.txt"}
+>
+  <inject-ConfirmationDialog-with-rootModel
+    assemblyName="hg38"
+    classes={
+      Object {
+        "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+      }
+    }
+    enableNext={[Function]}
+    hubName="TestHub"
+    rootModel={
+      Object {
+        "configuration": Object {
+          "_configId": "testing",
+          "views": Object {
+            "LinearGenomeView": Object {
+              "_configId": "LinearGenomeView",
+            },
+          },
+        },
+        "drawerWidgets": Object {
+          "hierarchicalTrackSelector": Object {
+            "collapsed": Object {},
+            "filterText": "",
+            "id": "hierarchicalTrackSelector",
+            "type": "HierarchicalTrackSelectorDrawerWidget",
+            "view": "viewTestingId",
+          },
+        },
+        "drawerWidth": 256,
+        "menuBars": Array [],
+        "selectedDrawerWidget": "hierarchicalTrackSelector",
+        "views": Array [
+          Object {
+            "bpPerPx": 1,
+            "configuration": Object {
+              "_configId": "LinearGenomeView",
+            },
+            "controlsWidth": 100,
+            "displayedRegions": Array [],
+            "flipped": false,
+            "id": "viewTestingId",
+            "offsetPx": 0,
+            "tracks": Array [],
+            "type": "LinearGenomeView",
+          },
+        ],
+      }
+    }
+    trackDbUrl={"http://test.com/trackDb.txt"}
+  >
+    <ConfirmationDialog
+      assemblyName="hg38"
+      classes={
+        Object {
+          "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+        }
+      }
+      enableNext={[Function]}
+      hubName="TestHub"
+      rootModel={
+        Object {
+          "configuration": Object {
+            "_configId": "testing",
+            "views": Object {
+              "LinearGenomeView": Object {
+                "_configId": "LinearGenomeView",
+              },
+            },
+          },
+          "drawerWidgets": Object {
+            "hierarchicalTrackSelector": Object {
+              "collapsed": Object {},
+              "filterText": "",
+              "id": "hierarchicalTrackSelector",
+              "type": "HierarchicalTrackSelectorDrawerWidget",
+              "view": "viewTestingId",
+            },
+          },
+          "drawerWidth": 256,
+          "menuBars": Array [],
+          "selectedDrawerWidget": "hierarchicalTrackSelector",
+          "views": Array [
+            Object {
+              "bpPerPx": 1,
+              "configuration": Object {
+                "_configId": "LinearGenomeView",
+              },
+              "controlsWidth": 100,
+              "displayedRegions": Array [],
+              "flipped": false,
+              "id": "viewTestingId",
+              "offsetPx": 0,
+              "tracks": Array [],
+              "type": "LinearGenomeView",
+            },
+          ],
+        }
+      }
+      trackDbUrl={"http://test.com/trackDb.txt"}
+    >
+      <WithStyles(LinearProgress)
+        variant="query"
+      >
+        <LinearProgress
+          classes={
+            Object {
+              "bar": "MuiLinearProgress-bar-12",
+              "bar1Buffer": "MuiLinearProgress-bar1Buffer-17",
+              "bar1Determinate": "MuiLinearProgress-bar1Determinate-16",
+              "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-15",
+              "bar2Buffer": "MuiLinearProgress-bar2Buffer-19",
+              "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-18",
+              "barColorPrimary": "MuiLinearProgress-barColorPrimary-13",
+              "barColorSecondary": "MuiLinearProgress-barColorSecondary-14",
+              "buffer": "MuiLinearProgress-buffer-7",
+              "colorPrimary": "MuiLinearProgress-colorPrimary-3",
+              "colorSecondary": "MuiLinearProgress-colorSecondary-4",
+              "dashed": "MuiLinearProgress-dashed-9",
+              "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-10",
+              "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-11",
+              "determinate": "MuiLinearProgress-determinate-5",
+              "indeterminate": "MuiLinearProgress-indeterminate-6",
+              "query": "MuiLinearProgress-query-8",
+              "root": "MuiLinearProgress-root-2",
+            }
+          }
+          color="primary"
+          variant="query"
+        >
+          <div
+            className="MuiLinearProgress-root-2 MuiLinearProgress-colorPrimary-3 MuiLinearProgress-query-8"
+            role="progressbar"
+          >
+            <div
+              className="MuiLinearProgress-bar-12 MuiLinearProgress-barColorPrimary-13 MuiLinearProgress-bar1Indeterminate-15"
+              style={Object {}}
+            />
+            <div
+              className="MuiLinearProgress-bar-12 MuiLinearProgress-barColorPrimary-13 MuiLinearProgress-bar2Indeterminate-18"
+              style={Object {}}
+            />
+          </div>
+        </LinearProgress>
+      </WithStyles(LinearProgress)>
+    </ConfirmationDialog>
+  </inject-ConfirmationDialog-with-rootModel>
+</WithStyles(inject-ConfirmationDialog-with-rootModel)>
+`;
+
+exports[`<ConfirmationDialog /> shallowly renders 1`] = `
+<WithStyles(LinearProgress)
+  variant="query"
+/>
+`;

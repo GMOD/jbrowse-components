@@ -9,7 +9,7 @@ describe('<HubTypeSelect />', () => {
     shallow = createShallow()
   })
 
-  it('renders and selects a hub', () => {
+  it('renders', () => {
     const wrapper = shallow(
       <HubTypeSelect setHubType={() => {}} enableNext={() => {}} />,
     )

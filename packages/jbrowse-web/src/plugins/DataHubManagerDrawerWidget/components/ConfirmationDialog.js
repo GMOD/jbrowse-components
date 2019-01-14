@@ -99,7 +99,6 @@ class ConfirmationDialog extends React.Component {
   }
 
   async componentDidMount() {
-    console.log('mounted')
     const { enableNext } = this.props
     const trackDb = await this.getTrackDb()
     if (!trackDb) return
@@ -247,35 +246,6 @@ class ConfirmationDialog extends React.Component {
     })
   }
 
-  async doGet(url) {
-    let rawResponse
-    try {
-      rawResponse = await fetch(url)
-    } catch (error) {
-      this.setState({
-        errorMessage: (
-          <span>
-            <strong>Network error.</strong> {error.message} <br />
-            {url.href}
-          </span>
-        ),
-      })
-      return undefined
-    }
-    if (!rawResponse.ok) {
-      this.setState({
-        errorMessage: (
-          <span>
-            <strong>URL is invalid</strong> <br />
-            {url.href}
-          </span>
-        ),
-      })
-      return undefined
-    }
-    return rawResponse.text()
-  }
-
   render() {
     const {
       errorMessage,
@@ -331,6 +301,7 @@ class ConfirmationDialog extends React.Component {
           </div>,
         )
     }
+    debugger
     return confirmationContents
   }
 }
