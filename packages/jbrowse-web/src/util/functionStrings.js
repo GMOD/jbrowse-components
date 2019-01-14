@@ -1,7 +1,13 @@
 export const functionRegexp = /^\s*function\s*\(([^)]*)\)\s*{([\w\W]*)/
 
+const compilationCache = {}
 export function stringToFunction(str, options = {}) {
   const { verifyFunctionSignature } = options
+
+  const cacheKey = `${verifyFunctionSignature &&
+    verifyFunctionSignature.join(',')}|${str}`
+  if (compilationCache[cacheKey]) return compilationCache[cacheKey]
+
   const match = functionRegexp.exec(str)
   if (!match)
     throw new Error('string does not appear to be a function declaration')
@@ -19,5 +25,6 @@ export function stringToFunction(str, options = {}) {
     )}) but "+arguments.length+" arguments were passed");\n${code}`
   }
   const func = new Function(...paramList, `"use strict"; ${code}`) // eslint-disable-line
+  compilationCache[cacheKey] = func
   return func
 }

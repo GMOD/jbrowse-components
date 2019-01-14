@@ -3,6 +3,7 @@ import ReactPropTypes from 'prop-types'
 
 import './SvgFeatureRendering.scss'
 
+import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
 import { bpToPx } from '../../../util'
@@ -12,7 +13,8 @@ import { bpToPx } from '../../../util'
 //   getRectangles: ReactPropTypes.func.isRequired,
 // })
 
-export default class Box extends Component {
+@observer
+class Box extends Component {
   static propTypes = {
     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
       .isRequired,
@@ -176,3 +178,5 @@ export default class Box extends Component {
     )
   }
 }
+
+export default Box
