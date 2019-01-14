@@ -8,6 +8,7 @@ export default ConfigurationSchema('PileupRenderer', {
   var s = feature.get('strand');
   return s === '-' || s === -1 ? 'blue': 'red'
 }`,
+    functionSignature: ['feature'],
   },
   alignmentHeight: {
     type: 'integer',
