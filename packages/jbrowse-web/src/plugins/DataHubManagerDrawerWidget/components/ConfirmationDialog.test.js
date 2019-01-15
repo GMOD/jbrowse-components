@@ -1,4 +1,5 @@
 import { createMount, createShallow } from '@material-ui/core/test-utils'
+import { clone } from 'mobx-state-tree'
 import React from 'react'
 import JBrowse from '../../../JBrowse'
 import ConfirmationDialog from './ConfirmationDialog'
@@ -35,7 +36,7 @@ describe('<ConfirmationDialog />', () => {
         assemblyName="hg38"
         hubName="TestHub"
         enableNext={() => {}}
-        rootModel={rootModel}
+        rootModel={clone(rootModel)}
       />,
     )
     expect(wrapper).toMatchSnapshot()
@@ -62,6 +63,24 @@ type bam
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const wrapper = mount(
       <ConfirmationDialog
+        trackDbUrl={new URL('http://test.com/hg19/trackDb.txt')}
+        assemblyName="hg38"
+        hubName="TestHub"
+        enableNext={() => {}}
+        rootModel={clone(rootModel)}
+      />,
+    )
+    const instance = wrapper.children().instance().wrappedInstance
+    await instance.componentDidMount()
+    instance.toggleUnsupported()
+    expect(wrapper).toMatchSnapshot()
+  })
+
+  it('handles 404', async () => {
+    const mockFetch = () => Promise.resolve(new Response('', { status: 404 }))
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    const wrapper = mount(
+      <ConfirmationDialog
         trackDbUrl={new URL('http://test.com/trackDb.txt')}
         assemblyName="hg38"
         hubName="TestHub"
@@ -69,7 +88,26 @@ type bam
         rootModel={rootModel}
       />,
     )
-    const instance = wrapper.instance()
+    const instance = wrapper.children().instance().wrappedInstance
+    await instance.componentDidMount()
+    expect(wrapper).toMatchSnapshot()
+  })
+
+  it('handles fetch error', async () => {
+    const mockFetch = () => {
+      throw new Error()
+    }
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    const wrapper = mount(
+      <ConfirmationDialog
+        trackDbUrl={new URL('http://test.com/trackDb.txt')}
+        assemblyName="hg38"
+        hubName="TestHub"
+        enableNext={() => {}}
+        rootModel={rootModel}
+      />,
+    )
+    const instance = wrapper.children().instance().wrappedInstance
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })

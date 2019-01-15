@@ -341,7 +341,7 @@ class TrackHubRegistrySelect extends React.Component {
       />,
     )
 
-    if (selectedSpecies) {
+    if (selectedSpecies)
       renderItems.push(
         <SelectBox
           key="assemblyselect"
@@ -352,7 +352,6 @@ class TrackHubRegistrySelect extends React.Component {
           helpText="Select an assembly"
         />,
       )
-    }
 
     if (selectedAssembly) {
       renderItems.push(
@@ -397,13 +396,6 @@ class TrackHubRegistrySelect extends React.Component {
                 }
                 control={<Radio />}
               />
-              // <li key={hub.id}>
-              //   {hub.hub.name} <br />
-              //   {hub.hub.shortLabel} <br />
-              //   {hub.hub.shortLabel} <br />
-              //   {hub.assembly.name} <br />
-              //   {hub.assembly.synonyms} <br />
-              // </li>
             ))}
           </RadioGroup>
         </div>,

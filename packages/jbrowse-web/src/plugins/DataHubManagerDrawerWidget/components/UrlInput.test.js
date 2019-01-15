@@ -72,4 +72,45 @@ descriptionUrl test.html
     await instance.validateUrl()
     expect(wrapper).toMatchSnapshot()
   })
+
+  it('handles 404', async () => {
+    const mockFetch = () =>
+      Promise.resolve(
+        new Response('', { status: 404, url: 'http://test.com/hub.txt' }),
+      )
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    const wrapper = mount(
+      <UrlInput
+        enableNext={() => {}}
+        disableNext={() => {}}
+        setTrackDbUrl={() => {}}
+        setHubName={() => {}}
+        setAssemblyName={() => {}}
+      />,
+    )
+    const instance = wrapper.find('UrlInput').instance()
+    instance.handleChange({ target: { value: 'http://test.com/hub.txt' } })
+    await instance.validateUrl()
+    expect(wrapper).toMatchSnapshot()
+  })
+
+  it('handles fetch error', async () => {
+    const mockFetch = () => {
+      throw new Error()
+    }
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    const wrapper = mount(
+      <UrlInput
+        enableNext={() => {}}
+        disableNext={() => {}}
+        setTrackDbUrl={() => {}}
+        setHubName={() => {}}
+        setAssemblyName={() => {}}
+      />,
+    )
+    const instance = wrapper.find('UrlInput').instance()
+    instance.handleChange({ target: { value: 'http://test.com/hub.txt' } })
+    await instance.validateUrl()
+    expect(wrapper).toMatchSnapshot()
+  })
 })

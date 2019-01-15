@@ -302,6 +302,308 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
 </div>
 `;
 
+exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
+<div
+  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+>
+  <WithStyles(Stepper)
+    activeStep={0}
+    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    orientation="vertical"
+  >
+    <WithStyles(Step)
+      key="Select a Data Hub Type"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub Type
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <HubTypeSelect
+          enableNext={[Function]}
+          hubType={null}
+          setHubType={[Function]}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={true}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Next
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Select a Data Hub Source"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub Source
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <HubTypeSelect
+          enableNext={[Function]}
+          hubType={null}
+          setHubType={[Function]}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={true}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Next
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Select a Data Hub"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <HubTypeSelect
+          enableNext={[Function]}
+          hubType={null}
+          setHubType={[Function]}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={true}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Next
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Confirm Selection"
+    >
+      <WithStyles(StepLabel)>
+        Confirm Selection
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <HubTypeSelect
+          enableNext={[Function]}
+          hubType={null}
+          setHubType={[Function]}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={true}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Next
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+  </WithStyles(Stepper)>
+</div>
+`;
+
+exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
+<div
+  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+>
+  <WithStyles(Stepper)
+    activeStep={3}
+    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    orientation="vertical"
+  >
+    <WithStyles(Step)
+      key="Select a Data Hub Type"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub Type
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+          assemblyName="testAssemblyName"
+          enableNext={[Function]}
+          hubName="testHubName"
+          trackDbUrl={"http://www.example.com/trackDb.txt"}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={false}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={false}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Finish
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Select a Data Hub Source"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub Source
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+          assemblyName="testAssemblyName"
+          enableNext={[Function]}
+          hubName="testHubName"
+          trackDbUrl={"http://www.example.com/trackDb.txt"}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={false}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={false}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Finish
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Select a Data Hub"
+    >
+      <WithStyles(StepLabel)>
+        Select a Data Hub
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+          assemblyName="testAssemblyName"
+          enableNext={[Function]}
+          hubName="testHubName"
+          trackDbUrl={"http://www.example.com/trackDb.txt"}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={false}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={false}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Finish
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+    <WithStyles(Step)
+      key="Confirm Selection"
+    >
+      <WithStyles(StepLabel)>
+        Confirm Selection
+      </WithStyles(StepLabel)>
+      <WithStyles(StepContent)>
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+          assemblyName="testAssemblyName"
+          enableNext={[Function]}
+          hubName="testHubName"
+          trackDbUrl={"http://www.example.com/trackDb.txt"}
+        />
+        <div
+          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+        >
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            disabled={false}
+            onClick={[Function]}
+          >
+            Back
+          </WithStyles(Button)>
+          <WithStyles(Button)
+            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            color="primary"
+            disabled={false}
+            onClick={[Function]}
+            variant="contained"
+          >
+            Finish
+          </WithStyles(Button)>
+        </div>
+      </WithStyles(StepContent)>
+    </WithStyles(Step)>
+  </WithStyles(Stepper)>
+</div>
+`;
+
 exports[`<DataHubDrawerWidget /> renders 1`] = `
 <div
   className="inject-DataHubDrawerWidget-with-rootModel-root-1"
