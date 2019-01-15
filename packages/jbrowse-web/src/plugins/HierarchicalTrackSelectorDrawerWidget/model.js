@@ -3,7 +3,7 @@ import { readConfObject } from '../../configuration'
 import { ElementId } from '../../mst-types'
 
 export function generateHierarchy(trackConfigurations) {
-  const hierarchy = {}
+  const hierarchy = new Map()
 
   trackConfigurations.forEach(trackConf => {
     const categories = [...(readConfObject(trackConf, 'category') || [])]
@@ -11,12 +11,10 @@ export function generateHierarchy(trackConfigurations) {
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i += 1) {
       const category = categories[i]
-      if (!currLevel[category]) currLevel[category] = {}
-      currLevel = currLevel[category]
+      if (!currLevel.has(category)) currLevel.set(category, new Map())
+      currLevel = currLevel.get(category)
     }
-    currLevel[
-      readConfObject(trackConf, 'name') || trackConf._configId
-    ] = trackConf
+    currLevel.set(trackConf._configId, trackConf)
   })
   return hierarchy
 }
@@ -65,12 +63,12 @@ export default pluginManager =>
       allTracksInCategoryPath(path) {
         let currentHier = self.hierarchy
         path.forEach(pathItem => {
-          currentHier = currentHier[pathItem]
+          currentHier = currentHier.get(pathItem) || new Map()
         })
         let tracks = {}
-        Object.entries(currentHier).forEach(([name, contents]) => {
+        currentHier.forEach((contents, name) => {
           if (contents._configId) {
-            tracks[name] = contents
+            tracks[contents._configId] = contents
           } else {
             tracks = Object.assign(
               tracks,

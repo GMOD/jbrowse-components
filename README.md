@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.com/GMOD/jbrowse-components.svg?branch=master)](https://travis-ci.com/GMOD/jbrowse-components)
+[![Build Status](https://img.shields.io/travis/com/GMOD/jbrowse-components/master.svg?logo=travis&style=flat-square)](https://travis-ci.com/GMOD/jbrowse-components)
+[![Coverage Status](https://img.shields.io/codecov/c/github/GMOD/jbrowse-components/master.svg?logo=codecov&style=flat-square)](https://codecov.io/gh/GMOD/jbrowse-components/branch/master)
 
 # jbrowse-components
 

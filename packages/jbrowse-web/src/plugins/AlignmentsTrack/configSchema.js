@@ -14,10 +14,6 @@ export default pluginManager => {
         type: 'string',
         defaultValue: 'pileup',
       },
-      category: {
-        type: 'stringArray',
-        defaultValue: [],
-      },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer: PileupRendererConfigSchema,

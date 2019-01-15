@@ -1,5 +1,6 @@
 import AppBar from '@material-ui/core/AppBar'
 import CssBaseline from '@material-ui/core/CssBaseline'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
@@ -26,12 +27,16 @@ const styles = theme => ({
     height: '100vh',
     display: 'flex',
   },
+  menuBars: {
+    marginBottom: theme.spacing.unit,
+  },
   menuBarsAndComponents: {
     display: 'flex',
     flexDirection: 'column',
   },
   components: {
     overflowY: 'auto',
+    backgroundColor: theme.palette.background.default,
   },
   drawerCloseButton: {
     float: 'right',
@@ -44,6 +49,9 @@ const styles = theme => ({
   },
   drawerToolbarCloseButton: {
     flexGrow: 1,
+  },
+  drawerLoading: {
+    margin: theme.spacing.unit * 2,
   },
 })
 
@@ -109,7 +117,14 @@ class App extends Component {
                 </IconButton>
               </Toolbar>
             </AppBar>
-            <React.Suspense fallback={<div>Loading...</div>}>
+            <React.Suspense
+              fallback={
+                <CircularProgress
+                  disableShrink
+                  className={classes.drawerLoading}
+                />
+              }
+            >
               <LazyReactComponent model={drawerWidget} />
             </React.Suspense>
           </div>
@@ -132,7 +147,7 @@ class App extends Component {
         <CssBaseline />
         <div className={classes.root}>
           <div className={classes.menuBarsAndComponents}>
-            <div>
+            <div className={classes.menuBars}>
               {rootModel.menuBars.map(menuBar => {
                 const { LazyReactComponent } = getMenuBarType(menuBar.type)
                 return (
