@@ -6,6 +6,7 @@
 self.window = {
   addEventListener() {},
   fetch: self.fetch.bind(self),
+  location: self.location,
 }
 self.document = {
   createTextNode() {},
