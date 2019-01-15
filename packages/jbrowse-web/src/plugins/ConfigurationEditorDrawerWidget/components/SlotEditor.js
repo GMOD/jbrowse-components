@@ -146,22 +146,29 @@ const valueComponents = {
   stringEnum: stringEnumEditor,
 }
 
+const modeSwitchButtonWidth = 25
 const slotEditorStyles = theme => ({
   card: {
     display: 'flex',
     marginBottom: 16,
+    position: 'relative',
   },
   cardContent: {
     flex: 'auto',
     padding: theme.spacing.unit,
+    paddingRight: modeSwitchButtonWidth + theme.spacing.unit,
   },
   slotModeSwitch: {
-    width: 25,
+    width: modeSwitchButtonWidth,
     background: theme.palette.secondary.light,
     display: 'flex',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    height: '100%',
   },
   slotModeIcon: {
-    width: 25,
+    width: modeSwitchButtonWidth,
   },
 })
 
