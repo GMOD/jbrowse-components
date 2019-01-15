@@ -22,7 +22,7 @@ const styles = theme => ({
   },
 })
 
-class TextFields extends React.Component {
+class UrlInput extends React.Component {
   static propTypes = {
     classes: PropTypes.shape({
       textField: PropTypes.string.isRequired,
@@ -161,4 +161,4 @@ class TextFields extends React.Component {
   }
 }
 
-export default withStyles(styles)(TextFields)
+export default withStyles(styles)(UrlInput)
