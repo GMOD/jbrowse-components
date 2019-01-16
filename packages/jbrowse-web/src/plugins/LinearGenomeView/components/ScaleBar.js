@@ -37,12 +37,6 @@ export default function ScaleBar({
 
   return (
     <div style={finalStyle} className="ScaleBar">
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className="refLabel floating">
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
       {blocks.map(block => {
         const locString = assembleLocString(block)
         return (
@@ -70,6 +64,12 @@ export default function ScaleBar({
           </Block>
         )
       })}
+      {// put in a floating ref label
+      blockContainingLeftEndOfView ? (
+        <div className="refLabel floating">
+          {blockContainingLeftEndOfView.refName}
+        </div>
+      ) : null}
     </div>
   )
 }
