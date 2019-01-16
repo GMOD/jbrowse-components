@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import ReactPropTypes from 'prop-types'
 import classnames from 'classnames'
 import { PropTypes } from '../../../mst-types'
@@ -78,7 +78,7 @@ function* makeTicks(
 }
 
 export default function Ruler(props) {
-  const { region, bpPerPx, flipped, major, minor } = props
+  const { region, bpPerPx, flipped, major, minor, showRefSeqLabel } = props
   const ticks = []
   const labels = []
   for (const tick of makeTicks(region, bpPerPx, flipped, major, minor)) {
@@ -112,10 +112,34 @@ export default function Ruler(props) {
       )
   }
 
+  const refSeqLabels = []
+  if (showRefSeqLabel && region.refName) {
+    refSeqLabels.push(
+      <Fragment key="refseq-label">
+        <rect
+          x={0}
+          y={2}
+          width={9 * region.refName.length}
+          height="17"
+          style={{ fill: 'white' }}
+        />
+        <text
+          x={0}
+          y={2}
+          alignmentBaseline="hanging"
+          style={{ fontSize: '16px', fontWeight: 'bold' }}
+          className={classnames('label', 'refseq')}
+        >
+          {region.refName}
+        </text>
+      </Fragment>,
+    )
+  }
+
   // svg painting is based on the document order,
   // so the labels need to come after the ticks in the
   // doc, so that they draw over them.
-  return [...ticks, ...labels]
+  return [...ticks, ...labels, ...refSeqLabels]
 }
 
 Ruler.propTypes = {

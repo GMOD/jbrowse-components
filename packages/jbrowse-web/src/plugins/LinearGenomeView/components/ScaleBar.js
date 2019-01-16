@@ -57,6 +57,7 @@ export default function ScaleBar({
               ) : null} */}
               <Ruler
                 region={block}
+                showRefSeqLabel={!!block.isLeftEndOfDisplayedRegion}
                 bpPerPx={bpPerPx}
                 flipped={horizontallyFlipped}
               />

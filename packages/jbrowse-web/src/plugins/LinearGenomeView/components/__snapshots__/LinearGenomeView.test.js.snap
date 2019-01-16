@@ -161,11 +161,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <div
-      className="refLabel floating"
-    >
-      ctgA
-    </div>
-    <div
       className="block left-side right-side"
       style={
         Object {
@@ -264,7 +259,37 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           100
         </text>
+        <rect
+          height="17"
+          style={
+            Object {
+              "fill": "white",
+            }
+          }
+          width={36}
+          x={0}
+          y={2}
+        />
+        <text
+          alignmentBaseline="hanging"
+          className="label refseq"
+          style={
+            Object {
+              "fontSize": "16px",
+              "fontWeight": "bold",
+            }
+          }
+          x={0}
+          y={2}
+        >
+          ctgA
+        </text>
       </svg>
+    </div>
+    <div
+      className="refLabel floating"
+    >
+      ctgA
     </div>
   </div>
   <div
