@@ -1,4 +1,4 @@
-import { map, toArray } from 'rxjs/operators'
+import { toArray } from 'rxjs/operators'
 
 import Adapter from './BamAdapter'
 

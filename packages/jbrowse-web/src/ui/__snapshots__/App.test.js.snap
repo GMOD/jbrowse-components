@@ -3,7 +3,7 @@
 exports[`jbrowse-web app renders an empty model without crashing 1`] = `
 Object {
   "configuration": Object {
-    "_configId": Any<String>,
+    "configId": Any<String>,
   },
   "drawerWidgets": Object {},
   "drawerWidth": 256,

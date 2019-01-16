@@ -16,7 +16,7 @@ describe('<ConfirmationDialog />', () => {
     mount = createMount()
     // classes = getClasses(<ConfirmationDialog rootModel={rootModel} />)
     jbrowse = new JBrowse().configure({
-      _configId: 'testing',
+      configId: 'testing',
     })
     rootModel = jbrowse.model
     const firstView = rootModel.addView('LinearGenomeView', {

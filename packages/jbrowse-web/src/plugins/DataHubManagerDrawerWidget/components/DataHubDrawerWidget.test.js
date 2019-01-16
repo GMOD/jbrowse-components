@@ -12,7 +12,7 @@ describe('<DataHubDrawerWidget />', () => {
   beforeAll(() => {
     shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
     classes = getClasses(<DataHubDrawerWidget rootModel={rootModel} />)
-    jbrowse = new JBrowse().configure({ _configId: 'testing' })
+    jbrowse = new JBrowse().configure({ configId: 'testing' })
     rootModel = jbrowse.model
   })
 

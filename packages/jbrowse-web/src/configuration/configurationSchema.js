@@ -77,7 +77,7 @@ export function ConfigurationSchema(
   }
 
   // now assemble the MST model of the configuration schema
-  const modelDefinition = { _configId: ElementId }
+  const modelDefinition = { configId: ElementId }
 
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
 

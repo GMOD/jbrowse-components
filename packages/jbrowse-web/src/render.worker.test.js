@@ -8,13 +8,13 @@ const baseprops = {
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
   adapterConfig: {
-    _configId: '7Hc9NkuD4x',
+    configId: '7Hc9NkuD4x',
     type: 'BamAdapter',
     bamLocation: {
       path: require.resolve('../public/test_data/volvox-sorted.bam'),
     },
     index: {
-      _configId: 'sGW8va26pr',
+      configId: 'sGW8va26pr',
       location: {
         path: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
       },

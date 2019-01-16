@@ -11,7 +11,7 @@ test('plugin in a stock JBrowse', () => {
   const BamAdapter = jbrowse.pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
   expect(config).toMatchSnapshot({
-    _configId: expect.any(String),
-    index: { _configId: expect.any(String) },
+    configId: expect.any(String),
+    index: { configId: expect.any(String) },
   })
 })

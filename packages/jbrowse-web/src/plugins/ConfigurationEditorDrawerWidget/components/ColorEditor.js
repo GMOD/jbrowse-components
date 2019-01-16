@@ -13,7 +13,8 @@ class ColorEditor extends Component {
   }
 
   onPickerChange = color => {
-    this.props.slot.set(color)
+    const { slot } = this.props
+    slot.set(color)
   }
 
   render() {

@@ -62,6 +62,7 @@ class DataHubDrawerWidget extends React.Component {
     hubName: '',
     assemblyName: '',
     // Step 3
+    // eslint-disable-next-line react/no-unused-state
     backupRootModel: null,
 
     activeStep: 0,
@@ -147,6 +148,7 @@ class DataHubDrawerWidget extends React.Component {
     }
     if (activeStep === steps.length - 2) {
       const backupRootModel = getSnapshot(rootModel)
+      // eslint-disable-next-line react/no-unused-state
       this.setState({ backupRootModel })
     }
     this.setState(state => ({

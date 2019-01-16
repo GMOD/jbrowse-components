@@ -77,7 +77,6 @@ class Box extends Component {
     let endPx = bpToPx(feature.get('end'), region, bpPerPx, horizontallyFlipped)
     if (horizontallyFlipped) [startPx, endPx] = [endPx, startPx]
     const heightPx = readConfObject(args.config, 'height', [feature])
-    if (!heightPx) debugger
 
     const topPx = layout.addRect(
       feature.id(),

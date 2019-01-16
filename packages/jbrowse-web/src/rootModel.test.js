@@ -5,8 +5,8 @@ test('can load configuration with the configure() action and resolve references 
   const jbrowse = new JBrowse().configure()
   const { model } = jbrowse
   model.configure({
-    _configId: 'fogbat',
-    views: { LinearGenomeView: { _configId: 'LinearGenomeView' } },
+    configId: 'fogbat',
+    views: { LinearGenomeView: { configId: 'LinearGenomeView' } },
   })
 
   expect(getSnapshot(model.configuration)).toMatchSnapshot()

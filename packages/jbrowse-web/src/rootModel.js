@@ -110,7 +110,7 @@ export default app => {
         if (!configuration) {
           // make a configuration for this view type if we don't have one
           configuration = typeDefinition.configSchema.create({
-            _configId: typeName,
+            configId: typeName,
             type: typeName,
           })
           self.configuration.views.put(configuration)
@@ -118,7 +118,7 @@ export default app => {
 
         const data = Object.assign({}, initialState, {
           type: typeName,
-          configuration: getSnapshot(configuration), // : configuration._configId,
+          configuration: getSnapshot(configuration), // : configuration.configId,
         })
         const newView = typeDefinition.stateModel.create(data)
         self.views.push(newView)
