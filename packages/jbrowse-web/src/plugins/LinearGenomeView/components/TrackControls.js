@@ -1,22 +1,42 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
 import { PropTypes, observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
+import { IconButton, Icon, withStyles } from '@material-ui/core'
 import { getConf } from '../../../configuration'
 
-function TrackControls({ track, onConfigureClick }) {
+const styles = theme => ({
+  trackName: {
+    margin: '0 auto',
+    width: '90%',
+    fontSize: '80%',
+  },
+  trackDescription: {
+    fontSize: '60%',
+    margin: '0.25em auto',
+    width: '90%',
+    color: '#5a5a5a',
+  },
+})
+
+function TrackControls({ track, classes, onConfigureClick }) {
   return (
     <>
-      <div className="track-name">{getConf(track, 'name') || track.id}</div>
-      <Button
+      <IconButton
         type="button"
         onClick={onConfigureClick}
         size="small"
-        color="secondary"
+        style={{ padding: '4px' }}
+        title="configure this track"
       >
-        configure
-      </Button>
+        <Icon style={{ fontSize: '12px' }}>settings</Icon>
+      </IconButton>
+      <div className={classes.trackName}>
+        {getConf(track, 'name') || track.id}
+      </div>
+      <div className={classes.trackDescription}>
+        {getConf(track, 'description')}
+      </div>
     </>
   )
 }
@@ -24,9 +44,11 @@ function TrackControls({ track, onConfigureClick }) {
 TrackControls.propTypes = {
   track: PropTypes.objectOrObservableObject.isRequired,
   onConfigureClick: ReactPropTypes.func,
+  classes: ReactPropTypes.shape({ trackName: ReactPropTypes.string.isRequired })
+    .isRequired,
 }
 TrackControls.defaultProps = {
   onConfigureClick: undefined,
 }
 
-export default observer(TrackControls)
+export default withStyles(styles)(observer(TrackControls))
