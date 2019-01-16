@@ -39,9 +39,11 @@ class DivSequenceRendering extends Component {
     } = this.props
 
     const featuresRendered = []
+    let s = ''
     for (const seq of features.values()) {
-      console.log(seq)
+      s += seq.seq || seq.data.seq // index.js:1452 Warning: Text content did not match. fix?
     }
+    console.log('lol', s)
 
     const width = (region.end - region.start) / bpPerPx
     const height = 200
@@ -52,10 +54,13 @@ class DivSequenceRendering extends Component {
         width={`${width}px`}
         height={`${height}px`}
         style={{
-          position: 'relative',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          color: 'black',
         }}
       >
-        Hello world
+        {s}
       </div>
     )
   }
