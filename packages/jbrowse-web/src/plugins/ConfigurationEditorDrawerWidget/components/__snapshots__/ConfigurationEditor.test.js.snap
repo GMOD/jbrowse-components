@@ -15,7 +15,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -91,7 +90,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -177,7 +175,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -253,7 +250,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -304,7 +300,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       <p
         className="MuiFormHelperText-root-113"
       >
-        
+        the category and sub-categories of a track
       </p>
     </div>
   </div>
@@ -390,7 +386,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             disabled={false}
             onBlur={[Function]}
             onClick={[Function]}
-            onContextMenu={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
             onKeyUp={[Function]}
@@ -462,7 +457,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             disabled={false}
             onBlur={[Function]}
             onClick={[Function]}
-            onContextMenu={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
             onKeyUp={[Function]}
@@ -545,7 +539,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -638,7 +631,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -714,7 +706,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -829,7 +820,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1034,7 +1024,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1123,7 +1112,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1209,7 +1197,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1295,7 +1282,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1381,7 +1367,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
-                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1468,7 +1453,6 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
-        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}

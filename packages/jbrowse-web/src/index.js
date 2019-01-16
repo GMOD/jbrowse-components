@@ -1,4 +1,5 @@
 import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
+import './fonts/material-icons.css'
 import 'typeface-roboto'
 import JBrowse from './JBrowse'
 

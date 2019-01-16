@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HubTypeSelect /> renders 1`] = `
+<WithStyles(FormControl)
+  component="fieldset"
+>
+  <RadioGroup
+    onChange={[Function]}
+  >
+    <WithStyles(WithFormControlContext(FormControlLabel))
+      control={<WithStyles(Radio) />}
+      disabled={false}
+      key="ucsc"
+      label="Track or Assembly Hub"
+      value="ucsc"
+    />
+    <WithStyles(WithFormControlContext(FormControlLabel))
+      control={<WithStyles(Radio) />}
+      disabled={true}
+      key="jbrowse1"
+      label="JBrowse Hub"
+      value="jbrowse1"
+    />
+  </RadioGroup>
+</WithStyles(FormControl)>
+`;

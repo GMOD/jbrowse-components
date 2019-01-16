@@ -11,6 +11,7 @@ import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalT
 import BamAdapterPlugin from './plugins/BamAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
+import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
 import PileupRendererPlugin from './plugins/PileupRenderer'
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
@@ -21,6 +22,7 @@ const corePlugins = [
   BamAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
+  DataHubManagerDrawerWidgetPlugin,
   PileupRendererPlugin,
   SvgFeaturePlugin,
   ConfigurationEditorPlugin,

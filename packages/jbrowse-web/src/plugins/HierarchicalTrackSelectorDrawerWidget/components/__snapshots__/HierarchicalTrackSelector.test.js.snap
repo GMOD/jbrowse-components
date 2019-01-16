@@ -46,7 +46,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
-          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -70,7 +69,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-87"
+            className="MuiTouchRipple-root-111"
           />
         </button>
       </div>
@@ -81,11 +80,40 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
+  <div
+    className="MuiFormGroup-root-85"
+  />
+  <button
+    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    disabled={false}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onKeyDown={[Function]}
+    onKeyUp={[Function]}
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseUp={[Function]}
+    onTouchEnd={[Function]}
+    onTouchMove={[Function]}
+    onTouchStart={[Function]}
+    tabIndex="0"
+    type="button"
+  >
+    <span
+      className="MuiFab-label-98"
+    >
+      <span
+        aria-hidden="true"
+        className="material-icons MuiIcon-root-59"
+      >
+        add
+      </span>
+    </span>
+    <span
+      className="MuiTouchRipple-root-111"
     />
-  </div>
+  </button>
 </div>
 `;
 
@@ -135,7 +163,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
-          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -159,7 +186,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-87"
+            className="MuiTouchRipple-root-111"
           />
         </button>
       </div>
@@ -170,11 +197,40 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
+  <div
+    className="MuiFormGroup-root-85"
+  />
+  <button
+    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    disabled={false}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onKeyDown={[Function]}
+    onKeyUp={[Function]}
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseUp={[Function]}
+    onTouchEnd={[Function]}
+    onTouchMove={[Function]}
+    onTouchStart={[Function]}
+    tabIndex="0"
+    type="button"
+  >
+    <span
+      className="MuiFab-label-98"
+    >
+      <span
+        aria-hidden="true"
+        className="material-icons MuiIcon-root-59"
+      >
+        add
+      </span>
+    </span>
+    <span
+      className="MuiTouchRipple-root-111"
     />
-  </div>
+  </button>
 </div>
 `;
 
@@ -224,7 +280,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
-          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -248,7 +303,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-87"
+            className="MuiTouchRipple-root-111"
           />
         </button>
       </div>
@@ -259,10 +314,39 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       No matches
     </p>
   </div>
-  <div>
-    <div
-      className="MuiFormGroup-root-85"
+  <div
+    className="MuiFormGroup-root-85"
+  />
+  <button
+    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    disabled={false}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onKeyDown={[Function]}
+    onKeyUp={[Function]}
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseUp={[Function]}
+    onTouchEnd={[Function]}
+    onTouchMove={[Function]}
+    onTouchStart={[Function]}
+    tabIndex="0"
+    type="button"
+  >
+    <span
+      className="MuiFab-label-98"
+    >
+      <span
+        aria-hidden="true"
+        className="material-icons MuiIcon-root-59"
+      >
+        add
+      </span>
+    </span>
+    <span
+      className="MuiTouchRipple-root-111"
     />
-  </div>
+  </button>
 </div>
 `;

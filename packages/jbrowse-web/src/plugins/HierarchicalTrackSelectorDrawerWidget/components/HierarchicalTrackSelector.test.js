@@ -1,10 +1,8 @@
 import { Provider } from 'mobx-react'
-import { types } from 'mobx-state-tree'
 import React from 'react'
 import renderer from 'react-test-renderer'
-
-import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 import JBrowse from '../../../JBrowse'
+import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 const jbrowse = new JBrowse().configure()
 
