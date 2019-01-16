@@ -26,7 +26,7 @@ export default class TwoBitAdapter {
     return Observable.create(async observer => {
       await this.gotTwoBitHeader
       const seq = await this.twobit.getSequence(refName, start, end)
-      observer.next(seq)
+      observer.next({ refName, start, end, seq })
       observer.complete()
     })
   }

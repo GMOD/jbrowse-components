@@ -29,26 +29,6 @@ export default (pluginManager, configSchema) =>
         reactComponent: SequenceTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
-      // .actions(self => ({
-      //   afterAttach() {
-      //     onPatch(self, patch => {
-      //       console.log('patch', self.name, patch)
-      //     })
-      //   },
-      // }))
-      .actions(self => ({
-        selectFeature(feature) {
-          const root = getRoot(self)
-          root.setSelection(feature)
-        },
-        clearFeatureSelection() {
-          const root = getRoot(self)
-          root.clearSelection()
-        },
-        setRenderer(newRenderer) {
-          self.selectedRendering = newRenderer
-        },
-      }))
       .views(self => ({
         /**
          * the renderer type name is based on the "view"
