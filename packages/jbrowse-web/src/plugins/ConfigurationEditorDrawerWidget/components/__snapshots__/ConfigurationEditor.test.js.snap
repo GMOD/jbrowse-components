@@ -8,45 +8,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
-    >
-      <div
-        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
-      >
-        <label
-          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
-          data-shrink={true}
-        >
-          name
-        </label>
-        <div
-          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
-          onClick={[Function]}
-        >
-          <input
-            aria-invalid={false}
-            className="MuiInputBase-input-81 MuiInput-input-66"
-            disabled={false}
-            onBlur={[Function]}
-            onChange={[Function]}
-            onFocus={[Function]}
-            required={false}
-            type="text"
-            value="Track"
-          />
-        </div>
-        <p
-          className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
-        >
-          descriptive name of the track
-        </p>
-      </div>
-    </div>
-    <div
       className="_class-slotModeSwitch-5"
     >
       <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -65,11 +30,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         type="button"
       >
         <span
-          className="MuiIconButton-label-93"
+          className="MuiIconButton-label-40"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
+            className="material-icons MuiIcon-root-44"
           >
             radio_button_unchecked
           </span>
@@ -79,25 +44,97 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </button>
     </div>
+    <div
+      className="MuiCardContent-root-53 _class-cardContent-4"
+    >
+      <div
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
+      >
+        <label
+          className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
+          data-shrink={true}
+        >
+          name
+        </label>
+        <div
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-99 MuiInput-input-84"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="Track"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+        >
+          descriptive name of the track
+        </p>
+      </div>
+    </div>
   </div>
   <div
     className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-40"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-44"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-106"
+        />
+      </button>
+    </div>
+    <div
+      className="MuiCardContent-root-53 _class-cardContent-4"
     >
       <div
-        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
         onClick={[Function]}
       >
         <label
-          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+          className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
           data-shrink={true}
         >
           backgroundColor
         </label>
         <div
-          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
           onClick={[Function]}
           style={
             Object {
@@ -110,7 +147,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <input
             aria-invalid={false}
-            className="MuiInputBase-input-81 MuiInput-input-66"
+            className="MuiInputBase-input-99 MuiInput-input-84"
             disabled={false}
             name="color"
             onBlur={[Function]}
@@ -128,11 +165,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         </p>
       </div>
     </div>
+  </div>
+  <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+  >
     <div
       className="_class-slotModeSwitch-5"
     >
       <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -151,11 +192,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         type="button"
       >
         <span
-          className="MuiIconButton-label-93"
+          className="MuiIconButton-label-40"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
+            className="material-icons MuiIcon-root-44"
           >
             radio_button_unchecked
           </span>
@@ -165,29 +206,25 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </button>
     </div>
-  </div>
-  <div
-    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-  >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
+      className="MuiCardContent-root-53 _class-cardContent-4"
     >
       <div
-        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
       >
         <label
-          className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48"
+          className="MuiFormLabel-root-69 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66"
           data-shrink={false}
         >
           description
         </label>
         <div
-          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
           onClick={[Function]}
         >
           <input
             aria-invalid={false}
-            className="MuiInputBase-input-81 MuiInput-input-66"
+            className="MuiInputBase-input-99 MuiInput-input-84"
             disabled={false}
             onBlur={[Function]}
             onChange={[Function]}
@@ -204,11 +241,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         </p>
       </div>
     </div>
+  </div>
+  <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+  >
     <div
       className="_class-slotModeSwitch-5"
     >
       <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -227,11 +268,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         type="button"
       >
         <span
-          className="MuiIconButton-label-93"
+          className="MuiIconButton-label-40"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
+            className="material-icons MuiIcon-root-44"
           >
             radio_button_unchecked
           </span>
@@ -241,15 +282,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </button>
     </div>
-  </div>
-  <div
-    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-  >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
+      className="MuiCardContent-root-53 _class-cardContent-4"
     >
       <label
-        className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-animated-48"
+        className="MuiFormLabel-root-69 MuiInputLabel-root-58 MuiInputLabel-animated-66"
       >
         category
       </label>
@@ -270,77 +307,137 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         
       </p>
     </div>
-    <div
-      className="_class-slotModeSwitch-5"
-    >
-      <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
-        disabled={false}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onContextMenu={[Function]}
-        onFocus={[Function]}
-        onKeyDown={[Function]}
-        onKeyUp={[Function]}
-        onMouseDown={[Function]}
-        onMouseLeave={[Function]}
-        onMouseUp={[Function]}
-        onTouchEnd={[Function]}
-        onTouchMove={[Function]}
-        onTouchStart={[Function]}
-        tabIndex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          className="MuiIconButton-label-93"
-        >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
-          >
-            radio_button_unchecked
-          </span>
-        </span>
-        <span
-          className="MuiTouchRipple-root-106"
-        />
-      </button>
-    </div>
   </div>
   <label
-    className="MuiFormLabel-root-51"
+    className="MuiFormLabel-root-69"
   >
     adapter
   </label>
   <div
+    className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-125"
+  >
+    <div
+      className="MuiCardContent-root-53 _class-cardContent-126"
+    >
+      <div
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
+      >
+        <label
+          className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
+          data-shrink={true}
+        >
+          Type
+        </label>
+        <div
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
+          onClick={[Function]}
+        >
+          <div
+            className="MuiSelect-root-129"
+          >
+            <div
+              aria-haspopup="true"
+              aria-pressed="false"
+              className="MuiSelect-select-130 MuiSelect-selectMenu-133 MuiInputBase-input-99 MuiInput-input-84"
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              role="button"
+              tabIndex={0}
+            >
+              BamAdapter
+            </div>
+            <input
+              type="hidden"
+              value="BamAdapter"
+            />
+            <svg
+              aria-hidden="true"
+              className="MuiSvgIcon-root-136 MuiSelect-icon-135"
+              focusable="false"
+              role="presentation"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 10l5 5 5-5z"
+              />
+            </svg>
+          </div>
+        </div>
+        <p
+          className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+        >
+          Type of adapter to use
+        </p>
+      </div>
+    </div>
+  </div>
+  <div
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-125"
+      className="MuiFormGroup-root-149"
     >
       <div
         className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
       >
         <div
-          className="MuiCardContent-root-35 _class-cardContent-4"
+          className="_class-slotModeSwitch-5"
+        >
+          <button
+            className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
+            disabled={false}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onContextMenu={[Function]}
+            onFocus={[Function]}
+            onKeyDown={[Function]}
+            onKeyUp={[Function]}
+            onMouseDown={[Function]}
+            onMouseLeave={[Function]}
+            onMouseUp={[Function]}
+            onTouchEnd={[Function]}
+            onTouchMove={[Function]}
+            onTouchStart={[Function]}
+            tabIndex="0"
+            title="convert to callback"
+            type="button"
+          >
+            <span
+              className="MuiIconButton-label-40"
+            >
+              <span
+                aria-hidden="true"
+                className="material-icons MuiIcon-root-44"
+              >
+                radio_button_unchecked
+              </span>
+            </span>
+            <span
+              className="MuiTouchRipple-root-106"
+            />
+          </button>
+        </div>
+        <div
+          className="MuiCardContent-root-53 _class-cardContent-4"
         >
           <div
-            className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+            className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
           >
             <label
-              className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+              className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
               data-shrink={true}
             >
               bamLocation
             </label>
             <div
-              className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+              className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
               onClick={[Function]}
             >
               <input
                 aria-invalid={false}
-                className="MuiInputBase-input-81 MuiInput-input-66"
+                className="MuiInputBase-input-99 MuiInput-input-84"
                 disabled={false}
                 onBlur={[Function]}
                 onChange={[Function]}
@@ -353,11 +450,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             
           </div>
         </div>
+      </div>
+      <div
+        className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+      >
         <div
           className="_class-slotModeSwitch-5"
         >
           <button
-            className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+            className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
             disabled={false}
             onBlur={[Function]}
             onClick={[Function]}
@@ -376,11 +477,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             type="button"
           >
             <span
-              className="MuiIconButton-label-93"
+              className="MuiIconButton-label-40"
             >
               <span
                 aria-hidden="true"
-                className="material-icons MuiIcon-root-97"
+                className="material-icons MuiIcon-root-44"
               >
                 radio_button_unchecked
               </span>
@@ -390,29 +491,25 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             />
           </button>
         </div>
-      </div>
-      <div
-        className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-      >
         <div
-          className="MuiCardContent-root-35 _class-cardContent-4"
+          className="MuiCardContent-root-53 _class-cardContent-4"
         >
           <div
-            className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+            className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
           >
             <label
-              className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48"
+              className="MuiFormLabel-root-69 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66"
               data-shrink={false}
             >
               assemblyName
             </label>
             <div
-              className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+              className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
               onClick={[Function]}
             >
               <input
                 aria-invalid={false}
-                className="MuiInputBase-input-81 MuiInput-input-66"
+                className="MuiInputBase-input-99 MuiInput-input-84"
                 disabled={false}
                 onBlur={[Function]}
                 onChange={[Function]}
@@ -425,46 +522,9 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             
           </div>
         </div>
-        <div
-          className="_class-slotModeSwitch-5"
-        >
-          <button
-            className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
-            disabled={false}
-            onBlur={[Function]}
-            onClick={[Function]}
-            onContextMenu={[Function]}
-            onFocus={[Function]}
-            onKeyDown={[Function]}
-            onKeyUp={[Function]}
-            onMouseDown={[Function]}
-            onMouseLeave={[Function]}
-            onMouseUp={[Function]}
-            onTouchEnd={[Function]}
-            onTouchMove={[Function]}
-            onTouchStart={[Function]}
-            tabIndex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              className="MuiIconButton-label-93"
-            >
-              <span
-                aria-hidden="true"
-                className="material-icons MuiIcon-root-97"
-              >
-                radio_button_unchecked
-              </span>
-            </span>
-            <span
-              className="MuiTouchRipple-root-106"
-            />
-          </button>
-        </div>
       </div>
       <label
-        className="MuiFormLabel-root-51"
+        className="MuiFormLabel-root-69"
       >
         index
       </label>
@@ -472,34 +532,71 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-125"
+          className="MuiFormGroup-root-149"
         >
           <div
             className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="_class-slotModeSwitch-5"
+            >
+              <button
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  className="MuiIconButton-label-40"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-44"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
+            <div
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+                className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   indexType
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                 >
                   <div
-                    className="MuiSelect-root-127"
+                    className="MuiSelect-root-129"
                   >
                     <div
                       aria-haspopup="true"
                       aria-pressed="false"
-                      className="MuiSelect-select-128 MuiSelect-selectMenu-131 MuiInputBase-input-81 MuiInput-input-66"
+                      className="MuiSelect-select-130 MuiSelect-selectMenu-133 MuiInputBase-input-99 MuiInput-input-84"
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -515,7 +612,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     />
                     <svg
                       aria-hidden="true"
-                      className="MuiSvgIcon-root-134 MuiSelect-icon-133"
+                      className="MuiSvgIcon-root-136 MuiSelect-icon-135"
                       focusable="false"
                       role="presentation"
                       viewBox="0 0 24 24"
@@ -529,11 +626,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 
               </div>
             </div>
+          </div>
+          <div
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+          >
             <div
               className="_class-slotModeSwitch-5"
             >
               <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
@@ -552,11 +653,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 type="button"
               >
                 <span
-                  className="MuiIconButton-label-93"
+                  className="MuiIconButton-label-40"
                 >
                   <span
                     aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
+                    className="material-icons MuiIcon-root-44"
                   >
                     radio_button_unchecked
                   </span>
@@ -566,29 +667,25 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </button>
             </div>
-          </div>
-          <div
-            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-          >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+                className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   location
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                 >
                   <input
                     aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    className="MuiInputBase-input-99 MuiInput-input-84"
                     disabled={false}
                     onBlur={[Function]}
                     onChange={[Function]}
@@ -601,43 +698,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 
               </div>
             </div>
-            <div
-              className="_class-slotModeSwitch-5"
-            >
-              <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
-                disabled={false}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onContextMenu={[Function]}
-                onFocus={[Function]}
-                onKeyDown={[Function]}
-                onKeyUp={[Function]}
-                onMouseDown={[Function]}
-                onMouseLeave={[Function]}
-                onMouseUp={[Function]}
-                onTouchEnd={[Function]}
-                onTouchMove={[Function]}
-                onTouchStart={[Function]}
-                tabIndex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  className="MuiIconButton-label-93"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
-                  >
-                    radio_button_unchecked
-                  </span>
-                </span>
-                <span
-                  className="MuiTouchRipple-root-106"
-                />
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -647,62 +707,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
-    >
-      <div
-        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
-      >
-        <label
-          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
-          data-shrink={true}
-        >
-          defaultRendering
-        </label>
-        <div
-          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
-          onClick={[Function]}
-        >
-          <div
-            className="MuiSelect-root-127"
-          >
-            <div
-              aria-haspopup="true"
-              aria-pressed="false"
-              className="MuiSelect-select-128 MuiSelect-selectMenu-131 MuiInputBase-input-81 MuiInput-input-66"
-              onBlur={[Function]}
-              onClick={[Function]}
-              onFocus={[Function]}
-              onKeyDown={[Function]}
-              role="button"
-              tabIndex={0}
-            >
-              pileup
-            </div>
-            <input
-              type="hidden"
-              value="pileup"
-            />
-            <svg
-              aria-hidden="true"
-              className="MuiSvgIcon-root-134 MuiSelect-icon-133"
-              focusable="false"
-              role="presentation"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 10l5 5 5-5z"
-              />
-            </svg>
-          </div>
-        </div>
-        
-      </div>
-    </div>
-    <div
       className="_class-slotModeSwitch-5"
     >
       <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -721,11 +729,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         type="button"
       >
         <span
-          className="MuiIconButton-label-93"
+          className="MuiIconButton-label-40"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
+            className="material-icons MuiIcon-root-44"
           >
             radio_button_unchecked
           </span>
@@ -735,9 +743,61 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         />
       </button>
     </div>
+    <div
+      className="MuiCardContent-root-53 _class-cardContent-4"
+    >
+      <div
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
+      >
+        <label
+          className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
+          data-shrink={true}
+        >
+          defaultRendering
+        </label>
+        <div
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
+          onClick={[Function]}
+        >
+          <div
+            className="MuiSelect-root-129"
+          >
+            <div
+              aria-haspopup="true"
+              aria-pressed="false"
+              className="MuiSelect-select-130 MuiSelect-selectMenu-133 MuiInputBase-input-99 MuiInput-input-84"
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              role="button"
+              tabIndex={0}
+            >
+              pileup
+            </div>
+            <input
+              type="hidden"
+              value="pileup"
+            />
+            <svg
+              aria-hidden="true"
+              className="MuiSvgIcon-root-136 MuiSelect-icon-135"
+              focusable="false"
+              role="presentation"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 10l5 5 5-5z"
+              />
+            </svg>
+          </div>
+        </div>
+        
+      </div>
+    </div>
   </div>
   <label
-    className="MuiFormLabel-root-51"
+    className="MuiFormLabel-root-69"
   >
     renderers
   </label>
@@ -745,10 +805,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="ConfigurationEditor-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-125"
+      className="MuiFormGroup-root-149"
     >
       <label
-        className="MuiFormLabel-root-51"
+        className="MuiFormLabel-root-69"
       >
         PileupRenderer
       </label>
@@ -756,19 +816,61 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-125"
+          className="MuiFormGroup-root-149"
         >
           <div
             className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="_class-slotModeSwitch-5"
+            >
+              <button
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to regular value"
+                type="button"
+              >
+                <span
+                  className="MuiIconButton-label-40"
+                >
+                  <svg
+                    aria-hidden="true"
+                    className="MuiSvgIcon-root-136"
+                    focusable="false"
+                    role="presentation"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
+            <div
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 CallbackEditor-callbackEditor-147"
+                className="MuiFormControl-root-54 CallbackEditor-callbackEditor-151"
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                   htmlFor="callback-editor"
                 >
@@ -920,92 +1022,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </p>
               </div>
             </div>
-            <div
-              className="_class-slotModeSwitch-5"
-            >
-              <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
-                disabled={false}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onContextMenu={[Function]}
-                onFocus={[Function]}
-                onKeyDown={[Function]}
-                onKeyUp={[Function]}
-                onMouseDown={[Function]}
-                onMouseLeave={[Function]}
-                onMouseUp={[Function]}
-                onTouchEnd={[Function]}
-                onTouchMove={[Function]}
-                onTouchStart={[Function]}
-                tabIndex="0"
-                title="convert to regular value"
-                type="button"
-              >
-                <span
-                  className="MuiIconButton-label-93"
-                >
-                  <svg
-                    aria-hidden="true"
-                    className="MuiSvgIcon-root-134"
-                    focusable="false"
-                    role="presentation"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  className="MuiTouchRipple-root-106"
-                />
-              </button>
-            </div>
           </div>
           <div
             className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
-            >
-              <div
-                className="MuiFormControl-root-36"
-              >
-                <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
-                  data-shrink={true}
-                >
-                  alignmentHeight
-                </label>
-                <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-formControl-72 MuiInput-formControl-59"
-                  onClick={[Function]}
-                >
-                  <input
-                    aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66 MuiInputBase-inputType-84 MuiInput-inputType-69"
-                    disabled={false}
-                    onBlur={[Function]}
-                    onChange={[Function]}
-                    onFocus={[Function]}
-                    required={false}
-                    type="number"
-                    value={5}
-                  />
-                </div>
-                <p
-                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
-                >
-                  the height of each feature in a pileup alignment
-                </p>
-              </div>
-            </div>
-            <div
               className="_class-slotModeSwitch-5"
             >
               <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
@@ -1024,11 +1049,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 type="button"
               >
                 <span
-                  className="MuiIconButton-label-93"
+                  className="MuiIconButton-label-40"
                 >
                   <span
                     aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
+                    className="material-icons MuiIcon-root-44"
                   >
                     radio_button_unchecked
                   </span>
@@ -1038,11 +1063,46 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </button>
             </div>
+            <div
+              className="MuiCardContent-root-53 _class-cardContent-4"
+            >
+              <div
+                className="MuiFormControl-root-54"
+              >
+                <label
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
+                  data-shrink={true}
+                >
+                  alignmentHeight
+                </label>
+                <div
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-formControl-90 MuiInput-formControl-77"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-99 MuiInput-input-84 MuiInputBase-inputType-102 MuiInput-inputType-87"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="number"
+                    value={5}
+                  />
+                </div>
+                <p
+                  className="MuiFormHelperText-root-113 MuiFormHelperText-filled-119"
+                >
+                  the height of each feature in a pileup alignment
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       <label
-        className="MuiFormLabel-root-51"
+        className="MuiFormLabel-root-69"
       >
         SvgFeatureRenderer
       </label>
@@ -1050,26 +1110,63 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="ConfigurationEditor-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-125"
+          className="MuiFormGroup-root-149"
         >
           <div
             className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
           >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="_class-slotModeSwitch-5"
+            >
+              <button
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
+                disabled={false}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onContextMenu={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                onKeyUp={[Function]}
+                onMouseDown={[Function]}
+                onMouseLeave={[Function]}
+                onMouseUp={[Function]}
+                onTouchEnd={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                tabIndex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  className="MuiIconButton-label-40"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="material-icons MuiIcon-root-44"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  className="MuiTouchRipple-root-106"
+                />
+              </button>
+            </div>
+            <div
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+                className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
                 onClick={[Function]}
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   color1
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                   style={
                     Object {
@@ -1082,7 +1179,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <input
                     aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    className="MuiInputBase-input-99 MuiInput-input-84"
                     disabled={false}
                     name="color"
                     onBlur={[Function]}
@@ -1100,11 +1197,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </p>
               </div>
             </div>
+          </div>
+          <div
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+          >
             <div
               className="_class-slotModeSwitch-5"
             >
               <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
@@ -1123,11 +1224,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 type="button"
               >
                 <span
-                  className="MuiIconButton-label-93"
+                  className="MuiIconButton-label-40"
                 >
                   <span
                     aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
+                    className="material-icons MuiIcon-root-44"
                   >
                     radio_button_unchecked
                   </span>
@@ -1137,25 +1238,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </button>
             </div>
-          </div>
-          <div
-            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-          >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+                className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
                 onClick={[Function]}
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   color2
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                   style={
                     Object {
@@ -1168,7 +1265,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <input
                     aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    className="MuiInputBase-input-99 MuiInput-input-84"
                     disabled={false}
                     name="color"
                     onBlur={[Function]}
@@ -1186,11 +1283,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </p>
               </div>
             </div>
+          </div>
+          <div
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+          >
             <div
               className="_class-slotModeSwitch-5"
             >
               <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
@@ -1209,11 +1310,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 type="button"
               >
                 <span
-                  className="MuiIconButton-label-93"
+                  className="MuiIconButton-label-40"
                 >
                   <span
                     aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
+                    className="material-icons MuiIcon-root-44"
                   >
                     radio_button_unchecked
                   </span>
@@ -1223,25 +1324,21 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </button>
             </div>
-          </div>
-          <div
-            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-          >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
+                className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
                 onClick={[Function]}
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   color3
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                   style={
                     Object {
@@ -1254,7 +1351,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <input
                     aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66"
+                    className="MuiInputBase-input-99 MuiInput-input-84"
                     disabled={false}
                     name="color"
                     onBlur={[Function]}
@@ -1272,11 +1369,15 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </p>
               </div>
             </div>
+          </div>
+          <div
+            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
+          >
             <div
               className="_class-slotModeSwitch-5"
             >
               <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+                className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
@@ -1295,11 +1396,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 type="button"
               >
                 <span
-                  className="MuiIconButton-label-93"
+                  className="MuiIconButton-label-40"
                 >
                   <span
                     aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
+                    className="material-icons MuiIcon-root-44"
                   >
                     radio_button_unchecked
                   </span>
@@ -1309,29 +1410,25 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 />
               </button>
             </div>
-          </div>
-          <div
-            className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
-          >
             <div
-              className="MuiCardContent-root-35 _class-cardContent-4"
+              className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-36"
+                className="MuiFormControl-root-54"
               >
                 <label
-                  className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
+                  className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
                   data-shrink={true}
                 >
                   height
                 </label>
                 <div
-                  className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-formControl-72 MuiInput-formControl-59"
+                  className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-formControl-90 MuiInput-formControl-77"
                   onClick={[Function]}
                 >
                   <input
                     aria-invalid={false}
-                    className="MuiInputBase-input-81 MuiInput-input-66 MuiInputBase-inputType-84 MuiInput-inputType-69"
+                    className="MuiInputBase-input-99 MuiInput-input-84 MuiInputBase-inputType-102 MuiInput-inputType-87"
                     disabled={false}
                     onBlur={[Function]}
                     onChange={[Function]}
@@ -1347,43 +1444,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   height in pixels of the main body of each feature
                 </p>
               </div>
-            </div>
-            <div
-              className="_class-slotModeSwitch-5"
-            >
-              <button
-                className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
-                disabled={false}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onContextMenu={[Function]}
-                onFocus={[Function]}
-                onKeyDown={[Function]}
-                onKeyUp={[Function]}
-                onMouseDown={[Function]}
-                onMouseLeave={[Function]}
-                onMouseUp={[Function]}
-                onTouchEnd={[Function]}
-                onTouchMove={[Function]}
-                onTouchStart={[Function]}
-                tabIndex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  className="MuiIconButton-label-93"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="material-icons MuiIcon-root-97"
-                  >
-                    radio_button_unchecked
-                  </span>
-                </span>
-                <span
-                  className="MuiTouchRipple-root-106"
-                />
-              </button>
             </div>
           </div>
         </div>
@@ -1401,41 +1461,10 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
     className="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-7 _class-card-3"
   >
     <div
-      className="MuiCardContent-root-35 _class-cardContent-4"
-    >
-      <div
-        className="MuiFormControl-root-36 MuiFormControl-fullWidth-39"
-      >
-        <label
-          className="MuiFormLabel-root-51 MuiFormLabel-filled-55 MuiInputLabel-root-40 MuiInputLabel-formControl-45 MuiInputLabel-animated-48 MuiInputLabel-shrink-47"
-          data-shrink={true}
-        >
-          foo
-        </label>
-        <div
-          className="MuiInputBase-root-71 MuiInput-root-58 MuiInput-underline-62 MuiInputBase-fullWidth-80 MuiInput-fullWidth-65 MuiInputBase-formControl-72 MuiInput-formControl-59"
-          onClick={[Function]}
-        >
-          <input
-            aria-invalid={false}
-            className="MuiInputBase-input-81 MuiInput-input-66"
-            disabled={false}
-            onBlur={[Function]}
-            onChange={[Function]}
-            onFocus={[Function]}
-            required={false}
-            type="text"
-            value="bar"
-          />
-        </div>
-        
-      </div>
-    </div>
-    <div
       className="_class-slotModeSwitch-5"
     >
       <button
-        className="MuiButtonBase-root-94 MuiIconButton-root-88 _class-slotModeIcon-6"
+        className="MuiButtonBase-root-41 MuiIconButton-root-35 _class-slotModeIcon-6"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -1454,11 +1483,11 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         type="button"
       >
         <span
-          className="MuiIconButton-label-93"
+          className="MuiIconButton-label-40"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-97"
+            className="material-icons MuiIcon-root-44"
           >
             radio_button_unchecked
           </span>
@@ -1467,6 +1496,37 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
           className="MuiTouchRipple-root-106"
         />
       </button>
+    </div>
+    <div
+      className="MuiCardContent-root-53 _class-cardContent-4"
+    >
+      <div
+        className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
+      >
+        <label
+          className="MuiFormLabel-root-69 MuiFormLabel-filled-73 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"
+          data-shrink={true}
+        >
+          foo
+        </label>
+        <div
+          className="MuiInputBase-root-89 MuiInput-root-76 MuiInput-underline-80 MuiInputBase-fullWidth-98 MuiInput-fullWidth-83 MuiInputBase-formControl-90 MuiInput-formControl-77"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-99 MuiInput-input-84"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="bar"
+          />
+        </div>
+        
+      </div>
     </div>
   </div>
 </div>

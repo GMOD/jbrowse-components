@@ -147,7 +147,7 @@ const valueComponents = {
 }
 
 const modeSwitchButtonWidth = 25
-const slotEditorStyles = theme => ({
+export const slotEditorStyles = theme => ({
   card: {
     display: 'flex',
     marginBottom: 16,
@@ -181,9 +181,6 @@ const SlotEditor = withStyles(slotEditorStyles)(
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
       <Card className={classes.card}>
-        <CardContent className={classes.cardContent}>
-          <ValueComponent slot={slot} slotSchema={slotSchema} />
-        </CardContent>
         <div className={classes.slotModeSwitch}>
           <IconButton
             className={classes.slotModeIcon}
@@ -203,6 +200,9 @@ const SlotEditor = withStyles(slotEditorStyles)(
             )}
           </IconButton>
         </div>
+        <CardContent className={classes.cardContent}>
+          <ValueComponent slot={slot} slotSchema={slotSchema} />
+        </CardContent>
       </Card>
     )
   }),

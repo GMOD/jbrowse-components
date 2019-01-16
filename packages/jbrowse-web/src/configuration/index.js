@@ -43,6 +43,10 @@ function getConf(model, slotName, args) {
   return readConfObject(model.configuration, slotName, args)
 }
 
+/**
+ * given a configuration model (an instance of a ConfigurationSchema),
+ * read the configuration variable at the given path
+ */
 function readConfObject(confObject, slotPath, args) {
   if (typeof slotPath === 'string') {
     const slotName = typeof slotPath === 'string' ? slotPath : slotPath[0]

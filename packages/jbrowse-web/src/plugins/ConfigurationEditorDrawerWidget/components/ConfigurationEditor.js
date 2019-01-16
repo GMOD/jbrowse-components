@@ -1,4 +1,4 @@
-import { FormLabel } from '@material-ui/core'
+import { FormLabel, TextField, MenuItem } from '@material-ui/core'
 import FormGroup from '@material-ui/core/FormGroup'
 import { withStyles } from '@material-ui/core/styles'
 import {
@@ -13,9 +13,11 @@ import React from 'react'
 import {
   isConfigurationSchemaType,
   isConfigurationSlotType,
+  getTypeNamesFromExplicitlyTypedUnion,
 } from '../../../configuration/configurationSchema'
 import { iterMap } from '../../../util'
 import SlotEditor from './SlotEditor'
+import TypeSelector from './TypeSelector'
 
 const styles = theme => ({
   root: {
@@ -36,11 +38,28 @@ const styles = theme => ({
 const Member = inject('classes')(
   observer(({ slotName, slotSchema, schema, classes, rootConfig }) => {
     const slot = schema[slotName]
-
+    let typeSelector
     if (isConfigurationSchemaType(slotSchema)) {
+      // if (slotName === 'adapter') debugger
+      const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
+      if (typeNameChoices.length) {
+        // do something
+        typeSelector = (
+          <TypeSelector
+            typeNameChoices={typeNameChoices}
+            slotName={slotName}
+            slot={slot}
+            onChange={evt => {
+              if (evt.target.value !== slot.type)
+                schema.setSubschema(slotName, { type: evt.target.value })
+            }}
+          />
+        )
+      }
       return (
         <>
           <FormLabel>{slotName}</FormLabel>
+          {typeSelector}
           <div className={classes.subSchemaContainer}>
             <FormGroup>
               <Schema rootConfig={rootConfig} schema={slot} />

@@ -4,6 +4,7 @@ import {
   isArrayType,
   isUnionType,
   isMapType,
+  isStateTreeNode,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -30,6 +31,22 @@ export function isConfigurationSchemaType(thing) {
       thing.types.every(t => isConfigurationSchemaType(t))) ||
     (isMapType(thing) && isConfigurationSchemaType(thing.subType))
   )
+}
+
+/**
+ * given a union of explicitly typed configuration schema types,
+ * extract an array of the type names contained in the union
+ */
+export function getTypeNamesFromExplicitlyTypedUnion(thing) {
+  if (isUnionType(thing)) {
+    const typeNames = thing.types.map(type => {
+      const typeName = type.defaultValue.type
+      if (!typeName) throw new Error('invalid config schema type', type)
+      return typeName
+    })
+    return typeNames
+  }
+  return []
 }
 
 export function isConfigurationSlotType(thing) {
@@ -92,10 +109,19 @@ export function ConfigurationSchema(
     }
   })
 
-  let completeModel = types.model(
-    `${modelName}ConfigurationSchema`,
-    modelDefinition,
-  )
+  let completeModel = types
+    .model(`${modelName}ConfigurationSchema`, modelDefinition)
+    .actions(self => ({
+      setSubschema(slotName, data) {
+        if (!isConfigurationSchemaType(modelDefinition[slotName]))
+          throw new Error(`${slotName} is not a subschema, cannot replace`)
+        const newSchema = isStateTreeNode(data)
+          ? data
+          : modelDefinition[slotName].create(data)
+        self[slotName] = newSchema
+        return newSchema
+      },
+    }))
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }
