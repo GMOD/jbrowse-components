@@ -11,7 +11,7 @@ const SequenceTrack = observer(props => {
     <div className="SequenceTrack">
       <TrackBlocks {...props} blockState={blockState} />
     </div>
-
+  )
 })
 
 SequenceTrack.propTypes = {
