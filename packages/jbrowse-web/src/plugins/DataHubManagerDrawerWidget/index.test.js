@@ -15,5 +15,5 @@ test('plugin in a stock JBrowse', () => {
   const config = HierarchicalTrackSelectorDrawerWidget.configSchema.create({
     type: 'HierarchicalTrackSelectorDrawerWidget',
   })
-  expect(getSnapshot(config)).toMatchSnapshot({ _configId: expect.any(String) })
+  expect(getSnapshot(config)).toMatchSnapshot({ configId: expect.any(String) })
 })

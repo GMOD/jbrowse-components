@@ -7,7 +7,6 @@ import {
   getType,
 } from 'mobx-state-tree'
 import {
-  ConfigurationSchema,
   ConfigurationReference,
   getConf,
   readConfObject,

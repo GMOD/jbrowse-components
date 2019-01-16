@@ -7,7 +7,7 @@ import jsonStableStringify from 'json-stable-stringify'
 function removeConfigIds(thing) {
   if (typeof thing === 'object') {
     const filtered = { ...thing }
-    delete filtered._configId
+    delete filtered.configId
     Object.entries(filtered).forEach(([k, v]) => {
       filtered[k] = removeConfigIds(v)
     })

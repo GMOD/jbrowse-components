@@ -1,4 +1,3 @@
-import { Provider } from 'mobx-react'
 import React from 'react'
 import renderer from 'react-test-renderer'
 

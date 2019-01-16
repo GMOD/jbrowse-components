@@ -1,5 +1,3 @@
-import fs from 'fs-extra'
-
 import { Provider } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
@@ -7,7 +5,6 @@ import ReactDOM from 'react-dom'
 import PluginManager from '../PluginManager'
 import RootModelFactory from '../rootModel'
 import App from './App'
-import JBrowse from '../JBrowse'
 
 describe('jbrowse-web app', () => {
   const pluginManager = new PluginManager()
@@ -31,7 +28,7 @@ describe('jbrowse-web app', () => {
     const model = RootModelFactory({ pluginManager }).create()
     expect(getSnapshot(model)).toMatchSnapshot({
       configuration: {
-        _configId: expect.any(String),
+        configId: expect.any(String),
       },
     })
     render(model)

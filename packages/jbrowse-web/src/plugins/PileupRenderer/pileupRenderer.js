@@ -41,7 +41,6 @@ class PileupRenderer extends BoxRenderer {
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
     if (feature.get('seq_id') !== region.refName) {
-      debugger
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
           region.refName

@@ -1,5 +1,4 @@
 import { stringToFunction, functionRegexp } from './functionStrings'
-import { inDevelopment } from './index'
 
 describe('function string parsing', () => {
   it('has working regex', () => {

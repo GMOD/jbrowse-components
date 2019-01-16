@@ -16,7 +16,7 @@ import React from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 
-const StringEditor = observer(({ slot, slotSchema }) => (
+const StringEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
     // error={filterError}
@@ -35,7 +35,7 @@ const stringArrayEditorStyles = {
 }
 
 const StringArrayEditor = withStyles(stringArrayEditorStyles)(
-  observer(({ slot, slotSchema, classes }) => (
+  observer(({ slot, classes }) => (
     <>
       <InputLabel>{slot.name}</InputLabel>
       <div className={classes.stringArrayEditor}>
@@ -174,7 +174,7 @@ export const slotEditorStyles = theme => ({
 
 const SlotEditor = withStyles(slotEditorStyles)(
   observer(({ slot, slotSchema, classes }) => {
-    const { name, description, type, value } = slot
+    const { type } = slot
     const ValueComponent = slot.isCallback
       ? CallbackEditor
       : valueComponents[type] || StringEditor

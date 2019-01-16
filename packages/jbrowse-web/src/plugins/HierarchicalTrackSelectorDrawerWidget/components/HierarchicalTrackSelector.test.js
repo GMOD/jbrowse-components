@@ -50,8 +50,8 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       },
       configuration: {
         tracks: [
-          { _configId: 'fooC', type: 'AlignmentsTrack' },
-          { _configId: 'barC', type: 'AlignmentsTrack' },
+          { configId: 'fooC', type: 'AlignmentsTrack' },
+          { configId: 'barC', type: 'AlignmentsTrack' },
         ],
       },
     })
@@ -83,8 +83,8 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       },
       configuration: {
         tracks: [
-          { _configId: 'fooC', type: 'AlignmentsTrack' },
-          { _configId: 'barC', type: 'AlignmentsTrack' },
+          { configId: 'fooC', type: 'AlignmentsTrack' },
+          { configId: 'barC', type: 'AlignmentsTrack' },
         ],
       },
     })

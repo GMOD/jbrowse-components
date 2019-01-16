@@ -70,5 +70,5 @@
     }
   ],
   "drawerWidgets": {},
-  "configuration": { "views": { "LinearGenomeView": { "_configId": "LinearGenomeView"}}}
+  "configuration": { "views": { "LinearGenomeView": { "configId": "LinearGenomeView"}}}
 }

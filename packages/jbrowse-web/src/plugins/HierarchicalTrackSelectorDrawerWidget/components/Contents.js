@@ -108,7 +108,7 @@ class Contents extends React.Component {
       Array.from(hierarchy)
         .slice(numLoaded, numLoaded + 10)
         .forEach(([name, contents]) => {
-          if (contents._configId) {
+          if (contents.configId) {
             trackConfigurations.push(contents)
           } else {
             categories.push([name, contents])
@@ -131,7 +131,7 @@ class Contents extends React.Component {
       <>
         <FormGroup>
           {trackConfigurations.filter(filterPredicate).map(trackConf => (
-            <Fade in key={trackConf._configId}>
+            <Fade in key={trackConf.configId}>
               <Tooltip
                 title={readConfObject(trackConf, 'description')}
                 placement="left"
@@ -151,7 +151,7 @@ class Contents extends React.Component {
           ))}
         </FormGroup>
         {doneLoading ? null : <CircularProgress />}
-        {categories.map(([name, contents]) => (
+        {categories.map(([name]) => (
           <Category
             key={name}
             model={model}

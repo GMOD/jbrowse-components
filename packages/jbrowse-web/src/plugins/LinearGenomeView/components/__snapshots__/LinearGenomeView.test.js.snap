@@ -161,11 +161,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <div
-      className="refLabel floating"
-    >
-      ctgA
-    </div>
-    <div
       className="block left-side right-side"
       style={
         Object {
@@ -265,6 +260,11 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           100
         </text>
       </svg>
+    </div>
+    <div
+      className="refLabel floating"
+    >
+      ctgA
     </div>
   </div>
   <div

@@ -1,4 +1,4 @@
-import { FormLabel, TextField, MenuItem } from '@material-ui/core'
+import { FormLabel } from '@material-ui/core'
 import FormGroup from '@material-ui/core/FormGroup'
 import { withStyles } from '@material-ui/core/styles'
 import {
@@ -78,7 +78,7 @@ const Member = inject('classes')(
   }),
 )
 
-const Schema = observer(({ rootConfig, schema, classes }) =>
+const Schema = observer(({ rootConfig, schema }) =>
   iterMap(
     Object.entries(getMembers(schema).properties),
     ([slotName, slotSchema]) => (

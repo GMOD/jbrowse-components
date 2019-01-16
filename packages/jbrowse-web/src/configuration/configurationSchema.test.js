@@ -96,19 +96,19 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create({
-      configuration: { _configId: 'fogbat', someInteger: 42 },
+      configuration: { configId: 'fogbat', someInteger: 42 },
     })
     expect(getConf(model, 'someInteger')).toEqual(42)
     expect(getSnapshot(model)).toEqual({
-      configuration: { _configId: 'fogbat', someInteger: 42 },
+      configuration: { configId: 'fogbat', someInteger: 42 },
     })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
     const model2 = container.create({
-      configuration: { _configId: 'one' },
+      configuration: { configId: 'one' },
     })
     expect(getSnapshot(model2)).toEqual({
-      configuration: { _configId: 'one' },
+      configuration: { configId: 'one' },
     })
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
@@ -142,23 +142,23 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
-        _configId: 'one',
+        configId: 'one',
         someInteger: 42,
-        mySubConfiguration: { _configId: 'four' },
+        mySubConfiguration: { configId: 'four' },
         myArrayOfSubConfigurations: [
-          { _configId: 'two', someNumber: 3.5 },
-          { _configId: 'three', someNumber: 11.1 },
+          { configId: 'two', someNumber: 3.5 },
+          { configId: 'three', someNumber: 11.1 },
         ],
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
-        _configId: 'one',
+        configId: 'one',
         someInteger: 42,
-        mySubConfiguration: { _configId: 'four' },
+        mySubConfiguration: { configId: 'four' },
         myArrayOfSubConfigurations: [
-          { _configId: 'two' },
-          { _configId: 'three', someNumber: 11.1 },
+          { configId: 'two' },
+          { configId: 'three', someNumber: 11.1 },
         ],
       },
     })
@@ -202,19 +202,19 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
-        _configId: 'two',
+        configId: 'two',
         someInteger: 12,
         myConfigurationMap: {
-          nog: { _configId: 'nog' },
+          nog: { configId: 'nog' },
         },
-        mySubConfiguration: { _configId: 'one', someNumber: 12 },
+        mySubConfiguration: { configId: 'one', someNumber: 12 },
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
-        _configId: 'two',
-        myConfigurationMap: { nog: { _configId: 'nog' } },
-        mySubConfiguration: { _configId: 'one', someNumber: 12 },
+        configId: 'two',
+        myConfigurationMap: { nog: { configId: 'nog' } },
+        mySubConfiguration: { configId: 'one', someNumber: 12 },
       },
     })
 
