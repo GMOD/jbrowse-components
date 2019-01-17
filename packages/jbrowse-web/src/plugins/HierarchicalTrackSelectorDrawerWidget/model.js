@@ -27,7 +27,11 @@ export default pluginManager =>
       collapsed: types.map(types.boolean), // map of category path -> boolean of whether it is collapsed
       filterText: '',
       view: types.maybe(
-        types.reference(pluginManager.pluggableMstType('view', 'stateModel')),
+        types.reference(pluginManager.pluggableMstType('view', 'stateModel'), {
+          onInvalidated(evt) {
+            evt.removeRef()
+          },
+        }),
       ),
     })
     .actions(self => ({

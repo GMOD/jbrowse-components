@@ -133,6 +133,11 @@ export default app => {
         return newView
       },
 
+      removeView(view) {
+        if (self.task && self.task.data === view) self.clearTask()
+        self.views.remove(view)
+      },
+
       addDrawerWidget(
         typeName,
         id,

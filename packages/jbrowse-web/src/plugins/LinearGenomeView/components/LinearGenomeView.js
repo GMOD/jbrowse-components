@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { inject, observer, PropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { Icon } from '@material-ui/core'
+import { Icon, IconButton } from '@material-ui/core'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import ScaleBar from './ScaleBar'
@@ -62,10 +62,17 @@ class LinearGenomeView extends Component {
           className="controls view-controls"
           style={{ gridRow: 'scale-bar' }}
         >
+          <IconButton
+            onClick={model.closeView}
+            style={{ padding: '4px' }}
+            title="close this view"
+          >
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
           <ConfigureToggleButton
             model={model}
             onClick={model.activateConfigurationUI}
-            title="configure this view"
+            title="configure view"
             style={{}}
             fontSize="small"
           />

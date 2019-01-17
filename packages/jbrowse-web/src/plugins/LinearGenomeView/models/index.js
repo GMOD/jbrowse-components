@@ -5,6 +5,7 @@ import {
   isStateTreeNode,
   types,
   getType,
+  getParent,
 } from 'mobx-state-tree'
 import {
   ConfigurationReference,
@@ -45,7 +46,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
-        controlsWidth: 100,
+        controlsWidth: 120,
         displayedRegions: types.array(Region),
         configuration: ConfigurationReference(LinearGenomeViewConfigSchema),
       }),
@@ -140,6 +141,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+
+      closeView() {
+        getParent(self, 2).removeView(self)
       },
 
       toggleTrack(configuration) {
