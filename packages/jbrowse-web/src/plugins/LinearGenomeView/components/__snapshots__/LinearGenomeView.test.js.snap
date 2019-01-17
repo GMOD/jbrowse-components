@@ -22,7 +22,44 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiIconButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      style={
+        Object {
+          "padding": "4px",
+        }
+      }
+      tabIndex="0"
+      title="close this view"
+      type="button"
+    >
+      <span
+        className="MuiIconButton-label-6"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
+        >
+          close
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-23"
+      />
+    </button>
+    <button
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       fontSize="small"
       onBlur={[Function]}
@@ -43,26 +80,26 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         }
       }
       tabIndex="0"
-      title="configure this view"
+      title="configure view"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -81,17 +118,17 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       value="track_select"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           line_style
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
      
@@ -117,7 +154,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -137,31 +174,31 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         }
       }
       tabIndex="0"
-      title="configure this track"
+      title="configure track"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <div
-      className="TrackControls-trackName-24"
+      className="TrackControls-trackName-30"
     >
       foo
     </div>
     <div
-      className="TrackControls-trackDescription-25"
+      className="TrackControls-trackDescription-31"
     >
       
     </div>
@@ -229,7 +266,44 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiIconButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      style={
+        Object {
+          "padding": "4px",
+        }
+      }
+      tabIndex="0"
+      title="close this view"
+      type="button"
+    >
+      <span
+        className="MuiIconButton-label-6"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
+        >
+          close
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-23"
+      />
+    </button>
+    <button
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       fontSize="small"
       onBlur={[Function]}
@@ -250,26 +324,26 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
       tabIndex="0"
-      title="configure this view"
+      title="configure view"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -288,17 +362,17 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       value="track_select"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           line_style
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
      
@@ -456,7 +530,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -476,31 +550,31 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
       tabIndex="0"
-      title="configure this track"
+      title="configure track"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <div
-      className="TrackControls-trackName-24"
+      className="TrackControls-trackName-30"
     >
       foo
     </div>
     <div
-      className="TrackControls-trackDescription-25"
+      className="TrackControls-trackDescription-31"
     >
       
     </div>
@@ -553,7 +627,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -573,31 +647,31 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
       tabIndex="0"
-      title="configure this track"
+      title="configure track"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <div
-      className="TrackControls-trackName-24"
+      className="TrackControls-trackName-30"
     >
       bar
     </div>
     <div
-      className="TrackControls-trackDescription-25"
+      className="TrackControls-trackDescription-31"
     >
       
     </div>
@@ -665,7 +739,44 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiIconButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      style={
+        Object {
+          "padding": "4px",
+        }
+      }
+      tabIndex="0"
+      title="close this view"
+      type="button"
+    >
+      <span
+        className="MuiIconButton-label-6"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
+        >
+          close
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-23"
+      />
+    </button>
+    <button
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       fontSize="small"
       onBlur={[Function]}
@@ -686,26 +797,26 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         }
       }
       tabIndex="0"
-      title="configure this view"
+      title="configure view"
       type="button"
       value="configure"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           settings
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
     <button
-      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      className="MuiButtonBase-root-7 MuiToggleButton-root-19"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -724,17 +835,17 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       value="track_select"
     >
       <span
-        className="MuiToggleButton-label-4"
+        className="MuiToggleButton-label-22"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+          className="material-icons MuiIcon-root-10 MuiIcon-fontSizeSmall-17"
         >
           line_style
         </span>
       </span>
       <span
-        className="MuiTouchRipple-root-17"
+        className="MuiTouchRipple-root-23"
       />
     </button>
      

@@ -31,7 +31,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         Object {
           "bpPerPx": 1,
           "configuration": "LinearGenomeView",
-          "controlsWidth": 100,
+          "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
           "id": "viewTestingId",
@@ -79,7 +79,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           Object {
             "bpPerPx": 1,
             "configuration": "LinearGenomeView",
-            "controlsWidth": 100,
+            "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
             "id": "viewTestingId",
@@ -127,7 +127,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             Object {
               "bpPerPx": 1,
               "configuration": "LinearGenomeView",
-              "controlsWidth": 100,
+              "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
               "id": "viewTestingId",
@@ -220,7 +220,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         Object {
           "bpPerPx": 1,
           "configuration": "LinearGenomeView",
-          "controlsWidth": 100,
+          "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
           "id": "viewTestingId",
@@ -268,7 +268,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           Object {
             "bpPerPx": 1,
             "configuration": "LinearGenomeView",
-            "controlsWidth": 100,
+            "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
             "id": "viewTestingId",
@@ -316,7 +316,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             Object {
               "bpPerPx": 1,
               "configuration": "LinearGenomeView",
-              "controlsWidth": 100,
+              "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
               "id": "viewTestingId",
@@ -812,7 +812,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         Object {
           "bpPerPx": 1,
           "configuration": "LinearGenomeView",
-          "controlsWidth": 100,
+          "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
           "id": "viewTestingId",
@@ -860,7 +860,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           Object {
             "bpPerPx": 1,
             "configuration": "LinearGenomeView",
-            "controlsWidth": 100,
+            "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
             "id": "viewTestingId",
@@ -908,7 +908,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             Object {
               "bpPerPx": 1,
               "configuration": "LinearGenomeView",
-              "controlsWidth": 100,
+              "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
               "id": "viewTestingId",
