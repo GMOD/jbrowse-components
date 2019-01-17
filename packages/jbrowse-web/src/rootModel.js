@@ -1,4 +1,4 @@
-import { types, getRoot, getType, getSnapshot } from 'mobx-state-tree'
+import { types, getRoot, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
 
