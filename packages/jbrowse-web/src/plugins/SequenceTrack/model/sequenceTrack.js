@@ -35,8 +35,8 @@ export default (pluginManager, configSchema) =>
          * selected in the UI: pileup, coverage, etc
          */
         get rendererTypeName() {
-          const defaultRendering = getConf(self, 'defaultRendering')
-          const viewName = self.selectedRendering || defaultRendering
+          const viewName =
+            self.selectedRendering || getConf(self, 'defaultRendering')
           const rendererType = rendererTypes.get(viewName)
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
@@ -47,25 +47,6 @@ export default (pluginManager, configSchema) =>
           return TrackControls
         },
 
-        /**
-         * returns a string feature ID if the globally-selected object
-         * is probably a feature
-         */
-        get selectedFeatureId() {
-          const root = getRoot(self)
-          if (!root) return undefined
-          const { selection } = root
-          // does it quack like a feature?
-          if (
-            selection &&
-            typeof selection.get === 'function' &&
-            typeof selection.id === 'function'
-          ) {
-            // probably is a feature
-            return selection.id()
-          }
-          return undefined
-        },
         /**
          * the pluggable element type object for this track's
          * renderer
@@ -100,14 +81,6 @@ export default (pluginManager, configSchema) =>
             bpPerPx: view.bpPerPx,
             config,
             trackModel: self,
-            onFeatureClick(event, featureId) {
-              // try to find the feature in our layout
-              const feature = self.features.get(featureId)
-              self.selectFeature(feature)
-            },
-            onClick() {
-              self.clearFeatureSelection()
-            },
           }
         },
 

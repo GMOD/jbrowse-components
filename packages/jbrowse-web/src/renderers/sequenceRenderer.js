@@ -110,6 +110,7 @@ export default class BoxRenderer extends RendererType {
     const renderProps = { ...args, features, config }
 
     const result = await this.render(renderProps)
+    console.log(result, 'wtf')
     result.html = renderToString(result.element)
     delete result.element
 
