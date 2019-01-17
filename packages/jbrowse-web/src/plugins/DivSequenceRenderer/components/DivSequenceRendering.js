@@ -43,7 +43,6 @@ class DivSequenceRendering extends Component {
     for (const seq of features.values()) {
       s += seq.seq || seq.data.seq // index.js:1452 Warning: Text content did not match. fix?
     }
-    console.log('lol', s)
 
     const width = (region.end - region.start) / bpPerPx
     const height = 200
@@ -60,7 +59,18 @@ class DivSequenceRendering extends Component {
           color: 'black',
         }}
       >
-        {s}
+        {s.split('').map(letter => (
+          <div
+            style={{
+              width: `${width / s.length}px`,
+              display: 'inline-block',
+              background: 'grey',
+              border: '1px solid #333',
+            }}
+          >
+            {letter}
+          </div>
+        ))}
       </div>
     )
   }

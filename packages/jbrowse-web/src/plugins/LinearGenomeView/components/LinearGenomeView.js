@@ -98,6 +98,19 @@ class LinearGenomeView extends Component {
           offsetPx={visibleBlocksOffsetPx}
           width={width - controlsWidth}
         />
+
+        <div
+          className="controls view-controls"
+          style={{ gridRow: 'scale-bar', left: '-200px' }}
+        >
+          <button type="button" onClick={model.zoomOut}>
+            zoom out
+          </button>
+          <button type="button" onClick={model.zoomIn}>
+            zoom in
+          </button>
+        </div>
+
         {tracks.map(track => [
           <div
             className="controls track-controls"
