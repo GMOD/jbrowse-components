@@ -7,5 +7,7 @@ export default class ViewType extends PluggableElementType {
       throw new Error(`no ReactComponent defined for view ${this.name}`)
     if (!this.stateModel)
       throw new Error(`no stateModel defined for view ${this.name}`)
+    if (!this.configSchema)
+      throw new Error(`no configSchema defined for view ${this.name}`)
   }
 }

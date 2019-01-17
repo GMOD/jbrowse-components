@@ -73,16 +73,7 @@ const BaseTrack = types
     },
 
     activateConfigurationUI() {
-      const rootModel = getRoot(self)
-      if (!rootModel.drawerWidgets.get('configEditor'))
-        rootModel.addDrawerWidget(
-          'ConfigurationEditorDrawerWidget',
-          'configEditor',
-          { target: self.configuration },
-        )
-      const editor = rootModel.drawerWidgets.get('configEditor')
-      editor.setTarget(self.configuration)
-      rootModel.showDrawerWidget(editor)
+      getRoot(self).editConfiguration(self.configuration)
     },
   }))
 

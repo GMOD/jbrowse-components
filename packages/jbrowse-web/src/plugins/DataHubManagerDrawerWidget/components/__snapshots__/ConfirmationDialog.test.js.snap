@@ -30,9 +30,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "LinearGenomeView",
-          },
+          "configuration": "LinearGenomeView",
           "controlsWidth": 100,
           "displayedRegions": Array [],
           "flipped": false,
@@ -80,9 +78,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": Object {
-              "configId": "LinearGenomeView",
-            },
+            "configuration": "LinearGenomeView",
             "controlsWidth": 100,
             "displayedRegions": Array [],
             "flipped": false,
@@ -130,9 +126,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": Object {
-                "configId": "LinearGenomeView",
-              },
+              "configuration": "LinearGenomeView",
               "controlsWidth": 100,
               "displayedRegions": Array [],
               "flipped": false,
@@ -225,9 +219,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "LinearGenomeView",
-          },
+          "configuration": "LinearGenomeView",
           "controlsWidth": 100,
           "displayedRegions": Array [],
           "flipped": false,
@@ -275,9 +267,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": Object {
-              "configId": "LinearGenomeView",
-            },
+            "configuration": "LinearGenomeView",
             "controlsWidth": 100,
             "displayedRegions": Array [],
             "flipped": false,
@@ -325,9 +315,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": Object {
-                "configId": "LinearGenomeView",
-              },
+              "configuration": "LinearGenomeView",
               "controlsWidth": 100,
               "displayedRegions": Array [],
               "flipped": false,
@@ -823,9 +811,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "LinearGenomeView",
-          },
+          "configuration": "LinearGenomeView",
           "controlsWidth": 100,
           "displayedRegions": Array [],
           "flipped": false,
@@ -873,9 +859,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": Object {
-              "configId": "LinearGenomeView",
-            },
+            "configuration": "LinearGenomeView",
             "controlsWidth": 100,
             "displayedRegions": Array [],
             "flipped": false,
@@ -923,9 +907,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": Object {
-                "configId": "LinearGenomeView",
-              },
+              "configuration": "LinearGenomeView",
               "controlsWidth": 100,
               "displayedRegions": Array [],
               "flipped": false,

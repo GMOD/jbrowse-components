@@ -111,7 +111,7 @@ class App extends Component {
                   className={classes.drawerCloseButton}
                   color="inherit"
                   aria-label="Close"
-                  onClick={() => rootModel.hideAllDrawerWidgets()}
+                  onClick={() => rootModel.clearTask()}
                 >
                   <Icon fontSize="small">close</Icon>
                 </IconButton>

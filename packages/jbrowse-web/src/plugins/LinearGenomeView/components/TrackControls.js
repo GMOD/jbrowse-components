@@ -2,8 +2,12 @@ import React from 'react'
 import { PropTypes, observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
-import { IconButton, Icon, withStyles } from '@material-ui/core'
+import { Icon, withStyles } from '@material-ui/core'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+
+import { getRoot } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
+import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 
 const styles = theme => ({
   trackName: {
@@ -20,17 +24,14 @@ const styles = theme => ({
 })
 
 function TrackControls({ track, classes, onConfigureClick }) {
+  const rootModel = getRoot(track)
   return (
     <>
-      <IconButton
-        type="button"
+      <ConfigureToggleButton
         onClick={onConfigureClick}
-        size="small"
-        style={{ padding: '4px' }}
         title="configure this track"
-      >
-        <Icon style={{ fontSize: '12px' }}>settings</Icon>
-      </IconButton>
+        model={track}
+      />
       <div className={classes.trackName}>
         {getConf(track, 'name') || track.id}
       </div>

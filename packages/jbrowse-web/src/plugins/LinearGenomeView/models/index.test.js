@@ -2,6 +2,7 @@ import { types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
 import configSchema from './configSchema'
 import { TestStub as LinearGenomeModel } from '.'
+import JBrowse from '../../../JBrowse'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types
@@ -29,6 +30,17 @@ test('can instantiate a mostly empty model and read a default configuration valu
 
   expect(root.view.tracks[0]).toBeTruthy()
   expect(getConf(model, 'backgroundColor')).toBe('#eee')
+})
+
+it('can run configuration', () => {
+  const jb = new JBrowse().configure({
+    views: {
+      LinearGenomeView: {},
+    },
+  })
+  const { model } = jb
+  const view = model.addView('LinearGenomeView')
+  view.activateConfigurationUI()
 })
 
 describe('block calculation', () => {

@@ -171,7 +171,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             'hierarchicalTrackSelector',
           )
           selector.setView(self)
-          rootModel.setSelection(self)
+          rootModel.setTask('track_select', self)
           rootModel.showDrawerWidget(selector)
         } else {
           throw new Error(`invalid track selector type ${trackSelectorType}`)
@@ -198,6 +198,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         const displayWidth = self.width - self.controlsWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
+      },
+
+      activateConfigurationUI() {
+        getRoot(self).editConfiguration(self.configuration)
       },
     }))
 }

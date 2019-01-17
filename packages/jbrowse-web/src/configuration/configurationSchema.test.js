@@ -1,5 +1,8 @@
 import { types, getSnapshot } from 'mobx-state-tree'
-import { ConfigurationSchema } from './configurationSchema'
+import {
+  ConfigurationSchema,
+  isConfigurationModel,
+} from './configurationSchema'
 
 import { getConf } from './index'
 
@@ -21,6 +24,7 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create()
+    expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
     expect(getConf(model, 'someInteger')).toBe(12)
 
@@ -62,6 +66,7 @@ describe('configuration schemas', () => {
   })
 
   test('can nest a single subconfiguration schema', () => {
+    debugger
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
         someInteger: {
@@ -80,6 +85,7 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create()
+    expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'someInteger')).toBe(12)
     // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
   })

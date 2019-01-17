@@ -5,6 +5,7 @@ import {
   isUnionType,
   isMapType,
   isStateTreeNode,
+  getType,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'
@@ -25,12 +26,19 @@ function isEmptyArray(thing) {
 
 export function isConfigurationSchemaType(thing) {
   return (
-    (isModelType(thing) && !!thing.isJBrowseConfigurationSchema) ||
+    (isModelType(thing) &&
+      (!!thing.isJBrowseConfigurationSchema ||
+        (thing.identifierAttribute === 'configId' &&
+          thing.name.includes('ConfigurationSchema')))) ||
     (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
     (isUnionType(thing) &&
       thing.types.every(t => isConfigurationSchemaType(t))) ||
     (isMapType(thing) && isConfigurationSchemaType(thing.subType))
   )
+}
+
+export function isConfigurationModel(thing) {
+  return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
 }
 
 /**
@@ -78,6 +86,14 @@ export function ConfigurationSchema(
 
   // now assemble the MST model of the configuration schema
   const modelDefinition = { configId: ElementId }
+  if (options.singleton) {
+    modelDefinition.configId = types.optional(
+      types.refinement(types.identifier, t => t === modelName),
+      modelName,
+    )
+  } else {
+    modelDefinition.configId = ElementId
+  }
 
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
 

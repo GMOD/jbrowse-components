@@ -8,7 +8,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px",
-      "height": "45px",
+      "height": "55px",
       "width": "800px",
     }
   }
@@ -22,39 +22,47 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      fontSize="small"
+      onBlur={[Function]}
       onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
+      tabIndex="0"
+      title="configure this view"
       type="button"
+      value="configure"
     >
-      select tracks
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
     </button>
-  </div>
-  <div
-    className="ScaleBar"
-    style={
-      Object {
-        "gridColumn": "blocks",
-        "gridRow": "scale-bar",
-        "height": "22px",
-        "width": "700px",
-      }
-    }
-  />
-  <div
-    className="controls track-controls"
-    style={
-      Object {
-        "gridColumn": "controls",
-        "gridRow": "track-foo",
-      }
-    }
-  >
-    <div
-      className="track-name"
-    >
-      foo
-    </div>
     <button
-      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -68,17 +76,95 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       onTouchMove={[Function]}
       onTouchStart={[Function]}
       tabIndex="0"
+      title="select tracks"
       type="button"
+      value="track_select"
     >
       <span
-        className="MuiButton-label-2"
+        className="MuiToggleButton-label-4"
       >
-        configure
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          line_style
+        </span>
       </span>
       <span
-        className="MuiTouchRipple-root-30"
+        className="MuiTouchRipple-root-17"
       />
     </button>
+     
+  </div>
+  <div
+    className="ScaleBar"
+    style={
+      Object {
+        "gridColumn": "blocks",
+        "gridRow": "scale-bar",
+        "height": "32px",
+        "width": "700px",
+      }
+    }
+  />
+  <div
+    className="controls track-controls"
+    style={
+      Object {
+        "gridColumn": "controls",
+        "gridRow": "track-foo",
+      }
+    }
+  >
+    <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
+      tabIndex="0"
+      title="configure this track"
+      type="button"
+      value="configure"
+    >
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
+    </button>
+    <div
+      className="TrackControls-trackName-24"
+    >
+      foo
+    </div>
+    <div
+      className="TrackControls-trackDescription-25"
+    >
+      
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -129,7 +215,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px",
-      "height": "68px",
+      "height": "78px",
       "width": "800px",
     }
   }
@@ -143,11 +229,79 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      fontSize="small"
+      onBlur={[Function]}
       onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
+      tabIndex="0"
+      title="configure this view"
       type="button"
+      value="configure"
     >
-      select tracks
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
     </button>
+    <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex="0"
+      title="select tracks"
+      type="button"
+      value="track_select"
+    >
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          line_style
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
+    </button>
+     
   </div>
   <div
     className="ScaleBar"
@@ -155,7 +309,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       Object {
         "gridColumn": "blocks",
         "gridRow": "scale-bar",
-        "height": "22px",
+        "height": "32px",
         "width": "700px",
       }
     }
@@ -170,7 +324,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <svg
-        height={22}
+        height={32}
         width={100}
       >
         <line
@@ -301,13 +455,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     }
   >
-    <div
-      className="track-name"
-    >
-      foo
-    </div>
     <button
-      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -320,18 +469,41 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       onTouchEnd={[Function]}
       onTouchMove={[Function]}
       onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
       tabIndex="0"
+      title="configure this track"
       type="button"
+      value="configure"
     >
       <span
-        className="MuiButton-label-2"
+        className="MuiToggleButton-label-4"
       >
-        configure
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
       </span>
       <span
-        className="MuiTouchRipple-root-30"
+        className="MuiTouchRipple-root-17"
       />
     </button>
+    <div
+      className="TrackControls-trackName-24"
+    >
+      foo
+    </div>
+    <div
+      className="TrackControls-trackDescription-25"
+    >
+      
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -380,13 +552,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     }
   >
-    <div
-      className="track-name"
-    >
-      bar
-    </div>
     <button
-      className="MuiButtonBase-root-27 MuiButton-root-1 MuiButton-text-3 MuiButton-textSecondary-5 MuiButton-flat-6 MuiButton-flatSecondary-8 MuiButton-sizeSmall-24"
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
       disabled={false}
       onBlur={[Function]}
       onClick={[Function]}
@@ -399,18 +566,41 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       onTouchEnd={[Function]}
       onTouchMove={[Function]}
       onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
       tabIndex="0"
+      title="configure this track"
       type="button"
+      value="configure"
     >
       <span
-        className="MuiButton-label-2"
+        className="MuiToggleButton-label-4"
       >
-        configure
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
       </span>
       <span
-        className="MuiTouchRipple-root-30"
+        className="MuiTouchRipple-root-17"
       />
     </button>
+    <div
+      className="TrackControls-trackName-24"
+    >
+      bar
+    </div>
+    <div
+      className="TrackControls-trackDescription-25"
+    >
+      
+    </div>
   </div>
   <div
     className="TrackRenderingContainer"
@@ -461,7 +651,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       "display": "grid",
       "gridTemplateColumns": "[controls] 100px [blocks] auto",
       "gridTemplateRows": "[scale-bar] auto ",
-      "height": "22px",
+      "height": "32px",
       "width": "800px",
     }
   }
@@ -475,11 +665,79 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      fontSize="small"
+      onBlur={[Function]}
       onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      size="small"
+      style={
+        Object {
+          "minWidth": 0,
+        }
+      }
+      tabIndex="0"
+      title="configure this view"
       type="button"
+      value="configure"
     >
-      select tracks
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          settings
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
     </button>
+    <button
+      className="MuiButtonBase-root-5 MuiToggleButton-root-1"
+      disabled={false}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onKeyDown={[Function]}
+      onKeyUp={[Function]}
+      onMouseDown={[Function]}
+      onMouseLeave={[Function]}
+      onMouseUp={[Function]}
+      onTouchEnd={[Function]}
+      onTouchMove={[Function]}
+      onTouchStart={[Function]}
+      tabIndex="0"
+      title="select tracks"
+      type="button"
+      value="track_select"
+    >
+      <span
+        className="MuiToggleButton-label-4"
+      >
+        <span
+          aria-hidden="true"
+          className="material-icons MuiIcon-root-8 MuiIcon-fontSizeSmall-15"
+        >
+          line_style
+        </span>
+      </span>
+      <span
+        className="MuiTouchRipple-root-17"
+      />
+    </button>
+     
   </div>
   <div
     className="ScaleBar"
@@ -487,7 +745,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       Object {
         "gridColumn": "blocks",
         "gridRow": "scale-bar",
-        "height": "22px",
+        "height": "32px",
         "width": "700px",
       }
     }

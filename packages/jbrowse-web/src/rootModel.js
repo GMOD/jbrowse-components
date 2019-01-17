@@ -1,5 +1,6 @@
 import { types, getRoot, getType, getSnapshot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
+import { isConfigurationModel } from './configuration/configurationSchema'
 
 export default app => {
   const { pluginManager } = app
@@ -60,6 +61,13 @@ export default app => {
        * kind of thing it is.
        */
       selection: undefined,
+
+      /**
+       * this is the current "task" that is being performed in the UI.
+       * this is usually an object of the form
+       * { taskName: "configure", target: thing_being_configured }
+       */
+      task: undefined,
     }))
     .views(self => ({
       get viewsWidth() {
@@ -118,7 +126,7 @@ export default app => {
 
         const data = Object.assign({}, initialState, {
           type: typeName,
-          configuration: getSnapshot(configuration), // : configuration.configId,
+          configuration,
         })
         const newView = typeDefinition.stateModel.create(data)
         self.views.push(newView)
@@ -185,6 +193,44 @@ export default app => {
       clearSelection() {
         self.selection = undefined
         console.log('selection cleared')
+      },
+
+      /**
+       * opens a configuration editor to configure the given thing,
+       * and sets the current task to be configuring it
+       * @param {*} configuration
+       */
+      editConfiguration(configuration) {
+        if (!isConfigurationModel(configuration)) {
+          throw new Error(
+            'must pass a configuration model to editConfiguration',
+          )
+        }
+        if (!self.drawerWidgets.get('configEditor'))
+          self.addDrawerWidget(
+            'ConfigurationEditorDrawerWidget',
+            'configEditor',
+            { target: configuration },
+          )
+        const editor = self.drawerWidgets.get('configEditor')
+        editor.setTarget(configuration)
+        self.setTask('configure', configuration)
+        self.showDrawerWidget(editor)
+      },
+
+      /**
+       * set the global "task" that is considered to be in progress.
+       */
+      setTask(taskName, data) {
+        self.task = { taskName, data }
+      },
+
+      /**
+       * clear the global task
+       */
+      clearTask() {
+        self.task = undefined
+        self.hideAllDrawerWidgets()
       },
     }))
   return RootModel
