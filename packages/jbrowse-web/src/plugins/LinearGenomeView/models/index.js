@@ -98,10 +98,12 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             const newBlock = {
               assembly: region.assembly,
               refName: region.refName,
-              start: region.start + blockNum * blockSizeBp,
-              end: Math.min(
-                region.end,
-                region.start + (blockNum + 1) * blockSizeBp,
+              start: Math.floor(region.start + blockNum * blockSizeBp),
+              end: Math.ceil(
+                Math.min(
+                  region.end,
+                  region.start + (blockNum + 1) * blockSizeBp,
+                ),
               ),
               offsetPx:
                 (regionBpOffset + region.start + blockNum * blockSizeBp) /
