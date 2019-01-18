@@ -160,6 +160,13 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         )
       },
 
+      zoomIn() {
+        this.zoomTo(self.bpPerPx / 2)
+      },
+
+      zoomOut() {
+        this.zoomTo(self.bpPerPx * 2)
+      },
       activateTrackSelector() {
         if (getType(self.configuration).name === 'AnonymousModel')
           throw new Error('this view should have a real configuration')

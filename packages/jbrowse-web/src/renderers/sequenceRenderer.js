@@ -13,7 +13,7 @@ class LayoutSession {
   }
 }
 
-export default class BoxRenderer extends RendererType {
+export default class SequenceRenderer extends RendererType {
   constructor(stuff) {
     super({ ...stuff, sessions: {} })
   }
@@ -82,7 +82,6 @@ export default class BoxRenderer extends RendererType {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
-      console.log('hello2', j)
       featuresMap.set(String(j.id), SimpleFeature.fromJSON(j))
     })
     result.features = featuresMap
@@ -110,7 +109,6 @@ export default class BoxRenderer extends RendererType {
     const renderProps = { ...args, features, config }
 
     const result = await this.render(renderProps)
-    console.log(result, 'wtf')
     result.html = renderToString(result.element)
     delete result.element
 
