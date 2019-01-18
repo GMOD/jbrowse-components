@@ -1,13 +1,16 @@
-.PileupRendering {
+.DivSequenceRendering {
   color: black;
-
-    white-space: normal;
-
-    .feature {
-    display: inline-block;
-    height: 1.2em;
-    margin: 1px;
-    background: blue;
-    color: white;
+  text-align: center;
+  .base-a {
+    background-color: #00BF00;
+  }
+  .base-g {
+    background-color: #ffa500;
+  }
+  .base-c {
+    background-color: #4747ff;
+  }
+  .base-t {
+    background-color: #f00;
   }
 }
