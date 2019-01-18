@@ -63,10 +63,8 @@ class DivSequenceRendering extends Component {
           <div
             style={{
               width: `${width / s.length}px`,
-              display: 'inline-block',
-              border: '1px solid #3339',
             }}
-            className={`base-${letter.toLowerCase()}`}
+            className={`base base-${letter.toLowerCase()}`}
           >
             {letter}
           </div>

@@ -1,6 +1,11 @@
 .DivSequenceRendering {
-  color: black;
-  text-align: center;
+  .base {
+    text-align: center;
+    display: inline-block;
+    color: black;
+    border: 1px solid #666;
+    border-collapse: collapse;
+  }
   .base-a {
     background-color: #00BF00;
   }
