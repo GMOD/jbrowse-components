@@ -43,8 +43,9 @@ class LinearGenomeView extends Component {
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
     const style = {
       display: 'grid',
-      width: `${width}px`,
-      height: `${height}px`,
+      width: '100%',
+      height: '100%',
+
       gridTemplateRows: `[scale-bar] auto ${tracks
         .map(
           t =>
@@ -55,12 +56,17 @@ class LinearGenomeView extends Component {
         .join(' ')}`,
       gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
     }
+
     // console.log(style)
     return (
-      <div className="LinearGenomeView" key={`view-${id}`} style={style}>
+      <div style={{ position: 'relative' }}>
         <div
-          className="controls view-controls"
-          style={{ gridRow: 'scale-bar' }}
+          style={{
+            position: 'absolute',
+            right: '0px',
+            top: '0px',
+            zIndex: 999,
+          }}
         >
           <IconButton
             onClick={model.closeView}
@@ -103,19 +109,17 @@ class LinearGenomeView extends Component {
           className="controls view-controls"
           style={{ gridRow: 'scale-bar', left: '-200px' }}
         >
-          <button type="button" onClick={model.zoomOut}>
-            zoom out
-          </button>
           <button type="button" onClick={model.zoomIn}>
-            zoom in
+            +
+          </button>
+          <button type="button" onClick={model.zoomOut}>
+            -
           </button>
         </div>
-
-        {tracks.map(track => [
+        <div className="LinearGenomeView" key={`view-${id}`} style={style}>
           <div
-            className="controls track-controls"
-            key={`controls:${track.id}`}
-            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+            className="controls view-controls"
+            style={{ gridRow: 'scale-bar' }}
           >
             <track.ControlsComponent
               track={track}
@@ -127,23 +131,56 @@ class LinearGenomeView extends Component {
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}
             trackId={track.id}
+            <button type="button" onClick={model.activateTrackSelector}>
+              select tracks
+            </button>
+          </div>
+
+          <ScaleBar
+            style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={blocks}
+            offsetPx={visibleBlocksOffsetPx}
             width={width - controlsWidth}
-            onHorizontalScroll={model.horizontalScroll}
-          >
-            <track.RenderingComponent
-              model={track}
-              blockDefinitions={blocks}
-              offsetPx={visibleBlocksOffsetPx}
-              bpPerPx={bpPerPx}
-              blockState={{}}
-            />
-          </TrackRenderingContainer>,
-          <TrackResizeHandle
-            key={`handle:${track.id}`}
-            trackId={track.id}
-            onVerticalDrag={model.resizeTrack}
-          />,
-        ])}
+          />
+
+          {tracks.map(track => [
+            <div
+              className="controls track-controls"
+              key={`controls:${track.id}`}
+              style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+            >
+              <track.ControlsComponent
+                track={track}
+                key={track.id}
+                view={model}
+                onConfigureClick={() => {
+                  /* TODO */
+                }}
+              />
+            </div>,
+            <TrackRenderingContainer
+              key={`track-rendering:${track.id}`}
+              trackId={track.id}
+              width={width - controlsWidth}
+              onHorizontalScroll={model.horizontalScroll}
+            >
+              <track.RenderingComponent
+                model={track}
+                blockDefinitions={blocks}
+                offsetPx={visibleBlocksOffsetPx}
+                bpPerPx={bpPerPx}
+                blockState={{}}
+              />
+            </TrackRenderingContainer>,
+            <TrackResizeHandle
+              key={`handle:${track.id}`}
+              trackId={track.id}
+              onVerticalDrag={model.resizeTrack}
+            />,
+          ])}
+        </div>
       </div>
     )
   }
