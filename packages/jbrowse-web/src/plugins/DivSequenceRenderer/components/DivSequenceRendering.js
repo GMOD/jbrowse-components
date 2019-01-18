@@ -48,27 +48,32 @@ class DivSequenceRendering extends Component {
     const height = 200
 
     return (
-      <div
-        className="DivSequenceRendering"
-        width={`${width}px`}
-        height={`${height}px`}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          color: 'black',
-        }}
-      >
-        {s.split('').map(letter => (
+      <div className="DivSequenceRendering">
+        {bpPerPx >= 1 ? (
+          <div className="blur">Zoom in to see sequence</div>
+        ) : (
           <div
+            width={`${width}px`}
+            height={`${height}px`}
             style={{
-              width: `${width / s.length}px`,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              color: 'black',
             }}
-            className={`base base-${letter.toLowerCase()}`}
           >
-            {letter}
+            {s.split('').map(letter => (
+              <div
+                style={{
+                  width: `${width / s.length}px`,
+                }}
+                className={`base base-${letter.toLowerCase()}`}
+              >
+                {bpPerPx < 0.1 ? letter : '\u00A0'}
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     )
   }
