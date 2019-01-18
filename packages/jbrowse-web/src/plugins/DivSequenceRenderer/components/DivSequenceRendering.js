@@ -62,8 +62,10 @@ class DivSequenceRendering extends Component {
               color: 'black',
             }}
           >
-            {s.split('').map(letter => (
+            {s.split('').map((letter, iter) => (
               <div
+                /* eslint-disable-next-line */
+                key={`${region.start}-${iter}`}
                 style={{
                   width: `${width / s.length}px`,
                 }}
