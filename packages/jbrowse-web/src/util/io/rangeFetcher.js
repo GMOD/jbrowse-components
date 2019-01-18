@@ -12,31 +12,49 @@ function unReplacePath() {
   throw new Error('unimplemented') // TODO
 }
 
-function fetchBinaryRange(url, start, end) {
-  const requestDate = new Date()
+function getfetch(url, opts = {}) {
   let mfetch
   if (isElectron()) {
     if (url.slice(0, 4) === 'http') {
       mfetch = window.electronRequire('node-fetch')
     } else {
+      url = url.replace('%20', ' ')
       mfetch = fetch
     }
   } else {
     mfetch = tenaciousFetch
   }
-  return mfetch(url, {
-    method: 'GET',
+  return mfetch(
+    url,
+    Object.assign(
+      {
+        method: 'GET',
+        credentials: 'same-origin',
+        retries: 5,
+        retryDelay: 1000, // 1 sec, 2 sec, 3 sec
+        retryStatus: [500, 404, 503],
+        onRetry: ({ retriesLeft, retryDelay }) => {
+          console.warn(
+            `${url} request failed, retrying (${retriesLeft} retries left)`,
+          )
+        },
+      },
+      opts,
+    ),
+  )
+}
+
+function fetchBinaryRange(url, start, end) {
+  const requestDate = new Date()
+  const requestHeaders = {
     headers: { range: `bytes=${start}-${end}` },
-    credentials: 'same-origin',
-    retries: 5,
-    retryDelay: 1000, // 1 sec, 2 sec, 3 sec
-    retryStatus: [500, 404, 503],
-    onRetry: ({ retriesLeft /* , retryDelay */ }) => {
+    onRetry: ({ retriesLeft, retryDelay }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )
     },
-  }).then(
+  }
+  return getfetch(url, requestHeaders).then(
     res => {
       const responseDate = new Date()
       if (res.status !== 206 && res.status !== 200)
@@ -66,14 +84,6 @@ function fetchBinaryRange(url, start, end) {
       } else if (res.status === 200) {
         throw new Error(
           `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
-        )
-      }
-
-      // if we now still have no content-range header, the most common reason
-      // is because the remote server doesn't support CORS
-      if (!headers['content-range']) {
-        throw new Error(
-          `could not read Content-Range for ${url}, the remote server may not support JBrowse (need CORS and HTTP Range requests)`,
         )
       }
 
@@ -108,18 +118,19 @@ class GloballyCachedFilehandle {
   }
 
   async read(buffer, offset = 0, length, position) {
-    const { buffer: data } = await globalCache.getRange(
-      this.url,
-      position,
-      length,
-    )
+    let data
+    if (length === undefined && offset === 0) {
+      data = await this.readFile()
+    } else {
+      data = (await globalCache.getRange(this.url, position, length)).buffer
+    }
     data.copy(buffer, offset)
     return data.length
   }
 
   async readFile() {
-    const range = await globalCache.getRange(this.url, 0)
-    return range.buffer
+    const res = await getfetch(this.url)
+    return Buffer.from(await res.arrayBuffer())
   }
 
   stat() {
