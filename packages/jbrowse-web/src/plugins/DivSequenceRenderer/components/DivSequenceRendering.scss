@@ -1,9 +1,14 @@
 .DivSequenceRendering {
+  .blur {
+    text-align: center;
+    color: black;
+    background: grey;
+  }
   .base {
     text-align: center;
     display: inline-block;
     color: black;
-    border: 1px solid #666;
+    border: 0.5px solid #666;
     border-collapse: collapse;
   }
   .base-a {
