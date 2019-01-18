@@ -38,8 +38,8 @@ class LinearGenomeView extends Component {
       tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
     const style = {
       display: 'grid',
-      width: '100%',
-      height: '100%',
+      width: `${width}px`,
+      height: `${height}px`,
       gridTemplateRows: `[scale-bar] auto ${tracks
         .map(
           t =>

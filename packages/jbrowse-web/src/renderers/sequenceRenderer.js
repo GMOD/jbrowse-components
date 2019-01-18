@@ -105,7 +105,6 @@ export default class SequenceRenderer extends RendererType {
       .toPromise()
 
     const config = this.configSchema.create(args.config || {})
-    const session = this.getWorkerSession(args)
     const renderProps = { ...args, features, config }
 
     const result = await this.render(renderProps)

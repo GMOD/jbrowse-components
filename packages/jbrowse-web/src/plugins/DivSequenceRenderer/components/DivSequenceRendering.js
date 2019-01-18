@@ -11,9 +11,7 @@ class DivSequenceRendering extends Component {
   static propTypes = {
     region: CommonPropTypes.Region.isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
-    horizontallyFlipped: ReactPropTypes.bool,
     features: ReactPropTypes.instanceOf(Map),
-    config: CommonPropTypes.ConfigSchema.isRequired,
     trackModel: ReactPropTypes.shape({
       /** id of the currently selected feature, if any */
       selectedFeatureId: ReactPropTypes.string,
@@ -21,31 +19,20 @@ class DivSequenceRendering extends Component {
   }
 
   static defaultProps = {
-    horizontallyFlipped: false,
-
     trackModel: {},
 
     features: new Map(),
   }
 
   render() {
-    const {
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-      config,
-      features,
-      trackModel: { selectedFeatureId },
-    } = this.props
+    const { region, bpPerPx, features } = this.props
 
-    const featuresRendered = []
     let s = ''
     for (const seq of features.values()) {
       s += seq.seq || seq.data.seq // index.js:1452 Warning: Text content did not match. fix?
     }
 
     const width = (region.end - region.start) / bpPerPx
-    const height = 200
 
     return (
       <div className="DivSequenceRendering">

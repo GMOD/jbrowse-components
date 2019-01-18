@@ -1,4 +1,4 @@
-import { types, getSnapshot, getParent, getRoot } from 'mobx-state-tree'
+import { types, getSnapshot, getParent } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../../configuration'
 
