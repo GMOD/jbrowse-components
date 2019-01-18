@@ -15,11 +15,6 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
     type: 'string',
     defaultValue: 'Track',
   },
-  backgroundColor: {
-    description: `the track's background color`,
-    type: 'color',
-    defaultValue: '#eee',
-  },
   description: {
     description: 'a description of the track',
     type: 'string',

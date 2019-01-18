@@ -29,7 +29,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
   )
 
   expect(root.view.tracks[0]).toBeTruthy()
-  expect(getConf(model, 'backgroundColor')).toBe('#eee')
+  expect(getConf(model, 'trackSelectorType')).toBe('hierarchical')
 })
 
 it('can run configuration', () => {
