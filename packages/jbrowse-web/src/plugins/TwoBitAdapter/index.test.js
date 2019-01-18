@@ -11,7 +11,6 @@ test('plugin in a stock JBrowse', () => {
   const TwoBitAdapter = jbrowse.pluginManager.getAdapterType('TwoBitAdapter')
   const config = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
   expect(config).toMatchSnapshot({
-    _configId: expect.any(String),
-    index: { _configId: expect.any(String) },
+    configId: expect.any(String),
   })
 })

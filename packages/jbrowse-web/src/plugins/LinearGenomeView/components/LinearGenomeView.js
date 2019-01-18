@@ -1,15 +1,11 @@
 import React, { Component } from 'react'
 import { inject, observer, PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
-import { Icon, IconButton } from '@material-ui/core'
-import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
 import './LinearGenomeView.scss'
-import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 
 const dragHandleHeight = 3
 
@@ -21,7 +17,7 @@ class LinearGenomeView extends Component {
   }
 
   render() {
-    const scaleBarHeight = 32
+    const scaleBarHeight = 22
     const { model } = this.props
     const {
       id,
@@ -32,7 +28,6 @@ class LinearGenomeView extends Component {
       controlsWidth,
       offsetPx,
     } = model
-    const rootModel = getRoot(model)
     // NOTE: offsetPx is the total offset in px of the viewing window into the
     // whole set of concatenated regions. this number is often quite large.
     // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -45,7 +40,6 @@ class LinearGenomeView extends Component {
       display: 'grid',
       width: '100%',
       height: '100%',
-
       gridTemplateRows: `[scale-bar] auto ${tracks
         .map(
           t =>
@@ -56,7 +50,6 @@ class LinearGenomeView extends Component {
         .join(' ')}`,
       gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
     }
-
     // console.log(style)
     return (
       <div style={{ position: 'relative' }}>
@@ -67,47 +60,6 @@ class LinearGenomeView extends Component {
             top: '0px',
             zIndex: 999,
           }}
-        >
-          <IconButton
-            onClick={model.closeView}
-            style={{ padding: '4px' }}
-            title="close this view"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-          <ConfigureToggleButton
-            model={model}
-            onClick={model.activateConfigurationUI}
-            title="configure view"
-            style={{}}
-            fontSize="small"
-          />
-          <ToggleButton
-            onClick={model.activateTrackSelector}
-            title="select tracks"
-            selected={
-              rootModel.task &&
-              rootModel.task.taskName === 'track_select' &&
-              rootModel.task.data === model
-            }
-            value="track_select"
-          >
-            <Icon fontSize="small">line_style</Icon>
-          </ToggleButton>{' '}
-        </div>
-
-        <ScaleBar
-          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-          height={scaleBarHeight}
-          bpPerPx={bpPerPx}
-          blocks={blocks}
-          offsetPx={visibleBlocksOffsetPx}
-          width={width - controlsWidth}
-        />
-
-        <div
-          className="controls view-controls"
-          style={{ gridRow: 'scale-bar', left: '-200px' }}
         >
           <button type="button" onClick={model.zoomIn}>
             +
@@ -121,21 +73,10 @@ class LinearGenomeView extends Component {
             className="controls view-controls"
             style={{ gridRow: 'scale-bar' }}
           >
-            <track.ControlsComponent
-              track={track}
-              key={track.id}
-              view={model}
-              onConfigureClick={track.activateConfigurationUI}
-            />
-          </div>,
-          <TrackRenderingContainer
-            key={`track-rendering:${track.id}`}
-            trackId={track.id}
             <button type="button" onClick={model.activateTrackSelector}>
               select tracks
             </button>
           </div>
-
           <ScaleBar
             style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
             height={scaleBarHeight}
@@ -144,7 +85,6 @@ class LinearGenomeView extends Component {
             offsetPx={visibleBlocksOffsetPx}
             width={width - controlsWidth}
           />
-
           {tracks.map(track => [
             <div
               className="controls track-controls"

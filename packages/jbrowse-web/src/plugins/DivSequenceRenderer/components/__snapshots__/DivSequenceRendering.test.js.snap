@@ -3,29 +3,23 @@
 exports[`no features 1`] = `
 <div
   className="DivSequenceRendering"
-  height="200px"
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
-  width="100px"
 >
-  Hello world
+  <div
+    className="blur"
+  >
+    Zoom in to see sequence
+  </div>
 </div>
 `;
 
 exports[`one feature 1`] = `
 <div
   className="DivSequenceRendering"
-  height="200px"
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
-  width="333.3333333333333px"
 >
-  Hello world
+  <div
+    className="blur"
+  >
+    Zoom in to see sequence
+  </div>
 </div>
 `;
