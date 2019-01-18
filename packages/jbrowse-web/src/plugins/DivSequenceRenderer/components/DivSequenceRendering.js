@@ -52,16 +52,7 @@ class DivSequenceRendering extends Component {
         {bpPerPx >= 1 ? (
           <div className="blur">Zoom in to see sequence</div>
         ) : (
-          <div
-            width={`${width}px`}
-            height={`${height}px`}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              color: 'black',
-            }}
-          >
+          <div>
             {s.split('').map((letter, iter) => (
               <div
                 /* eslint-disable-next-line */
