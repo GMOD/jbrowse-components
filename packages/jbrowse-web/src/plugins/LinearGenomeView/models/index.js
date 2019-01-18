@@ -163,11 +163,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       zoomIn() {
-        this.zoomTo(self.bpPerPx / 2)
+        this.zoomTo(self.bpPerPx / 1.5)
       },
 
       zoomOut() {
-        this.zoomTo(self.bpPerPx * 2)
+        this.zoomTo(self.bpPerPx * 1.5)
       },
       activateTrackSelector() {
         if (getType(self.configuration).name === 'AnonymousModel')
