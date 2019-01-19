@@ -39,10 +39,10 @@ function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
   return { majorPitch, minorPitch }
 }
 
-function* makeTicks(
+export function* makeTicks(
   region,
   bpPerPx,
-  flipped,
+  flipped = false,
   emitMajor = true,
   emitMinor = true,
 ) {
@@ -58,7 +58,7 @@ function* makeTicks(
 
   // add 10px additional on the right to allow for
   // labels sitting a little leftward
-  maxBase += Math.abs(10 * bpPerPx)
+  maxBase += Math.abs(10 * bpPerPx) + 1
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
@@ -68,10 +68,10 @@ function* makeTicks(
     base += iterPitch
   ) {
     if (emitMinor && base % gridPitch.majorPitch) {
-      yield { type: 'minor', base, index }
+      yield { type: 'minor', base: base - 1, index }
       index += 1
     } else if (emitMajor) {
-      yield { type: 'major', base, index }
+      yield { type: 'major', base: base - 1, index }
       index += 1
     }
   }
@@ -107,7 +107,7 @@ export default function Ruler(props) {
           style={{ fontSize: '11px' }}
           className={classnames('label', tick.index === 0 && 'first')}
         >
-          {Number(tick.base).toLocaleString()}
+          {(Number(tick.base) + 1).toLocaleString()}
         </text>,
       )
   }
