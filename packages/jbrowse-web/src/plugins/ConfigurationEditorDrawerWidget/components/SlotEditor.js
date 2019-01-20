@@ -9,6 +9,9 @@ import {
   withStyles,
   CardContent,
   IconButton,
+  Checkbox,
+  FormControlLabel,
+  FormControl,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
@@ -113,6 +116,21 @@ const FileLocationEditor = observer(({ slot }) => {
   )
 })
 
+const booleanEditor = observer(({ slot }) => (
+  <FormControl>
+    <FormControlLabel
+      label={slot.name}
+      control={
+        <Checkbox
+          checked={slot.value}
+          onChange={evt => slot.set(evt.target.checked)}
+        />
+      }
+    />
+    <FormHelperText>{slot.description}</FormHelperText>
+  </FormControl>
+))
+
 const stringEnumEditor = observer(({ slot, slotSchema }) => {
   const p = getPropertyMembers(slotSchema.type)
   const choices = p.properties.value.type.types[1].types.map(t => t.value)
@@ -144,6 +162,7 @@ const valueComponents = {
   integer: IntegerEditor,
   color: ColorEditor,
   stringEnum: stringEnumEditor,
+  boolean: booleanEditor,
 }
 
 const modeSwitchButtonWidth = 25
