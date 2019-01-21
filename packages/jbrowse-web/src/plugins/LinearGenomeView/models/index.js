@@ -7,11 +7,7 @@ import {
   getType,
   getParent,
 } from 'mobx-state-tree'
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '../../../configuration'
+import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
 import { clamp } from '../../../util'
 import PluginManager from '../../../PluginManager'
