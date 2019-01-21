@@ -1,17 +1,13 @@
 import { ConfigurationSchema } from '../../../configuration'
 
-export default ConfigurationSchema(
-  'LinearGenomeView',
-  {
-    reversed: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'horizontally flip the view',
-    },
-    trackSelectorType: {
-      type: 'string',
-      defaultValue: 'hierarchical',
-    },
+export default ConfigurationSchema('LinearGenomeView', {
+  reversed: {
+    type: 'boolean',
+    defaultValue: false,
+    description: 'horizontally flip the view',
   },
-  { singleton: true },
-)
+  trackSelectorType: {
+    type: 'string',
+    defaultValue: 'hierarchical',
+  },
+})

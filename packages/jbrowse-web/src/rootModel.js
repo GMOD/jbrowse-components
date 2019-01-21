@@ -27,9 +27,6 @@ export default app => {
       configuration: ConfigurationSchema(
         'JBrowseWebRoot',
         {
-          // the view configuration is a map of view type name -> shared config for all views
-          views: types.map(pluginManager.pluggableConfigSchemaType('view')),
-
           // track configuration is an array of track config schemas. multiple instances of
           // a track can exist that use the same configuration
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
@@ -111,24 +108,15 @@ export default app => {
         return drawerWidthBefore - self.drawerWidth
       },
 
-      addView(typeName, initialState = {}) {
+      addView(typeName, configuration, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
-        let configuration = self.configuration.views.get(typeName)
-        if (!configuration) {
-          // make a configuration for this view type if we don't have one
-          configuration = typeDefinition.configSchema.create({
-            configId: typeName,
-            type: typeName,
-          })
-          self.configuration.views.put(configuration)
-        }
 
-        const data = Object.assign({}, initialState, {
+        const newView = typeDefinition.stateModel.create({
+          ...initialState,
           type: typeName,
           configuration,
         })
-        const newView = typeDefinition.stateModel.create(data)
         self.views.push(newView)
         return newView
       },

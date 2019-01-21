@@ -15,9 +15,7 @@ jbrowse.addWorkers(workerGroups)
 
 // add the initial configuration
 jbrowse.configure({
-  views: {
-    LinearGenomeView: {},
-  },
+  views: [{ type: 'LinearGenomeView' }],
   tracks: [
     {
       type: 'AlignmentsTrack',

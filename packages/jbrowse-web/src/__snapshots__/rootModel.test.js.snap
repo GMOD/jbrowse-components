@@ -3,10 +3,5 @@
 exports[`can load configuration with the configure() action and resolve references to view configurations 1`] = `
 Object {
   "configId": "fogbat",
-  "views": Object {
-    "LinearGenomeView": Object {
-      "configId": "LinearGenomeView",
-    },
-  },
 }
 `;

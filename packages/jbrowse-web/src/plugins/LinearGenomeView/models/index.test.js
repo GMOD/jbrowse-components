@@ -1,6 +1,5 @@
 import { types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
-import configSchema from './configSchema'
 import { TestStub as LinearGenomeModel } from '.'
 import JBrowse from '../../../JBrowse'
 
@@ -8,7 +7,6 @@ test('can instantiate a mostly empty model and read a default configuration valu
   const root = types
     .model({
       view: types.maybe(LinearGenomeModel),
-      config: configSchema,
     })
     .actions(self => ({
       setView(view) {
@@ -24,7 +22,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-      configuration: root.config,
+      configuration: {},
     }),
   )
 

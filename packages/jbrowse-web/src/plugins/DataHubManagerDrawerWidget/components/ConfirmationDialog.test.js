@@ -19,9 +19,13 @@ describe('<ConfirmationDialog />', () => {
       configId: 'testing',
     })
     rootModel = jbrowse.model
-    const firstView = rootModel.addView('LinearGenomeView', {
-      id: 'viewTestingId',
-    })
+    const firstView = rootModel.addView(
+      'LinearGenomeView',
+      {
+        configId: 'testViewConfigId',
+      },
+      { id: 'testViewId' },
+    )
     firstView.activateTrackSelector()
   })
 

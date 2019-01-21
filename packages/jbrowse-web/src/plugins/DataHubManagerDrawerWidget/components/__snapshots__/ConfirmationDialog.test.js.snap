@@ -9,11 +9,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
     Object {
       "configuration": Object {
         "configId": "testing",
-        "views": Object {
-          "LinearGenomeView": Object {
-            "configId": "LinearGenomeView",
-          },
-        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -21,7 +16,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "filterText": "",
           "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
-          "view": "viewTestingId",
+          "view": "testViewId",
         },
       },
       "drawerWidth": 256,
@@ -30,11 +25,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": "LinearGenomeView",
+          "configuration": Object {
+            "configId": "testViewConfigId",
+          },
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
-          "id": "viewTestingId",
+          "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
@@ -57,11 +54,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       Object {
         "configuration": Object {
           "configId": "testing",
-          "views": Object {
-            "LinearGenomeView": Object {
-              "configId": "LinearGenomeView",
-            },
-          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -69,7 +61,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             "filterText": "",
             "id": "hierarchicalTrackSelector",
             "type": "HierarchicalTrackSelectorDrawerWidget",
-            "view": "viewTestingId",
+            "view": "testViewId",
           },
         },
         "drawerWidth": 256,
@@ -78,11 +70,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": "LinearGenomeView",
+            "configuration": Object {
+              "configId": "testViewConfigId",
+            },
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
-            "id": "viewTestingId",
+            "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
@@ -105,11 +99,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         Object {
           "configuration": Object {
             "configId": "testing",
-            "views": Object {
-              "LinearGenomeView": Object {
-                "configId": "LinearGenomeView",
-              },
-            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -117,7 +106,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
               "filterText": "",
               "id": "hierarchicalTrackSelector",
               "type": "HierarchicalTrackSelectorDrawerWidget",
-              "view": "viewTestingId",
+              "view": "testViewId",
             },
           },
           "drawerWidth": 256,
@@ -126,11 +115,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": "LinearGenomeView",
+              "configuration": Object {
+                "configId": "testViewConfigId",
+              },
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
-              "id": "viewTestingId",
+              "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",
@@ -198,11 +189,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
     Object {
       "configuration": Object {
         "configId": "testing",
-        "views": Object {
-          "LinearGenomeView": Object {
-            "configId": "LinearGenomeView",
-          },
-        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -210,7 +196,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "filterText": "",
           "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
-          "view": "viewTestingId",
+          "view": "testViewId",
         },
       },
       "drawerWidth": 256,
@@ -219,11 +205,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": "LinearGenomeView",
+          "configuration": Object {
+            "configId": "testViewConfigId",
+          },
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
-          "id": "viewTestingId",
+          "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
@@ -246,11 +234,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       Object {
         "configuration": Object {
           "configId": "testing",
-          "views": Object {
-            "LinearGenomeView": Object {
-              "configId": "LinearGenomeView",
-            },
-          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -258,7 +241,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             "filterText": "",
             "id": "hierarchicalTrackSelector",
             "type": "HierarchicalTrackSelectorDrawerWidget",
-            "view": "viewTestingId",
+            "view": "testViewId",
           },
         },
         "drawerWidth": 256,
@@ -267,11 +250,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": "LinearGenomeView",
+            "configuration": Object {
+              "configId": "testViewConfigId",
+            },
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
-            "id": "viewTestingId",
+            "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
@@ -294,11 +279,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         Object {
           "configuration": Object {
             "configId": "testing",
-            "views": Object {
-              "LinearGenomeView": Object {
-                "configId": "LinearGenomeView",
-              },
-            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -306,7 +286,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
               "filterText": "",
               "id": "hierarchicalTrackSelector",
               "type": "HierarchicalTrackSelectorDrawerWidget",
-              "view": "viewTestingId",
+              "view": "testViewId",
             },
           },
           "drawerWidth": 256,
@@ -315,11 +295,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": "LinearGenomeView",
+              "configuration": Object {
+                "configId": "testViewConfigId",
+              },
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
-              "id": "viewTestingId",
+              "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",
@@ -790,11 +772,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
     Object {
       "configuration": Object {
         "configId": "testing",
-        "views": Object {
-          "LinearGenomeView": Object {
-            "configId": "LinearGenomeView",
-          },
-        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -802,7 +779,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "filterText": "",
           "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
-          "view": "viewTestingId",
+          "view": "testViewId",
         },
       },
       "drawerWidth": 256,
@@ -811,11 +788,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       "views": Array [
         Object {
           "bpPerPx": 1,
-          "configuration": "LinearGenomeView",
+          "configuration": Object {
+            "configId": "testViewConfigId",
+          },
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
-          "id": "viewTestingId",
+          "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
@@ -838,11 +817,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       Object {
         "configuration": Object {
           "configId": "testing",
-          "views": Object {
-            "LinearGenomeView": Object {
-              "configId": "LinearGenomeView",
-            },
-          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -850,7 +824,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             "filterText": "",
             "id": "hierarchicalTrackSelector",
             "type": "HierarchicalTrackSelectorDrawerWidget",
-            "view": "viewTestingId",
+            "view": "testViewId",
           },
         },
         "drawerWidth": 256,
@@ -859,11 +833,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         "views": Array [
           Object {
             "bpPerPx": 1,
-            "configuration": "LinearGenomeView",
+            "configuration": Object {
+              "configId": "testViewConfigId",
+            },
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
-            "id": "viewTestingId",
+            "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
@@ -886,11 +862,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         Object {
           "configuration": Object {
             "configId": "testing",
-            "views": Object {
-              "LinearGenomeView": Object {
-                "configId": "LinearGenomeView",
-              },
-            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -898,7 +869,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
               "filterText": "",
               "id": "hierarchicalTrackSelector",
               "type": "HierarchicalTrackSelectorDrawerWidget",
-              "view": "viewTestingId",
+              "view": "testViewId",
             },
           },
           "drawerWidth": 256,
@@ -907,11 +878,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "views": Array [
             Object {
               "bpPerPx": 1,
-              "configuration": "LinearGenomeView",
+              "configuration": Object {
+                "configId": "testViewConfigId",
+              },
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
-              "id": "viewTestingId",
+              "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",

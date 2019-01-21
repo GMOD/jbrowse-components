@@ -49,7 +49,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         ),
         controlsWidth: 120,
         displayedRegions: types.array(Region),
-        configuration: ConfigurationReference(LinearGenomeViewConfigSchema),
+        configuration: LinearGenomeViewConfigSchema,
       }),
     )
     .views(self => ({
