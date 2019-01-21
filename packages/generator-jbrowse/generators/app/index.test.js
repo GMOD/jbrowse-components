@@ -1,4 +1,4 @@
-const assert = require('yeoman-assert')
+const fs = require('fs')
 const helpers = require('yeoman-test')
 
 describe('generator-jbrowse:app', () => {
@@ -9,23 +9,24 @@ describe('generator-jbrowse:app', () => {
 
   afterEach(() => process.chdir(originalWorkingDirectory))
 
-  it('throws when not in the plugins directory', async () =>
-    expect(
-      helpers.run(__dirname).withPrompts({
-        correctDir: false,
-        type: 'helloWorldMenuBar',
-      }),
-    ).rejects.toThrow(/Exiting now/))
+  it('throws when not in the plugins directory', async () => {
+    await helpers.run(__dirname).withPrompts({
+      correctDir: false,
+      type: 'helloWorldMenuBar',
+    })
+    const files = fs.readdirSync('.')
+    expect(files.length).toBe(0)
+  })
 
   it('creates a "Hello World" menu bar', async () => {
     await helpers
       .run(__dirname)
       .withPrompts({ correctDir: true, type: 'helloWorldMenuBar' })
-    assert.file([
+    ;[
       'HelloWorldMenuBar/components/HelloWorld.js',
       'HelloWorldMenuBar/index.js',
       'HelloWorldMenuBar/model.js',
-    ])
+    ].forEach(file => expect(fs.existsSync(file)).toBe(true))
   })
 
   it('creates a "Hello World" menu bar and drawer widget', async () => {
@@ -33,11 +34,11 @@ describe('generator-jbrowse:app', () => {
       correctDir: true,
       type: 'helloWorldMenuBarAndDrawerWidget',
     })
-    assert.file([
+    ;[
       'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldDrawerWidget.js',
       'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldMenuBar.js',
       'HelloWorldMenuBarAndDrawerWidget/index.js',
       'HelloWorldMenuBarAndDrawerWidget/model.js',
-    ])
+    ].forEach(file => expect(fs.existsSync(file)).toBe(true))
   })
 })

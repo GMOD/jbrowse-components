@@ -33,7 +33,7 @@ function getfetch(url, opts = {}) {
         retries: 5,
         retryDelay: 1000, // 1 sec, 2 sec, 3 sec
         retryStatus: [500, 404, 503],
-        onRetry: ({ retriesLeft, retryDelay }) => {
+        onRetry: ({ retriesLeft }) => {
           console.warn(
             `${url} request failed, retrying (${retriesLeft} retries left)`,
           )
@@ -48,7 +48,7 @@ function fetchBinaryRange(url, start, end) {
   const requestDate = new Date()
   const requestHeaders = {
     headers: { range: `bytes=${start}-${end}` },
-    onRetry: ({ retriesLeft, retryDelay }) => {
+    onRetry: ({ retriesLeft }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )

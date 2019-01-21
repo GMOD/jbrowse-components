@@ -12,14 +12,14 @@
   ],
   "dependencies": {
     "chalk": "^2.1.0",
-    "yeoman-generator": "^2.0.1",
+    "yeoman-generator": "^3.2.0",
     "yosay": "^2.0.1"
   },
   "jest": {
     "testEnvironment": "node"
   },
   "scripts": {
-    "pretest": "eslint .",
+    "pretest": "eslint --ignore-path ../../.eslintignore .",
     "test": "jest"
   }
 }
