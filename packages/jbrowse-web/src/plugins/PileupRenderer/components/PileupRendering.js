@@ -232,14 +232,14 @@ class PileupRendering extends Component {
 
   render() {
     const { width, height } = this.props
-
+    const canvasWidth = Math.ceil(width)
     // need to call this in render so we get the right observer behavior
     this.updateSelectionHighlight()
     return (
       <div className="PileupRendering" style={{ position: 'relative' }}>
-        <PrerenderedCanvas {...this.props} />
+        <PrerenderedCanvas {...this.props} width={canvasWidth} />
         <canvas
-          width={width}
+          width={canvasWidth}
           height={height}
           style={{ position: 'absolute', left: 0, top: 0 }}
           className="highlightOverlayCanvas"

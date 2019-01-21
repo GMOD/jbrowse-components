@@ -91,7 +91,7 @@ class PileupRenderer extends BoxRenderer {
     const height = layout.getTotalHeight()
     if (!(width > 0) || !(height > 0)) return { height: 0, width: 0 }
 
-    const canvas = createCanvas(width, height)
+    const canvas = createCanvas(Math.ceil(width), height)
     const ctx = canvas.getContext('2d')
     layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
