@@ -1,11 +1,15 @@
 import React, { Component } from 'react'
 import { inject, observer, PropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
+import { Icon, IconButton } from '@material-ui/core'
+import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
 import './LinearGenomeView.scss'
+import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 
 const dragHandleHeight = 3
 
@@ -17,7 +21,7 @@ class LinearGenomeView extends Component {
   }
 
   render() {
-    const scaleBarHeight = 22
+    const scaleBarHeight = 32
     const { model } = this.props
     const {
       id,
@@ -28,6 +32,7 @@ class LinearGenomeView extends Component {
       controlsWidth,
       offsetPx,
     } = model
+    const rootModel = getRoot(model)
     // NOTE: offsetPx is the total offset in px of the viewing window into the
     // whole set of concatenated regions. this number is often quite large.
     // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -52,76 +57,80 @@ class LinearGenomeView extends Component {
     }
     // console.log(style)
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="LinearGenomeView" key={`view-${id}`} style={style}>
         <div
-          style={{
-            position: 'absolute',
-            right: '0px',
-            top: '0px',
-            zIndex: 999,
-          }}
+          className="controls view-controls"
+          style={{ gridRow: 'scale-bar' }}
         >
-          <button type="button" onClick={model.zoomIn}>
-            +
-          </button>
-          <button type="button" onClick={model.zoomOut}>
-            -
-          </button>
-        </div>
-        <div className="LinearGenomeView" key={`view-${id}`} style={style}>
-          <div
-            className="controls view-controls"
-            style={{ gridRow: 'scale-bar' }}
+          <IconButton
+            onClick={model.closeView}
+            style={{ padding: '4px' }}
+            title="close this view"
           >
-            <button type="button" onClick={model.activateTrackSelector}>
-              select tracks
-            </button>
-          </div>
-          <ScaleBar
-            style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-            height={scaleBarHeight}
-            bpPerPx={bpPerPx}
-            blocks={blocks}
-            offsetPx={visibleBlocksOffsetPx}
-            width={width - controlsWidth}
-            horizontallyFlipped={model.horizontallyFlipped}
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
+          <ConfigureToggleButton
+            model={model}
+            onClick={model.activateConfigurationUI}
+            title="configure view"
+            style={{}}
+            fontSize="small"
           />
-          {tracks.map(track => [
-            <div
-              className="controls track-controls"
-              key={`controls:${track.id}`}
-              style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-            >
-              <track.ControlsComponent
-                track={track}
-                key={track.id}
-                view={model}
-                onConfigureClick={() => {
-                  /* TODO */
-                }}
-              />
-            </div>,
-            <TrackRenderingContainer
-              key={`track-rendering:${track.id}`}
-              trackId={track.id}
-              width={width - controlsWidth}
-              onHorizontalScroll={model.horizontalScroll}
-            >
-              <track.RenderingComponent
-                model={track}
-                blockDefinitions={blocks}
-                offsetPx={visibleBlocksOffsetPx}
-                bpPerPx={bpPerPx}
-                blockState={{}}
-              />
-            </TrackRenderingContainer>,
-            <TrackResizeHandle
-              key={`handle:${track.id}`}
-              trackId={track.id}
-              onVerticalDrag={model.resizeTrack}
-            />,
-          ])}
+          <ToggleButton
+            onClick={model.activateTrackSelector}
+            title="select tracks"
+            selected={
+              rootModel.task &&
+              rootModel.task.taskName === 'track_select' &&
+              rootModel.task.data === model
+            }
+            value="track_select"
+          >
+            <Icon fontSize="small">line_style</Icon>
+          </ToggleButton>{' '}
         </div>
+        <ScaleBar
+          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
+          height={scaleBarHeight}
+          bpPerPx={bpPerPx}
+          blocks={blocks}
+          offsetPx={visibleBlocksOffsetPx}
+          width={width - controlsWidth}
+          horizontallyFlipped={model.horizontallyFlipped}
+        />
+        {tracks.map(track => [
+          <div
+            className="controls track-controls"
+            key={`controls:${track.id}`}
+            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+          >
+            <track.ControlsComponent
+              track={track}
+              key={track.id}
+              view={model}
+              onConfigureClick={track.activateConfigurationUI}
+            />
+          </div>,
+          <TrackRenderingContainer
+            key={`track-rendering:${track.id}`}
+            trackId={track.id}
+            width={width - controlsWidth}
+            onHorizontalScroll={model.horizontalScroll}
+          >
+            <track.RenderingComponent
+              model={track}
+              blockDefinitions={blocks}
+              offsetPx={visibleBlocksOffsetPx}
+              bpPerPx={bpPerPx}
+              blockState={{}}
+            />
+          </TrackRenderingContainer>,
+          <TrackResizeHandle
+            key={`handle:${track.id}`}
+            trackId={track.id}
+            onVerticalDrag={model.resizeTrack}
+          />,
+        ])}
       </div>
     )
   }
