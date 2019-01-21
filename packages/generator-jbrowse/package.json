@@ -19,7 +19,7 @@
     "testEnvironment": "node"
   },
   "scripts": {
-    "pretest": "eslint .",
+    "pretest": "eslint --ignore-path ../../.eslintignore .",
     "test": "jest"
   }
 }

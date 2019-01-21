@@ -26,7 +26,8 @@ module.exports = class extends Generator {
       this.log.error(
         chalk.red('Please change directory to the JBrowse plugins directory'),
       )
-      this.env.error('Exiting now')
+      this.props = {}
+      return
     }
 
     this.props = await this.prompt([

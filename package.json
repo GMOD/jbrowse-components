@@ -73,7 +73,6 @@
         "webpack-manifest-plugin": "^2.0.4",
         "workbox-webpack-plugin": "^3.6.2",
         "worker-loader": "^2.0.0",
-        "yeoman-assert": "^3.1.1",
         "yeoman-test": "^1.9.1"
     }
 }
