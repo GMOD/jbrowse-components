@@ -13,7 +13,7 @@ describe('LinearGenomeView genome view component', () => {
         bpPerPx: 1,
         tracks: [],
         controlsWidth: 100,
-        configuration: 'fakereference',
+        configuration: {},
       },
       {
         testEnv: true,
@@ -44,7 +44,7 @@ describe('LinearGenomeView genome view component', () => {
           },
         ],
         controlsWidth: 100,
-        configuration: 'fakeViewConf',
+        configuration: {},
       },
       {
         testEnv: true,

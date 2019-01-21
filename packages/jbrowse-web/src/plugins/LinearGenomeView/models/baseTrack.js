@@ -1,5 +1,5 @@
 import React from 'react'
-import { types, getRoot } from 'mobx-state-tree'
+import { types, getRoot, getParent } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
@@ -60,6 +60,15 @@ const BaseTrack = types
           </div>
         ))
       )
+    },
+
+    get renderProps() {
+      // view -> [tracks] -> [blocks]
+      const view = getParent(self, 2)
+      return {
+        bpPerPx: view.bpPerPx,
+        horizontallyFlipped: view.horizontallyFlipped,
+      }
     },
   }))
   .actions(self => ({

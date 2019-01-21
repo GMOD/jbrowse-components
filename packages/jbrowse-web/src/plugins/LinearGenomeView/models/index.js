@@ -13,13 +13,14 @@ import {
   readConfObject,
 } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
-import { assembleLocString, clamp } from '../../../util'
+import { clamp } from '../../../util'
 import PluginManager from '../../../PluginManager'
 import TrackType from '../../../pluggableElementTypes/TrackType'
 
 import LinearGenomeViewConfigSchema from './configSchema'
 
 import BaseTrack from './baseTrack'
+import calculateBlocks from './calculateBlocks'
 
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
@@ -63,63 +64,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * calculate the blocks we should be showing
        */
       get blocks() {
-        const windowLeftBp = self.offsetPx * self.bpPerPx
-        const windowRightBp = (self.offsetPx + self.width) * self.bpPerPx
-        const blockSizePx = Math.ceil(self.width / 200) * 200
-        const blockSizeBp = blockSizePx * self.bpPerPx
-        // for each displayed region
-        let regionBpOffset = 0
-        const blocks = []
-        self.displayedRegions.forEach(region => {
-          // find the block numbers of the left and right window sides,
-          // clamp those to the region range, and then make blocks for that range
-          const regionBlockCount = Math.ceil(
-            (region.end - region.start) / blockSizeBp,
-          )
+        return calculateBlocks(self, self.horizontallyFlipped)
+      },
 
-          let windowRightBlockNum = Math.floor(
-            (windowRightBp - regionBpOffset) / blockSizeBp,
-          )
-          if (windowRightBlockNum >= regionBlockCount)
-            windowRightBlockNum = regionBlockCount - 1
-          // if (windowRightBlockNum < 0) return // this region is not visible
-
-          let windowLeftBlockNum = Math.floor(
-            (windowLeftBp - regionBpOffset) / blockSizeBp,
-          )
-          if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
-          // if (windowLeftBlockNum >= regionBlockCount) return // this region is not visible
-
-          for (
-            let blockNum = windowLeftBlockNum;
-            blockNum <= windowRightBlockNum;
-            blockNum += 1
-          ) {
-            const newBlock = {
-              assembly: region.assembly,
-              refName: region.refName,
-              start: region.start + blockNum * blockSizeBp,
-              end: Math.min(
-                region.end,
-                region.start + (blockNum + 1) * blockSizeBp,
-              ),
-              offsetPx:
-                (regionBpOffset + region.start + blockNum * blockSizeBp) /
-                self.bpPerPx,
-            }
-            newBlock.key = assembleLocString(newBlock)
-            newBlock.widthPx =
-              Math.abs(newBlock.end - newBlock.start) / self.bpPerPx
-            newBlock.isLeftEndOfDisplayedRegion =
-              newBlock.start === region.start
-            newBlock.isRightEndOfDisplayedRegion = newBlock.end === region.end
-            blocks.push(newBlock)
-          }
-
-          regionBpOffset += region.end - region.start
-        })
-
-        return blocks
+      get horizontallyFlipped() {
+        return getConf(self, 'reversed')
       },
     }))
     .actions(self => ({

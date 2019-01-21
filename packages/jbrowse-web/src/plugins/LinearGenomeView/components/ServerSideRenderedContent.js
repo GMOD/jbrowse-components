@@ -54,9 +54,8 @@ class ServerSideRenderedContent extends Component {
           },
           null,
         )
-        // console.log(rendererType.name, html.slice(0, 20))
-        if (!isAlive(model)) return
         requestIdleCallback(() => {
+          if (!isAlive(model)) return
           hydrate(mainThreadRendering, domNode.firstChild)
           this.hydrated = true
         })

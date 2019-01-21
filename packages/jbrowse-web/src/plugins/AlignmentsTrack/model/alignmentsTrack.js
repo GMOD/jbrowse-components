@@ -121,6 +121,7 @@ export default (pluginManager, configSchema) =>
           )
           return {
             bpPerPx: view.bpPerPx,
+            horizontallyFlipped: view.horizontallyFlipped,
             config,
             trackModel: self,
             onFeatureClick(event, featureId) {

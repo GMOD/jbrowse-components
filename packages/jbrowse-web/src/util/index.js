@@ -33,6 +33,12 @@ export function bpToPx(bp, region, bpPerPx, flipped = false) {
   return (bp - region.start) / bpPerPx
 }
 
+export function featureSpanPx(feature, region, bpPerPx, flipped = false) {
+  const start = bpToPx(feature.get('start'), region, bpPerPx, flipped)
+  const end = bpToPx(feature.get('end'), region, bpPerPx, flipped)
+  return flipped ? [end, start] : [start, end]
+}
+
 export const objectFromEntries = Object.fromEntries.bind(Object)
 
 // do an array map of an iterable

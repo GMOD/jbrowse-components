@@ -22,8 +22,6 @@ class PileupRenderer extends BoxRenderer {
     region,
     horizontallyFlipped = false,
   ) {
-    if (horizontallyFlipped)
-      throw new Error('horizontal flipping not yet implemented')
     // const leftBase = region.start
     const startPx = bpToPx(
       feature.get('start'),

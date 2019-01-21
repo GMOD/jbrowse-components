@@ -13,15 +13,6 @@ export default types.compose(
     .model({
       blockState: types.map(BlockState),
     })
-    .views(self => ({
-      get renderProps() {
-        // view -> [tracks] -> [blocks]
-        const view = getParent(self, 2)
-        return {
-          bpPerPx: view.bpPerPx,
-        }
-      },
-    }))
     .actions(self => {
       let blockWatchDisposer
       function disposeBlockWatch() {
@@ -38,19 +29,25 @@ export default types.compose(
             view.blocks.forEach(block => {
               blocksPresent[block.key] = true
               if (!self.blockState.has(block.key))
-                self.blockState.set(
-                  block.key,
-                  BlockState.create({
-                    key: block.key,
-                    region: block,
-                  }),
-                )
+                self.addBlock(block.key, block)
             })
             // delete any blocks we need to delete
             self.blockState.forEach((value, key) => {
-              if (!blocksPresent[key]) self.blockState.delete(key)
+              if (!blocksPresent[key]) self.deleteBlock(key)
             })
           })
+        },
+        addBlock(key, region) {
+          self.blockState.set(
+            key,
+            BlockState.create({
+              key,
+              region,
+            }),
+          )
+        },
+        deleteBlock(key) {
+          self.blockState.delete(key)
         },
         beforeDetach: disposeBlockWatch,
         beforeDestroy: disposeBlockWatch,

@@ -96,6 +96,7 @@ class LinearGenomeView extends Component {
           blocks={blocks}
           offsetPx={visibleBlocksOffsetPx}
           width={width - controlsWidth}
+          horizontallyFlipped={model.horizontallyFlipped}
         />
         {tracks.map(track => [
           <div

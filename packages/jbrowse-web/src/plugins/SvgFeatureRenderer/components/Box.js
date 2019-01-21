@@ -6,19 +6,14 @@ import './SvgFeatureRendering.scss'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { bpToPx } from '../../../util'
-// import { bpToPx } from '../../../util'
-
-// const layoutPropType = ReactPropTypes.shape({
-//   getRectangles: ReactPropTypes.func.isRequired,
-// })
+import { featureSpanPx } from '../../../util'
 
 @observer
 class Box extends Component {
   static propTypes = {
     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
       .isRequired,
-    horizontallyFlipped: ReactPropTypes.bool,
+    // horizontallyFlipped: ReactPropTypes.bool,
     // bpPerPx: ReactPropTypes.number.isRequired,
     // region: CommonPropTypes.Region.isRequired,
     // config: CommonPropTypes.ConfigSchema.isRequired,
@@ -46,7 +41,7 @@ class Box extends Component {
   }
 
   static defaultProps = {
-    horizontallyFlipped: false,
+    // horizontallyFlipped: false,
 
     selectedFeatureId: undefined,
 
@@ -62,20 +57,15 @@ class Box extends Component {
   }
 
   static layout(args) {
-    const { feature, horizontallyFlipped, bpPerPx, region, layout } = args
+    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
 
     // ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
-    if (horizontallyFlipped)
-      throw new Error('horizontal flipping not yet implemented')
-
-    let startPx = bpToPx(
-      feature.get('start'),
+    const [startPx, endPx] = featureSpanPx(
+      feature,
       region,
       bpPerPx,
       horizontallyFlipped,
     )
-    let endPx = bpToPx(feature.get('end'), region, bpPerPx, horizontallyFlipped)
-    if (horizontallyFlipped) [startPx, endPx] = [endPx, startPx]
     const heightPx = readConfObject(args.config, 'height', [feature])
 
     const topPx = layout.addRect(
@@ -141,14 +131,10 @@ class Box extends Component {
   render() {
     const {
       feature,
-      horizontallyFlipped,
       config,
       layoutRecord: { startPx, endPx, heightPx, topPx },
       selectedFeatureId,
     } = this.props
-
-    if (horizontallyFlipped)
-      throw new Error('horizontal flipping not yet implemented')
 
     const style = { fill: readConfObject(config, 'color1', [feature]) }
     if (String(selectedFeatureId) === String(feature.id())) {
