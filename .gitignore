@@ -3,3 +3,4 @@
 **/coverage/
 yarn-error.log
 *.swp
+.DS_Store
