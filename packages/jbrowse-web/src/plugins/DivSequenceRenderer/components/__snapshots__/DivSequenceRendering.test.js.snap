@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<div
+  className="DivSequenceRendering"
+>
+  <div
+    className="blur"
+  >
+    Zoom in to see sequence
+  </div>
+</div>
+`;
+
+exports[`one feature 1`] = `
+<div
+  className="DivSequenceRendering"
+>
+  <div
+    className="blur"
+  >
+    Zoom in to see sequence
+  </div>
+</div>
+`;

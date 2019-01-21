@@ -18,6 +18,16 @@ jbrowse.configure({
   views: [{ type: 'LinearGenomeView' }],
   tracks: [
     {
+      type: 'SequenceTrack',
+      name: 'Reference sequence',
+      category: ['Bar Category'],
+      defaultRendering: 'div',
+      adapter: {
+        type: 'TwoBitAdapter',
+        twoBitLocation: { uri: '/test_data/volvox.2bit' },
+      },
+    },
+    {
       type: 'AlignmentsTrack',
       name: 'volvox-sorted red/blue',
       category: ['Bar Category', 'Baz Category'],

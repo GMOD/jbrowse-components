@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `"(intermediate value).addPlugin is not a function"`;
+
+exports[`plugin in a stock JBrowse 2`] = `
+Object {
+  "assemblyName": undefined,
+  "configId": Any<String>,
+  "twoBitLocation": Object {
+    "uri": "/path/to/my.2bit",
+  },
+  "type": "TwoBitAdapter",
+}
+`;

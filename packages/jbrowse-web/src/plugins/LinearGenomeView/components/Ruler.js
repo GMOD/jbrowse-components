@@ -36,7 +36,10 @@ function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
     minorPitch = majorPitch / 2
   }
 
-  return { majorPitch, minorPitch }
+  return {
+    majorPitch: Math.ceil(majorPitch),
+    minorPitch: Math.ceil(minorPitch),
+  }
 }
 
 export function* makeTicks(
