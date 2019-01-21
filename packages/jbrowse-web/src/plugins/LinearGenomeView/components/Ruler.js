@@ -42,7 +42,6 @@ function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
 export function* makeTicks(
   region,
   bpPerPx,
-  flipped = false,
   emitMajor = true,
   emitMinor = true,
 ) {
@@ -52,7 +51,7 @@ export function* makeTicks(
   let maxBase = region.end
   if (minBase === null || maxBase === null) return
 
-  if (bpPerPx < 0 || flipped) {
+  if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
   }
 
@@ -81,8 +80,9 @@ export default function Ruler(props) {
   const { region, bpPerPx, flipped, major, minor, showRefSeqLabel } = props
   const ticks = []
   const labels = []
-  for (const tick of makeTicks(region, bpPerPx, flipped, major, minor)) {
-    const x = (tick.base - region.start) / bpPerPx
+  for (const tick of makeTicks(region, bpPerPx, major, minor)) {
+    const x =
+      (flipped ? region.end - tick.base : tick.base - region.start) / bpPerPx
     ticks.push(
       <line
         key={tick.base}
