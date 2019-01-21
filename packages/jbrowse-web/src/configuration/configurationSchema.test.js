@@ -66,7 +66,6 @@ describe('configuration schemas', () => {
   })
 
   test('can nest a single subconfiguration schema', () => {
-    debugger
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
         someInteger: {
