@@ -13,7 +13,7 @@ test('no features', () => {
       height={500}
       region={{ assembly: 'toaster', refName: 'zonk', start: 0, end: 300 }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
-      config={{}}
+      config={DivRenderingConfigSchema.create()}
       bpPerPx={3}
     />,
   )

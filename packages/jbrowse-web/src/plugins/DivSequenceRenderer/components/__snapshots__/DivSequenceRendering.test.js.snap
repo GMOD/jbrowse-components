@@ -3,6 +3,12 @@
 exports[`no features 1`] = `
 <div
   className="DivSequenceRendering"
+  style={
+    Object {
+      "fontSize": "8px",
+      "height": "10px",
+    }
+  }
 >
   <div
     className="blur"
@@ -15,6 +21,12 @@ exports[`no features 1`] = `
 exports[`one feature 1`] = `
 <div
   className="DivSequenceRendering"
+  style={
+    Object {
+      "fontSize": "8px",
+      "height": "10px",
+    }
+  }
 >
   <div
     className="blur"

@@ -2,14 +2,16 @@
   .blur {
     text-align: center;
     color: black;
-    background: grey;
   }
   .base {
     text-align: center;
     display: inline-block;
     color: black;
+    height: 100%;
+    overflow: hidden;
     border: 0.5px solid #666;
     border-collapse: collapse;
+    box-sizing: border-box;
   }
   .base-a {
     background-color: #00BF00;

@@ -5,6 +5,7 @@ import ReactPropTypes from 'prop-types'
 import './DivSequenceRendering.scss'
 
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
+import { readConfObject } from '../../../configuration'
 
 function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   let s = ''
@@ -47,9 +48,13 @@ SequenceDivs.defaultProps = {
 }
 
 function DivSequenceRendering(props) {
-  const { bpPerPx } = props
+  const { bpPerPx, config } = props
+  const height = readConfObject(config, 'height')
   return (
-    <div className="DivSequenceRendering">
+    <div
+      className="DivSequenceRendering"
+      style={{ height: `${height}px`, fontSize: `${height * 0.8}px` }}
+    >
       {bpPerPx >= 1 ? (
         <div className="blur">Zoom in to see sequence</div>
       ) : (
@@ -57,6 +62,10 @@ function DivSequenceRendering(props) {
       )}
     </div>
   )
+}
+DivSequenceRendering.propTypes = {
+  config: CommonPropTypes.ConfigSchema.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
 }
 
 export default observer(DivSequenceRendering)

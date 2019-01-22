@@ -1,16 +1,9 @@
-import React from 'react'
-
 import DivSequenceRendering from './components/DivSequenceRendering'
 
 import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class DivSequenceRenderer extends ServerSideRenderer {
-  async render(renderProps) {
-    const element = React.createElement(this.ReactComponent, renderProps, null)
-    return { element }
-  }
-}
+class DivSequenceRenderer extends ServerSideRenderer {}
 
 export default (/* pluginManager */) =>
   new DivSequenceRenderer({

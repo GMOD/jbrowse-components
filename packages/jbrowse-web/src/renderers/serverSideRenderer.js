@@ -19,29 +19,25 @@ export default class ServerSideRenderer extends RendererType {
    * this is the only part of the track model that most
    * renderers read.
    *
-   * @param {object} args the arguments passed to render, not modified
-   * @returns {object} the converted arguments
+   * @param {object} args the arguments passed to render
+   * @returns {object} the same object
    */
   serializeArgsInClient(args) {
     if (args.renderProps.trackModel) {
-      const result = Object.assign({}, args)
-      result.renderProps = Object.assign({}, result.renderProps)
-      result.renderProps.trackModel = {
+      args.renderProps.trackModel = {
         selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
       }
-      return result
     }
     return args
   }
 
-  deserializeResultsInClient(result, args) {
+  deserializeResultsInClient(result /* , args */) {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
       featuresMap.set(String(j.id), SimpleFeature.fromJSON(j))
     })
     result.features = featuresMap
-    result.config = this.configSchema.create(args.renderProps.config || {})
     return result
   }
 
@@ -50,7 +46,12 @@ export default class ServerSideRenderer extends RendererType {
    * inflate arguments as necessary. called in the worker process.
    * @param {object} args the converted arguments to modify
    */
-  deserializeArgsInWorker() {}
+  deserializeArgsInWorker(args) {
+    if (this.configSchema) {
+      const config = this.configSchema.create(args.config || {})
+      args.config = config
+    }
+  }
 
   /**
    *
@@ -74,10 +75,6 @@ export default class ServerSideRenderer extends RendererType {
     return result
   }
 
-  async render() {
-    throw new Error('render not implemented')
-  }
-
   // render method called on the worker
   async renderInWorker(args) {
     this.deserializeArgsInWorker(args)
@@ -88,8 +85,7 @@ export default class ServerSideRenderer extends RendererType {
       .pipe(tap(feature => features.set(feature.id(), feature)))
       .toPromise()
 
-    const config = this.configSchema.create(args.config || {})
-    const renderProps = { ...args, features, config }
+    const renderProps = { ...args, features }
 
     const results = await this.render(renderProps)
     results.html = renderToString(results.element)

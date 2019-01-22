@@ -61,13 +61,11 @@ export default class BoxRenderer extends ServerSideRenderer {
   deserializeArgsInWorker(args) {
     super.deserializeArgsInWorker(args)
     const { region } = args
-    const config = this.configSchema.create(args.config || {})
     const session = this.getWorkerSession(args)
     const subLayout = session.layout.getSublayout(
       `${region.assembly}:${region.refName}`,
     )
     args.layout = subLayout
-    args.config = config
   }
 
   async render() {
