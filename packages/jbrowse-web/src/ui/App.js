@@ -171,11 +171,15 @@ class App extends Component {
               <button
                 type="button"
                 onClick={() =>
-                  rootModel.addView('LinearGenomeView', {
-                    displayedRegions: getSnapshot(
-                      rootModel.views[0].displayedRegions,
-                    ),
-                  })
+                  rootModel.addView(
+                    'LinearGenomeView',
+                    {},
+                    {
+                      displayedRegions: getSnapshot(
+                        rootModel.views[0].displayedRegions,
+                      ),
+                    },
+                  )
                 }
               >
                 Add linear view

@@ -84,8 +84,9 @@ firstView.displayRegions([
   { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
-firstView.zoomTo(2) // bpPerPx
-firstView.showTrack(model.configuration.tracks[0], { height: 200 })
+firstView.zoomTo(0.06) // bpPerPx
+firstView.showTrack(model.configuration.tracks[0], { height: 110 })
+firstView.showTrack(model.configuration.tracks[2], { height: 200 })
 
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
