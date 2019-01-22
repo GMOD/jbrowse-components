@@ -3,9 +3,9 @@ import React from 'react'
 import DivSequenceRendering from './components/DivSequenceRendering'
 
 import ConfigSchema from './configSchema'
-import SequenceRenderer from '../../renderers/sequenceRenderer'
+import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class DivSequenceRenderer extends SequenceRenderer {
+class DivSequenceRenderer extends ServerSideRenderer {
   async render(renderProps) {
     const element = React.createElement(this.ReactComponent, renderProps, null)
     return { element }

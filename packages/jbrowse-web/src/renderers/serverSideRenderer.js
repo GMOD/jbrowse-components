@@ -6,42 +6,11 @@ import { renderRegionWithWorker } from '../render'
 import RendererType from '../pluggableElementTypes/RendererType'
 
 import SimpleFeature from '../util/simpleFeature'
+import { iterMap } from '../util'
 
-class LayoutSession {
-  update(props) {
-    Object.assign(this, props)
-  }
-}
-
-export default class SequenceRenderer extends RendererType {
-  constructor(stuff) {
-    super({ ...stuff, sessions: {} })
-  }
-
-  getWorkerSession(props) {
-    const { sessionId } = props
-    if (!this.sessions[sessionId])
-      this.sessions[sessionId] = this.createSession()
-    const session = this.sessions[sessionId]
-    session.update(props)
-    return session
-  }
-
-  createSession() {
-    return new LayoutSession()
-  }
-
-  freeResources({ sessionId, region }) {
-    if (!region && this.sessions[sessionId]) {
-      delete this.sessions[sessionId]
-      return 1
-    }
-    // TODO: implement freeing for regions
-    return 0
-  }
-
+export default class ServerSideRenderer extends RendererType {
   /**
-   * filter/convert the render arguments to prepare
+   * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
    *
    * the base class replaces the `renderProps.trackModel` param
@@ -53,7 +22,7 @@ export default class SequenceRenderer extends RendererType {
    * @param {object} args the arguments passed to render, not modified
    * @returns {object} the converted arguments
    */
-  serializeArgsForWorker(args) {
+  serializeArgsInClient(args) {
     if (args.renderProps.trackModel) {
       const result = Object.assign({}, args)
       result.renderProps = Object.assign({}, result.renderProps)
@@ -65,20 +34,7 @@ export default class SequenceRenderer extends RendererType {
     return args
   }
 
-  /**
-   * directly modifies the passed arguments object to
-   * inflate arguments as necessary. called in the worker process.
-   * @param {object} args the converted arguments to modify
-   */
-  deserializeArgsInWorker() {}
-
-  // render method called on the client. should call the worker render
-  async renderInClient(app, args) {
-    const result = await renderRegionWithWorker(
-      app,
-      this.serializeArgsForWorker(args),
-    )
-
+  deserializeResultsInClient(result, args) {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
@@ -86,7 +42,35 @@ export default class SequenceRenderer extends RendererType {
     })
     result.features = featuresMap
     result.config = this.configSchema.create(args.renderProps.config || {})
+    return result
+  }
 
+  /**
+   * directly modifies the passed arguments object to
+   * inflate arguments as necessary. called in the worker process.
+   * @param {object} args the converted arguments to modify
+   */
+  deserializeArgsInWorker() {}
+
+  /**
+   *
+   * @param {object} result object containing the results of calling the `render` method
+   * @param {Map} features Map of feature.id() -> feature
+   */
+  serializeResultsInWorker(result, features) {
+    result.features = iterMap(features.values(), f =>
+      f.toJSON ? f.toJSON() : f,
+    )
+  }
+
+  // render method called on the client. should call the worker render
+  async renderInClient(app, args) {
+    const result = await renderRegionWithWorker(
+      app,
+      this.serializeArgsInClient(args),
+    )
+
+    this.deserializeResultsInClient(result, args)
     return result
   }
 
@@ -101,26 +85,20 @@ export default class SequenceRenderer extends RendererType {
     const features = new Map()
     await dataAdapter
       .getFeaturesInRegion(region)
-      .pipe(tap(feature => features.set(feature.seq, feature)))
+      .pipe(tap(feature => features.set(feature.id(), feature)))
       .toPromise()
 
     const config = this.configSchema.create(args.config || {})
     const renderProps = { ...args, features, config }
 
-    const result = await this.render(renderProps)
-    result.html = renderToString(result.element)
-    delete result.element
+    const results = await this.render(renderProps)
+    results.html = renderToString(results.element)
+    delete results.element
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    const featureJSON = []
-    for (const feature of features.values()) {
-      featureJSON.push(feature)
-    }
-    return {
-      ...result,
-      features: featureJSON,
-    }
+    this.serializeResultsInWorker(results, features, args)
+    return results
   }
 }

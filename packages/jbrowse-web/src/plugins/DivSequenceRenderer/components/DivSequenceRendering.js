@@ -9,7 +9,7 @@ import { PropTypes as CommonPropTypes } from '../../../mst-types'
 function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   let s = ''
   for (const seq of features.values()) {
-    s += seq.seq || seq.data.seq // index.js:1452 Warning: Text content did not match. fix?
+    s += seq.get('seq')
   }
 
   const width = (region.end - region.start) / bpPerPx

@@ -49,7 +49,10 @@ export function getTypeNamesFromExplicitlyTypedUnion(thing) {
   if (isUnionType(thing)) {
     const typeNames = thing.types.map(type => {
       const typeName = type.defaultValue.type
-      if (!typeName) throw new Error('invalid config schema type', type)
+      if (!typeName) {
+        // debugger
+        throw new Error('invalid config schema type', type)
+      }
       return typeName
     })
     return typeNames

@@ -3,6 +3,7 @@ import { Observable } from 'rxjs'
 import { TwoBitFile } from '@gmod/twobit'
 
 import { openLocation } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
 
 export default class TwoBitAdapter {
   constructor(config) {
@@ -26,7 +27,12 @@ export default class TwoBitAdapter {
     return Observable.create(async observer => {
       await this.gotTwoBitHeader
       const seq = await this.twobit.getSequence(refName, start, end)
-      observer.next({ refName, start, end, seq })
+      observer.next(
+        new SimpleFeature({
+          id: `${refName} ${start}-${end}`,
+          data: { refName, start, end, seq },
+        }),
+      )
       observer.complete()
     })
   }

@@ -85,7 +85,9 @@ firstView.displayRegions([
 ])
 
 firstView.zoomTo(0.05) // bpPerPx
-firstView.showTrack(model.configuration.tracks[0], { height: 200 })
+firstView.showTrack(model.configuration.tracks[0], { height: 50 })
+firstView.showTrack(model.configuration.tracks[1], { height: 200 })
+firstView.showTrack(model.configuration.tracks[2], { height: 200 })
 
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
