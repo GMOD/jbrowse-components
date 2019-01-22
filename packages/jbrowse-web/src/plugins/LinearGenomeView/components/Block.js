@@ -7,12 +7,12 @@ const styles = (/* theme */) => ({
   block: {
     position: 'relative',
     height: '100%',
-    background: '#eee',
+    background: 'white',
     // background: theme.palette.background.default,
     boxSizing: 'border-box',
     display: 'inline-block',
     whiteSpace: 'nowrap',
-    overflow: 'normal',
+    overflow: 'hidden',
   },
   leftBorder: {
     borderLeft: `2px solid #333`,
