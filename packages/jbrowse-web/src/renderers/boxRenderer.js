@@ -1,15 +1,7 @@
-import { renderToString } from 'react-dom/server'
-import { tap } from 'rxjs/operators'
-
-import { renderRegionWithWorker } from '../render'
-
-import RendererType from '../pluggableElementTypes/RendererType'
-
 import GranularRectLayout from '../util/layouts/GranularRectLayout'
 
 import PrecomputedLayout from '../util/layouts/PrecomputedLayout'
 
-import SimpleFeature from '../util/simpleFeature'
 import MultiLayout from '../util/layouts/MultiLayout'
 import ServerSideRenderer from './serverSideRenderer'
 

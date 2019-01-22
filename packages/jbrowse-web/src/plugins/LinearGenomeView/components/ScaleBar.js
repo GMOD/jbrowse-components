@@ -6,7 +6,7 @@ import { assembleLocString } from '../../../util'
 
 import Ruler from './Ruler'
 
-const styles = theme => ({
+const styles = (/* theme */) => ({
   scaleBar: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
