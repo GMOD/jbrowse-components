@@ -1,28 +1,58 @@
-import React, { Component } from 'react'
+import { Icon, IconButton, withStyles } from '@material-ui/core'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+import classnames from 'classnames'
 import { inject, observer, PropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { Icon, IconButton } from '@material-ui/core'
-import ToggleButton from '@material-ui/lab/ToggleButton'
+import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 
+import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
-import './LinearGenomeView.scss'
-import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
+import ZoomControls from './ZoomControls'
 
 const dragHandleHeight = 3
 
+const styles = (/* theme */) => ({
+  linearGenomeView: {
+    background: '#eee',
+    // background: theme.palette.background.paper,
+    border: '1px solid hsl(0, 0%, 0%)',
+    boxSizing: 'content-box',
+  },
+  controls: {
+    borderRight: '1px solid gray',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+  },
+  viewControls: {
+    height: '100%',
+    borderBottom: '1px solid #9e9e9e',
+    boxSizing: 'border-box',
+  },
+  trackControls: {
+    whiteSpace: 'normal',
+  },
+  zoomControls: {
+    position: 'absolute',
+  },
+})
+
 @inject('rootModel')
+@withStyles(styles)
 @observer
 class LinearGenomeView extends Component {
   static propTypes = {
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
     model: PropTypes.observableObject.isRequired,
   }
 
   render() {
     const scaleBarHeight = 32
-    const { model } = this.props
+    const { classes, model } = this.props
     const {
       id,
       blocks,
@@ -57,9 +87,13 @@ class LinearGenomeView extends Component {
     }
     // console.log(style)
     return (
-      <div className="LinearGenomeView" key={`view-${id}`} style={style}>
+      <div
+        className={classes.linearGenomeView}
+        key={`view-${id}`}
+        style={style}
+      >
         <div
-          className="controls view-controls"
+          className={classnames(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
           <IconButton
@@ -87,7 +121,7 @@ class LinearGenomeView extends Component {
             value="track_select"
           >
             <Icon fontSize="small">line_style</Icon>
-          </ToggleButton>{' '}
+          </ToggleButton>
         </div>
         <ScaleBar
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
@@ -95,12 +129,15 @@ class LinearGenomeView extends Component {
           bpPerPx={bpPerPx}
           blocks={blocks}
           offsetPx={visibleBlocksOffsetPx}
-          width={width - controlsWidth}
           horizontallyFlipped={model.horizontallyFlipped}
+          width={width - controlsWidth}
         />
+        <div className={classes.zoomControls} style={{ left: width - 138 }}>
+          <ZoomControls model={model} controlsHeight={scaleBarHeight} />
+        </div>
         {tracks.map(track => [
           <div
-            className="controls track-controls"
+            className={classnames(classes.controls, classes.trackControls)}
             key={`controls:${track.id}`}
             style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
           >

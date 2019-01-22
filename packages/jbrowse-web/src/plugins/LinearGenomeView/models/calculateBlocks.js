@@ -18,7 +18,7 @@ export function calculateBlocksForward(self) {
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
   const blockSizePx = Math.ceil(width / 200) * 200
-  const blockSizeBp = blockSizePx * bpPerPx
+  const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
   // for each displayed region
   let regionBpOffset = 0
   const blocks = []

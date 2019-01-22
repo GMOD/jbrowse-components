@@ -1,13 +1,24 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
+import { withStyles } from '@material-ui/core'
+
+const styles = {
+  trackRenderingContainer: {
+    overflow: 'hidden',
+    background: '#333',
+    whiteSpace: 'nowrap',
+  },
+}
 
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
+@withStyles(styles)
 @observer
 class TrackRenderingContainer extends Component {
   static propTypes = {
+    classes: PropTypes.objectOf(PropTypes.string).isRequired,
     trackId: PropTypes.string.isRequired,
     onHorizontalScroll: PropTypes.func.isRequired,
     width: PropTypes.number.isRequired,
@@ -82,10 +93,10 @@ class TrackRenderingContainer extends Component {
   }
 
   render() {
-    const { trackId, width, children } = this.props
+    const { trackId, width, children, classes } = this.props
     return (
       <div
-        className="TrackRenderingContainer"
+        className={classes.trackRenderingContainer}
         key={`rendering:${trackId}`}
         style={{
           gridRow: `track-${trackId}`,

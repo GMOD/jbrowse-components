@@ -1,8 +1,21 @@
 import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
+import { withStyles } from '@material-ui/core'
 
-export default class TrackResizeHandle extends Component {
+const styles = {
+  dragHandle: {
+    background: '#ccc',
+    cursor: 'ns-resize',
+    width: '100%',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  },
+}
+
+@withStyles(styles)
+class TrackResizeHandle extends Component {
   static propTypes = {
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
     trackId: ReactPropTypes.string.isRequired,
     onVerticalDrag: ReactPropTypes.func.isRequired,
   }
@@ -47,7 +60,7 @@ export default class TrackResizeHandle extends Component {
   }
 
   render() {
-    const { trackId } = this.props
+    const { classes, trackId } = this.props
     return (
       <div
         onMouseDown={this.mouseDown}
@@ -55,7 +68,7 @@ export default class TrackResizeHandle extends Component {
         onMouseLeave={this.mouseLeave}
         onMouseUp={this.mouseUp}
         role="presentation"
-        className="drag-handle drag-handle-horizontal"
+        className={classes.dragHandle}
         style={{
           gridRow: `resize-${trackId}`,
           gridColumn: 'span 2',
@@ -64,3 +77,5 @@ export default class TrackResizeHandle extends Component {
     )
   }
 }
+
+export default TrackResizeHandle
