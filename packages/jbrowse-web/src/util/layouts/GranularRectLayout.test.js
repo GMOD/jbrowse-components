@@ -63,4 +63,6 @@ it('stacks up overlapping features', () => {
     const top = l.addRect(...testRects[i])
     expect(top).toEqual((i % 2) * 4)
   }
+
+  expect(() => l.discardRange(0, 20000)).not.toThrow()
 })
