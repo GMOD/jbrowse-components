@@ -89,25 +89,6 @@ export default (pluginManager, configSchema) =>
           }
           return undefined
         },
-        /**
-         * the pluggable element type object for this track's
-         * renderer
-         */
-        get rendererType() {
-          const track = getParent(self, 2)
-          const RendererType = pluginManager.getRendererType(
-            self.rendererTypeName,
-          )
-          if (!RendererType)
-            throw new Error(`renderer "${track.rendererTypeName}" not found`)
-          if (!RendererType.ReactComponent)
-            throw new Error(
-              `renderer ${
-                track.rendererTypeName
-              } has no ReactComponent, it may not be completely implemented yet`,
-            )
-          return RendererType
-        },
 
         /**
          * the react props that are passed to the Renderer when data

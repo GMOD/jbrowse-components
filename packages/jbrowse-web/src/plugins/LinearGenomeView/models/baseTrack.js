@@ -1,8 +1,9 @@
 import React from 'react'
-import { types, getRoot, getParent } from 'mobx-state-tree'
+import { types, getRoot, getParent, getSnapshot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
+  getConf,
 } from '../../../configuration'
 import { ElementId } from '../../../mst-types'
 
@@ -62,13 +63,65 @@ const BaseTrack = types
       )
     },
 
+    /**
+     * the react props that are passed to the Renderer when data
+     * is rendered in this track
+     */
     get renderProps() {
       // view -> [tracks] -> [blocks]
       const view = getParent(self, 2)
       return {
         bpPerPx: view.bpPerPx,
         horizontallyFlipped: view.horizontallyFlipped,
+        trackModel: self,
       }
+    },
+
+    /**
+     * the pluggable element type object for this track's
+     * renderer
+     */
+    get rendererType() {
+      const track = getParent(self, 2)
+      const rootModel = getRoot(self)
+      const RendererType = rootModel.pluginManager.getRendererType(
+        self.rendererTypeName,
+      )
+      if (!RendererType)
+        throw new Error(`renderer "${track.rendererTypeName}" not found`)
+      if (!RendererType.ReactComponent)
+        throw new Error(
+          `renderer ${
+            track.rendererTypeName
+          } has no ReactComponent, it may not be completely implemented yet`,
+        )
+      return RendererType
+    },
+
+    /**
+     * the PluggableElementType for the currently defined adapter
+     */
+    get adapterType() {
+      const adapterConfig = getConf(self, 'adapter')
+      const rootModel = getRoot(self)
+      if (!adapterConfig)
+        throw new Error(`no adapter configuration provided for ${self.type}`)
+      const adapterType = rootModel.pluginManager.getAdapterType(
+        adapterConfig.type,
+      )
+      if (!adapterType)
+        throw new Error(`unknown adapter type ${adapterConfig.type}`)
+      return adapterType
+    },
+
+    /**
+     * the Adapter that this track uses to fetch data
+     */
+    get adapter() {
+      const adapter = new self.adapterType.AdapterClass(
+        getSnapshot(self.configuration.adapter),
+      )
+      return adapter
     },
   }))
   .actions(self => ({

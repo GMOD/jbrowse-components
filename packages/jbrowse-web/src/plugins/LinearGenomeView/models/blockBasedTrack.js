@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import LinearGenomeTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
+import CompositeMap from '../../../util/compositeMap'
 
 export default types.compose(
   'BlockBasedTrackState',
@@ -13,6 +14,20 @@ export default types.compose(
     .model({
       blockState: types.map(BlockState),
     })
+    .views(self => ({
+      /**
+       * a CompositeMap of featureId -> feature obj that
+       * just looks in all the block data for that feature
+       */
+      get features() {
+        const featureMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.features)
+            featureMaps.push(block.data.features)
+        }
+        return new CompositeMap(featureMaps)
+      },
+    }))
     .actions(self => {
       let blockWatchDisposer
       function disposeBlockWatch() {

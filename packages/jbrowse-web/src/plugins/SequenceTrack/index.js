@@ -9,7 +9,6 @@ export default class SequenceTrackPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = configSchemaFactory(pluginManager)
-
       const stateModel = modelFactory(pluginManager, configSchema)
 
       return new TrackType({
