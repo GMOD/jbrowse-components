@@ -5,8 +5,8 @@ exports[`no features 1`] = `
   className="DivSequenceRendering"
   style={
     Object {
-      "fontSize": "8px",
-      "height": "10px",
+      "fontSize": "12.8px",
+      "height": "16px",
     }
   }
 >
@@ -23,8 +23,8 @@ exports[`one feature 1`] = `
   className="DivSequenceRendering"
   style={
     Object {
-      "fontSize": "8px",
-      "height": "10px",
+      "fontSize": "12.8px",
+      "height": "16px",
     }
   }
 >
