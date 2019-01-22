@@ -11,15 +11,22 @@ const styles = {
     color: 'gray',
     paddingLeft: '0.6em',
   },
+  error: {
+    display: 'block',
+    color: 'red',
+    width: '30em',
+    wordWrap: 'normal',
+    whiteSpace: 'normal',
+  },
 }
 
 const LoadingMessage = withStyles(styles)(classes => (
   <div className={classes.loading}>Loading ...</div>
 ))
 
-function ErrorMessage({ error }) {
-  return <div className="error">{error.message}</div>
-}
+const ErrorMessage = withStyles(styles)(({ error, classes }) => (
+  <div className={classes.error}>{error.message}</div>
+))
 ErrorMessage.propTypes = {
   error: PropTypes.objectOrObservableObject.isRequired,
 }

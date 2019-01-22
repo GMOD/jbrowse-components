@@ -1,7 +1,6 @@
 import Plugin from '../../Plugin'
 import TrackType from '../../pluggableElementTypes/TrackType'
 
-import AlignmentsTrack from './components/AlignmentsTrack'
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
 
@@ -16,7 +15,6 @@ export default class AlignmentsTrackPlugin extends Plugin {
         name: 'AlignmentsTrack',
         configSchema,
         stateModel,
-        RenderingComponent: AlignmentsTrack,
       })
     })
   }

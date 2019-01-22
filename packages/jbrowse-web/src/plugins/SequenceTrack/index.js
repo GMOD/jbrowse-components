@@ -1,7 +1,6 @@
 import Plugin from '../../Plugin'
 import TrackType from '../../pluggableElementTypes/TrackType'
 
-import SequenceTrack from './components/SequenceTrack'
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
 
@@ -15,7 +14,6 @@ export default class SequenceTrackPlugin extends Plugin {
         name: 'SequenceTrack',
         configSchema,
         stateModel,
-        RenderingComponent: SequenceTrack,
       })
     })
   }

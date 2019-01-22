@@ -3,10 +3,6 @@ import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/
 import DivSequenceRendererConfigurationSchema from '../DivSequenceRenderer/configSchema'
 
 export default pluginManager =>
-  // const SequenceRendererConfigSchema = pluginManager.getRendererType(
-  //   'DivSequenceRenderer',
-  // ).configSchema
-
   ConfigurationSchema(
     'SequenceTrack',
     {

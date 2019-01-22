@@ -65,7 +65,7 @@ export default types
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })
-  // NOTE: all this stuff has to be filled in at once, so that it stays consistent
+  // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
     filled: false,
     data: undefined,

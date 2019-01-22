@@ -2,8 +2,7 @@ import { types, getParent } from 'mobx-state-tree'
 
 import { ConfigurationReference } from '../../configuration'
 
-import SequenceTrack from './components/SequenceTrack'
-
+import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 
 export default (pluginManager, configSchema) =>
@@ -28,7 +27,7 @@ export default (pluginManager, configSchema) =>
         },
       }))
       .volatile(() => ({
-        reactComponent: SequenceTrack,
+        reactComponent: BlockBasedTrackComponent,
         rendererTypeName: 'DivSequenceRenderer',
       })),
   )
