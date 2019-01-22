@@ -1,13 +1,26 @@
-import React, { Component } from 'react'
-import { PropTypes, observer } from 'mobx-react'
+import { withStyles } from '@material-ui/core'
+import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 import Block from './Block'
 
-import './TrackBlocks.scss'
+const styles = {
+  trackBlocks: {
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
+    width: '100%',
+    position: 'relative',
+    background: '#555',
+    overflow: 'hidden',
+    height: '100%',
+  },
+}
 
+@withStyles(styles)
 @observer
 class TrackBlocks extends Component {
   static propTypes = {
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
     offsetPx: ReactPropTypes.number.isRequired,
     blockDefinitions: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
@@ -24,9 +37,15 @@ class TrackBlocks extends Component {
   }
 
   render() {
-    const { blockDefinitions, offsetPx, bpPerPx, blockState } = this.props
+    const {
+      classes,
+      blockDefinitions,
+      offsetPx,
+      bpPerPx,
+      blockState,
+    } = this.props
     return (
-      <div className="TrackBlocks">
+      <div className={classes.trackBlocks}>
         {blockDefinitions.map(block => {
           const state = blockState.get(block.key)
           const comp = (

@@ -1,3 +1,4 @@
+import { withStyles } from '@material-ui/core'
 import React from 'react'
 import PropTypes from 'prop-types'
 import Block from './Block'
@@ -5,7 +6,28 @@ import { assembleLocString } from '../../../util'
 
 import Ruler from './Ruler'
 
-import './ScaleBar.scss'
+const styles = (/* theme */) => ({
+  scaleBar: {
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
+    width: '100%',
+    position: 'relative',
+    background: '#555',
+    // background: theme.palette.background.default,
+    overflow: 'hidden',
+    height: '100%',
+  },
+  refLabel: {
+    fontSize: '16px',
+    position: 'absolute',
+    left: '2px',
+    top: '-1px',
+    fontWeight: 'bold',
+    background: '#eee',
+    // background: theme.palette.background.paper,
+    // color: theme.palette.text.primary,
+  },
+})
 
 function findBlockContainingLeftSideOfView(offsetPx, blocks) {
   const pxSoFar = 0
@@ -16,7 +38,8 @@ function findBlockContainingLeftSideOfView(offsetPx, blocks) {
   return undefined
 }
 
-export default function ScaleBar({
+function ScaleBar({
+  classes,
   style,
   height,
   blocks,
@@ -36,7 +59,7 @@ export default function ScaleBar({
   )
 
   return (
-    <div style={finalStyle} className="ScaleBar">
+    <div style={finalStyle} className={classes.scaleBar}>
       {blocks.map(block => {
         const locString = assembleLocString(block)
         return (
@@ -53,11 +76,14 @@ export default function ScaleBar({
           >
             <svg height={height} width={block.widthPx}>
               {/* {block.isLeftEndOfDisplayedRegion ? (
-                <div className="refLabel">{block.refName}</div>
+                <div className={classes.refLabel}>{block.refName}</div>
               ) : null} */}
               <Ruler
                 region={block}
-                showRefSeqLabel={!!block.isLeftEndOfDisplayedRegion}
+                showRefSeqLabel={
+                  !!block.isLeftEndOfDisplayedRegion &&
+                  !blockContainingLeftEndOfView
+                }
                 bpPerPx={bpPerPx}
                 flipped={horizontallyFlipped}
               />
@@ -67,7 +93,7 @@ export default function ScaleBar({
       })}
       {// put in a floating ref label
       blockContainingLeftEndOfView ? (
-        <div className="refLabel floating">
+        <div className={classes.refLabel}>
           {blockContainingLeftEndOfView.refName}
         </div>
       ) : null}
@@ -76,6 +102,7 @@ export default function ScaleBar({
 }
 ScaleBar.defaultProps = { style: {}, blocks: [], horizontallyFlipped: false }
 ScaleBar.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   style: PropTypes.objectOf(PropTypes.any),
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
@@ -84,3 +111,5 @@ ScaleBar.propTypes = {
   offsetPx: PropTypes.number.isRequired,
   horizontallyFlipped: PropTypes.bool,
 }
+
+export default withStyles(styles)(ScaleBar)

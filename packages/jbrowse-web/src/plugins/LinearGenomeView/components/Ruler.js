@@ -1,6 +1,6 @@
+import { withStyles } from '@material-ui/core/styles'
 import React, { Fragment } from 'react'
 import ReactPropTypes from 'prop-types'
-import classnames from 'classnames'
 import { PropTypes } from '../../../mst-types'
 
 /**
@@ -79,8 +79,44 @@ export function* makeTicks(
   }
 }
 
-export default function Ruler(props) {
-  const { region, bpPerPx, flipped, major, minor, showRefSeqLabel } = props
+const styles = (/* theme */) => ({
+  majorTickLabel: {
+    fontSize: '11px',
+    // fill: theme.palette.text.primary,
+  },
+  majorTick: {
+    stroke: '#555',
+    // stroke: theme.palette.text.secondary,
+  },
+  minorTick: {
+    stroke: '#999',
+    // stroke: theme.palette.text.hint,
+  },
+  refSeqLabel: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    // fill: theme.palette.text.primary,
+  },
+  refSeqLabelBackground: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    fill: '#eee',
+    // fill: theme.palette.background.default,
+    fillOpacity: 0.75,
+    filter: 'url(#dilate)',
+  },
+})
+
+function Ruler(props) {
+  const {
+    region,
+    bpPerPx,
+    flipped,
+    major,
+    minor,
+    showRefSeqLabel,
+    classes,
+  } = props
   const ticks = []
   const labels = []
   for (const tick of makeTicks(region, bpPerPx, major, minor)) {
@@ -95,7 +131,9 @@ export default function Ruler(props) {
         y2={tick.type === 'major' ? 6 : 4}
         strokeWidth={1}
         stroke={tick.type === 'major' ? '#555' : '#999'}
-        className={`tick ${tick.type}`}
+        className={
+          tick.type === 'major' ? classes.majorTick : classes.minorTick
+        }
         data-bp={tick.base}
       />,
     )
@@ -108,7 +146,7 @@ export default function Ruler(props) {
           key={`label-${tick.base}`}
           alignmentBaseline="hanging"
           style={{ fontSize: '11px' }}
-          className={classnames('label', tick.index === 0 && 'first')}
+          className={classes.majorTickLabel}
         >
           {(Number(tick.base) + 1).toLocaleString()}
         </text>,
@@ -119,22 +157,29 @@ export default function Ruler(props) {
   if (showRefSeqLabel && region.refName) {
     refSeqLabels.push(
       <Fragment key="refseq-label">
-        <rect
-          x={0}
-          y={2}
-          width={9 * region.refName.length}
-          height="17"
-          style={{ fill: 'white' }}
-        />
-        <text
-          x={0}
-          y={2}
-          alignmentBaseline="hanging"
-          style={{ fontSize: '16px', fontWeight: 'bold' }}
-          className={classnames('label', 'refseq')}
-        >
-          {region.refName}
-        </text>
+        <g>
+          <defs>
+            <filter id="dilate">
+              <feMorphology operator="dilate" radius="5" />
+            </filter>
+          </defs>
+          <text
+            x={0}
+            y={2}
+            alignmentBaseline="hanging"
+            className={classes.refSeqLabelBackground}
+          >
+            {region.refName}
+          </text>
+          <text
+            x={0}
+            y={2}
+            alignmentBaseline="hanging"
+            className={classes.refSeqLabel}
+          >
+            {region.refName}
+          </text>
+        </g>
       </Fragment>,
     )
   }
@@ -146,6 +191,7 @@ export default function Ruler(props) {
 }
 
 Ruler.propTypes = {
+  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   region: PropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   flipped: ReactPropTypes.bool,
@@ -158,3 +204,5 @@ Ruler.defaultProps = {
   major: true,
   minor: true,
 }
+
+export default withStyles(styles)(Ruler)

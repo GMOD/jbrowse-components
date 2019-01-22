@@ -1,22 +1,37 @@
+import { withStyles } from '@material-ui/core/styles'
 import React from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 
-export default function Block({
-  offset,
-  children,
-  width,
-  leftBorder,
-  rightBorder,
-}) {
+const styles = (/* theme */) => ({
+  block: {
+    position: 'relative',
+    height: '100%',
+    background: '#eee',
+    // background: theme.palette.background.default,
+    boxSizing: 'border-box',
+    display: 'inline-block',
+    whiteSpace: 'nowrap',
+    overflow: 'normal',
+  },
+  leftBorder: {
+    borderLeft: `2px solid #333`,
+    // borderLeft: `2px solid ${theme.palette.divider}`,
+  },
+  rightBorder: {
+    borderRight: `2px solid #333`,
+    // borderRight: `2px solid ${theme.palette.divider}`,
+  },
+})
+
+function Block({ classes, offset, children, width, leftBorder, rightBorder }) {
   return (
     <div
       style={{ left: `${-offset}px`, width: `${width}px` }}
-      className={classnames(
-        'block',
-        leftBorder && 'left-side',
-        rightBorder && 'right-side',
-      )}
+      className={classnames(classes.block, {
+        [classes.leftBorder]: leftBorder,
+        [classes.rightBorder]: rightBorder,
+      })}
     >
       {children}
     </div>
@@ -29,6 +44,7 @@ Block.defaultProps = {
   rightBorder: false,
 }
 Block.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   offset: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
   children: PropTypes.oneOfType([
@@ -38,3 +54,5 @@ Block.propTypes = {
   leftBorder: PropTypes.bool,
   rightBorder: PropTypes.bool,
 }
+
+export default withStyles(styles)(Block)

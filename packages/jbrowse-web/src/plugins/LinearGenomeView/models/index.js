@@ -27,6 +27,8 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
+const minBpPerPx = 0.03
+
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
     .compose(
@@ -54,6 +56,17 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)
+      },
+      get maxBpPerPx() {
+        const displayWidth = self.width - self.controlsWidth
+        let totalbp = 0
+        self.displayedRegions.forEach(region => {
+          totalbp += region.end - region.start
+        })
+        return totalbp / displayWidth
+      },
+      get minBpPerPx() {
+        return minBpPerPx
       },
 
       /**
@@ -105,13 +118,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         )
       },
 
-      zoomIn() {
-        this.zoomTo(self.bpPerPx / 1.5)
-      },
-
-      zoomOut() {
-        this.zoomTo(self.bpPerPx * 1.5)
-      },
       activateTrackSelector() {
         if (getType(self.configuration).name === 'AnonymousModel')
           throw new Error('this view should have a real configuration')
@@ -136,7 +142,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       zoomTo(newBpPerPx) {
-        self.bpPerPx = newBpPerPx
+        if (newBpPerPx === self.bpPerPx) return
+        let bpPerPx = newBpPerPx
+        if (bpPerPx < self.minBpPerPx) bpPerPx = self.minBpPerPx
+        else if (bpPerPx > self.maxBpPerPx) bpPerPx = self.maxBpPerPx
+        self.bpPerPx = bpPerPx
       },
 
       resizeTrack(trackId, distance) {
