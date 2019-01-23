@@ -1,10 +1,17 @@
 import { lazy } from 'react'
+import { observer } from 'mobx-react'
 import { ConfigurationSchema } from '../../configuration'
 import Plugin from '../../Plugin'
 import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
 import modelFactory from './model'
 
 const Editor = lazy(() => import('./components/ConfigurationEditor'))
+
+const HeadingComponent = observer(({ model }) => {
+  const typeName =
+    model && model.target && model.target.type ? ` ${model.target.type}` : ''
+  return `Configure${typeName}`
+})
 
 export default class ConfigurationEditorDrawerWidget extends Plugin {
   install(pluginManager) {
@@ -29,7 +36,7 @@ export default class ConfigurationEditorDrawerWidget extends Plugin {
 
       return new DrawerWidgetType({
         name: 'ConfigurationEditorDrawerWidget',
-        heading: 'Configure',
+        HeadingComponent,
         configSchema,
         stateModel,
         LazyReactComponent: Editor,
