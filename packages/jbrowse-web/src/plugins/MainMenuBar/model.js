@@ -1,8 +1,9 @@
-import { getRoot, types } from 'mobx-state-tree'
+import saveAs from 'file-saver'
+import { getRoot, types, getSnapshot } from 'mobx-state-tree'
 import { ElementId } from '../../mst-types'
 import { stringToFunction } from '../../util/functionStrings'
 
-const MenuItemModel = types
+export const MenuItemModel = types
   .model('MenuItemModel', {
     name: types.string,
     icon: types.optional(types.string, ''),
@@ -37,6 +38,16 @@ const MenuItemModel = types
       rootModel.showDrawerWidget(
         rootModel.drawerWidgets.get('helpDrawerWidget'),
       )
+    },
+    downloadConfiguration() {
+      const rootModel = getRoot(self)
+      const configSnap = JSON.stringify(
+        getSnapshot(rootModel.configuration),
+        null,
+        '  ',
+      )
+      saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')
+      return configSnap
     },
   }))
 

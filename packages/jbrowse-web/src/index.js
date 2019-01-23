@@ -60,9 +60,13 @@ window.resolveIdentifier = resolveIdentifier
 
 model.addMenuBar('MainMenuBar')
 model.menuBars[0].addMenu({
-  name: 'Another Menu',
+  name: 'Data',
   menuItems: [
-    { name: 'Item 1' },
+    {
+      name: 'Download configuration',
+      icon: 'settings',
+      callback: 'downloadConfiguration',
+    },
     {
       name: 'Item 2',
       icon: 'code',
