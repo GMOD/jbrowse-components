@@ -9,7 +9,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
   })
 
   const features = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,

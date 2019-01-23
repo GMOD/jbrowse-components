@@ -10,7 +10,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -22,8 +22,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 30,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-        { assembly: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -35,8 +35,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1000,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-        { assembly: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
       ],
     })
     expect(blocks).toEqual([])
@@ -49,8 +49,8 @@ describe('block calculation', () => {
         width: 800,
         offsetPx: -1000,
         displayedRegions: [
-          { assembly: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-          { assembly: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+          { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
         ],
       },
       {
@@ -66,8 +66,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 5000,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-        { assembly: 'volvox', refName: 'ctgB', start: 100, end: 10000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 10000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -80,12 +80,12 @@ describe('block calculation', () => {
       offsetPx: 0,
       displayedRegions: [
         {
-          assembly: 'volvox',
+          assemblyName: 'volvox',
           refName: 'ctgA',
           start: 0,
           end: 200,
         },
-        { assembly: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -97,8 +97,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 801,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 200 },
-        { assembly: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -110,8 +110,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1600,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 200 },
-        { assembly: 'volvox', refName: 'ctgB', start: 0, end: 10000000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000000 },
       ],
       configuration: 'fakeReference',
     })
@@ -125,12 +125,12 @@ describe('block calculation', () => {
       bpPerPx: 2,
       displayedRegions: [
         {
-          assembly: 'volvox',
+          assemblyName: 'volvox',
           refName: 'ctgA',
           start: 0,
           end: 50000,
         },
-        { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
+        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
       ],
       configuration: 'fakeReference',
     })
@@ -145,7 +145,7 @@ describe('reverse block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        { assembly: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
       ],
     })
     expect(blocks).toMatchSnapshot()

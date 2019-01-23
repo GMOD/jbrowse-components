@@ -15,7 +15,7 @@ test('adapter can fetch features from volvox.bam', async () => {
   })
 
   const features = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -31,6 +31,6 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(await adapter.refIdToName(1)).toBe(undefined)
 
   expect(
-    await adapter.hasDataForRefSeq({ assembly: 'volvox', refName: 'ctgA' }),
+    await adapter.hasDataForRefSeq({ assemblyName: 'volvox', refName: 'ctgA' }),
   ).toBe(true)
 })
