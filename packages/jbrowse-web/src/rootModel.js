@@ -2,6 +2,19 @@ import { types, getRoot, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
 
+const Assembly = ConfigurationSchema('Assembly', {
+  aliases: {
+    type: 'stringArray',
+    defaultValue: [],
+    description: 'A list of aliases of the assembly',
+  },
+  seqNameAliases: {
+    type: 'stringArrayMap',
+    defaultValue: {},
+    description: 'A map of seq -> Array(altSeqName)',
+  },
+})
+
 export default app => {
   const { pluginManager } = app
   const minViewsWidth = 150
@@ -30,6 +43,9 @@ export default app => {
           // track configuration is an array of track config schemas. multiple instances of
           // a track can exist that use the same configuration
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+
+          // let's try some assemblies
+          assemblies: types.map(Assembly),
         },
         {
           actions: self => ({

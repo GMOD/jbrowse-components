@@ -49,6 +49,15 @@ jbrowse.configure({
       renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
+  assemblies: {
+    volvox: {
+      aliases: ['vvx'],
+      seqNameAliases: {
+        A: ['ctgA', 'contigA'],
+        B: ['ctgB', 'contigB'],
+      },
+    },
+  },
 })
 
 // poke some things for testing (this stuff will eventually be removed)
@@ -75,12 +84,12 @@ model.menuBars[0].addMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assembly: 'volvox',
+    assemblyName: 'nope',
     refName: 'ctgA',
     start: 0,
     end: 50000,
   },
-  { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
+  { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
 firstView.zoomTo(0.06) // bpPerPx
@@ -91,9 +100,9 @@ firstView.showTrack(model.configuration.tracks[2], { height: 200 })
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
 secondView.displayRegions([
-  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+  { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
   {
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgB',
     start: 0,
     end: 2000,

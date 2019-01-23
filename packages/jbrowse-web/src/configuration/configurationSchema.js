@@ -88,14 +88,13 @@ export function ConfigurationSchema(
   }
 
   // now assemble the MST model of the configuration schema
-  const modelDefinition = { configId: ElementId }
-  if (options.singleton) {
-    modelDefinition.configId = types.optional(
-      types.refinement(types.identifier, t => t === modelName),
-      modelName,
-    )
-  } else {
-    modelDefinition.configId = ElementId
+  const modelDefinition = {
+    configId: options.singleton
+      ? types.optional(
+          types.refinement(types.identifier, t => t === modelName),
+          modelName,
+        )
+      : ElementId,
   }
 
   if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)

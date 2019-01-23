@@ -7,8 +7,8 @@ if (!Object.fromEntries) {
   fromEntries.shim()
 }
 
-export function assembleLocString({ assembly, refName, start, end }) {
-  return `${assembly}:${refName}:${start + 1}-${end}`
+export function assembleLocString({ assemblyName, refName, start, end }) {
+  return `${assemblyName}:${refName}:${start + 1}-${end}`
 }
 
 export function openLocation(location) {

@@ -29,8 +29,8 @@ export default class BamAdapter {
       .then(header => this.loadSamHeader(header))
   }
 
-  async hasDataForRefSeq({ assembly, refName }) {
-    if (this.assemblyName !== assembly) return false
+  async hasDataForRefSeq({ assemblyName, refName }) {
+    if (this.assemblyName !== assemblyName) return false
     await this.gotBamHeader
     return this.samHeader.refSeqNameToId[refName] !== undefined
   }

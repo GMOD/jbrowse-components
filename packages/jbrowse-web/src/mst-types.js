@@ -1,16 +1,17 @@
 import shortid from 'shortid'
-import { types } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
 import { assembleLocString } from './util'
+import { readConfObject } from './configuration'
 
 export const ElementId = types.optional(types.identifier, shortid.generate)
 
 // PropTypes that are useful when working with instances of these in react components
 export const PropTypes = {
   Region: propTypes.shape({
-    assembly: propTypes.string.isRequired,
+    assemblyName: propTypes.string.isRequired,
     refName: propTypes.string.isRequired,
     start: propTypes.number.isRequired,
     end: propTypes.number.isRequired,
@@ -24,7 +25,7 @@ export const PropTypes = {
 
 export const Region = types
   .model('Region', {
-    assembly: types.string,
+    assemblyName: types.string,
     refName: types.string,
     start: types.integer,
     end: types.integer,
@@ -32,6 +33,17 @@ export const Region = types
   .views(self => ({
     get locString() {
       return assembleLocString(self)
+    },
+    get assembly() {
+      const rootModel = getRoot(self)
+      let assembly = rootModel.configuration.assemblies.get(self.assemblyName)
+      if (!assembly) {
+        rootModel.configuration.assemblies.forEach((value, key) => {
+          if (readConfObject(value, 'aliases').includes(self.assemblyName))
+            assembly = rootModel.configuration.assemblies.get(key)
+        })
+      }
+      return assembly || self.assemblyName
     },
   }))
 

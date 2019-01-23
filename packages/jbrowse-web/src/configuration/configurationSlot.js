@@ -9,6 +9,7 @@ function isValidColorString(/* str */) {
 }
 const typeModels = {
   stringArray: types.array(types.string),
+  stringArrayMap: types.map(types.array(types.string)),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
   integer: types.integer,
