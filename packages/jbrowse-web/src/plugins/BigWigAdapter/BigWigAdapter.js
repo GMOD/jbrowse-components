@@ -4,6 +4,15 @@ import { BigWig } from '@gmod/bbi'
 
 import { openLocation } from '../../util'
 
+class Record {
+  id() {
+    return this.start
+  }
+
+  constructor(obj) {
+    Object.assign(this, obj)
+  }
+}
 export default class BigWigAdapter {
   constructor(config) {
     const { bigWigLocation, assemblyName } = config
@@ -43,7 +52,7 @@ export default class BigWigAdapter {
       await this.gotBigWigHeader
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
-        observer.next(record)
+        observer.next(new Record(record))
       })
       observer.complete()
     })

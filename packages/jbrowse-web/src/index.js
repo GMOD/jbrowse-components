@@ -35,7 +35,7 @@ jbrowse.configure({
       defaultRendering: 'wiggle',
       adapter: {
         type: 'BigWigAdapter',
-        twoBitLocation: { uri: '/test_data/volvox.bw' },
+        bigWigLocation: { uri: '/test_data/volvox.bw' },
       },
     },
     {

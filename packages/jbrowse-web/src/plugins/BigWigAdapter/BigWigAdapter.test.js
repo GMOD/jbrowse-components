@@ -1,9 +1,9 @@
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './BigWigAdapter'
+import BigWigAdapter from './BigWigAdapter'
 
 test('adapter can fetch features from volvox.bw', async () => {
-  const adapter = new Adapter({
+  const adapter = new BigWigAdapter({
     assemblyName: 'volvox',
     bigWigLocation: { path: require.resolve('./test_data/volvox.bw') },
   })
