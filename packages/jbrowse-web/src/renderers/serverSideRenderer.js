@@ -80,8 +80,10 @@ export default class ServerSideRenderer extends RendererType {
     this.deserializeArgsInWorker(args)
     const { dataAdapter, region } = args
     const features = new Map()
-    await dataAdapter
-      .getFeaturesInRegion(region)
+    const featureObservable = await dataAdapter.regularizeAndGetFeaturesInRegion(
+      region,
+    )
+    await featureObservable
       .pipe(tap(feature => features.set(feature.id(), feature)))
       .toPromise()
 

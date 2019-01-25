@@ -20,6 +20,7 @@ const baseprops = {
       },
     },
   },
+  rootConfig: {},
   renderProps: { bpPerPx: 1 },
 }
 

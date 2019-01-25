@@ -25,6 +25,7 @@ jbrowse.configure({
       adapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: '/test_data/volvox.2bit' },
+        assemblyName: 'volvox',
       },
     },
     {
@@ -35,6 +36,7 @@ jbrowse.configure({
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'volvox',
       },
     },
     {
@@ -45,6 +47,7 @@ jbrowse.configure({
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'vvx',
       },
       renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
@@ -84,8 +87,8 @@ model.menuBars[0].addMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assemblyName: 'nope',
-    refName: 'ctgA',
+    assemblyName: 'vvx',
+    refName: 'contigA',
     start: 0,
     end: 50000,
   },

@@ -26,6 +26,7 @@ function renderBlockData(self) {
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),
+      rootConfig: getConf(root),
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,

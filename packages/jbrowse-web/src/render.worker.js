@@ -45,7 +45,15 @@ export function freeResources(pluginManager, specification) {
  */
 export async function renderRegion(
   pluginManager,
-  { region, sessionId, adapterType, adapterConfig, rendererType, renderProps },
+  {
+    region,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rootConfig,
+    rendererType,
+    renderProps,
+  },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
@@ -54,6 +62,7 @@ export async function renderRegion(
     sessionId,
     adapterType,
     adapterConfig,
+    rootConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)

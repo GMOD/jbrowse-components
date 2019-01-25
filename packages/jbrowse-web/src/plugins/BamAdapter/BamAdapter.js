@@ -3,18 +3,19 @@ import { Observable } from 'rxjs'
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '../../util'
+import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
-export default class BamAdapter {
-  constructor(config) {
-    const { bamLocation, assemblyName } = config
+export default class BamAdapter extends BaseAdapter {
+  constructor(config, rootConfig) {
+    super(config, rootConfig)
+    const { bamLocation } = config
+
     const indexLocation = config.index.location
     const { indexType } = config.index
     const bamOpts = {
       bamFilehandle: openLocation(bamLocation),
     }
-
-    this.assemblyName = assemblyName
 
     const indexFile = openLocation(indexLocation)
     if (indexType === 'CSI') {
@@ -24,23 +25,10 @@ export default class BamAdapter {
     }
 
     this.bam = new BamFile(bamOpts)
-    this.gotBamHeader = this.bam
-      .getHeader()
-      .then(header => this.loadSamHeader(header))
   }
 
-  async hasDataForRefSeq({ assemblyName, refName }) {
-    if (this.assemblyName !== assemblyName) return false
-    await this.gotBamHeader
-    return this.samHeader.refSeqNameToId[refName] !== undefined
-  }
-
-  bamRecordToFeature(record) {
-    return new BamSlightlyLazyFeature(record, this)
-  }
-
-  // process the parsed SAM header from the bam file
-  loadSamHeader(samHeader) {
+  async loadData() {
+    const samHeader = await this.bam.getHeader()
     this.samHeader = {}
 
     // use the @SQ lines in the header to figure out the
@@ -62,15 +50,7 @@ export default class BamAdapter {
       this.samHeader.refSeqIdToName = refSeqIdToName
       this.samHeader.refSeqNameToId = refSeqNameToId
     }
-  }
-
-  refIdToName(refId) {
-    // use info from the SAM header if possible, but fall back to using
-    // the ref seq order from when the browser's refseqs were loaded
-    if (this.samHeader.refSeqIdToName) {
-      return this.samHeader.refSeqIdToName[refId]
-    }
-    return undefined
+    return refSeqIdToName
   }
 
   /**
@@ -78,10 +58,8 @@ export default class BamAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
-    // TODO
+  async getFeaturesInRegion({ refName, start, end }) {
     return Observable.create(async observer => {
-      await this.gotBamHeader
       const records = await this.bam.getRecordsForRange(refName, start, end)
       records.forEach(record => {
         observer.next(this.bamRecordToFeature(record))
@@ -96,4 +74,17 @@ export default class BamAdapter {
    * from caches, etc
    */
   freeResources(/* { region } */) {}
+
+  bamRecordToFeature(record) {
+    return new BamSlightlyLazyFeature(record, this)
+  }
+
+  refIdToName(refId) {
+    // use info from the SAM header if possible, but fall back to using
+    // the ref seq order from when the browser's refseqs were loaded
+    if (this.samHeader.refSeqIdToName) {
+      return this.samHeader.refSeqIdToName[refId]
+    }
+    return undefined
+  }
 }

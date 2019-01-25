@@ -1,10 +1,9 @@
 import shortid from 'shortid'
-import { types, getRoot } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
 import { assembleLocString } from './util'
-import { readConfObject } from './configuration'
 
 export const ElementId = types.optional(types.identifier, shortid.generate)
 
@@ -34,16 +33,6 @@ export const Region = types
     get locString() {
       return assembleLocString(self)
     },
-    // get assembly() {
-    //   const rootModel = getRoot(self)
-    //   let assembly = rootModel.configuration.assemblies.get(self.assemblyName)
-    //   if (!assembly)
-    //     rootModel.configuration.assemblies.forEach((value, key) => {
-    //       if (readConfObject(value, 'aliases').includes(self.assemblyName))
-    //         assembly = rootModel.configuration.assemblies.get(key)
-    //     })
-    //   return assembly || { aliases: [], seqNameAliases: {} }
-    // },
   }))
 
 export const BlockState = types.model('BlockState', {
