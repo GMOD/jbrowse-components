@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<div
+  className="WiggleRendering"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+>
+  <canvas
+    height={500}
+    width={500}
+  />
+</div>
+`;
+
+exports[`one feature 1`] = `
+<div
+  className="WiggleRendering"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+>
+  <canvas
+    height={500}
+    width={500}
+  />
+</div>
+`;

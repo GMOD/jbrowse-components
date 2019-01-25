@@ -15,7 +15,6 @@ const layoutPropType = ReactPropTypes.shape({
 @observer
 class WiggleRendering extends Component {
   static propTypes = {
-    layout: layoutPropType.isRequired,
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     region: CommonPropTypes.Region.isRequired,

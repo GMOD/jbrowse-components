@@ -3,16 +3,8 @@ import { Observable } from 'rxjs'
 import { BigWig } from '@gmod/bbi'
 
 import { openLocation } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
 
-class Record {
-  id() {
-    return this.start
-  }
-
-  constructor(obj) {
-    Object.assign(this, obj)
-  }
-}
 export default class BigWigAdapter {
   constructor(config) {
     const { bigWigLocation, assemblyName } = config
@@ -28,17 +20,12 @@ export default class BigWigAdapter {
 
   async hasDataForRefSeq({ assembly, refName }) {
     if (this.assemblyName !== assembly) return false
-    await this.gotBamHeader
-    return this.samHeader.refSeqNameToId[refName] !== undefined
+    await this.gotBigWigHeader
+    return true // TODO
   }
 
   refIdToName(refId) {
-    // use info from the SAM header if possible, but fall back to using
-    // the ref seq order from when the browser's refseqs were loaded
-    if (this.samHeader.refSeqIdToName) {
-      return this.samHeader.refSeqIdToName[refId]
-    }
-    return undefined
+    return undefined // TOD
   }
 
   /**
@@ -52,16 +39,14 @@ export default class BigWigAdapter {
       await this.gotBigWigHeader
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
-        observer.next(new Record(record))
+        observer.next(
+          new SimpleFeature({
+            id: record.start,
+            data: record,
+          }),
+        )
       })
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
-  freeResources(/* { region } */) {}
 }

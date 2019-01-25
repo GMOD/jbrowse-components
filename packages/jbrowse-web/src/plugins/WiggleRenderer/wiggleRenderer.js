@@ -14,54 +14,6 @@ import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
 class WiggleRenderer extends ServerSideRenderer {
-  layoutFeature(
-    feature,
-    subLayout,
-    config,
-    bpPerPx,
-    region,
-    horizontallyFlipped = false,
-  ) {
-    // const leftBase = region.start
-    const startPx = bpToPx(
-      feature.get('start'),
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
-    const endPx = bpToPx(
-      feature.get('end'),
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
-    const heightPx = readConfObject(config, 'height', [feature])
-    // if (Number.isNaN(startPx)) debugger
-    // if (Number.isNaN(endPx)) debugger
-    if (feature.get('seq_id') !== region.refName) {
-      throw new Error(
-        `feature ${feature.id()} is not on the current region's reference sequence ${
-          region.refName
-        }`,
-      )
-    }
-    const topPx = subLayout.addRect(
-      feature.id(),
-      feature.get('start'),
-      feature.get('end'),
-      heightPx, // height
-      feature,
-    )
-
-    return {
-      feature,
-      startPx,
-      endPx,
-      topPx,
-      heightPx,
-    }
-  }
-
   async makeImageData({
     features,
     config,
@@ -75,10 +27,26 @@ class WiggleRenderer extends ServerSideRenderer {
 
     const canvas = createCanvas(Math.ceil(width), height)
     const ctx = canvas.getContext('2d')
-    features.forEach(feature => {
-      ctx.fillStyle = readConfObject(config, 'color', [feature])
-      ctx.fillRect(feature.start, 0, feature.end - feature.start, feature.score)
-    })
+    iterMap(
+      features.values(),
+      feature => {
+        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        const s = bpToPx(
+          feature.get('start'),
+          region,
+          bpPerPx,
+          horizontallyFlipped,
+        )
+        const e = bpToPx(
+          feature.get('end'),
+          region,
+          bpPerPx,
+          horizontallyFlipped,
+        )
+        ctx.fillRect(s, 0, e - s, feature.get('score'))
+      },
+      features.size,
+    )
 
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width }
