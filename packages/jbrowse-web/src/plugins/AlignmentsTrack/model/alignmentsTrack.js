@@ -1,4 +1,4 @@
-import { types, getSnapshot, getParent, getRoot } from 'mobx-state-tree'
+import { types, getParent, getRoot } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../../configuration'
 
@@ -127,31 +127,6 @@ export default (pluginManager, configSchema) =>
               featureMaps.push(block.data.features)
           }
           return new CompositeMap(featureMaps)
-        },
-
-        /**
-         * the PluggableElementType for the currently defined adapter
-         */
-        get adapterType() {
-          const adapterConfig = getConf(self, 'adapter')
-          if (!adapterConfig)
-            throw new Error(
-              `no adapter configuration provided for ${self.type}`,
-            )
-          const adapterType = pluginManager.getAdapterType(adapterConfig.type)
-          if (!adapterType)
-            throw new Error(`unknown adapter type ${adapterConfig.type}`)
-          return adapterType
-        },
-
-        /**
-         * the Adapter that this track uses to fetch data
-         */
-        get adapter() {
-          const adapter = new self.adapterType.AdapterClass(
-            getSnapshot(self.configuration.adapter),
-          )
-          return adapter
         },
       })),
   )
