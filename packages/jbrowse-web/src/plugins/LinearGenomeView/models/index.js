@@ -142,11 +142,17 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       zoomTo(newBpPerPx) {
-        if (newBpPerPx === self.bpPerPx) return
-        let bpPerPx = newBpPerPx
-        if (bpPerPx < self.minBpPerPx) bpPerPx = self.minBpPerPx
-        else if (bpPerPx > self.maxBpPerPx) bpPerPx = self.maxBpPerPx
+        const bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        if (bpPerPx === self.bpPerPx) return
+        const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx
+
+        // tweak the offset so that the center of the view remains at the same coordinate
+        const viewWidth = self.width - self.controlsWidth
+        self.offsetPx = Math.round(
+          ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
+            viewWidth / 2,
+        )
       },
 
       resizeTrack(trackId, distance) {
