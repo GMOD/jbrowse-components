@@ -60,18 +60,12 @@ window.resolveIdentifier = resolveIdentifier
 
 model.addMenuBar('MainMenuBar')
 model.menuBars[0].unshiftMenu({
-  name: 'Data',
+  name: 'Admin',
   menuItems: [
     {
       name: 'Download configuration',
-      icon: 'settings',
+      icon: 'get_app',
       callback: 'downloadConfiguration',
-    },
-    {
-      name: 'Item 2',
-      icon: 'code',
-      callback:
-        'function(model){console.log("You clicked Item 2");console.log(model)}',
     },
   ],
 })
