@@ -59,7 +59,7 @@ window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
 model.addMenuBar('MainMenuBar')
-model.menuBars[0].addMenu({
+model.menuBars[0].unshiftMenu({
   name: 'Data',
   menuItems: [
     {

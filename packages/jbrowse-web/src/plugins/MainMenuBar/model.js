@@ -70,7 +70,7 @@ export const MainMenuBarModel = types
   })
   .actions(self => ({
     afterCreate() {
-      this.addMenu({
+      this.pushMenu({
         name: 'Help',
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
@@ -78,7 +78,10 @@ export const MainMenuBarModel = types
         ],
       })
     },
-    addMenu({ name, menuItems = [] }) {
+    unshiftMenu({ name, menuItems = [] }) {
+      self.menus.unshift(MenuModel.create({ name, menuItems }))
+    },
+    pushMenu({ name, menuItems = [] }) {
       self.menus.push(MenuModel.create({ name, menuItems }))
     },
   }))
