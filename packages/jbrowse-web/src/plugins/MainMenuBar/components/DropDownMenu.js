@@ -79,6 +79,7 @@ class DropDownMenu extends React.Component {
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
           placement="bottom-start"
+          style={{ zIndex: 3 }}
           transition
           // disablePortal
         >
