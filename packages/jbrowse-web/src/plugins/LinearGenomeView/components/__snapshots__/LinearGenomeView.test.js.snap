@@ -597,6 +597,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           y1={0}
           y2={6}
         />
+        <line
+          className="Ruler-minorTick-97"
+          data-bp={119}
+          stroke="#999"
+          strokeWidth={1}
+          x1={119}
+          x2={119}
+          y1={0}
+          y2={4}
+        />
         <text
           alignmentBaseline="hanging"
           className="Ruler-majorTickLabel-95"

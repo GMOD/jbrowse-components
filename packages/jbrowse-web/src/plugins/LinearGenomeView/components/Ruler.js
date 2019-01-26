@@ -55,9 +55,10 @@ export function* makeTicks(
     ;[minBase, maxBase] = [maxBase, minBase]
   }
 
-  // add 10px additional on the right to allow for
-  // labels sitting a little leftward
-  maxBase += Math.abs(10 * bpPerPx) + 1
+  // add 20px additional on the right and left to allow us to draw the ends
+  // of labels that lie a little outside our region
+  minBase -= Math.abs(20 * bpPerPx) - 1
+  maxBase += Math.abs(20 * bpPerPx) + 1
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
