@@ -18,9 +18,37 @@ import LinearGenomeViewConfigSchema from './configSchema'
 import BaseTrack from './baseTrack'
 import calculateBlocks from './calculateBlocks'
 
-// these MST models only exist for tracks that are *shown*.
-// they should contain only UI state for the track, and have
-// a reference to a track configuration (stored under root.configuration.tracks).
+const validBpPerPx = [
+  0.05,
+  0.1,
+  0.2,
+  0.5,
+  1,
+  2,
+  5,
+  10,
+  20,
+  50,
+  100,
+  200,
+  500,
+  1000,
+  2000,
+  5000,
+  10000,
+  20000,
+  50000,
+  100000,
+  200000,
+  500000,
+]
+function constrainBpPerPx(newBpPerPx) {
+  // find the closest valid zoom level and return it
+  // might consider reimplementing this later using a more efficient algorithm
+  return validBpPerPx.sort(
+    (a, b) => Math.abs(a - newBpPerPx) - Math.abs(b - newBpPerPx),
+  )[0]
+}
 
 const ViewStateBase = types.model({
   // views have an auto-generated ID by default
@@ -63,10 +91,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
         })
-        return totalbp / displayWidth
+        return constrainBpPerPx(totalbp / displayWidth)
       },
       get minBpPerPx() {
-        return minBpPerPx
+        return constrainBpPerPx(minBpPerPx)
       },
 
       /**
@@ -142,7 +170,8 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       zoomTo(newBpPerPx) {
-        const bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        let bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        bpPerPx = constrainBpPerPx(newBpPerPx)
         if (bpPerPx === self.bpPerPx) return
         const oldBpPerPx = self.bpPerPx
         self.bpPerPx = bpPerPx

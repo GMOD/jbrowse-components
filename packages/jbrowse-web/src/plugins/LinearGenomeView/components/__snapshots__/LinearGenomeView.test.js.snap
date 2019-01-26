@@ -192,8 +192,8 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </button>
       <div
         aria-orientation="horizontal"
-        aria-valuemax={5.058893689053568}
-        aria-valuemin={Infinity}
+        aria-valuemax={4.321928094887363}
+        aria-valuemin={4.321928094887363}
         aria-valuenow={-0}
         className="MuiSlider-root-32 ZoomControls-slider-31"
         onClick={[Function]}
@@ -209,7 +209,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             className="MuiSlider-track-34 MuiSlider-trackBefore-35"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(0)",
               }
             }
           />
@@ -217,7 +217,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             className="MuiSlider-thumbWrapper-37"
             style={
               Object {
-                "transform": "translateX(NaN%)",
+                "transform": "translateX(0%)",
               }
             }
           >
@@ -242,7 +242,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             className="MuiSlider-track-34 MuiSlider-trackAfter-36"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(1)",
               }
             }
           />
@@ -690,8 +690,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <div
         aria-orientation="horizontal"
-        aria-valuemax={5.058893689053568}
-        aria-valuemin={NaN}
+        aria-valuemax={4.321928094887363}
+        aria-valuemin={4.321928094887363}
         aria-valuenow={-0}
         className="MuiSlider-root-32 ZoomControls-slider-31"
         onClick={[Function]}
@@ -707,7 +707,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             className="MuiSlider-track-34 MuiSlider-trackBefore-35"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(0)",
               }
             }
           />
@@ -715,7 +715,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             className="MuiSlider-thumbWrapper-37"
             style={
               Object {
-                "transform": "translateX(NaN%)",
+                "transform": "translateX(0%)",
               }
             }
           >
@@ -740,7 +740,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             className="MuiSlider-track-34 MuiSlider-trackAfter-36"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(1)",
               }
             }
           />
@@ -1168,8 +1168,8 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       </button>
       <div
         aria-orientation="horizontal"
-        aria-valuemax={5.058893689053568}
-        aria-valuemin={Infinity}
+        aria-valuemax={4.321928094887363}
+        aria-valuemin={4.321928094887363}
         aria-valuenow={-0}
         className="MuiSlider-root-32 ZoomControls-slider-31"
         onClick={[Function]}
@@ -1185,7 +1185,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             className="MuiSlider-track-34 MuiSlider-trackBefore-35"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(0)",
               }
             }
           />
@@ -1193,7 +1193,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             className="MuiSlider-thumbWrapper-37"
             style={
               Object {
-                "transform": "translateX(NaN%)",
+                "transform": "translateX(0%)",
               }
             }
           >
@@ -1218,7 +1218,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             className="MuiSlider-track-34 MuiSlider-trackAfter-36"
             style={
               Object {
-                "transform": "translateY(-50%) scaleX(NaN)",
+                "transform": "translateY(-50%) scaleX(1)",
               }
             }
           />
