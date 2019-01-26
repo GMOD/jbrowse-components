@@ -53,7 +53,7 @@ class DropDownMenu extends React.Component {
   handleClose = (event, callback) => {
     const { anchorEl } = this.state
     const { model } = this.props
-    if (anchorEl.contains(event.target)) {
+    if (anchorEl && anchorEl.contains(event.target)) {
       return
     }
     this.setState({ anchorEl: null })
