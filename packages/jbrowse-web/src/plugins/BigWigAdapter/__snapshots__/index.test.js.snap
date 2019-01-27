@@ -5,17 +5,10 @@ exports[`plugin in a stock JBrowse 1`] = `"(intermediate value).addPlugin is not
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "assemblyName": undefined,
-  "bamLocation": Object {
-    "uri": "/path/to/my.bam",
+  "bigWigLocation": Object {
+    "uri": "/path/to/my.bw",
   },
   "configId": Any<String>,
-  "index": Object {
-    "configId": Any<String>,
-    "indexType": undefined,
-    "location": Object {
-      "uri": "/path/to/my.bam.bai",
-    },
-  },
-  "type": "BamAdapter",
+  "type": "BigWigAdapter",
 }
 `;
