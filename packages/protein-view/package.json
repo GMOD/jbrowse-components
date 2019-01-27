@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "eslint-config-react-app": "^3.0.6",
+    "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "react-scripts": "2.1.3"
+    "react-jss": "^8.6.1",
+    "react-scripts": "2.1.3",
+    "typescript": "^3.2.4"
   },
   "scripts": {
     "start": "react-scripts start",

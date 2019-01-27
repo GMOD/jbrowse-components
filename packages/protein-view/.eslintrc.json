@@ -1,0 +1,68 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "react-app",
+    "airbnb",
+    "prettier",
+    "prettier/react"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "class-methods-use-this": "off",
+    "no-debugger": "warn",
+    "no-param-reassign": "off",
+    "no-restricted-syntax": "off",
+    "no-underscore-dangle": "warn",
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "no-use-before-define": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "all"
+      }
+    ],
+    "react/destructuring-assignment": "warn",
+    "react/jsx-filename-extension": "off",
+    "react/prefer-stateless-function": "warn",
+    "react/no-unused-state": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/**/*.worker.js"
+      ],
+      "globals": {
+        "self": true
+      },
+      "rules": {
+        "no-restricted-globals": "off"
+      }
+    },
+    {
+      "files": [
+        "src/**/*.test.js"
+      ],
+      "env": {
+        "jest": true
+      },
+      "globals": {
+        "document": true,
+        "it": true,
+        "describe": true,
+        "test": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": "off",
+        "no-restricted-globals": "off"
+      }
+    }
+  ]
+}
