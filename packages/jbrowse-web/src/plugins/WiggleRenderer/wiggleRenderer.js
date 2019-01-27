@@ -43,7 +43,7 @@ class WiggleRenderer extends ServerSideRenderer {
           bpPerPx,
           horizontallyFlipped,
         )
-        ctx.fillRect(s, 0, e - s, feature.get('score'))
+        ctx.fillRect(s, 0, e - s + 0.05, feature.get('score'))
       },
       features.size,
     )
