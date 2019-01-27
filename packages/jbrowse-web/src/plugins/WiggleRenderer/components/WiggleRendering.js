@@ -6,11 +6,6 @@ import './WiggleRendering.scss'
 import PrerenderedCanvas from './PrerenderedCanvas'
 
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { bpToPx } from '../../../util'
-
-const layoutPropType = ReactPropTypes.shape({
-  getRectangles: ReactPropTypes.func.isRequired,
-})
 
 @observer
 class WiggleRendering extends Component {
@@ -31,7 +26,7 @@ class WiggleRendering extends Component {
   }
 
   render() {
-    const { width, height } = this.props
+    const { width } = this.props
     const canvasWidth = Math.ceil(width)
     // need to call this in render so we get the right observer behavior
     return (
