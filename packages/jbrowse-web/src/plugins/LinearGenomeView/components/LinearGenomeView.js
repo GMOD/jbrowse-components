@@ -15,7 +15,10 @@ import ZoomControls from './ZoomControls'
 
 const dragHandleHeight = 3
 
-const styles = (/* theme */) => ({
+const styles = theme => ({
+  root: {
+    position: 'relative',
+  },
   linearGenomeView: {
     background: '#eee',
     // background: theme.palette.background.paper,
@@ -38,6 +41,12 @@ const styles = (/* theme */) => ({
   },
   zoomControls: {
     position: 'absolute',
+    right: theme.spacing.unit / 2,
+    top: '0px',
+    zIndex: 999,
+  },
+  iconButton: {
+    padding: theme.spacing.unit / 2,
   },
 })
 
@@ -87,7 +96,7 @@ class LinearGenomeView extends Component {
     }
     // console.log(style)
     return (
-      <div style={{ position: 'relative' }}>
+      <div className={classes.root}>
         <div
           className={classes.linearGenomeView}
           key={`view-${id}`}
@@ -99,7 +108,7 @@ class LinearGenomeView extends Component {
           >
             <IconButton
               onClick={model.closeView}
-              style={{ padding: '4px' }}
+              className={classes.iconButton}
               title="close this view"
             >
               <Icon fontSize="small">close</Icon>
@@ -133,15 +142,7 @@ class LinearGenomeView extends Component {
             horizontallyFlipped={model.horizontallyFlipped}
             width={width - controlsWidth}
           />
-          <div
-            className={classes.zoomControls}
-            style={{
-              position: 'absolute',
-              right: '0px',
-              top: '0px',
-              zIndex: 999,
-            }}
-          >
+          <div className={classes.zoomControls}>
             <ZoomControls model={model} controlsHeight={scaleBarHeight} />
           </div>
           {tracks.map(track => [
