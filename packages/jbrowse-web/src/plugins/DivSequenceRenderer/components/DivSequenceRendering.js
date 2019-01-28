@@ -29,7 +29,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
           }}
           className={`base base-${letter.toLowerCase()}`}
         >
-          {bpPerPx < 0.1 ? letter : '\u00A0'}
+          {bpPerPx < 0.1 ? letter : ''}
         </div>
       ))}
     </>
