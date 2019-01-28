@@ -14,7 +14,11 @@ test('adapter can fetch features from volvox.bw', async () => {
     start: 0,
     end: 20000,
   })
-
+  expect(await adapter.refIdToName(0)).toBe('ctgA')
+  expect(await adapter.refIdToName(1)).toBe(undefined)
+  expect(
+    await adapter.hasDataForRefSeq({ assembly: 'volvox', refName: 'ctgA' }),
+  ).toBe(true)
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()

@@ -20,12 +20,15 @@ export default class BigWigAdapter {
 
   async hasDataForRefSeq({ assembly }) {
     if (this.assemblyName !== assembly) return false
-    await this.gotBigWigHeader
+    const header = await this.gotBigWigHeader
+    console.log(header)
     return true // TODO
   }
 
-  refIdToName() {
-    return undefined // TODO
+  async refIdToName(refId) {
+    const header = await this.gotBigWigHeader
+    console.log(header)
+    return (header.refsByName[refId] || {}).name
   }
 
   /**
