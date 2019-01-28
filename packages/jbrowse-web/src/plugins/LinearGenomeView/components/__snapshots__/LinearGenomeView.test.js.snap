@@ -2,14 +2,10 @@
 
 exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
 <div
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
+  className="LinearGenomeView-root-1"
 >
   <div
-    className="LinearGenomeView-linearGenomeView-1"
+    className="LinearGenomeView-linearGenomeView-2"
     style={
       Object {
         "display": "grid",
@@ -21,7 +17,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     }
   >
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-viewControls-3"
+      className="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
       style={
         Object {
           "gridRow": "scale-bar",
@@ -29,7 +25,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiIconButton-root-6"
+        className="MuiButtonBase-root-14 MuiIconButton-root-8 LinearGenomeView-iconButton-7"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -42,31 +38,26 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         onTouchEnd={[Function]}
         onTouchMove={[Function]}
         onTouchStart={[Function]}
-        style={
-          Object {
-            "padding": "4px",
-          }
-        }
         tabIndex="0"
         title="close this view"
         type="button"
       >
         <span
-          className="MuiIconButton-label-11"
+          className="MuiIconButton-label-13"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             close
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         fontSize="small"
         onBlur={[Function]}
@@ -92,21 +83,21 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -125,22 +116,22 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         value="track_select"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             line_style
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-28"
+      className="ScaleBar-scaleBar-30"
       style={
         Object {
           "gridColumn": "blocks",
@@ -151,18 +142,10 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     />
     <div
-      className="LinearGenomeView-zoomControls-5"
-      style={
-        Object {
-          "position": "absolute",
-          "right": "0px",
-          "top": "0px",
-          "zIndex": 999,
-        }
-      }
+      className="LinearGenomeView-zoomControls-6"
     >
       <div
-        className="ZoomControls-container-30"
+        className="ZoomControls-container-32"
         style={
           Object {
             "height": 32,
@@ -170,7 +153,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         }
       >
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -186,18 +169,18 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_out
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
         <div
@@ -205,7 +188,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           aria-valuemax={4.321928094887363}
           aria-valuemin={4.321928094887363}
           aria-valuenow={-0}
-          className="MuiSlider-root-32 ZoomControls-slider-31"
+          className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -213,10 +196,10 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           role="slider"
         >
           <div
-            className="MuiSlider-container-33"
+            className="MuiSlider-container-35"
           >
             <div
-              className="MuiSlider-track-34 MuiSlider-trackBefore-35"
+              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -224,7 +207,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-37"
+              className="MuiSlider-thumbWrapper-39"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -232,7 +215,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               }
             >
               <button
-                className="MuiButtonBase-root-12 MuiSlider-thumb-38"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
@@ -249,7 +232,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               />
             </div>
             <div
-              className="MuiSlider-track-34 MuiSlider-trackAfter-36"
+              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -259,7 +242,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           </div>
         </div>
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -275,24 +258,24 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_in
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
       </div>
     </div>
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-trackControls-4"
+      className="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
       style={
         Object {
           "gridColumn": "controls",
@@ -301,7 +284,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -326,32 +309,32 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <p
-        className="MuiTypography-root-55 MuiTypography-body1-64 TrackControls-trackName-53"
+        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
         foo
       </p>
       <span
-        className="MuiTypography-root-55 MuiTypography-caption-65 MuiTypography-colorTextSecondary-88 TrackControls-trackDescription-54"
+        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-90"
+      className="TrackRenderingContainer-trackRenderingContainer-92"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -375,7 +358,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-91"
+      className="TrackResizeHandle-dragHandle-93"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -394,14 +377,10 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 
 exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
 <div
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
+  className="LinearGenomeView-root-1"
 >
   <div
-    className="LinearGenomeView-linearGenomeView-1"
+    className="LinearGenomeView-linearGenomeView-2"
     style={
       Object {
         "display": "grid",
@@ -413,7 +392,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     }
   >
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-viewControls-3"
+      className="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
       style={
         Object {
           "gridRow": "scale-bar",
@@ -421,7 +400,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiIconButton-root-6"
+        className="MuiButtonBase-root-14 MuiIconButton-root-8 LinearGenomeView-iconButton-7"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -434,31 +413,26 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         onTouchEnd={[Function]}
         onTouchMove={[Function]}
         onTouchStart={[Function]}
-        style={
-          Object {
-            "padding": "4px",
-          }
-        }
         tabIndex="0"
         title="close this view"
         type="button"
       >
         <span
-          className="MuiIconButton-label-11"
+          className="MuiIconButton-label-13"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             close
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         fontSize="small"
         onBlur={[Function]}
@@ -484,21 +458,21 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -517,22 +491,22 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         value="track_select"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             line_style
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-28"
+      className="ScaleBar-scaleBar-30"
       style={
         Object {
           "gridColumn": "blocks",
@@ -543,7 +517,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <div
-        className="Block-block-92 Block-leftBorder-93 Block-rightBorder-94"
+        className="Block-block-94 Block-leftBorder-95 Block-rightBorder-96"
         style={
           Object {
             "left": "0px",
@@ -556,7 +530,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           width={100}
         >
           <line
-            className="Ruler-majorTick-96"
+            className="Ruler-majorTick-98"
             data-bp={-1}
             stroke="#555"
             strokeWidth={1}
@@ -566,7 +540,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-97"
+            className="Ruler-minorTick-99"
             data-bp={19}
             stroke="#999"
             strokeWidth={1}
@@ -576,7 +550,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-97"
+            className="Ruler-minorTick-99"
             data-bp={39}
             stroke="#999"
             strokeWidth={1}
@@ -586,7 +560,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-97"
+            className="Ruler-minorTick-99"
             data-bp={59}
             stroke="#999"
             strokeWidth={1}
@@ -596,7 +570,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-97"
+            className="Ruler-minorTick-99"
             data-bp={79}
             stroke="#999"
             strokeWidth={1}
@@ -606,7 +580,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-majorTick-96"
+            className="Ruler-majorTick-98"
             data-bp={99}
             stroke="#555"
             strokeWidth={1}
@@ -616,7 +590,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-97"
+            className="Ruler-minorTick-99"
             data-bp={119}
             stroke="#999"
             strokeWidth={1}
@@ -627,7 +601,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
           <text
             alignmentBaseline="hanging"
-            className="Ruler-majorTickLabel-95"
+            className="Ruler-majorTickLabel-97"
             style={
               Object {
                 "fontSize": "11px",
@@ -640,7 +614,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </text>
           <text
             alignmentBaseline="hanging"
-            className="Ruler-majorTickLabel-95"
+            className="Ruler-majorTickLabel-97"
             style={
               Object {
                 "fontSize": "11px",
@@ -654,24 +628,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         </svg>
       </div>
       <div
-        className="ScaleBar-refLabel-29"
+        className="ScaleBar-refLabel-31"
       >
         ctgA
       </div>
     </div>
     <div
-      className="LinearGenomeView-zoomControls-5"
-      style={
-        Object {
-          "position": "absolute",
-          "right": "0px",
-          "top": "0px",
-          "zIndex": 999,
-        }
-      }
+      className="LinearGenomeView-zoomControls-6"
     >
       <div
-        className="ZoomControls-container-30"
+        className="ZoomControls-container-32"
         style={
           Object {
             "height": 32,
@@ -679,7 +645,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       >
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -695,18 +661,18 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_out
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
         <div
@@ -714,7 +680,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           aria-valuemax={4.321928094887363}
           aria-valuemin={4.321928094887363}
           aria-valuenow={-0}
-          className="MuiSlider-root-32 ZoomControls-slider-31"
+          className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -722,10 +688,10 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           role="slider"
         >
           <div
-            className="MuiSlider-container-33"
+            className="MuiSlider-container-35"
           >
             <div
-              className="MuiSlider-track-34 MuiSlider-trackBefore-35"
+              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -733,7 +699,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-37"
+              className="MuiSlider-thumbWrapper-39"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -741,7 +707,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               }
             >
               <button
-                className="MuiButtonBase-root-12 MuiSlider-thumb-38"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
@@ -758,7 +724,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               />
             </div>
             <div
-              className="MuiSlider-track-34 MuiSlider-trackAfter-36"
+              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -768,7 +734,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </div>
         </div>
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -784,24 +750,24 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_in
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
       </div>
     </div>
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-trackControls-4"
+      className="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
       style={
         Object {
           "gridColumn": "controls",
@@ -810,7 +776,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -835,32 +801,32 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <p
-        className="MuiTypography-root-55 MuiTypography-body1-64 TrackControls-trackName-53"
+        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
         foo
       </p>
       <span
-        className="MuiTypography-root-55 MuiTypography-caption-65 MuiTypography-colorTextSecondary-88 TrackControls-trackDescription-54"
+        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-90"
+      className="TrackRenderingContainer-trackRenderingContainer-92"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -884,7 +850,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-91"
+      className="TrackResizeHandle-dragHandle-93"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -898,7 +864,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     />
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-trackControls-4"
+      className="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
       style={
         Object {
           "gridColumn": "controls",
@@ -907,7 +873,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -932,32 +898,32 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <p
-        className="MuiTypography-root-55 MuiTypography-body1-64 TrackControls-trackName-53"
+        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
         bar
       </p>
       <span
-        className="MuiTypography-root-55 MuiTypography-caption-65 MuiTypography-colorTextSecondary-88 TrackControls-trackDescription-54"
+        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-90"
+      className="TrackRenderingContainer-trackRenderingContainer-92"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -981,7 +947,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-91"
+      className="TrackResizeHandle-dragHandle-93"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -1000,14 +966,10 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 
 exports[`LinearGenomeView genome view component renders with an empty model 1`] = `
 <div
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
+  className="LinearGenomeView-root-1"
 >
   <div
-    className="LinearGenomeView-linearGenomeView-1"
+    className="LinearGenomeView-linearGenomeView-2"
     style={
       Object {
         "display": "grid",
@@ -1019,7 +981,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     }
   >
     <div
-      className="LinearGenomeView-controls-2 LinearGenomeView-viewControls-3"
+      className="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
       style={
         Object {
           "gridRow": "scale-bar",
@@ -1027,7 +989,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       }
     >
       <button
-        className="MuiButtonBase-root-12 MuiIconButton-root-6"
+        className="MuiButtonBase-root-14 MuiIconButton-root-8 LinearGenomeView-iconButton-7"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -1040,31 +1002,26 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         onTouchEnd={[Function]}
         onTouchMove={[Function]}
         onTouchStart={[Function]}
-        style={
-          Object {
-            "padding": "4px",
-          }
-        }
         tabIndex="0"
         title="close this view"
         type="button"
       >
         <span
-          className="MuiIconButton-label-11"
+          className="MuiIconButton-label-13"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             close
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         fontSize="small"
         onBlur={[Function]}
@@ -1090,21 +1047,21 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         value="configure"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             settings
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
       <button
-        className="MuiButtonBase-root-12 MuiToggleButton-root-24"
+        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -1123,22 +1080,22 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         value="track_select"
       >
         <span
-          className="MuiToggleButton-label-27"
+          className="MuiToggleButton-label-29"
         >
           <span
             aria-hidden="true"
-            className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
           >
             line_style
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-46"
+          className="MuiTouchRipple-root-48"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-28"
+      className="ScaleBar-scaleBar-30"
       style={
         Object {
           "gridColumn": "blocks",
@@ -1149,18 +1106,10 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       }
     />
     <div
-      className="LinearGenomeView-zoomControls-5"
-      style={
-        Object {
-          "position": "absolute",
-          "right": "0px",
-          "top": "0px",
-          "zIndex": 999,
-        }
-      }
+      className="LinearGenomeView-zoomControls-6"
     >
       <div
-        className="ZoomControls-container-30"
+        className="ZoomControls-container-32"
         style={
           Object {
             "height": 32,
@@ -1168,7 +1117,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         }
       >
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -1184,18 +1133,18 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_out
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
         <div
@@ -1203,7 +1152,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           aria-valuemax={4.321928094887363}
           aria-valuemin={4.321928094887363}
           aria-valuenow={-0}
-          className="MuiSlider-root-32 ZoomControls-slider-31"
+          className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -1211,10 +1160,10 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           role="slider"
         >
           <div
-            className="MuiSlider-container-33"
+            className="MuiSlider-container-35"
           >
             <div
-              className="MuiSlider-track-34 MuiSlider-trackBefore-35"
+              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -1222,7 +1171,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-37"
+              className="MuiSlider-thumbWrapper-39"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -1230,7 +1179,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               }
             >
               <button
-                className="MuiButtonBase-root-12 MuiSlider-thumb-38"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
@@ -1247,7 +1196,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               />
             </div>
             <div
-              className="MuiSlider-track-34 MuiSlider-trackAfter-36"
+              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -1257,7 +1206,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           </div>
         </div>
         <button
-          className="MuiButtonBase-root-12 MuiIconButton-root-6"
+          className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
           onFocus={[Function]}
@@ -1273,18 +1222,18 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           type="button"
         >
           <span
-            className="MuiIconButton-label-11"
+            className="MuiIconButton-label-13"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-15 MuiIcon-fontSizeSmall-22"
+              className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
               onClick={[Function]}
             >
               zoom_in
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-46"
+            className="MuiTouchRipple-root-48"
           />
         </button>
       </div>
