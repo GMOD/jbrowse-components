@@ -55,6 +55,7 @@ export default class BamAdapter extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
+   * You probably actually want to use regularizeAndGetFeaturesInRegion()
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */

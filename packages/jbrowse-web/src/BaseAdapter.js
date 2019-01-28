@@ -41,7 +41,7 @@ export default class BaseAdapter {
    * @returns {string[]} Observable of Feature objects in the region
    */
   async loadData() {
-    throw new Error('This method should be overridden by the subclass')
+    throw new Error('loadData should be overridden by the subclass')
     // Subclass method should look something like this:
     // this.metadata = await this.store.getMetadata()
     // const { seqNames } = this.metadata
@@ -59,7 +59,7 @@ export default class BaseAdapter {
    */
   // eslint-disable-next-line no-unused-vars
   async getFeaturesInRegion({ assembly, refName, start, end }) {
-    throw new Error('This method should be overridden by the subclass')
+    throw new Error('getFeaturesInRegion should be overridden by the subclass')
     // Subclass method should look something like this:
     // return Observable.create(observer => {
     //   const records = getRecords(assembly, refName, start, end)
@@ -80,7 +80,7 @@ export default class BaseAdapter {
    */
   // eslint-disable-next-line no-unused-vars
   freeResources(region) {
-    throw new Error('This method should be overridden by the subclass')
+    throw new Error('freeResources should be overridden by the subclass')
   }
 
   async regularizeAndGetFeaturesInRegion(region) {
