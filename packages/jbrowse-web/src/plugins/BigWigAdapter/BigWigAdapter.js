@@ -18,17 +18,13 @@ export default class BigWigAdapter {
     this.gotBigWigHeader = this.bigwig.getHeader()
   }
 
-  async hasDataForRefSeq({ assembly }) {
+  async hasDataForRefSeq({ assembly, refName }) {
     if (this.assemblyName !== assembly) return false
-    const header = await this.gotBigWigHeader
-    console.log(header)
-    return true // TODO
+    return !!(await this.gotBigWigHeader).refsByName[refName]
   }
 
   async refIdToName(refId) {
-    const header = await this.gotBigWigHeader
-    console.log(header)
-    return (header.refsByName[refId] || {}).name
+    return ((await this.gotBigWigHeader).refsByNumber[refId] || {}).name
   }
 
   /**
@@ -37,7 +33,6 @@ export default class BigWigAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
-    // TODO
     return Observable.create(async observer => {
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
