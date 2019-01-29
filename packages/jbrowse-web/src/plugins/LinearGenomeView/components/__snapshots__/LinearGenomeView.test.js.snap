@@ -600,8 +600,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <text
-            alignmentBaseline="hanging"
             className="Ruler-majorTickLabel-97"
+            dominantBaseline="hanging"
             style={
               Object {
                 "fontSize": "11px",
@@ -613,8 +613,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             0
           </text>
           <text
-            alignmentBaseline="hanging"
             className="Ruler-majorTickLabel-97"
+            dominantBaseline="hanging"
             style={
               Object {
                 "fontSize": "11px",
