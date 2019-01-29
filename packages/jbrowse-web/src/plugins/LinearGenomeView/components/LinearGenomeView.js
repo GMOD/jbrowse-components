@@ -43,7 +43,6 @@ const styles = theme => ({
     position: 'absolute',
     right: theme.spacing.unit / 2,
     top: '0px',
-    zIndex: 999,
   },
   iconButton: {
     padding: theme.spacing.unit / 2,
