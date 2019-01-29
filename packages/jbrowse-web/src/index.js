@@ -19,37 +19,41 @@ jbrowse.configure({
   tracks: [
     {
       type: 'SequenceTrack',
-      name: 'Reference sequence',
-      category: ['Bar Category'],
-      defaultRendering: 'div',
+      name: 'Sequence',
       adapter: {
-        type: 'TwoBitAdapter',
-        twoBitLocation: { uri: '/test_data/volvox.2bit' },
-        assemblyName: 'volvox',
+        type: 'FromConfigAdapter',
+        assemblyName: 'grc37 genes',
+        features: [
+          {
+            seq_id: 'JAK2',
+            start: 0,
+            end: 1132,
+            seq: `
+            MGMACLTMTEMEGTSTSSIYQNGDISGNANSMKQIDPVLQVYLYHSLGKSEADYLTFPSG
+            EYVAEEICIAASKACGITPVYHNMFALMSETERIWYPPNHVFHIDESTRHNVLYRIRFYF
+            PRWYCSGSNRAYRHGISRGAEAPLLDDFVMSYLFAQWRHDFVHGWIKVPVTHETQEECLG
+            MAVLDMMRIAKENDQTPLAIYNSISYKTFLPKCIRAKIQDYHILTRKRIRYRFRRFIQQF
+            SQCKATARNLKLKYLINLETLQSAFYTEKFEVKEPGSGPSGEEIFATIIITGNGGIQWSR
+            GKHKESETLTEQDLQLYCDFPNIIDVSIKQANQEGSNESRVVTIHKQDGKNLEIELSSLR
+            EALSFVSLIDGYYRLTADAHHYLCKEVAPPAVLENIQSNCHGPISMDFAISKLKKAGNQT
+            GLYVLRCSPKDFNKYFLTFAVERENVIEYKHCLITKNENEEYNLSGTKKNFSSLKDLLNC
+            YQMETVRSDNIIFQFTKCCPPKPKDKSNLLVFRTNGVSDVPTSPTLQRPTHMNQMVFHKI
+            RNEDLIFNESLGQGTFTKIFKGVRREVGDYGQLHETEVLLKVLDKAHRNYSESFFEAASM
+            MSKLSHKHLVLNYGVCVCGDENILVQEFVKFGSLDTYLKKNKNCINILWKLEVAKQLAWA
+            MHFLEENTLIHGNVCAKNILLIREEDRKTGNPPFIKLSDPGISITVLPKDILQERIPWVP
+            PECIENPKNLNLATDKWSFGTTLWEICSGGDKPLSALDSQRKLQFYEDRHQLPAPKWAEL
+            ANLINNCMDYEPDFRPSFRAIIRDLNSLFTPDYELLTENDMLPNMRIGALGFSGAFEDRD
+            PTQFEERHLKFLQQLGKGNFGSVEMCRYDPLQDNTGEVVAVKKLQHSTEEHLRDFEREIE
+            ILKSLQHDNIVKYKGVCYSAGRRNLKLIMEYLPYGSLRDYLQKHKERIDHIKLLQYTSQI
+            CKGMEYLGTKRYIHRDLATRNILVENENRVKIGDFGLTKVLPQDKEYYKVKEPGESPIFW
+            YAPESLTESKFSVASDVWSFGVVLYELFTYIEKSKSPPAEFMRMIGNDKQGQMIVFHLIE
+            LLKNNGRLPRPDGCPDEIYMIMTECWNNNVNQRPSFRDLALRVDQIRDNMAG`.replace(
+              /\s/g,
+              '',
+            ),
+          },
+        ],
       },
-    },
-    {
-      type: 'AlignmentsTrack',
-      name: 'volvox-sorted red/blue',
-      category: ['Bar Category', 'Baz Category'],
-      adapter: {
-        type: 'BamAdapter',
-        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
-        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
-        assemblyName: 'volvox',
-      },
-    },
-    {
-      type: 'AlignmentsTrack',
-      name: 'volvox-sorted all green',
-      category: ['Bee Category', 'Boo Category'],
-      adapter: {
-        type: 'BamAdapter',
-        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
-        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
-        assemblyName: 'vvx',
-      },
-      renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
   assemblies: {
@@ -85,32 +89,15 @@ model.menuBars[0].unshiftMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assemblyName: 'vvx',
-    refName: 'contigA',
+    assemblyName: 'grc37 genes',
+    refName: 'JAK2',
     start: 0,
     end: 50000,
   },
-  { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
 firstView.zoomTo(0.06) // bpPerPx
 firstView.showTrack(model.configuration.tracks[0], { height: 110 })
-firstView.showTrack(model.configuration.tracks[1], { height: 110 })
-firstView.showTrack(model.configuration.tracks[2], { height: 200 })
-
-const secondView = model.addView('LinearGenomeView')
-secondView.showTrack(model.configuration.tracks[1], { height: 100 })
-secondView.displayRegions([
-  { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-  {
-    assemblyName: 'volvox',
-    refName: 'ctgB',
-    start: 0,
-    end: 2000,
-  },
-])
-
-firstView.activateTrackSelector()
 
 // finally, start the app
 jbrowse.start()

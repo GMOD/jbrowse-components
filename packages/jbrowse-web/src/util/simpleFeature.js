@@ -84,7 +84,7 @@ export default class SimpleFeature {
 
   toJSON() {
     const d = Object.assign({}, this.data)
-    d.parentID = d.parent ? d.parent.id() : undefined
+    if (d.parent) d.parentID = d.parent.id()
     delete d.parent
     return d
   }

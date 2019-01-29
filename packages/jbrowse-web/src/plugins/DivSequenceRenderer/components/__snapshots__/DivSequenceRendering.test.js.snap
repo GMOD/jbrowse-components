@@ -32,7 +32,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-a"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -42,7 +42,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-b"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -52,7 +52,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-c"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -62,7 +62,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-d"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -72,7 +72,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-e"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -82,7 +82,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-f"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -92,7 +92,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-g"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -102,7 +102,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-h"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >
@@ -112,7 +112,7 @@ exports[`one feature with a correct seq, zoomed in, should render nicely 1`] = `
     className="base base-i"
     style={
       Object {
-        "width": "2222.222222222222px",
+        "width": "20px",
       }
     }
   >

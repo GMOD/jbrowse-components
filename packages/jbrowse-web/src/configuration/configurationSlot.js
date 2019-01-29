@@ -16,6 +16,7 @@ const typeModels = {
   number: types.number,
   string: types.string,
   fileLocation: FileLocation,
+  frozen: types.frozen(),
 }
 
 // default values we use if the defaultValue is malformed or does not work
@@ -27,6 +28,7 @@ const fallbackDefaults = {
   number: 1,
   string: '',
   fileLocation: { uri: '/path/to/resource.txt' },
+  frozen: {},
 }
 
 const literalJSON = self => ({
@@ -49,6 +51,7 @@ const typeModelExtensions = {
   number: literalJSON,
   integer: literalJSON,
   boolean: literalJSON,
+  frozen: literalJSON,
   // special actions for working with stringArray slots
   stringArray: self => ({
     views: {

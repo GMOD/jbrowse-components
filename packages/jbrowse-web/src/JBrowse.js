@@ -12,6 +12,7 @@ import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalT
 // adapters
 import BamAdapterPlugin from './plugins/BamAdapter'
 import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
+import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -40,6 +41,7 @@ const corePlugins = [
   PileupRendererPlugin,
   SvgFeaturePlugin,
   DivSequenceRendererPlugin,
+  FromConfigAdapterPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app
@@ -48,6 +50,11 @@ class JBrowse {
 
   constructor() {
     this.pluginManager = new PluginManager(corePlugins)
+  }
+
+  addPlugin(plugin) {
+    this.pluginManager.addPlugin(plugin)
+    return this
   }
 
   configure(initialConfig) {

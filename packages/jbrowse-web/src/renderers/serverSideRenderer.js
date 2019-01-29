@@ -87,7 +87,13 @@ export default class ServerSideRenderer extends RendererType {
       region,
     )
     await featureObservable
-      .pipe(tap(feature => features.set(feature.id(), feature)))
+      .pipe(
+        tap(feature => {
+          const id = feature.id()
+          if (!id) throw new Error(`invalid feature id "${id}"`)
+          features.set(id, feature)
+        }),
+      )
       .toPromise()
 
     const renderProps = { ...args, features }

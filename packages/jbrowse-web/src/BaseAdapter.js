@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs'
+import { empty } from 'rxjs'
 
 /**
  * Base class for adapters to extend. Provides utilities for reference sequence
@@ -89,9 +89,7 @@ export default class BaseAdapter {
     const refSeqs = await this.loadData()
     this.loadRefSeqs(refSeqs)
     if (!this.hasDataForRefSeq({ assemblyName, refName })) {
-      return Observable.create(observer => {
-        observer.complete()
-      })
+      return empty()
     }
     refName = this.seqNameMap.get(refName) || refName
     return this.getFeaturesInRegion(Object.assign(region, { refName }))

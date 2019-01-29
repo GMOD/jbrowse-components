@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "eslint-config-react-app": "^3.0.6",
+    "express": "^4.16.4",
+    "http-proxy-middleware": "^0.19.1",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",

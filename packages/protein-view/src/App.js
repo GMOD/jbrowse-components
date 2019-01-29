@@ -1,14 +1,13 @@
-import React, { Component } from 'react'
+import React from 'react'
 import ProteinView from './components/ProteinView'
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <ProteinView />
-      </div>
-    )
-  }
+function App(props) {
+  return (
+    <div className="App">
+      <h1>ProteinView testing</h1>
+      <ProteinView {...props} />
+    </div>
+  )
 }
 
 export default App

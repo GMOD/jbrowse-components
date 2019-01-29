@@ -1,11 +1,24 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import TestRenderer from 'react-test-renderer'
-import Rendering from './DivSequenceRendering'
+import Rendering, { featuresToSequence } from './DivSequenceRendering'
 import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
 import SimpleFeature from '../../../util/simpleFeature'
-import GranularRectLayout from '../../../util/layouts/GranularRectLayout'
 import DivRenderingConfigSchema from '../configSchema'
+
+test('features to sequence function', () => {
+  expect(
+    featuresToSequence(
+      { start: 20, end: 30 },
+      new Map([
+        [
+          'one',
+          new SimpleFeature({ start: 10, end: 25, seq: '123456789012345' }),
+        ],
+      ]),
+    ),
+  ).toEqual('12345     ')
+})
 
 class ErrorCatcher extends React.Component {
   static propTypes = { children: ReactPropTypes.node.isRequired }

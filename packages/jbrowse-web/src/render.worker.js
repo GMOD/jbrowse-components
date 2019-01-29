@@ -71,7 +71,6 @@ export async function renderRegion(
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
-
   return RendererType.renderInWorker({
     ...renderProps,
     sessionId,
