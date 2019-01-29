@@ -16,5 +16,6 @@ test('plugin in a stock JBrowse', () => {
   })
   expect(config).toMatchSnapshot({
     configId: expect.any(String),
+    index: { configId: expect.any(String) },
   })
 })

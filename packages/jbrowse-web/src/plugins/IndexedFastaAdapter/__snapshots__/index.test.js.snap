@@ -10,7 +10,7 @@ Object {
     "uri": "/path/to/seq.fa",
   },
   "index": Object {
-    "configId": "_3IfsglFZG",
+    "configId": Any<String>,
     "location": Object {
       "uri": "/path/to/seq.fa.fai",
     },
