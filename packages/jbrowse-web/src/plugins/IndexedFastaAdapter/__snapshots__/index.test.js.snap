@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `"(intermediate value).addPlugin is not a function"`;
+
+exports[`plugin in a stock JBrowse 2`] = `
+Object {
+  "assemblyName": undefined,
+  "configId": Any<String>,
+  "fastaLocation": Object {
+    "uri": "/path/to/seq.fa",
+  },
+  "index": Object {
+    "configId": "_3IfsglFZG",
+    "location": Object {
+      "uri": "/path/to/seq.fa.fai",
+    },
+  },
+  "type": "IndexedFastaAdapter",
+}
+`;

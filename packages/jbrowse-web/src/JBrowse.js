@@ -12,6 +12,7 @@ import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalT
 // adapters
 import BamAdapterPlugin from './plugins/BamAdapter'
 import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
+import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -32,6 +33,7 @@ const corePlugins = [
   HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
   TwoBitAdapterPlugin,
+  IndexedFastaAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,
