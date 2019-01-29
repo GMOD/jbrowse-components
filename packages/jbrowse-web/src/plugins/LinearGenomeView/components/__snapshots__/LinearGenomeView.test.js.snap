@@ -156,6 +156,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -174,7 +175,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_out
             </span>
@@ -245,6 +245,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -263,7 +264,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_in
             </span>
@@ -648,6 +648,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -666,7 +667,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_out
             </span>
@@ -737,6 +737,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -755,7 +756,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_in
             </span>
@@ -1120,6 +1120,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -1138,7 +1139,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_out
             </span>
@@ -1209,6 +1209,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           className="MuiButtonBase-root-14 MuiIconButton-root-8"
           disabled={false}
           onBlur={[Function]}
+          onClick={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -1227,7 +1228,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             <span
               aria-hidden="true"
               className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-              onClick={[Function]}
             >
               zoom_in
             </span>
