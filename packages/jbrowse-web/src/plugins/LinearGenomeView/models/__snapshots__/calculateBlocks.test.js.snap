@@ -3,14 +3,14 @@
 exports[`block calculation can calculate some blocks 1 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 800,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:1-800",
     "offsetPx": 0,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,
@@ -20,14 +20,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 1600,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:801-1600",
     "offsetPx": 800,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,
@@ -42,14 +42,14 @@ Array [
 exports[`block calculation can calculate some blocks 2 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 100,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgA:1-100",
     "offsetPx": 0,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 100,
       "refName": "ctgA",
       "start": 0,
@@ -59,14 +59,14 @@ Array [
     "widthPx": 100,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 200,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgB:101-200",
     "offsetPx": 200,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 200,
       "refName": "ctgB",
       "start": 100,
@@ -81,14 +81,14 @@ Array [
 exports[`block calculation can calculate some blocks 5 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 5600,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:4801-5600",
     "offsetPx": 4800,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,
@@ -98,14 +98,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 6400,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:5601-6400",
     "offsetPx": 5600,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,
@@ -120,14 +120,14 @@ Array [
 exports[`block calculation can calculate some blocks 6 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 200,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgA:1-200",
     "offsetPx": 0,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 200,
       "refName": "ctgA",
       "start": 0,
@@ -137,14 +137,14 @@ Array [
     "widthPx": 200,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 800,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1-800",
     "offsetPx": 200,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 1000,
       "refName": "ctgB",
       "start": 0,
@@ -159,14 +159,14 @@ Array [
 exports[`block calculation can calculate some blocks 7 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 800,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1-800",
     "offsetPx": 200,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 1000,
       "refName": "ctgB",
       "start": 0,
@@ -176,14 +176,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 1000,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": true,
     "key": "volvox:ctgB:801-1000",
     "offsetPx": 1000,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 1000,
       "refName": "ctgB",
       "start": 0,
@@ -198,14 +198,14 @@ Array [
 exports[`block calculation can calculate some blocks 8 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 1600,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:801-1600",
     "offsetPx": 1000,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000000,
       "refName": "ctgB",
       "start": 0,
@@ -215,14 +215,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 2400,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgB:1601-2400",
     "offsetPx": 1800,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000000,
       "refName": "ctgB",
       "start": 0,
@@ -237,14 +237,14 @@ Array [
 exports[`block calculation can calculate some blocks 9 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 3200,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:1601-3200",
     "offsetPx": 800,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 50000,
       "refName": "ctgA",
       "start": 0,
@@ -254,14 +254,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 4800,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:3201-4800",
     "offsetPx": 1600,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 50000,
       "refName": "ctgA",
       "start": 0,
@@ -276,14 +276,14 @@ Array [
 exports[`reverse block calculation 1 1`] = `
 Array [
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 10000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:9201-10000",
     "offsetPx": 0,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,
@@ -293,14 +293,14 @@ Array [
     "widthPx": 800,
   },
   Object {
-    "assembly": "volvox",
+    "assemblyName": "volvox",
     "end": 9200,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
     "key": "volvox:ctgA:8401-9200",
     "offsetPx": 800,
     "parentRegion": Object {
-      "assembly": "volvox",
+      "assemblyName": "volvox",
       "end": 10000,
       "refName": "ctgA",
       "start": 0,

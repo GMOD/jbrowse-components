@@ -120,6 +120,7 @@ const BaseTrack = types
     get adapter() {
       const adapter = new self.adapterType.AdapterClass(
         getSnapshot(self.configuration.adapter),
+        getSnapshot(getRoot(self).configuration),
       )
       return adapter
     },

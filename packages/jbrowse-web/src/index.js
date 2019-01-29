@@ -25,6 +25,7 @@ jbrowse.configure({
       adapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: '/test_data/volvox.2bit' },
+        assemblyName: 'volvox',
       },
     },
     {
@@ -35,6 +36,7 @@ jbrowse.configure({
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'volvox',
       },
     },
     {
@@ -45,10 +47,20 @@ jbrowse.configure({
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
         index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'vvx',
       },
       renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
+  assemblies: {
+    volvox: {
+      aliases: ['vvx'],
+      seqNameAliases: {
+        A: ['ctgA', 'contigA'],
+        B: ['ctgB', 'contigB'],
+      },
+    },
+  },
 })
 
 // poke some things for testing (this stuff will eventually be removed)
@@ -73,12 +85,12 @@ model.menuBars[0].unshiftMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assembly: 'volvox',
-    refName: 'ctgA',
+    assemblyName: 'vvx',
+    refName: 'contigA',
     start: 0,
     end: 50000,
   },
-  { assembly: 'volvox', refName: 'ctgB', start: 0, end: 300 },
+  { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
 firstView.zoomTo(0.06) // bpPerPx
@@ -89,9 +101,9 @@ firstView.showTrack(model.configuration.tracks[2], { height: 200 })
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
 secondView.displayRegions([
-  { assembly: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+  { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
   {
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgB',
     start: 0,
     end: 2000,

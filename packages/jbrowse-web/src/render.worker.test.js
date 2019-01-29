@@ -4,7 +4,7 @@ import { renderRegion, freeResources } from './render.worker'
 const jbrowse = new JBrowse().configure()
 
 const baseprops = {
-  region: { assembly: 'volvox', refName: 'ctgA', start: 0, end: 800 },
+  region: { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
   adapterConfig: {
@@ -20,6 +20,7 @@ const baseprops = {
       },
     },
   },
+  rootConfig: {},
   renderProps: { bpPerPx: 1 },
 }
 
@@ -55,7 +56,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   const testprops = {
     ...baseprops,
     rendererType: 'SvgFeatureRenderer',
-    region: { assembly: 'volvox', refName: 'ctgA', start: 0, end: 300 },
+    region: { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 300 },
   }
 
   const result = await renderRegion(jbrowse.pluginManager, testprops)

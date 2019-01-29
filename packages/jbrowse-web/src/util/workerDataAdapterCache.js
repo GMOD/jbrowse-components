@@ -36,6 +36,7 @@ export function getAdapter(
   sessionId,
   adapterType,
   adapterConfig,
+  rootConfig,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfig)
@@ -45,7 +46,7 @@ export function getAdapter(
       throw new Error(`unknown data adapter type ${adapterType}`)
     // console.log('new adapter', cacheKey)
     adapterCache[cacheKey] = {
-      adapter: new dataAdapterType.AdapterClass(adapterConfig),
+      adapter: new dataAdapterType.AdapterClass(adapterConfig, rootConfig),
       sessionIds: new Set([sessionId]),
     }
   }

@@ -3,7 +3,7 @@ import {
   getPropertyMembers,
   getSnapshot,
 } from 'mobx-state-tree'
-import { isObservableArray, isObservableObject } from 'mobx'
+import { isObservableArray, isObservableObject, isObservableMap } from 'mobx'
 
 import {
   ConfigurationSchema,
@@ -28,8 +28,12 @@ function getModelConfig(tree) {
       keys.forEach(key => {
         config[key] = getModelConfig(tree[key])
       })
-    } else if (isObservableArray(tree)) {
-      config = tree.map(getModelConfig)
+    } else if (isObservableArray(tree)) config = tree.map(getModelConfig)
+    else if (isObservableMap(tree)) {
+      config = {}
+      tree.forEach((value, key) => {
+        config[key] = getModelConfig(value)
+      })
     }
 
     return config
@@ -48,6 +52,7 @@ function getConf(model, slotName, args) {
  * read the configuration variable at the given path
  */
 function readConfObject(confObject, slotPath, args) {
+  if (!slotPath) return getSnapshot(confObject)
   if (typeof slotPath === 'string') {
     const slot = confObject[slotPath]
     if (!slot) {
