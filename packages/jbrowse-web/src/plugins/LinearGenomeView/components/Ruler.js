@@ -142,7 +142,7 @@ function Ruler(props) {
           x={x - 3}
           y={7}
           key={`label-${tick.base}`}
-          alignmentBaseline="hanging"
+          dominantBaseline="hanging"
           style={{ fontSize: '11px' }}
           className={classes.majorTickLabel}
         >
