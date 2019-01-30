@@ -32,6 +32,12 @@ export default class BigWigAdapter extends BaseAdapter {
     return ((await this.bigwig.getHeader()).refsByNumber[refId] || {}).name
   }
 
+  async getGlobalStats() {
+    const header = await this.bigwig.getHeader()
+    console.log(header)
+    return null
+  }
+
   /**
    * Fetch features for a certain region
    * @param {Region} param

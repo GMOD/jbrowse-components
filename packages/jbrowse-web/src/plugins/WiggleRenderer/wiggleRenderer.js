@@ -22,7 +22,7 @@ class WiggleRenderer extends ServerSideRenderer {
     horizontallyFlipped,
   }) {
     const width = (region.end - region.start) / bpPerPx
-    const height = 200
+    const height = readConfObject(config, 'height')
     if (!(width > 0) || !(height > 0)) return { height: 0, width: 0 }
 
     const canvas = createCanvas(Math.ceil(width), height)
