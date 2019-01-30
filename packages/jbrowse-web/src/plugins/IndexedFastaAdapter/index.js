@@ -10,16 +10,17 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa' },
     },
+    faiLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/seq.fa.fai' },
+    },
+    // gziLocation: {
+    //   type: // what should this be for an optional fileLocation?
+    // },
     assemblyName: {
       type: 'string',
       defaultValue: '',
     },
-    index: ConfigurationSchema('FastaIndex', {
-      location: {
-        type: 'fileLocation',
-        defaultValue: { uri: '/path/to/seq.fa.fai' },
-      },
-    }),
   },
   { explicitlyTyped: true },
 )

@@ -19,24 +19,13 @@ jbrowse.configure({
   tracks: [
     {
       type: 'SequenceTrack',
-      name: 'Reference sequence twobit',
+      name: 'Reference sequence',
       category: ['Bar Category'],
       defaultRendering: 'div',
       adapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: '/test_data/volvox.2bit' },
         assemblyName: 'volvox',
-      },
-    },
-    {
-      type: 'SequenceTrack',
-      name: 'Reference sequence fasta',
-      category: ['Bar Category'],
-      defaultRendering: 'div',
-      adapter: {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: { uri: '/test_data/volvox.fa' },
-        index: { location: { uri: '/test_data/volvox.fa.fai' } },
       },
     },
     {

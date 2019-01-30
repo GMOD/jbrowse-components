@@ -6,14 +6,11 @@ exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "assemblyName": undefined,
   "configId": Any<String>,
+  "faiLocation": Object {
+    "uri": "/path/to/seq.fa.fai",
+  },
   "fastaLocation": Object {
     "uri": "/path/to/seq.fa",
-  },
-  "index": Object {
-    "configId": Any<String>,
-    "location": Object {
-      "uri": "/path/to/seq.fa.fai",
-    },
   },
   "type": "IndexedFastaAdapter",
 }
