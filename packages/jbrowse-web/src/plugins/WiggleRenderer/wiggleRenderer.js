@@ -27,7 +27,6 @@ class WiggleRenderer extends ServerSideRenderer {
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
-    console.log(height)
 
     const canvas = createCanvas(Math.ceil(width), height)
     const ctx = canvas.getContext('2d')
@@ -51,14 +50,14 @@ class WiggleRenderer extends ServerSideRenderer {
           ctx.fillRect(
             s,
             0,
-            e - s + 0.05,
+            e - s + 0.5,
             (feature.get('score') / stats.scoreMax) * height,
           )
         } else {
           ctx.fillRect(
             s,
             (1 - feature.get('score') / stats.scoreMax) * height,
-            e - s + 0.05,
+            e - s + 0.5,
             height,
           )
         }
