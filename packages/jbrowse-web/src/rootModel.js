@@ -2,7 +2,7 @@ import { types, getRoot, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
 
-const Assembly = ConfigurationSchema('Assembly', {
+export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
     type: 'stringArray',
     defaultValue: [],
@@ -19,7 +19,7 @@ export default app => {
   const { pluginManager } = app
   const minViewsWidth = 150
   const minDrawerWidth = 100
-  const RootModel = types
+  return types
     .model('JBrowseWebRootModel', {
       drawerWidth: types.optional(
         types.integer,
@@ -44,7 +44,7 @@ export default app => {
           // a track can exist that use the same configuration
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
 
-          // let's try some assemblies
+          // A map of assembly name -> assembly details
           assemblies: types.map(Assembly),
         },
         {
@@ -58,6 +58,19 @@ export default app => {
               )
               self.tracks.push(conf)
               return conf
+            },
+            addAssembly(assemblyName, aliases = [], seqNameAliases = {}) {
+              self.assemblies.set(
+                assemblyName,
+                Assembly.create({
+                  configId: assemblyName,
+                  aliases,
+                  seqNameAliases,
+                }),
+              )
+            },
+            removeAssembly(assemblyName) {
+              self.assemblies.delete(assemblyName)
             },
           }),
         },
@@ -242,7 +255,6 @@ export default app => {
         self.hideAllDrawerWidgets()
       },
     }))
-  return RootModel
 }
 
 // a track is a combination of a dataset and a renderer, along with some conditions

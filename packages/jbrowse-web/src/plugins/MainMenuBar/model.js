@@ -38,6 +38,17 @@ const MenuItemModel = types
         rootModel.drawerWidgets.get('helpDrawerWidget'),
       )
     },
+    openAssemblyEditor() {
+      const rootModel = getRoot(self)
+      if (!rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'))
+        rootModel.addDrawerWidget(
+          'AssemblyEditorDrawerWidget',
+          'assemblyEditorDrawerWidget',
+        )
+      rootModel.showDrawerWidget(
+        rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
+      )
+    },
   }))
 
 const MenuModel = types
@@ -64,6 +75,7 @@ export const MainMenuBarModel = types
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
           { name: 'Help', icon: 'help', callback: 'openHelp' },
+          { name: 'Assemblies', icon: 'edit', callback: 'openAssemblyEditor' },
         ],
       })
     },
@@ -81,3 +93,11 @@ export const HelpDrawerWidgetModel = types.model('HelpDrawerWidget', {
   id: ElementId,
   type: types.literal('HelpDrawerWidget'),
 })
+
+export const AssemblyEditorDrawerWidgetModel = types.model(
+  'AssemblyEditorDrawerWidget',
+  {
+    id: ElementId,
+    type: types.literal('AssemblyEditorDrawerWidget'),
+  },
+)
