@@ -6,4 +6,10 @@ export default ConfigurationSchema('WiggleRenderer', {
     description: 'height in pixels of the track',
     defaultValue: 100,
   },
+  color: {
+    type: 'color',
+    description: 'the color of the wiggle track',
+    defaultValue: 'navy',
+    functionSignature: ['feature'],
+  },
 })

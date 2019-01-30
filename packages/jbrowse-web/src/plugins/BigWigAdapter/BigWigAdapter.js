@@ -34,8 +34,7 @@ export default class BigWigAdapter extends BaseAdapter {
 
   async getGlobalStats() {
     const header = await this.bigwig.getHeader()
-    console.log(header)
-    return null
+    return header.totalSummary
   }
 
   /**

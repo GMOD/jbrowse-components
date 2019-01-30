@@ -18,12 +18,15 @@ class WiggleRenderer extends ServerSideRenderer {
     features,
     config,
     region,
+    stats,
     bpPerPx,
     horizontallyFlipped,
   }) {
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'height')
-    if (!(width > 0) || !(height > 0)) return { height: 0, width: 0 }
+    if (!(width > 0) || !(height > 0)) {
+      return { height: 0, width: 0 }
+    }
 
     const canvas = createCanvas(Math.ceil(width), height)
     const ctx = canvas.getContext('2d')
@@ -43,7 +46,12 @@ class WiggleRenderer extends ServerSideRenderer {
           bpPerPx,
           horizontallyFlipped,
         )
-        ctx.fillRect(s, 0, e - s + 0.05, feature.get('score'))
+        ctx.fillRect(
+          s,
+          0,
+          e - s + 0.05,
+          (feature.get('score') / stats.scoreMax) * height,
+        )
       },
       features.size,
     )
@@ -53,6 +61,11 @@ class WiggleRenderer extends ServerSideRenderer {
   }
 
   async render(renderProps) {
+    renderProps.stats = {}
+    Object.assign(
+      renderProps.stats,
+      await this.getGlobalStats(renderProps.dataAdapter),
+    )
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
@@ -60,6 +73,10 @@ class WiggleRenderer extends ServerSideRenderer {
       null,
     )
     return { element, imageData, height, width }
+  }
+
+  async getGlobalStats(dataAdapter) {
+    return dataAdapter.getGlobalStats()
   }
 }
 
