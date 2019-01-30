@@ -18,4 +18,14 @@ test('adapter can fetch sequence from volvox.fa', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
+
+  const features2 = adapter.getFeaturesInRegion({
+    assembly: 'volvox',
+    refName: 'ctgC',
+    start: 0,
+    end: 20000,
+  })
+
+  const featuresArray2 = await features2.pipe(toArray()).toPromise()
+  expect(featuresArray2).toMatchSnapshot()
 })

@@ -11,3 +11,15 @@ Array [
   },
 ]
 `;
+
+exports[`adapter can fetch sequence from volvox.fa 2`] = `
+Array [
+  Object {
+    "end": 20000,
+    "parentID": undefined,
+    "refName": "ctgC",
+    "seq": undefined,
+    "start": 0,
+  },
+]
+`;
