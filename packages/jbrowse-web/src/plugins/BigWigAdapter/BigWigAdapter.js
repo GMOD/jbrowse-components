@@ -9,13 +9,9 @@ import SimpleFeature from '../../util/simpleFeature'
 export default class BigWigAdapter extends BaseAdapter {
   constructor(config, rootConfig) {
     super(config, rootConfig)
-    const { bigWigLocation, assemblyName } = config
-    const bigWigOpts = {
-      filehandle: openLocation(bigWigLocation),
-    }
-
-    this.assemblyName = assemblyName
-    this.bigwig = new BigWig(bigWigOpts)
+    this.bigwig = new BigWig({
+      filehandle: openLocation(config.bigWigLocation),
+    })
   }
 
   async loadData() {
@@ -23,9 +19,11 @@ export default class BigWigAdapter extends BaseAdapter {
     return Object.keys(header.refsByName)
   }
 
-  async hasDataForRefSeq({ assembly, refName }) {
-    if (this.assemblyName !== assembly) return false
-    return !!(await this.bigwig.getHeader()).refsByName[refName]
+  async hasDataForRefSeq(args) {
+    return (
+      !!(await this.bigwig.getHeader()).refsByName[args.refName] &&
+      super.hasDataForRefSeq(args)
+    )
   }
 
   async refIdToName(refId) {
