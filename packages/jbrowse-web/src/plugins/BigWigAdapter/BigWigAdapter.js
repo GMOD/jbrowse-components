@@ -2,29 +2,34 @@ import { Observable } from 'rxjs'
 
 import { BigWig } from '@gmod/bbi'
 
+import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 
-export default class BigWigAdapter {
-  constructor(config) {
+export default class BigWigAdapter extends BaseAdapter {
+  constructor(config, rootConfig) {
+    super(config, rootConfig)
     const { bigWigLocation, assemblyName } = config
     const bigWigOpts = {
       filehandle: openLocation(bigWigLocation),
     }
 
     this.assemblyName = assemblyName
-
     this.bigwig = new BigWig(bigWigOpts)
-    this.gotBigWigHeader = this.bigwig.getHeader()
+  }
+
+  async loadData() {
+    const header = await this.bigwig.getHeader()
+    return Object.keys(header.refsByName)
   }
 
   async hasDataForRefSeq({ assembly, refName }) {
     if (this.assemblyName !== assembly) return false
-    return !!(await this.gotBigWigHeader).refsByName[refName]
+    return !!(await this.bigwig.getHeader()).refsByName[refName]
   }
 
   async refIdToName(refId) {
-    return ((await this.gotBigWigHeader).refsByNumber[refId] || {}).name
+    return ((await this.bigwig.getHeader()).refsByNumber[refId] || {}).name
   }
 
   /**
