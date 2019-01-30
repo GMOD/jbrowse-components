@@ -12,4 +12,9 @@ export default ConfigurationSchema('WiggleRenderer', {
     defaultValue: 'navy',
     functionSignature: ['feature'],
   },
+  inverted: {
+    type: 'boolean',
+    description: 'draw upside down',
+    defaultValue: false,
+  },
 })
