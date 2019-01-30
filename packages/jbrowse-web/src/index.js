@@ -36,6 +36,7 @@ jbrowse.configure({
       adapter: {
         type: 'BigWigAdapter',
         bigWigLocation: { uri: '/test_data/volvox.bw' },
+        assemblyName: 'volvox',
       },
     },
     {

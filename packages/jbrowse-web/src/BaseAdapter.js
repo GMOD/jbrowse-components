@@ -34,6 +34,7 @@ export default class BaseAdapter {
           this.seqNameAliases = assemblies[assembly].seqNameAliases || {}
         }
       })
+    }
   }
 
   /**
