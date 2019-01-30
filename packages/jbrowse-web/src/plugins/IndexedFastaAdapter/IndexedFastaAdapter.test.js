@@ -6,10 +6,10 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   const adapter = new Adapter({
     assemblyName: 'volvox',
     fastaLocation: { path: require.resolve('./test_data/volvox.fa') },
-    faiLocation: { path: require.resolve('./test_data/volvox.fa.fai') },
+    index: { location: { path: require.resolve('./test_data/volvox.fa.fai') } },
   })
 
-  const features = adapter.getSequence({
+  const features = adapter.getFeaturesInRegion({
     assembly: 'volvox',
     refName: 'ctgA',
     start: 0,
