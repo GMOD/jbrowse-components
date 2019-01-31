@@ -148,7 +148,7 @@ class StringArrayMapEditor extends React.Component {
               <StringArrayEditor
                 slot={{
                   value: val,
-                  description: `Aliases for sequence ${key}`,
+                  description: `Values associated with entry ${key}`,
                   setAtIndex: (idx, value) => {
                     slot.setAtKeyIndex(key, idx, value)
                   },

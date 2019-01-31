@@ -29,6 +29,13 @@ const styles = theme => ({
     textAlign: 'left',
     padding: theme.spacing.unit,
   },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  headerText: {
+    flex: 'auto',
+  },
   paper: {
     marginBottom: theme.spacing.unit,
   },
@@ -49,6 +56,7 @@ const styles = theme => ({
   },
   menu: {
     padding: theme.spacing.unit * 2,
+    maxWidth: 400,
   },
   menuButtons: {
     display: 'flex',
@@ -66,22 +74,68 @@ class AssemblyEditorDrawerWidget extends React.Component {
   }
 
   state = {
-    anchorEl: null,
+    addMenuAnchorEl: null,
+    helpMenuAnchorEl: null,
     newAssemblyName: '',
   }
 
-  handleFabClick = event => this.setState({ anchorEl: event.currentTarget })
+  handleFabClick = event =>
+    this.setState({ addMenuAnchorEl: event.currentTarget })
 
-  handleFabClose = () => this.setState({ anchorEl: null })
+  handleHelpClick = event =>
+    this.setState({ helpMenuAnchorEl: event.currentTarget })
+
+  handleFabClose = () => this.setState({ addMenuAnchorEl: null })
+
+  handleHelpClose = () => this.setState({ helpMenuAnchorEl: null })
 
   handleNewAssemblyChange = event =>
     this.setState({ newAssemblyName: event.target.value })
 
   render() {
-    const { anchorEl, newAssemblyName } = this.state
+    const { addMenuAnchorEl, helpMenuAnchorEl, newAssemblyName } = this.state
     const { classes, rootModel } = this.props
     return (
       <div className={classes.root}>
+        <div className={classes.header}>
+          <Typography variant="subtitle1" className={classes.headerText}>
+            Configured assemblies
+          </Typography>
+          <IconButton onClick={this.handleHelpClick}>
+            <Icon>help</Icon>
+          </IconButton>
+          <Popper
+            anchorEl={helpMenuAnchorEl}
+            open={Boolean(helpMenuAnchorEl)}
+            transition
+          >
+            {({ TransitionProps }) => (
+              <Grow {...TransitionProps} in={Boolean(helpMenuAnchorEl)}>
+                <Paper className={classes.menu}>
+                  <ClickAwayListener onClickAway={this.handleHelpClose}>
+                    <div>
+                      <Typography paragraph>
+                        JBrowse uses the assemblies listed here to help make
+                        sure that tracks appear on the correct reference
+                        sequence.
+                      </Typography>
+                      <Typography paragraph>
+                        You can define aliases for an assembly so that the two
+                        assembly names are treated as the same, e.g. GRCh37 and
+                        hg19.
+                      </Typography>
+                      <Typography paragraph>
+                        You can also define any reference sequences within that
+                        assembly that may have multiple names, such as 1 and
+                        chr1 or ctgA and contigA.
+                      </Typography>
+                    </div>
+                  </ClickAwayListener>
+                </Paper>
+              </Grow>
+            )}
+          </Popper>
+        </div>
         {Array.from(rootModel.configuration.assemblies, ([key, val]) => (
           <Card className={classes.assembly} key={key}>
             <CardHeader
@@ -162,44 +216,50 @@ class AssemblyEditorDrawerWidget extends React.Component {
         >
           <Icon>add</Icon>
         </Fab>
-        <Popper anchorEl={anchorEl} open={Boolean(anchorEl)} transition>
-          <Grow in={Boolean(anchorEl)}>
-            <Paper className={classes.menu}>
-              <ClickAwayListener onClickAway={this.handleFabClose}>
-                <div>
-                  <Typography
-                    component="p"
-                    variant="subtitle1"
-                    color="textSecondary"
-                  >
-                    Enter the name of the new assembly
-                  </Typography>
-                  <TextField
-                    autoFocus
-                    label="Assembly name"
-                    value={newAssemblyName}
-                    onChange={this.handleNewAssemblyChange}
-                  />
-                  <div className={classes.menuButtons}>
-                    <Button color="secondary" onClick={this.handleFabClose}>
-                      Cancel
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => {
-                        this.handleFabClose()
-                        rootModel.configuration.addAssembly(newAssemblyName)
-                        this.setState({ newAssemblyName: '' })
-                      }}
-                      disabled={!newAssemblyName}
+        <Popper
+          anchorEl={addMenuAnchorEl}
+          open={Boolean(addMenuAnchorEl)}
+          transition
+        >
+          {({ TransitionProps }) => (
+            <Grow {...TransitionProps} in={Boolean(addMenuAnchorEl)}>
+              <Paper className={classes.menu}>
+                <ClickAwayListener onClickAway={this.handleFabClose}>
+                  <div>
+                    <Typography
+                      component="p"
+                      variant="subtitle1"
+                      color="textSecondary"
                     >
-                      Add assembly
-                    </Button>
+                      Enter the name of the new assembly
+                    </Typography>
+                    <TextField
+                      autoFocus
+                      label="Assembly name"
+                      value={newAssemblyName}
+                      onChange={this.handleNewAssemblyChange}
+                    />
+                    <div className={classes.menuButtons}>
+                      <Button color="secondary" onClick={this.handleFabClose}>
+                        Cancel
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          this.handleFabClose()
+                          rootModel.configuration.addAssembly(newAssemblyName)
+                          this.setState({ newAssemblyName: '' })
+                        }}
+                        disabled={!newAssemblyName}
+                      >
+                        Add assembly
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )}
         </Popper>
       </div>
     )
