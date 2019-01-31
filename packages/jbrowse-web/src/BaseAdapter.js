@@ -136,6 +136,7 @@ export default class BaseAdapter {
         '"loadRefSeqs" must be called before "hasDataForRefSeq" can be called',
       )
     if (
+      assemblyName &&
       this.assemblyName &&
       !(
         this.assemblyName === assemblyName ||
@@ -143,7 +144,6 @@ export default class BaseAdapter {
       )
     )
       return false
-    if (this.seqNameMap.get(refName)) return true
-    return false
+    return !!this.seqNameMap.get(refName)
   }
 }

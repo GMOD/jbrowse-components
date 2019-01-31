@@ -51,7 +51,7 @@ test('can use a indexed fasta with gzi', async () => {
     },
   )
 
-  const features = adapter.regularizeAndGetFeaturesInRegion({
+  const features = await adapter.regularizeAndGetFeaturesInRegion({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -71,7 +71,7 @@ test('can use a indexed fasta with gzi', async () => {
   const featuresArray2 = await features2.pipe(toArray()).toPromise()
   expect(featuresArray2).toMatchSnapshot()
 
-  expect(adapter.hasDataForRefSeq('ctgA')).toEqual(true)
-  expect(adapter.hasDataForRefSeq('ctgC')).toEqual(false)
-  expect(adapter.hasDataForRefSeq('contigA')).toEqual(true)
+  expect(adapter.hasDataForRefSeq({ refName: 'ctgA' })).toEqual(true)
+  expect(adapter.hasDataForRefSeq({ refName: 'ctgC' })).toEqual(false)
+  expect(adapter.hasDataForRefSeq({ refName: 'contigA' })).toEqual(true)
 })

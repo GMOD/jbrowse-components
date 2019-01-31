@@ -17,9 +17,8 @@ export default class TwoBitAdapter extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  async loadData() {
-    const seqNames = await this.twobit.getSequenceNames()
-    return seqNames
+  loadData() {
+    return this.twobit.getSequenceNames()
   }
 
   /**
