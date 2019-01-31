@@ -3,10 +3,13 @@ import { toArray } from 'rxjs/operators'
 import BigWigAdapter from './BigWigAdapter'
 
 test('adapter can fetch features from volvox.bw', async () => {
-  const adapter = new BigWigAdapter({
-    assemblyName: 'volvox',
-    bigWigLocation: { path: require.resolve('./test_data/volvox.bw') },
-  })
+  const adapter = new BigWigAdapter(
+    {
+      assemblyName: 'volvox',
+      bigWigLocation: { path: require.resolve('./test_data/volvox.bw') },
+    },
+    {},
+  )
 
   const features = await adapter.regularizeAndGetFeaturesInRegion({
     assemblyName: 'volvox',

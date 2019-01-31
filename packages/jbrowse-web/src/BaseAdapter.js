@@ -34,7 +34,6 @@ export default class BaseAdapter {
           this.seqNameAliases = assemblies[assembly].seqNameAliases || {}
         }
       })
-    }
   }
 
   /**
@@ -103,7 +102,6 @@ export default class BaseAdapter {
    * @param {string[]} refSeqs An array of the reference sequences in the file
    */
   loadRefSeqs(refSeqs) {
-    if (this.seqNameMap) return
     this.seqNameMap = new Map()
     refSeqs.forEach(seqName => {
       this.seqNameMap.set(seqName, seqName)

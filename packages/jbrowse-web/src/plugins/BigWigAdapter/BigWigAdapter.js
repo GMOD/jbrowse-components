@@ -19,13 +19,6 @@ export default class BigWigAdapter extends BaseAdapter {
     return Object.keys(header.refsByName)
   }
 
-  async hasDataForRefSeq(args) {
-    return (
-      !!(await this.bigwig.getHeader()).refsByName[args.refName] &&
-      super.hasDataForRefSeq(args)
-    )
-  }
-
   async refIdToName(refId) {
     return ((await this.bigwig.getHeader()).refsByNumber[refId] || {}).name
   }

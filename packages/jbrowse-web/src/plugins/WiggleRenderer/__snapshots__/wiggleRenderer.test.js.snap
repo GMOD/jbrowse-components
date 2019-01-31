@@ -1,3 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`one 1`] = `Promise {}`;
+exports[`inverted mode and horizontally flipped 1`] = `
+Object {
+  "height": 100,
+  "imageData": Image {
+    "_originalSource": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAABkCAYAAAAIcVmwAAAABmJLR0QA/wD/AP+gvaeTAAAAKklEQVRoge3DsQ0AMAjAsJzO52XgiC625Kqp3ucAAAAAAAAAAAAAAADAWdg7IGFqiByRAAAAAElFTkSuQmCC",
+    "onerror": [Function],
+    "onload": [Function],
+  },
+  "width": 33,
+}
+`;
+
+exports[`several features 1`] = `
+Object {
+  "height": 100,
+  "imageData": Image {
+    "_originalSource": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAABkCAYAAAAIcVmwAAAABmJLR0QA/wD/AP+gvaeTAAAAK0lEQVRoge3OMQEAMAzAoNS/6PWphz2ggAIAAAAAAAAAAAAAAADOVO93YgG0+AEBOxa+3gAAAABJRU5ErkJggg==",
+    "onerror": [Function],
+    "onload": [Function],
+  },
+  "width": 33,
+}
+`;
