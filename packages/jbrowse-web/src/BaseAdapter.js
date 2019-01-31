@@ -24,14 +24,14 @@ export default class BaseAdapter {
     this.seqNameAliases = {}
     const assemblies = rootConfig.assemblies || {}
     if (assemblies[assemblyName]) {
-      this.assemblyAliases = assemblies[assemblyName].aliases
-      this.seqNameAliases = assemblies[assemblyName].seqNameAliases
+      this.assemblyAliases = assemblies[assemblyName].aliases || {}
+      this.seqNameAliases = assemblies[assemblyName].seqNameAliases || {}
     } else
       Object.keys(assemblies).forEach(assembly => {
         if (assemblies[assembly].aliases.includes(assemblyName)) {
           this.assemblyName = assembly
-          this.assemblyAliases = assemblies[assembly].aliases
-          this.seqNameAliases = assemblies[assembly].seqNameAliases
+          this.assemblyAliases = assemblies[assembly].aliases || {}
+          this.seqNameAliases = assemblies[assembly].seqNameAliases || {}
         }
       })
   }
