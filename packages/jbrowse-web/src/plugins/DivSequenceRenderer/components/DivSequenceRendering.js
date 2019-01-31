@@ -10,7 +10,12 @@ import { readConfObject } from '../../../configuration'
 function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   let s = ''
   for (const seq of features.values()) {
-    s += seq.get('seq')
+    const seqString = seq.get('seq')
+    if (!seqString || seqString.length !== seq.get('end') - seq.get('start'))
+      throw new Error(
+        `feature ${seq.id()} did not contain a valid \`seq\` attribute`,
+      )
+    if (seqString) s += seq.get('seq')
   }
 
   const width = (region.end - region.start) / bpPerPx
@@ -29,7 +34,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
           }}
           className={`base base-${letter.toLowerCase()}`}
         >
-          {bpPerPx < 0.1 ? letter : '\u00A0'}
+          {bpPerPx < 0.1 ? letter : ''}
         </div>
       ))}
     </>

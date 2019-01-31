@@ -74,14 +74,11 @@ function ScaleBar({
             bpPerPx={bpPerPx}
           >
             <svg height={height} width={block.widthPx}>
-              {/* {block.isLeftEndOfDisplayedRegion ? (
-                <div className={classes.refLabel}>{block.refName}</div>
-              ) : null} */}
               <Ruler
                 region={block}
                 showRefSeqLabel={
                   !!block.isLeftEndOfDisplayedRegion &&
-                  !blockContainingLeftEndOfView
+                  block !== blockContainingLeftEndOfView
                 }
                 bpPerPx={bpPerPx}
                 flipped={horizontallyFlipped}

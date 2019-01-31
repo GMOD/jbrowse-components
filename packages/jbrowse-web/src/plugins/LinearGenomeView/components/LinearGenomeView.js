@@ -15,7 +15,10 @@ import ZoomControls from './ZoomControls'
 
 const dragHandleHeight = 3
 
-const styles = (/* theme */) => ({
+const styles = theme => ({
+  root: {
+    position: 'relative',
+  },
   linearGenomeView: {
     background: '#eee',
     // background: theme.palette.background.paper,
@@ -38,6 +41,11 @@ const styles = (/* theme */) => ({
   },
   zoomControls: {
     position: 'absolute',
+    right: theme.spacing.unit / 2,
+    top: '0px',
+  },
+  iconButton: {
+    padding: theme.spacing.unit / 2,
   },
 })
 
@@ -87,87 +95,89 @@ class LinearGenomeView extends Component {
     }
     // console.log(style)
     return (
-      <div
-        className={classes.linearGenomeView}
-        key={`view-${id}`}
-        style={style}
-      >
+      <div className={classes.root}>
         <div
-          className={classnames(classes.controls, classes.viewControls)}
-          style={{ gridRow: 'scale-bar' }}
+          className={classes.linearGenomeView}
+          key={`view-${id}`}
+          style={style}
         >
-          <IconButton
-            onClick={model.closeView}
-            style={{ padding: '4px' }}
-            title="close this view"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-          <ConfigureToggleButton
-            model={model}
-            onClick={model.activateConfigurationUI}
-            title="configure view"
-            style={{}}
-            fontSize="small"
-          />
-          <ToggleButton
-            onClick={model.activateTrackSelector}
-            title="select tracks"
-            selected={
-              rootModel.task &&
-              rootModel.task.taskName === 'track_select' &&
-              rootModel.task.data === model
-            }
-            value="track_select"
-          >
-            <Icon fontSize="small">line_style</Icon>
-          </ToggleButton>
-        </div>
-        <ScaleBar
-          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-          height={scaleBarHeight}
-          bpPerPx={bpPerPx}
-          blocks={blocks}
-          offsetPx={visibleBlocksOffsetPx}
-          horizontallyFlipped={model.horizontallyFlipped}
-          width={width - controlsWidth}
-        />
-        <div className={classes.zoomControls} style={{ left: width - 138 }}>
-          <ZoomControls model={model} controlsHeight={scaleBarHeight} />
-        </div>
-        {tracks.map(track => [
           <div
-            className={classnames(classes.controls, classes.trackControls)}
-            key={`controls:${track.id}`}
-            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+            className={classnames(classes.controls, classes.viewControls)}
+            style={{ gridRow: 'scale-bar' }}
           >
-            <track.ControlsComponent
-              track={track}
-              key={track.id}
-              view={model}
-              onConfigureClick={track.activateConfigurationUI}
+            <IconButton
+              onClick={model.closeView}
+              className={classes.iconButton}
+              title="close this view"
+            >
+              <Icon fontSize="small">close</Icon>
+            </IconButton>
+            <ConfigureToggleButton
+              model={model}
+              onClick={model.activateConfigurationUI}
+              title="configure view"
+              style={{}}
+              fontSize="small"
             />
-          </div>,
-          <TrackRenderingContainer
-            key={`track-rendering:${track.id}`}
-            trackId={track.id}
+            <ToggleButton
+              onClick={model.activateTrackSelector}
+              title="select tracks"
+              selected={
+                rootModel.task &&
+                rootModel.task.taskName === 'track_select' &&
+                rootModel.task.data === model
+              }
+              value="track_select"
+            >
+              <Icon fontSize="small">line_style</Icon>
+            </ToggleButton>
+          </div>
+          <ScaleBar
+            style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={blocks}
+            offsetPx={visibleBlocksOffsetPx}
+            horizontallyFlipped={model.horizontallyFlipped}
             width={width - controlsWidth}
-            onHorizontalScroll={model.horizontalScroll}
-          >
-            <track.RenderingComponent
-              model={track}
-              blockDefinitions={blocks}
-              offsetPx={visibleBlocksOffsetPx}
-              bpPerPx={bpPerPx}
-              blockState={{}}
-            />
-          </TrackRenderingContainer>,
-          <TrackResizeHandle
-            key={`handle:${track.id}`}
-            trackId={track.id}
-            onVerticalDrag={model.resizeTrack}
-          />,
-        ])}
+          />
+          <div className={classes.zoomControls}>
+            <ZoomControls model={model} controlsHeight={scaleBarHeight} />
+          </div>
+          {tracks.map(track => [
+            <div
+              className={classnames(classes.controls, classes.trackControls)}
+              key={`controls:${track.id}`}
+              style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+            >
+              <track.ControlsComponent
+                track={track}
+                key={track.id}
+                view={model}
+                onConfigureClick={track.activateConfigurationUI}
+              />
+            </div>,
+            <TrackRenderingContainer
+              key={`track-rendering:${track.id}`}
+              trackId={track.id}
+              width={width - controlsWidth}
+              onHorizontalScroll={model.horizontalScroll}
+            >
+              <track.RenderingComponent
+                model={track}
+                blockDefinitions={blocks}
+                offsetPx={visibleBlocksOffsetPx}
+                bpPerPx={bpPerPx}
+                blockState={{}}
+              />
+            </TrackRenderingContainer>,
+            <TrackResizeHandle
+              key={`handle:${track.id}`}
+              trackId={track.id}
+              onVerticalDrag={model.resizeTrack}
+            />,
+          ])}
+        </div>
       </div>
     )
   }

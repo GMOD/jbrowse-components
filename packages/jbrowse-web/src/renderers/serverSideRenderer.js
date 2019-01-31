@@ -24,8 +24,11 @@ export default class ServerSideRenderer extends RendererType {
    */
   serializeArgsInClient(args) {
     if (args.renderProps.trackModel) {
-      args.renderProps.trackModel = {
-        selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
+      args.renderProps = {
+        ...args.renderProps,
+        trackModel: {
+          selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
+        },
       }
     }
     return args

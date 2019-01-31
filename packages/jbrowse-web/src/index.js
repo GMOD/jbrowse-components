@@ -71,15 +71,13 @@ window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
 model.addMenuBar('MainMenuBar')
-model.menuBars[0].addMenu({
-  name: 'Another Menu',
+model.menuBars[0].unshiftMenu({
+  name: 'Admin',
   menuItems: [
-    { name: 'Item 1' },
     {
-      name: 'Item 2',
-      icon: 'code',
-      callback:
-        'function(model){console.log("You clicked Item 2");console.log(model)}',
+      name: 'Download configuration',
+      icon: 'get_app',
+      callback: 'downloadConfiguration',
     },
   ],
 })

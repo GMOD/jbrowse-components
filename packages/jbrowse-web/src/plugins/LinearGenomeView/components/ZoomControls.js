@@ -21,10 +21,12 @@ function ZoomControls(props) {
   const { classes, model, controlsHeight } = props
   return (
     <div className={classes.container} style={{ height: controlsHeight }}>
-      <IconButton>
-        <Icon fontSize="small" onClick={() => model.zoomTo(model.bpPerPx * 2)}>
-          zoom_out
-        </Icon>
+      <IconButton
+        onClick={() => {
+          model.zoomTo(model.bpPerPx * 2)
+        }}
+      >
+        <Icon fontSize="small">zoom_out</Icon>
       </IconButton>
       <Slider
         className={classes.slider}
@@ -33,10 +35,12 @@ function ZoomControls(props) {
         max={-Math.log2(model.minBpPerPx)}
         onChange={(event, value) => model.zoomTo(2 ** -value)}
       />
-      <IconButton>
-        <Icon fontSize="small" onClick={() => model.zoomTo(model.bpPerPx / 2)}>
-          zoom_in
-        </Icon>
+      <IconButton
+        onClick={() => {
+          model.zoomTo(model.bpPerPx / 2)
+        }}
+      >
+        <Icon fontSize="small">zoom_in</Icon>
       </IconButton>
     </div>
   )

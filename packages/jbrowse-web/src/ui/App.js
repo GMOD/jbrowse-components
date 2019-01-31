@@ -91,9 +91,11 @@ class App extends Component {
     const drawerWidget = rootModel.selectedDrawerWidget
     let drawerComponent
     if (drawerWidget) {
-      const { LazyReactComponent, heading } = getDrawerWidgetType(
-        drawerWidget.type,
-      )
+      const {
+        LazyReactComponent,
+        HeadingComponent,
+        heading,
+      } = getDrawerWidgetType(drawerWidget.type)
       drawerComponent = (
         <Slide direction="left" in>
           <div>
@@ -104,7 +106,11 @@ class App extends Component {
                 className={classes.drawerToolbar}
               >
                 <Typography variant="h6" color="inherit">
-                  {heading || ''}
+                  {HeadingComponent ? (
+                    <HeadingComponent model={drawerWidget} />
+                  ) : (
+                    heading || undefined
+                  )}
                 </Typography>
                 <div className={classes.drawerToolbarCloseButton} />
                 <IconButton

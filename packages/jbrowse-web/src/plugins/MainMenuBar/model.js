@@ -1,8 +1,9 @@
-import { getRoot, types } from 'mobx-state-tree'
+import saveAs from 'file-saver'
+import { getRoot, types, getSnapshot } from 'mobx-state-tree'
 import { ElementId } from '../../mst-types'
 import { stringToFunction } from '../../util/functionStrings'
 
-const MenuItemModel = types
+export const MenuItemModel = types
   .model('MenuItemModel', {
     name: types.string,
     icon: types.optional(types.string, ''),
@@ -49,6 +50,16 @@ const MenuItemModel = types
         rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
       )
     },
+    downloadConfiguration() {
+      const rootModel = getRoot(self)
+      const configSnap = JSON.stringify(
+        getSnapshot(rootModel.configuration),
+        null,
+        '  ',
+      )
+      saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')
+      return configSnap
+    },
   }))
 
 const MenuModel = types
@@ -70,7 +81,7 @@ export const MainMenuBarModel = types
   })
   .actions(self => ({
     afterCreate() {
-      this.addMenu({
+      this.pushMenu({
         name: 'Help',
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
@@ -79,7 +90,10 @@ export const MainMenuBarModel = types
         ],
       })
     },
-    addMenu({ name, menuItems = [] }) {
+    unshiftMenu({ name, menuItems = [] }) {
+      self.menus.unshift(MenuModel.create({ name, menuItems }))
+    },
+    pushMenu({ name, menuItems = [] }) {
       self.menus.push(MenuModel.create({ name, menuItems }))
     },
   }))

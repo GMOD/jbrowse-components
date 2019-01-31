@@ -23,6 +23,10 @@ function MainMenuBar(props) {
   return (
     <AppBar className={classes.root} position="static">
       <Toolbar variant="dense">
+        <Typography variant="h6" color="inherit">
+          JBrowse
+        </Typography>
+        <div className={classes.grow} />
         {values(model.menus).map(menu => (
           <DropDownMenu
             key={menu.name}
@@ -31,10 +35,6 @@ function MainMenuBar(props) {
             model={model}
           />
         ))}
-        <div className={classes.grow} />
-        <Typography variant="h6" color="inherit">
-          JBrowse
-        </Typography>
       </Toolbar>
     </AppBar>
   )
