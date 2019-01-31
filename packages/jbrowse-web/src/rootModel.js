@@ -6,12 +6,13 @@ export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
     type: 'stringArray',
     defaultValue: [],
-    description: 'A list of aliases of the assembly',
+    description: 'Other possible names for this assembly',
   },
   seqNameAliases: {
     type: 'stringArrayMap',
     defaultValue: {},
-    description: 'A map of seq -> Array(altSeqName)',
+    description:
+      'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
   },
 })
 

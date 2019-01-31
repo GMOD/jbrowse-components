@@ -47,8 +47,8 @@ const Member = withStyles(memberStyles)(
       return (
         <>
           <FormLabel>{slotName}</FormLabel>
-          {typeSelector}
           <div className={classes.subSchemaContainer}>
+            {typeSelector}
             <FormGroup>
               <Schema schema={slot} />
             </FormGroup>

@@ -11,7 +11,6 @@ import {
   InputLabel,
   List,
   ListItem,
-  ListItemSecondaryAction,
   MenuItem,
   Paper,
   SvgIcon,
@@ -37,40 +36,74 @@ const StringEditor = observer(({ slot }) => (
   />
 ))
 
-const StringArrayEditor = observer(({ slot }) => (
-  <>
-    {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
-    <List dense disablePadding>
-      {slot.value.map((val, idx) => (
-        <ListItem
-          key={idx} // eslint-disable-line react/no-array-index-key
-          dense
-          disableGutters
-          divider
-        >
-          <TextField
-            value={val}
-            onChange={evt => slot.setAtIndex(idx, evt.target.value)}
-          />
-          <ListItemSecondaryAction>
-            <IconButton onClick={() => slot.removeAtIndex(idx)}>
-              <Icon>delete</Icon>
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-      ))}
-      <IconButton
-        disabled={slot.value[slot.value.length - 1] === ''}
-        onClick={() => slot.add('')}
-      >
-        <Icon>add</Icon>
-      </IconButton>
-    </List>
-    {slot.description ? (
-      <FormHelperText>{slot.description}</FormHelperText>
-    ) : null}
-  </>
-))
+@observer
+class StringArrayEditor extends React.Component {
+  static propTypes = {
+    slot: MobxPropTypes.objectOrObservableObject.isRequired,
+  }
+
+  state = {
+    newString: '',
+  }
+
+  render() {
+    const { newString } = this.state
+    const { slot } = this.props
+    return (
+      <>
+        {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
+        <List dense disablePadding>
+          {slot.value.map((val, idx) => (
+            <ListItem
+              key={idx} // eslint-disable-line react/no-array-index-key
+              dense
+              disableGutters
+            >
+              <TextField
+                value={val}
+                onChange={evt => slot.setAtIndex(idx, evt.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment>
+                      <IconButton onClick={() => slot.removeAtIndex(idx)}>
+                        <Icon>delete</Icon>
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </ListItem>
+          ))}
+          <ListItem dense disableGutters>
+            <TextField
+              value={newString}
+              placeholder="add new"
+              onChange={event =>
+                this.setState({ newString: event.target.value })
+              }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment>
+                    <IconButton
+                      onClick={() => {
+                        slot.add(newString)
+                        this.setState({ newString: '' })
+                      }}
+                      disabled={newString === ''}
+                    >
+                      <Icon>add</Icon>
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </ListItem>
+        </List>
+        <FormHelperText>{slot.description}</FormHelperText>
+      </>
+    )
+  }
+}
 
 const stringArrayMapEditorStyles = theme => ({
   card: {
@@ -78,6 +111,7 @@ const stringArrayMapEditorStyles = theme => ({
   },
 })
 
+// eslint-disable-next-line react/no-multi-comp
 @withStyles(stringArrayMapEditorStyles)
 @observer
 class StringArrayMapEditor extends React.Component {
@@ -87,11 +121,11 @@ class StringArrayMapEditor extends React.Component {
   }
 
   state = {
-    newSeqName: '',
+    newString: '',
   }
 
   render() {
-    const { newSeqName } = this.state
+    const { newString } = this.state
     const { slot, classes } = this.props
     return (
       <>
@@ -114,7 +148,7 @@ class StringArrayMapEditor extends React.Component {
               <StringArrayEditor
                 slot={{
                   value: val,
-                  description: '',
+                  description: `Aliases for sequence ${key}`,
                   setAtIndex: (idx, value) => {
                     slot.setAtKeyIndex(key, idx, value)
                   },
@@ -129,25 +163,37 @@ class StringArrayMapEditor extends React.Component {
             </CardContent>
           </Card>
         ))}
-        <TextField
-          fullWidth
-          value={newSeqName}
-          onChange={event => this.setState({ newSeqName: event.target.value })}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment>
-                <IconButton
-                  onClick={() => {
-                    slot.add(newSeqName, [])
-                    this.setState({ newSeqName: '' })
-                  }}
-                >
-                  <Icon>add</Icon>
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Card raised className={classes.card}>
+          <CardHeader
+            disableTypography
+            title={
+              <TextField
+                fullWidth
+                value={newString}
+                placeholder="add new"
+                onChange={event =>
+                  this.setState({ newString: event.target.value })
+                }
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment>
+                      <IconButton
+                        disabled={newString === ''}
+                        onClick={() => {
+                          slot.add(newString, [])
+                          this.setState({ newString: '' })
+                        }}
+                      >
+                        <Icon>add</Icon>
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            }
+          />
+        </Card>
+        <FormHelperText>{slot.description}</FormHelperText>
       </>
     )
   }

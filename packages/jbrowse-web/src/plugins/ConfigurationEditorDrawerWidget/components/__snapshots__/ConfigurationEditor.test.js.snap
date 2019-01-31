@@ -168,37 +168,64 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       <ul
         className="MuiList-root-118"
       >
-        <button
-          className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        <li
+          className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
           disabled={false}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onKeyDown={[Function]}
-          onKeyUp={[Function]}
-          onMouseDown={[Function]}
-          onMouseLeave={[Function]}
-          onMouseUp={[Function]}
-          onTouchEnd={[Function]}
-          onTouchMove={[Function]}
-          onTouchStart={[Function]}
-          tabIndex="0"
-          type="button"
         >
-          <span
-            className="MuiIconButton-label-90"
+          <div
+            className="MuiFormControl-root-33"
           >
-            <span
-              aria-hidden="true"
-              className="material-icons MuiIcon-root-94"
+            <div
+              className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+              onClick={[Function]}
             >
-              add
-            </span>
-          </span>
-          <span
-            className="MuiTouchRipple-root-103"
-          />
-        </button>
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                placeholder="add new"
+                required={false}
+                type="text"
+                value=""
+              />
+              <div
+                className="MuiInputAdornment-root-134"
+              >
+                <button
+                  className="MuiButtonBase-root-91 MuiButtonBase-disabled-92 MuiIconButton-root-85 MuiIconButton-disabled-89"
+                  disabled={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex="-1"
+                  type="button"
+                >
+                  <span
+                    className="MuiIconButton-label-90"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="material-icons MuiIcon-root-94"
+                    >
+                      add
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </li>
       </ul>
       <p
         className="MuiFormHelperText-root-110"
@@ -249,70 +276,70 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     adapter
   </label>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-122"
-  >
-    <div
-      className="_class-paperContent-123"
-    >
-      <div
-        className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
-      >
-        <label
-          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
-          data-shrink={true}
-        >
-          Type
-        </label>
-        <div
-          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56"
-          onClick={[Function]}
-        >
-          <div
-            className="MuiSelect-root-125"
-          >
-            <div
-              aria-haspopup="true"
-              aria-pressed="false"
-              className="MuiSelect-select-126 MuiSelect-selectMenu-129 MuiInputBase-input-78 MuiInput-input-63"
-              onBlur={[Function]}
-              onClick={[Function]}
-              onFocus={[Function]}
-              onKeyDown={[Function]}
-              role="button"
-              tabIndex={0}
-            >
-              BamAdapter
-            </div>
-            <input
-              type="hidden"
-              value="BamAdapter"
-            />
-            <svg
-              aria-hidden="true"
-              className="MuiSvgIcon-root-132 MuiSelect-icon-131"
-              focusable="false"
-              role="presentation"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 10l5 5 5-5z"
-              />
-            </svg>
-          </div>
-        </div>
-        <p
-          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
-        >
-          Type of adapter to use
-        </p>
-      </div>
-    </div>
-  </div>
-  <div
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-145"
+      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-138"
+    >
+      <div
+        className="_class-paperContent-139"
+      >
+        <div
+          className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
+        >
+          <label
+            className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+            data-shrink={true}
+          >
+            Type
+          </label>
+          <div
+            className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56"
+            onClick={[Function]}
+          >
+            <div
+              className="MuiSelect-root-141"
+            >
+              <div
+                aria-haspopup="true"
+                aria-pressed="false"
+                className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onKeyDown={[Function]}
+                role="button"
+                tabIndex={0}
+              >
+                BamAdapter
+              </div>
+              <input
+                type="hidden"
+                value="BamAdapter"
+              />
+              <svg
+                aria-hidden="true"
+                className="MuiSvgIcon-root-148 MuiSelect-icon-147"
+                focusable="false"
+                role="presentation"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M7 10l5 5 5-5z"
+                />
+              </svg>
+            </div>
+          </div>
+          <p
+            className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+          >
+            Type of adapter to use
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      className="MuiFormGroup-root-161"
     >
       <div
         className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -465,7 +492,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-145"
+          className="MuiFormGroup-root-161"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -487,12 +514,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   onClick={[Function]}
                 >
                   <div
-                    className="MuiSelect-root-125"
+                    className="MuiSelect-root-141"
                   >
                     <div
                       aria-haspopup="true"
                       aria-pressed="false"
-                      className="MuiSelect-select-126 MuiSelect-selectMenu-129 MuiInputBase-input-78 MuiInput-input-63"
+                      className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -508,7 +535,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     />
                     <svg
                       aria-hidden="true"
-                      className="MuiSvgIcon-root-132 MuiSelect-icon-131"
+                      className="MuiSvgIcon-root-148 MuiSelect-icon-147"
                       focusable="false"
                       role="presentation"
                       viewBox="0 0 24 24"
@@ -654,12 +681,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           onClick={[Function]}
         >
           <div
-            className="MuiSelect-root-125"
+            className="MuiSelect-root-141"
           >
             <div
               aria-haspopup="true"
               aria-pressed="false"
-              className="MuiSelect-select-126 MuiSelect-selectMenu-129 MuiInputBase-input-78 MuiInput-input-63"
+              className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
               onBlur={[Function]}
               onClick={[Function]}
               onFocus={[Function]}
@@ -675,7 +702,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             />
             <svg
               aria-hidden="true"
-              className="MuiSvgIcon-root-132 MuiSelect-icon-131"
+              className="MuiSvgIcon-root-148 MuiSelect-icon-147"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -735,7 +762,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-145"
+      className="MuiFormGroup-root-161"
     >
       <label
         className="MuiFormLabel-root-48"
@@ -746,7 +773,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-145"
+          className="MuiFormGroup-root-161"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -765,7 +792,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   alignmentColor
                 </label>
                 <div
-                  className="CallbackEditor-callbackEditor-147"
+                  className="CallbackEditor-callbackEditor-163"
                   style={
                     Object {
                       "boxSizing": "border-box",
@@ -926,7 +953,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <svg
                     aria-hidden="true"
-                    className="MuiSvgIcon-root-132"
+                    className="MuiSvgIcon-root-148"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -1028,7 +1055,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-145"
+          className="MuiFormGroup-root-161"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
