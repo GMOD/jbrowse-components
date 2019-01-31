@@ -12,7 +12,7 @@ import { Observable } from 'rxjs'
  * names for that sequence
  */
 export default class BaseAdapter {
-  constructor(config, rootConfig) {
+  constructor(config, rootConfig = {}) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',

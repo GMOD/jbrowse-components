@@ -9,18 +9,21 @@ import SimpleFeature from '../../util/simpleFeature'
 export default class TwoBitAdapter extends BaseAdapter {
   constructor(config, rootConfig) {
     super(config, rootConfig)
-    const { twoBitLocation, assemblyName } = config
+    const { twoBitLocation } = config
     const twoBitOpts = {
       filehandle: openLocation(twoBitLocation),
     }
 
-    this.assemblyName = assemblyName
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
   async loadData() {
     const seqNames = await this.twobit.getSequenceNames()
     return seqNames
+  }
+
+  async hasDataForRefSeq(refName) {
+    return !!(await this.twobit.getSequenceSize(refName))
   }
 
   /**

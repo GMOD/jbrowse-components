@@ -10,7 +10,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   })
 
   const features = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -20,7 +20,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   expect(featuresArray).toMatchSnapshot()
 
   const features2 = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgC',
     start: 0,
     end: 20000,
@@ -50,7 +50,7 @@ test('can use a indexed fasta with gzi', async () => {
   })
 
   const features = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -60,7 +60,7 @@ test('can use a indexed fasta with gzi', async () => {
   expect(featuresArray).toMatchSnapshot()
 
   const features2 = adapter.getFeaturesInRegion({
-    assembly: 'volvox',
+    assemblyName: 'volvox',
     refName: 'ctgC',
     start: 0,
     end: 20000,
@@ -68,4 +68,8 @@ test('can use a indexed fasta with gzi', async () => {
 
   const featuresArray2 = await features2.pipe(toArray()).toPromise()
   expect(featuresArray2).toMatchSnapshot()
+
+  expect(await adapter.hasDataForRefSeq('ctgA')).toEqual(true)
+  expect(await adapter.hasDataForRefSeq('ctgC')).toEqual(false)
+  expect(await adapter.hasDataForRefSeq('contigA')).toEqual(true)
 })

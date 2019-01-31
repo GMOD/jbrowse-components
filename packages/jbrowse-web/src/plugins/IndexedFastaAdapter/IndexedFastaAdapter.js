@@ -4,10 +4,12 @@ import { IndexedFasta, BgzipIndexedFasta } from '@gmod/indexedfasta'
 
 import { openLocation } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
+import BaseAdapter from '../../BaseAdapter'
 
-export default class IndexedFastaAdapter {
-  constructor(config) {
-    const { fastaLocation, faiLocation, gziLocation, assemblyName } = config
+export default class IndexedFastaAdapter extends BaseAdapter {
+  constructor(config, rootConfig) {
+    super(config, rootConfig)
+    const { fastaLocation, faiLocation, gziLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -19,13 +21,21 @@ export default class IndexedFastaAdapter {
       fai: openLocation(faiLocation),
     }
 
-    this.assemblyName = assemblyName
     if (gziLocation) {
       fastaOpts.gzi = openLocation(gziLocation)
       this.fasta = new BgzipIndexedFasta(fastaOpts)
     } else {
       this.fasta = new IndexedFasta(fastaOpts)
     }
+  }
+
+  async loadData() {
+    const seqNames = await this.fasta.getSequenceNames()
+    return seqNames
+  }
+
+  hasDataForRefSeq(refName) {
+    return this.fasta.hasReferenceSequence(refName)
   }
 
   /**

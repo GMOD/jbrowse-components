@@ -20,4 +20,8 @@ test('adapter can fetch features from volvox.2bit', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
+
+  expect(await adapter.hasDataForRefSeq('ctgA')).toEqual(true)
+  expect(await adapter.hasDataForRefSeq('ctgC')).toEqual(false)
+  expect(await adapter.hasDataForRefSeq('contigA')).toEqual(true)
 })
