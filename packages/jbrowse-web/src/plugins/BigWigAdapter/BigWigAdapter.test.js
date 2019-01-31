@@ -29,8 +29,6 @@ test('adapter can fetch features from volvox.bw', async () => {
     }),
   ).toBe(false)
 
-
-	console,
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
