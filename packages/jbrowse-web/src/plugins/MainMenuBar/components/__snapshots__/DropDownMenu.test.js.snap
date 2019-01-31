@@ -1,0 +1,331 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 1`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns="menu-list-grow"
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={
+      <WithStyles(Button)
+        aria-haspopup="true"
+        aria-owns={null}
+        color="inherit"
+        onClick={[Function]}
+      >
+        Help
+        <WithStyles(Icon)>
+          arrow_drop_down
+        </WithStyles(Icon)>
+      </WithStyles(Button)>
+    }
+    disablePortal={false}
+    open={true}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 2`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns="menu-list-grow"
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={
+      <WithStyles(Button)
+        aria-haspopup="true"
+        aria-owns={null}
+        color="inherit"
+        onClick={[Function]}
+      >
+        Help
+        <WithStyles(Icon)>
+          arrow_drop_down
+        </WithStyles(Icon)>
+      </WithStyles(Button)>
+    }
+    disablePortal={false}
+    open={true}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 3`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns={null}
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={null}
+    disablePortal={false}
+    open={false}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 4`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns="menu-list-grow"
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={
+      <WithStyles(Button)
+        aria-haspopup="true"
+        aria-owns={null}
+        color="inherit"
+        onClick={[Function]}
+      >
+        Help
+        <WithStyles(Icon)>
+          arrow_drop_down
+        </WithStyles(Icon)>
+      </WithStyles(Button)>
+    }
+    disablePortal={false}
+    open={true}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 5`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns={null}
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={null}
+    disablePortal={false}
+    open={false}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> renders 1`] = `
+<DropDownMenu
+  classes={
+    Object {
+      "root": "DropDownMenu-root-1",
+    }
+  }
+  menuItems={
+    Array [
+      Object {
+        "callback": "openAbout",
+        "icon": "info",
+        "name": "About",
+      },
+      Object {
+        "callback": "openHelp",
+        "icon": "help",
+        "name": "Help",
+      },
+      Object {
+        "callback": "openAssemblyEditor",
+        "icon": "edit",
+        "name": "Assemblies",
+      },
+    ]
+  }
+  menuTitle="Help"
+  model={
+    Object {
+      "id": "testingId",
+      "menus": Array [
+        Object {
+          "menuItems": Array [
+            Object {
+              "callback": "openAbout",
+              "icon": "info",
+              "name": "About",
+            },
+            Object {
+              "callback": "openHelp",
+              "icon": "help",
+              "name": "Help",
+            },
+            Object {
+              "callback": "openAssemblyEditor",
+              "icon": "edit",
+              "name": "Assemblies",
+            },
+          ],
+          "name": "Help",
+        },
+      ],
+      "type": "MainMenuBar",
+    }
+  }
+/>
+`;
+
+exports[`<DropDownMenu /> selects a menu item 1`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns="menu-list-grow"
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={
+      <WithStyles(Button)
+        aria-haspopup="true"
+        aria-owns={null}
+        color="inherit"
+        onClick={[Function]}
+      >
+        Help
+        <WithStyles(Icon)>
+          arrow_drop_down
+        </WithStyles(Icon)>
+      </WithStyles(Button)>
+    }
+    disablePortal={false}
+    open={true}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;
+
+exports[`<DropDownMenu /> selects a menu item 2`] = `
+<div
+  className="DropDownMenu-root-1"
+>
+  <WithStyles(Button)
+    aria-haspopup="true"
+    aria-owns={null}
+    color="inherit"
+    onClick={[Function]}
+  >
+    Help
+    <WithStyles(Icon)>
+      arrow_drop_down
+    </WithStyles(Icon)>
+  </WithStyles(Button)>
+  <Popper
+    anchorEl={null}
+    disablePortal={false}
+    open={false}
+    placement="bottom-start"
+    style={
+      Object {
+        "zIndex": 3,
+      }
+    }
+    transition={true}
+  >
+    <Component />
+  </Popper>
+</div>
+`;

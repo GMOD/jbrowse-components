@@ -79,18 +79,42 @@ class AssemblyEditorDrawerWidget extends React.Component {
     newAssemblyName: '',
   }
 
-  handleFabClick = event =>
-    this.setState({ addMenuAnchorEl: event.currentTarget })
+  handleFabClick = event => {
+    const { addMenuAnchorEl } = this.state
+    this.setState({
+      addMenuAnchorEl: addMenuAnchorEl ? null : event.currentTarget,
+    })
+  }
 
-  handleHelpClick = event =>
-    this.setState({ helpMenuAnchorEl: event.currentTarget })
+  handleHelpClick = event => {
+    const { helpMenuAnchorEl } = this.state
+    this.setState({
+      helpMenuAnchorEl: helpMenuAnchorEl ? null : event.currentTarget,
+    })
+  }
 
-  handleFabClose = () => this.setState({ addMenuAnchorEl: null })
+  handleFabClose = event => {
+    const { addMenuAnchorEl } = this.state
+    if (addMenuAnchorEl && addMenuAnchorEl.contains(event.target)) return
+    this.setState({ addMenuAnchorEl: null })
+  }
 
-  handleHelpClose = () => this.setState({ helpMenuAnchorEl: null })
+  handleHelpClose = event => {
+    const { helpMenuAnchorEl } = this.state
+    if (helpMenuAnchorEl && helpMenuAnchorEl.contains(event.target)) return
+    this.setState({ helpMenuAnchorEl: null })
+  }
 
   handleNewAssemblyChange = event =>
     this.setState({ newAssemblyName: event.target.value })
+
+  handleAddAssembly = event => {
+    const { newAssemblyName } = this.state
+    const { rootModel } = this.props
+    this.handleFabClose(event)
+    rootModel.configuration.addAssembly(newAssemblyName)
+    this.setState({ newAssemblyName: '' })
+  }
 
   render() {
     const { addMenuAnchorEl, helpMenuAnchorEl, newAssemblyName } = this.state
@@ -245,11 +269,7 @@ class AssemblyEditorDrawerWidget extends React.Component {
                       </Button>
                       <Button
                         color="secondary"
-                        onClick={() => {
-                          this.handleFabClose()
-                          rootModel.configuration.addAssembly(newAssemblyName)
-                          this.setState({ newAssemblyName: '' })
-                        }}
+                        onClick={this.handleAddAssembly}
                         disabled={!newAssemblyName}
                       >
                         Add assembly

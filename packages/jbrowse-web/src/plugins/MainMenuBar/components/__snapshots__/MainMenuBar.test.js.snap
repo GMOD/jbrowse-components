@@ -1,0 +1,73 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MainMenuBar /> renders 1`] = `
+<WithStyles(AppBar)
+  className="MainMenuBar-root-1"
+  position="static"
+>
+  <WithStyles(Toolbar)
+    variant="dense"
+  >
+    <WithStyles(Typography)
+      color="inherit"
+      variant="h6"
+    >
+      JBrowse
+    </WithStyles(Typography)>
+    <div
+      className="MainMenuBar-grow-2"
+    />
+    <WithStyles(DropDownMenu)
+      key="Help"
+      menuItems={
+        Array [
+          Object {
+            "callback": "openAbout",
+            "icon": "info",
+            "name": "About",
+          },
+          Object {
+            "callback": "openHelp",
+            "icon": "help",
+            "name": "Help",
+          },
+          Object {
+            "callback": "openAssemblyEditor",
+            "icon": "edit",
+            "name": "Assemblies",
+          },
+        ]
+      }
+      menuTitle="Help"
+      model={
+        Object {
+          "id": "testingId",
+          "menus": Array [
+            Object {
+              "menuItems": Array [
+                Object {
+                  "callback": "openAbout",
+                  "icon": "info",
+                  "name": "About",
+                },
+                Object {
+                  "callback": "openHelp",
+                  "icon": "help",
+                  "name": "Help",
+                },
+                Object {
+                  "callback": "openAssemblyEditor",
+                  "icon": "edit",
+                  "name": "Assemblies",
+                },
+              ],
+              "name": "Help",
+            },
+          ],
+          "type": "MainMenuBar",
+        }
+      }
+    />
+  </WithStyles(Toolbar)>
+</WithStyles(AppBar)>
+`;
