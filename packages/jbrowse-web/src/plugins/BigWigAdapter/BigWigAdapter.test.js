@@ -8,7 +8,7 @@ test('adapter can fetch features from volvox.bw', async () => {
     bigWigLocation: { path: require.resolve('./test_data/volvox.bw') },
   })
 
-  const features = adapter.regularizeAndGetFeaturesInRegion({
+  const features = await adapter.regularizeAndGetFeaturesInRegion({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
