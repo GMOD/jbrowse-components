@@ -34,12 +34,13 @@ class ErrorCatcher extends React.Component {
   }
 
   render() {
-    const { hasError } = this.state
-    if (this.state.hasError) {
+    const { hasError, errorText } = this.state
+    if (hasError) {
       // You can render any custom fallback UI
-      return <h1 className="error">{this.state.errorText}</h1>
+      return <h1 className="error">{errorText}</h1>
     }
-    return this.props.children
+    const { children } = this.props
+    return children
   }
 }
 
