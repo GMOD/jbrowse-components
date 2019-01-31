@@ -13,12 +13,6 @@ exports[`one 1`] = `
     bpPerPx={3}
     height={500}
     horizontallyFlipped={false}
-    layout={
-      Object {
-        "rectangles": Object {},
-        "totalHeight": 20,
-      }
-    }
     region={
       Object {
         "assemblyName": "wookie",
