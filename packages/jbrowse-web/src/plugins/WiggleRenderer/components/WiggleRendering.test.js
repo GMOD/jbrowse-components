@@ -1,42 +1,21 @@
 import React from 'react'
-import TestRenderer from 'react-test-renderer'
-import Rendering from './WiggleRendering'
+import ShallowRenderer from 'react-test-renderer/shallow'
+import WiggleRendering from './WiggleRendering'
 import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
-import SimpleFeature from '../../../util/simpleFeature'
-import GranularRectLayout from '../../../util/layouts/GranularRectLayout'
-import DivRenderingConfigSchema from '../configSchema'
+
 // these tests do very little, let's try to expand them at some point
-test('no features', () => {
-  const renderer = TestRenderer.create(
-    <Rendering
+test('one', () => {
+  const renderer = new ShallowRenderer()
+  renderer.render(
+    <WiggleRendering
       width={500}
       height={500}
-      region={{ assembly: 'toaster', refName: 'zonk', start: 0, end: 300 }}
+      region={{ assemblyName: 'wookie', refName: 'chr1', start: 1, end: 3 }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
-      config={DivRenderingConfigSchema.create()}
       bpPerPx={3}
     />,
   )
-  const result = renderer.toJSON()
-
-  expect(result).toMatchSnapshot()
-})
-
-test('one feature', () => {
-  const renderer = TestRenderer.create(
-    <Rendering
-      width={500}
-      height={500}
-      region={{ assembly: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
-      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      features={
-        new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
-      }
-      config={DivRenderingConfigSchema.create({})}
-      bpPerPx={3}
-    />,
-  )
-  const result = renderer.toJSON()
+  const result = renderer.getRenderOutput()
 
   expect(result).toMatchSnapshot()
 })

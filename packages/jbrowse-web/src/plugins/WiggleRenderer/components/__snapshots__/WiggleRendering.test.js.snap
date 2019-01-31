@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`no features 1`] = `
+exports[`one 1`] = `
 <div
   className="WiggleRendering"
   style={
@@ -9,24 +9,25 @@ exports[`no features 1`] = `
     }
   }
 >
-  <canvas
+  <PrerenderedCanvas
+    bpPerPx={3}
     height={500}
-    width={500}
-  />
-</div>
-`;
-
-exports[`one feature 1`] = `
-<div
-  className="WiggleRendering"
-  style={
-    Object {
-      "position": "relative",
+    horizontallyFlipped={false}
+    layout={
+      Object {
+        "rectangles": Object {},
+        "totalHeight": 20,
+      }
     }
-  }
->
-  <canvas
-    height={500}
+    region={
+      Object {
+        "assemblyName": "wookie",
+        "end": 3,
+        "refName": "chr1",
+        "start": 1,
+      }
+    }
+    trackModel={Object {}}
     width={500}
   />
 </div>
