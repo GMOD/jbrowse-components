@@ -22,10 +22,6 @@ export default class TwoBitAdapter extends BaseAdapter {
     return seqNames
   }
 
-  async hasDataForRefSeq(refName) {
-    return !!(await this.twobit.getSequenceSize(refName))
-  }
-
   /**
    * Fetch features for a certain region
    * @param {Region} param

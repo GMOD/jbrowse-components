@@ -86,8 +86,10 @@ export default class BaseAdapter {
   async regularizeAndGetFeaturesInRegion(region) {
     const { assemblyName } = region
     let { refName } = region
-    const refSeqs = await this.loadData()
-    this.loadRefSeqs(refSeqs)
+    if (!this.seqNameMap) {
+      const refSeqs = await this.loadData()
+      this.loadRefSeqs(refSeqs)
+    }
     if (!this.hasDataForRefSeq({ assemblyName, refName })) {
       return Observable.create(observer => {
         observer.complete()

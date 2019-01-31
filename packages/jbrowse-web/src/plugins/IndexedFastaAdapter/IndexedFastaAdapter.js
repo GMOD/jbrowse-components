@@ -29,13 +29,8 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     }
   }
 
-  async loadData() {
-    const seqNames = await this.fasta.getSequenceNames()
-    return seqNames
-  }
-
-  hasDataForRefSeq(refName) {
-    return this.fasta.hasReferenceSequence(refName)
+  loadData() {
+    return this.fasta.getSequenceNames()
   }
 
   /**
@@ -46,7 +41,6 @@ export default class IndexedFastaAdapter extends BaseAdapter {
   getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
     // TODO
     return Observable.create(async observer => {
-      await this.gotTwoBitHeader
       const seq = await this.fasta.getSequence(refName, start, end)
       observer.next(
         new SimpleFeature({
