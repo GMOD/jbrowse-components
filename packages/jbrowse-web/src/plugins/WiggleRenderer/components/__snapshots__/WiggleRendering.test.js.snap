@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`one 1`] = `
+<div
+  className="WiggleRendering"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+>
+  <PrerenderedCanvas
+    bpPerPx={3}
+    height={500}
+    horizontallyFlipped={false}
+    region={
+      Object {
+        "assemblyName": "wookie",
+        "end": 3,
+        "refName": "chr1",
+        "start": 1,
+      }
+    }
+    trackModel={Object {}}
+    width={500}
+  />
+</div>
+`;
