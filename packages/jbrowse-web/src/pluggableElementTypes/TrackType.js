@@ -5,5 +5,7 @@ export default class TrackType extends PluggableElementType {
     super(stuff, { compatibleView: 'LinearGenomeView' }, subClassDefaults)
     if (!this.stateModel)
       throw new Error(`no stateModel defined for track ${this.name}`)
+    if (!this.configSchema)
+      throw new Error(`no configSchema provided for track ${this.name}`)
   }
 }

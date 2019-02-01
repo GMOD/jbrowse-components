@@ -18,11 +18,12 @@ jbrowse.configure({
   views: [{ type: 'LinearGenomeView' }],
   tracks: [
     {
-      type: 'SequenceTrack',
+      type: 'BasicTrack',
       name: 'Sequence',
+      renderer: { type: 'DivSequenceRenderer' },
       adapter: {
         type: 'FromConfigAdapter',
-        assemblyName: 'grc37 genes',
+        assemblyName: 'grc37 proteins',
         features: [
           {
             seq_id: 'JAK2',
@@ -57,6 +58,9 @@ jbrowse.configure({
     },
   ],
   assemblies: {
+    'grc37 proteins': {
+      sequenceType: 'protein',
+    },
     volvox: {
       aliases: ['vvx'],
       seqNameAliases: {
@@ -89,7 +93,7 @@ model.menuBars[0].unshiftMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assemblyName: 'grc37 genes',
+    assemblyName: 'grc37 proteins',
     refName: 'JAK2',
     start: 0,
     end: 50000,
