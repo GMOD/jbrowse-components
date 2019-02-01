@@ -12,7 +12,7 @@ import { Observable } from 'rxjs'
  * names for that sequence
  */
 export default class BaseAdapter {
-  constructor(config, rootConfig = {}) {
+  constructor(config, rootConfig) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
@@ -86,10 +86,8 @@ export default class BaseAdapter {
   async regularizeAndGetFeaturesInRegion(region) {
     const { assemblyName } = region
     let { refName } = region
-    if (!this.seqNameMap) {
-      const refSeqs = await this.loadData()
-      this.loadRefSeqs(refSeqs)
-    }
+    const refSeqs = await this.loadData()
+    this.loadRefSeqs(refSeqs)
     if (!this.hasDataForRefSeq({ assemblyName, refName })) {
       return Observable.create(observer => {
         observer.complete()
@@ -136,7 +134,6 @@ export default class BaseAdapter {
         '"loadRefSeqs" must be called before "hasDataForRefSeq" can be called',
       )
     if (
-      assemblyName &&
       this.assemblyName &&
       !(
         this.assemblyName === assemblyName ||
@@ -144,6 +141,7 @@ export default class BaseAdapter {
       )
     )
       return false
-    return !!this.seqNameMap.get(refName)
+    if (this.seqNameMap.get(refName)) return true
+    return false
   }
 }
