@@ -86,6 +86,8 @@ function wrapForRpc(func) {
       console.error(e)
       throw e
     })
+    // uncomment the below to log the data that the worker is
+    // returning to the main thread
     // result.then(r => console.log(r))
     return result
   }
