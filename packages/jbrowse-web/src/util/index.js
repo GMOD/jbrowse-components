@@ -17,7 +17,7 @@ export function openLocation(location) {
   if (location.path) {
     return new LocalFile(location.path)
   }
-  throw new Error('local files not yet supported by openLocation')
+  throw new Error('invalid fileLocation')
 }
 
 export function clamp(val, min, max) {
