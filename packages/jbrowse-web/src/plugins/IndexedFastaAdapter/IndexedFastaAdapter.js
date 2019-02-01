@@ -30,7 +30,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
   }
 
   loadData() {
-    return this.fasta.getSequenceNames()
+    return this.fasta.getSequenceList()
   }
 
   /**
