@@ -1,7 +1,8 @@
 import Plugin from '../../Plugin'
 import AdapterType from '../../pluggableElementTypes/AdapterType'
 import { ConfigurationSchema } from '../../configuration'
-import AdapterClass from './IndexedFastaAdapter'
+import IndexedAdapterClass from './IndexedFastaAdapter'
+import BgzipAdapterClass from './BgzipFastaAdapter'
 
 const configSchema = ConfigurationSchema(
   'IndexedFastaAdapter',
@@ -14,9 +15,6 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai' },
     },
-    // gziLocation: {
-    //   type: // what should this be for an optional fileLocation?
-    // },
     assemblyName: {
       type: 'string',
       defaultValue: '',
@@ -25,6 +23,28 @@ const configSchema = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
+const bgzipConfigSchema = ConfigurationSchema(
+  'BgzipFastaAdapter',
+  {
+    fastaLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/seq.fa.gz' },
+    },
+    faiLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/seq.fa.gz.fai' },
+    },
+    gziLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/seq.fa.gz.gzi' },
+    },
+    assemblyName: {
+      type: 'string',
+      defaultValue: '',
+    },
+  },
+  { explicitlyTyped: true },
+)
 export default class IndexedFastaAdapterPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addAdapterType(
@@ -32,7 +52,15 @@ export default class IndexedFastaAdapterPlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema,
-          AdapterClass,
+          IndexedAdapterClass,
+        }),
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'BgzipFastaAdapter',
+          bgzipConfigSchema,
+          BgzipAdapterClass,
         }),
     )
   }

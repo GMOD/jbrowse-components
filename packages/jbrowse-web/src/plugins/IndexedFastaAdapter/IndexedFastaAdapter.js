@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-import { IndexedFasta, BgzipIndexedFasta } from '@gmod/indexedfasta'
+import { IndexedFasta } from '@gmod/indexedfasta'
 
 import { openLocation } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
@@ -9,7 +9,7 @@ import BaseAdapter from '../../BaseAdapter'
 export default class IndexedFastaAdapter extends BaseAdapter {
   constructor(config, rootConfig) {
     super(config, rootConfig)
-    const { fastaLocation, faiLocation, gziLocation } = config
+    const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
     }
@@ -21,12 +21,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
       fai: openLocation(faiLocation),
     }
 
-    if (gziLocation) {
-      fastaOpts.gzi = openLocation(gziLocation)
-      this.fasta = new BgzipIndexedFasta(fastaOpts)
-    } else {
-      this.fasta = new IndexedFasta(fastaOpts)
-    }
+    this.fasta = new IndexedFasta(fastaOpts)
   }
 
   loadData() {

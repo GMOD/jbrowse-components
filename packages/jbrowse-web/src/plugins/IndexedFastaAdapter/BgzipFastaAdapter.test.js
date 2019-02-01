@@ -1,13 +1,14 @@
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './IndexedFastaAdapter'
+import Adapter from './BgzipFastaAdapter'
 
-test('adapter can fetch sequence from volvox.fa', async () => {
+test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(
     {
       assemblyName: 'volvox',
-      fastaLocation: { path: require.resolve('./test_data/volvox.fa') },
-      faiLocation: { path: require.resolve('./test_data/volvox.fa.fai') },
+      fastaLocation: { path: require.resolve('./test_data/volvox.fa.gz') },
+      faiLocation: { path: require.resolve('./test_data/volvox.fa.gz.fai') },
+      gziLocation: { path: require.resolve('./test_data/volvox.fa.gz.gzi') },
     },
     {},
   )
