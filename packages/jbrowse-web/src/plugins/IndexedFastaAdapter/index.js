@@ -52,15 +52,15 @@ export default class IndexedFastaAdapterPlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema,
-          IndexedAdapterClass,
+          AdapterClass: IndexedAdapterClass,
         }),
     )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'BgzipFastaAdapter',
-          bgzipConfigSchema,
-          BgzipAdapterClass,
+          configSchema: bgzipConfigSchema,
+          AdapterClass: BgzipAdapterClass,
         }),
     )
   }
