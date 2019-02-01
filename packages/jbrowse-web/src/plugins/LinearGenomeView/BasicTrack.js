@@ -1,8 +1,7 @@
-import { types, getParent, getType } from 'mobx-state-tree'
+import { types, getParent } from 'mobx-state-tree'
 import blockBasedTrack from './models/blockBasedTrack'
 import {
   ConfigurationReference,
-  getConf,
   ConfigurationSchema,
 } from '../../configuration'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
