@@ -4,8 +4,8 @@ import Adapter from './FromConfigAdapter'
 
 test('adapter can fetch features', async () => {
   const features = [
-    { seq_id: 'ctgA', start: 20, end: 40 },
-    { seq_id: 'ctgB', start: 50, end: 60 },
+    { uniqueId: 'one', seq_id: 'ctgA', start: 20, end: 40 },
+    { uniqueId: 'two', seq_id: 'ctgB', start: 50, end: 60 },
   ]
   const adapter = new Adapter(
     {

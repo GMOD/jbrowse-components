@@ -13,7 +13,12 @@ test('features to sequence function', () => {
       new Map([
         [
           'one',
-          new SimpleFeature({ start: 10, end: 25, seq: '123456789012345' }),
+          new SimpleFeature({
+            uniqueId: 'foo',
+            start: 10,
+            end: 25,
+            seq: '123456789012345',
+          }),
         ],
       ]),
     ),
@@ -68,7 +73,9 @@ test('one feature with no seq, zoomed way out', () => {
       height={500}
       region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
       features={
-        new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
+        new Map([
+          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+        ])
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={3}
@@ -92,7 +99,9 @@ test('one feature with no seq, zoomed in, should throw', () => {
           end: 1000,
         }}
         features={
-          new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
+          new Map([
+            ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+          ])
         }
         config={DivRenderingConfigSchema.create({})}
         bpPerPx={0.05}
@@ -120,7 +129,12 @@ test('one feature with an incorrect seq, zoomed in, should throw', () => {
           new Map([
             [
               'one',
-              new SimpleFeature({ id: 'one', start: 1, end: 3, seq: 'ABC' }),
+              new SimpleFeature({
+                uniqueId: 'one',
+                start: 1,
+                end: 3,
+                seq: 'ABC',
+              }),
             ],
           ])
         }
@@ -145,7 +159,7 @@ test('one feature with a correct seq, zoomed in, should render nicely', () => {
           [
             'one',
             new SimpleFeature({
-              id: 'one',
+              uniqueId: 'one',
               start: 1,
               end: 10,
               seq: 'ABCDEFGHI',

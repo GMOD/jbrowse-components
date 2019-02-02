@@ -1,4 +1,4 @@
-import { types, getParent } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import blockBasedTrack from './models/blockBasedTrack'
 import {
   ConfigurationReference,
@@ -6,13 +6,14 @@ import {
 } from '../../configuration'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
+import { getContainingView } from '../../util/tracks'
 
 export default pluginManager => {
   const configSchema = ConfigurationSchema(
     'BasicTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      rendering: pluginManager.pluggableConfigSchemaType('renderer'),
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )
@@ -28,17 +29,17 @@ export default pluginManager => {
       })
       .views(self => ({
         get renderProps() {
-          const view = getParent(self, 2)
+          const view = getContainingView(self)
           return {
             bpPerPx: view.bpPerPx,
             horizontallyFlipped: view.horizontallyFlipped,
             trackModel: self,
-            config: self.configuration.rendering,
+            config: self.configuration.renderer,
           }
         },
 
         get rendererTypeName() {
-          return self.configuration.rendering.type
+          return self.configuration.renderer.type
         },
       }))
       .volatile(() => ({

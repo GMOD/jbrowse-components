@@ -1,4 +1,4 @@
-import { types, getParent, getRoot } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../../configuration'
 
@@ -8,6 +8,7 @@ import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
 import CompositeMap from '../../../util/compositeMap'
 import TrackControls from '../components/TrackControls'
+import { getContainingView } from '../../../util/tracks'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -96,7 +97,7 @@ export default (pluginManager, configSchema) =>
          */
         get renderProps() {
           // view -> [tracks] -> [blocks]
-          const view = getParent(self, 2)
+          const view = getContainingView(self)
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )

@@ -1,5 +1,5 @@
 import React from 'react'
-import { types, getRoot, getParent, getSnapshot } from 'mobx-state-tree'
+import { types, getRoot, getSnapshot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
@@ -8,6 +8,7 @@ import {
 import { ElementId } from '../../../mst-types'
 
 import TrackControls from '../components/TrackControls'
+import { getContainingView } from '../../../util/tracks'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -69,7 +70,7 @@ const BaseTrack = types
      */
     get renderProps() {
       // view -> [tracks] -> [blocks]
-      const view = getParent(self, 2)
+      const view = getContainingView(self)
       return {
         bpPerPx: view.bpPerPx,
         horizontallyFlipped: view.horizontallyFlipped,
@@ -82,7 +83,7 @@ const BaseTrack = types
      * renderer
      */
     get rendererType() {
-      const track = getParent(self, 2)
+      const track = getContainingView(self)
       const rootModel = getRoot(self)
       const RendererType = rootModel.pluginManager.getRendererType(
         self.rendererTypeName,

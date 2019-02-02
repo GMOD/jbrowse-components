@@ -50,7 +50,7 @@ export default class FromConfigAdapter extends BaseAdapter {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
-        if (f.get('end') >= start && f.get('start') <= end) {
+        if (f.get('end') > start && f.get('start') < end) {
           observer.next(f)
         }
       }

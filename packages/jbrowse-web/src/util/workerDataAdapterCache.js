@@ -46,7 +46,11 @@ export function getAdapter(
       throw new Error(`unknown data adapter type ${adapterType}`)
     // console.log('new adapter', cacheKey)
     adapterCache[cacheKey] = {
-      adapter: new dataAdapterType.AdapterClass(adapterConfig, rootConfig),
+      adapter: new dataAdapterType.AdapterClass(
+        adapterConfig,
+        rootConfig,
+        pluginManager,
+      ),
       sessionIds: new Set([sessionId]),
     }
   }

@@ -17,6 +17,7 @@ import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
+import FilteringTrackPlugin from './plugins/FilteringTrack'
 
 // views
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
@@ -42,6 +43,7 @@ const corePlugins = [
   SvgFeaturePlugin,
   DivSequenceRendererPlugin,
   FromConfigAdapterPlugin,
+  FilteringTrackPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app

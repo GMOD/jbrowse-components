@@ -103,10 +103,9 @@ const FileLocationEditor = observer(({ slot }) => {
   // TODO: this can only edit URIs right now, need to make this an actual
   // good file selector
   const { value } = slot
-  if (!value.uri) throw new Error('local files not yet supported')
   return (
     <TextField
-      value={slot.value.uri}
+      value={value.uri}
       label={slot.name}
       // error={filterError}
       helperText={slot.description}

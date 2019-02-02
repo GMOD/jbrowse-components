@@ -28,6 +28,7 @@
     "object.fromentries": "^2.0.0",
     "prismjs": "^1.15.0",
     "prop-types": "^15.6.2",
+    "quick-lru": "^2.0.0",
     "react": "^16.6.3",
     "react-dom": "^16.5.2",
     "react-simple-code-editor": "^0.8.0",

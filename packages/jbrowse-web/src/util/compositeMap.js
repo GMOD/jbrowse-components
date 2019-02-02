@@ -1,4 +1,4 @@
-// takes an array or Map of Maps
+// takes an array or Map or Set (anything iterable with values()) of Maps
 // and lets you query them as one Map
 export default class CompositeMap {
   constructor(submaps) {
@@ -17,5 +17,11 @@ export default class CompositeMap {
       if (submap.has(id)) return submap.get(id)
     }
     return undefined
+  }
+
+  *values() {
+    for (const submap of this.submaps.values()) {
+      for (const value of submap.values()) yield value
+    }
   }
 }

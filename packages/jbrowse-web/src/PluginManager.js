@@ -137,7 +137,6 @@ export default class PluginManager {
 
   getElementType(groupName, typeName) {
     if (!typeName) {
-      debugger
       throw new Error(`invalid type name "${typeName}"`)
     }
     return (this.elementTypes[groupName] || {})[typeName]

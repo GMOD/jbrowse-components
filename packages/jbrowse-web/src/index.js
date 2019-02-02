@@ -26,6 +26,7 @@ jbrowse.configure({
         assemblyName: 'grc37 proteins',
         features: [
           {
+            uniqueId: 'protein_seq',
             seq_id: 'JAK2',
             start: 0,
             end: 1132,
@@ -52,6 +53,59 @@ jbrowse.configure({
               /\s/g,
               '',
             ),
+          },
+        ],
+      },
+    },
+    {
+      type: 'FilteringTrack',
+      name: 'Variants',
+      renderer: { type: 'SvgFeatureRenderer' },
+      adapter: {
+        type: 'FromConfigAdapter',
+        assemblyName: 'grc37 proteins',
+        features: [
+          {
+            uniqueId: 'one',
+            seq_id: 'JAK2',
+            start: 100,
+            end: 101,
+            type: 'zonk',
+          },
+          {
+            uniqueId: 'two',
+            seq_id: 'JAK2',
+            start: 110,
+            end: 111,
+            type: 'zee',
+          },
+          {
+            uniqueId: 'three',
+            seq_id: 'JAK2',
+            start: 120,
+            end: 121,
+            type: 'ziz',
+          },
+          {
+            uniqueId: 'four',
+            seq_id: 'JAK2',
+            start: 130,
+            end: 131,
+            type: 'zoz',
+          },
+          {
+            uniqueId: 'five',
+            seq_id: 'JAK2',
+            start: 140,
+            end: 141,
+            type: 'nee',
+          },
+          {
+            uniqueId: 'six',
+            seq_id: 'JAK2',
+            start: 100,
+            end: 101,
+            type: 'noo',
           },
         ],
       },
@@ -101,7 +155,8 @@ firstView.displayRegions([
 ])
 
 firstView.zoomTo(0.06) // bpPerPx
-firstView.showTrack(model.configuration.tracks[0], { height: 110 })
+firstView.horizontalScroll(-6500)
+firstView.showTrack(model.configuration.tracks[1], { height: 110 })
 
 // finally, start the app
 jbrowse.start()
