@@ -20,8 +20,19 @@ export default class CompositeMap {
   }
 
   *values() {
-    for (const submap of this.submaps.values()) {
-      for (const value of submap.values()) yield value
+    const submaps = Array.from(this.submaps.values())
+    for (let i = 0; i < submaps.length; i += 1) {
+      const submap = submaps[i]
+      const values = Array.from(submap.values())
+      for (let j = 0; j < values.length; j += 1) {
+        yield values[j]
+      }
     }
+
+    // this is what the code should be, but it doesn't work
+    // because of https://github.com/facebook/regenerator/issues/229
+    // for (const submap of this.submaps.values())
+    //   for (const value of submap.values())
+    //      yield value
   }
 }
