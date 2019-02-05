@@ -20,7 +20,7 @@ describe('LinearGenomeView genome view component', () => {
       },
     )
     const component = renderer.create(
-      <Provider rootModel={{}}>
+      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
         <LinearGenomeView model={model} />
       </Provider>,
     )
@@ -51,7 +51,7 @@ describe('LinearGenomeView genome view component', () => {
       },
     )
     const component = renderer.create(
-      <Provider rootModel={{}}>
+      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
         <LinearGenomeView model={model} />
       </Provider>,
     )
@@ -90,7 +90,7 @@ describe('LinearGenomeView genome view component', () => {
       },
     )
     const component = renderer.create(
-      <Provider rootModel={{}}>
+      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
         <LinearGenomeView model={model} />
       </Provider>,
     )

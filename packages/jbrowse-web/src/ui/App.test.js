@@ -33,28 +33,29 @@ describe('jbrowse-web app', () => {
     })
     render(model)
   })
+
   it('accepts a custom drawer width', () => {
     const model = RootModelFactory({ pluginManager }).create({
       drawerWidth: 256,
     })
     expect(model.drawerWidth).toBe(256)
-    expect(model.viewsWidth).toBe(761)
+    expect(model.viewsWidth).toBe(512)
     render(model)
   })
 
-  it('expands a drawer width that is too small', () => {
-    const model = RootModelFactory({ pluginManager }).create({
-      drawerWidth: 50,
-    })
-    expect(model.drawerWidth).toBe(100)
-    render(model)
+  it('throws if drawer width is too small', () => {
+    expect(() =>
+      RootModelFactory({ pluginManager }).create({
+        drawerWidth: 50,
+      }),
+    ).toThrow()
   })
 
   it('shrinks a drawer width that is too big', () => {
     const model = RootModelFactory({ pluginManager }).create({
       drawerWidth: 4096,
     })
-    expect(model.drawerWidth).toBe(867)
+    expect(model.drawerWidth).toBe(256)
     render(model)
   })
 

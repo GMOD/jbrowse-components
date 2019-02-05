@@ -42,6 +42,14 @@ export default (pluginManager, configSchema) =>
       .actions(self => ({
         selectFeature(feature) {
           const root = getRoot(self)
+          if (!root.drawerWidgets.get('alignmentsFeature'))
+            root.addDrawerWidget(
+              'AlignmentsFeatureDrawerWidget',
+              'alignmentsFeature',
+            )
+          const featureWidget = root.drawerWidgets.get('alignmentsFeature')
+          featureWidget.setFeatureData(feature.data)
+          root.showDrawerWidget(featureWidget)
           root.setSelection(feature)
         },
         clearFeatureSelection() {

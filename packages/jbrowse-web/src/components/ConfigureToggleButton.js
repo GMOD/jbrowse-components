@@ -1,21 +1,21 @@
 import React from 'react'
-import { getRoot } from 'mobx-state-tree'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { Icon } from '@material-ui/core'
-import { propTypes, observer } from 'mobx-react'
+import { inject, observer, propTypes } from 'mobx-react'
 
 function ConfigureToggleButton(props) {
-  const { model, style, ...otherProps } = props
-  const rootModel = getRoot(model)
+  const { model, style, rootModel, ...otherProps } = props
+  const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
+  const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
   return (
     <ToggleButton
       type="button"
       size="small"
       style={{ minWidth: 0, ...style }}
       selected={
-        rootModel.task &&
-        rootModel.task.taskName === 'configure' &&
-        rootModel.task.data === model.configuration
+        activeDrawerWidget &&
+        activeDrawerWidget.id === 'configEditor' &&
+        activeDrawerWidget.target.configId === model.configuration.configId
       }
       value="configure"
       {...otherProps}
@@ -27,7 +27,8 @@ function ConfigureToggleButton(props) {
 
 ConfigureToggleButton.propTypes = {
   model: propTypes.objectOrObservableObject.isRequired,
+  rootModel: propTypes.objectOrObservableObject.isRequired,
 }
 ConfigureToggleButton.defaultProps = {}
 
-export default observer(ConfigureToggleButton)
+export default inject('rootModel')(observer(ConfigureToggleButton))

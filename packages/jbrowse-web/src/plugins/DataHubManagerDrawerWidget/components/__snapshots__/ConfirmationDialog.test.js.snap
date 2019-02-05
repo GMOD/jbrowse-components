@@ -7,6 +7,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
   hubName="TestHub"
   rootModel={
     Object {
+      "activeDrawerWidgets": Object {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+      },
       "configuration": Object {
         "configId": "testing",
       },
@@ -21,7 +24,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       },
       "drawerWidth": 256,
       "menuBars": Array [],
-      "selectedDrawerWidget": "hierarchicalTrackSelector",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -37,6 +39,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "type": "LinearGenomeView",
         },
       ],
+      "width": 512,
     }
   }
   trackDbUrl={"http://test.com/trackDb.txt"}
@@ -52,6 +55,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
     hubName="TestHub"
     rootModel={
       Object {
+        "activeDrawerWidgets": Object {
+          "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+        },
         "configuration": Object {
           "configId": "testing",
         },
@@ -66,7 +72,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         },
         "drawerWidth": 256,
         "menuBars": Array [],
-        "selectedDrawerWidget": "hierarchicalTrackSelector",
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -82,6 +87,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             "type": "LinearGenomeView",
           },
         ],
+        "width": 512,
       }
     }
     trackDbUrl={"http://test.com/trackDb.txt"}
@@ -97,6 +103,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       hubName="TestHub"
       rootModel={
         Object {
+          "activeDrawerWidgets": Object {
+            "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+          },
           "configuration": Object {
             "configId": "testing",
           },
@@ -111,7 +120,6 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           },
           "drawerWidth": 256,
           "menuBars": Array [],
-          "selectedDrawerWidget": "hierarchicalTrackSelector",
           "views": Array [
             Object {
               "bpPerPx": 1,
@@ -127,6 +135,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
               "type": "LinearGenomeView",
             },
           ],
+          "width": 512,
         }
       }
       trackDbUrl={"http://test.com/trackDb.txt"}
@@ -187,6 +196,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
   hubName="TestHub"
   rootModel={
     Object {
+      "activeDrawerWidgets": Object {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+      },
       "configuration": Object {
         "configId": "testing",
       },
@@ -201,7 +213,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       },
       "drawerWidth": 256,
       "menuBars": Array [],
-      "selectedDrawerWidget": "hierarchicalTrackSelector",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -217,6 +228,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "type": "LinearGenomeView",
         },
       ],
+      "width": 512,
     }
   }
   trackDbUrl={"http://test.com/trackDb.txt"}
@@ -232,6 +244,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
     hubName="TestHub"
     rootModel={
       Object {
+        "activeDrawerWidgets": Object {
+          "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+        },
         "configuration": Object {
           "configId": "testing",
         },
@@ -246,7 +261,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         },
         "drawerWidth": 256,
         "menuBars": Array [],
-        "selectedDrawerWidget": "hierarchicalTrackSelector",
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -262,6 +276,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             "type": "LinearGenomeView",
           },
         ],
+        "width": 512,
       }
     }
     trackDbUrl={"http://test.com/trackDb.txt"}
@@ -277,6 +292,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       hubName="TestHub"
       rootModel={
         Object {
+          "activeDrawerWidgets": Object {
+            "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+          },
           "configuration": Object {
             "configId": "testing",
           },
@@ -291,7 +309,6 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           },
           "drawerWidth": 256,
           "menuBars": Array [],
-          "selectedDrawerWidget": "hierarchicalTrackSelector",
           "views": Array [
             Object {
               "bpPerPx": 1,
@@ -307,6 +324,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
               "type": "LinearGenomeView",
             },
           ],
+          "width": 512,
         }
       }
       trackDbUrl={"http://test.com/trackDb.txt"}
@@ -770,6 +788,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
   hubName="TestHub"
   rootModel={
     Object {
+      "activeDrawerWidgets": Object {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+      },
       "configuration": Object {
         "configId": "testing",
       },
@@ -784,7 +805,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       },
       "drawerWidth": 256,
       "menuBars": Array [],
-      "selectedDrawerWidget": "hierarchicalTrackSelector",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -800,6 +820,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "type": "LinearGenomeView",
         },
       ],
+      "width": 512,
     }
   }
   trackDbUrl={"http://test.com/hg19/trackDb.txt"}
@@ -815,6 +836,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
     hubName="TestHub"
     rootModel={
       Object {
+        "activeDrawerWidgets": Object {
+          "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+        },
         "configuration": Object {
           "configId": "testing",
         },
@@ -829,7 +853,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         },
         "drawerWidth": 256,
         "menuBars": Array [],
-        "selectedDrawerWidget": "hierarchicalTrackSelector",
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -845,6 +868,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             "type": "LinearGenomeView",
           },
         ],
+        "width": 512,
       }
     }
     trackDbUrl={"http://test.com/hg19/trackDb.txt"}
@@ -860,6 +884,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       hubName="TestHub"
       rootModel={
         Object {
+          "activeDrawerWidgets": Object {
+            "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+          },
           "configuration": Object {
             "configId": "testing",
           },
@@ -874,7 +901,6 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           },
           "drawerWidth": 256,
           "menuBars": Array [],
-          "selectedDrawerWidget": "hierarchicalTrackSelector",
           "views": Array [
             Object {
               "bpPerPx": 1,
@@ -890,6 +916,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
               "type": "LinearGenomeView",
             },
           ],
+          "width": 512,
         }
       }
       trackDbUrl={"http://test.com/hg19/trackDb.txt"}

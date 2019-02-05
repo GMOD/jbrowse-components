@@ -143,6 +143,11 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     />
     <div
       className="LinearGenomeView-zoomControls-6"
+      style={
+        Object {
+          "right": 4,
+        }
+      }
     >
       <div
         className="ZoomControls-container-32"
@@ -635,6 +640,11 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     </div>
     <div
       className="LinearGenomeView-zoomControls-6"
+      style={
+        Object {
+          "right": 4,
+        }
+      }
     >
       <div
         className="ZoomControls-container-32"
@@ -1107,6 +1117,11 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     />
     <div
       className="LinearGenomeView-zoomControls-6"
+      style={
+        Object {
+          "right": 4,
+        }
+      }
     >
       <div
         className="ZoomControls-container-32"
