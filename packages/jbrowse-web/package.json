@@ -18,6 +18,7 @@
     "canvas": "^2.3.1",
     "classnames": "^2.2.6",
     "debounce": "^1.2.0",
+    "deepmerge": "^3.1.0",
     "file-saver": "^2.0.0",
     "http-range-fetcher": "^1.1.0",
     "json-stable-stringify": "^1.0.1",
