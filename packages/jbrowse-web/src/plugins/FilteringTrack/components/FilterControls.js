@@ -7,6 +7,7 @@ import {
   FormLabel,
   FormControl,
   FormGroup,
+  FormHelperText,
 } from '@material-ui/core'
 import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import { reaction } from 'mobx'
@@ -42,25 +43,31 @@ const AttributeFilter = withStyles(styles)(
     <FormControl component="fieldset" className={classes.formControl}>
       <FormLabel component="legend">{attrName}</FormLabel>
       <FormGroup row>
-        {values.map(value => (
-          <FormControlLabel
-            key={`${attrName}-${value}`}
-            control={
-              <Checkbox
-                checked={
-                  !(
-                    model.filterOut.has(attrName) &&
-                    model.filterOut.get(attrName).get(String(value))
-                  )
-                }
-                onChange={evt =>
-                  model.toggleFilter(attrName, value, evt.target.checked)
-                }
-              />
-            }
-            label={value}
-          />
-        ))}
+        {!values.length ? (
+          <FormHelperText style={{ marginRight: '1em' }}>
+            no values seen yet
+          </FormHelperText>
+        ) : (
+          values.map(value => (
+            <FormControlLabel
+              key={`${attrName}-${value}`}
+              control={
+                <Checkbox
+                  checked={
+                    !(
+                      model.filterOut.has(attrName) &&
+                      model.filterOut.get(attrName).get(String(value))
+                    )
+                  }
+                  onChange={evt =>
+                    model.toggleFilter(attrName, value, evt.target.checked)
+                  }
+                />
+              }
+              label={value}
+            />
+          ))
+        )}
       </FormGroup>
     </FormControl>
   )),
