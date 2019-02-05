@@ -61,6 +61,7 @@ jbrowse.configure({
       type: 'FilteringTrack',
       name: 'Variants',
       renderer: { type: 'SvgFeatureRenderer' },
+      filterAttributes: ['type', 'start', 'end'],
       adapter: {
         type: 'FromConfigAdapter',
         assemblyName: 'grc37 proteins',
@@ -156,7 +157,7 @@ firstView.displayRegions([
 
 firstView.zoomTo(0.06) // bpPerPx
 firstView.horizontalScroll(-6500)
-firstView.showTrack(model.configuration.tracks[1], { height: 110 })
+firstView.showTrack(model.configuration.tracks[1])
 
 // finally, start the app
 jbrowse.start()

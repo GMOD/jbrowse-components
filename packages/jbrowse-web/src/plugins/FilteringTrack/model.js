@@ -53,8 +53,8 @@ export default pluginManager => {
         type: types.literal('FilteringTrack'),
         configuration: ConfigurationReference(configSchema),
         hideExpressions: types.optional(types.array(types.string), () => []),
-        height: 103,
-        filterControlHeight: 50,
+        height: 193,
+        filterControlHeight: 70,
         dragHandleHeight: 3,
         filterOut: types.map(types.map(types.boolean)), // model[attrName][value] = true if filtering out
       })

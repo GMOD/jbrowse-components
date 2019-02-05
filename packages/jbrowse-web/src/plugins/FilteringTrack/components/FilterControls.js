@@ -1,9 +1,15 @@
 import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
-import { withStyles, FormControlLabel, Checkbox } from '@material-ui/core'
+import {
+  withStyles,
+  FormControlLabel,
+  Checkbox,
+  FormLabel,
+  FormControl,
+  FormGroup,
+} from '@material-ui/core'
 import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import { reaction } from 'mobx'
-import * as deepmerge from 'deepmerge'
 
 import { getConf } from '../../../configuration'
 
@@ -11,6 +17,9 @@ const styles = theme => ({
   root: {
     background: theme.palette.background.default,
     overflow: 'auto',
+    padding: theme.spacing.unit,
+    display: 'flex',
+    flexWrap: 'wrap',
   },
 })
 
@@ -26,6 +35,41 @@ function visibleValues(model, attrName) {
     }
   }
   return Array.from(values.values()).sort()
+}
+
+const AttributeFilter = withStyles(styles)(
+  observer(({ attrName, model, classes, values }) => (
+    <FormControl component="fieldset" className={classes.formControl}>
+      <FormLabel component="legend">{attrName}</FormLabel>
+      <FormGroup row>
+        {values.map(value => (
+          <FormControlLabel
+            key={`${attrName}-${value}`}
+            control={
+              <Checkbox
+                checked={
+                  !(
+                    model.filterOut.has(attrName) &&
+                    model.filterOut.get(attrName).get(String(value))
+                  )
+                }
+                onChange={evt =>
+                  model.toggleFilter(attrName, value, evt.target.checked)
+                }
+              />
+            }
+            label={value}
+          />
+        ))}
+      </FormGroup>
+    </FormControl>
+  )),
+)
+
+AttributeFilter.propTypes = {
+  attrName: ReactPropTypes.string.isRequired,
+  model: MxPropTypes.objectOrObservableObject.isRequired,
+  values: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
 }
 
 class FilterControls extends Component {
@@ -53,9 +97,16 @@ class FilterControls extends Component {
         return newSeenAttributes
       },
       newSeenAttributes => {
-        this.setState(state => ({
-          seenAttributes: deepmerge(newSeenAttributes, state.seenAttributes),
-        }))
+        this.setState(state => {
+          const seenAttributes = {}
+          Object.keys(newSeenAttributes).forEach(attrName => {
+            seenAttributes[attrName] = {
+              ...(state.seenAttributes[attrName] || {}),
+              ...newSeenAttributes[attrName],
+            }
+          })
+          return { seenAttributes }
+        })
       },
     )
   }
@@ -72,34 +123,12 @@ class FilterControls extends Component {
         {Object.keys(seenAttributes)
           .sort()
           .map(attrName => (
-            <React.Fragment key={attrName}>
-              <div>{attrName}</div>
-              {Object.keys(seenAttributes[attrName])
-                .sort()
-                .map(value => (
-                  <FormControlLabel
-                    key={`${attrName}-${value}`}
-                    control={
-                      <Checkbox
-                        checked={
-                          !(
-                            model.filterOut.has(attrName) &&
-                            model.filterOut.get(attrName).get(String(value))
-                          )
-                        }
-                        onChange={evt =>
-                          model.toggleFilter(
-                            attrName,
-                            value,
-                            evt.target.checked,
-                          )
-                        }
-                      />
-                    }
-                    label={value}
-                  />
-                ))}
-            </React.Fragment>
+            <AttributeFilter
+              key={attrName}
+              attrName={attrName}
+              model={model}
+              values={Object.keys(seenAttributes[attrName]).sort()}
+            />
           ))}
       </div>
     )
