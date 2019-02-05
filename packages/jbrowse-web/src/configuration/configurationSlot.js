@@ -39,19 +39,21 @@ const literalJSON = self => ({
   },
 })
 
+const objectJSON = self => ({
+  views: {
+    get valueJSON() {
+      return JSON.stringify(self.value)
+    },
+  },
+})
+
 // custom actions for modifying the value models
 const typeModelExtensions = {
-  fileLocation: self => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
-  }),
+  fileLocation: objectJSON,
   number: literalJSON,
   integer: literalJSON,
   boolean: literalJSON,
-  frozen: literalJSON,
+  frozen: objectJSON,
   // special actions for working with stringArray slots
   stringArray: self => ({
     views: {

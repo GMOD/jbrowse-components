@@ -18,6 +18,7 @@ import { getPropertyMembers } from 'mobx-state-tree'
 import React from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
+import JsonEditor from './JsonEditor'
 
 const StringEditor = observer(({ slot }) => (
   <TextField
@@ -162,6 +163,7 @@ const valueComponents = {
   color: ColorEditor,
   stringEnum: stringEnumEditor,
   boolean: booleanEditor,
+  frozen: JsonEditor,
 }
 
 const modeSwitchButtonWidth = 25
@@ -193,9 +195,13 @@ export const slotEditorStyles = theme => ({
 const SlotEditor = withStyles(slotEditorStyles)(
   observer(({ slot, slotSchema, classes }) => {
     const { type } = slot
-    const ValueComponent = slot.isCallback
+    let ValueComponent = slot.isCallback
       ? CallbackEditor
-      : valueComponents[type] || StringEditor
+      : valueComponents[type]
+    if (!ValueComponent) {
+      console.warn(`no slot editor defined for ${type}, editing as string`)
+      ValueComponent = StringEditor
+    }
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
       <Card className={classes.card}>
