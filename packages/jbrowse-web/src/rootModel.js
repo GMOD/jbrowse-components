@@ -105,14 +105,9 @@ export default app => {
       },
 
       updateWidth(width) {
-        if (width === self.width) return
-        let newWidth = width
+        let newWidth = Math.floor(width)
+        if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
-        if (newWidth - Math.floor(newWidth) > 0) {
-          console.warn('non-integer width inputted')
-          self.width = Math.floor(newWidth)
-          return
-        }
         self.width = newWidth
       },
 
