@@ -29,6 +29,17 @@ jbrowse.configure({
       },
     },
     {
+      type: 'WiggleTrack',
+      name: 'Wiggle track',
+      category: ['Bar Category'],
+      defaultRendering: 'wiggle',
+      adapter: {
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: '/test_data/volvox.bw' },
+        assemblyName: 'volvox',
+      },
+    },
+    {
       type: 'AlignmentsTrack',
       name: 'volvox-sorted red/blue',
       category: ['Bar Category', 'Baz Category'],

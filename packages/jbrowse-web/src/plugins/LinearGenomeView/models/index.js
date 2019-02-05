@@ -162,7 +162,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             'hierarchicalTrackSelector',
           )
           selector.setView(self)
-          rootModel.setTask('track_select', self)
           rootModel.showDrawerWidget(selector)
         } else {
           throw new Error(`invalid track selector type ${trackSelectorType}`)

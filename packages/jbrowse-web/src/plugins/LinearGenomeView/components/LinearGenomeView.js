@@ -2,7 +2,6 @@ import { Icon, IconButton, withStyles } from '@material-ui/core'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { inject, observer, PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 
@@ -22,7 +21,6 @@ const styles = theme => ({
   linearGenomeView: {
     background: '#eee',
     // background: theme.palette.background.paper,
-    border: '1px solid hsl(0, 0%, 0%)',
     boxSizing: 'content-box',
   },
   controls: {
@@ -41,7 +39,6 @@ const styles = theme => ({
   },
   zoomControls: {
     position: 'absolute',
-    right: theme.spacing.unit / 2,
     top: '0px',
   },
   iconButton: {
@@ -55,12 +52,13 @@ const styles = theme => ({
 class LinearGenomeView extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-    model: PropTypes.observableObject.isRequired,
+    model: PropTypes.objectOrObservableObject.isRequired,
+    rootModel: PropTypes.objectOrObservableObject.isRequired,
   }
 
   render() {
     const scaleBarHeight = 32
-    const { classes, model } = this.props
+    const { classes, model, rootModel } = this.props
     const {
       id,
       blocks,
@@ -70,7 +68,8 @@ class LinearGenomeView extends Component {
       controlsWidth,
       offsetPx,
     } = model
-    const rootModel = getRoot(model)
+    const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
+    const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
     // NOTE: offsetPx is the total offset in px of the viewing window into the
     // whole set of concatenated regions. this number is often quite large.
     // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -123,9 +122,9 @@ class LinearGenomeView extends Component {
               onClick={model.activateTrackSelector}
               title="select tracks"
               selected={
-                rootModel.task &&
-                rootModel.task.taskName === 'track_select' &&
-                rootModel.task.data === model
+                activeDrawerWidget &&
+                activeDrawerWidget.id === 'hierarchicalTrackSelector' &&
+                activeDrawerWidget.view.id === model.id
               }
               value="track_select"
             >
@@ -141,7 +140,14 @@ class LinearGenomeView extends Component {
             horizontallyFlipped={model.horizontallyFlipped}
             width={width - controlsWidth}
           />
-          <div className={classes.zoomControls}>
+          <div
+            className={classes.zoomControls}
+            style={{
+              right: rootModel.activeDrawerWidgets.size
+                ? rootModel.drawerWidth + 4
+                : 4,
+            }}
+          >
             <ZoomControls model={model} controlsHeight={scaleBarHeight} />
           </div>
           {tracks.map(track => [

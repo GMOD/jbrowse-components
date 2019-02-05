@@ -18,19 +18,23 @@ export const Assembly = ConfigurationSchema('Assembly', {
 
 export default app => {
   const { pluginManager } = app
-  const minViewsWidth = 150
-  const minDrawerWidth = 100
+  const minWidth = 384
+  const minDrawerWidth = 128
   return types
     .model('JBrowseWebRootModel', {
+      width: types.optional(
+        types.refinement(types.integer, width => width >= minWidth),
+        512,
+      ),
       drawerWidth: types.optional(
-        types.integer,
-        Math.round((window.innerWidth || 0) * 0.25),
+        types.refinement(types.integer, width => width >= minDrawerWidth),
+        384,
       ),
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
       drawerWidgets: types.map(
         pluginManager.pluggableMstType('drawer widget', 'stateModel'),
       ),
-      selectedDrawerWidget: types.maybe(
+      activeDrawerWidgets: types.map(
         types.reference(
           pluginManager.pluggableMstType('drawer widget', 'stateModel'),
         ),
@@ -80,7 +84,6 @@ export default app => {
     .volatile(() => ({
       app,
       pluginManager,
-      windowWidth: window.innerWidth,
 
       /**
        * this is the globally "selected" object. can be anything.
@@ -98,44 +101,45 @@ export default app => {
     }))
     .views(self => ({
       get viewsWidth() {
-        return window.innerWidth - (self.drawerWidth + 7)
+        // TODO: when drawer is permanent, subtract its width
+        return self.width
+      },
+      get maxDrawerWidth() {
+        return self.width - 256
       },
     }))
     .actions(self => ({
       afterCreate() {
-        if (self.drawerWidth < minDrawerWidth) self.drawerWidth = minDrawerWidth
-        if (self.drawerWidth > self.windowWidth - (minViewsWidth + 7))
-          self.drawerWidth = self.windowWidth - (minViewsWidth + 7)
+        if (self.drawerWidth > self.maxDrawerWidth)
+          self.drawerWidth = self.maxDrawerWidth
       },
 
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
 
-      updateWindowWidth() {
-        const drawerRelativeWidth = self.drawerWidth / self.windowWidth
-        self.windowWidth = window.innerWidth
-        self.drawerWidth = Math.min(
-          Math.max(
-            Math.round(drawerRelativeWidth * self.windowWidth),
-            minDrawerWidth,
-          ),
-          self.windowWidth - (minViewsWidth + 7),
-        )
+      updateWidth(width) {
+        if (width === self.width) return
+        let newWidth = width
+        if (newWidth < minWidth) newWidth = minWidth
+        self.width = newWidth
       },
 
-      setDrawerWidth(drawerWidth) {
-        if (drawerWidth >= minDrawerWidth) {
-          if (self.windowWidth - drawerWidth - 7 >= minViewsWidth)
-            self.drawerWidth = drawerWidth
-        }
-        return self.drawerWidth
+      updateDrawerWidth(drawerWidth) {
+        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        let newDrawerWidth = drawerWidth
+        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth > self.maxDrawerWidth)
+          newDrawerWidth = self.maxDrawerWidth
+        self.drawerWidth = newDrawerWidth
+        return newDrawerWidth
       },
 
       resizeDrawer(distance) {
-        const drawerWidthBefore = self.drawerWidth
-        self.setDrawerWidth(self.drawerWidth - distance)
-        return drawerWidthBefore - self.drawerWidth
+        const oldDrawerWidth = self.drawerWidth
+        const newDrawerWidth = self.updateDrawerWidth(oldDrawerWidth - distance)
+        const actualDistance = oldDrawerWidth - newDrawerWidth
+        return actualDistance
       },
 
       addView(typeName, configuration, initialState = {}) {
@@ -152,7 +156,18 @@ export default app => {
       },
 
       removeView(view) {
-        if (self.task && self.task.data === view) self.clearTask()
+        for (const [id, drawerWidget] of self.activeDrawerWidgets) {
+          if (
+            id === 'configEditor' &&
+            drawerWidget.target.configId === view.configuration.configId
+          )
+            self.hideDrawerWidget(drawerWidget)
+          else if (
+            id === 'hierarchicalTrackSelector' &&
+            drawerWidget.view.id === view.id
+          )
+            self.hideDrawerWidget(drawerWidget)
+        }
         self.views.remove(view)
       },
 
@@ -173,12 +188,18 @@ export default app => {
         self.drawerWidgets.set(model.id, model)
       },
 
-      showDrawerWidget(id) {
-        self.selectedDrawerWidget = id
+      showDrawerWidget(drawerWidget) {
+        if (self.activeDrawerWidgets.has(drawerWidget.id))
+          self.activeDrawerWidgets.delete(drawerWidget.id)
+        self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
+      },
+
+      hideDrawerWidget(drawerWidget) {
+        self.activeDrawerWidgets.delete(drawerWidget.id)
       },
 
       hideAllDrawerWidgets() {
-        self.selectedDrawerWidget = undefined
+        self.activeDrawerWidgets.clear()
       },
 
       addMenuBar(
@@ -237,23 +258,7 @@ export default app => {
           )
         const editor = self.drawerWidgets.get('configEditor')
         editor.setTarget(configuration)
-        self.setTask('configure', configuration)
         self.showDrawerWidget(editor)
-      },
-
-      /**
-       * set the global "task" that is considered to be in progress.
-       */
-      setTask(taskName, data) {
-        self.task = { taskName, data }
-      },
-
-      /**
-       * clear the global task
-       */
-      clearTask() {
-        self.task = undefined
-        self.hideAllDrawerWidgets()
       },
     }))
 }

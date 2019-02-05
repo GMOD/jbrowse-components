@@ -1,8 +1,11 @@
+import { ConfigurationSchema } from '../../configuration'
 import Plugin from '../../Plugin'
 import TrackType from '../../pluggableElementTypes/TrackType'
+import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
+import AlignmentsFeatureDrawerWidgetComponent from './components/AlignmentsFeatureDrawerWidget'
 
 import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import modelFactory, { AlignmentsFeatureDrawerWidgetModel } from './model'
 
 export default class AlignmentsTrackPlugin extends Plugin {
   install(pluginManager) {
@@ -15,6 +18,23 @@ export default class AlignmentsTrackPlugin extends Plugin {
         name: 'AlignmentsTrack',
         configSchema,
         stateModel,
+      })
+    })
+
+    pluginManager.addDrawerWidgetType(() => {
+      const stateModel = AlignmentsFeatureDrawerWidgetModel
+
+      const configSchema = ConfigurationSchema(
+        'AlignmentsFeatureDrawerWidget',
+        {},
+      )
+
+      return new DrawerWidgetType({
+        name: 'AlignmentsFeatureDrawerWidget',
+        heading: 'Feature Details',
+        configSchema,
+        stateModel,
+        LazyReactComponent: AlignmentsFeatureDrawerWidgetComponent,
       })
     })
   }

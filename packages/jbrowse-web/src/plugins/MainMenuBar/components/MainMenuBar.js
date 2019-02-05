@@ -3,7 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { values } from 'mobx'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import DropDownMenu from './DropDownMenu'
@@ -18,7 +18,7 @@ const styles = {
 }
 
 function MainMenuBar(props) {
-  const { classes, model } = props
+  const { classes, model, rootModel } = props
 
   return (
     <AppBar className={classes.root} position="static">
@@ -35,6 +35,13 @@ function MainMenuBar(props) {
             model={model}
           />
         ))}
+        <div
+          style={{
+            width: rootModel.activeDrawerWidgets.size
+              ? rootModel.drawerWidth
+              : 0,
+          }}
+        />
       </Toolbar>
     </AppBar>
   )
@@ -45,7 +52,8 @@ MainMenuBar.propTypes = {
     grow: PropTypes.shape.isRequired,
     root: PropTypes.shape.isRequired,
   }).isRequired,
-  model: MobxPropTypes.observableObject.isRequired,
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
+  rootModel: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(MainMenuBar))
+export default withStyles(styles)(inject('rootModel')(observer(MainMenuBar)))

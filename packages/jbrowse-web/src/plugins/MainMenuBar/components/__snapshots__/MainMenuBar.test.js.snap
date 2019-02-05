@@ -1,73 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MainMenuBar /> renders 1`] = `
-<WithStyles(AppBar)
-  className="MainMenuBar-root-1"
-  position="static"
->
-  <WithStyles(Toolbar)
-    variant="dense"
-  >
-    <WithStyles(Typography)
-      color="inherit"
-      variant="h6"
-    >
-      JBrowse
-    </WithStyles(Typography)>
-    <div
-      className="MainMenuBar-grow-2"
-    />
-    <WithStyles(DropDownMenu)
-      key="Help"
-      menuItems={
-        Array [
-          Object {
-            "callback": "openAbout",
-            "icon": "info",
-            "name": "About",
-          },
-          Object {
-            "callback": "openHelp",
-            "icon": "help",
-            "name": "Help",
-          },
-          Object {
-            "callback": "openAssemblyEditor",
-            "icon": "edit",
-            "name": "Assemblies",
-          },
-        ]
-      }
-      menuTitle="Help"
-      model={
+<MainMenuBar
+  classes={
+    Object {
+      "grow": "inject-MainMenuBar-with-rootModel-grow-2",
+      "root": "inject-MainMenuBar-with-rootModel-root-1",
+    }
+  }
+  model={
+    Object {
+      "id": "testingId",
+      "menus": Array [
         Object {
-          "id": "testingId",
-          "menus": Array [
+          "menuItems": Array [
             Object {
-              "menuItems": Array [
-                Object {
-                  "callback": "openAbout",
-                  "icon": "info",
-                  "name": "About",
-                },
-                Object {
-                  "callback": "openHelp",
-                  "icon": "help",
-                  "name": "Help",
-                },
-                Object {
-                  "callback": "openAssemblyEditor",
-                  "icon": "edit",
-                  "name": "Assemblies",
-                },
-              ],
+              "callback": "openAbout",
+              "icon": "info",
+              "name": "About",
+            },
+            Object {
+              "callback": "openHelp",
+              "icon": "help",
               "name": "Help",
             },
+            Object {
+              "callback": "openAssemblyEditor",
+              "icon": "edit",
+              "name": "Assemblies",
+            },
           ],
-          "type": "MainMenuBar",
-        }
-      }
-    />
-  </WithStyles(Toolbar)>
-</WithStyles(AppBar)>
+          "name": "Help",
+        },
+      ],
+      "type": "MainMenuBar",
+    }
+  }
+  rootModel={
+    Object {
+      "activeDrawerWidgets": Map {},
+    }
+  }
+/>
 `;

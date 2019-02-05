@@ -15,7 +15,12 @@ describe('<MainMenuBar />', () => {
       id: 'testingId',
       type: 'MainMenuBar',
     })
-    const wrapper = shallow(<MainMenuBar model={menubar} />)
+    const wrapper = shallow(
+      <MainMenuBar
+        model={menubar}
+        rootModel={{ activeDrawerWidgets: new Map() }}
+      />,
+    )
       .first()
       .shallow()
     expect(wrapper).toMatchSnapshot()
