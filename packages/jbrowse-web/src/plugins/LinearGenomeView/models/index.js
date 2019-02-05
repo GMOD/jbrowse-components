@@ -17,7 +17,6 @@ import LinearGenomeViewConfigSchema from './configSchema'
 
 import BaseTrack from './baseTrack'
 import calculateBlocks from './calculateBlocks'
-import { getContainingView } from '../../../util/tracks'
 
 const validBpPerPx = [
   0.05,
@@ -214,7 +213,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * @param {string} refName
        * @param {string} assemblyName
        */
-      centerAt(bp, refName, assemblyName) {
+      centerAt(/* bp, refName, assemblyName */) {
         /* TODO */
       },
 
