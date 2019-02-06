@@ -59,7 +59,7 @@ jbrowse.configure({
     },
     {
       type: 'FilteringTrack',
-      name: 'Variants',
+      name: 'Filter Test',
       renderer: { type: 'SvgFeatureRenderer' },
       filterAttributes: ['type', 'start', 'end'],
       adapter: {
@@ -71,42 +71,28 @@ jbrowse.configure({
             seq_id: 'JAK2',
             start: 100,
             end: 101,
-            type: 'zonk',
+            type: 'foo',
           },
           {
             uniqueId: 'two',
             seq_id: 'JAK2',
             start: 110,
             end: 111,
-            type: 'zee',
+            type: 'bar',
           },
           {
             uniqueId: 'three',
             seq_id: 'JAK2',
             start: 120,
             end: 121,
-            type: 'ziz',
+            type: 'baz',
           },
           {
             uniqueId: 'four',
             seq_id: 'JAK2',
             start: 130,
             end: 131,
-            type: 'zoz',
-          },
-          {
-            uniqueId: 'five',
-            seq_id: 'JAK2',
-            start: 140,
-            end: 141,
-            type: 'nee',
-          },
-          {
-            uniqueId: 'six',
-            seq_id: 'JAK2',
-            start: 100,
-            end: 101,
-            type: 'noo',
+            type: 'quux',
           },
         ],
       },
@@ -157,7 +143,10 @@ firstView.displayRegions([
 
 firstView.zoomTo(0.06) // bpPerPx
 firstView.horizontalScroll(-6500)
-firstView.showTrack(model.configuration.tracks[1])
+firstView.showTrack(model.configuration.tracks[1], {
+  height: 400,
+  filterControlHeight: 200,
+})
 
 // finally, start the app
 jbrowse.start()
