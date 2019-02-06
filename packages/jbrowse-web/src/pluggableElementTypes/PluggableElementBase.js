@@ -5,7 +5,11 @@ export default class PluggableElementType {
     Object.assign(
       this,
       {
-        configSchema: ConfigurationSchema('Anonymous', {}),
+        configSchema: ConfigurationSchema(
+          'Anonymous',
+          {},
+          { explicitlyTyped: true },
+        ),
       },
       ...defaults,
       stuff,

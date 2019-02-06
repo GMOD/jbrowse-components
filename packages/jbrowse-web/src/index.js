@@ -18,90 +18,52 @@ jbrowse.configure({
   views: [{ type: 'LinearGenomeView' }],
   tracks: [
     {
-      type: 'BasicTrack',
-      name: 'Sequence',
-      renderer: { type: 'DivSequenceRenderer' },
+      type: 'SequenceTrack',
+      name: 'Reference sequence',
+      category: ['Bar Category'],
+      defaultRendering: 'div',
       adapter: {
-        type: 'FromConfigAdapter',
-        assemblyName: 'grc37 proteins',
-        features: [
-          {
-            uniqueId: 'protein_seq',
-            seq_id: 'JAK2',
-            start: 0,
-            end: 1132,
-            seq: `
-            MGMACLTMTEMEGTSTSSIYQNGDISGNANSMKQIDPVLQVYLYHSLGKSEADYLTFPSG
-            EYVAEEICIAASKACGITPVYHNMFALMSETERIWYPPNHVFHIDESTRHNVLYRIRFYF
-            PRWYCSGSNRAYRHGISRGAEAPLLDDFVMSYLFAQWRHDFVHGWIKVPVTHETQEECLG
-            MAVLDMMRIAKENDQTPLAIYNSISYKTFLPKCIRAKIQDYHILTRKRIRYRFRRFIQQF
-            SQCKATARNLKLKYLINLETLQSAFYTEKFEVKEPGSGPSGEEIFATIIITGNGGIQWSR
-            GKHKESETLTEQDLQLYCDFPNIIDVSIKQANQEGSNESRVVTIHKQDGKNLEIELSSLR
-            EALSFVSLIDGYYRLTADAHHYLCKEVAPPAVLENIQSNCHGPISMDFAISKLKKAGNQT
-            GLYVLRCSPKDFNKYFLTFAVERENVIEYKHCLITKNENEEYNLSGTKKNFSSLKDLLNC
-            YQMETVRSDNIIFQFTKCCPPKPKDKSNLLVFRTNGVSDVPTSPTLQRPTHMNQMVFHKI
-            RNEDLIFNESLGQGTFTKIFKGVRREVGDYGQLHETEVLLKVLDKAHRNYSESFFEAASM
-            MSKLSHKHLVLNYGVCVCGDENILVQEFVKFGSLDTYLKKNKNCINILWKLEVAKQLAWA
-            MHFLEENTLIHGNVCAKNILLIREEDRKTGNPPFIKLSDPGISITVLPKDILQERIPWVP
-            PECIENPKNLNLATDKWSFGTTLWEICSGGDKPLSALDSQRKLQFYEDRHQLPAPKWAEL
-            ANLINNCMDYEPDFRPSFRAIIRDLNSLFTPDYELLTENDMLPNMRIGALGFSGAFEDRD
-            PTQFEERHLKFLQQLGKGNFGSVEMCRYDPLQDNTGEVVAVKKLQHSTEEHLRDFEREIE
-            ILKSLQHDNIVKYKGVCYSAGRRNLKLIMEYLPYGSLRDYLQKHKERIDHIKLLQYTSQI
-            CKGMEYLGTKRYIHRDLATRNILVENENRVKIGDFGLTKVLPQDKEYYKVKEPGESPIFW
-            YAPESLTESKFSVASDVWSFGVVLYELFTYIEKSKSPPAEFMRMIGNDKQGQMIVFHLIE
-            LLKNNGRLPRPDGCPDEIYMIMTECWNNNVNQRPSFRDLALRVDQIRDNMAG`.replace(
-              /\s/g,
-              '',
-            ),
-          },
-        ],
+        type: 'TwoBitAdapter',
+        twoBitLocation: { uri: '/test_data/volvox.2bit' },
+        assemblyName: 'volvox',
       },
     },
     {
-      type: 'FilteringTrack',
-      name: 'Filter Test',
-      renderer: { type: 'SvgFeatureRenderer' },
-      filterAttributes: ['type', 'start', 'end'],
+      type: 'WiggleTrack',
+      name: 'Wiggle track',
+      category: ['Bar Category'],
+      defaultRendering: 'wiggle',
       adapter: {
-        type: 'FromConfigAdapter',
-        assemblyName: 'grc37 proteins',
-        features: [
-          {
-            uniqueId: 'one',
-            seq_id: 'JAK2',
-            start: 100,
-            end: 101,
-            type: 'foo',
-          },
-          {
-            uniqueId: 'two',
-            seq_id: 'JAK2',
-            start: 110,
-            end: 111,
-            type: 'bar',
-          },
-          {
-            uniqueId: 'three',
-            seq_id: 'JAK2',
-            start: 120,
-            end: 121,
-            type: 'baz',
-          },
-          {
-            uniqueId: 'four',
-            seq_id: 'JAK2',
-            start: 130,
-            end: 131,
-            type: 'quux',
-          },
-        ],
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: '/test_data/volvox.bw' },
+        assemblyName: 'volvox',
       },
+    },
+    {
+      type: 'AlignmentsTrack',
+      name: 'volvox-sorted red/blue',
+      category: ['Bar Category', 'Baz Category'],
+      adapter: {
+        type: 'BamAdapter',
+        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
+        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'volvox',
+      },
+    },
+    {
+      type: 'AlignmentsTrack',
+      name: 'volvox-sorted all green',
+      category: ['Bee Category', 'Boo Category'],
+      adapter: {
+        type: 'BamAdapter',
+        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
+        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'vvx',
+      },
+      renderers: { PileupRenderer: { alignmentColor: 'green' } },
     },
   ],
   assemblies: {
-    'grc37 proteins': {
-      sequenceType: 'protein',
-    },
     volvox: {
       aliases: ['vvx'],
       seqNameAliases: {
@@ -134,19 +96,32 @@ model.menuBars[0].unshiftMenu({
 const firstView = model.addView('LinearGenomeView')
 firstView.displayRegions([
   {
-    assemblyName: 'grc37 proteins',
-    refName: 'JAK2',
+    assemblyName: 'vvx',
+    refName: 'contigA',
     start: 0,
     end: 50000,
   },
+  { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
 firstView.zoomTo(0.06) // bpPerPx
-firstView.horizontalScroll(-6500)
-firstView.showTrack(model.configuration.tracks[1], {
-  height: 400,
-  filterControlHeight: 200,
-})
+firstView.showTrack(model.configuration.tracks[0], { height: 110 })
+firstView.showTrack(model.configuration.tracks[1], { height: 110 })
+firstView.showTrack(model.configuration.tracks[2], { height: 200 })
+
+const secondView = model.addView('LinearGenomeView')
+secondView.showTrack(model.configuration.tracks[1], { height: 100 })
+secondView.displayRegions([
+  { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+  {
+    assemblyName: 'volvox',
+    refName: 'ctgB',
+    start: 0,
+    end: 2000,
+  },
+])
+
+firstView.activateTrackSelector()
 
 // finally, start the app
 jbrowse.start()

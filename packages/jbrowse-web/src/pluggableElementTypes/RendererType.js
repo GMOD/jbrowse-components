@@ -6,6 +6,12 @@ export default class RendererType extends PluggableElementType {
     super(stuff)
     if (!this.ReactComponent)
       throw new Error(`no ReactComponent defined for renderer ${this.name}`)
+    if (!this.configSchema.defaultValue.type)
+      throw new Error(
+        `${this.name} config schema ${
+          this.configSchema.name
+        } is not explicitlyTyped`,
+      )
   }
 
   render(props) {
