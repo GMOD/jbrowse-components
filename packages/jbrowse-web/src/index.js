@@ -20,8 +20,6 @@ jbrowse.configure({
     {
       type: 'SequenceTrack',
       name: 'Reference sequence',
-      category: ['Bar Category'],
-      defaultRendering: 'div',
       adapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: '/test_data/volvox.2bit' },
@@ -30,9 +28,8 @@ jbrowse.configure({
     },
     {
       type: 'BasicTrack',
-      name: 'Wiggle track',
-      category: ['Bar Category'],
-      renderer: { type: 'WiggleRenderer' },
+      name: 'BigWig track',
+      category: ['WGS'],
       adapter: {
         type: 'BigWigAdapter',
         bigWigLocation: { uri: '/test_data/volvox.bw' },
@@ -42,7 +39,7 @@ jbrowse.configure({
     {
       type: 'AlignmentsTrack',
       name: 'volvox-sorted red/blue',
-      category: ['Bar Category', 'Baz Category'],
+      category: ['WGS', 'Alignments'],
       adapter: {
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },
@@ -53,7 +50,7 @@ jbrowse.configure({
     {
       type: 'AlignmentsTrack',
       name: 'volvox-sorted all green',
-      category: ['Bee Category', 'Boo Category'],
+      category: ['WGS', 'Alignments'],
       adapter: {
         type: 'BamAdapter',
         bamLocation: { uri: '/test_data/volvox-sorted.bam' },

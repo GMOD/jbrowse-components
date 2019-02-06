@@ -16,18 +16,24 @@ import React from 'react'
 import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
-const styles = {
+const styles = theme => ({
+  root: {
+    margin: '0 !important',
+    padding: '5px 0 0 5px !important',
+    minHeight: '0 !important',
+    background: '#ddd',
+  },
   expansionPanelDetails: {
     display: 'block',
+    margin: '5px 0 0 5px !important',
   },
-}
+})
 
 const CompactCheckbox = withStyles({
   root: {
     padding: 0,
   },
 })(Checkbox)
-
 const Category = withStyles(styles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
@@ -39,7 +45,14 @@ const Category = withStyles(styles)(
         expanded={!model.collapsed.get(pathName)}
         onChange={() => model.toggleCategory(pathName)}
       >
-        <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+        <ExpansionPanelSummary
+          classes={{
+            root: classes.root,
+            content: classes.root,
+            expanded: classes.root,
+          }}
+          expandIcon={<Icon>expand_more</Icon>}
+        >
           <Typography variant="button">{`${name} (${
             Object.keys(model.allTracksInCategoryPath(path)).length
           })`}</Typography>
