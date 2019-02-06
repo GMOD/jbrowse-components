@@ -1,5 +1,1098 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ConfigurationEditor drawer widget renders all the different types of slots 1`] = `
+<div
+  className="ConfigurationEditor-root-1"
+>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
+      >
+        <label
+          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+          data-shrink={true}
+        >
+          stringTest
+        </label>
+        <div
+          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-78 MuiInput-input-63"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="string1"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+        >
+          stringTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
+      >
+        <label
+          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+          data-shrink={true}
+        >
+          fileLocationTest
+        </label>
+        <div
+          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-78 MuiInput-input-63"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="/path/to/my.file"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+        >
+          fileLocationTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <label
+        className="MuiFormLabel-root-48 MuiInputLabel-root-37 MuiInputLabel-animated-45"
+      >
+        stringArrayTest
+      </label>
+      <ul
+        className="MuiList-root-118"
+      >
+        <li
+          className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+          disabled={false}
+        >
+          <div
+            className="MuiFormControl-root-33"
+          >
+            <div
+              className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+              onClick={[Function]}
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="string1"
+              />
+              <div
+                className="MuiInputAdornment-root-134"
+              >
+                <button
+                  className="MuiButtonBase-root-91 MuiIconButton-root-85"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex="0"
+                  type="button"
+                >
+                  <span
+                    className="MuiIconButton-label-90"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="material-icons MuiIcon-root-94"
+                    >
+                      delete
+                    </span>
+                  </span>
+                  <span
+                    className="MuiTouchRipple-root-103"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li
+          className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+          disabled={false}
+        >
+          <div
+            className="MuiFormControl-root-33"
+          >
+            <div
+              className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+              onClick={[Function]}
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                required={false}
+                type="text"
+                value="string2"
+              />
+              <div
+                className="MuiInputAdornment-root-134"
+              >
+                <button
+                  className="MuiButtonBase-root-91 MuiIconButton-root-85"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex="0"
+                  type="button"
+                >
+                  <span
+                    className="MuiIconButton-label-90"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="material-icons MuiIcon-root-94"
+                    >
+                      delete
+                    </span>
+                  </span>
+                  <span
+                    className="MuiTouchRipple-root-103"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li
+          className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+          disabled={false}
+        >
+          <div
+            className="MuiFormControl-root-33"
+          >
+            <div
+              className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+              onClick={[Function]}
+            >
+              <input
+                aria-invalid={false}
+                className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                disabled={false}
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                placeholder="add new"
+                required={false}
+                type="text"
+                value=""
+              />
+              <div
+                className="MuiInputAdornment-root-134"
+              >
+                <button
+                  className="MuiButtonBase-root-91 MuiButtonBase-disabled-92 MuiIconButton-root-85 MuiIconButton-disabled-89"
+                  disabled={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex="-1"
+                  type="button"
+                >
+                  <span
+                    className="MuiIconButton-label-90"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="material-icons MuiIcon-root-94"
+                    >
+                      add
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+      <p
+        className="MuiFormHelperText-root-110"
+      >
+        stringArrayTest
+      </p>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <label
+        className="MuiFormLabel-root-48 MuiInputLabel-root-37 MuiInputLabel-animated-45"
+      >
+        stringArrayMapTest
+      </label>
+      <div
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-139 StringArrayMapEditor-card-138"
+      >
+        <div
+          className="MuiCardHeader-root-140"
+        >
+          <div
+            className="MuiCardHeader-content-143"
+          >
+            <span
+              className="MuiTypography-root-146 MuiTypography-headline-151 MuiCardHeader-title-144"
+            >
+              key1
+            </span>
+          </div>
+          <div
+            className="MuiCardHeader-action-142"
+          >
+            <button
+              className="MuiButtonBase-root-91 MuiIconButton-root-85"
+              disabled={false}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              onKeyUp={[Function]}
+              onMouseDown={[Function]}
+              onMouseLeave={[Function]}
+              onMouseUp={[Function]}
+              onTouchEnd={[Function]}
+              onTouchMove={[Function]}
+              onTouchStart={[Function]}
+              tabIndex="0"
+              type="button"
+            >
+              <span
+                className="MuiIconButton-label-90"
+              >
+                <span
+                  aria-hidden="true"
+                  className="material-icons MuiIcon-root-94"
+                >
+                  delete
+                </span>
+              </span>
+              <span
+                className="MuiTouchRipple-root-103"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          className="MuiCardContent-root-181"
+        >
+          <ul
+            className="MuiList-root-118"
+          >
+            <li
+              className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+              disabled={false}
+            >
+              <div
+                className="MuiFormControl-root-33"
+              >
+                <div
+                  className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="string1"
+                  />
+                  <div
+                    className="MuiInputAdornment-root-134"
+                  >
+                    <button
+                      className="MuiButtonBase-root-91 MuiIconButton-root-85"
+                      disabled={false}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      onKeyUp={[Function]}
+                      onMouseDown={[Function]}
+                      onMouseLeave={[Function]}
+                      onMouseUp={[Function]}
+                      onTouchEnd={[Function]}
+                      onTouchMove={[Function]}
+                      onTouchStart={[Function]}
+                      tabIndex="0"
+                      type="button"
+                    >
+                      <span
+                        className="MuiIconButton-label-90"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="material-icons MuiIcon-root-94"
+                        >
+                          delete
+                        </span>
+                      </span>
+                      <span
+                        className="MuiTouchRipple-root-103"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li
+              className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+              disabled={false}
+            >
+              <div
+                className="MuiFormControl-root-33"
+              >
+                <div
+                  className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    required={false}
+                    type="text"
+                    value="string2"
+                  />
+                  <div
+                    className="MuiInputAdornment-root-134"
+                  >
+                    <button
+                      className="MuiButtonBase-root-91 MuiIconButton-root-85"
+                      disabled={false}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      onKeyUp={[Function]}
+                      onMouseDown={[Function]}
+                      onMouseLeave={[Function]}
+                      onMouseUp={[Function]}
+                      onTouchEnd={[Function]}
+                      onTouchMove={[Function]}
+                      onTouchStart={[Function]}
+                      tabIndex="0"
+                      type="button"
+                    >
+                      <span
+                        className="MuiIconButton-label-90"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="material-icons MuiIcon-root-94"
+                        >
+                          delete
+                        </span>
+                      </span>
+                      <span
+                        className="MuiTouchRipple-root-103"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li
+              className="MuiListItem-root-122 MuiListItem-default-125 MuiListItem-dense-126"
+              disabled={false}
+            >
+              <div
+                className="MuiFormControl-root-33"
+              >
+                <div
+                  className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+                  onClick={[Function]}
+                >
+                  <input
+                    aria-invalid={false}
+                    className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                    disabled={false}
+                    onBlur={[Function]}
+                    onChange={[Function]}
+                    onFocus={[Function]}
+                    placeholder="add new"
+                    required={false}
+                    type="text"
+                    value=""
+                  />
+                  <div
+                    className="MuiInputAdornment-root-134"
+                  >
+                    <button
+                      className="MuiButtonBase-root-91 MuiButtonBase-disabled-92 MuiIconButton-root-85 MuiIconButton-disabled-89"
+                      disabled={true}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      onKeyUp={[Function]}
+                      onMouseDown={[Function]}
+                      onMouseLeave={[Function]}
+                      onMouseUp={[Function]}
+                      onTouchEnd={[Function]}
+                      onTouchMove={[Function]}
+                      onTouchStart={[Function]}
+                      tabIndex="-1"
+                      type="button"
+                    >
+                      <span
+                        className="MuiIconButton-label-90"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="material-icons MuiIcon-root-94"
+                        >
+                          add
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <p
+            className="MuiFormHelperText-root-110"
+          >
+            Values associated with entry key1
+          </p>
+        </div>
+      </div>
+      <div
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-139 StringArrayMapEditor-card-138"
+      >
+        <div
+          className="MuiCardHeader-root-140"
+        >
+          <div
+            className="MuiCardHeader-content-143"
+          >
+            <div
+              className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
+            >
+              <div
+                className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56 MuiInputBase-adornedEnd-73"
+                onClick={[Function]}
+              >
+                <input
+                  aria-invalid={false}
+                  className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputAdornedEnd-84"
+                  disabled={false}
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  placeholder="add new"
+                  required={false}
+                  type="text"
+                  value=""
+                />
+                <div
+                  className="MuiInputAdornment-root-134"
+                >
+                  <button
+                    className="MuiButtonBase-root-91 MuiButtonBase-disabled-92 MuiIconButton-root-85 MuiIconButton-disabled-89"
+                    disabled={true}
+                    onBlur={[Function]}
+                    onClick={[Function]}
+                    onFocus={[Function]}
+                    onKeyDown={[Function]}
+                    onKeyUp={[Function]}
+                    onMouseDown={[Function]}
+                    onMouseLeave={[Function]}
+                    onMouseUp={[Function]}
+                    onTouchEnd={[Function]}
+                    onTouchMove={[Function]}
+                    onTouchStart={[Function]}
+                    tabIndex="-1"
+                    type="button"
+                  >
+                    <span
+                      className="MuiIconButton-label-90"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="material-icons MuiIcon-root-94"
+                      >
+                        add
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p
+        className="MuiFormHelperText-root-110"
+      >
+        stringArrayMapTest
+      </p>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33"
+      >
+        <label
+          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+          data-shrink={true}
+        >
+          numberTest
+        </label>
+        <div
+          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputType-81 MuiInput-inputType-66"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="number"
+            value={88.5}
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+        >
+          numberTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33"
+      >
+        <label
+          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+          data-shrink={true}
+        >
+          integerTest
+        </label>
+        <div
+          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-formControl-69 MuiInput-formControl-56"
+          onClick={[Function]}
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-78 MuiInput-input-63 MuiInputBase-inputType-81 MuiInput-inputType-66"
+            disabled={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="number"
+            value={42}
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+        >
+          integerTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
+        onClick={[Function]}
+      >
+        <label
+          className="MuiFormLabel-root-48 MuiFormLabel-filled-52 MuiInputLabel-root-37 MuiInputLabel-formControl-42 MuiInputLabel-animated-45 MuiInputLabel-shrink-44"
+          data-shrink={true}
+        >
+          colorTest
+        </label>
+        <div
+          className="MuiInputBase-root-68 MuiInput-root-55 MuiInput-underline-59 MuiInputBase-fullWidth-77 MuiInput-fullWidth-62 MuiInputBase-formControl-69 MuiInput-formControl-56"
+          onClick={[Function]}
+          style={
+            Object {
+              "borderRightColor": "#396494",
+              "borderRightStyle": "solid",
+              "borderRightWidth": "25px",
+              "color": "#396494",
+            }
+          }
+        >
+          <input
+            aria-invalid={false}
+            className="MuiInputBase-input-78 MuiInput-input-63"
+            disabled={false}
+            name="color"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            required={false}
+            type="text"
+            value="#396494"
+          />
+        </div>
+        <p
+          className="MuiFormHelperText-root-110 MuiFormHelperText-filled-116"
+        >
+          colorTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+  >
+    <div
+      className="_class-paperContent-4"
+    >
+      <div
+        className="MuiFormControl-root-33"
+      >
+        <label
+          className="MuiFormControlLabel-root-182"
+        >
+          <span
+            className="MuiButtonBase-root-91 MuiIconButton-root-85 MuiPrivateSwitchBase-root-194 MuiCheckbox-root-188 MuiCheckbox-colorSecondary-193 MuiPrivateSwitchBase-checked-195 MuiCheckbox-checked-189"
+            onBlur={[Function]}
+            onFocus={[Function]}
+            onKeyDown={[Function]}
+            onKeyUp={[Function]}
+            onMouseDown={[Function]}
+            onMouseLeave={[Function]}
+            onMouseUp={[Function]}
+            onTouchEnd={[Function]}
+            onTouchMove={[Function]}
+            onTouchStart={[Function]}
+            tabIndex={null}
+          >
+            <span
+              className="MuiIconButton-label-90"
+            >
+              <svg
+                aria-hidden="true"
+                className="MuiSvgIcon-root-198"
+                focusable="false"
+                role="presentation"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                />
+              </svg>
+              <input
+                checked={true}
+                className="MuiPrivateSwitchBase-input-197"
+                data-indeterminate={false}
+                disabled={false}
+                onChange={[Function]}
+                type="checkbox"
+              />
+            </span>
+            <span
+              className="MuiTouchRipple-root-103"
+            />
+          </span>
+          <span
+            className="MuiTypography-root-146 MuiTypography-body1-155 MuiFormControlLabel-label-187"
+          >
+            booleanTest
+          </span>
+        </label>
+        <p
+          className="MuiFormHelperText-root-110"
+        >
+          booleanTest
+        </p>
+      </div>
+    </div>
+    <div
+      className="_class-slotModeSwitch-5"
+    >
+      <button
+        className="MuiButtonBase-root-91 MuiIconButton-root-85"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="convert to callback"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-90"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-94"
+          >
+            radio_button_unchecked
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-103"
+        />
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`ConfigurationEditor drawer widget renders with defaults of the AlignmentsTrack schema 1`] = `
 <div
   className="ConfigurationEditor-root-1"
@@ -279,10 +1372,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-138"
+      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-207"
     >
       <div
-        className="_class-paperContent-139"
+        className="_class-paperContent-208"
       >
         <div
           className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -298,12 +1391,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             onClick={[Function]}
           >
             <div
-              className="MuiSelect-root-141"
+              className="MuiSelect-root-210"
             >
               <div
                 aria-haspopup="true"
                 aria-pressed="false"
-                className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
+                className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
                 onBlur={[Function]}
                 onClick={[Function]}
                 onFocus={[Function]}
@@ -319,7 +1412,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               />
               <svg
                 aria-hidden="true"
-                className="MuiSvgIcon-root-148 MuiSelect-icon-147"
+                className="MuiSvgIcon-root-198 MuiSelect-icon-216"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -339,7 +1432,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      className="MuiFormGroup-root-161"
+      className="MuiFormGroup-root-221"
     >
       <div
         className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -492,7 +1585,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-161"
+          className="MuiFormGroup-root-221"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -514,12 +1607,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   onClick={[Function]}
                 >
                   <div
-                    className="MuiSelect-root-141"
+                    className="MuiSelect-root-210"
                   >
                     <div
                       aria-haspopup="true"
                       aria-pressed="false"
-                      className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
+                      className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -535,7 +1628,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     />
                     <svg
                       aria-hidden="true"
-                      className="MuiSvgIcon-root-148 MuiSelect-icon-147"
+                      className="MuiSvgIcon-root-198 MuiSelect-icon-216"
                       focusable="false"
                       role="presentation"
                       viewBox="0 0 24 24"
@@ -681,12 +1774,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           onClick={[Function]}
         >
           <div
-            className="MuiSelect-root-141"
+            className="MuiSelect-root-210"
           >
             <div
               aria-haspopup="true"
               aria-pressed="false"
-              className="MuiSelect-select-142 MuiSelect-selectMenu-145 MuiInputBase-input-78 MuiInput-input-63"
+              className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
               onBlur={[Function]}
               onClick={[Function]}
               onFocus={[Function]}
@@ -702,7 +1795,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             />
             <svg
               aria-hidden="true"
-              className="MuiSvgIcon-root-148 MuiSelect-icon-147"
+              className="MuiSvgIcon-root-198 MuiSelect-icon-216"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -762,7 +1855,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-161"
+      className="MuiFormGroup-root-221"
     >
       <label
         className="MuiFormLabel-root-48"
@@ -773,7 +1866,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-161"
+          className="MuiFormGroup-root-221"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -792,7 +1885,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   alignmentColor
                 </label>
                 <div
-                  className="CallbackEditor-callbackEditor-163"
+                  className="CallbackEditor-callbackEditor-223"
                   style={
                     Object {
                       "boxSizing": "border-box",
@@ -953,7 +2046,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <svg
                     aria-hidden="true"
-                    className="MuiSvgIcon-root-148"
+                    className="MuiSvgIcon-root-198"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -1055,7 +2148,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-161"
+          className="MuiFormGroup-root-221"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
