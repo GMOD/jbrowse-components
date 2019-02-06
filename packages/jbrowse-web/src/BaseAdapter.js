@@ -1,39 +1,19 @@
-import { Observable } from 'rxjs'
+import { empty } from 'rxjs'
 
 /**
- * Base class for adapters to extend. Provides utilities for reference sequence
- * name normalization and defines some methods that subclasses must implement.
+ * Base class for adapters to extend. Defines some methods that subclasses must
+ * implement.
  * @property {string} assemblyName - The name of the assembly given in the
- * config or the normalized name if it was an alias defined in the root config
- * @property {string[]} assemblyAliases - An array of other possible names for this
- * assembly
- * @property {object} seqNameAliases - An object with keys that are possible
- * sequence names for that assembly and values that are arrays of other possible
- * names for that sequence
+ * config
  */
 export default class BaseAdapter {
-  constructor(config, rootConfig) {
+  constructor(config) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
       )
     }
-    const { assemblyName } = config
-    this.assemblyName = assemblyName
-    this.assemblyAliases = []
-    this.seqNameAliases = {}
-    const assemblies = rootConfig.assemblies || {}
-    if (assemblies[assemblyName]) {
-      this.assemblyAliases = assemblies[assemblyName].aliases || {}
-      this.seqNameAliases = assemblies[assemblyName].seqNameAliases || {}
-    } else
-      Object.keys(assemblies).forEach(assembly => {
-        if (assemblies[assembly].aliases.includes(assemblyName)) {
-          this.assemblyName = assembly
-          this.assemblyAliases = assemblies[assembly].aliases || {}
-          this.seqNameAliases = assemblies[assembly].seqNameAliases || {}
-        }
-      })
+    this.assemblyName = config.assemblyName
   }
 
   /**
@@ -50,7 +30,7 @@ export default class BaseAdapter {
 
   /**
    * Subclasses should override this method. Method signature here for reference.
-   * @param {Region} param
+   * @param {Region} region
    * @param {string} region.assemblyName Name of the assembly
    * @param {string} region.refName Name of the reference sequence
    * @param {int} region.start Start of the reference sequence
@@ -58,8 +38,8 @@ export default class BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // eslint-disable-next-line no-unused-vars
-  async getFeaturesInRegion({ assembly, refName, start, end }) {
-    throw new Error('getFeaturesInRegion should be overridden by the subclass')
+  async getFeatures({ assembly, refName, start, end }) {
+    throw new Error('getFeatures should be overridden by the subclass')
     // Subclass method should look something like this:
     // return Observable.create(observer => {
     //   const records = getRecords(assembly, refName, start, end)
@@ -83,42 +63,16 @@ export default class BaseAdapter {
     throw new Error('freeResources should be overridden by the subclass')
   }
 
-  async regularizeAndGetFeaturesInRegion(region) {
-    const { assemblyName } = region
-    let { refName } = region
-    const refSeqs = await this.loadData()
-    this.loadRefSeqs(refSeqs)
-    if (!this.hasDataForRefSeq({ assemblyName, refName })) {
-      return Observable.create(observer => {
-        observer.complete()
-      })
-    }
-    refName = this.seqNameMap.get(refName) || refName
-    return this.getFeaturesInRegion(Object.assign(region, { refName }))
-  }
-
   /**
-   * Generates the alias map for the provided sequence names.
-   * @param {string[]} refSeqs An array of the reference sequences in the file
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
+   * @param {Region} region see getFeatures()
    */
-  loadRefSeqs(refSeqs) {
-    this.seqNameMap = new Map()
-    refSeqs.forEach(seqName => {
-      this.seqNameMap.set(seqName, seqName)
-      if (this.seqNameAliases[seqName]) {
-        this.seqNameAliases[seqName].forEach(seqNameAlias => {
-          this.seqNameMap.set(seqNameAlias, seqName)
-        })
-      } else
-        Object.keys(this.seqNameAliases).forEach(configSeqName => {
-          if (this.seqNameAliases[configSeqName].includes(seqName)) {
-            this.seqNameMap.set(configSeqName, seqName)
-            this.seqNameAliases[configSeqName].forEach(seqNameAlias => {
-              this.seqNameMap.set(seqNameAlias, seqName)
-            })
-          }
-        })
-    })
+  async getFeaturesInRegion(region) {
+    if (!(await this.hasDataForRefSeq(region))) {
+      return empty()
+    }
+    return this.getFeatures(region)
   }
 
   /**
@@ -128,20 +82,11 @@ export default class BaseAdapter {
    * @param {string} region.assemblyName Name of the assembly
    * @param {string} region.refName Name of the reference sequence
    */
-  hasDataForRefSeq({ assemblyName, refName }) {
-    if (!this.seqNameMap)
-      throw new Error(
-        '"loadRefSeqs" must be called before "hasDataForRefSeq" can be called',
-      )
-    if (
-      this.assemblyName &&
-      !(
-        this.assemblyName === assemblyName ||
-        this.assemblyAliases.includes(assemblyName)
-      )
-    )
+  async hasDataForRefSeq({ assemblyName, refName }) {
+    if (this.assemblyName && assemblyName && this.assemblyName !== assemblyName)
       return false
-    if (this.seqNameMap.get(refName)) return true
+    const refSeqs = await this.loadData()
+    if (refSeqs.includes(refName)) return true
     return false
   }
 }
