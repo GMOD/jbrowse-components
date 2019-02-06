@@ -19,7 +19,6 @@ import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
-import WiggleTrackPlugin from './plugins/WiggleTrack'
 import FilteringTrackPlugin from './plugins/FilteringTrack'
 
 // views
@@ -47,7 +46,6 @@ const corePlugins = [
   DataHubManagerDrawerWidgetPlugin,
   ConfigurationEditorPlugin,
   SequenceTrackPlugin,
-  WiggleTrackPlugin,
   PileupRendererPlugin,
   SvgFeaturePlugin,
   DivSequenceRendererPlugin,

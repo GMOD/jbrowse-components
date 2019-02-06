@@ -29,10 +29,10 @@ jbrowse.configure({
       },
     },
     {
-      type: 'WiggleTrack',
+      type: 'BasicTrack',
       name: 'Wiggle track',
       category: ['Bar Category'],
-      defaultRendering: 'wiggle',
+      renderer: { type: 'WiggleRenderer' },
       adapter: {
         type: 'BigWigAdapter',
         bigWigLocation: { uri: '/test_data/volvox.bw' },
