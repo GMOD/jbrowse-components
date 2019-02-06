@@ -140,7 +140,7 @@ class FilterControls extends Component {
         <div className={classes.header}>
           <Typography
             className={classes.title}
-            variant="subheading"
+            variant="subtitle2"
             gutterBottom
           >
             Filters
