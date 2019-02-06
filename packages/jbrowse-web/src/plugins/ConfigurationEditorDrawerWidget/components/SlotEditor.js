@@ -171,6 +171,7 @@ export const slotEditorStyles = theme => ({
     display: 'flex',
     marginBottom: 16,
     position: 'relative',
+    overflow: 'visible',
   },
   cardContent: {
     flex: 'auto',
