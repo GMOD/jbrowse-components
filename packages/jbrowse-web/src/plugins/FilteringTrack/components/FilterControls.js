@@ -8,6 +8,7 @@ import {
   FormControl,
   FormGroup,
   FormHelperText,
+  Typography,
 } from '@material-ui/core'
 import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import { reaction } from 'mobx'
@@ -18,9 +19,18 @@ const styles = theme => ({
   root: {
     background: theme.palette.background.default,
     overflow: 'auto',
-    padding: theme.spacing.unit,
+    paddingTop: 0,
+    paddingBottom: theme.spacing.unit,
+    paddingLeft: theme.spacing.unit,
+    paddingRight: theme.spacing.unit,
     display: 'flex',
     flexWrap: 'wrap',
+  },
+  header: {
+    width: '100%',
+  },
+  title: {
+    // fontSize: '80%',
   },
 })
 
@@ -127,6 +137,15 @@ class FilterControls extends Component {
     const { seenAttributes } = this.state
     return (
       <div style={style} className={classes.root}>
+        <div className={classes.header}>
+          <Typography
+            className={classes.title}
+            variant="subheading"
+            gutterBottom
+          >
+            Filters
+          </Typography>
+        </div>
         {Object.keys(seenAttributes)
           .sort()
           .map(attrName => (
