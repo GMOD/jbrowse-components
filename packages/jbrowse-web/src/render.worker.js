@@ -82,13 +82,14 @@ export async function renderRegion(
 
 function wrapForRpc(func) {
   return args => {
+    // console.log(`${func.name} args`, args)
     const result = func(jbrowse.pluginManager, args).catch(e => {
       console.error(e)
       throw e
     })
     // uncomment the below to log the data that the worker is
     // returning to the main thread
-    // result.then(r => console.log(r))
+    // result.then(r => console.log(`${func.name} returned`, r))
     return result
   }
 }
