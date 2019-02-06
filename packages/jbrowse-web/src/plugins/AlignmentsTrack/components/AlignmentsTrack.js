@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
 
-import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
+import BlockBasedTrack from '../../LinearGenomeView/components/BlockBasedTrack'
 
 import './AlignmentsTrack.scss'
 
@@ -9,7 +9,7 @@ const AlignmentsTrack = observer(props => {
   const { blockState } = props.model
   return (
     <div className="AlignmentsTrack">
-      <TrackBlocks {...props} blockState={blockState} />
+      <BlockBasedTrack {...props} blockState={blockState} />
     </div>
   )
 })

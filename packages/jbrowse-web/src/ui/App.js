@@ -3,7 +3,6 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -13,9 +12,11 @@ import { inject, observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
+import { withSize } from 'react-sizeme'
+import { Scrollbars } from 'react-custom-scrollbars'
 
-import DrawerResizeHandle from './DrawerResizeHandle'
 import Theme from './Theme'
+import Drawer from './Drawer'
 
 const styles = theme => ({
   '@global': {
@@ -26,18 +27,15 @@ const styles = theme => ({
   root: {
     height: '100vh',
     display: 'flex',
+    overflow: 'hidden',
+    background: '#808080',
   },
-  menuBars: {
-    marginBottom: theme.spacing.unit,
-  },
+  menuBars: {},
   menuBarsAndComponents: {
     display: 'flex',
     flexDirection: 'column',
   },
-  components: {
-    overflowY: 'auto',
-    backgroundColor: theme.palette.background.default,
-  },
+  components: {},
   drawerCloseButton: {
     float: 'right',
   },
@@ -60,24 +58,22 @@ const styles = theme => ({
 @observer
 class App extends Component {
   static propTypes = {
-    classes: ReactPropTypes.shape({
-      root: ReactPropTypes.string.isRequired,
-      components: ReactPropTypes.string.isRequired,
-      drawerCloseButton: ReactPropTypes.string.isRequired,
-      defaultDrawer: ReactPropTypes.string.isRequired,
-      drawerToolbar: ReactPropTypes.string.isRequired,
-      drawerToolbarCloseButton: ReactPropTypes.string.isRequired,
-    }).isRequired,
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
     rootModel: PropTypes.observableObject.isRequired,
     getViewType: ReactPropTypes.func.isRequired,
     getDrawerWidgetType: ReactPropTypes.func.isRequired,
     getMenuBarType: ReactPropTypes.func.isRequired,
+    size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   }
 
-  constructor(props) {
-    super(props)
-    const { rootModel } = this.props
-    window.addEventListener('resize', () => rootModel.updateWindowWidth())
+  componentDidMount() {
+    const { rootModel, size } = this.props
+    rootModel.updateWidth(size.width)
+  }
+
+  componentDidUpdate() {
+    const { rootModel, size } = this.props
+    rootModel.updateWidth(size.width)
   }
 
   render() {
@@ -88,14 +84,15 @@ class App extends Component {
       getMenuBarType,
       rootModel,
     } = this.props
-    const drawerWidget = rootModel.selectedDrawerWidget
+    const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
     let drawerComponent
-    if (drawerWidget) {
+    if (drawerWidgets.length) {
+      const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
       const {
         LazyReactComponent,
         HeadingComponent,
         heading,
-      } = getDrawerWidgetType(drawerWidget.type)
+      } = getDrawerWidgetType(activeDrawerWidget.type)
       drawerComponent = (
         <Slide direction="left" in>
           <div>
@@ -107,7 +104,7 @@ class App extends Component {
               >
                 <Typography variant="h6" color="inherit">
                   {HeadingComponent ? (
-                    <HeadingComponent model={drawerWidget} />
+                    <HeadingComponent model={activeDrawerWidget} />
                   ) : (
                     heading || undefined
                   )}
@@ -117,7 +114,7 @@ class App extends Component {
                   className={classes.drawerCloseButton}
                   color="inherit"
                   aria-label="Close"
-                  onClick={() => rootModel.clearTask()}
+                  onClick={() => rootModel.hideDrawerWidget(activeDrawerWidget)}
                 >
                   <Icon fontSize="small">close</Icon>
                 </IconButton>
@@ -131,20 +128,10 @@ class App extends Component {
                 />
               }
             >
-              <LazyReactComponent model={drawerWidget} />
+              <LazyReactComponent model={activeDrawerWidget} />
             </React.Suspense>
           </div>
         </Slide>
-      )
-    } else {
-      drawerComponent = (
-        <div className={classes.defaultDrawer}>
-          <Typography variant="h5">Welcome to JBrowse!</Typography>
-          <Typography>
-            Click on &quot;select tracks&quot; in a view to open the track
-            selector for that view here.
-          </Typography>
-        </div>
       )
     }
 
@@ -169,7 +156,10 @@ class App extends Component {
                 )
               })}
             </div>
-            <div className={classes.components}>
+            <Scrollbars
+              className={classes.components}
+              style={{ width: rootModel.width }}
+            >
               {rootModel.views.map(view => {
                 const { ReactComponent } = getViewType(view.type)
                 return <ReactComponent key={`view-${view.id}`} model={view} />
@@ -190,23 +180,15 @@ class App extends Component {
               >
                 Add linear view
               </button>
-            </div>
+            </Scrollbars>
           </div>
-          <DrawerResizeHandle
-            onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
-          />
-          <Paper
-            className={classes.components}
-            style={{
-              width: rootModel.drawerWidth,
-            }}
-          >
-            {drawerComponent}
-          </Paper>
         </div>
+        <Drawer open={Boolean(rootModel.activeDrawerWidgets.size)}>
+          {drawerComponent}
+        </Drawer>
       </MuiThemeProvider>
     )
   }
 }
 
-export default App
+export default withSize()(App)

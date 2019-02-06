@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`inverted mode and horizontally flipped 1`] = `
+Object {
+  "height": 100,
+  "imageData": Any<Object>,
+  "width": 33,
+}
+`;
+
+exports[`several features 1`] = `
+Object {
+  "height": 100,
+  "imageData": Any<Object>,
+  "width": 33,
+}
+`;
+
+exports[`test render 1`] = `
+Object {
+  "height": 100,
+  "imageData": Any<Object>,
+  "width": 33,
+}
+`;

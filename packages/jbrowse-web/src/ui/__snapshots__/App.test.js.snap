@@ -2,13 +2,14 @@
 
 exports[`jbrowse-web app renders an empty model without crashing 1`] = `
 Object {
+  "activeDrawerWidgets": Object {},
   "configuration": Object {
     "configId": Any<String>,
   },
   "drawerWidgets": Object {},
   "drawerWidth": 256,
   "menuBars": Array [],
-  "selectedDrawerWidget": undefined,
   "views": Array [],
+  "width": 512,
 }
 `;

@@ -10,7 +10,7 @@ const styles = {
     textAlign: 'left',
     width: '100%',
     position: 'relative',
-    background: '#555',
+    background: '#404040',
     overflow: 'hidden',
     height: '100%',
   },

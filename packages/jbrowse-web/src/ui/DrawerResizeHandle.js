@@ -1,82 +1,77 @@
 import { withStyles } from '@material-ui/core/styles'
-import ReactPropTypes from 'prop-types'
+import PropTypes from 'prop-types'
+import classNames from 'classnames'
 import React from 'react'
 
 const styles = {
-  resizeHandle: {
+  root: {
     cursor: 'col-resize',
-    width: 5,
+    width: 4,
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 }
 
 @withStyles(styles)
 class DrawerResizeHandle extends React.Component {
   static propTypes = {
-    classes: ReactPropTypes.shape({
-      resizeHandle: ReactPropTypes.string.isRequired,
-    }).isRequired,
-    onHorizontalDrag: ReactPropTypes.func.isRequired,
+    classes: PropTypes.objectOf(PropTypes.string).isRequired,
+    onHorizontalDrag: PropTypes.func.isRequired,
+    className: PropTypes.string,
   }
 
-  constructor(props) {
-    super(props)
-    this.state = { mouseDragging: false, throttling: false }
-
-    this.mouseUp = this.mouseUp.bind(this)
-    this.mouseDown = this.mouseDown.bind(this)
-    this.mouseMove = this.mouseMove.bind(this)
-    this.mouseLeave = this.mouseLeave.bind(this)
+  static defaultProps = {
+    className: '',
   }
 
-  mouseDown(event) {
+  state = {
+    // eslint can't tell that x is actually used in the mouseMove callback
+    x: undefined, // eslint-disable-line react/no-unused-state
+  }
+
+  mouseDown = event => {
+    const { clientX } = event
+    this.setState({ x: clientX }) // eslint-disable-line react/no-unused-state
     event.preventDefault()
     window.addEventListener('mousemove', this.mouseMove, true)
     window.addEventListener('mouseup', this.mouseUp, true)
-    this.setState({ mouseDragging: true })
   }
 
-  mouseMove(event) {
-    event.preventDefault()
-    const { throttling } = this.state
-    if (!throttling) {
-      this.setState({ throttling: true })
+  mouseMove = event => {
+    this.setState(state => {
       const { clientX } = event
-      setTimeout(() => {
-        this.setState({ throttling: false })
-        const { onHorizontalDrag } = this.props
-        const { mouseDragging } = this.state
-        if (mouseDragging && this.previousMouseX !== undefined) {
-          const distance = clientX - this.previousMouseX
-          if (distance) {
-            const distMoved = onHorizontalDrag(distance)
-            if (!distMoved) return
-          }
-        }
-        this.previousMouseX = clientX
-      }, 132)
-    }
+      const { x } = state
+      const { onHorizontalDrag } = this.props
+      const requestedDistance = clientX - x
+      if (requestedDistance) {
+        const actualDistance = onHorizontalDrag(requestedDistance)
+        if (actualDistance) return { x: x + actualDistance }
+      }
+      return { x }
+    })
   }
 
-  mouseUp() {
+  mouseUp = () => {
     window.removeEventListener('mouseup', this.mouseUp, true)
     window.removeEventListener('mousemove', this.mouseMove, true)
-    this.setState({ mouseDragging: false })
+    this.setState({ x: undefined }) // eslint-disable-line react/no-unused-state
   }
 
-  mouseLeave(event) {
+  mouseLeave = event => {
     event.preventDefault()
   }
 
   render() {
-    const { classes } = this.props
+    const { classes, className } = this.props
     return (
       <div
         onMouseDown={this.mouseDown}
-        onMouseMove={this.mouseMove}
         onMouseLeave={this.mouseLeave}
         onMouseUp={this.mouseUp}
         role="presentation"
-        className={classes.resizeHandle}
+        className={classNames(className, classes.root)}
       />
     )
   }

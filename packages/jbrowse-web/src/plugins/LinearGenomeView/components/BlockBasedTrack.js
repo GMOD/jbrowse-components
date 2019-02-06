@@ -9,6 +9,11 @@ const styles = {
     color: 'white',
     position: 'relative',
     height: '100%',
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
+    width: '100%',
+    background: '#555',
+    overflow: 'hidden',
   },
 }
 
