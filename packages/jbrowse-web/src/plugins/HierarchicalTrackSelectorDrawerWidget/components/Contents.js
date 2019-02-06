@@ -22,6 +22,12 @@ const styles = {
   },
 }
 
+const CompactCheckbox = withStyles({
+  root: {
+    padding: 0,
+  },
+})(Checkbox)
+
 const Category = withStyles(styles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
@@ -138,7 +144,7 @@ class Contents extends React.Component {
                 enterDelay={500}
               >
                 <FormControlLabel
-                  control={<Checkbox />}
+                  control={<CompactCheckbox />}
                   label={readConfObject(trackConf, 'name')}
                   checked={model.view.tracks.some(
                     t => t.configuration === trackConf,
