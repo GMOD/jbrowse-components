@@ -109,11 +109,6 @@ export default app => {
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        if (self.drawerWidth > self.maxDrawerWidth)
-          self.drawerWidth = self.maxDrawerWidth
-      },
-
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
@@ -123,6 +118,8 @@ export default app => {
         let newWidth = width
         if (newWidth < minWidth) newWidth = minWidth
         self.width = newWidth
+        if (self.drawerWidth > self.maxDrawerWidth)
+          self.drawerWidth = self.maxDrawerWidth
       },
 
       updateDrawerWidth(drawerWidth) {
