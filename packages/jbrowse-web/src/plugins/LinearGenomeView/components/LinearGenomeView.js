@@ -161,7 +161,6 @@ class LinearGenomeView extends Component {
               key={`track-rendering:${track.id}`}
               trackId={track.id}
               width={width - controlsWidth}
-              onHorizontalScroll={model.horizontalScroll}
             >
               <track.RenderingComponent
                 model={track}
@@ -169,6 +168,7 @@ class LinearGenomeView extends Component {
                 offsetPx={visibleBlocksOffsetPx}
                 bpPerPx={bpPerPx}
                 blockState={{}}
+                onHorizontalScroll={model.horizontalScroll}
               />
             </TrackRenderingContainer>,
             <TrackResizeHandle
