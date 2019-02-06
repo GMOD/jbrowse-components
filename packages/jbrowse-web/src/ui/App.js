@@ -28,17 +28,14 @@ const styles = theme => ({
     height: '100vh',
     display: 'flex',
     overflow: 'hidden',
+    background: '#d8e6fb',
   },
-  menuBars: {
-    marginBottom: theme.spacing.unit,
-  },
+  menuBars: {},
   menuBarsAndComponents: {
     display: 'flex',
     flexDirection: 'column',
   },
-  components: {
-    backgroundColor: theme.palette.background.default,
-  },
+  components: {},
   drawerCloseButton: {
     float: 'right',
   },

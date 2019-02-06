@@ -17,6 +17,7 @@ const dragHandleHeight = 3
 const styles = theme => ({
   root: {
     position: 'relative',
+    marginBottom: theme.spacing.unit,
   },
   linearGenomeView: {
     background: '#eee',
