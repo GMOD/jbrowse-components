@@ -125,6 +125,7 @@ class FilterControls extends Component {
           return { seenAttributes }
         })
       },
+      { delay: 400 },
     )
   }
 
