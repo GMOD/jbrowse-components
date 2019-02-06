@@ -17,16 +17,29 @@ import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
 const styles = theme => ({
-  root: {
-    margin: '0 !important',
-    padding: '5px 0 0 5px !important',
-    minHeight: '0 !important',
-    background: '#ddd',
-  },
+  // root: {
+  //   margin: '0 !important',
+  //   padding: '5px 0 0 5px !important',
+  //   minHeight: '0 !important',
+  //   background: '#ddd',
+  // },
   expansionPanelDetails: {
     display: 'block',
-    margin: '5px 0 0 5px !important',
   },
+  content: {
+    '&$expanded': {
+      margin: '8px 0',
+    },
+  },
+  root: {
+    margin: 0,
+    background: '#ddd',
+    '&$expanded': {
+      minHeight: 0,
+      margin: 0,
+    },
+  },
+  expanded: {},
 })
 
 const CompactCheckbox = withStyles({
@@ -48,8 +61,8 @@ const Category = withStyles(styles)(
         <ExpansionPanelSummary
           classes={{
             root: classes.root,
-            content: classes.root,
-            expanded: classes.root,
+            expanded: classes.expanded,
+            content: classes.content,
           }}
           expandIcon={<Icon>expand_more</Icon>}
         >
