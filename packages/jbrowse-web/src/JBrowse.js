@@ -14,11 +14,12 @@ import BamAdapterPlugin from './plugins/BamAdapter'
 import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
 import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 import BigWigAdapterPlugin from './plugins/BigWigAdapter'
+import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
-import WiggleTrackPlugin from './plugins/WiggleTrack'
+import FilteringTrackPlugin from './plugins/FilteringTrack'
 
 // views
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
@@ -45,10 +46,11 @@ const corePlugins = [
   DataHubManagerDrawerWidgetPlugin,
   ConfigurationEditorPlugin,
   SequenceTrackPlugin,
-  WiggleTrackPlugin,
   PileupRendererPlugin,
   SvgFeaturePlugin,
   DivSequenceRendererPlugin,
+  FromConfigAdapterPlugin,
+  FilteringTrackPlugin,
   WiggleRendererPlugin,
 ]
 
@@ -58,6 +60,11 @@ class JBrowse {
 
   constructor() {
     this.pluginManager = new PluginManager(corePlugins)
+  }
+
+  addPlugin(plugin) {
+    this.pluginManager.addPlugin(plugin)
+    return this
   }
 
   configure(initialConfig) {

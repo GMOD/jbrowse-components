@@ -17,6 +17,7 @@ const dragHandleHeight = 3
 const styles = theme => ({
   root: {
     position: 'relative',
+    marginBottom: theme.spacing.unit,
   },
   linearGenomeView: {
     background: '#eee',
@@ -167,7 +168,6 @@ class LinearGenomeView extends Component {
               key={`track-rendering:${track.id}`}
               trackId={track.id}
               width={width - controlsWidth}
-              onHorizontalScroll={model.horizontalScroll}
             >
               <track.RenderingComponent
                 model={track}
@@ -175,6 +175,7 @@ class LinearGenomeView extends Component {
                 offsetPx={visibleBlocksOffsetPx}
                 bpPerPx={bpPerPx}
                 blockState={{}}
+                onHorizontalScroll={model.horizontalScroll}
               />
             </TrackRenderingContainer>,
             <TrackResizeHandle

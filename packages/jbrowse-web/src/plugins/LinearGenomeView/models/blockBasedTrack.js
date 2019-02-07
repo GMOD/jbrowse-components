@@ -1,4 +1,4 @@
-import { types, getParent } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
@@ -6,6 +6,7 @@ import LinearGenomeTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
 import CompositeMap from '../../../util/compositeMap'
+import { getContainingView } from '../../../util/tracks'
 
 export default types.compose(
   'BlockBasedTrackState',
@@ -36,7 +37,7 @@ export default types.compose(
       }
       return {
         afterAttach() {
-          const view = getParent(self, 2)
+          const view = getContainingView(self)
           // watch the parent's blocks to update our block state when they change
           blockWatchDisposer = autorun(() => {
             // create any blocks that we need to create

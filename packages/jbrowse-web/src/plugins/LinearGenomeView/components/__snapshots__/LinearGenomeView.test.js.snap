@@ -340,11 +340,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     </div>
     <div
       className="TrackRenderingContainer-trackRenderingContainer-92"
-      onMouseDown={[Function]}
-      onMouseLeave={[Function]}
-      onMouseMove={[Function]}
-      onMouseUp={[Function]}
-      onWheel={[Function]}
       role="presentation"
       style={
         Object {
@@ -837,11 +832,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     </div>
     <div
       className="TrackRenderingContainer-trackRenderingContainer-92"
-      onMouseDown={[Function]}
-      onMouseLeave={[Function]}
-      onMouseMove={[Function]}
-      onMouseUp={[Function]}
-      onWheel={[Function]}
       role="presentation"
       style={
         Object {
@@ -934,11 +924,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     </div>
     <div
       className="TrackRenderingContainer-trackRenderingContainer-92"
-      onMouseDown={[Function]}
-      onMouseLeave={[Function]}
-      onMouseMove={[Function]}
-      onMouseUp={[Function]}
-      onWheel={[Function]}
       role="presentation"
       style={
         Object {

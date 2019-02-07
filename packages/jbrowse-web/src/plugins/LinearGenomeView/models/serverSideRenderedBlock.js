@@ -7,13 +7,14 @@ import { Region } from '../../../mst-types'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 import { assembleLocString } from '../../../util'
+import { getContainingView } from '../../../util/tracks'
 
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self) {
   const track = getParent(self, 2)
-  const view = getParent(track, 2)
+  const view = getContainingView(track)
   const root = getParent(view, 2)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
@@ -30,7 +31,7 @@ function renderBlockData(self) {
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,
-      timeout: 10000,
+      timeout: 1000000, // 10000,
     },
   }
 }
@@ -38,7 +39,7 @@ function renderBlockEffect(
   self,
   { rendererType, renderProps, app, renderArgs },
 ) {
-  // console.log(getParent(self, 2).rendererType)
+  // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
   if (self.renderInFlight) self.renderInFlight.cancelled = true
   const inProgress = {}
@@ -81,7 +82,7 @@ export default types
     let renderDisposer
     return {
       afterAttach() {
-        const track = getParent(self, 2)
+        const track = getContainingView(self)
         renderDisposer = reaction(
           () => renderBlockData(self),
           data => renderBlockEffect(self, data),

@@ -7,6 +7,7 @@ import RendererType from '../pluggableElementTypes/RendererType'
 
 import SimpleFeature from '../util/simpleFeature'
 import { iterMap } from '../util'
+import SerializableFilterChain from './util/serializableFilterChain'
 
 export default class ServerSideRenderer extends RendererType {
   /**
@@ -38,7 +39,8 @@ export default class ServerSideRenderer extends RendererType {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
-      featuresMap.set(String(j.id), SimpleFeature.fromJSON(j))
+      const f = SimpleFeature.fromJSON(j)
+      featuresMap.set(String(f.id()), f)
     })
     result.features = featuresMap
     return result
@@ -78,16 +80,46 @@ export default class ServerSideRenderer extends RendererType {
     return result
   }
 
-  // render method called on the worker
-  async renderInWorker(args) {
-    this.deserializeArgsInWorker(args)
-    const { dataAdapter, region } = args
+  /**
+   * use the dataAdapter to fetch the features to be rendered
+   *
+   * @param {object} renderArgs
+   * @returns {Map} of features as { id => feature, ... }
+   */
+  async getFeatures(renderArgs) {
+    const { dataAdapter, region } = renderArgs
     const features = new Map()
     const featureObservable = await dataAdapter.getFeaturesInRegion(region)
     await featureObservable
-      .pipe(tap(feature => features.set(feature.id(), feature)))
+      .pipe(
+        tap(feature => {
+          if (this.featurePassesFilters(renderArgs, feature)) {
+            const id = feature.id()
+            if (!id) throw new Error(`invalid feature id "${id}"`)
+            features.set(id, feature)
+          }
+        }),
+      )
       .toPromise()
+    return features
+  }
 
+  /**
+   * @param {object} renderArgs
+   * @param {FeatureI} feature
+   * @returns {boolean} true if this feature passes all configured filters
+   */
+  featurePassesFilters(renderArgs, feature) {
+    const filterChain = new SerializableFilterChain({
+      filters: renderArgs.filters,
+    })
+    return filterChain.passes(feature, renderArgs)
+  }
+
+  // render method called on the worker
+  async renderInWorker(args) {
+    this.deserializeArgsInWorker(args)
+    const features = await this.getFeatures(args)
     const renderProps = { ...args, features }
 
     const results = await this.render(renderProps)

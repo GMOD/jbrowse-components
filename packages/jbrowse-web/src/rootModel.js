@@ -114,8 +114,8 @@ export default app => {
       },
 
       updateWidth(width) {
-        if (width === self.width) return
-        let newWidth = width
+        let newWidth = Math.floor(width)
+        if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
         self.width = newWidth
         if (self.drawerWidth > self.maxDrawerWidth)

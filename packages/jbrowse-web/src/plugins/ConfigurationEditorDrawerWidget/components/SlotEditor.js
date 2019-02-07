@@ -24,6 +24,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
+import JsonEditor from './JsonEditor'
 
 const StringEditor = observer(({ slot }) => (
   <TextField
@@ -229,10 +230,9 @@ const FileLocationEditor = observer(({ slot }) => {
   // TODO: this can only edit URIs right now, need to make this an actual
   // good file selector
   const { value } = slot
-  if (!value.uri) throw new Error('local files not yet supported')
   return (
     <TextField
-      value={slot.value.uri}
+      value={value.uri}
       label={slot.name}
       // error={filterError}
       helperText={slot.description}
@@ -290,12 +290,15 @@ const valueComponents = {
   color: ColorEditor,
   stringEnum: stringEnumEditor,
   boolean: booleanEditor,
+  frozen: JsonEditor,
 }
 
 export const slotEditorStyles = theme => ({
   paper: {
     display: 'flex',
     marginBottom: theme.spacing.unit * 2,
+    position: 'relative',
+    overflow: 'visible',
   },
   paperContent: {
     flex: 'auto',
@@ -314,9 +317,13 @@ export const slotEditorStyles = theme => ({
 const SlotEditor = withStyles(slotEditorStyles)(
   observer(({ slot, slotSchema, classes }) => {
     const { type } = slot
-    const ValueComponent = slot.isCallback
+    let ValueComponent = slot.isCallback
       ? CallbackEditor
-      : valueComponents[type] || StringEditor
+      : valueComponents[type]
+    if (!ValueComponent) {
+      console.warn(`no slot editor defined for ${type}, editing as string`)
+      ValueComponent = StringEditor
+    }
     if (!(type in valueComponents)) console.log(`need to implement ${type}`)
     return (
       <Paper className={classes.paper}>

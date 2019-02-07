@@ -29,10 +29,10 @@ jbrowse.configure({
       },
     },
     {
-      type: 'WiggleTrack',
+      type: 'BasicTrack',
       name: 'Wiggle track',
       category: ['Bar Category'],
-      defaultRendering: 'wiggle',
+      renderer: { type: 'WiggleRenderer' },
       adapter: {
         type: 'BigWigAdapter',
         bigWigLocation: { uri: '/test_data/volvox.bw' },
@@ -61,6 +61,50 @@ jbrowse.configure({
         assemblyName: 'vvx',
       },
       renderers: { PileupRenderer: { alignmentColor: 'green' } },
+    },
+    {
+      type: 'FilteringTrack',
+      name: 'Filter Test',
+      renderer: { type: 'SvgFeatureRenderer' },
+      filterAttributes: ['type', 'start', 'end'],
+      adapter: {
+        type: 'FromConfigAdapter',
+        assemblyName: 'volvox',
+        features: [
+          {
+            uniqueId: 'one',
+            seq_id: 'ctgA',
+            start: 100,
+            end: 101,
+            type: 'foo',
+            name: 'Boris',
+          },
+          {
+            uniqueId: 'two',
+            seq_id: 'ctgA',
+            start: 110,
+            end: 111,
+            type: 'bar',
+            name: 'Theresa',
+          },
+          {
+            uniqueId: 'three',
+            seq_id: 'ctgA',
+            start: 120,
+            end: 121,
+            type: 'baz',
+            name: 'Nigel',
+          },
+          {
+            uniqueId: 'four',
+            seq_id: 'ctgA',
+            start: 130,
+            end: 131,
+            type: 'quux',
+            name: 'Geoffray',
+          },
+        ],
+      },
     },
   ],
   assemblies: {
