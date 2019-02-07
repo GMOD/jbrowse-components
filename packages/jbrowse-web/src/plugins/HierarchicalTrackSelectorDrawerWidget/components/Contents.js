@@ -16,11 +16,42 @@ import React from 'react'
 import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
-const styles = {
+const styles = theme => ({
   expansionPanelDetails: {
     display: 'block',
+    padding: '8px',
   },
-}
+  content: {
+    '&$expanded': {
+      margin: '8px 0',
+    },
+    margin: '8px 0',
+  },
+  root: {
+    background: theme.categoryColor || '#ddd',
+    '&$expanded': {
+      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
+      minHeight: 0,
+      margin: 0,
+    },
+    margin: 0,
+    minHeight: 0,
+    padding: '0 8px',
+  },
+  expanded: {},
+})
+
+const CompactCheckbox = withStyles({
+  root: {
+    padding: 0,
+  },
+})(Checkbox)
+
+const CompactFormControlLabel = withStyles({
+  root: {
+    marginLeft: 0,
+  },
+})(FormControlLabel)
 
 const Category = withStyles(styles)(
   observer(props => {
@@ -30,10 +61,18 @@ const Category = withStyles(styles)(
 
     return (
       <ExpansionPanel
+        style={{ marginTop: '4px' }}
         expanded={!model.collapsed.get(pathName)}
         onChange={() => model.toggleCategory(pathName)}
       >
-        <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+        <ExpansionPanelSummary
+          classes={{
+            root: classes.root,
+            expanded: classes.expanded,
+            content: classes.content,
+          }}
+          expandIcon={<Icon>expand_more</Icon>}
+        >
           <Typography variant="button">{`${name} (${
             Object.keys(model.allTracksInCategoryPath(path)).length
           })`}</Typography>
@@ -137,8 +176,8 @@ class Contents extends React.Component {
                 placement="left"
                 enterDelay={500}
               >
-                <FormControlLabel
-                  control={<Checkbox />}
+                <CompactFormControlLabel
+                  control={<CompactCheckbox />}
                   label={readConfObject(trackConf, 'name')}
                   checked={model.view.tracks.some(
                     t => t.configuration === trackConf,

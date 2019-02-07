@@ -146,39 +146,39 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         <LinearProgress
           classes={
             Object {
-              "bar": "MuiLinearProgress-bar-202",
-              "bar1Buffer": "MuiLinearProgress-bar1Buffer-207",
-              "bar1Determinate": "MuiLinearProgress-bar1Determinate-206",
-              "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-205",
-              "bar2Buffer": "MuiLinearProgress-bar2Buffer-209",
-              "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-208",
-              "barColorPrimary": "MuiLinearProgress-barColorPrimary-203",
-              "barColorSecondary": "MuiLinearProgress-barColorSecondary-204",
-              "buffer": "MuiLinearProgress-buffer-197",
-              "colorPrimary": "MuiLinearProgress-colorPrimary-193",
-              "colorSecondary": "MuiLinearProgress-colorSecondary-194",
-              "dashed": "MuiLinearProgress-dashed-199",
-              "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-200",
-              "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-201",
-              "determinate": "MuiLinearProgress-determinate-195",
-              "indeterminate": "MuiLinearProgress-indeterminate-196",
-              "query": "MuiLinearProgress-query-198",
-              "root": "MuiLinearProgress-root-192",
+              "bar": "MuiLinearProgress-bar-207",
+              "bar1Buffer": "MuiLinearProgress-bar1Buffer-212",
+              "bar1Determinate": "MuiLinearProgress-bar1Determinate-211",
+              "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-210",
+              "bar2Buffer": "MuiLinearProgress-bar2Buffer-214",
+              "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-213",
+              "barColorPrimary": "MuiLinearProgress-barColorPrimary-208",
+              "barColorSecondary": "MuiLinearProgress-barColorSecondary-209",
+              "buffer": "MuiLinearProgress-buffer-202",
+              "colorPrimary": "MuiLinearProgress-colorPrimary-198",
+              "colorSecondary": "MuiLinearProgress-colorSecondary-199",
+              "dashed": "MuiLinearProgress-dashed-204",
+              "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-205",
+              "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-206",
+              "determinate": "MuiLinearProgress-determinate-200",
+              "indeterminate": "MuiLinearProgress-indeterminate-201",
+              "query": "MuiLinearProgress-query-203",
+              "root": "MuiLinearProgress-root-197",
             }
           }
           color="primary"
           variant="query"
         >
           <div
-            className="MuiLinearProgress-root-192 MuiLinearProgress-colorPrimary-193 MuiLinearProgress-query-198"
+            className="MuiLinearProgress-root-197 MuiLinearProgress-colorPrimary-198 MuiLinearProgress-query-203"
             role="progressbar"
           >
             <div
-              className="MuiLinearProgress-bar-202 MuiLinearProgress-barColorPrimary-203 MuiLinearProgress-bar1Indeterminate-205"
+              className="MuiLinearProgress-bar-207 MuiLinearProgress-barColorPrimary-208 MuiLinearProgress-bar1Indeterminate-210"
               style={Object {}}
             />
             <div
-              className="MuiLinearProgress-bar-202 MuiLinearProgress-barColorPrimary-203 MuiLinearProgress-bar2Indeterminate-208"
+              className="MuiLinearProgress-bar-207 MuiLinearProgress-barColorPrimary-208 MuiLinearProgress-bar2Indeterminate-213"
               style={Object {}}
             />
           </div>
@@ -336,41 +336,41 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           align="inherit"
           classes={
             Object {
-              "alignCenter": "MuiTypography-alignCenter-286",
-              "alignJustify": "MuiTypography-alignJustify-288",
-              "alignLeft": "MuiTypography-alignLeft-285",
-              "alignRight": "MuiTypography-alignRight-287",
-              "body1": "MuiTypography-body1-272",
-              "body2": "MuiTypography-body2-271",
-              "button": "MuiTypography-button-274",
-              "caption": "MuiTypography-caption-273",
-              "colorError": "MuiTypography-colorError-297",
-              "colorInherit": "MuiTypography-colorInherit-292",
-              "colorPrimary": "MuiTypography-colorPrimary-293",
-              "colorSecondary": "MuiTypography-colorSecondary-294",
-              "colorTextPrimary": "MuiTypography-colorTextPrimary-295",
-              "colorTextSecondary": "MuiTypography-colorTextSecondary-296",
-              "display1": "MuiTypography-display1-267",
-              "display2": "MuiTypography-display2-266",
-              "display3": "MuiTypography-display3-265",
-              "display4": "MuiTypography-display4-264",
-              "gutterBottom": "MuiTypography-gutterBottom-290",
-              "h1": "MuiTypography-h1-275",
-              "h2": "MuiTypography-h2-276",
-              "h3": "MuiTypography-h3-277",
-              "h4": "MuiTypography-h4-278",
-              "h5": "MuiTypography-h5-279",
-              "h6": "MuiTypography-h6-280",
-              "headline": "MuiTypography-headline-268",
-              "noWrap": "MuiTypography-noWrap-289",
-              "overline": "MuiTypography-overline-283",
-              "paragraph": "MuiTypography-paragraph-291",
-              "root": "MuiTypography-root-263",
-              "srOnly": "MuiTypography-srOnly-284",
-              "subheading": "MuiTypography-subheading-270",
-              "subtitle1": "MuiTypography-subtitle1-281",
-              "subtitle2": "MuiTypography-subtitle2-282",
-              "title": "MuiTypography-title-269",
+              "alignCenter": "MuiTypography-alignCenter-291",
+              "alignJustify": "MuiTypography-alignJustify-293",
+              "alignLeft": "MuiTypography-alignLeft-290",
+              "alignRight": "MuiTypography-alignRight-292",
+              "body1": "MuiTypography-body1-277",
+              "body2": "MuiTypography-body2-276",
+              "button": "MuiTypography-button-279",
+              "caption": "MuiTypography-caption-278",
+              "colorError": "MuiTypography-colorError-302",
+              "colorInherit": "MuiTypography-colorInherit-297",
+              "colorPrimary": "MuiTypography-colorPrimary-298",
+              "colorSecondary": "MuiTypography-colorSecondary-299",
+              "colorTextPrimary": "MuiTypography-colorTextPrimary-300",
+              "colorTextSecondary": "MuiTypography-colorTextSecondary-301",
+              "display1": "MuiTypography-display1-272",
+              "display2": "MuiTypography-display2-271",
+              "display3": "MuiTypography-display3-270",
+              "display4": "MuiTypography-display4-269",
+              "gutterBottom": "MuiTypography-gutterBottom-295",
+              "h1": "MuiTypography-h1-280",
+              "h2": "MuiTypography-h2-281",
+              "h3": "MuiTypography-h3-282",
+              "h4": "MuiTypography-h4-283",
+              "h5": "MuiTypography-h5-284",
+              "h6": "MuiTypography-h6-285",
+              "headline": "MuiTypography-headline-273",
+              "noWrap": "MuiTypography-noWrap-294",
+              "overline": "MuiTypography-overline-288",
+              "paragraph": "MuiTypography-paragraph-296",
+              "root": "MuiTypography-root-268",
+              "srOnly": "MuiTypography-srOnly-289",
+              "subheading": "MuiTypography-subheading-275",
+              "subtitle1": "MuiTypography-subtitle1-286",
+              "subtitle2": "MuiTypography-subtitle2-287",
+              "title": "MuiTypography-title-274",
             }
           }
           color="error"
@@ -762,7 +762,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           }
         >
           <p
-            className="MuiTypography-root-263 MuiTypography-body1-272 MuiTypography-colorError-297"
+            className="MuiTypography-root-268 MuiTypography-body1-277 MuiTypography-colorError-302"
           >
             <span>
               <strong>
