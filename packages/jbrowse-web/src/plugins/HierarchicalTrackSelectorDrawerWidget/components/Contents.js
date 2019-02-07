@@ -17,27 +17,26 @@ import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
 const styles = theme => ({
-  // root: {
-  //   margin: '0 !important',
-  //   padding: '5px 0 0 5px !important',
-  //   minHeight: '0 !important',
-  //   background: '#ddd',
-  // },
   expansionPanelDetails: {
     display: 'block',
+    padding: '8px',
   },
   content: {
     '&$expanded': {
       margin: '8px 0',
     },
+    margin: '8px 0',
   },
   root: {
-    margin: 0,
-    background: '#ddd',
+    background: theme.categoryColor || '#ddd',
     '&$expanded': {
+      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
       minHeight: 0,
       margin: 0,
     },
+    margin: 0,
+    minHeight: 0,
+    padding: '0 8px',
   },
   expanded: {},
 })
@@ -47,6 +46,13 @@ const CompactCheckbox = withStyles({
     padding: 0,
   },
 })(Checkbox)
+
+const CompactFormControlLabel = withStyles({
+  root: {
+    marginLeft: 0,
+  },
+})(FormControlLabel)
+
 const Category = withStyles(styles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
@@ -55,6 +61,7 @@ const Category = withStyles(styles)(
 
     return (
       <ExpansionPanel
+        style={{ marginTop: '4px' }}
         expanded={!model.collapsed.get(pathName)}
         onChange={() => model.toggleCategory(pathName)}
       >
@@ -169,7 +176,7 @@ class Contents extends React.Component {
                 placement="left"
                 enterDelay={500}
               >
-                <FormControlLabel
+                <CompactFormControlLabel
                   control={<CompactCheckbox />}
                   label={readConfObject(trackConf, 'name')}
                   checked={model.view.tracks.some(
