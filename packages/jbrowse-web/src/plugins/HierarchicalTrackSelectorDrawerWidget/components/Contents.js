@@ -89,7 +89,6 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
-  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
 const contentStyles = {
