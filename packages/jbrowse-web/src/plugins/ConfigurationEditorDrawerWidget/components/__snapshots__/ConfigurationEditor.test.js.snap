@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConfigurationEditor drawer widget renders all the different types of slots 1`] = `
+exports[`ConfigurationEditor drawer widget renders all the different types of built-in slots 1`] = `
 <div
   className="ConfigurationEditor-root-1"
 >
