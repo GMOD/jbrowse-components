@@ -7,6 +7,39 @@ import './DivSequenceRendering.scss'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
 
+// given the displayed region and a Map of id => feature, assemble the region's
+// sequence from the sequences returned by each feature.
+export function featuresToSequence(region, features) {
+  // insert the `replacement` string into `str` at the given
+  // `offset`, putting in `length` characters.
+  function replaceAt(str, offset, replacement) {
+    let rOffset = 0
+    if (offset < 0) {
+      rOffset = -offset
+      offset = 0
+    }
+
+    const length = Math.min(str.length - offset, replacement.length - rOffset)
+
+    return (
+      str.substr(0, offset) +
+      replacement.substr(rOffset, length) +
+      str.substr(offset + length)
+    )
+  }
+
+  // pad with spaces at the beginning of the string if necessary
+  const len = region.end - region.start
+  let sequence = ''
+  while (sequence.length < len) sequence += ' '
+
+  for (const f of features.values()) {
+    const seq = f.get('residues') || f.get('seq')
+    if (seq) sequence = replaceAt(sequence, f.get('start') - region.start, seq)
+  }
+  return sequence
+}
+
 function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   let s = ''
   for (const seq of features.values()) {
@@ -18,8 +51,6 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
     if (seqString) s += seq.get('seq')
   }
 
-  const width = (region.end - region.start) / bpPerPx
-
   s = s.split('')
   if (horizontallyFlipped) s = s.reverse()
 
@@ -30,7 +61,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
           /* eslint-disable-next-line */
           key={`${region.start}-${iter}`}
           style={{
-            width: `${width / s.length}px`,
+            width: `${1 / bpPerPx}px`,
           }}
           className={`base base-${letter.toLowerCase()}`}
         >

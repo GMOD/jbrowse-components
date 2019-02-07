@@ -1,6 +1,4 @@
-import React from 'react'
 import WiggleRenderer from './wiggleRenderer'
-import BigWigAdapter from '../BigWigAdapter'
 
 import SimpleFeature from '../../util/simpleFeature'
 
@@ -34,7 +32,9 @@ test('several features', async () => {
     },
   })
 
-  expect(result).toMatchSnapshot()
+  expect(result).toMatchSnapshot({
+    imageData: expect.any(Object),
+  })
 })
 
 test('inverted mode and horizontally flipped', async () => {
@@ -58,7 +58,9 @@ test('inverted mode and horizontally flipped', async () => {
     },
   })
 
-  expect(result).toMatchSnapshot()
+  expect(result).toMatchSnapshot({
+    imageData: expect.any(Object),
+  })
 })
 
 test('test render', async () => {
@@ -85,5 +87,7 @@ test('test render', async () => {
     },
   })
 
-  expect(result).toMatchSnapshot()
+  expect(result).toMatchSnapshot({
+    imageData: expect.any(Object),
+  })
 })

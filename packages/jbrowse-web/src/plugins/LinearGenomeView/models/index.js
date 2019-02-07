@@ -111,12 +111,16 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
     .actions(self => ({
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
+        if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
         if (!trackType) throw new Error(`unknown track type ${type}`)
-        const track = trackType.stateModel.create(
-          Object.assign({}, initialSnapshot, { name, type, configuration }),
-        )
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        })
         self.tracks.push(track)
       },
 
@@ -199,6 +203,17 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         const displayWidth = self.width - self.controlsWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
+      },
+
+      /**
+       * scrolls the view to center on the given bp. if that is not in any
+       * of the displayed regions, does nothing
+       * @param {number} bp
+       * @param {string} refName
+       * @param {string} assemblyName
+       */
+      centerAt(/* bp, refName, assemblyName */) {
+        /* TODO */
       },
 
       activateConfigurationUI() {

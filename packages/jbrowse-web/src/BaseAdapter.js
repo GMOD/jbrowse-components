@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs'
+import { empty } from 'rxjs'
 
 /**
  * Base class for adapters to extend. Provides utilities for reference sequence
@@ -28,7 +28,10 @@ export default class BaseAdapter {
       this.seqNameAliases = assemblies[assemblyName].seqNameAliases || {}
     } else
       Object.keys(assemblies).forEach(assembly => {
-        if (assemblies[assembly].aliases.includes(assemblyName)) {
+        if (
+          assemblies[assembly].aliases &&
+          assemblies[assembly].aliases.includes(assemblyName)
+        ) {
           this.assemblyName = assembly
           this.assemblyAliases = assemblies[assembly].aliases || {}
           this.seqNameAliases = assemblies[assembly].seqNameAliases || {}
@@ -89,9 +92,7 @@ export default class BaseAdapter {
     const refSeqs = await this.loadData()
     this.loadRefSeqs(refSeqs)
     if (!this.hasDataForRefSeq({ assemblyName, refName })) {
-      return Observable.create(observer => {
-        observer.complete()
-      })
+      return empty()
     }
     refName = this.seqNameMap.get(refName) || refName
     return this.getFeaturesInRegion(Object.assign(region, { refName }))
@@ -111,7 +112,10 @@ export default class BaseAdapter {
         })
       } else
         Object.keys(this.seqNameAliases).forEach(configSeqName => {
-          if (this.seqNameAliases[configSeqName].includes(seqName)) {
+          if (
+            this.seqNameAliases[configSeqName] &&
+            this.seqNameAliases[configSeqName].includes(seqName)
+          ) {
             this.seqNameMap.set(configSeqName, seqName)
             this.seqNameAliases[configSeqName].forEach(seqNameAlias => {
               this.seqNameMap.set(seqNameAlias, seqName)

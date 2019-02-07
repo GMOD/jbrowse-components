@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `"(intermediate value).addPlugin is not a function"`;
+exports[`plugin in a stock JBrowse 1`] = `"drawer widget ConfigurationEditorDrawerWidget already registered, cannot register it again"`;
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {

@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `"adapter FromConfigAdapter already registered, cannot register it again"`;
+
+exports[`plugin in a stock JBrowse 2`] = `
+Object {
+  "assemblyName": undefined,
+  "configId": Any<String>,
+  "features": undefined,
+  "type": "FromConfigAdapter",
+}
+`;

@@ -1,9 +1,3 @@
-let counter = 1
-function generateId(feature) {
-  counter += 1
-  return `${feature.parent ? feature.parent.id() : 'SimpleFeature'}_${counter}`
-}
-
 /**
  * Simple implementation of a feature object.
  */
@@ -11,7 +5,8 @@ export default class SimpleFeature {
   /**
    * @param args.data {Object} key-value data, must include 'start' and 'end'
    * @param args.parent {Feature} optional parent feature
-   * @param args.id {String} optional unique identifier.  can also be in data.uniqueID.
+   * @param args.id {String} unique identifier.  can also be in data.uniqueID.
+   * @param args.data.uniqueId {String} alternate location of the unique identifier
    *
    * Note: args.data.subfeatures can be an array of these same args,
    * which will be inflated to more instances of this class.
@@ -19,7 +14,13 @@ export default class SimpleFeature {
   constructor(args = {}) {
     this.data = args.data || args
     this.parent = args.parent
-    this.uniqueID = String(args.id || this.data.uniqueID || generateId(this))
+    this.uniqueId = args.id || this.data.uniqueId
+    if (this.uniqueId === undefined || this.uniqueId === null) {
+      throw new Error(
+        'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
+      )
+    }
+    this.uniqueId = String(this.uniqueId)
 
     if (!(this.data.end - this.data.start >= 0)) {
       throw new Error(`invalid feature data`)
@@ -65,7 +66,7 @@ export default class SimpleFeature {
    * Get the unique ID of this feature.
    */
   id() {
-    return this.uniqueID
+    return this.uniqueId
   }
 
   /**
@@ -83,14 +84,13 @@ export default class SimpleFeature {
   }
 
   toJSON() {
-    const d = Object.assign({}, this.data)
-    d.parentID = d.parent ? d.parent.id() : undefined
+    const d = { ...this.data, uniqueId: this.id() }
+    if (d.parent) d.parentId = d.parent.id()
     delete d.parent
     return d
   }
 
   static fromJSON(json) {
-    const data = Object.assign({}, json)
-    return new SimpleFeature(data)
+    return new SimpleFeature({ ...json })
   }
 }

@@ -486,6 +486,7 @@ exports[`<UrlInput /> handles 404 1`] = `
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -515,25 +516,25 @@ exports[`<UrlInput /> handles 404 1`] = `
                       center={false}
                       classes={
                         Object {
-                          "child": "MuiTouchRipple-child-198",
-                          "childLeaving": "MuiTouchRipple-childLeaving-199",
-                          "childPulsate": "MuiTouchRipple-childPulsate-200",
-                          "ripple": "MuiTouchRipple-ripple-195",
-                          "ripplePulsate": "MuiTouchRipple-ripplePulsate-197",
-                          "rippleVisible": "MuiTouchRipple-rippleVisible-196",
-                          "root": "MuiTouchRipple-root-194",
+                          "child": "MuiTouchRipple-child-200",
+                          "childLeaving": "MuiTouchRipple-childLeaving-201",
+                          "childPulsate": "MuiTouchRipple-childPulsate-202",
+                          "ripple": "MuiTouchRipple-ripple-197",
+                          "ripplePulsate": "MuiTouchRipple-ripplePulsate-199",
+                          "rippleVisible": "MuiTouchRipple-rippleVisible-198",
+                          "root": "MuiTouchRipple-root-196",
                         }
                       }
                     >
                       <TransitionGroup
                         childFactory={[Function]}
-                        className="MuiTouchRipple-root-194"
+                        className="MuiTouchRipple-root-196"
                         component="span"
                         enter={true}
                         exit={true}
                       >
                         <span
-                          className="MuiTouchRipple-root-194"
+                          className="MuiTouchRipple-root-196"
                         />
                       </TransitionGroup>
                     </TouchRipple>
@@ -1035,6 +1036,7 @@ exports[`<UrlInput /> handles fetch error 1`] = `
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1064,25 +1066,25 @@ exports[`<UrlInput /> handles fetch error 1`] = `
                       center={false}
                       classes={
                         Object {
-                          "child": "MuiTouchRipple-child-205",
-                          "childLeaving": "MuiTouchRipple-childLeaving-206",
-                          "childPulsate": "MuiTouchRipple-childPulsate-207",
-                          "ripple": "MuiTouchRipple-ripple-202",
-                          "ripplePulsate": "MuiTouchRipple-ripplePulsate-204",
-                          "rippleVisible": "MuiTouchRipple-rippleVisible-203",
-                          "root": "MuiTouchRipple-root-201",
+                          "child": "MuiTouchRipple-child-207",
+                          "childLeaving": "MuiTouchRipple-childLeaving-208",
+                          "childPulsate": "MuiTouchRipple-childPulsate-209",
+                          "ripple": "MuiTouchRipple-ripple-204",
+                          "ripplePulsate": "MuiTouchRipple-ripplePulsate-206",
+                          "rippleVisible": "MuiTouchRipple-rippleVisible-205",
+                          "root": "MuiTouchRipple-root-203",
                         }
                       }
                     >
                       <TransitionGroup
                         childFactory={[Function]}
-                        className="MuiTouchRipple-root-201"
+                        className="MuiTouchRipple-root-203"
                         component="span"
                         enter={true}
                         exit={true}
                       >
                         <span
-                          className="MuiTouchRipple-root-201"
+                          className="MuiTouchRipple-root-203"
                         />
                       </TransitionGroup>
                     </TouchRipple>
@@ -1584,6 +1586,7 @@ exports[`<UrlInput /> mounts and validates a URL 1`] = `
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2133,6 +2136,7 @@ exports[`<UrlInput /> mounts and validates a URL 2`] = `
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}

@@ -34,32 +34,19 @@ class WiggleRenderer extends ServerSideRenderer {
       features.values(),
       feature => {
         ctx.fillStyle = readConfObject(config, 'color', [feature])
-        const s = bpToPx(
-          feature.get('start'),
-          region,
-          bpPerPx,
-          horizontallyFlipped,
-        )
-        const e = bpToPx(
-          feature.get('end'),
-          region,
-          bpPerPx,
-          horizontallyFlipped,
-        )
+        const s = feature.get('start')
+        const e = feature.get('end')
+        let leftPx = bpToPx(s, region, bpPerPx, horizontallyFlipped)
+        let rightPx = bpToPx(e, region, bpPerPx, horizontallyFlipped)
+        if (horizontallyFlipped) {
+          ;[leftPx, rightPx] = [rightPx, leftPx]
+        }
+        const score = feature.get('score') / stats.scoreMax
+        const w = rightPx - leftPx + 0.1 // fudge factor for subpixel rendering
         if (readConfObject(config, 'inverted')) {
-          ctx.fillRect(
-            s,
-            0,
-            e - s + 0.5,
-            (feature.get('score') / stats.scoreMax) * height,
-          )
+          ctx.fillRect(leftPx, 0, w, score * height)
         } else {
-          ctx.fillRect(
-            s,
-            (1 - feature.get('score') / stats.scoreMax) * height,
-            e - s + 0.5,
-            height,
-          )
+          ctx.fillRect(leftPx, (1 - score) * height, w, height)
         }
       },
       features.size,

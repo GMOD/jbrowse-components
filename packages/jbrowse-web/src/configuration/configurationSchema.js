@@ -97,7 +97,8 @@ export function ConfigurationSchema(
       : ElementId,
   }
 
-  if (options.explicitlyTyped) modelDefinition.type = types.literal(modelName)
+  if (options.explicitlyTyped)
+    modelDefinition.type = types.optional(types.literal(modelName), modelName)
 
   const volatileConstants = {}
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {

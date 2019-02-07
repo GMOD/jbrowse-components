@@ -1,9 +1,10 @@
-import { types, getParent } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import { ConfigurationReference } from '../../configuration'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
+import { getContainingView } from '../../util/tracks'
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -17,7 +18,7 @@ export default (pluginManager, configSchema) =>
       })
       .views(self => ({
         get renderProps() {
-          const view = getParent(self, 2)
+          const view = getContainingView(self)
           return {
             bpPerPx: view.bpPerPx,
             horizontallyFlipped: view.horizontallyFlipped,

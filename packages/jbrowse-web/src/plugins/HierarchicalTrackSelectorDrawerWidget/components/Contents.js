@@ -16,13 +16,32 @@ import React from 'react'
 import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
-const styles = {
+const categoryStyles = theme => ({
   expansionPanelDetails: {
     display: 'block',
+    padding: '8px',
   },
-}
+  content: {
+    '&$expanded': {
+      margin: '8px 0',
+    },
+    margin: '8px 0',
+  },
+  root: {
+    background: theme.palette.grey[300],
+    '&$expanded': {
+      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
+      minHeight: 0,
+      margin: 0,
+    },
+    margin: 0,
+    minHeight: 0,
+    padding: '0 8px',
+  },
+  expanded: {},
+})
 
-const Category = withStyles(styles)(
+const Category = withStyles(categoryStyles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
     const pathName = path.join('|')
@@ -30,10 +49,18 @@ const Category = withStyles(styles)(
 
     return (
       <ExpansionPanel
+        style={{ marginTop: '4px' }}
         expanded={!model.collapsed.get(pathName)}
         onChange={() => model.toggleCategory(pathName)}
       >
-        <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+        <ExpansionPanelSummary
+          classes={{
+            root: classes.root,
+            expanded: classes.expanded,
+            content: classes.content,
+          }}
+          expandIcon={<Icon>expand_more</Icon>}
+        >
           <Typography variant="button">{`${name} (${
             Object.keys(model.allTracksInCategoryPath(path)).length
           })`}</Typography>
@@ -62,8 +89,19 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
+  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
+const contentStyles = {
+  formControlLabel: {
+    marginLeft: 0,
+  },
+  checkbox: {
+    padding: 0,
+  },
+}
+
+@withStyles(contentStyles)
 @observer
 class Contents extends React.Component {
   static propTypes = {
@@ -71,6 +109,7 @@ class Contents extends React.Component {
     path: propTypes.arrayOf(propTypes.string),
     filterPredicate: propTypes.func,
     disabled: propTypes.bool,
+    classes: propTypes.objectOf(propTypes.string).isRequired,
   }
 
   static defaultProps = {
@@ -126,7 +165,7 @@ class Contents extends React.Component {
 
   render() {
     const { categories, trackConfigurations, doneLoading } = this.state
-    const { model, path, filterPredicate, disabled } = this.props
+    const { model, path, filterPredicate, disabled, classes } = this.props
     return (
       <>
         <FormGroup>
@@ -138,7 +177,8 @@ class Contents extends React.Component {
                 enterDelay={500}
               >
                 <FormControlLabel
-                  control={<Checkbox />}
+                  className={classes.formControlLabel}
+                  control={<Checkbox className={classes.checkbox} />}
                   label={readConfObject(trackConf, 'name')}
                   checked={model.view.tracks.some(
                     t => t.configuration === trackConf,
