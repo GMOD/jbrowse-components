@@ -16,7 +16,7 @@ import React from 'react'
 import { requestIdleCallback, cancelIdleCallback } from 'request-idle-callback'
 import { readConfObject } from '../../../configuration'
 
-const styles = theme => ({
+const categoryStyles = theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: '8px',
@@ -28,7 +28,7 @@ const styles = theme => ({
     margin: '8px 0',
   },
   root: {
-    background: theme.categoryColor || '#ddd',
+    background: theme.palette.grey[300],
     '&$expanded': {
       // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
       minHeight: 0,
@@ -41,19 +41,7 @@ const styles = theme => ({
   expanded: {},
 })
 
-const CompactCheckbox = withStyles({
-  root: {
-    padding: 0,
-  },
-})(Checkbox)
-
-const CompactFormControlLabel = withStyles({
-  root: {
-    marginLeft: 0,
-  },
-})(FormControlLabel)
-
-const Category = withStyles(styles)(
+const Category = withStyles(categoryStyles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
     const pathName = path.join('|')
@@ -101,8 +89,19 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
+  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
+const contentStyles = {
+  formControlLabel: {
+    marginLeft: 0,
+  },
+  checkbox: {
+    padding: 0,
+  },
+}
+
+@withStyles(contentStyles)
 @observer
 class Contents extends React.Component {
   static propTypes = {
@@ -110,6 +109,7 @@ class Contents extends React.Component {
     path: propTypes.arrayOf(propTypes.string),
     filterPredicate: propTypes.func,
     disabled: propTypes.bool,
+    classes: propTypes.objectOf(propTypes.string).isRequired,
   }
 
   static defaultProps = {
@@ -165,7 +165,7 @@ class Contents extends React.Component {
 
   render() {
     const { categories, trackConfigurations, doneLoading } = this.state
-    const { model, path, filterPredicate, disabled } = this.props
+    const { model, path, filterPredicate, disabled, classes } = this.props
     return (
       <>
         <FormGroup>
@@ -176,8 +176,9 @@ class Contents extends React.Component {
                 placement="left"
                 enterDelay={500}
               >
-                <CompactFormControlLabel
-                  control={<CompactCheckbox />}
+                <FormControlLabel
+                  className={classes.formControlLabel}
+                  control={<Checkbox className={classes.checkbox} />}
                   label={readConfObject(trackConf, 'name')}
                   checked={model.view.tracks.some(
                     t => t.configuration === trackConf,
