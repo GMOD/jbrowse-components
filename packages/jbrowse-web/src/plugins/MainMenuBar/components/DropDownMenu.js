@@ -15,11 +15,14 @@ import { withStyles } from '@material-ui/core/styles'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 
-const styles = {
+const styles = theme => ({
   root: {
     display: 'flex',
   },
-}
+  popper: {
+    zIndex: theme.zIndex.drawer + 50,
+  },
+})
 
 @withStyles(styles)
 @observer
@@ -66,10 +69,10 @@ class DropDownMenu extends React.Component {
           <Icon>arrow_drop_down</Icon>
         </Button>
         <Popper
+          className={classes.popper}
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
           placement="bottom-start"
-          style={{ zIndex: 3 }}
           transition
           // disablePortal
         >

@@ -39,6 +39,9 @@ const styles = theme => ({
   paper: {
     marginBottom: theme.spacing.unit,
   },
+  popper: {
+    zIndex: theme.zIndex.drawer + 50,
+  },
   assembly: {
     marginBottom: theme.spacing.unit,
   },
@@ -129,6 +132,7 @@ class AssemblyEditorDrawerWidget extends React.Component {
             <Icon>help</Icon>
           </IconButton>
           <Popper
+            className={classes.popper}
             anchorEl={helpMenuAnchorEl}
             open={Boolean(helpMenuAnchorEl)}
             transition
@@ -241,6 +245,7 @@ class AssemblyEditorDrawerWidget extends React.Component {
           <Icon>add</Icon>
         </Fab>
         <Popper
+          className={classes.popper}
           anchorEl={addMenuAnchorEl}
           open={Boolean(addMenuAnchorEl)}
           transition

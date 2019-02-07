@@ -29,14 +29,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 1`] = 
         </WithStyles(Icon)>
       </WithStyles(Button)>
     }
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={true}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -73,14 +69,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 2`] = 
         </WithStyles(Icon)>
       </WithStyles(Button)>
     }
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={true}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -105,14 +97,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 3`] = 
   </WithStyles(Button)>
   <Popper
     anchorEl={null}
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={false}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -149,14 +137,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 4`] = 
         </WithStyles(Icon)>
       </WithStyles(Button)>
     }
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={true}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -181,14 +165,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 5`] = 
   </WithStyles(Button)>
   <Popper
     anchorEl={null}
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={false}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -200,6 +180,7 @@ exports[`<DropDownMenu /> renders 1`] = `
 <DropDownMenu
   classes={
     Object {
+      "popper": "DropDownMenu-popper-2",
       "root": "DropDownMenu-root-1",
     }
   }
@@ -283,14 +264,10 @@ exports[`<DropDownMenu /> selects a menu item 1`] = `
         </WithStyles(Icon)>
       </WithStyles(Button)>
     }
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={true}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
@@ -315,14 +292,10 @@ exports[`<DropDownMenu /> selects a menu item 2`] = `
   </WithStyles(Button)>
   <Popper
     anchorEl={null}
+    className="DropDownMenu-popper-2"
     disablePortal={false}
     open={false}
     placement="bottom-start"
-    style={
-      Object {
-        "zIndex": 3,
-      }
-    }
     transition={true}
   >
     <Component />
