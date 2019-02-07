@@ -29,6 +29,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -62,6 +63,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         fontSize="small"
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -101,6 +103,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -162,6 +165,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -222,6 +226,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               <button
                 className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -251,6 +256,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -293,6 +299,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -339,7 +346,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-92"
+      className="TrackRenderingContainer-trackRenderingContainer-93"
       role="presentation"
       style={
         Object {
@@ -358,7 +365,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-93"
+      className="TrackResizeHandle-dragHandle-94"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -404,6 +411,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -437,6 +445,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         fontSize="small"
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -476,6 +485,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -517,7 +527,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <div
-        className="Block-block-94 Block-leftBorder-95 Block-rightBorder-96"
+        className="Block-block-95 Block-leftBorder-96 Block-rightBorder-97"
         style={
           Object {
             "left": "0px",
@@ -530,7 +540,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           width={100}
         >
           <line
-            className="Ruler-majorTick-98"
+            className="Ruler-majorTick-99"
             data-bp={-1}
             stroke="#555"
             strokeWidth={1}
@@ -540,7 +550,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-99"
+            className="Ruler-minorTick-100"
             data-bp={19}
             stroke="#999"
             strokeWidth={1}
@@ -550,7 +560,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-99"
+            className="Ruler-minorTick-100"
             data-bp={39}
             stroke="#999"
             strokeWidth={1}
@@ -560,7 +570,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-99"
+            className="Ruler-minorTick-100"
             data-bp={59}
             stroke="#999"
             strokeWidth={1}
@@ -570,7 +580,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-99"
+            className="Ruler-minorTick-100"
             data-bp={79}
             stroke="#999"
             strokeWidth={1}
@@ -580,7 +590,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-majorTick-98"
+            className="Ruler-majorTick-99"
             data-bp={99}
             stroke="#555"
             strokeWidth={1}
@@ -590,7 +600,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-99"
+            className="Ruler-minorTick-100"
             data-bp={119}
             stroke="#999"
             strokeWidth={1}
@@ -600,7 +610,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <text
-            className="Ruler-majorTickLabel-97"
+            className="Ruler-majorTickLabel-98"
             dominantBaseline="hanging"
             style={
               Object {
@@ -613,7 +623,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             0
           </text>
           <text
-            className="Ruler-majorTickLabel-97"
+            className="Ruler-majorTickLabel-98"
             dominantBaseline="hanging"
             style={
               Object {
@@ -654,6 +664,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -714,6 +725,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               <button
                 className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -743,6 +755,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -785,6 +798,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -831,7 +845,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-92"
+      className="TrackRenderingContainer-trackRenderingContainer-93"
       role="presentation"
       style={
         Object {
@@ -850,7 +864,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-93"
+      className="TrackResizeHandle-dragHandle-94"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -877,6 +891,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -923,7 +938,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-92"
+      className="TrackRenderingContainer-trackRenderingContainer-93"
       role="presentation"
       style={
         Object {
@@ -942,7 +957,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-93"
+      className="TrackResizeHandle-dragHandle-94"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -988,6 +1003,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1021,6 +1037,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         fontSize="small"
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1060,6 +1077,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1121,6 +1139,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -1181,6 +1200,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               <button
                 className="MuiButtonBase-root-14 MuiSlider-thumb-40"
                 onBlur={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1210,6 +1230,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
