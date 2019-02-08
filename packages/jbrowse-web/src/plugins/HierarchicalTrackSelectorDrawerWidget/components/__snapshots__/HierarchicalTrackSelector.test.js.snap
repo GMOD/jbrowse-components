@@ -22,7 +22,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-59"
+          className="material-icons MuiIcon-root-60"
         >
           search
         </span>
@@ -42,10 +42,11 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
-          className="MuiButtonBase-root-74 MuiIconButton-root-68"
+          className="MuiButtonBase-root-75 MuiIconButton-root-69"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -59,35 +60,36 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           type="button"
         >
           <span
-            className="MuiIconButton-label-73"
+            className="MuiIconButton-label-74"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-59"
+              className="material-icons MuiIcon-root-60"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-111"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-77 MuiFormHelperText-error-78"
+      className="MuiFormHelperText-root-78 MuiFormHelperText-error-79"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-85"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    className="MuiButtonBase-root-75 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-2"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
+    onContextMenu={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
     onKeyUp={[Function]}
@@ -101,17 +103,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     type="button"
   >
     <span
-      className="MuiFab-label-98"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-59"
+        className="material-icons MuiIcon-root-60"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-111"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>
@@ -139,7 +141,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-59"
+          className="material-icons MuiIcon-root-60"
         >
           search
         </span>
@@ -159,10 +161,11 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
-          className="MuiButtonBase-root-74 MuiIconButton-root-68"
+          className="MuiButtonBase-root-75 MuiIconButton-root-69"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -176,35 +179,36 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           type="button"
         >
           <span
-            className="MuiIconButton-label-73"
+            className="MuiIconButton-label-74"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-59"
+              className="material-icons MuiIcon-root-60"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-111"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-77 MuiFormHelperText-error-78"
+      className="MuiFormHelperText-root-78 MuiFormHelperText-error-79"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-85"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    className="MuiButtonBase-root-75 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-2"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
+    onContextMenu={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
     onKeyUp={[Function]}
@@ -218,17 +222,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     type="button"
   >
     <span
-      className="MuiFab-label-98"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-59"
+        className="material-icons MuiIcon-root-60"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-111"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>
@@ -256,7 +260,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-59"
+          className="material-icons MuiIcon-root-60"
         >
           search
         </span>
@@ -276,10 +280,11 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
         className="MuiInputAdornment-root-55 MuiInputAdornment-positionEnd-58"
       >
         <button
-          className="MuiButtonBase-root-74 MuiIconButton-root-68"
+          className="MuiButtonBase-root-75 MuiIconButton-root-69"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
+          onContextMenu={[Function]}
           onFocus={[Function]}
           onKeyDown={[Function]}
           onKeyUp={[Function]}
@@ -293,35 +298,36 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
           type="button"
         >
           <span
-            className="MuiIconButton-label-73"
+            className="MuiIconButton-label-74"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-59"
+              className="material-icons MuiIcon-root-60"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-111"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-77 MuiFormHelperText-error-78"
+      className="MuiFormHelperText-root-78 MuiFormHelperText-error-79"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-85"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-74 MuiFab-root-97 MuiFab-secondary-100 HierarchicalTrackSelector-fab-2"
+    className="MuiButtonBase-root-75 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-2"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
+    onContextMenu={[Function]}
     onFocus={[Function]}
     onKeyDown={[Function]}
     onKeyUp={[Function]}
@@ -335,17 +341,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
     type="button"
   >
     <span
-      className="MuiFab-label-98"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-59"
+        className="material-icons MuiIcon-root-60"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-111"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>

@@ -1,6 +1,4 @@
-import React from 'react'
 import WiggleRenderer from './wiggleRenderer'
-import BigWigAdapter from '../BigWigAdapter'
 
 import SimpleFeature from '../../util/simpleFeature'
 

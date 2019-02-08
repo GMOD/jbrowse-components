@@ -50,6 +50,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -125,6 +126,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -198,6 +200,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   disabled={false}
                   onBlur={[Function]}
                   onClick={[Function]}
+                  onContextMenu={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
                   onKeyUp={[Function]}
@@ -258,6 +261,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   disabled={false}
                   onBlur={[Function]}
                   onClick={[Function]}
+                  onContextMenu={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
                   onKeyUp={[Function]}
@@ -319,6 +323,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   disabled={true}
                   onBlur={[Function]}
                   onClick={[Function]}
+                  onContextMenu={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
                   onKeyUp={[Function]}
@@ -361,6 +366,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -402,28 +408,29 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         stringArrayMapTest
       </label>
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-139 StringArrayMapEditor-card-138"
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-140 StringArrayMapEditor-card-139"
       >
         <div
-          className="MuiCardHeader-root-140"
+          className="MuiCardHeader-root-141"
         >
           <div
-            className="MuiCardHeader-content-143"
+            className="MuiCardHeader-content-144"
           >
             <span
-              className="MuiTypography-root-146 MuiTypography-headline-151 MuiCardHeader-title-144"
+              className="MuiTypography-root-147 MuiTypography-headline-152 MuiCardHeader-title-145"
             >
               key1
             </span>
           </div>
           <div
-            className="MuiCardHeader-action-142"
+            className="MuiCardHeader-action-143"
           >
             <button
               className="MuiButtonBase-root-91 MuiIconButton-root-85"
               disabled={false}
               onBlur={[Function]}
               onClick={[Function]}
+              onContextMenu={[Function]}
               onFocus={[Function]}
               onKeyDown={[Function]}
               onKeyUp={[Function]}
@@ -453,7 +460,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
           </div>
         </div>
         <div
-          className="MuiCardContent-root-181"
+          className="MuiCardContent-root-183"
         >
           <ul
             className="MuiList-root-118"
@@ -488,6 +495,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       disabled={false}
                       onBlur={[Function]}
                       onClick={[Function]}
+                      onContextMenu={[Function]}
                       onFocus={[Function]}
                       onKeyDown={[Function]}
                       onKeyUp={[Function]}
@@ -548,6 +556,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       disabled={false}
                       onBlur={[Function]}
                       onClick={[Function]}
+                      onContextMenu={[Function]}
                       onFocus={[Function]}
                       onKeyDown={[Function]}
                       onKeyUp={[Function]}
@@ -609,6 +618,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       disabled={true}
                       onBlur={[Function]}
                       onClick={[Function]}
+                      onContextMenu={[Function]}
                       onFocus={[Function]}
                       onKeyDown={[Function]}
                       onKeyUp={[Function]}
@@ -645,13 +655,13 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         </div>
       </div>
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-139 StringArrayMapEditor-card-138"
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-140 StringArrayMapEditor-card-139"
       >
         <div
-          className="MuiCardHeader-root-140"
+          className="MuiCardHeader-root-141"
         >
           <div
-            className="MuiCardHeader-content-143"
+            className="MuiCardHeader-content-144"
           >
             <div
               className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -680,6 +690,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     disabled={true}
                     onBlur={[Function]}
                     onClick={[Function]}
+                    onContextMenu={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
                     onKeyUp={[Function]}
@@ -723,6 +734,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -798,6 +810,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -873,6 +886,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -958,6 +972,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -997,11 +1012,12 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         className="MuiFormControl-root-33"
       >
         <label
-          className="MuiFormControlLabel-root-182"
+          className="MuiFormControlLabel-root-184"
         >
           <span
-            className="MuiButtonBase-root-91 MuiIconButton-root-85 MuiPrivateSwitchBase-root-194 MuiCheckbox-root-188 MuiCheckbox-colorSecondary-193 MuiPrivateSwitchBase-checked-195 MuiCheckbox-checked-189"
+            className="MuiButtonBase-root-91 MuiIconButton-root-85 MuiPrivateSwitchBase-root-196 MuiCheckbox-root-190 MuiCheckbox-colorSecondary-195 MuiPrivateSwitchBase-checked-197 MuiCheckbox-checked-191"
             onBlur={[Function]}
+            onContextMenu={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
             onKeyUp={[Function]}
@@ -1018,7 +1034,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
             >
               <svg
                 aria-hidden="true"
-                className="MuiSvgIcon-root-198"
+                className="MuiSvgIcon-root-200"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -1029,7 +1045,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               </svg>
               <input
                 checked={true}
-                className="MuiPrivateSwitchBase-input-197"
+                className="MuiPrivateSwitchBase-input-199"
                 data-indeterminate={false}
                 disabled={false}
                 onChange={[Function]}
@@ -1041,7 +1057,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
             />
           </span>
           <span
-            className="MuiTypography-root-146 MuiTypography-body1-155 MuiFormControlLabel-label-187"
+            className="MuiTypography-root-147 MuiTypography-body1-156 MuiFormControlLabel-label-189"
           >
             booleanTest
           </span>
@@ -1061,6 +1077,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1143,6 +1160,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1218,6 +1236,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1292,6 +1311,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   disabled={true}
                   onBlur={[Function]}
                   onClick={[Function]}
+                  onContextMenu={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
                   onKeyUp={[Function]}
@@ -1334,6 +1354,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1372,10 +1393,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-207"
+      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-209"
     >
       <div
-        className="_class-paperContent-208"
+        className="_class-paperContent-210"
       >
         <div
           className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1391,12 +1412,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             onClick={[Function]}
           >
             <div
-              className="MuiSelect-root-210"
+              className="MuiSelect-root-212"
             >
               <div
                 aria-haspopup="true"
                 aria-pressed="false"
-                className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
+                className="MuiSelect-select-213 MuiSelect-selectMenu-216 MuiInputBase-input-78 MuiInput-input-63"
                 onBlur={[Function]}
                 onClick={[Function]}
                 onFocus={[Function]}
@@ -1412,7 +1433,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               />
               <svg
                 aria-hidden="true"
-                className="MuiSvgIcon-root-198 MuiSelect-icon-216"
+                className="MuiSvgIcon-root-200 MuiSelect-icon-218"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -1432,7 +1453,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      className="MuiFormGroup-root-221"
+      className="MuiFormGroup-root-223"
     >
       <div
         className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -1476,6 +1497,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             disabled={false}
             onBlur={[Function]}
             onClick={[Function]}
+            onContextMenu={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
             onKeyUp={[Function]}
@@ -1547,6 +1569,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             disabled={false}
             onBlur={[Function]}
             onClick={[Function]}
+            onContextMenu={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
             onKeyUp={[Function]}
@@ -1585,7 +1608,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-221"
+          className="MuiFormGroup-root-223"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -1607,12 +1630,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   onClick={[Function]}
                 >
                   <div
-                    className="MuiSelect-root-210"
+                    className="MuiSelect-root-212"
                   >
                     <div
                       aria-haspopup="true"
                       aria-pressed="false"
-                      className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
+                      className="MuiSelect-select-213 MuiSelect-selectMenu-216 MuiInputBase-input-78 MuiInput-input-63"
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1628,7 +1651,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     />
                     <svg
                       aria-hidden="true"
-                      className="MuiSvgIcon-root-198 MuiSelect-icon-216"
+                      className="MuiSvgIcon-root-200 MuiSelect-icon-218"
                       focusable="false"
                       role="presentation"
                       viewBox="0 0 24 24"
@@ -1650,6 +1673,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1721,6 +1745,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -1774,12 +1799,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           onClick={[Function]}
         >
           <div
-            className="MuiSelect-root-210"
+            className="MuiSelect-root-212"
           >
             <div
               aria-haspopup="true"
               aria-pressed="false"
-              className="MuiSelect-select-211 MuiSelect-selectMenu-214 MuiInputBase-input-78 MuiInput-input-63"
+              className="MuiSelect-select-213 MuiSelect-selectMenu-216 MuiInputBase-input-78 MuiInput-input-63"
               onBlur={[Function]}
               onClick={[Function]}
               onFocus={[Function]}
@@ -1795,7 +1820,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             />
             <svg
               aria-hidden="true"
-              className="MuiSvgIcon-root-198 MuiSelect-icon-216"
+              className="MuiSvgIcon-root-200 MuiSelect-icon-218"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -1817,6 +1842,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
@@ -1855,7 +1881,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     className="_class-subSchemaContainer-2"
   >
     <div
-      className="MuiFormGroup-root-221"
+      className="MuiFormGroup-root-223"
     >
       <label
         className="MuiFormLabel-root-48"
@@ -1866,7 +1892,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-221"
+          className="MuiFormGroup-root-223"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -1885,7 +1911,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   alignmentColor
                 </label>
                 <div
-                  className="CallbackEditor-callbackEditor-223"
+                  className="CallbackEditor-callbackEditor-225"
                   style={
                     Object {
                       "boxSizing": "border-box",
@@ -2028,6 +2054,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2046,7 +2073,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <svg
                     aria-hidden="true"
-                    className="MuiSvgIcon-root-198"
+                    className="MuiSvgIcon-root-200"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -2108,6 +2135,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2148,7 +2176,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         className="_class-subSchemaContainer-2"
       >
         <div
-          className="MuiFormGroup-root-221"
+          className="MuiFormGroup-root-223"
         >
           <div
             className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
@@ -2206,6 +2234,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2291,6 +2320,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2376,6 +2406,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2451,6 +2482,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 disabled={false}
                 onBlur={[Function]}
                 onClick={[Function]}
+                onContextMenu={[Function]}
                 onFocus={[Function]}
                 onKeyDown={[Function]}
                 onKeyUp={[Function]}
@@ -2533,6 +2565,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
+        onContextMenu={[Function]}
         onFocus={[Function]}
         onKeyDown={[Function]}
         onKeyUp={[Function]}
