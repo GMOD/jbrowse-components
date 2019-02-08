@@ -1,6 +1,6 @@
 import { withStyles } from '@material-ui/core'
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { Component } from 'react'
+import { PropTypes, ReactPropTypes } from 'prop-types'
 import Block from './Block'
 import { assembleLocString } from '../../../util'
 
@@ -16,6 +16,7 @@ const styles = (/* theme */) => ({
     // background: theme.palette.background.default,
     overflow: 'hidden',
     height: '100%',
+    cursor: 'crosshair',
   },
   refLabel: {
     fontSize: '16px',
@@ -37,75 +38,125 @@ function findBlockContainingLeftSideOfView(offsetPx, blocks) {
   return undefined
 }
 
-function ScaleBar({
-  classes,
-  style,
-  height,
-  blocks,
-  offsetPx,
-  bpPerPx,
-  width,
-  horizontallyFlipped,
-}) {
-  const finalStyle = Object.assign({}, style, {
-    height: `${height}px`,
-    width: `${width}px`,
-  })
+@withStyles(styles)
+class ScaleBar extends Component {
+  static defaultProps = {
+    style: {},
+    blocks: [],
+    horizontallyFlipped: false,
+  }
 
-  const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
-    offsetPx,
-    blocks,
-  )
+  static propTypes = {
+    classes: PropTypes.objectOf(PropTypes.string).isRequired,
+    style: PropTypes.objectOf(PropTypes.any),
+    height: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    blocks: PropTypes.arrayOf(PropTypes.object),
+    bpPerPx: PropTypes.number.isRequired,
+    offsetPx: PropTypes.number.isRequired,
+    horizontallyFlipped: PropTypes.bool,
+  }
 
-  return (
-    <div style={finalStyle} className={classes.scaleBar}>
-      {blocks.map(block => {
-        const locString = assembleLocString(block)
-        return (
-          <Block
-            leftBorder={block.isLeftEndOfDisplayedRegion}
-            rightBorder={block.isRightEndOfDisplayedRegion}
-            refName={block.refName}
-            start={block.start}
-            end={block.end}
-            width={block.widthPx}
-            key={locString}
-            offset={offsetPx}
-            bpPerPx={bpPerPx}
-          >
-            <svg height={height} width={block.widthPx}>
-              <Ruler
-                region={block}
-                showRefSeqLabel={
-                  !!block.isLeftEndOfDisplayedRegion &&
-                  block !== blockContainingLeftEndOfView
-                }
-                bpPerPx={bpPerPx}
-                flipped={horizontallyFlipped}
-              />
-            </svg>
-          </Block>
-        )
-      })}
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className={classes.refLabel}>
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
-    </div>
-  )
+  onMouseDown = event => {
+    console.log('here', event)
+    console.log(this.props)
+    console.log(event.clientX)
+    console.log(event.clientY)
+  }
+
+  onMouseEnter = event => {}
+
+  onMouseOut = event => {}
+
+  onMouseOver = event => {}
+
+  onMouseUp = event => {
+    console.log('here', event)
+    console.log(event.clientX)
+    console.log(event.clientY)
+  }
+
+  onClick = event => {}
+
+  onMouseLeave = event => {}
+
+  onMouseMove = event => {}
+
+  render() {
+    const {
+      classes,
+      style,
+      height,
+      blocks,
+      offsetPx,
+      bpPerPx,
+      width,
+      horizontallyFlipped,
+    } = this.props
+    const finalStyle = Object.assign({}, style, {
+      height: `${height}px`,
+      width: `${width}px`,
+    })
+
+    const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
+      offsetPx,
+      blocks,
+    )
+
+    return (
+      <div
+        style={finalStyle}
+        className={classes.scaleBar}
+        onMouseDown={this.onMouseDown}
+        onMouseEnter={this.onMouseEnter}
+        onMouseOut={this.onMouseOut}
+        onMouseOver={this.onMouseOver}
+        onMouseUp={this.onMouseUp}
+        onMouseLeave={this.onMouseLeave}
+        onMouseMove={this.onMouseMove}
+        onFocus={() => {}}
+        onBlur={() => {}}
+        onClick={this.onClick}
+        onKeyDown={() => {}}
+        role="presentation"
+      >
+        {blocks.map(block => {
+          const locString = assembleLocString(block)
+          return (
+            <Block
+              leftBorder={block.isLeftEndOfDisplayedRegion}
+              rightBorder={block.isRightEndOfDisplayedRegion}
+              refName={block.refName}
+              start={block.start}
+              end={block.end}
+              width={block.widthPx}
+              key={locString}
+              offset={offsetPx}
+              bpPerPx={bpPerPx}
+            >
+              <svg height={height} width={block.widthPx}>
+                <Ruler
+                  region={block}
+                  showRefSeqLabel={
+                    !!block.isLeftEndOfDisplayedRegion &&
+                    block !== blockContainingLeftEndOfView
+                  }
+                  bpPerPx={bpPerPx}
+                  flipped={horizontallyFlipped}
+                />
+              </svg>
+            </Block>
+          )
+        })}
+        {// put in a floating ref label
+        blockContainingLeftEndOfView ? (
+          <div className={classes.refLabel}>
+            {blockContainingLeftEndOfView.refName}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
 }
-ScaleBar.defaultProps = { style: {}, blocks: [], horizontallyFlipped: false }
-ScaleBar.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  style: PropTypes.objectOf(PropTypes.any),
-  height: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
-  blocks: PropTypes.arrayOf(PropTypes.object),
-  bpPerPx: PropTypes.number.isRequired,
-  offsetPx: PropTypes.number.isRequired,
-  horizontallyFlipped: PropTypes.bool,
-}
 
-export default withStyles(styles)(ScaleBar)
+export default ScaleBar
