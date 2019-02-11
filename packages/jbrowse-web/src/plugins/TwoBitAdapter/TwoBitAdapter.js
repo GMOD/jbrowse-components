@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 
 import { TwoBitFile } from '@gmod/twobit'
 
-import { openLocation } from '../../util'
+import { openLocation } from '../../util/io'
 import BaseAdapter from '../../BaseAdapter'
 import SimpleFeature from '../../util/simpleFeature'
 
