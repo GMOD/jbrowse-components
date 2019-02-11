@@ -57,30 +57,32 @@ class ScaleBar extends Component {
     horizontallyFlipped: PropTypes.bool,
   }
 
-  onMouseDown = event => {
-    console.log('here', event)
-    console.log(this.props)
-    console.log(event.clientX)
-    console.log(event.clientY)
+  state = {}
+
+  onMouseDown = ({ clientX }) => {
+    this.setState({
+      rubberband: [clientX, clientX + 1],
+    })
+    window.addEventListener('mousemove', this.mouseMove, true)
+    window.addEventListener('mouseup', this.mouseUp, true)
   }
 
-  onMouseEnter = event => {}
-
-  onMouseOut = event => {}
-
-  onMouseOver = event => {}
-
-  onMouseUp = event => {
-    console.log('here', event)
-    console.log(event.clientX)
-    console.log(event.clientY)
+  mouseUp = () => {
+    // this.setState(() => ({
+    //   rubberband: undefined,
+    // }))
+    window.removeEventListener('mouseup', this.mouseUp, true)
+    window.removeEventListener('mousemove', this.mouseMove, true)
   }
 
-  onClick = event => {}
-
-  onMouseLeave = event => {}
-
-  onMouseMove = event => {}
+  mouseMove = ({ clientX }) => {
+    const { rubberband } = this.state
+    if (rubberband) {
+      this.setState({
+        rubberband: [rubberband[0], clientX],
+      })
+    }
+  }
 
   render() {
     const {
@@ -102,24 +104,34 @@ class ScaleBar extends Component {
       offsetPx,
       blocks,
     )
+    const { rubberband } = this.state
+    console.log(rubberband)
 
     return (
       <div
         style={finalStyle}
         className={classes.scaleBar}
         onMouseDown={this.onMouseDown}
-        onMouseEnter={this.onMouseEnter}
-        onMouseOut={this.onMouseOut}
-        onMouseOver={this.onMouseOver}
-        onMouseUp={this.onMouseUp}
-        onMouseLeave={this.onMouseLeave}
-        onMouseMove={this.onMouseMove}
         onFocus={() => {}}
         onBlur={() => {}}
-        onClick={this.onClick}
         onKeyDown={() => {}}
         role="presentation"
       >
+        {rubberband ? (
+          <div
+            id="rubberband"
+            style={{
+              left: `${rubberband[0] - 119}px`,
+              width: `${rubberband[1] - rubberband[0]}px`,
+              height: '100%',
+              background: '#aad8',
+              position: 'absolute',
+              zIndex: 999,
+            }}
+          />
+        ) : (
+          ''
+        )}
         {blocks.map(block => {
           const locString = assembleLocString(block)
           return (
