@@ -9,11 +9,11 @@ test('plugin in a stock JBrowse', () => {
   ).toThrowErrorMatchingSnapshot()
 
   const jbrowse = new JBrowse().configure()
-  const HierarchicalTrackSelectorDrawerWidget = jbrowse.pluginManager.getDrawerWidgetType(
-    'HierarchicalTrackSelectorDrawerWidget',
+  const DataHubDrawerWidget = jbrowse.pluginManager.getDrawerWidgetType(
+    'DataHubDrawerWidget',
   )
-  const config = HierarchicalTrackSelectorDrawerWidget.configSchema.create({
-    type: 'HierarchicalTrackSelectorDrawerWidget',
+  const config = DataHubDrawerWidget.configSchema.create({
+    type: 'DataHubDrawerWidget',
   })
   expect(getSnapshot(config)).toMatchSnapshot({ configId: expect.any(String) })
 })
