@@ -336,6 +336,114 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         <div
           className="MuiCardContent-root-53 _class-cardContent-4"
         >
+          <fieldset
+            className="MuiFormControl-root-54"
+          >
+            <div
+              className="MuiFormGroup-root-149"
+              role="radiogroup"
+            >
+              <label
+                className="MuiFormControlLabel-root-151"
+              >
+                <span
+                  className="MuiButtonBase-root-41 MuiIconButton-root-35 MuiPrivateSwitchBase-root-162 MuiRadio-root-157 MuiRadio-colorSecondary-161 MuiPrivateSwitchBase-checked-163 MuiRadio-checked-158"
+                  onBlur={[Function]}
+                  onContextMenu={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex={null}
+                >
+                  <span
+                    className="MuiIconButton-label-40"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      className="MuiSvgIcon-root-136"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                      />
+                    </svg>
+                    <input
+                      checked={true}
+                      className="MuiPrivateSwitchBase-input-165"
+                      disabled={false}
+                      onChange={[Function]}
+                      type="radio"
+                      value="uri"
+                    />
+                  </span>
+                  <span
+                    className="MuiTouchRipple-root-106"
+                  />
+                </span>
+                <span
+                  className="MuiTypography-root-166 MuiTypography-body1-175 MuiFormControlLabel-label-156"
+                >
+                  URL
+                </span>
+              </label>
+              <label
+                className="MuiFormControlLabel-root-151 MuiFormControlLabel-disabled-155"
+              >
+                <span
+                  className="MuiButtonBase-root-41 MuiButtonBase-disabled-42 MuiIconButton-root-35 MuiIconButton-disabled-39 MuiPrivateSwitchBase-root-162 MuiRadio-root-157 MuiRadio-colorSecondary-161 MuiPrivateSwitchBase-disabled-164 MuiRadio-disabled-159"
+                  onBlur={[Function]}
+                  onContextMenu={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  onKeyUp={[Function]}
+                  onMouseDown={[Function]}
+                  onMouseLeave={[Function]}
+                  onMouseUp={[Function]}
+                  onTouchEnd={[Function]}
+                  onTouchMove={[Function]}
+                  onTouchStart={[Function]}
+                  tabIndex="-1"
+                >
+                  <span
+                    className="MuiIconButton-label-40"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      className="MuiSvgIcon-root-136"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                      />
+                    </svg>
+                    <input
+                      checked={false}
+                      className="MuiPrivateSwitchBase-input-165"
+                      disabled={true}
+                      onChange={[Function]}
+                      type="radio"
+                      value="localPath"
+                    />
+                  </span>
+                </span>
+                <span
+                  className="MuiTypography-root-166 MuiTypography-body1-175 MuiFormControlLabel-label-156 MuiFormControlLabel-disabled-155"
+                >
+                  Local File
+                </span>
+              </label>
+            </div>
+          </fieldset>
           <div
             className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
           >
@@ -584,6 +692,114 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             <div
               className="MuiCardContent-root-53 _class-cardContent-4"
             >
+              <fieldset
+                className="MuiFormControl-root-54"
+              >
+                <div
+                  className="MuiFormGroup-root-149"
+                  role="radiogroup"
+                >
+                  <label
+                    className="MuiFormControlLabel-root-151"
+                  >
+                    <span
+                      className="MuiButtonBase-root-41 MuiIconButton-root-35 MuiPrivateSwitchBase-root-162 MuiRadio-root-157 MuiRadio-colorSecondary-161 MuiPrivateSwitchBase-checked-163 MuiRadio-checked-158"
+                      onBlur={[Function]}
+                      onContextMenu={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      onKeyUp={[Function]}
+                      onMouseDown={[Function]}
+                      onMouseLeave={[Function]}
+                      onMouseUp={[Function]}
+                      onTouchEnd={[Function]}
+                      onTouchMove={[Function]}
+                      onTouchStart={[Function]}
+                      tabIndex={null}
+                    >
+                      <span
+                        className="MuiIconButton-label-40"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="MuiSvgIcon-root-136"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                          />
+                        </svg>
+                        <input
+                          checked={true}
+                          className="MuiPrivateSwitchBase-input-165"
+                          disabled={false}
+                          onChange={[Function]}
+                          type="radio"
+                          value="uri"
+                        />
+                      </span>
+                      <span
+                        className="MuiTouchRipple-root-106"
+                      />
+                    </span>
+                    <span
+                      className="MuiTypography-root-166 MuiTypography-body1-175 MuiFormControlLabel-label-156"
+                    >
+                      URL
+                    </span>
+                  </label>
+                  <label
+                    className="MuiFormControlLabel-root-151 MuiFormControlLabel-disabled-155"
+                  >
+                    <span
+                      className="MuiButtonBase-root-41 MuiButtonBase-disabled-42 MuiIconButton-root-35 MuiIconButton-disabled-39 MuiPrivateSwitchBase-root-162 MuiRadio-root-157 MuiRadio-colorSecondary-161 MuiPrivateSwitchBase-disabled-164 MuiRadio-disabled-159"
+                      onBlur={[Function]}
+                      onContextMenu={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      onKeyUp={[Function]}
+                      onMouseDown={[Function]}
+                      onMouseLeave={[Function]}
+                      onMouseUp={[Function]}
+                      onTouchEnd={[Function]}
+                      onTouchMove={[Function]}
+                      onTouchStart={[Function]}
+                      tabIndex="-1"
+                    >
+                      <span
+                        className="MuiIconButton-label-40"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="MuiSvgIcon-root-136"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                          />
+                        </svg>
+                        <input
+                          checked={false}
+                          className="MuiPrivateSwitchBase-input-165"
+                          disabled={true}
+                          onChange={[Function]}
+                          type="radio"
+                          value="localPath"
+                        />
+                      </span>
+                    </span>
+                    <span
+                      className="MuiTypography-root-166 MuiTypography-body1-175 MuiFormControlLabel-label-156 MuiFormControlLabel-disabled-155"
+                    >
+                      Local File
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
               <div
                 className="MuiFormControl-root-54 MuiFormControl-fullWidth-57"
               >
@@ -781,7 +997,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               className="MuiCardContent-root-53 _class-cardContent-4"
             >
               <div
-                className="MuiFormControl-root-54 CallbackEditor-callbackEditor-151"
+                className="MuiFormControl-root-54 CallbackEditor-callbackEditor-202"
               >
                 <label
                   className="MuiFormLabel-root-69 MuiInputLabel-root-58 MuiInputLabel-formControl-63 MuiInputLabel-animated-66 MuiInputLabel-shrink-65"

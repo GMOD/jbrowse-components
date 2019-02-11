@@ -7,7 +7,6 @@ import PluginManager from './PluginManager'
 import App from './ui/App'
 import RootModelFactory from './rootModel'
 import MainMenuBarPlugin from './plugins/MainMenuBar'
-import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
 
 // adapters
 import BamAdapterPlugin from './plugins/BamAdapter'
@@ -23,7 +22,6 @@ import FilteringTrackPlugin from './plugins/FilteringTrack'
 
 // views
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
-import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
 
 // renderers
 import PileupRendererPlugin from './plugins/PileupRenderer'
@@ -31,7 +29,10 @@ import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
 import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import WiggleRendererPlugin from './plugins/WiggleRenderer'
 
-// configs
+// drawer widgets
+import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
+import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
+import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 
 const corePlugins = [
@@ -44,6 +45,7 @@ const corePlugins = [
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,
+  AddTrackDrawerWidgetPlugin,
   ConfigurationEditorPlugin,
   SequenceTrackPlugin,
   PileupRendererPlugin,

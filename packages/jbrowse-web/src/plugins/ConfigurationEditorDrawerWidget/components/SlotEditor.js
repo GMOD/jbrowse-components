@@ -1,17 +1,19 @@
 import {
   Card,
+  CardContent,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
   FormHelperText,
   Icon,
+  IconButton,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   SvgIcon,
   TextField,
   withStyles,
-  CardContent,
-  IconButton,
-  Checkbox,
-  FormControlLabel,
-  FormControl,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
@@ -100,19 +102,38 @@ const IntegerEditor = observer(({ slot }) => (
   />
 ))
 
-const FileLocationEditor = observer(({ slot }) => {
+export const FileLocationEditor = observer(({ slot }) => {
   // TODO: this can only edit URIs right now, need to make this an actual
   // good file selector
   const { value } = slot
   return (
-    <TextField
-      value={value.uri}
-      label={slot.name}
-      // error={filterError}
-      helperText={slot.description}
-      fullWidth
-      onChange={evt => slot.set({ uri: evt.target.value })}
-    />
+    <>
+      <FormControl component="fieldset">
+        <RadioGroup
+          value={value.uri === undefined ? 'localPath' : 'uri'}
+          onChange={event => {
+            if (event.target.value === 'uri') slot.set({ uri: '' })
+            else slot.set({ localPath: '' })
+          }}
+        >
+          <FormControlLabel value="uri" control={<Radio />} label="URL" />
+          <FormControlLabel
+            disabled
+            value="localPath"
+            control={<Radio />}
+            label="Local File"
+          />
+        </RadioGroup>
+      </FormControl>
+      <TextField
+        value={value.uri === undefined ? value.localPath : value.uri}
+        label={slot.name}
+        // error={filterError}
+        helperText={slot.description}
+        fullWidth
+        onChange={evt => slot.set({ uri: evt.target.value })}
+      />
+    </>
   )
 })
 

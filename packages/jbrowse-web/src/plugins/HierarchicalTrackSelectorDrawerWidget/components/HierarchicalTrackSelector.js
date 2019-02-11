@@ -66,6 +66,17 @@ class HierarchicalTrackSelector extends React.Component {
     )
   }
 
+  addTrack = () => {
+    this.handleFabClose()
+    const { model } = this.props
+    const rootModel = getRoot(model)
+    if (!rootModel.drawerWidgets.get('addTrackDrawerWidget'))
+      rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget')
+    rootModel.showDrawerWidget(
+      rootModel.drawerWidgets.get('addTrackDrawerWidget'),
+    )
+  }
+
   filter = trackConfig => {
     const { model } = this.props
     if (!model.filterText) return true
@@ -119,6 +130,7 @@ class HierarchicalTrackSelector extends React.Component {
           onClose={this.handleFabClose}
         >
           <MenuItem onClick={this.addDataHub}>Add Data Hub</MenuItem>
+          <MenuItem onClick={this.addTrack}>Add track</MenuItem>
         </Menu>
       </div>
     )

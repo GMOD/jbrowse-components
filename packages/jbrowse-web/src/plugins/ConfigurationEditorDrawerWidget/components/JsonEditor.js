@@ -14,56 +14,62 @@ import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
 
-const styles = { callbackEditor: {} }
+const styles = {
+  callbackEditor: {
+    // Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
+    fontFamily:
+      'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace',
+    fontSize: '90%',
+    overflowX: 'auto',
+    marginTop: '16px',
+    borderBottom: '1px solid rgba(0,0,0,0.42)',
+  },
+}
 
 @withStyles(styles)
 @observer
 class JsonEditor extends Component {
   static propTypes = {
     slot: PropTypes.objectOrObservableObject.isRequired,
-    classes: ReactPropTypes.shape({
-      callbackEditor: ReactPropTypes.string.isRequired,
-    }).isRequired,
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   }
 
   constructor(props) {
     super(props)
     const { slot } = props
-    this.state = { code: JSON.stringify(slot.value, null, '  ') }
+    this.state = { code: JSON.stringify(slot.value, null, '  '), error: false }
 
-    this.updateSlot = debounce(code => slot.set(JSON.parse(code)), 400)
+    this.updateSlot = debounce(code => {
+      try {
+        slot.set(JSON.parse(code))
+        this.setState({ error: false })
+      } catch (error) {
+        this.setState({ error: true })
+      }
+    }, 400)
   }
 
   render() {
     const { slot, classes } = this.props
-    const { code } = this.state
+    const { code, error } = this.state
     return (
-      <FormControl className={classes.callbackEditor}>
+      <FormControl error={error}>
         <InputLabel shrink htmlFor="callback-editor">
-          {slot.name}
+          {`${slot.name}${error ? ' (invalid JSON)' : ''}`}
         </InputLabel>
-        <div
-          style={{
-            marginTop: '16px',
-            borderBottom: '1px solid rgba(0,0,0,0.42)',
+        <Editor
+          className={classes.callbackEditor}
+          value={code}
+          onValueChange={newCode => {
+            this.setState({ code: newCode })
+            this.updateSlot(newCode)
           }}
-        >
-          <Editor
-            value={code}
-            onValueChange={newCode => {
-              this.setState({ code: newCode })
-              this.updateSlot(newCode)
-            }}
-            highlight={newCode =>
-              highlight(newCode, languages.javascript, 'javascript')
-            }
-            padding={10}
-            style={{
-              fontFamily: '"Fira code", "Fira Mono", monospace',
-              fontSize: '90%',
-            }}
-          />
-        </div>
+          highlight={newCode =>
+            highlight(newCode, languages.javascript, 'javascript')
+          }
+          padding={10}
+          style={{}}
+        />
         <FormHelperText>{slot.description}</FormHelperText>
       </FormControl>
     )
