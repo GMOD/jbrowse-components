@@ -6,9 +6,13 @@ test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(
     {
       assemblyName: 'volvox',
-      fastaLocation: { path: require.resolve('./test_data/volvox.fa.gz') },
-      faiLocation: { path: require.resolve('./test_data/volvox.fa.gz.fai') },
-      gziLocation: { path: require.resolve('./test_data/volvox.fa.gz.gzi') },
+      fastaLocation: { localPath: require.resolve('./test_data/volvox.fa.gz') },
+      faiLocation: {
+        localPath: require.resolve('./test_data/volvox.fa.gz.fai'),
+      },
+      gziLocation: {
+        localPath: require.resolve('./test_data/volvox.fa.gz.gzi'),
+      },
     },
     {},
   )
