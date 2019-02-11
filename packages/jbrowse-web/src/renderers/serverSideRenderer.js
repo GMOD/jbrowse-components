@@ -69,7 +69,10 @@ export default class ServerSideRenderer extends RendererType {
     )
   }
 
-  // render method called on the client. should call the worker render
+  /**
+   * Render method called on the client. Primarily a wrapper
+   * for `renderRegionWithWorker` that takes care of data serialization.
+   */
   async renderInClient(app, args) {
     const result = await renderRegionWithWorker(
       app,
