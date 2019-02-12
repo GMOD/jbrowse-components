@@ -41,7 +41,7 @@ const categoryStyles = theme => ({
   expanded: {},
 })
 
-const Category = withStyles(categoryStyles)(
+export const Category = withStyles(categoryStyles)(
   observer(props => {
     const { model, path, filterPredicate, disabled, classes } = props
     const pathName = path.join('|')
@@ -89,7 +89,6 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
-  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
 const contentStyles = {
@@ -101,109 +100,113 @@ const contentStyles = {
   },
 }
 
-@withStyles(contentStyles)
-@observer
-class Contents extends React.Component {
-  static propTypes = {
-    model: MobxPropTypes.observableObject.isRequired,
-    path: propTypes.arrayOf(propTypes.string),
-    filterPredicate: propTypes.func,
-    disabled: propTypes.bool,
-    classes: propTypes.objectOf(propTypes.string).isRequired,
-  }
+const Contents = withStyles(contentStyles)(
+  observer(
+    class Contents extends React.Component {
+      static propTypes = {
+        model: MobxPropTypes.observableObject.isRequired,
+        path: propTypes.arrayOf(propTypes.string),
+        filterPredicate: propTypes.func,
+        disabled: propTypes.bool,
+        classes: propTypes.objectOf(propTypes.string).isRequired,
+      }
 
-  static defaultProps = {
-    filterPredicate: () => true,
-    path: [],
-    disabled: false,
-  }
+      static defaultProps = {
+        filterPredicate: () => true,
+        path: [],
+        disabled: false,
+      }
 
-  state = {
-    categories: [],
-    trackConfigurations: [],
-    doneLoading: false,
-    handle: undefined,
-  }
+      state = {
+        categories: [],
+        trackConfigurations: [],
+        doneLoading: false,
+        handle: undefined,
+      }
 
-  componentDidMount() {
-    this.loadMoreTracks()
-  }
+      componentDidMount() {
+        this.loadMoreTracks()
+      }
 
-  componentWillUnmount() {
-    const { handle } = this.state
-    cancelIdleCallback(handle)
-  }
+      componentWillUnmount() {
+        const { handle } = this.state
+        cancelIdleCallback(handle)
+      }
 
-  loadMoreTracks() {
-    this.setState((state, props) => {
-      const { categories, trackConfigurations } = state
-      let { doneLoading } = state
-      const { model, path } = props
-      let { hierarchy } = model
-      path.forEach(pathEntry => {
-        hierarchy = hierarchy.get(pathEntry) || new Map()
-      })
-      const numLoaded = categories.length + trackConfigurations.length
-      Array.from(hierarchy)
-        .slice(numLoaded, numLoaded + 10)
-        .forEach(([name, contents]) => {
-          if (contents.configId) {
-            trackConfigurations.push(contents)
-          } else {
-            categories.push([name, contents])
-          }
+      loadMoreTracks() {
+        this.setState((state, props) => {
+          const { categories, trackConfigurations } = state
+          let { doneLoading } = state
+          const { model, path } = props
+          let { hierarchy } = model
+          path.forEach(pathEntry => {
+            hierarchy = hierarchy.get(pathEntry) || new Map()
+          })
+          const numLoaded = categories.length + trackConfigurations.length
+          Array.from(hierarchy)
+            .slice(numLoaded, numLoaded + 10)
+            .forEach(([name, contents]) => {
+              if (contents.configId) {
+                trackConfigurations.push(contents)
+              } else {
+                categories.push([name, contents])
+              }
+            })
+          let handle
+          if (
+            categories.length + trackConfigurations.length !==
+            hierarchy.size
+          ) {
+            handle = requestIdleCallback(() => {
+              this.loadMoreTracks()
+            })
+          } else doneLoading = true
+          return { categories, trackConfigurations, doneLoading, handle }
         })
-      let handle
-      if (categories.length + trackConfigurations.length !== hierarchy.size) {
-        handle = requestIdleCallback(() => {
-          this.loadMoreTracks()
-        })
-      } else doneLoading = true
-      return { categories, trackConfigurations, doneLoading, handle }
-    })
-  }
+      }
 
-  render() {
-    const { categories, trackConfigurations, doneLoading } = this.state
-    const { model, path, filterPredicate, disabled, classes } = this.props
-    return (
-      <>
-        <FormGroup>
-          {trackConfigurations.filter(filterPredicate).map(trackConf => (
-            <Fade in key={trackConf.configId}>
-              <Tooltip
-                title={readConfObject(trackConf, 'description')}
-                placement="left"
-                enterDelay={500}
-              >
-                <FormControlLabel
-                  className={classes.formControlLabel}
-                  control={<Checkbox className={classes.checkbox} />}
-                  label={readConfObject(trackConf, 'name')}
-                  checked={model.view.tracks.some(
-                    t => t.configuration === trackConf,
-                  )}
-                  onChange={() => model.view.toggleTrack(trackConf)}
-                  disabled={disabled}
-                />
-              </Tooltip>
-            </Fade>
-          ))}
-        </FormGroup>
-        {doneLoading ? null : <CircularProgress />}
-        {categories.map(([name]) => (
-          <Category
-            key={name}
-            model={model}
-            path={path.concat([name])}
-            filterPredicate={filterPredicate}
-            disabled={disabled}
-          />
-        ))}
-      </>
-    )
-  }
-}
+      render() {
+        const { categories, trackConfigurations, doneLoading } = this.state
+        const { model, path, filterPredicate, disabled, classes } = this.props
+        return (
+          <>
+            <FormGroup>
+              {trackConfigurations.filter(filterPredicate).map(trackConf => (
+                <Fade in key={trackConf.configId}>
+                  <Tooltip
+                    title={readConfObject(trackConf, 'description')}
+                    placement="left"
+                    enterDelay={500}
+                  >
+                    <FormControlLabel
+                      className={classes.formControlLabel}
+                      control={<Checkbox className={classes.checkbox} />}
+                      label={readConfObject(trackConf, 'name')}
+                      checked={model.view.tracks.some(
+                        t => t.configuration === trackConf,
+                      )}
+                      onChange={() => model.view.toggleTrack(trackConf)}
+                      disabled={disabled}
+                    />
+                  </Tooltip>
+                </Fade>
+              ))}
+            </FormGroup>
+            {doneLoading ? null : <CircularProgress />}
+            {categories.map(([name]) => (
+              <Category
+                key={name}
+                model={model}
+                path={path.concat([name])}
+                filterPredicate={filterPredicate}
+                disabled={disabled}
+              />
+            ))}
+          </>
+        )
+      }
+    },
+  ),
+)
 
 export default Contents
-export { Category }

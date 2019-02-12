@@ -8,7 +8,6 @@ import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
 import { featureSpanPx } from '../../../util'
 
-@observer
 class Box extends Component {
   static propTypes = {
     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
@@ -164,4 +163,4 @@ class Box extends Component {
   }
 }
 
-export default Box
+export default observer(Box)

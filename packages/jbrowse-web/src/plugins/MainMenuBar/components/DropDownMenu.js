@@ -24,8 +24,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@observer
 class DropDownMenu extends React.Component {
   static propTypes = {
     classes: PropTypes.shape({
@@ -116,4 +114,4 @@ class DropDownMenu extends React.Component {
   }
 }
 
-export default DropDownMenu
+export default withStyles(styles)(observer(DropDownMenu))

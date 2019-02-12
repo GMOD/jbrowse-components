@@ -90,7 +90,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
 class TrackHubRegistrySelect extends React.Component {
   static propTypes = {
     classes: PropTypes.shape({
@@ -410,4 +409,4 @@ class TrackHubRegistrySelect extends React.Component {
   }
 }
 
-export default TrackHubRegistrySelect
+export default withStyles(styles)(TrackHubRegistrySelect)

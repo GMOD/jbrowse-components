@@ -11,7 +11,7 @@ const jbrowse = new JBrowse()
 // this is the main process, so start and register our service worker and web workers
 serviceWorker.register()
 const workerGroups = webWorkers.register()
-jbrowse.addWorkers(workerGroups)
+jbrowse.workerManager.addWorkers(workerGroups)
 
 // add the initial configuration
 jbrowse.configure({

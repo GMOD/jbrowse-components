@@ -14,7 +14,6 @@ const styles = {
   },
 }
 
-@withStyles(styles)
 class DrawerResizeHandle extends React.Component {
   static propTypes = {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
@@ -77,4 +76,4 @@ class DrawerResizeHandle extends React.Component {
   }
 }
 
-export default DrawerResizeHandle
+export default withStyles(styles)(DrawerResizeHandle)

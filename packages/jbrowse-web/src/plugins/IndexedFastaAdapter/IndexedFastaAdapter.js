@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 
 import { IndexedFasta } from '@gmod/indexedfasta'
 
-import { openLocation } from '../../util'
+import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 import BaseAdapter from '../../BaseAdapter'
 

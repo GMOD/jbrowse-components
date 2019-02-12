@@ -16,8 +16,6 @@ import 'prismjs/themes/prism.css'
 
 const styles = { callbackEditor: {} }
 
-@withStyles(styles)
-@observer
 class JsonEditor extends Component {
   static propTypes = {
     slot: PropTypes.objectOrObservableObject.isRequired,
@@ -70,4 +68,4 @@ class JsonEditor extends Component {
   }
 }
 
-export default JsonEditor
+export default withStyles(styles)(observer(JsonEditor))

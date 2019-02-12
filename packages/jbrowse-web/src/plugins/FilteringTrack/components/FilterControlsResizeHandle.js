@@ -12,7 +12,6 @@ const styles = {
   },
 }
 
-@withStyles(styles)
 class FilterControlResizeHandle extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
@@ -77,4 +76,4 @@ class FilterControlResizeHandle extends Component {
   }
 }
 
-export default FilterControlResizeHandle
+export default withStyles(styles)(FilterControlResizeHandle)

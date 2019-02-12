@@ -20,8 +20,7 @@ const styles = {
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
-@withStyles(styles)
-@observer
+
 class BlockBasedTrack extends Component {
   static propTypes = {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
@@ -111,4 +110,4 @@ class BlockBasedTrack extends Component {
   }
 }
 
-export default BlockBasedTrack
+export default withStyles(styles)(observer(BlockBasedTrack))

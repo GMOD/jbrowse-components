@@ -4,7 +4,7 @@ import { objectFromEntries } from './util'
 
 const getClient = app =>
   new Rpc.Client({
-    workers: app.getWorkerGroup('render'),
+    workers: app.workerManager.getWorkerGroup('render'),
   })
 
 function isClonable(thing) {

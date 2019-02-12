@@ -12,7 +12,6 @@ const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,
 })
 
-@observer
 class PileupRendering extends Component {
   static propTypes = {
     layout: layoutPropType.isRequired,
@@ -259,4 +258,4 @@ class PileupRendering extends Component {
     )
   }
 }
-export default PileupRendering
+export default observer(PileupRendering)

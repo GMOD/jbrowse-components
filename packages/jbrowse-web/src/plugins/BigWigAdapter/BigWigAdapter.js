@@ -3,7 +3,7 @@ import { Observable } from 'rxjs'
 import { BigWig } from '@gmod/bbi'
 
 import BaseAdapter from '../../BaseAdapter'
-import { openLocation } from '../../util'
+import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 
 export default class BigWigAdapter extends BaseAdapter {
