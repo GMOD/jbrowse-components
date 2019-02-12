@@ -3569,11 +3569,11 @@ exports[`<TrackSourceSelect /> mounts 2`] = `
       ],
       "results": Array [
         Object {
-          "isThrow": false,
+          "type": "return",
           "value": undefined,
         },
         Object {
-          "isThrow": false,
+          "type": "return",
           "value": undefined,
         },
       ],
@@ -7169,15 +7169,15 @@ exports[`<TrackSourceSelect /> mounts 3`] = `
       ],
       "results": Array [
         Object {
-          "isThrow": false,
+          "type": "return",
           "value": undefined,
         },
         Object {
-          "isThrow": false,
+          "type": "return",
           "value": undefined,
         },
         Object {
-          "isThrow": false,
+          "type": "return",
           "value": undefined,
         },
       ],
