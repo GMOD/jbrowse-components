@@ -134,9 +134,6 @@ class AddTrackDrawerWidget extends React.Component {
       case 0:
         return !(trackData.uri || trackData.localPath || trackData.config)
       case 1:
-        console.log(trackName)
-        console.log(trackType)
-        console.log(trackAdapter)
         return !(trackName && trackType && trackAdapter.type)
       default:
         return true

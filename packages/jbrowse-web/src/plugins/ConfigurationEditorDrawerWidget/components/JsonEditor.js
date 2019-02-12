@@ -49,6 +49,11 @@ class JsonEditor extends Component {
     }, 400)
   }
 
+  onValueChange = newCode => {
+    this.setState({ code: newCode })
+    this.updateSlot(newCode)
+  }
+
   render() {
     const { slot, classes } = this.props
     const { code, error } = this.state
@@ -60,10 +65,7 @@ class JsonEditor extends Component {
         <Editor
           className={classes.callbackEditor}
           value={code}
-          onValueChange={newCode => {
-            this.setState({ code: newCode })
-            this.updateSlot(newCode)
-          }}
+          onValueChange={this.onValueChange}
           highlight={newCode =>
             highlight(newCode, languages.javascript, 'javascript')
           }

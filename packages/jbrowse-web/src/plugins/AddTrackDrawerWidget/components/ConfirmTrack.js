@@ -9,7 +9,7 @@ import React from 'react'
 
 const unsupported = 'unsupported'
 
-function guessAdapter(fileName, protocol) {
+export function guessAdapter(fileName, protocol) {
   if (/\.bam$/i.test(fileName))
     return {
       type: 'BamAdapter',
