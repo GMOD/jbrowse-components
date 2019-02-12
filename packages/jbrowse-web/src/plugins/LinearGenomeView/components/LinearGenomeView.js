@@ -126,6 +126,7 @@ function LinearGenomeView(props) {
           horizontallyFlipped={model.horizontallyFlipped}
           width={width - controlsWidth}
         />
+
         <div
           className={classes.zoomControls}
           style={{

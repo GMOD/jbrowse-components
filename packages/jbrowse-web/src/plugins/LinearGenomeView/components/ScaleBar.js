@@ -50,7 +50,6 @@ class ScaleBar extends Component {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
     style: PropTypes.objectOf(PropTypes.any),
     height: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired,
     blocks: PropTypes.arrayOf(PropTypes.object),
     bpPerPx: PropTypes.number.isRequired,
     offsetPx: PropTypes.number.isRequired,
@@ -92,81 +91,80 @@ class ScaleBar extends Component {
       blocks,
       offsetPx,
       bpPerPx,
-      width,
       horizontallyFlipped,
     } = this.props
-    const finalStyle = Object.assign({}, style, {
-      height: `${height}px`,
-      width: `${width}px`,
-    })
+    const { rubberband } = this.state
+    const finalStyle = Object.assign({}, style, { position: 'relative' })
+    console.log(finalStyle, style)
 
     const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
       offsetPx,
       blocks,
     )
-    const { rubberband } = this.state
-    console.log(rubberband)
 
     return (
-      <div
-        style={finalStyle}
-        className={classes.scaleBar}
-        onMouseDown={this.onMouseDown}
-        onFocus={() => {}}
-        onBlur={() => {}}
-        onKeyDown={() => {}}
-        role="presentation"
-      >
+      <>
         {rubberband ? (
           <div
             id="rubberband"
             style={{
-              left: `${rubberband[0] - 119}px`,
+              left: `${rubberband[0]}px`,
               width: `${rubberband[1] - rubberband[0]}px`,
               height: '100%',
               background: '#aad8',
               position: 'absolute',
+              gridColumn: '1 / auto',
               zIndex: 999,
             }}
           />
         ) : (
           ''
         )}
-        {blocks.map(block => {
-          const locString = assembleLocString(block)
-          return (
-            <Block
-              leftBorder={block.isLeftEndOfDisplayedRegion}
-              rightBorder={block.isRightEndOfDisplayedRegion}
-              refName={block.refName}
-              start={block.start}
-              end={block.end}
-              width={block.widthPx}
-              key={locString}
-              offset={offsetPx}
-              bpPerPx={bpPerPx}
-            >
-              <svg height={height} width={block.widthPx}>
-                <Ruler
-                  region={block}
-                  showRefSeqLabel={
-                    !!block.isLeftEndOfDisplayedRegion &&
-                    block !== blockContainingLeftEndOfView
-                  }
-                  bpPerPx={bpPerPx}
-                  flipped={horizontallyFlipped}
-                />
-              </svg>
-            </Block>
-          )
-        })}
-        {// put in a floating ref label
-        blockContainingLeftEndOfView ? (
-          <div className={classes.refLabel}>
-            {blockContainingLeftEndOfView.refName}
-          </div>
-        ) : null}
-      </div>
+        <div
+          style={finalStyle}
+          className={classes.scaleBar}
+          onMouseDown={this.onMouseDown}
+          onFocus={() => {}}
+          onBlur={() => {}}
+          onKeyDown={() => {}}
+          role="presentation"
+        >
+          {blocks.map(block => {
+            const locString = assembleLocString(block)
+            return (
+              <Block
+                leftBorder={block.isLeftEndOfDisplayedRegion}
+                rightBorder={block.isRightEndOfDisplayedRegion}
+                refName={block.refName}
+                start={block.start}
+                end={block.end}
+                width={block.widthPx}
+                key={locString}
+                offset={offsetPx}
+                bpPerPx={bpPerPx}
+              >
+                <svg height={height} width={block.widthPx}>
+                  <Ruler
+                    region={block}
+                    showRefSeqLabel={
+                      !!block.isLeftEndOfDisplayedRegion &&
+                      block !== blockContainingLeftEndOfView
+                    }
+                    bpPerPx={bpPerPx}
+                    flipped={horizontallyFlipped}
+                  />
+                </svg>
+              </Block>
+            )
+          })}
+          {// put in a floating ref label
+          blockContainingLeftEndOfView ? (
+            <div className={classes.refLabel}>
+              {blockContainingLeftEndOfView.refName}
+            </div>
+          ) : null}
+        </div>
+      </>
     )
   }
 }
