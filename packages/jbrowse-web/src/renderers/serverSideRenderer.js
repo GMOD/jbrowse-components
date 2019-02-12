@@ -69,7 +69,10 @@ export default class ServerSideRenderer extends RendererType {
     )
   }
 
-  // render method called on the client. should call the worker render
+  /**
+   * Render method called on the client. Primarily a wrapper
+   * for `renderRegionWithWorker` that takes care of data serialization.
+   */
   async renderInClient(app, args) {
     const result = await renderRegionWithWorker(
       app,
@@ -89,9 +92,7 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs) {
     const { dataAdapter, region } = renderArgs
     const features = new Map()
-    const featureObservable = await dataAdapter.regularizeAndGetFeaturesInRegion(
-      region,
-    )
+    const featureObservable = await dataAdapter.getFeaturesInRegion(region)
     await featureObservable
       .pipe(
         tap(feature => {

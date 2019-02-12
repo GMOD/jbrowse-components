@@ -23,7 +23,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
           "type": "AddTrackDrawerWidget",
         },
       },
-      "drawerWidth": 256,
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [],
       "width": 512,
@@ -6060,7 +6060,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
           "type": "ConfigurationEditorDrawerWidget",
         },
       },
-      "drawerWidth": 256,
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [],
       "width": 512,
@@ -12053,8 +12053,13 @@ exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
       "configuration": Object {
         "configId": "testing",
       },
-      "drawerWidgets": Object {},
-      "drawerWidth": 256,
+      "drawerWidgets": Object {
+        "addTrackDrawerWidget": Object {
+          "id": "addTrackDrawerWidget",
+          "type": "AddTrackDrawerWidget",
+        },
+      },
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [],
       "width": 512,

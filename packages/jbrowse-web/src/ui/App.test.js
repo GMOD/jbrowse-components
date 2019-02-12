@@ -53,8 +53,10 @@ describe('jbrowse-web app', () => {
 
   it('shrinks a drawer width that is too big', () => {
     const model = RootModelFactory({ pluginManager }).create({
+      width: 1024,
       drawerWidth: 4096,
     })
+    model.updateWidth(512)
     expect(model.drawerWidth).toBe(256)
     render(model)
   })

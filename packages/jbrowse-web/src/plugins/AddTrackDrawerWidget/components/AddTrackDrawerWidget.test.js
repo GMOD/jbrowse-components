@@ -20,7 +20,7 @@ describe('<AddTrackDrawerWidget />', () => {
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget')
   })
 
-  xit('shallowly renders', () => {
+  it('shallowly renders', () => {
     const wrapper = shallow(<AddTrackDrawerWidget rootModel={rootModel} />)
     expect(wrapper).toMatchSnapshot()
   })

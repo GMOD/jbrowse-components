@@ -29,6 +29,14 @@ function removeNonClonable(thing) {
   return thing
 }
 
+/**
+ * render a region in a web worker
+ *
+ * @param {object} app the enclosing application
+ * @param {object} args the render arguments
+ * @returns {Promise[object]} object containing the rendering results
+ * (e.g. html, features, a computed layout for the features)
+ */
 export async function renderRegionWithWorker(app, args) {
   const filteredArgs = removeNonClonable(args)
   const result = await getClient(app).call('renderRegion', filteredArgs, {

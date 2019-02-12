@@ -73,6 +73,30 @@ const typeModelExtensions = {
       },
     },
   }),
+  stringArrayMap: self => ({
+    views: {
+      get valueJSON() {
+        return JSON.stringify(self.value)
+      },
+    },
+    actions: {
+      add(key, val) {
+        self.value.set(key, val)
+      },
+      remove(key) {
+        self.value.delete(key)
+      },
+      addToKey(key, val) {
+        self.value.get(key).push(val)
+      },
+      removeAtKeyIndex(key, idx) {
+        self.value.get(key).splice(idx, 1)
+      },
+      setAtKeyIndex(key, idx, val) {
+        self.value.get(key)[idx] = val
+      },
+    },
+  }),
 }
 
 const FunctionStringType = types.refinement(

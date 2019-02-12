@@ -12,7 +12,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
     {},
   )
 
-  const features = await adapter.regularizeAndGetFeaturesInRegion({
+  const features = await adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -22,7 +22,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
 
-  const features2 = await adapter.regularizeAndGetFeaturesInRegion({
+  const features2 = await adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgC',
     start: 0,
