@@ -12,7 +12,6 @@ const styles = {
   },
 }
 
-@withStyles(styles)
 class TrackResizeHandle extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
@@ -78,4 +77,4 @@ class TrackResizeHandle extends Component {
   }
 }
 
-export default TrackResizeHandle
+export default withStyles(styles)(TrackResizeHandle)

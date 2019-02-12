@@ -65,17 +65,22 @@ type bam
         ),
       )
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    let instance
     const wrapper = mount(
       <ConfirmationDialog
         trackDbUrl={new URL('http://test.com/hg19/trackDb.txt')}
+        innerRef={node => {
+          instance = node
+        }}
         assemblyName="hg38"
         hubName="TestHub"
         enableNext={() => {}}
         rootModel={clone(rootModel)}
       />,
     )
-    const instance = wrapper.children().instance().wrappedInstance
+
     await instance.componentDidMount()
+
     instance.toggleUnsupported()
     expect(wrapper).toMatchSnapshot()
   })
@@ -83,16 +88,19 @@ type bam
   it('handles 404', async () => {
     const mockFetch = () => Promise.resolve(new Response('', { status: 404 }))
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    let instance
     const wrapper = mount(
       <ConfirmationDialog
         trackDbUrl={new URL('http://test.com/trackDb.txt')}
         assemblyName="hg38"
+        innerRef={node => {
+          instance = node
+        }}
         hubName="TestHub"
         enableNext={() => {}}
         rootModel={rootModel}
       />,
     )
-    const instance = wrapper.children().instance().wrappedInstance
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })
@@ -102,16 +110,19 @@ type bam
       throw new Error()
     }
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+    let instance
     const wrapper = mount(
       <ConfirmationDialog
         trackDbUrl={new URL('http://test.com/trackDb.txt')}
         assemblyName="hg38"
+        innerRef={node => {
+          instance = node
+        }}
         hubName="TestHub"
         enableNext={() => {}}
         rootModel={rootModel}
       />,
     )
-    const instance = wrapper.children().instance().wrappedInstance
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })

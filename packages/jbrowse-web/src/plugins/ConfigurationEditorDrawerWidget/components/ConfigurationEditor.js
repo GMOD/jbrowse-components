@@ -90,30 +90,25 @@ const Schema = observer(({ rootConfig, schema }) =>
   ),
 )
 
-@withStyles(styles)
-@observer
-class ConfigurationEditor extends React.Component {
-  static propTypes = {
-    classes: propTypes.shape({
-      root: propTypes.string.isRequired,
-    }).isRequired,
-    model: MobxPropTypes.objectOrObservableObject.isRequired,
-  }
-
-  render() {
-    const { classes, model } = this.props
-    return (
-      <Provider model={model} classes={classes}>
-        <div className={classes.root}>
-          {!model.target ? (
-            'no target set'
-          ) : (
-            <Schema rootConfig={model.target} schema={model.target} />
-          )}
-        </div>
-      </Provider>
-    )
-  }
+function ConfigurationEditor({ classes, model }) {
+  return (
+    <Provider model={model} classes={classes}>
+      <div className={classes.root}>
+        {!model.target ? (
+          'no target set'
+        ) : (
+          <Schema rootConfig={model.target} schema={model.target} />
+        )}
+      </div>
+    </Provider>
+  )
 }
 
-export default ConfigurationEditor
+ConfigurationEditor.propTypes = {
+  classes: propTypes.shape({
+    root: propTypes.string.isRequired,
+  }).isRequired,
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
+export default withStyles(styles)(observer(ConfigurationEditor))

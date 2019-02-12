@@ -27,8 +27,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@observer
 class HierarchicalTrackSelector extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
@@ -125,4 +123,4 @@ class HierarchicalTrackSelector extends React.Component {
   }
 }
 
-export default HierarchicalTrackSelector
+export default withStyles(styles)(observer(HierarchicalTrackSelector))

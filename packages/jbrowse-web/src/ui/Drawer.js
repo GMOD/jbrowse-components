@@ -26,9 +26,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@inject('rootModel')
-@observer
 class Drawer extends React.Component {
   static propTypes = {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
@@ -68,4 +65,4 @@ class Drawer extends React.Component {
   }
 }
 
-export default Drawer
+export default withStyles(styles)(inject('rootModel')(observer(Drawer)))

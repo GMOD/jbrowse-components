@@ -3,7 +3,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { inject, observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
 
 import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 import ScaleBar from './ScaleBar'
@@ -47,147 +47,134 @@ const styles = theme => ({
   },
 })
 
-@inject('rootModel')
-@withStyles(styles)
-@observer
-class LinearGenomeView extends Component {
-  static propTypes = {
-    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-    model: PropTypes.objectOrObservableObject.isRequired,
-    rootModel: PropTypes.objectOrObservableObject.isRequired,
+function LinearGenomeView(props) {
+  const scaleBarHeight = 32
+  const { classes, model, rootModel } = props
+  const { id, blocks, tracks, bpPerPx, width, controlsWidth, offsetPx } = model
+  const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
+  const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
+  // NOTE: offsetPx is the total offset in px of the viewing window into the
+  // whole set of concatenated regions. this number is often quite large.
+  // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
+  // that are *currently* being displayed
+  const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
+  const height =
+    scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
+  const style = {
+    display: 'grid',
+    width: `${width}px`,
+    height: `${height}px`,
+    gridTemplateRows: `[scale-bar] auto ${tracks
+      .map(
+        t =>
+          `[track-${t.id}] ${t.height}px [resize-${
+            t.id
+          }] ${dragHandleHeight}px`,
+      )
+      .join(' ')}`,
+    gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
   }
-
-  render() {
-    const scaleBarHeight = 32
-    const { classes, model, rootModel } = this.props
-    const {
-      id,
-      blocks,
-      tracks,
-      bpPerPx,
-      width,
-      controlsWidth,
-      offsetPx,
-    } = model
-    const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
-    const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
-    // NOTE: offsetPx is the total offset in px of the viewing window into the
-    // whole set of concatenated regions. this number is often quite large.
-    // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
-    // that are *currently* being displayed
-    const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
-    const height =
-      scaleBarHeight +
-      tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
-    const style = {
-      display: 'grid',
-      width: `${width}px`,
-      height: `${height}px`,
-      gridTemplateRows: `[scale-bar] auto ${tracks
-        .map(
-          t =>
-            `[track-${t.id}] ${t.height}px [resize-${
-              t.id
-            }] ${dragHandleHeight}px`,
-        )
-        .join(' ')}`,
-      gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-    }
-    // console.log(style)
-    return (
-      <div className={classes.root}>
+  // console.log(style)
+  return (
+    <div className={classes.root}>
+      <div
+        className={classes.linearGenomeView}
+        key={`view-${id}`}
+        style={style}
+      >
         <div
-          className={classes.linearGenomeView}
-          key={`view-${id}`}
-          style={style}
+          className={classnames(classes.controls, classes.viewControls)}
+          style={{ gridRow: 'scale-bar' }}
         >
-          <div
-            className={classnames(classes.controls, classes.viewControls)}
-            style={{ gridRow: 'scale-bar' }}
+          <IconButton
+            onClick={model.closeView}
+            className={classes.iconButton}
+            title="close this view"
           >
-            <IconButton
-              onClick={model.closeView}
-              className={classes.iconButton}
-              title="close this view"
-            >
-              <Icon fontSize="small">close</Icon>
-            </IconButton>
-            <ConfigureToggleButton
-              model={model}
-              onClick={model.activateConfigurationUI}
-              title="configure view"
-              style={{}}
-              fontSize="small"
-            />
-            <ToggleButton
-              onClick={model.activateTrackSelector}
-              title="select tracks"
-              selected={
-                activeDrawerWidget &&
-                activeDrawerWidget.id === 'hierarchicalTrackSelector' &&
-                activeDrawerWidget.view.id === model.id
-              }
-              value="track_select"
-            >
-              <Icon fontSize="small">line_style</Icon>
-            </ToggleButton>
-          </div>
-          <ScaleBar
-            style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-            height={scaleBarHeight}
-            bpPerPx={bpPerPx}
-            blocks={blocks}
-            offsetPx={visibleBlocksOffsetPx}
-            horizontallyFlipped={model.horizontallyFlipped}
-            width={width - controlsWidth}
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
+          <ConfigureToggleButton
+            model={model}
+            onClick={model.activateConfigurationUI}
+            title="configure view"
+            style={{}}
+            fontSize="small"
           />
-          <div
-            className={classes.zoomControls}
-            style={{
-              right: rootModel.activeDrawerWidgets.size
-                ? rootModel.drawerWidth + 4
-                : 4,
-            }}
+          <ToggleButton
+            onClick={model.activateTrackSelector}
+            title="select tracks"
+            selected={
+              activeDrawerWidget &&
+              activeDrawerWidget.id === 'hierarchicalTrackSelector' &&
+              activeDrawerWidget.view.id === model.id
+            }
+            value="track_select"
           >
-            <ZoomControls model={model} controlsHeight={scaleBarHeight} />
-          </div>
-          {tracks.map(track => [
-            <div
-              className={classnames(classes.controls, classes.trackControls)}
-              key={`controls:${track.id}`}
-              style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-            >
-              <track.ControlsComponent
-                track={track}
-                key={track.id}
-                view={model}
-                onConfigureClick={track.activateConfigurationUI}
-              />
-            </div>,
-            <TrackRenderingContainer
-              key={`track-rendering:${track.id}`}
-              trackId={track.id}
-              width={width - controlsWidth}
-            >
-              <track.RenderingComponent
-                model={track}
-                blockDefinitions={blocks}
-                offsetPx={visibleBlocksOffsetPx}
-                bpPerPx={bpPerPx}
-                blockState={{}}
-                onHorizontalScroll={model.horizontalScroll}
-              />
-            </TrackRenderingContainer>,
-            <TrackResizeHandle
-              key={`handle:${track.id}`}
-              trackId={track.id}
-              onVerticalDrag={model.resizeTrack}
-            />,
-          ])}
+            <Icon fontSize="small">line_style</Icon>
+          </ToggleButton>
         </div>
+        <ScaleBar
+          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
+          height={scaleBarHeight}
+          bpPerPx={bpPerPx}
+          blocks={blocks}
+          offsetPx={visibleBlocksOffsetPx}
+          horizontallyFlipped={model.horizontallyFlipped}
+          width={width - controlsWidth}
+        />
+        <div
+          className={classes.zoomControls}
+          style={{
+            right: rootModel.activeDrawerWidgets.size
+              ? rootModel.drawerWidth + 4
+              : 4,
+          }}
+        >
+          <ZoomControls model={model} controlsHeight={scaleBarHeight} />
+        </div>
+        {tracks.map(track => [
+          <div
+            className={classnames(classes.controls, classes.trackControls)}
+            key={`controls:${track.id}`}
+            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+          >
+            <track.ControlsComponent
+              track={track}
+              key={track.id}
+              view={model}
+              onConfigureClick={track.activateConfigurationUI}
+            />
+          </div>,
+          <TrackRenderingContainer
+            key={`track-rendering:${track.id}`}
+            trackId={track.id}
+            width={width - controlsWidth}
+          >
+            <track.RenderingComponent
+              model={track}
+              blockDefinitions={blocks}
+              offsetPx={visibleBlocksOffsetPx}
+              bpPerPx={bpPerPx}
+              blockState={{}}
+              onHorizontalScroll={model.horizontalScroll}
+            />
+          </TrackRenderingContainer>,
+          <TrackResizeHandle
+            key={`handle:${track.id}`}
+            trackId={track.id}
+            onVerticalDrag={model.resizeTrack}
+          />,
+        ])}
       </div>
-    )
-  }
+    </div>
+  )
+}
+LinearGenomeView.propTypes = {
+  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+  rootModel: PropTypes.objectOrObservableObject.isRequired,
 }
 
-export default LinearGenomeView
+export default inject('rootModel')(
+  withStyles(styles)(observer(LinearGenomeView)),
+)

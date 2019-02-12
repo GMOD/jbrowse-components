@@ -38,9 +38,6 @@ const steps = [
   'Confirm Selection',
 ]
 
-@withStyles(styles)
-@inject('rootModel')
-@observer
 class DataHubDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.shape({
@@ -219,4 +216,6 @@ class DataHubDrawerWidget extends React.Component {
   }
 }
 
-export default DataHubDrawerWidget
+export default withStyles(styles)(
+  inject('rootModel')(observer(DataHubDrawerWidget)),
+)

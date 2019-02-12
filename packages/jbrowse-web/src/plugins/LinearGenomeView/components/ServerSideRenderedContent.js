@@ -9,7 +9,6 @@ import { requestIdleCallback } from 'request-idle-callback'
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-@observer
 class ServerSideRenderedContent extends Component {
   static propTypes = {
     model: PropTypes.observableObject.isRequired,
@@ -75,4 +74,4 @@ class ServerSideRenderedContent extends Component {
   }
 }
 
-export default ServerSideRenderedContent
+export default observer(ServerSideRenderedContent)
