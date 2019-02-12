@@ -87,24 +87,19 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@observer
-class ConfigurationEditor extends React.Component {
-  static propTypes = {
-    classes: propTypes.shape({
-      root: propTypes.string.isRequired,
-    }).isRequired,
-    model: MobxPropTypes.objectOrObservableObject.isRequired,
-  }
-
-  render() {
-    const { classes, model } = this.props
-    return (
-      <div className={classes.root}>
-        {!model.target ? 'no target set' : <Schema schema={model.target} />}
-      </div>
-    )
-  }
+function ConfigurationEditor(props) {
+  const { classes, model } = props
+  return (
+    <div className={classes.root}>
+      {!model.target ? 'no target set' : <Schema schema={model.target} />}
+    </div>
+  )
+}
+ConfigurationEditor.propTypes = {
+  classes: propTypes.shape({
+    root: propTypes.string.isRequired,
+  }).isRequired,
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export default ConfigurationEditor
+export default withStyles(styles)(observer(ConfigurationEditor))

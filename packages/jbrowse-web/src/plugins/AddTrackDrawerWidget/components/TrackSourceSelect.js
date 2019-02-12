@@ -66,7 +66,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
 class TrackSourceSelect extends React.Component {
   static propTypes = {
     updateTrackData: PropTypes.func.isRequired,
@@ -145,4 +144,4 @@ class TrackSourceSelect extends React.Component {
   }
 }
 
-export default TrackSourceSelect
+export default withStyles(styles)(TrackSourceSelect)

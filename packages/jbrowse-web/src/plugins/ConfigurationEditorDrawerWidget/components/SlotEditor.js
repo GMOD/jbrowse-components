@@ -39,139 +39,46 @@ const StringEditor = observer(({ slot }) => (
   />
 ))
 
-@observer
-class StringArrayEditor extends React.Component {
-  static propTypes = {
-    slot: MobxPropTypes.objectOrObservableObject.isRequired,
-  }
+const StringArrayEditor = observer(
+  class StringArrayEditor extends React.Component {
+    static propTypes = {
+      slot: MobxPropTypes.objectOrObservableObject.isRequired,
+    }
 
-  state = {
-    newString: '',
-  }
+    state = {
+      newString: '',
+    }
 
-  render() {
-    const { newString } = this.state
-    const { slot } = this.props
-    return (
-      <>
-        {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
-        <List dense disablePadding>
-          {slot.value.map((val, idx) => (
-            <ListItem
-              key={idx} // eslint-disable-line react/no-array-index-key
-              dense
-              disableGutters
-            >
+    render() {
+      const { newString } = this.state
+      const { slot } = this.props
+      return (
+        <>
+          {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
+          <List dense disablePadding>
+            {slot.value.map((val, idx) => (
+              <ListItem
+                key={idx} // eslint-disable-line react/no-array-index-key
+                dense
+                disableGutters
+              >
+                <TextField
+                  value={val}
+                  onChange={evt => slot.setAtIndex(idx, evt.target.value)}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment>
+                        <IconButton onClick={() => slot.removeAtIndex(idx)}>
+                          <Icon>delete</Icon>
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </ListItem>
+            ))}
+            <ListItem dense disableGutters>
               <TextField
-                value={val}
-                onChange={evt => slot.setAtIndex(idx, evt.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment>
-                      <IconButton onClick={() => slot.removeAtIndex(idx)}>
-                        <Icon>delete</Icon>
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </ListItem>
-          ))}
-          <ListItem dense disableGutters>
-            <TextField
-              value={newString}
-              placeholder="add new"
-              onChange={event =>
-                this.setState({ newString: event.target.value })
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment>
-                    <IconButton
-                      onClick={() => {
-                        slot.add(newString)
-                        this.setState({ newString: '' })
-                      }}
-                      disabled={newString === ''}
-                    >
-                      <Icon>add</Icon>
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </ListItem>
-        </List>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  }
-}
-
-const stringArrayMapEditorStyles = theme => ({
-  card: {
-    marginTop: theme.spacing.unit,
-  },
-})
-
-// eslint-disable-next-line react/no-multi-comp
-@withStyles(stringArrayMapEditorStyles)
-@observer
-class StringArrayMapEditor extends React.Component {
-  static propTypes = {
-    slot: MobxPropTypes.observableObject.isRequired,
-    classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  }
-
-  state = {
-    newString: '',
-  }
-
-  render() {
-    const { newString } = this.state
-    const { slot, classes } = this.props
-    return (
-      <>
-        <InputLabel>{slot.name}</InputLabel>
-        {Array.from(slot.value, ([key, val]) => (
-          <Card
-            raised
-            key={key} // eslint-disable-line react/no-array-index-key
-            className={classes.card}
-          >
-            <CardHeader
-              title={key}
-              action={
-                <IconButton onClick={() => slot.remove(key)}>
-                  <Icon>delete</Icon>
-                </IconButton>
-              }
-            />
-            <CardContent>
-              <StringArrayEditor
-                slot={{
-                  value: val,
-                  description: `Values associated with entry ${key}`,
-                  setAtIndex: (idx, value) => {
-                    slot.setAtKeyIndex(key, idx, value)
-                  },
-                  removeAtIndex: idx => {
-                    slot.removeAtKeyIndex(key, idx)
-                  },
-                  add: value => {
-                    slot.addToKey(key, value)
-                  },
-                }}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Card raised className={classes.card}>
-          <CardHeader
-            disableTypography
-            title={
-              <TextField
-                fullWidth
                 value={newString}
                 placeholder="add new"
                 onChange={event =>
@@ -181,11 +88,11 @@ class StringArrayMapEditor extends React.Component {
                   endAdornment: (
                     <InputAdornment>
                       <IconButton
-                        disabled={newString === ''}
                         onClick={() => {
-                          slot.add(newString, [])
+                          slot.add(newString)
                           this.setState({ newString: '' })
                         }}
+                        disabled={newString === ''}
                       >
                         <Icon>add</Icon>
                       </IconButton>
@@ -193,14 +100,110 @@ class StringArrayMapEditor extends React.Component {
                   ),
                 }}
               />
-            }
-          />
-        </Card>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  }
-}
+            </ListItem>
+          </List>
+          <FormHelperText>{slot.description}</FormHelperText>
+        </>
+      )
+    }
+  },
+)
+
+const stringArrayMapEditorStyles = theme => ({
+  card: {
+    marginTop: theme.spacing.unit,
+  },
+})
+
+const StringArrayMapEditor = withStyles(stringArrayMapEditorStyles)(
+  observer(
+    // eslint-disable-next-line react/no-multi-comp
+    class StringArrayMapEditor extends React.Component {
+      static propTypes = {
+        slot: MobxPropTypes.observableObject.isRequired,
+        classes: PropTypes.objectOf(PropTypes.string).isRequired,
+      }
+
+      state = {
+        newString: '',
+      }
+
+      render() {
+        const { newString } = this.state
+        const { slot, classes } = this.props
+        return (
+          <>
+            <InputLabel>{slot.name}</InputLabel>
+            {Array.from(slot.value, ([key, val]) => (
+              <Card
+                raised
+                key={key} // eslint-disable-line react/no-array-index-key
+                className={classes.card}
+              >
+                <CardHeader
+                  title={key}
+                  action={
+                    <IconButton onClick={() => slot.remove(key)}>
+                      <Icon>delete</Icon>
+                    </IconButton>
+                  }
+                />
+                <CardContent>
+                  <StringArrayEditor
+                    slot={{
+                      value: val,
+                      description: `Values associated with entry ${key}`,
+                      setAtIndex: (idx, value) => {
+                        slot.setAtKeyIndex(key, idx, value)
+                      },
+                      removeAtIndex: idx => {
+                        slot.removeAtKeyIndex(key, idx)
+                      },
+                      add: value => {
+                        slot.addToKey(key, value)
+                      },
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            ))}
+            <Card raised className={classes.card}>
+              <CardHeader
+                disableTypography
+                title={
+                  <TextField
+                    fullWidth
+                    value={newString}
+                    placeholder="add new"
+                    onChange={event =>
+                      this.setState({ newString: event.target.value })
+                    }
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment>
+                          <IconButton
+                            disabled={newString === ''}
+                            onClick={() => {
+                              slot.add(newString, [])
+                              this.setState({ newString: '' })
+                            }}
+                          >
+                            <Icon>add</Icon>
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                }
+              />
+            </Card>
+            <FormHelperText>{slot.description}</FormHelperText>
+          </>
+        )
+      }
+    },
+  ),
+)
 
 const NumberEditor = observer(({ slot }) => (
   <TextField

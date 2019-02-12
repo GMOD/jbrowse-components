@@ -1,10 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<ConfirmationDialog /> handles 404 1`] = `
-<WithStyles(inject-ConfirmationDialog-with-rootModel)
+<inject-WithStyles(ConfirmationDialog)-with-rootModel
   assemblyName="hg38"
   enableNext={[Function]}
   hubName="TestHub"
+  innerRef={[Function]}
   rootModel={
     Object {
       "activeDrawerWidgets": Object {
@@ -44,15 +45,11 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
   }
   trackDbUrl={"http://test.com/trackDb.txt"}
 >
-  <inject-ConfirmationDialog-with-rootModel
+  <WithStyles(ConfirmationDialog)
     assemblyName="hg38"
-    classes={
-      Object {
-        "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
-      }
-    }
     enableNext={[Function]}
     hubName="TestHub"
+    innerRef={[Function]}
     rootModel={
       Object {
         "activeDrawerWidgets": Object {
@@ -96,7 +93,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       assemblyName="hg38"
       classes={
         Object {
-          "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+          "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
         }
       }
       enableNext={[Function]}
@@ -185,15 +182,16 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         </LinearProgress>
       </WithStyles(LinearProgress)>
     </ConfirmationDialog>
-  </inject-ConfirmationDialog-with-rootModel>
-</WithStyles(inject-ConfirmationDialog-with-rootModel)>
+  </WithStyles(ConfirmationDialog)>
+</inject-WithStyles(ConfirmationDialog)-with-rootModel>
 `;
 
 exports[`<ConfirmationDialog /> handles fetch error 1`] = `
-<WithStyles(inject-ConfirmationDialog-with-rootModel)
+<inject-WithStyles(ConfirmationDialog)-with-rootModel
   assemblyName="hg38"
   enableNext={[Function]}
   hubName="TestHub"
+  innerRef={[Function]}
   rootModel={
     Object {
       "activeDrawerWidgets": Object {
@@ -233,15 +231,11 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
   }
   trackDbUrl={"http://test.com/trackDb.txt"}
 >
-  <inject-ConfirmationDialog-with-rootModel
+  <WithStyles(ConfirmationDialog)
     assemblyName="hg38"
-    classes={
-      Object {
-        "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
-      }
-    }
     enableNext={[Function]}
     hubName="TestHub"
+    innerRef={[Function]}
     rootModel={
       Object {
         "activeDrawerWidgets": Object {
@@ -285,7 +279,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       assemblyName="hg38"
       classes={
         Object {
-          "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+          "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
         }
       }
       enableNext={[Function]}
@@ -779,15 +773,16 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         </Typography>
       </WithStyles(Typography)>
     </ConfirmationDialog>
-  </inject-ConfirmationDialog-with-rootModel>
-</WithStyles(inject-ConfirmationDialog-with-rootModel)>
+  </WithStyles(ConfirmationDialog)>
+</inject-WithStyles(ConfirmationDialog)-with-rootModel>
 `;
 
 exports[`<ConfirmationDialog /> mounts 1`] = `
-<WithStyles(inject-ConfirmationDialog-with-rootModel)
+<inject-WithStyles(ConfirmationDialog)-with-rootModel
   assemblyName="hg38"
   enableNext={[Function]}
   hubName="TestHub"
+  innerRef={[Function]}
   rootModel={
     Object {
       "activeDrawerWidgets": Object {
@@ -827,15 +822,11 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
   }
   trackDbUrl={"http://test.com/hg19/trackDb.txt"}
 >
-  <inject-ConfirmationDialog-with-rootModel
+  <WithStyles(ConfirmationDialog)
     assemblyName="hg38"
-    classes={
-      Object {
-        "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
-      }
-    }
     enableNext={[Function]}
     hubName="TestHub"
+    innerRef={[Function]}
     rootModel={
       Object {
         "activeDrawerWidgets": Object {
@@ -879,7 +870,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       assemblyName="hg38"
       classes={
         Object {
-          "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+          "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
         }
       }
       enableNext={[Function]}
@@ -968,8 +959,8 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         </LinearProgress>
       </WithStyles(LinearProgress)>
     </ConfirmationDialog>
-  </inject-ConfirmationDialog-with-rootModel>
-</WithStyles(inject-ConfirmationDialog-with-rootModel)>
+  </WithStyles(ConfirmationDialog)>
+</inject-WithStyles(ConfirmationDialog)-with-rootModel>
 `;
 
 exports[`<ConfirmationDialog /> shallowly renders 1`] = `

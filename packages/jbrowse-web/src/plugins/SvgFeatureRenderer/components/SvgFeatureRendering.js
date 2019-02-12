@@ -8,7 +8,6 @@ import { PropTypes as CommonPropTypes } from '../../../mst-types'
 
 import Box from './Box'
 
-@observer
 class SvgFeatureRendering extends Component {
   static propTypes = {
     layout: ReactPropTypes.shape({
@@ -156,4 +155,4 @@ class SvgFeatureRendering extends Component {
     )
   }
 }
-export default SvgFeatureRendering
+export default observer(SvgFeatureRendering)

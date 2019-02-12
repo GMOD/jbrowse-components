@@ -1,6 +1,6 @@
 # About rendering
 
-## What is in herea
+## What is in here
 
 This directory contains very general renderer base classes that can be built off of by plugins.
 

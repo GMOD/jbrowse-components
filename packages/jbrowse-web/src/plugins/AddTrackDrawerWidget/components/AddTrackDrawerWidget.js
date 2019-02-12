@@ -32,9 +32,6 @@ const styles = theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-@withStyles(styles)
-@inject('rootModel')
-@observer
 class AddTrackDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.objectOf(propTypes.string).isRequired,
@@ -185,4 +182,6 @@ class AddTrackDrawerWidget extends React.Component {
   }
 }
 
-export default AddTrackDrawerWidget
+export default withStyles(styles)(
+  inject('rootModel')(observer(AddTrackDrawerWidget)),
+)

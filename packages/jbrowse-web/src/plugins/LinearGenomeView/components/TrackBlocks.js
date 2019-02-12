@@ -16,8 +16,6 @@ const styles = {
   },
 }
 
-@withStyles(styles)
-@observer
 class TrackBlocks extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
@@ -74,4 +72,4 @@ class TrackBlocks extends Component {
   }
 }
 
-export default TrackBlocks
+export default withStyles(styles)(observer(TrackBlocks))

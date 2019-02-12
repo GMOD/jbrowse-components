@@ -53,9 +53,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@inject('rootModel')
-@observer
 class App extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
@@ -191,4 +188,6 @@ class App extends Component {
   }
 }
 
-export default withSize()(App)
+export default withSize()(
+  withStyles(styles)(inject('rootModel')(observer(App))),
+)

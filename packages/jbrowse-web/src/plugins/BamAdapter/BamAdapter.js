@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 
 import { BamFile } from '@gmod/bam'
 
-import { openLocation } from '../../util'
+import { openLocation } from '../../util/io'
 import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 

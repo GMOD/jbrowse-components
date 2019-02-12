@@ -34,6 +34,7 @@ import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalT
 import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
 import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
+import WorkerManager from './WorkerManager'
 
 const corePlugins = [
   MainMenuBarPlugin,
@@ -58,13 +59,13 @@ const corePlugins = [
 
 // the main class used to configure and start a new JBrowse app
 class JBrowse {
-  workerGroups = {}
-
   constructor() {
     this.pluginManager = new PluginManager(corePlugins)
+    this.workerManager = new WorkerManager()
   }
 
   addPlugin(plugin) {
+    // just delegates to the plugin manager
     this.pluginManager.addPlugin(plugin)
     return this
   }
@@ -81,17 +82,6 @@ class JBrowse {
 
     this.configured = true
     return this
-  }
-
-  addWorkers(groups) {
-    Object.entries(groups).forEach(([groupName, workers]) => {
-      if (!this.workerGroups[groupName]) this.workerGroups[groupName] = []
-      this.workerGroups[groupName].push(...workers)
-    })
-  }
-
-  getWorkerGroup(name) {
-    return this.workerGroups[name]
   }
 
   start() {

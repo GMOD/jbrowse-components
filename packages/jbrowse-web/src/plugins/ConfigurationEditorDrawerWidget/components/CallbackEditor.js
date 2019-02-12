@@ -25,8 +25,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@observer
 class CallbackEditor extends Component {
   static propTypes = {
     slot: PropTypes.objectOrObservableObject.isRequired,
@@ -67,4 +65,4 @@ class CallbackEditor extends Component {
   }
 }
 
-export default CallbackEditor
+export default withStyles(styles)(observer(CallbackEditor))

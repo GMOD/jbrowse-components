@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 
-@observer
 class ColorEditor extends Component {
   static propTypes = {
     slot: ReactPropTypes.shape({
@@ -43,4 +42,4 @@ class ColorEditor extends Component {
   }
 }
 
-export default ColorEditor
+export default observer(ColorEditor)
