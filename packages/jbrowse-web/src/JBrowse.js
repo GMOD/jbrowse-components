@@ -70,15 +70,14 @@ class JBrowse {
     return this
   }
 
-  configure(initialConfig) {
+  configure(initialConfig = {}) {
     this.pluginManager.configure()
 
     this.modelType = RootModelFactory(this)
-    this.model = this.modelType.create({})
-
-    if (initialConfig) {
-      this.model.configure(initialConfig)
-    }
+    if (initialConfig.uri || initialConfig.localPath) {
+      this.model = this.modelType.create()
+      this.model.loadConfig(initialConfig)
+    } else this.model = this.modelType.create({ configuration: initialConfig })
 
     this.configured = true
     return this

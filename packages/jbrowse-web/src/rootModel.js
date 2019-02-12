@@ -1,6 +1,7 @@
-import { types, getRoot, getType } from 'mobx-state-tree'
+import { flow, getRoot, getType, types } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
+import { openLocation } from './util/io'
 
 export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
@@ -112,6 +113,19 @@ export default app => {
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
+
+      loadConfig: flow(function* loadConfig(configLocation) {
+        try {
+          const configSnapshot = JSON.parse(
+            new TextDecoder('utf-8').decode(
+              yield openLocation(configLocation).readFile(),
+            ),
+          )
+          self.configure(configSnapshot)
+        } catch (error) {
+          console.error('Failed to load config ', error)
+        }
+      }),
 
       updateWidth(width) {
         let newWidth = Math.floor(width)
