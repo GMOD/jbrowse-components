@@ -7,6 +7,7 @@ import React from 'react'
 
 import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 import ScaleBar from './ScaleBar'
+import Rubberband from './Rubberband'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
@@ -148,9 +149,19 @@ function LinearGenomeView(props) {
               view={model}
               onConfigureClick={track.activateConfigurationUI}
             />
-          </div>,
-
-
+          </div>
+          <Rubberband
+            style={{
+              gridColumn: 'blocks',
+              gridRow: 'scale-bar',
+              zIndex: 999,
+              cursor: 'crosshair',
+            }}
+            offsetPx={visibleBlocksOffsetPx}
+            realOffsetPx={offsetPx}
+            blocks={blocks}
+            bpPerPx={bpPerPx}
+          />
           <ScaleBar
             style={{
               gridColumn: 'blocks',
