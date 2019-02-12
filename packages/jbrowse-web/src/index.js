@@ -165,10 +165,7 @@ secondView.displayRegions([
   },
 ])
 
-// firstView.activateTrackSelector()
-if (!model.drawerWidgets.get('addTrackDrawerWidget'))
-  model.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget')
-model.showDrawerWidget(model.drawerWidgets.get('addTrackDrawerWidget'))
+firstView.activateTrackSelector()
 
 // finally, start the app
 jbrowse.start()
