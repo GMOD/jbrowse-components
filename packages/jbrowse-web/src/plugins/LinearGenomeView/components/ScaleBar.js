@@ -99,6 +99,14 @@ class ScaleBar extends Component {
       offsetPx,
       blocks,
     )
+    let leftPx
+    let rightPx
+    if (rubberband) {
+      ;[leftPx, rightPx] = rubberband
+      if (rightPx < leftPx) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+    }
 
     return (
       <>
@@ -106,8 +114,8 @@ class ScaleBar extends Component {
           <div
             id="rubberband"
             style={{
-              left: `${rubberband[0]}px`,
-              width: `${rubberband[1] - rubberband[0]}px`,
+              left: `${leftPx}px`,
+              width: `${rightPx - leftPx}px`,
               height: '100%',
               background: '#aad8',
               position: 'absolute',

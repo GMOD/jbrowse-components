@@ -149,9 +149,19 @@ function LinearGenomeView(props) {
               onConfigureClick={track.activateConfigurationUI}
             />
           </div>,
-          <TrackRenderingContainer
-            key={`track-rendering:${track.id}`}
-            trackId={track.id}
+
+
+          <ScaleBar
+            style={{
+              gridColumn: 'blocks',
+              gridRow: 'scale-bar',
+              userSelect: 'none',
+            }}
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={blocks}
+            offsetPx={visibleBlocksOffsetPx}
+            horizontallyFlipped={model.horizontallyFlipped}
             width={width - controlsWidth}
           >
             <track.RenderingComponent
