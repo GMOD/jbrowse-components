@@ -7,8 +7,8 @@ import BaseAdapter from '../../BaseAdapter'
 import SimpleFeature from '../../util/simpleFeature'
 
 export default class TwoBitAdapter extends BaseAdapter {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super(config)
     const { twoBitLocation } = config
     const twoBitOpts = {
       filehandle: openLocation(twoBitLocation),
@@ -17,7 +17,7 @@ export default class TwoBitAdapter extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  loadData() {
+  async loadData() {
     return this.twobit.getSequenceNames()
   }
 
@@ -26,7 +26,8 @@ export default class TwoBitAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeaturesInRegion({ refName, start, end }) {
+  async getFeatures({ refName, start, end }) {
+    await this.loadData()
     return Observable.create(async observer => {
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(

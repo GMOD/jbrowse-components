@@ -7,8 +7,8 @@ import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 export default class BamAdapter extends BaseAdapter {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super(config)
     const { bamLocation } = config
 
     const indexLocation = config.index.location
@@ -28,38 +28,42 @@ export default class BamAdapter extends BaseAdapter {
   }
 
   async loadData() {
-    const samHeader = await this.bam.getHeader()
-    this.samHeader = {}
+    if (!this.samHeader) {
+      const samHeader = await this.bam.getHeader()
+      this.samHeader = {}
 
-    // use the @SQ lines in the header to figure out the
-    // mapping between ref seq ID numbers and names
-    const refSeqIdToName = []
-    const refSeqNameToId = {}
-    const sqLines = samHeader.filter(l => l.tag === 'SQ')
-    sqLines.forEach((sqLine, seqId) => {
-      sqLine.data.forEach(item => {
-        if (item.tag === 'SN') {
-          // this is the seq name
-          const seqName = item.value
-          refSeqNameToId[seqName] = seqId
-          refSeqIdToName[seqId] = seqName
-        }
+      // use the @SQ lines in the header to figure out the
+      // mapping between ref seq ID numbers and names
+      const refSeqIdToName = []
+      const refSeqNameToId = {}
+      const sqLines = samHeader.filter(l => l.tag === 'SQ')
+      sqLines.forEach((sqLine, seqId) => {
+        sqLine.data.forEach(item => {
+          if (item.tag === 'SN') {
+            // this is the seq name
+            const seqName = item.value
+            refSeqNameToId[seqName] = seqId
+            refSeqIdToName[seqId] = seqName
+          }
+        })
       })
-    })
-    if (refSeqIdToName.length) {
-      this.samHeader.refSeqIdToName = refSeqIdToName
-      this.samHeader.refSeqNameToId = refSeqNameToId
+      if (refSeqIdToName.length) {
+        this.samHeader.refSeqIdToName = refSeqIdToName
+        this.samHeader.refSeqNameToId = refSeqNameToId
+      }
     }
-    return refSeqIdToName
+    return this.samHeader.refSeqIdToName
   }
 
   /**
-   * Fetch features for a certain region
-   * You probably actually want to use regularizeAndGetFeaturesInRegion()
+   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
+   * want to verify that the store has features for the given assembly and
+   * reference sequence before fetching.
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeaturesInRegion({ refName, start, end }) {
+  async getFeatures({ refName, start, end }) {
+    await this.loadData()
     return Observable.create(async observer => {
       const records = await this.bam.getRecordsForRange(refName, start, end)
       records.forEach(record => {

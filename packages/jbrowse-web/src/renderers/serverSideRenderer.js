@@ -92,9 +92,7 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs) {
     const { dataAdapter, region } = renderArgs
     const features = new Map()
-    const featureObservable = await dataAdapter.regularizeAndGetFeaturesInRegion(
-      region,
-    )
+    const featureObservable = await dataAdapter.getFeaturesInRegion(region)
     await featureObservable
       .pipe(
         tap(feature => {

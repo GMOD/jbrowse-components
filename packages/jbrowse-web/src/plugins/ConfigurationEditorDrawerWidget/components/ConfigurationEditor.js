@@ -1,12 +1,7 @@
-import { FormLabel } from '@material-ui/core'
 import FormGroup from '@material-ui/core/FormGroup'
+import FormLabel from '@material-ui/core/FormLabel'
 import { withStyles } from '@material-ui/core/styles'
-import {
-  inject,
-  observer,
-  PropTypes as MobxPropTypes,
-  Provider,
-} from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
@@ -19,14 +14,7 @@ import { iterMap } from '../../../util'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
-const styles = theme => ({
-  root: {
-    textAlign: 'left',
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 3}px ${
-      theme.spacing.unit
-    }px ${theme.spacing.unit}px`,
-    background: theme.palette.background.default,
-  },
+const memberStyles = theme => ({
   subSchemaContainer: {
     marginLeft: theme.spacing.unit,
     borderLeft: `1px solid ${theme.palette.secondary.main}`,
@@ -35,8 +23,8 @@ const styles = theme => ({
   },
 })
 
-const Member = inject('classes')(
-  observer(({ slotName, slotSchema, schema, classes, rootConfig }) => {
+const Member = withStyles(memberStyles)(
+  observer(({ slotName, slotSchema, schema, classes }) => {
     const slot = schema[slotName]
     let typeSelector
     if (isConfigurationSchemaType(slotSchema)) {
@@ -59,10 +47,10 @@ const Member = inject('classes')(
       return (
         <>
           <FormLabel>{slotName}</FormLabel>
-          {typeSelector}
           <div className={classes.subSchemaContainer}>
+            {typeSelector}
             <FormGroup>
-              <Schema rootConfig={rootConfig} schema={slot} />
+              <Schema schema={slot} />
             </FormGroup>
           </div>
         </>
@@ -78,32 +66,35 @@ const Member = inject('classes')(
   }),
 )
 
-const Schema = observer(({ rootConfig, schema }) =>
+const Schema = observer(({ schema }) =>
   iterMap(
     Object.entries(getMembers(schema).properties),
     ([slotName, slotSchema]) => (
-      <Member
-        key={slotName}
-        {...{ slotName, slotSchema, schema, rootConfig }}
-      />
+      <Member key={slotName} {...{ slotName, slotSchema, schema }} />
     ),
   ),
 )
 
-function ConfigurationEditor({ classes, model }) {
+const styles = theme => ({
+  root: {
+    padding:
+      `${theme.spacing.unit}px ` +
+      `${theme.spacing.unit * 3}px ` +
+      `${theme.spacing.unit}px ` +
+      `${theme.spacing.unit}px`,
+    background: theme.palette.background.default,
+    overflowX: 'hidden',
+  },
+})
+
+function ConfigurationEditor(props) {
+  const { classes, model } = props
   return (
-    <Provider model={model} classes={classes}>
-      <div className={classes.root}>
-        {!model.target ? (
-          'no target set'
-        ) : (
-          <Schema rootConfig={model.target} schema={model.target} />
-        )}
-      </div>
-    </Provider>
+    <div className={classes.root}>
+      {!model.target ? 'no target set' : <Schema schema={model.target} />}
+    </div>
   )
 }
-
 ConfigurationEditor.propTypes = {
   classes: propTypes.shape({
     root: propTypes.string.isRequired,

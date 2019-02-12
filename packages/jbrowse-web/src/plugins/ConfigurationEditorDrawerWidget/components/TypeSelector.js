@@ -1,18 +1,12 @@
 import React from 'react'
-import {
-  TextField,
-  MenuItem,
-  withStyles,
-  Card,
-  CardContent,
-} from '@material-ui/core'
+import { TextField, MenuItem, withStyles, Paper } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { slotEditorStyles } from './SlotEditor'
 
 const TypeSelector = withStyles(slotEditorStyles)(
   observer(({ typeNameChoices, slot, slotName, onChange, classes }) => (
-    <Card className={classes.card}>
-      <CardContent className={classes.cardContent}>
+    <Paper className={classes.paper}>
+      <div className={classes.paperContent}>
         <TextField
           value={slot.type}
           label="Type"
@@ -28,8 +22,8 @@ const TypeSelector = withStyles(slotEditorStyles)(
             </MenuItem>
           ))}
         </TextField>
-      </CardContent>
-    </Card>
+      </div>
+    </Paper>
   )),
 )
 

@@ -7,7 +7,7 @@ Object {
     "configId": Any<String>,
   },
   "drawerWidgets": Object {},
-  "drawerWidth": 256,
+  "drawerWidth": 384,
   "menuBars": Array [],
   "views": Array [],
   "width": 512,
