@@ -67,9 +67,6 @@ const styles = theme => ({
   },
 })
 
-@withStyles(styles)
-@inject('rootModel')
-@observer
 class AssemblyEditorDrawerWidget extends React.Component {
   static propTypes = {
     rootModel: MobxPropTypes.observableObject.isRequired,
@@ -291,4 +288,6 @@ class AssemblyEditorDrawerWidget extends React.Component {
   }
 }
 
-export default AssemblyEditorDrawerWidget
+export default withStyles(styles)(
+  inject('rootModel')(observer(AssemblyEditorDrawerWidget)),
+)
