@@ -2,16 +2,17 @@ import { types, getRoot, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
 
-const Assembly = ConfigurationSchema('Assembly', {
+export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
     type: 'stringArray',
     defaultValue: [],
-    description: 'A list of aliases of the assembly',
+    description: 'Other possible names for this assembly',
   },
   seqNameAliases: {
     type: 'stringArrayMap',
     defaultValue: {},
-    description: 'A map of seq -> Array(altSeqName)',
+    description:
+      'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
   },
 })
 
@@ -19,7 +20,7 @@ export default app => {
   const { pluginManager } = app
   const minWidth = 384
   const minDrawerWidth = 128
-  const RootModel = types
+  return types
     .model('JBrowseWebRootModel', {
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
@@ -48,7 +49,7 @@ export default app => {
           // a track can exist that use the same configuration
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
 
-          // let's try some assemblies
+          // A map of assembly name -> assembly details
           assemblies: types.map(Assembly),
         },
         {
@@ -62,6 +63,19 @@ export default app => {
               )
               self.tracks.push(conf)
               return conf
+            },
+            addAssembly(assemblyName, aliases = [], seqNameAliases = {}) {
+              self.assemblies.set(
+                assemblyName,
+                Assembly.create({
+                  configId: assemblyName,
+                  aliases,
+                  seqNameAliases,
+                }),
+              )
+            },
+            removeAssembly(assemblyName) {
+              self.assemblies.delete(assemblyName)
             },
           }),
         },
@@ -95,11 +109,6 @@ export default app => {
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        if (self.drawerWidth > self.maxDrawerWidth)
-          self.drawerWidth = self.maxDrawerWidth
-      },
-
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
@@ -109,6 +118,8 @@ export default app => {
         if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
         self.width = newWidth
+        if (self.drawerWidth > self.maxDrawerWidth)
+          self.drawerWidth = self.maxDrawerWidth
       },
 
       updateDrawerWidth(drawerWidth) {
@@ -247,7 +258,6 @@ export default app => {
         self.showDrawerWidget(editor)
       },
     }))
-  return RootModel
 }
 
 // a track is a combination of a dataset and a renderer, along with some conditions

@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<AboutDrawerWidget /> renders 1`] = `
+<WithStyles(Typography)
+  variant="h6"
+>
+  About JBrowse:
+</WithStyles(Typography)>
+`;

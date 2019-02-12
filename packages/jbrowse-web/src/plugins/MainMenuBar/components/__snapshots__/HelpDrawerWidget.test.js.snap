@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HelpDrawerWidget /> renders 1`] = `
+<WithStyles(Typography)
+  variant="h6"
+>
+  Here's some help:
+</WithStyles(Typography)>
+`;

@@ -7,8 +7,8 @@ import { openLocation } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 
 export default class BigWigAdapter extends BaseAdapter {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
     })
@@ -33,7 +33,8 @@ export default class BigWigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
+  async getFeatures({ /* assembly, */ refName, start, end }) {
+    await this.loadData()
     return Observable.create(async observer => {
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {

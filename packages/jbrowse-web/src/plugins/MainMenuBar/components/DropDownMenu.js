@@ -10,26 +10,21 @@ import MenuItem from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
-import SvgIcon from '@material-ui/core/SvgIcon'
 import { withStyles } from '@material-ui/core/styles'
 
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 
-function EmptyIcon(props) {
-  return (
-    <SvgIcon {...props}>
-      <path />
-    </SvgIcon>
-  )
-}
-
-const styles = {
+const styles = theme => ({
   root: {
     display: 'flex',
   },
-}
+  popper: {
+    zIndex: theme.zIndex.drawer + 50,
+  },
+})
 
+@withStyles(styles)
 @observer
 class DropDownMenu extends React.Component {
   static propTypes = {
@@ -53,9 +48,7 @@ class DropDownMenu extends React.Component {
   handleClose = (event, callback) => {
     const { anchorEl } = this.state
     const { model } = this.props
-    if (anchorEl && anchorEl.contains(event.target)) {
-      return
-    }
+    if (anchorEl && anchorEl.contains(event.target)) return
     this.setState({ anchorEl: null })
     if (callback) callback(model)
   }
@@ -76,10 +69,10 @@ class DropDownMenu extends React.Component {
           <Icon>arrow_drop_down</Icon>
         </Button>
         <Popper
+          className={classes.popper}
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
           placement="bottom-start"
-          style={{ zIndex: 3 }}
           transition
           // disablePortal
         >
@@ -101,14 +94,15 @@ class DropDownMenu extends React.Component {
                           this.handleClose(event, menuItem.func)
                         }
                       >
-                        <ListItemIcon key={menuItem.name}>
-                          {menuItem.icon ? (
+                        {menuItem.icon ? (
+                          <ListItemIcon key={menuItem.name}>
                             <Icon>{menuItem.icon}</Icon>
-                          ) : (
-                            <EmptyIcon key={menuItem.name} />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText inset primary={menuItem.name} />
+                          </ListItemIcon>
+                        ) : null}
+                        <ListItemText
+                          inset={!menuItem.icon}
+                          primary={menuItem.name}
+                        />
                       </MenuItem>
                     ))}
                   </MenuList>
@@ -122,4 +116,4 @@ class DropDownMenu extends React.Component {
   }
 }
 
-export default withStyles(styles)(DropDownMenu)
+export default DropDownMenu

@@ -22,7 +22,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "view": "testViewId",
         },
       },
-      "drawerWidth": 256,
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [
         Object {
@@ -70,7 +70,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             "view": "testViewId",
           },
         },
-        "drawerWidth": 256,
+        "drawerWidth": 384,
         "menuBars": Array [],
         "views": Array [
           Object {
@@ -118,7 +118,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
               "view": "testViewId",
             },
           },
-          "drawerWidth": 256,
+          "drawerWidth": 384,
           "menuBars": Array [],
           "views": Array [
             Object {
@@ -211,7 +211,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "view": "testViewId",
         },
       },
-      "drawerWidth": 256,
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [
         Object {
@@ -259,7 +259,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             "view": "testViewId",
           },
         },
-        "drawerWidth": 256,
+        "drawerWidth": 384,
         "menuBars": Array [],
         "views": Array [
           Object {
@@ -307,7 +307,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
               "view": "testViewId",
             },
           },
-          "drawerWidth": 256,
+          "drawerWidth": 384,
           "menuBars": Array [],
           "views": Array [
             Object {
@@ -805,7 +805,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "view": "testViewId",
         },
       },
-      "drawerWidth": 256,
+      "drawerWidth": 384,
       "menuBars": Array [],
       "views": Array [
         Object {
@@ -853,7 +853,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             "view": "testViewId",
           },
         },
-        "drawerWidth": 256,
+        "drawerWidth": 384,
         "menuBars": Array [],
         "views": Array [
           Object {
@@ -901,7 +901,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
               "view": "testViewId",
             },
           },
-          "drawerWidth": 256,
+          "drawerWidth": 384,
           "menuBars": Array [],
           "views": Array [
             Object {

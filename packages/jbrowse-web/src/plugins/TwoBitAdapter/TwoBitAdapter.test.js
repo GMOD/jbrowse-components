@@ -11,7 +11,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     {},
   )
 
-  const features = await adapter.regularizeAndGetFeaturesInRegion({
+  const features = await adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,

@@ -7,8 +7,8 @@ import SimpleFeature from '../../util/simpleFeature'
 import BaseAdapter from '../../BaseAdapter'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super(config)
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
@@ -24,7 +24,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  loadData() {
+  async loadData() {
     return this.fasta.getSequenceList()
   }
 
@@ -33,16 +33,17 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeaturesInRegion({ /* assembly, */ refName, start, end }) {
-    // TODO
+  async getFeatures({ /* assembly, */ refName, start, end }) {
     return Observable.create(async observer => {
+      await this.loadData()
       const seq = await this.fasta.getSequence(refName, start, end)
-      observer.next(
-        new SimpleFeature({
-          id: `${refName} ${start}-${end}`,
-          data: { refName, start, end, seq },
-        }),
-      )
+      if (seq)
+        observer.next(
+          new SimpleFeature({
+            id: `${refName} ${start}-${end}`,
+            data: { refName, start, end, seq },
+          }),
+        )
       observer.complete()
     })
   }
