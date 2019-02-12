@@ -67,9 +67,9 @@ class ScaleBar extends Component {
   }
 
   mouseUp = () => {
-    // this.setState(() => ({
-    //   rubberband: undefined,
-    // }))
+    this.setState(() => ({
+      rubberband: undefined,
+    }))
     window.removeEventListener('mouseup', this.mouseUp, true)
     window.removeEventListener('mousemove', this.mouseMove, true)
   }
@@ -94,8 +94,6 @@ class ScaleBar extends Component {
       horizontallyFlipped,
     } = this.props
     const { rubberband } = this.state
-    const finalStyle = Object.assign({}, style, { position: 'relative' })
-    console.log(finalStyle, style)
 
     const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
       offsetPx,
@@ -121,7 +119,7 @@ class ScaleBar extends Component {
           ''
         )}
         <div
-          style={finalStyle}
+          style={style}
           className={classes.scaleBar}
           onMouseDown={this.onMouseDown}
           onFocus={() => {}}

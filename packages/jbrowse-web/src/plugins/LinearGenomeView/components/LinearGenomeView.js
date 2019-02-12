@@ -127,6 +127,7 @@ function LinearGenomeView(props) {
           width={width - controlsWidth}
         />
 
+
         <div
           className={classes.zoomControls}
           style={{
