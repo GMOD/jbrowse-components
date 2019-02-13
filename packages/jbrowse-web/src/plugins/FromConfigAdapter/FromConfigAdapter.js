@@ -45,7 +45,7 @@ export default class FromConfigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeaturesInRegion({ refName, start, end }) {
+  async getFeatures({ refName, start, end }) {
     return Observable.create(async observer => {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {

@@ -14,7 +14,7 @@ test('adapter can fetch features', async () => {
     },
     {},
   )
-  const result = await adapter.getFeaturesInRegion({
+  const result = await adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
