@@ -9,11 +9,27 @@ function getBp(px, model) {
   for (let i = 0; i < regions.length; i += 1) {
     const region = regions[i]
     if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
-      return Object.assign({}, region, { offset: bp - bpSoFar })
+      return Object.assign({}, region, { offset: bp - bpSoFar, index: i })
     }
     bpSoFar += region.end - region.start
   }
   return undefined
+}
+function navigateToLocation(start, end, model) {
+  // find locations in the modellist
+  if (start.index === end.index) {
+    return end.offset - start.offset
+  }
+  let bpSoFar = 0
+  bpSoFar += start.end - start.offset
+  bpSoFar += end.offset
+  if (end.index - start.index > 2) {
+    for (let i = start.index + 1; i < end.index - 1; i += 1) {
+      bpSoFar += model.displayedRegions[i].end - model.displayedRegions[i].start
+    }
+  }
+  console.log(bpSoFar)
+  return 0
 }
 
 class Rubberband extends Component {
@@ -48,6 +64,7 @@ class Rubberband extends Component {
       }
       const leftBp = getBp(leftPx, model)
       const rightBp = getBp(rightPx, model)
+      navigateToLocation(leftBp, rightBp, model)
       console.log(leftBp, rightBp)
       // model.zoomToThisLocation()
     }
@@ -81,24 +98,27 @@ class Rubberband extends Component {
     }
 
     return (
-      <div onMouseDown={this.onMouseDown} role="presentation" style={style}>
-        {rubberband ? (
-          <div
-            id="rubberband"
-            style={{
-              left: `${leftPx}px`,
-              width: `${rightPx - leftPx}px`,
-              height: '100%',
-              background: '#aad8',
-              position: 'absolute',
-              gridColumn: '1 / auto',
-            }}
-          />
-        ) : (
-          ''
-        )}
+      <>
         {children}
-      </div>
+        <div onMouseDown={this.onMouseDown} role="presentation" style={style}>
+          {rubberband ? (
+            <div
+              id="rubberband"
+              style={{
+                left: `${leftPx}px`,
+                width: `${rightPx - leftPx}px`,
+                height: '100%',
+                background: '#aad8',
+                position: 'absolute',
+                gridColumn: '1 / auto',
+                zIndex: 9999,
+              }}
+            />
+          ) : (
+            ''
+          )}
+        </div>
+      </>
     )
   }
 }
