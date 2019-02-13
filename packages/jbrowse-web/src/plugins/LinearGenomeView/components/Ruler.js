@@ -98,7 +98,7 @@ const styles = (/* theme */) => ({
   refSeqLabelBackground: {
     fontSize: '16px',
     fontWeight: 'bold',
-    fill: '#eee',
+    fill: 'white',
     // fill: theme.palette.background.default,
     fillOpacity: 0.75,
     filter: 'url(#dilate)',
