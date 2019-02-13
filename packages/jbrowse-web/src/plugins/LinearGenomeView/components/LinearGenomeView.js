@@ -166,7 +166,6 @@ function LinearGenomeView(props) {
             style={{
               gridColumn: 'blocks',
               gridRow: 'scale-bar',
-              userSelect: 'none',
             }}
             height={scaleBarHeight}
             bpPerPx={bpPerPx}
