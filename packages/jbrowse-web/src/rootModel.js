@@ -1,3 +1,5 @@
+// Polyfill for TextDecoder
+import 'fast-text-encoding'
 import { flow, getRoot, getType, types } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
@@ -115,8 +117,9 @@ export default app => {
       },
 
       loadConfig: flow(function* loadConfig(configLocation) {
+        let configSnapshot
         try {
-          const configSnapshot = JSON.parse(
+          configSnapshot = JSON.parse(
             new TextDecoder('utf-8').decode(
               yield openLocation(configLocation).readFile(),
             ),
@@ -124,7 +127,9 @@ export default app => {
           self.configure(configSnapshot)
         } catch (error) {
           console.error('Failed to load config ', error)
+          throw error
         }
+        return configSnapshot
       }),
 
       updateWidth(width) {

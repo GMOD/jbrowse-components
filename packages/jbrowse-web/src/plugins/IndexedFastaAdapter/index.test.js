@@ -1,13 +1,13 @@
 import MyPlugin from './index'
 import JBrowse from '../../JBrowse'
 
-test('plugin in a stock JBrowse', () => {
+test('plugin in a stock JBrowse', async () => {
   // adding this plugin should fail because it is core
-  expect(() =>
+  await expect(
     new JBrowse().addPlugin(new MyPlugin()).configure(),
-  ).toThrowErrorMatchingSnapshot()
+  ).rejects.toThrowErrorMatchingSnapshot()
 
-  const jbrowse = new JBrowse().configure()
+  const jbrowse = await new JBrowse().configure()
   const IndexedFastaAdapter = jbrowse.pluginManager.getAdapterType(
     'IndexedFastaAdapter',
   )

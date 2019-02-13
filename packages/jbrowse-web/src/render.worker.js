@@ -10,7 +10,11 @@ import { freeAdapterResources, getAdapter } from './util/workerDataAdapterCache'
 // prevent mobx-react from doing funny things when we render in the worker
 useStaticRendering(true)
 
-const jbrowse = new JBrowse().configure()
+let jbrowse
+
+async function setup() {
+  if (!jbrowse) jbrowse = await new JBrowse().configure()
+}
 
 /**
  * free up any resources (e.g. cached adapter objects)
@@ -56,6 +60,7 @@ export async function renderRegion(
   },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
+  await setup()
 
   const { dataAdapter, assemblyAliases, seqNameMap } = await getAdapter(
     pluginManager,
@@ -93,15 +98,19 @@ export async function renderRegion(
 }
 
 function wrapForRpc(func) {
-  return args => {
+  return async args => {
     // console.log(`${func.name} args`, args)
-    const result = func(jbrowse.pluginManager, args).catch(e => {
-      console.error(e)
-      throw e
-    })
+    await setup()
+    let result
+    try {
+      result = func(jbrowse.pluginManager, args)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
     // uncomment the below to log the data that the worker is
     // returning to the main thread
-    // result.then(r => console.log(`${func.name} returned`, r))
+    // console.log(`${func.name} returned`, await result)
     return result
   }
 }

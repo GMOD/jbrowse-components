@@ -82,9 +82,10 @@ describe('ConfigurationEditor drawer widget', () => {
     expect(tree).toMatchSnapshot()
   })
 
-  it('renders with defaults of the AlignmentsTrack schema', () => {
+  it('renders with defaults of the AlignmentsTrack schema', async () => {
+    const jbrowse = await new JBrowse().configure()
     const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(
-      new JBrowse().configure().pluginManager,
+      jbrowse.pluginManager,
     )
     const component = renderer.create(
       <ConfigurationEditor

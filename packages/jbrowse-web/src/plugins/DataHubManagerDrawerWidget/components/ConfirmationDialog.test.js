@@ -11,11 +11,11 @@ describe('<ConfirmationDialog />', () => {
   let jbrowse
   let rootModel
 
-  beforeAll(() => {
+  beforeAll(async () => {
     shallow = createShallow({ untilSelector: 'ConfirmationDialog' })
     mount = createMount()
     // classes = getClasses(<ConfirmationDialog rootModel={rootModel} />)
-    jbrowse = new JBrowse().configure({
+    jbrowse = await new JBrowse().configure({
       configId: 'testing',
     })
     rootModel = jbrowse.model
@@ -79,6 +79,7 @@ type bam
       />,
     )
 
+    instance = instance.wrappedInstance
     await instance.componentDidMount()
 
     instance.toggleUnsupported()
@@ -101,6 +102,7 @@ type bam
         rootModel={rootModel}
       />,
     )
+    instance = instance.wrappedInstance
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })
@@ -123,6 +125,7 @@ type bam
         rootModel={rootModel}
       />,
     )
+    instance = instance.wrappedInstance
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })

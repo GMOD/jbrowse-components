@@ -1,5 +1,217 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`can load configuration from a config object 1`] = `
+Object {
+  "assemblies": Object {
+    "volvox": Object {
+      "aliases": Array [
+        "vvx",
+      ],
+      "configId": "testid",
+      "seqNameAliases": Object {
+        "A": Array [
+          "ctgA",
+          "contigA",
+        ],
+        "B": Array [
+          "ctgB",
+          "contigB",
+        ],
+      },
+    },
+  },
+  "configId": "testid",
+}
+`;
+
+exports[`can load configuration from a file 1`] = `
+Object {
+  "assemblies": Object {
+    "volvox": Object {
+      "aliases": Array [
+        "vvx",
+      ],
+      "configId": "testid",
+      "seqNameAliases": Object {
+        "A": Array [
+          "ctgA",
+          "contigA",
+        ],
+        "B": Array [
+          "ctgB",
+          "contigB",
+        ],
+      },
+    },
+  },
+  "configId": "testid",
+  "tracks": Array [
+    Object {
+      "adapter": Object {
+        "assemblyName": "volvox",
+        "configId": "testid",
+        "twoBitLocation": Object {
+          "uri": "/test_data/volvox.2bit",
+        },
+        "type": "TwoBitAdapter",
+      },
+      "category": Array [
+        "Bar Category",
+      ],
+      "configId": "testid",
+      "name": "Reference sequence",
+      "rendering": Object {
+        "configId": "testid",
+        "type": "DivSequenceRenderer",
+      },
+      "type": "SequenceTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyName": "volvox",
+        "bigWigLocation": Object {
+          "uri": "/test_data/volvox.bw",
+        },
+        "configId": "testid",
+        "type": "BigWigAdapter",
+      },
+      "category": Array [
+        "Bar Category",
+      ],
+      "configId": "testid",
+      "name": "Wiggle track",
+      "renderer": Object {
+        "configId": "testid",
+        "type": "WiggleRenderer",
+      },
+      "type": "BasicTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyName": "volvox",
+        "bamLocation": Object {
+          "uri": "/test_data/volvox-sorted.bam",
+        },
+        "configId": "testid",
+        "index": Object {
+          "configId": "testid",
+          "location": Object {
+            "uri": "/test_data/volvox-sorted.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "category": Array [
+        "Bar Category",
+        "Baz Category",
+      ],
+      "configId": "testid",
+      "name": "volvox-sorted red/blue",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "configId": "testid",
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "configId": "testid",
+          "type": "SvgFeatureRenderer",
+        },
+        "configId": "testid",
+      },
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyName": "vvx",
+        "bamLocation": Object {
+          "uri": "/test_data/volvox-sorted.bam",
+        },
+        "configId": "testid",
+        "index": Object {
+          "configId": "testid",
+          "location": Object {
+            "uri": "/test_data/volvox-sorted.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "category": Array [
+        "Bee Category",
+        "Boo Category",
+      ],
+      "configId": "testid",
+      "name": "volvox-sorted all green",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "alignmentColor": "green",
+          "configId": "testid",
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "configId": "testid",
+          "type": "SvgFeatureRenderer",
+        },
+        "configId": "testid",
+      },
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyName": "volvox",
+        "configId": "testid",
+        "features": Array [
+          Object {
+            "end": 101,
+            "name": "Boris",
+            "seq_id": "ctgA",
+            "start": 100,
+            "type": "foo",
+            "uniqueId": "one",
+          },
+          Object {
+            "end": 111,
+            "name": "Theresa",
+            "seq_id": "ctgA",
+            "start": 110,
+            "type": "bar",
+            "uniqueId": "two",
+          },
+          Object {
+            "end": 121,
+            "name": "Nigel",
+            "seq_id": "ctgA",
+            "start": 120,
+            "type": "baz",
+            "uniqueId": "three",
+          },
+          Object {
+            "end": 131,
+            "name": "Geoffray",
+            "seq_id": "ctgA",
+            "start": 130,
+            "type": "quux",
+            "uniqueId": "four",
+          },
+        ],
+        "type": "FromConfigAdapter",
+      },
+      "configId": "testid",
+      "filterAttributes": Array [
+        "type",
+        "start",
+        "end",
+      ],
+      "name": "Filter Test",
+      "renderer": Object {
+        "configId": "testid",
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "FilteringTrack",
+    },
+  ],
+}
+`;
+
 exports[`can load configuration with the configure() action and resolve references to view configurations 1`] = `
 Object {
   "configId": "fogbat",

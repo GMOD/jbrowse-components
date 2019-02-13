@@ -30,8 +30,8 @@ test('can instantiate a mostly empty model and read a default configuration valu
   expect(getConf(model, 'trackSelectorType')).toBe('hierarchical')
 })
 
-it('can run configuration', () => {
-  const jb = new JBrowse().configure({
+it('can run configuration', async () => {
+  const jb = await new JBrowse().configure({
     views: {
       LinearGenomeView: {},
     },

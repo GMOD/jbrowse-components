@@ -4,9 +4,13 @@ import renderer from 'react-test-renderer'
 import JBrowse from '../../../JBrowse'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
-const jbrowse = new JBrowse().configure()
-
 describe('HierarchicalTrackSelector drawer widget', () => {
+  let jbrowse
+
+  beforeAll(async () => {
+    jbrowse = await new JBrowse().configure()
+  })
+
   it('renders with just the required model elements', () => {
     const rootModel = jbrowse.modelType.create({
       views: [

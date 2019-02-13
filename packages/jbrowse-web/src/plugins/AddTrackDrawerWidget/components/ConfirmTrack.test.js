@@ -9,10 +9,10 @@ describe('<ConfirmTrack />', () => {
   let jbrowse
   let rootModel
 
-  beforeAll(() => {
+  beforeAll(async () => {
     shallow = createShallow()
     mount = createMount()
-    jbrowse = new JBrowse().configure({ configId: 'testing' })
+    jbrowse = await new JBrowse().configure({ configId: 'testing' })
     rootModel = jbrowse.model
   })
 

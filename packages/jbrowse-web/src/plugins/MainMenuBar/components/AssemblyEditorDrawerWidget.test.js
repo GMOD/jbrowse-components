@@ -8,9 +8,9 @@ describe('<AssemblyEditorDrawerWidget />', () => {
   let jbrowse
   let rootModel
 
-  beforeAll(() => {
+  beforeAll(async () => {
     shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
-    jbrowse = new JBrowse().configure({
+    jbrowse = await new JBrowse().configure({
       configId: 'testing',
       assemblies: {
         volvox: {

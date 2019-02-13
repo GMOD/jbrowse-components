@@ -1,7 +1,10 @@
 import JBrowse from './JBrowse'
 import { renderRegion, freeResources } from './render.worker'
 
-const jbrowse = new JBrowse().configure()
+let jbrowse
+beforeAll(async () => {
+  jbrowse = await new JBrowse().configure()
+})
 
 const baseprops = {
   region: { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
