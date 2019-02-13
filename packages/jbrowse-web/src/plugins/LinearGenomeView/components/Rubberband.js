@@ -17,18 +17,33 @@ function getBp(px, model) {
 }
 function navigateToLocation(start, end, model) {
   // find locations in the modellist
-  if (start.index === end.index) {
-    return end.offset - start.offset
-  }
   let bpSoFar = 0
-  bpSoFar += start.end - start.offset
-  bpSoFar += end.offset
-  if (end.index - start.index > 2) {
-    for (let i = start.index + 1; i < end.index - 1; i += 1) {
-      bpSoFar += model.displayedRegions[i].end - model.displayedRegions[i].start
+  if (start.index === end.index) {
+    bpSoFar += end.offset - start.offset
+  } else {
+    bpSoFar += start.end - start.offset
+    bpSoFar += end.offset
+    if (end.index - start.index > 2) {
+      for (let i = start.index + 1; i < end.index - 1; i += 1) {
+        bpSoFar +=
+          model.displayedRegions[i].end - model.displayedRegions[i].start
+      }
     }
   }
-  console.log(bpSoFar)
+  let bpToStart = 0
+  for (let i = 0; i < model.displayedRegions.length; i += 1) {
+    const region = model.displayedRegions[i]
+    if (start.index === i) {
+      bpToStart += start.offset
+      break
+    } else {
+      bpToStart += region.end - region.start
+    }
+  }
+  const bpPerPx = bpSoFar / model.width
+  console.log(bpToStart, bpPerPx)
+  const offsetPx = bpToStart / bpPerPx
+  model.setNewView(bpPerPx, offsetPx)
   return 0
 }
 

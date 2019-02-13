@@ -222,6 +222,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       activateConfigurationUI() {
         getRoot(self).editConfiguration(self.configuration)
       },
+
+      setNewView(bpPerPx, offsetPx) {
+        self.bpPerPx = bpPerPx
+        self.offsetPx = offsetPx
+      },
     }))
 }
 
