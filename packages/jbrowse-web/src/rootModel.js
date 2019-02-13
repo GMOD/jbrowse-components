@@ -107,6 +107,12 @@ export default app => {
       get maxDrawerWidth() {
         return self.width - 256
       },
+
+      get visibleDrawerWidget() {
+        let activeDrawerWidget
+        for (activeDrawerWidget of self.activeDrawerWidgets.values());
+        return activeDrawerWidget
+      },
     }))
     .actions(self => ({
       configure(configSnapshot) {

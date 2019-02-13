@@ -5,17 +5,16 @@ import { inject, observer, propTypes } from 'mobx-react'
 
 function ConfigureToggleButton(props) {
   const { model, style, rootModel, ...otherProps } = props
-  const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
-  const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
   return (
     <ToggleButton
       type="button"
       size="small"
       style={{ minWidth: 0, ...style }}
       selected={
-        activeDrawerWidget &&
-        activeDrawerWidget.id === 'configEditor' &&
-        activeDrawerWidget.target.configId === model.configuration.configId
+        rootModel.visibleDrawerWidget &&
+        rootModel.visibleDrawerWidget.id === 'configEditor' &&
+        rootModel.visibleDrawerWidget.target.configId ===
+          model.configuration.configId
       }
       value="configure"
       {...otherProps}
