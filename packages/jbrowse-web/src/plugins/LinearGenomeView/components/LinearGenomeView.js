@@ -118,21 +118,39 @@ function LinearGenomeView(props) {
             </>
           )}
         </div>
-        <ScaleBar
-          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-          height={scaleBarHeight}
-          bpPerPx={bpPerPx}
-          blocks={blocks}
-          offsetPx={visibleBlocksOffsetPx}
-          horizontallyFlipped={model.horizontallyFlipped}
-          width={width - controlsWidth}
-        />
 
+        <Rubberband
+          style={{
+            gridColumn: 'blocks',
+            gridRow: 'scale-bar',
+            zIndex: 999,
+            cursor: 'crosshair',
+          }}
+          offsetPx={visibleBlocksOffsetPx}
+          realOffsetPx={offsetPx}
+          blocks={blocks}
+          bpPerPx={bpPerPx}
+          model={model}
+        >
+          <ScaleBar
+            style={{
+              gridColumn: 'blocks',
+              gridRow: 'scale-bar',
+            }}
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={blocks}
+            offsetPx={visibleBlocksOffsetPx}
+            horizontallyFlipped={model.horizontallyFlipped}
+            width={width - controlsWidth}
+          />
+        </Rubberband>
 
         <div
           className={classes.zoomControls}
           style={{
             right: 4,
+            zIndex: 1000,
           }}
         >
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />
@@ -149,41 +167,11 @@ function LinearGenomeView(props) {
               view={model}
               onConfigureClick={track.activateConfigurationUI}
             />
-          </div>
-          <Rubberband
-            style={{
-              gridColumn: 'blocks',
-              gridRow: 'scale-bar',
-              zIndex: 999,
-              cursor: 'crosshair',
-            }}
-            offsetPx={visibleBlocksOffsetPx}
-            realOffsetPx={offsetPx}
-            blocks={blocks}
-            bpPerPx={bpPerPx}
-            model={model}
-          >
-            <ScaleBar
-              style={{
-                gridColumn: 'blocks',
-                gridRow: 'scale-bar',
-              }}
-              height={scaleBarHeight}
-              bpPerPx={bpPerPx}
-              blocks={blocks}
-              offsetPx={visibleBlocksOffsetPx}
-              horizontallyFlipped={model.horizontallyFlipped}
-              width={width - controlsWidth}
-            />
-          </Rubberband>
-          <div
-            className={classes.zoomControls}
-            style={{
-              right: rootModel.activeDrawerWidgets.size
-                ? rootModel.drawerWidth + 4
-                : 4,
-              zIndex: 1000,
-            }}
+          </div>,
+          <TrackRenderingContainer
+            key={`track-rendering:${track.id}`}
+            trackId={track.id}
+            width={width - controlsWidth}
           >
             <track.RenderingComponent
               model={track}

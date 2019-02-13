@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { PropTypes } from 'prop-types'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
 
 function getBp(px, model) {
   const regions = model.displayedRegions
