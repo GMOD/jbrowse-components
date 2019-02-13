@@ -1,22 +1,36 @@
 import React, { Component } from 'react'
 import { PropTypes } from 'prop-types'
-import Block from './Block'
+import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+
+function getBp(px, model) {
+  const regions = model.displayedRegions
+  const bp = (model.offsetPx + px - model.controlsWidth) * model.bpPerPx + 1
+  let bpSoFar = 0
+  for (let i = 0; i < regions.length; i += 1) {
+    const region = regions[i]
+    if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
+      return Object.assign({}, region, { offset: bp - bpSoFar })
+    }
+    bpSoFar += region.end - region.start
+  }
+  return undefined
+}
 
 class Rubberband extends Component {
   static defaultProps = {
     style: {},
+    children: undefined,
   }
 
   static propTypes = {
-    bpPerPx: PropTypes.number.isRequired,
-    offsetPx: PropTypes.number.isRequired,
+    model: MobxPropTypes.objectOrObservableObject.isRequired,
+    children: PropTypes.node,
     style: PropTypes.objectOf(PropTypes.any),
   }
 
   state = {}
 
   onMouseDown = ({ clientX }) => {
-    console.log('here2')
     this.setState({
       rubberband: [clientX, clientX + 1],
     })
@@ -25,6 +39,18 @@ class Rubberband extends Component {
   }
 
   mouseUp = () => {
+    const { rubberband } = this.state
+    const { model } = this.props
+    if (rubberband) {
+      let [leftPx, rightPx] = rubberband
+      if (rightPx < leftPx) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+      const leftBp = getBp(leftPx, model)
+      const rightBp = getBp(rightPx, model)
+      console.log(leftBp, rightBp)
+      // model.zoomToThisLocation()
+    }
     this.setState(() => ({
       rubberband: undefined,
     }))
@@ -42,7 +68,7 @@ class Rubberband extends Component {
   }
 
   render() {
-    const { offsetPx, bpPerPx, style } = this.props
+    const { style, children } = this.props
     const { rubberband } = this.state
 
     let leftPx
@@ -52,9 +78,6 @@ class Rubberband extends Component {
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      const leftBp = (offsetPx + leftPx) * bpPerPx
-      const rightBp = (offsetPx + rightPx) * bpPerPx
-      console.log(leftBp, rightBp)
     }
 
     return (
@@ -74,6 +97,7 @@ class Rubberband extends Component {
         ) : (
           ''
         )}
+        {children}
       </div>
     )
   }

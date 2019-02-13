@@ -161,18 +161,29 @@ function LinearGenomeView(props) {
             realOffsetPx={offsetPx}
             blocks={blocks}
             bpPerPx={bpPerPx}
-          />
-          <ScaleBar
+            model={model}
+          >
+            <ScaleBar
+              style={{
+                gridColumn: 'blocks',
+                gridRow: 'scale-bar',
+              }}
+              height={scaleBarHeight}
+              bpPerPx={bpPerPx}
+              blocks={blocks}
+              offsetPx={visibleBlocksOffsetPx}
+              horizontallyFlipped={model.horizontallyFlipped}
+              width={width - controlsWidth}
+            />
+          </Rubberband>
+          <div
+            className={classes.zoomControls}
             style={{
-              gridColumn: 'blocks',
-              gridRow: 'scale-bar',
+              right: rootModel.activeDrawerWidgets.size
+                ? rootModel.drawerWidth + 4
+                : 4,
+              zIndex: 1000,
             }}
-            height={scaleBarHeight}
-            bpPerPx={bpPerPx}
-            blocks={blocks}
-            offsetPx={visibleBlocksOffsetPx}
-            horizontallyFlipped={model.horizontallyFlipped}
-            width={width - controlsWidth}
           >
             <track.RenderingComponent
               model={track}
