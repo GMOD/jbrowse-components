@@ -165,7 +165,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub Type
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -200,7 +200,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub Source
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -235,7 +235,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -270,7 +270,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Confirm Selection
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -467,7 +467,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub Type
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -502,7 +502,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub Source
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -537,7 +537,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
@@ -572,7 +572,7 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Confirm Selection
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <inject-WithStyles(ConfirmationDialog)-with-rootModel
+        <WithStyles(inject-ConfirmationDialog-with-rootModel)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
