@@ -11,6 +11,13 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
       "stepper": "inject-AddTrackDrawerWidget-with-rootModel-stepper-2",
     }
   }
+  model={
+    Object {
+      "id": "addTrackDrawerWidget",
+      "type": "AddTrackDrawerWidget",
+      "view": "testid",
+    }
+  }
   rootModel={
     Object {
       "activeDrawerWidgets": Object {},
@@ -21,11 +28,26 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
         "addTrackDrawerWidget": Object {
           "id": "addTrackDrawerWidget",
           "type": "AddTrackDrawerWidget",
+          "view": "testid",
         },
       },
       "drawerWidth": 384,
       "menuBars": Array [],
-      "views": Array [],
+      "views": Array [
+        Object {
+          "bpPerPx": 1,
+          "configuration": Object {
+            "configId": "testid",
+          },
+          "controlsWidth": 120,
+          "displayedRegions": Array [],
+          "flipped": false,
+          "id": "testid",
+          "offsetPx": 0,
+          "tracks": Array [],
+          "type": "LinearGenomeView",
+        },
+      ],
       "width": 512,
     }
   }
@@ -6010,11 +6032,16 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
       "stepper": "inject-AddTrackDrawerWidget-with-rootModel-stepper-2",
     }
   }
+  model={
+    Object {
+      "id": "addTrackDrawerWidget",
+      "type": "AddTrackDrawerWidget",
+      "view": "testid",
+    }
+  }
   rootModel={
     Object {
-      "activeDrawerWidgets": Object {
-        "configEditor": "configEditor",
-      },
+      "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
         "tracks": Array [
@@ -6053,16 +6080,36 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
         "addTrackDrawerWidget": Object {
           "id": "addTrackDrawerWidget",
           "type": "AddTrackDrawerWidget",
-        },
-        "configEditor": Object {
-          "id": "configEditor",
-          "target": "testid",
-          "type": "ConfigurationEditorDrawerWidget",
+          "view": "testid",
         },
       },
       "drawerWidth": 384,
       "menuBars": Array [],
-      "views": Array [],
+      "views": Array [
+        Object {
+          "bpPerPx": 1,
+          "configuration": Object {
+            "configId": "testid",
+          },
+          "controlsWidth": 120,
+          "displayedRegions": Array [],
+          "flipped": false,
+          "id": "testid",
+          "offsetPx": 0,
+          "tracks": Array [
+            Object {
+              "blockState": Object {},
+              "configuration": "testid",
+              "height": 100,
+              "id": "testid",
+              "selectedRendering": "",
+              "subtracks": undefined,
+              "type": "AlignmentsTrack",
+            },
+          ],
+          "type": "LinearGenomeView",
+        },
+      ],
       "width": 512,
     }
   }
@@ -12057,11 +12104,26 @@ exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
         "addTrackDrawerWidget": Object {
           "id": "addTrackDrawerWidget",
           "type": "AddTrackDrawerWidget",
+          "view": "testid",
         },
       },
       "drawerWidth": 384,
       "menuBars": Array [],
-      "views": Array [],
+      "views": Array [
+        Object {
+          "bpPerPx": 1,
+          "configuration": Object {
+            "configId": "testid",
+          },
+          "controlsWidth": 120,
+          "displayedRegions": Array [],
+          "flipped": false,
+          "id": "testid",
+          "offsetPx": 0,
+          "tracks": Array [],
+          "type": "LinearGenomeView",
+        },
+      ],
       "width": 512,
     }
   }

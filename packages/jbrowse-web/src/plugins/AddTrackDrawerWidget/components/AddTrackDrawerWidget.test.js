@@ -17,7 +17,10 @@ describe('<AddTrackDrawerWidget />', () => {
     mount = createMount()
     jbrowse = new JBrowse().configure({ configId: 'testing' })
     rootModel = jbrowse.model
-    rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget')
+    const view = rootModel.addView('LinearGenomeView')
+    rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
+      view: view.id,
+    })
   })
 
   it('shallowly renders', () => {
@@ -29,7 +32,9 @@ describe('<AddTrackDrawerWidget />', () => {
     // shortid.generate = jest.fn(() => 'testId')
     const preWrap = mount(
       <Provider rootModel={rootModel}>
-        <AddTrackDrawerWidget />
+        <AddTrackDrawerWidget
+          model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
+        />
       </Provider>,
     )
     const wrapper = preWrap.find('AddTrackDrawerWidget')

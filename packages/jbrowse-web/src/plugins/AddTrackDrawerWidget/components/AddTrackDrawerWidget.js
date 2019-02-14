@@ -35,6 +35,7 @@ const steps = ['Enter track data', 'Confirm track type']
 class AddTrackDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.objectOf(propTypes.string).isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
     rootModel: MobxPropTypes.observableObject.isRequired,
   }
 
@@ -94,14 +95,14 @@ class AddTrackDrawerWidget extends React.Component {
       trackType,
       trackAdapter,
     } = this.state
-    const { rootModel } = this.props
+    const { model, rootModel } = this.props
     if (activeStep === steps.length - 1) {
       trackAdapter.features = trackData.config
       const trackConf = rootModel.configuration.addTrackConf(trackType, {
         name: trackName,
         adapter: trackAdapter,
       })
-      rootModel.editConfiguration(trackConf)
+      model.view.showTrack(trackConf)
       rootModel.hideDrawerWidget(
         rootModel.drawerWidgets.get('addTrackDrawerWidget'),
       )
@@ -168,9 +169,7 @@ class AddTrackDrawerWidget extends React.Component {
                     onClick={this.handleNext}
                     className={classes.button}
                   >
-                    {activeStep === steps.length - 1
-                      ? 'Add and Configure'
-                      : 'Next'}
+                    {activeStep === steps.length - 1 ? 'Add' : 'Next'}
                   </Button>
                 </div>
               </StepContent>
