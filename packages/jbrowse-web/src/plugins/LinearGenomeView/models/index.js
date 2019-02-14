@@ -74,6 +74,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         controlsWidth: 120,
+        width: 800,
         displayedRegions: types.array(Region),
         configuration: LinearGenomeViewConfigSchema,
         // set this to true to hide the close, config, and tracksel buttons
@@ -81,9 +82,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       }),
     )
     .views(self => ({
-      get width() {
-        return getEnv(self).testEnv ? 800 : getRoot(self).viewsWidth
-      },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)
       },
