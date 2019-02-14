@@ -15,7 +15,13 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }
@@ -2944,7 +2950,13 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }
@@ -5538,7 +5550,13 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }

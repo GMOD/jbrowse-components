@@ -24,7 +24,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -72,7 +78,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           },
         },
         "drawerWidth": 384,
-        "menuBars": Array [],
+        "menuBars": Array [
+          Object {
+            "id": "testid",
+            "menus": Array [],
+            "type": "MainMenuBar",
+          },
+        ],
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -120,7 +132,13 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             },
           },
           "drawerWidth": 384,
-          "menuBars": Array [],
+          "menuBars": Array [
+            Object {
+              "id": "testid",
+              "menus": Array [],
+              "type": "MainMenuBar",
+            },
+          ],
           "views": Array [
             Object {
               "bpPerPx": 1,
@@ -214,7 +232,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -262,7 +286,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           },
         },
         "drawerWidth": 384,
-        "menuBars": Array [],
+        "menuBars": Array [
+          Object {
+            "id": "testid",
+            "menus": Array [],
+            "type": "MainMenuBar",
+          },
+        ],
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -310,7 +340,13 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             },
           },
           "drawerWidth": 384,
-          "menuBars": Array [],
+          "menuBars": Array [
+            Object {
+              "id": "testid",
+              "menus": Array [],
+              "type": "MainMenuBar",
+            },
+          ],
           "views": Array [
             Object {
               "bpPerPx": 1,
@@ -809,7 +845,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -857,7 +899,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           },
         },
         "drawerWidth": 384,
-        "menuBars": Array [],
+        "menuBars": Array [
+          Object {
+            "id": "testid",
+            "menus": Array [],
+            "type": "MainMenuBar",
+          },
+        ],
         "views": Array [
           Object {
             "bpPerPx": 1,
@@ -905,7 +953,13 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             },
           },
           "drawerWidth": 384,
-          "menuBars": Array [],
+          "menuBars": Array [
+            Object {
+              "id": "testid",
+              "menus": Array [],
+              "type": "MainMenuBar",
+            },
+          ],
           "views": Array [
             Object {
               "bpPerPx": 1,

@@ -4,6 +4,8 @@ import React from 'react'
 import JBrowse from '../../../JBrowse'
 import ConfirmationDialog from './ConfirmationDialog'
 
+jest.mock('shortid', () => ({ generate: 'testid' }))
+
 describe('<ConfirmationDialog />', () => {
   let shallow
   let mount

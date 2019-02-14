@@ -31,7 +31,7 @@ Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "testid",
+      "configId": "rwbpxsYzXsU",
       "seqNameAliases": Object {
         "A": Array [
           "ctgA",
@@ -44,12 +44,119 @@ Object {
       },
     },
   },
-  "configId": "testid",
+  "configId": "tQ76_pSGI",
+  "defaultSession": Object {
+    "activeDrawerWidgets": Object {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    },
+    "drawerWidgets": Object {
+      "hierarchicalTrackSelector": Object {
+        "filterText": "",
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "view": "BhLw7v7Not",
+      },
+    },
+    "menuBars": Array [
+      Object {
+        "menus": Array [
+          Object {
+            "menuItems": Array [
+              Object {
+                "callback": "downloadConfiguration",
+                "icon": "get_app",
+                "name": "Download configuration",
+              },
+            ],
+            "name": "Admin",
+          },
+        ],
+        "type": "MainMenuBar",
+      },
+    ],
+    "views": Array [
+      Object {
+        "bpPerPx": 0.05,
+        "configuration": Object {
+          "configId": "vVpZZU1XnD",
+        },
+        "displayedRegions": Array [
+          Object {
+            "assemblyName": "vvx",
+            "end": 50000,
+            "refName": "contigA",
+            "start": 0,
+          },
+          Object {
+            "assemblyName": "volvox",
+            "end": 300,
+            "refName": "ctgB",
+            "start": 0,
+          },
+        ],
+        "id": "BhLw7v7Not",
+        "offsetPx": 3724,
+        "tracks": Array [
+          Object {
+            "configuration": "iTo6LoXUeI",
+            "height": 110,
+            "id": "UNlXyrJy95",
+            "type": "SequenceTrack",
+          },
+          Object {
+            "configuration": "PDWVXl3526",
+            "height": 110,
+            "id": "46PJw11TFk",
+            "type": "BasicTrack",
+          },
+          Object {
+            "configuration": "XqNsoIRXi3",
+            "height": 200,
+            "id": "721mZQdXLH",
+            "type": "AlignmentsTrack",
+          },
+        ],
+        "type": "LinearGenomeView",
+      },
+      Object {
+        "bpPerPx": 1,
+        "configuration": Object {
+          "configId": "VMf1epQfFc",
+          "reversed": true,
+        },
+        "displayedRegions": Array [
+          Object {
+            "assemblyName": "volvox",
+            "end": 1000,
+            "refName": "ctgA",
+            "start": 0,
+          },
+          Object {
+            "assemblyName": "volvox",
+            "end": 2000,
+            "refName": "ctgB",
+            "start": 0,
+          },
+        ],
+        "id": "4n7uxLJ1DP",
+        "offsetPx": 0,
+        "tracks": Array [
+          Object {
+            "configuration": "PDWVXl3526",
+            "height": 100,
+            "id": "2k2CNh5WPc",
+            "type": "BasicTrack",
+          },
+        ],
+        "type": "LinearGenomeView",
+      },
+    ],
+  },
   "tracks": Array [
     Object {
       "adapter": Object {
         "assemblyName": "volvox",
-        "configId": "testid",
+        "configId": "t17b5y_Ydj",
         "twoBitLocation": Object {
           "uri": "/test_data/volvox.2bit",
         },
@@ -58,10 +165,10 @@ Object {
       "category": Array [
         "Bar Category",
       ],
-      "configId": "testid",
+      "configId": "iTo6LoXUeI",
       "name": "Reference sequence",
       "rendering": Object {
-        "configId": "testid",
+        "configId": "71P5Lys28o",
         "type": "DivSequenceRenderer",
       },
       "type": "SequenceTrack",
@@ -72,16 +179,16 @@ Object {
         "bigWigLocation": Object {
           "uri": "/test_data/volvox.bw",
         },
-        "configId": "testid",
+        "configId": "GbpDGXt1G4",
         "type": "BigWigAdapter",
       },
       "category": Array [
         "Bar Category",
       ],
-      "configId": "testid",
+      "configId": "PDWVXl3526",
       "name": "Wiggle track",
       "renderer": Object {
-        "configId": "testid",
+        "configId": "i2QVLtGHNH",
         "type": "WiggleRenderer",
       },
       "type": "BasicTrack",
@@ -92,9 +199,9 @@ Object {
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
-        "configId": "testid",
+        "configId": "bEfF0TZF74",
         "index": Object {
-          "configId": "testid",
+          "configId": "og9sCU2st9",
           "location": Object {
             "uri": "/test_data/volvox-sorted.bam.bai",
           },
@@ -105,18 +212,18 @@ Object {
         "Bar Category",
         "Baz Category",
       ],
-      "configId": "testid",
+      "configId": "XqNsoIRXi3",
       "name": "volvox-sorted red/blue",
       "renderers": Object {
         "PileupRenderer": Object {
-          "configId": "testid",
+          "configId": "FfE7SAJR_i",
           "type": "PileupRenderer",
         },
         "SvgFeatureRenderer": Object {
-          "configId": "testid",
+          "configId": "u7413cFlCR",
           "type": "SvgFeatureRenderer",
         },
-        "configId": "testid",
+        "configId": "eBqTfMeT0E",
       },
       "type": "AlignmentsTrack",
     },
@@ -126,9 +233,9 @@ Object {
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
-        "configId": "testid",
+        "configId": "xrcAPC8w2X",
         "index": Object {
-          "configId": "testid",
+          "configId": "HFGUCFV5d2",
           "location": Object {
             "uri": "/test_data/volvox-sorted.bam.bai",
           },
@@ -139,26 +246,26 @@ Object {
         "Bee Category",
         "Boo Category",
       ],
-      "configId": "testid",
+      "configId": "itQDGgsghD",
       "name": "volvox-sorted all green",
       "renderers": Object {
         "PileupRenderer": Object {
           "alignmentColor": "green",
-          "configId": "testid",
+          "configId": "tWLLKEXJ1sL",
           "type": "PileupRenderer",
         },
         "SvgFeatureRenderer": Object {
-          "configId": "testid",
+          "configId": "5LSHv5xM2pB",
           "type": "SvgFeatureRenderer",
         },
-        "configId": "testid",
+        "configId": "hWUhhoNXr7_",
       },
       "type": "AlignmentsTrack",
     },
     Object {
       "adapter": Object {
         "assemblyName": "volvox",
-        "configId": "testid",
+        "configId": "Zd0NLmtxPZ1",
         "features": Array [
           Object {
             "end": 101,
@@ -195,7 +302,7 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
-      "configId": "testid",
+      "configId": "i3jUPmrgMOS",
       "filterAttributes": Array [
         "type",
         "start",
@@ -203,7 +310,7 @@ Object {
       ],
       "name": "Filter Test",
       "renderer": Object {
-        "configId": "testid",
+        "configId": "ofwb00qAvRE",
         "type": "SvgFeatureRenderer",
       },
       "type": "FilteringTrack",

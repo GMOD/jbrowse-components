@@ -54,6 +54,11 @@ export default app => {
 
           // A map of assembly name -> assembly details
           assemblies: types.map(Assembly),
+          defaultSession: {
+            type: 'frozen',
+            defaultValue: null,
+            description: 'Snapshot representing a default session',
+          },
         },
         {
           actions: self => ({

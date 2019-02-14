@@ -1,8 +1,11 @@
+// Polyfill for TextDecoder
+import 'fast-text-encoding'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'mobx-react'
 
 import PluginManager from './PluginManager'
+import { openLocation } from './util/io'
 
 import App from './ui/App'
 import RootModelFactory from './rootModel'
@@ -72,12 +75,29 @@ class JBrowse {
 
   async configure(initialConfig = {}) {
     this.pluginManager.configure()
-
     this.modelType = RootModelFactory(this)
+
+    let configSnapshot
     if (initialConfig.uri || initialConfig.localPath) {
-      this.model = this.modelType.create()
-      await this.model.loadConfig(initialConfig)
-    } else this.model = this.modelType.create({ configuration: initialConfig })
+      try {
+        configSnapshot = JSON.parse(
+          new TextDecoder('utf-8').decode(
+            await openLocation(initialConfig).readFile(),
+          ),
+        )
+      } catch (error) {
+        console.error('Failed to load config ', error)
+        throw error
+      }
+    } else configSnapshot = initialConfig
+
+    const {
+      defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
+    } = configSnapshot
+    this.model = this.modelType.create({
+      ...defaultSession,
+      configuration: configSnapshot,
+    })
 
     this.configured = true
     return this

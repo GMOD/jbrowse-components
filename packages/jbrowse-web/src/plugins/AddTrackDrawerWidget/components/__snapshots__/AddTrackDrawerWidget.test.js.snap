@@ -24,7 +24,13 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }
@@ -6061,7 +6067,13 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }
@@ -12060,7 +12072,13 @@ exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
       "views": Array [],
       "width": 512,
     }
