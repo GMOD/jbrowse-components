@@ -98,7 +98,7 @@ class AddTrackDrawerWidget extends React.Component {
       trackAdapter,
     } = this.state
     const { model } = this.props
-    const { rootModel } = getRoot(model)
+    const rootModel = getRoot(model)
     if (activeStep === steps.length - 1) {
       trackAdapter.features = trackData.config
       const trackConf = rootModel.configuration.addTrackConf(trackType, {
