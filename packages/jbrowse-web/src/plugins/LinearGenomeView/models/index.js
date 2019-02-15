@@ -1,6 +1,5 @@
 import { transaction } from 'mobx'
 import {
-  getEnv,
   getRoot,
   isStateTreeNode,
   types,

@@ -34,6 +34,7 @@ import WiggleRendererPlugin from './plugins/WiggleRenderer'
 // configs
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 import WorkerManager from './WorkerManager'
+import RpcManager from './rpc/RpcManager'
 
 const corePlugins = [
   MainMenuBarPlugin,
@@ -77,6 +78,13 @@ class JBrowse {
     if (initialConfig) {
       this.model.configure(initialConfig)
     }
+
+    // rpc isn't connected until our configuration is loaded
+    this.rpcManager = new RpcManager(this.model.configuration.rpc, {
+      WebWorkerRpcDriver: {
+        workers: this.workerManager.getWorkerGroup('rpc'),
+      },
+    })
 
     this.configured = true
     return this

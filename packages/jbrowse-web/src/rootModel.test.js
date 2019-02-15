@@ -7,6 +7,7 @@ test('can load configuration with the configure() action and resolve references 
   model.configure({
     configId: 'fogbat',
     views: { LinearGenomeView: { configId: 'LinearGenomeView' } },
+    rpc: { configId: 'oh hi rpc' },
   })
 
   expect(getSnapshot(model.configuration)).toMatchSnapshot()

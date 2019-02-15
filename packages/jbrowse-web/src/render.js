@@ -1,51 +1,81 @@
-import Rpc from '@librpc/web'
+import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
 
-import { objectFromEntries } from './util'
+/**
+ * free up any resources (e.g. cached adapter objects)
+ * that are only associated with the given track ID.
+ *
+ * returns number of objects deleted
+ */
+export function freeResources(pluginManager, specification) {
+  let deleteCount = 0
 
-const getClient = app =>
-  new Rpc.Client({
-    workers: app.workerManager.getWorkerGroup('render'),
+  deleteCount += freeAdapterResources(specification)
+
+  // pass the freeResources hint along to all the renderers as well
+  pluginManager.getElementTypesInGroup('renderer').forEach(renderer => {
+    const count = renderer.freeResources(specification)
+    if (count) deleteCount += count
   })
 
-function isClonable(thing) {
-  if (typeof thing === 'function') return false
-  if (thing instanceof Error) return false
-  return true
-}
-
-// filter the given object and just remove any non-clonable things from it
-function removeNonClonable(thing) {
-  if (Array.isArray(thing)) {
-    return thing.filter(isClonable).map(removeNonClonable)
-  }
-  if (typeof thing === 'object') {
-    const newobj = objectFromEntries(
-      Object.entries(thing)
-        .filter(e => isClonable(e[1]))
-        .map(([k, v]) => [k, removeNonClonable(v)]),
-    )
-    return newobj
-  }
-  return thing
+  return deleteCount
 }
 
 /**
- * render a region in a web worker
- *
- * @param {object} app the enclosing application
- * @param {object} args the render arguments
- * @returns {Promise[object]} object containing the rendering results
- * (e.g. html, features, a computed layout for the features)
+ * render a single region
+ * @param {*} pluginManager
+ * @param {object} args
+ * @param {*} args.region
+ * @param {*} args.sessionId
+ * @param {*} args.adapterType
+ * @param {*} args.adapterConfig
+ * @param {*} args.rendererType
+ * @param {*} args.renderProps
  */
-export async function renderRegionWithWorker(app, args) {
-  const filteredArgs = removeNonClonable(args)
-  const result = await getClient(app).call('renderRegion', filteredArgs, {
-    timeout: args.timeout,
+export async function renderRegion(
+  pluginManager,
+  {
+    region,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rootConfig,
+    rendererType,
+    renderProps,
+  },
+) {
+  if (!sessionId) throw new Error('must pass a unique session id')
+
+  const { dataAdapter, assemblyAliases, seqNameMap } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rootConfig,
+  )
+
+  const RendererType = pluginManager.getRendererType(rendererType)
+  if (!RendererType) throw new Error(`renderer "${rendererType}" not found`)
+  if (!RendererType.ReactComponent)
+    throw new Error(
+      `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+    )
+
+  // Regularize assembly
+  const { assemblyName } = adapterConfig
+  if (
+    assemblyName &&
+    region.assemblyName &&
+    assemblyName !== region.assemblyName
+  )
+    if (assemblyAliases.includes(region.assemblyName))
+      region.assemblyName = assemblyName
+  // Regularize reference name
+  region.refName = seqNameMap.get(region.refName) || region.refName
+
+  return RendererType.renderInWorker({
+    ...renderProps,
+    sessionId,
+    dataAdapter,
+    region,
   })
-
-  return result
-}
-
-export async function freeSessionResourcesInWorker(pluginManager, sessionId) {
-  return getClient(pluginManager).call('freeSessionResources', sessionId)
 }

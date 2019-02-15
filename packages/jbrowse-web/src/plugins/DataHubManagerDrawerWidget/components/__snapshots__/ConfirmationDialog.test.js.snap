@@ -13,6 +13,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       },
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcConfig",
+        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -34,10 +37,12 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
+          "width": 800,
         },
       ],
       "width": 512,
@@ -57,6 +62,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         },
         "configuration": Object {
           "configId": "testing",
+          "rpc": Object {
+            "configId": "rpcConfig",
+          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -78,10 +86,12 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
+            "hideControls": false,
             "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
+            "width": 800,
           },
         ],
         "width": 512,
@@ -105,6 +115,9 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
           },
           "configuration": Object {
             "configId": "testing",
+            "rpc": Object {
+              "configId": "rpcConfig",
+            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -126,10 +139,12 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
+              "hideControls": false,
               "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",
+              "width": 800,
             },
           ],
           "width": 512,
@@ -199,6 +214,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       },
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcConfig",
+        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -220,10 +238,12 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
+          "width": 800,
         },
       ],
       "width": 512,
@@ -243,6 +263,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         },
         "configuration": Object {
           "configId": "testing",
+          "rpc": Object {
+            "configId": "rpcConfig",
+          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -264,10 +287,12 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
+            "hideControls": false,
             "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
+            "width": 800,
           },
         ],
         "width": 512,
@@ -291,6 +316,9 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
           },
           "configuration": Object {
             "configId": "testing",
+            "rpc": Object {
+              "configId": "rpcConfig",
+            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -312,10 +340,12 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
+              "hideControls": false,
               "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",
+              "width": 800,
             },
           ],
           "width": 512,
@@ -790,6 +820,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       },
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcConfig",
+        },
       },
       "drawerWidgets": Object {
         "hierarchicalTrackSelector": Object {
@@ -811,10 +844,12 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testViewId",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
+          "width": 800,
         },
       ],
       "width": 512,
@@ -834,6 +869,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         },
         "configuration": Object {
           "configId": "testing",
+          "rpc": Object {
+            "configId": "rpcConfig",
+          },
         },
         "drawerWidgets": Object {
           "hierarchicalTrackSelector": Object {
@@ -855,10 +893,12 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             "controlsWidth": 120,
             "displayedRegions": Array [],
             "flipped": false,
+            "hideControls": false,
             "id": "testViewId",
             "offsetPx": 0,
             "tracks": Array [],
             "type": "LinearGenomeView",
+            "width": 800,
           },
         ],
         "width": 512,
@@ -882,6 +922,9 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
           },
           "configuration": Object {
             "configId": "testing",
+            "rpc": Object {
+              "configId": "rpcConfig",
+            },
           },
           "drawerWidgets": Object {
             "hierarchicalTrackSelector": Object {
@@ -903,10 +946,12 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
               "controlsWidth": 120,
               "displayedRegions": Array [],
               "flipped": false,
+              "hideControls": false,
               "id": "testViewId",
               "offsetPx": 0,
               "tracks": Array [],
               "type": "LinearGenomeView",
+              "width": 800,
             },
           ],
           "width": 512,

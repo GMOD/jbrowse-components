@@ -1,8 +1,6 @@
 import { renderToString } from 'react-dom/server'
 import { tap } from 'rxjs/operators'
 
-import { renderRegionWithWorker } from '../render'
-
 import RendererType from '../pluggableElementTypes/RendererType'
 
 import SimpleFeature from '../util/simpleFeature'
@@ -74,10 +72,15 @@ export default class ServerSideRenderer extends RendererType {
    * for `renderRegionWithWorker` that takes care of data serialization.
    */
   async renderInClient(app, args) {
-    const result = await renderRegionWithWorker(
-      app,
-      this.serializeArgsInClient(args),
+    const serializedArgs = this.serializeArgsInClient(args)
+
+    const stateGroupName = 'TODO'
+    const result = await app.rpcManager.call(
+      stateGroupName,
+      'renderRegion',
+      serializedArgs,
     )
+    // const result = await renderRegionWithWorker(app, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result
