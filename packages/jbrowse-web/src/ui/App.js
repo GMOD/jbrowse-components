@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
-import { inject, observer, PropTypes } from 'mobx-react'
+import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -191,7 +191,10 @@ class App extends Component {
             </select>
           </Scrollbars>
         </div>
-        <Drawer open={Boolean(rootModel.activeDrawerWidgets.size)}>
+        <Drawer
+          rootModel={rootModel}
+          open={Boolean(rootModel.activeDrawerWidgets.size)}
+        >
           {drawerComponent}
         </Drawer>
       </div>
@@ -199,6 +202,4 @@ class App extends Component {
   }
 }
 
-export default withSize()(
-  withStyles(styles)(inject('rootModel')(observer(App))),
-)
+export default withSize()(withStyles(styles)(observer(App)))

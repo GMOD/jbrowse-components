@@ -2,7 +2,6 @@
 import 'fast-text-encoding'
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Provider } from 'mobx-react'
 import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider } from '@material-ui/core/styles'
@@ -133,19 +132,18 @@ class JBrowse extends React.Component {
     window.MODEL = sessions.get(activeSession)
 
     return (
-      <Provider rootModel={sessions.get(activeSession)}>
-        <MuiThemeProvider theme={Theme}>
-          <CssBaseline />
-          <App
-            getViewType={pluginManager.getViewType}
-            getDrawerWidgetType={pluginManager.getDrawerWidgetType}
-            getMenuBarType={pluginManager.getMenuBarType}
-            sessionNames={Array.from(sessions.keys())}
-            activeSession={activeSession}
-            setSession={this.setSession}
-          />
-        </MuiThemeProvider>
-      </Provider>
+      <MuiThemeProvider theme={Theme}>
+        <CssBaseline />
+        <App
+          rootModel={sessions.get(activeSession)}
+          getViewType={pluginManager.getViewType}
+          getDrawerWidgetType={pluginManager.getDrawerWidgetType}
+          getMenuBarType={pluginManager.getMenuBarType}
+          sessionNames={Array.from(sessions.keys())}
+          activeSession={activeSession}
+          setSession={this.setSession}
+        />
+      </MuiThemeProvider>
     )
   }
 }

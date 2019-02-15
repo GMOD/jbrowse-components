@@ -3,7 +3,7 @@ import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -312,4 +312,4 @@ class ConfirmTrack extends React.Component {
   }
 }
 
-export default withStyles(styles)(inject('rootModel')(observer(ConfirmTrack)))
+export default withStyles(styles)(observer(ConfirmTrack))

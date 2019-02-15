@@ -5,8 +5,8 @@ import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { applySnapshot, getSnapshot } from 'mobx-state-tree'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getRoot, applySnapshot, getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import ConfirmationDialog from './ConfirmationDialog'
@@ -46,7 +46,7 @@ class DataHubDrawerWidget extends React.Component {
       button: propTypes.string.isRequired,
       actionsContainer: propTypes.string.isRequired,
     }).isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
   }
 
   state = {
@@ -86,6 +86,7 @@ class DataHubDrawerWidget extends React.Component {
       hubName,
       assemblyName,
     } = this.state
+    const { model } = this.props
     let StepComponent
     switch (activeStep) {
       case 0:
@@ -127,6 +128,7 @@ class DataHubDrawerWidget extends React.Component {
             assemblyName={assemblyName}
             trackDbUrl={trackDbUrl}
             enableNext={() => this.enableNextThrough(activeStep)}
+            rootModel={getRoot(model)}
           />
         )
       default:
@@ -138,7 +140,8 @@ class DataHubDrawerWidget extends React.Component {
 
   handleNext = () => {
     const { activeStep } = this.state
-    const { rootModel } = this.props
+    const { model } = this.props
+    const rootModel = getRoot(model)
     if (activeStep === steps.length - 1) {
       rootModel.hideAllDrawerWidgets()
       return
@@ -216,6 +219,4 @@ class DataHubDrawerWidget extends React.Component {
   }
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(DataHubDrawerWidget)),
-)
+export default withStyles(styles)(observer(DataHubDrawerWidget))

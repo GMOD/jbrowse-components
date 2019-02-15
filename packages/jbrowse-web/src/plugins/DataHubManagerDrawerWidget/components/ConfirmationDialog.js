@@ -5,7 +5,7 @@ import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { transaction } from 'mobx'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
@@ -305,6 +305,4 @@ class ConfirmationDialog extends React.Component {
   }
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(ConfirmationDialog)),
-)
+export default withStyles(styles)(observer(ConfirmationDialog))

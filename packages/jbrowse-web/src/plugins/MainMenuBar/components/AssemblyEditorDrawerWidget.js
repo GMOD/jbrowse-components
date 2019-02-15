@@ -19,7 +19,8 @@ import Popper from '@material-ui/core/Popper'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { withStyles } from '@material-ui/core/styles'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
@@ -69,7 +70,7 @@ const styles = theme => ({
 
 class AssemblyEditorDrawerWidget extends React.Component {
   static propTypes = {
-    rootModel: MobxPropTypes.observableObject.isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
     classes: propTypes.objectOf(propTypes.string).isRequired,
   }
 
@@ -110,7 +111,8 @@ class AssemblyEditorDrawerWidget extends React.Component {
 
   handleAddAssembly = event => {
     const { newAssemblyName } = this.state
-    const { rootModel } = this.props
+    const { model } = this.props
+    const rootModel = getRoot(model)
     this.handleFabClose(event)
     rootModel.configuration.addAssembly(newAssemblyName)
     this.setState({ newAssemblyName: '' })
@@ -118,7 +120,8 @@ class AssemblyEditorDrawerWidget extends React.Component {
 
   render() {
     const { addMenuAnchorEl, helpMenuAnchorEl, newAssemblyName } = this.state
-    const { classes, rootModel } = this.props
+    const { classes, model } = this.props
+    const rootModel = getRoot(model)
     return (
       <div className={classes.root}>
         <div className={classes.header}>
@@ -288,6 +291,4 @@ class AssemblyEditorDrawerWidget extends React.Component {
   }
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(AssemblyEditorDrawerWidget)),
-)
+export default withStyles(styles)(observer(AssemblyEditorDrawerWidget))

@@ -1,7 +1,8 @@
 import { Icon, IconButton, withStyles } from '@material-ui/core'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
-import { inject, observer, PropTypes } from 'mobx-react'
+import { observer, PropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
@@ -49,7 +50,8 @@ const styles = theme => ({
 
 function LinearGenomeView(props) {
   const scaleBarHeight = 32
-  const { classes, model, rootModel } = props
+  const { classes, model } = props
+  const rootModel = getRoot(model)
   const { id, blocks, tracks, bpPerPx, width, controlsWidth, offsetPx } = model
   const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
   const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
@@ -172,9 +174,6 @@ function LinearGenomeView(props) {
 LinearGenomeView.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
-  rootModel: PropTypes.objectOrObservableObject.isRequired,
 }
 
-export default inject('rootModel')(
-  withStyles(styles)(observer(LinearGenomeView)),
-)
+export default withStyles(styles)(observer(LinearGenomeView))

@@ -5,7 +5,8 @@ import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import ConfirmTrack from './ConfirmTrack'
@@ -35,7 +36,7 @@ const steps = ['Enter track data', 'Confirm track type']
 class AddTrackDrawerWidget extends React.Component {
   static propTypes = {
     classes: propTypes.objectOf(propTypes.string).isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
+    model: MobxPropTypes.observableObject.isRequired,
   }
 
   state = {
@@ -54,6 +55,7 @@ class AddTrackDrawerWidget extends React.Component {
       trackType,
       trackAdapter,
     } = this.state
+    const { model } = this.props
     switch (activeStep) {
       case 0:
         return (
@@ -66,6 +68,7 @@ class AddTrackDrawerWidget extends React.Component {
       case 1:
         return (
           <ConfirmTrack
+            rootModel={getRoot(model)}
             trackData={trackData}
             trackName={trackName}
             updateTrackName={event =>
@@ -94,7 +97,8 @@ class AddTrackDrawerWidget extends React.Component {
       trackType,
       trackAdapter,
     } = this.state
-    const { rootModel } = this.props
+    const { model } = this.props
+    const { rootModel } = getRoot(model)
     if (activeStep === steps.length - 1) {
       trackAdapter.features = trackData.config
       const trackConf = rootModel.configuration.addTrackConf(trackType, {
@@ -182,6 +186,4 @@ class AddTrackDrawerWidget extends React.Component {
   }
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(AddTrackDrawerWidget)),
-)
+export default withStyles(styles)(observer(AddTrackDrawerWidget))
