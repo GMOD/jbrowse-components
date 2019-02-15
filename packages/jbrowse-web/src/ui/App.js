@@ -1,10 +1,9 @@
 import AppBar from '@material-ui/core/AppBar'
-import CssBaseline from '@material-ui/core/CssBaseline'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { MuiThemeProvider, withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
@@ -15,7 +14,6 @@ import { getSnapshot } from 'mobx-state-tree'
 import { withSize } from 'react-sizeme'
 import { Scrollbars } from 'react-custom-scrollbars'
 
-import Theme from './Theme'
 import Drawer from './Drawer'
 
 const styles = theme => ({
@@ -61,6 +59,9 @@ class App extends Component {
     getDrawerWidgetType: ReactPropTypes.func.isRequired,
     getMenuBarType: ReactPropTypes.func.isRequired,
     size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
+    sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
+    activeSession: ReactPropTypes.string.isRequired,
+    setSession: ReactPropTypes.func.isRequired,
   }
 
   componentDidMount() {
@@ -80,6 +81,9 @@ class App extends Component {
       getViewType,
       getMenuBarType,
       rootModel,
+      sessionNames,
+      activeSession,
+      setSession,
     } = this.props
     const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
     let drawerComponent
@@ -133,57 +137,64 @@ class App extends Component {
     }
 
     return (
-      <MuiThemeProvider theme={Theme}>
-        <CssBaseline />
-        <div className={classes.root}>
-          <div className={classes.menuBarsAndComponents}>
-            <div className={classes.menuBars}>
-              {rootModel.menuBars.map(menuBar => {
-                const { LazyReactComponent } = getMenuBarType(menuBar.type)
-                return (
-                  <React.Suspense
+      <div className={classes.root}>
+        <div className={classes.menuBarsAndComponents}>
+          <div className={classes.menuBars}>
+            {rootModel.menuBars.map(menuBar => {
+              const { LazyReactComponent } = getMenuBarType(menuBar.type)
+              return (
+                <React.Suspense
+                  key={`view-${menuBar.id}`}
+                  fallback={<div>Loading...</div>}
+                >
+                  <LazyReactComponent
                     key={`view-${menuBar.id}`}
-                    fallback={<div>Loading...</div>}
-                  >
-                    <LazyReactComponent
-                      key={`view-${menuBar.id}`}
-                      model={menuBar}
-                    />
-                  </React.Suspense>
-                )
-              })}
-            </div>
-            <Scrollbars
-              className={classes.components}
-              style={{ width: rootModel.width }}
-            >
-              {rootModel.views.map(view => {
-                const { ReactComponent } = getViewType(view.type)
-                return <ReactComponent key={`view-${view.id}`} model={view} />
-              })}
-              <button
-                type="button"
-                onClick={() =>
-                  rootModel.addView(
-                    'LinearGenomeView',
-                    {},
-                    {
-                      displayedRegions: getSnapshot(
-                        rootModel.views[0].displayedRegions,
-                      ),
-                    },
-                  )
-                }
-              >
-                Add linear view
-              </button>
-            </Scrollbars>
+                    model={menuBar}
+                  />
+                </React.Suspense>
+              )
+            })}
           </div>
+          <Scrollbars
+            className={classes.components}
+            style={{ width: rootModel.width }}
+          >
+            {rootModel.views.map(view => {
+              const { ReactComponent } = getViewType(view.type)
+              return <ReactComponent key={`view-${view.id}`} model={view} />
+            })}
+            <button
+              type="button"
+              onClick={() =>
+                rootModel.addView(
+                  'LinearGenomeView',
+                  {},
+                  {
+                    displayedRegions: getSnapshot(
+                      rootModel.views[0].displayedRegions,
+                    ),
+                  },
+                )
+              }
+            >
+              Add linear view
+            </button>
+            <select
+              onChange={event => setSession(event.target.value)}
+              value={activeSession}
+            >
+              {sessionNames.map(sessionName => (
+                <option key={sessionName} value={sessionName}>
+                  {sessionName}
+                </option>
+              ))}
+            </select>
+          </Scrollbars>
         </div>
         <Drawer open={Boolean(rootModel.activeDrawerWidgets.size)}>
           {drawerComponent}
         </Drawer>
-      </MuiThemeProvider>
+      </div>
     )
   }
 }

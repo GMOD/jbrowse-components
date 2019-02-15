@@ -294,7 +294,7 @@ class ConfirmTrack extends React.Component {
             fullWidth
             onChange={updateTrackType}
           >
-            {rootModel.app.pluginManager
+            {rootModel.pluginManager
               .getElementTypesInGroup('track')
               .map(installedTrackType => (
                 <MenuItem

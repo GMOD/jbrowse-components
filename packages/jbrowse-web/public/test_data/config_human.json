@@ -1,0 +1,107 @@
+{
+  "configId": "tQ76_pSGI",
+  "tracks": [
+    {
+      "configId": "hWk07s1R6",
+      "type": "SequenceTrack",
+      "name": "hg38 Reference Sequence",
+      "adapter": {
+        "configId": "Fnry79fJDX",
+        "type": "TwoBitAdapter",
+        "twoBitLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
+        },
+        "assemblyName": "hg38"
+      },
+      "rendering": {
+        "configId": "kK8MocBNRt",
+        "type": "DivSequenceRenderer"
+      }
+    },
+    {
+      "configId": "kgGeu2G_P",
+      "type": "AlignmentsTrack",
+      "name": "1000 Genomes NA12878 Coverage",
+      "adapter": {
+        "configId": "cpL7wSQq0-",
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+        },
+        "assemblyName": "hg38",
+        "index": {
+          "configId": "pUSN15LliE",
+          "location": {
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+          }
+        }
+      }
+    }
+  ],
+  "assemblies": {
+    "hg38": {
+      "configId": "rwbpxsYzXsU",
+      "aliases": [
+        "GRCh38"
+      ],
+      "seqNameAliases": {
+        "chr1": [
+          "1"
+        ]
+      }
+    }
+  },
+  "defaultSession": {
+    "sessionName": "Human Example",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Download configuration",
+                "icon": "get_app",
+                "callback": "downloadConfiguration"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "id": "BhLw7v7Not",
+        "type": "LinearGenomeView",
+        "offsetPx": 8355300,
+        "bpPerPx": 0.1,
+        "tracks": [
+          {
+            "id": "GFanwdnRC",
+            "type": "SequenceTrack",
+            "height": 100,
+            "configuration": "hWk07s1R6"
+          },
+          {
+            "id": "cR4NC5vd4",
+            "type": "AlignmentsTrack",
+            "height": 100,
+            "configuration": "kgGeu2G_P"
+          }
+        ],
+        "displayedRegions": [
+          {
+            "assemblyName": "hg38",
+            "refName": "chr1",
+            "start": 0,
+            "end": 248956422
+          }
+        ],
+        "configuration": {
+          "configId": "vVpZZU1XnD"
+        }
+      }
+    ]
+  }
+}

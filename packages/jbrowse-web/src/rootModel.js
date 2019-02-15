@@ -19,12 +19,12 @@ export const Assembly = ConfigurationSchema('Assembly', {
   },
 })
 
-export default app => {
-  const { pluginManager } = app
+export default (pluginManager, workerManager) => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebRootModel', {
+      sessionName: types.optional(types.string, 'UnnamedSession'),
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
         512,
@@ -90,9 +90,8 @@ export default app => {
       ),
     })
     .volatile(() => ({
-      app,
       pluginManager,
-
+      workerManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what

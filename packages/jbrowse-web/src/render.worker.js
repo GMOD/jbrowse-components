@@ -4,17 +4,15 @@ import { useStaticRendering } from 'mobx-react'
 
 import RpcServer from '@librpc/web'
 
-import JBrowse from './JBrowse'
+import PluginManager from './PluginManager'
+import corePlugins from './corePlugins'
 import { freeAdapterResources, getAdapter } from './util/workerDataAdapterCache'
 
 // prevent mobx-react from doing funny things when we render in the worker
 useStaticRendering(true)
 
-let jbrowse
-
-async function setup() {
-  if (!jbrowse) jbrowse = await new JBrowse().configure()
-}
+const jbPluginManager = new PluginManager(corePlugins)
+jbPluginManager.configure()
 
 /**
  * free up any resources (e.g. cached adapter objects)
@@ -60,7 +58,6 @@ export async function renderRegion(
   },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
-  await setup()
 
   const { dataAdapter, assemblyAliases, seqNameMap } = await getAdapter(
     pluginManager,
@@ -100,10 +97,9 @@ export async function renderRegion(
 function wrapForRpc(func) {
   return async args => {
     // console.log(`${func.name} args`, args)
-    await setup()
     let result
     try {
-      result = func(jbrowse.pluginManager, args)
+      result = func(jbPluginManager, args)
     } catch (error) {
       console.error(error)
       throw error

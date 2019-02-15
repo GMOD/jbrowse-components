@@ -1,70 +1,105 @@
 // Polyfill for TextDecoder
 import 'fast-text-encoding'
 import React from 'react'
-import ReactDOM from 'react-dom'
+import PropTypes from 'prop-types'
 import { Provider } from 'mobx-react'
+import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
+import CssBaseline from '@material-ui/core/CssBaseline'
+import { MuiThemeProvider } from '@material-ui/core/styles'
+import shortid from 'shortid'
+import 'typeface-roboto'
+import './fonts/material-icons.css'
+
+import Theme from './ui/theme'
 
 import PluginManager from './PluginManager'
+import corePlugins from './corePlugins'
 import { openLocation } from './util/io'
 
 import App from './ui/App'
 import RootModelFactory from './rootModel'
-import MainMenuBarPlugin from './plugins/MainMenuBar'
 
-// adapters
-import BamAdapterPlugin from './plugins/BamAdapter'
-import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
-import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
-import BigWigAdapterPlugin from './plugins/BigWigAdapter'
-import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
-
-// tracks
-import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
-import SequenceTrackPlugin from './plugins/SequenceTrack'
-import FilteringTrackPlugin from './plugins/FilteringTrack'
-
-// views
-import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
-
-// renderers
-import PileupRendererPlugin from './plugins/PileupRenderer'
-import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
-import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
-import WiggleRendererPlugin from './plugins/WiggleRenderer'
-
-// drawer widgets
-import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
-import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
-import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
-import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 import WorkerManager from './WorkerManager'
 
-const corePlugins = [
-  MainMenuBarPlugin,
-  HierarchicalTrackSelectorDrawerWidgetPlugin,
-  BamAdapterPlugin,
-  TwoBitAdapterPlugin,
-  IndexedFastaAdapterPlugin,
-  BigWigAdapterPlugin,
-  LinearGenomeViewPlugin,
-  AlignmentsTrackPlugin,
-  DataHubManagerDrawerWidgetPlugin,
-  AddTrackDrawerWidgetPlugin,
-  ConfigurationEditorPlugin,
-  SequenceTrackPlugin,
-  PileupRendererPlugin,
-  SvgFeaturePlugin,
-  DivSequenceRendererPlugin,
-  FromConfigAdapterPlugin,
-  FilteringTrackPlugin,
-  WiggleRendererPlugin,
-]
-
 // the main class used to configure and start a new JBrowse app
-class JBrowse {
-  constructor() {
-    this.pluginManager = new PluginManager(corePlugins)
-    this.workerManager = new WorkerManager()
+class JBrowse extends React.Component {
+  static propTypes = {
+    configs: PropTypes.arrayOf(PropTypes.shape()),
+    workerGroups: PropTypes.shape().isRequired,
+  }
+
+  static defaultProps = {
+    configs: [],
+  }
+
+  state = {
+    pluginManager: undefined,
+    workerManager: undefined,
+    modelType: undefined,
+    sessions: undefined,
+    activeSession: undefined,
+    configured: false,
+  }
+
+  async componentDidMount() {
+    const { configs, workerGroups } = this.props
+    const pluginManager = new PluginManager(corePlugins)
+    const workerManager = new WorkerManager()
+    workerManager.addWorkers(workerGroups)
+    pluginManager.configure()
+    const modelType = RootModelFactory(pluginManager, workerManager)
+
+    const sessions = new Map()
+    let activeSession
+    for (const config of configs) {
+      let configSnapshot
+      if (config.uri || config.localPath) {
+        try {
+          configSnapshot = JSON.parse(
+            new TextDecoder('utf-8').decode(
+              // eslint-disable-next-line no-await-in-loop
+              await openLocation(config).readFile(),
+            ),
+          )
+        } catch (error) {
+          console.error('Failed to load config ', error)
+          throw error
+        }
+      } else configSnapshot = config
+
+      const {
+        defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
+      } = configSnapshot
+      const {
+        sessionName = `Unnamed Session ${shortid.generate()}`,
+      } = defaultSession
+      if (!activeSession) activeSession = sessionName
+      sessions.set(
+        sessionName,
+        modelType.create({
+          ...defaultSession,
+          configuration: configSnapshot,
+        }),
+      )
+
+      const configured = true
+      this.setState({
+        pluginManager,
+        workerManager,
+        modelType,
+        sessions,
+        activeSession,
+        configured,
+      })
+
+      // poke some things for testing (this stuff will eventually be removed)
+      window.getSnapshot = getSnapshot
+      window.resolveIdentifier = resolveIdentifier
+    }
+  }
+
+  setSession = sessionName => {
+    this.setState({ activeSession: sessionName })
   }
 
   addPlugin(plugin) {
@@ -73,48 +108,45 @@ class JBrowse {
     return this
   }
 
-  async configure(initialConfig = {}) {
-    this.pluginManager.configure()
-    this.modelType = RootModelFactory(this)
-
-    let configSnapshot
-    if (initialConfig.uri || initialConfig.localPath) {
-      try {
-        configSnapshot = JSON.parse(
-          new TextDecoder('utf-8').decode(
-            await openLocation(initialConfig).readFile(),
-          ),
-        )
-      } catch (error) {
-        console.error('Failed to load config ', error)
-        throw error
-      }
-    } else configSnapshot = initialConfig
-
+  render() {
     const {
-      defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
-    } = configSnapshot
-    this.model = this.modelType.create({
-      ...defaultSession,
-      configuration: configSnapshot,
-    })
-
-    this.configured = true
-    return this
-  }
-
-  start() {
-    ReactDOM.render(
-      <Provider rootModel={this.model}>
-        <App
-          getViewType={this.pluginManager.getViewType}
-          getDrawerWidgetType={this.pluginManager.getDrawerWidgetType}
-          getMenuBarType={this.pluginManager.getMenuBarType}
-        />
-      </Provider>,
-      document.getElementById('root'),
+      pluginManager,
+      workerManager,
+      modelType,
+      sessions,
+      activeSession,
+      configured,
+    } = this.state
+    if (
+      !(
+        pluginManager &&
+        workerManager &&
+        modelType &&
+        sessions &&
+        activeSession &&
+        configured
+      )
     )
-    return this
+      return <div>loading...</div>
+
+    // poke some things for testing (this stuff will eventually be removed)
+    window.MODEL = sessions.get(activeSession)
+
+    return (
+      <Provider rootModel={sessions.get(activeSession)}>
+        <MuiThemeProvider theme={Theme}>
+          <CssBaseline />
+          <App
+            getViewType={pluginManager.getViewType}
+            getDrawerWidgetType={pluginManager.getDrawerWidgetType}
+            getMenuBarType={pluginManager.getMenuBarType}
+            sessionNames={Array.from(sessions.keys())}
+            activeSession={activeSession}
+            setSession={this.setSession}
+          />
+        </MuiThemeProvider>
+      </Provider>
+    )
   }
 }
 

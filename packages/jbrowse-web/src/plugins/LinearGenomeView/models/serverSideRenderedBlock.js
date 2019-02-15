@@ -21,7 +21,7 @@ function renderBlockData(self) {
 
   return {
     rendererType,
-    app: root.app,
+    app: root,
     renderProps,
     renderArgs: {
       region: self.region,

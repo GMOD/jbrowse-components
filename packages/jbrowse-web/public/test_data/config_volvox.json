@@ -183,6 +183,7 @@
     }
   },
   "defaultSession": {
+    "sessionName": "Volvox Example",
     "menuBars": [
       {
         "type": "MainMenuBar",
