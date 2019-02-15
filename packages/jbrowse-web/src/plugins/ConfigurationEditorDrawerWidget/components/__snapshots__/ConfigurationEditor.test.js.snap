@@ -2013,9 +2013,9 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     }
                   />
                   <style
-                    type="text/css"
-                  >
-                    
+                    dangerouslySetInnerHTML={
+                      Object {
+                        "__html": "
 /**
  * Reset the text fill color so that placeholder is visible
  */
@@ -2036,8 +2036,11 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
   background-color: #accef7 !important;
   color: transparent !important;
 }
-
-                  </style>
+",
+                      }
+                    }
+                    type="text/css"
+                  />
                 </div>
                 <p
                   className="MuiFormHelperText-root-110"
