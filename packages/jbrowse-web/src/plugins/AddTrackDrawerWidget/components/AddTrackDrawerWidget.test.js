@@ -29,7 +29,6 @@ describe('<AddTrackDrawerWidget />', () => {
   })
 
   it('mounts', () => {
-    // shortid.generate = jest.fn(() => 'testId')
     const preWrap = mount(
       <Provider rootModel={rootModel}>
         <AddTrackDrawerWidget
@@ -41,6 +40,8 @@ describe('<AddTrackDrawerWidget />', () => {
     expect(wrapper).toMatchSnapshot()
     const instance = wrapper.instance()
     instance.setState({ trackData: { uri: 'test.bam' } })
+    instance.handleNext()
+    instance.handleBack()
     instance.handleNext()
     wrapper.update()
     instance.setState({ trackName: 'test track' })

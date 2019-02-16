@@ -12,30 +12,38 @@ describe('<TrackSourceSelect />', () => {
   })
 
   it('shallowly renders', () => {
-    const wrapper = shallow(<TrackSourceSelect updateTrackData={() => {}} />)
+    const wrapper = shallow(
+      <TrackSourceSelect
+        trackSource="fromFile"
+        updateTrackSource={() => {}}
+        trackData={{ uri: '' }}
+        updateTrackData={() => {}}
+      />,
+    )
     expect(wrapper).toMatchSnapshot()
   })
 
   it('mounts', () => {
+    const updateTrackSource = jest.fn(() => {})
     const updateTrackData = jest.fn(() => {})
     const wrapper = mount(
-      shallow(<TrackSourceSelect updateTrackData={updateTrackData} />).get(0),
+      <TrackSourceSelect
+        trackSource="fromFile"
+        updateTrackSource={updateTrackSource}
+        trackData={{ uri: '' }}
+        updateTrackData={updateTrackData}
+      />,
     )
-    expect(wrapper).toMatchSnapshot()
-    const instance = wrapper.instance()
+    let radioGroups = wrapper.find('RadioGroup')
+    radioGroups.get(0).props.onChange({ target: { value: 'fromFile' } })
+    expect(radioGroups.get(0).props.value).toBe('fromFile')
+    expect(radioGroups.get(1).props.value).toBe('uri')
 
-    instance.handleChange({ target: { value: 'fromFile' } })
-    wrapper.update()
-    const textBox = wrapper.find('[label="fileLocation"]').instance()
-    textBox.props.onChange({ target: { value: 'test.bam' } })
-    expect(wrapper).toMatchSnapshot()
-
-    instance.handleChange({ target: { value: 'fromConfig' } })
-    wrapper.update()
-    const jsonBox = wrapper.find('JsonEditor').instance()
-    jsonBox.onValueChange('{}')
-    wrapper.update()
-    expect(wrapper).toMatchSnapshot()
-    expect(updateTrackData.mock.calls.length).toBe(3)
+    radioGroups.get(0).props.onChange({ target: { value: 'fromConfig' } })
+    wrapper.setProps({ trackSource: 'fromConfig', trackData: { config: {} } })
+    radioGroups = wrapper.find('RadioGroup')
+    expect(radioGroups.get(0).props.value).toBe('fromConfig')
+    expect(updateTrackSource.mock.calls.length).toBe(2)
+    expect(updateTrackData.mock.calls.length).toBe(2)
   })
 })

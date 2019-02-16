@@ -41,7 +41,8 @@ class AddTrackDrawerWidget extends React.Component {
 
   state = {
     activeStep: 0,
-    trackData: {},
+    trackSource: 'fromFile',
+    trackData: { uri: '' },
     trackName: '',
     trackType: '',
     trackAdapter: {},
@@ -49,6 +50,7 @@ class AddTrackDrawerWidget extends React.Component {
 
   get stepContent() {
     const {
+      trackSource,
       activeStep,
       trackData,
       trackName,
@@ -59,6 +61,11 @@ class AddTrackDrawerWidget extends React.Component {
       case 0:
         return (
           <TrackSourceSelect
+            trackSource={trackSource}
+            updateTrackSource={newTrackSource =>
+              this.setState({ trackSource: newTrackSource })
+            }
+            trackData={trackData}
             updateTrackData={newTrackData =>
               this.setState({ trackData: newTrackData })
             }

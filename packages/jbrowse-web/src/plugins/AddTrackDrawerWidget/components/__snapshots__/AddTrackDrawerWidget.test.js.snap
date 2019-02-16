@@ -1164,7 +1164,14 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                       className="MuiCollapse-wrapperInner-109"
                                     >
                                       <WithStyles(TrackSourceSelect)
+                                        trackData={
+                                          Object {
+                                            "uri": "",
+                                          }
+                                        }
+                                        trackSource="fromFile"
                                         updateTrackData={[Function]}
+                                        updateTrackSource={[Function]}
                                       >
                                         <TrackSourceSelect
                                           classes={
@@ -1173,7 +1180,14 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                               "root": "TrackSourceSelect-root-110",
                                             }
                                           }
+                                          trackData={
+                                            Object {
+                                              "uri": "",
+                                            }
+                                          }
+                                          trackSource="fromFile"
                                           updateTrackData={[Function]}
+                                          updateTrackSource={[Function]}
                                         >
                                           <div
                                             className="TrackSourceSelect-root-110"
@@ -2825,7 +2839,12 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                                   <_class
                                                     slot={
                                                       Object {
-                                                        "uri": "",
+                                                        "description": "",
+                                                        "name": "fileLocation",
+                                                        "set": [Function],
+                                                        "value": Object {
+                                                          "uri": "",
+                                                        },
                                                       }
                                                     }
                                                   >
@@ -7226,7 +7245,14 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                       className="MuiCollapse-wrapperInner-109"
                                     >
                                       <WithStyles(TrackSourceSelect)
+                                        trackData={
+                                          Object {
+                                            "uri": "",
+                                          }
+                                        }
+                                        trackSource="fromFile"
                                         updateTrackData={[Function]}
+                                        updateTrackSource={[Function]}
                                       >
                                         <TrackSourceSelect
                                           classes={
@@ -7235,7 +7261,14 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                               "root": "TrackSourceSelect-root-110",
                                             }
                                           }
+                                          trackData={
+                                            Object {
+                                              "uri": "",
+                                            }
+                                          }
+                                          trackSource="fromFile"
                                           updateTrackData={[Function]}
+                                          updateTrackSource={[Function]}
                                         >
                                           <div
                                             className="TrackSourceSelect-root-110"
@@ -8887,7 +8920,12 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                                   <_class
                                                     slot={
                                                       Object {
-                                                        "uri": "",
+                                                        "description": "",
+                                                        "name": "fileLocation",
+                                                        "set": [Function],
+                                                        "value": Object {
+                                                          "uri": "",
+                                                        },
                                                       }
                                                     }
                                                   >
