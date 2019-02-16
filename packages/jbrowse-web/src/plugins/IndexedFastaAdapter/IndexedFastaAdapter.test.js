@@ -6,8 +6,8 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   const adapter = new Adapter(
     {
       assemblyName: 'volvox',
-      fastaLocation: { path: require.resolve('./test_data/volvox.fa') },
-      faiLocation: { path: require.resolve('./test_data/volvox.fa.fai') },
+      fastaLocation: { localPath: require.resolve('./test_data/volvox.fa') },
+      faiLocation: { localPath: require.resolve('./test_data/volvox.fa.fai') },
     },
     {},
   )

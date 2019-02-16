@@ -4,16 +4,16 @@ import MyPlugin from './index'
 
 test('plugin in a stock JBrowse', () => {
   // adding this plugin should fail because it is core
-  expect(() =>
-    new JBrowse().addPlugin(new MyPlugin()).configure(),
-  ).toThrowErrorMatchingSnapshot()
+  expect(() => new JBrowse().addPlugin(new MyPlugin()).configure()).toThrow(
+    /already registered, cannot register it again/,
+  )
 
   const jbrowse = new JBrowse().configure()
-  const DataHubDrawerWidget = jbrowse.pluginManager.getDrawerWidgetType(
-    'DataHubDrawerWidget',
+  const AddTrackDrawerWidget = jbrowse.pluginManager.getDrawerWidgetType(
+    'AddTrackDrawerWidget',
   )
-  const config = DataHubDrawerWidget.configSchema.create({
-    type: 'DataHubDrawerWidget',
+  const config = AddTrackDrawerWidget.configSchema.create({
+    type: 'AddTrackDrawerWidget',
   })
   expect(getSnapshot(config)).toMatchSnapshot({ configId: expect.any(String) })
 })

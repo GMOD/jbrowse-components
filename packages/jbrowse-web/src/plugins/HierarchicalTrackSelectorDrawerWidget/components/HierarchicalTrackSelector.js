@@ -18,10 +18,13 @@ const styles = theme => ({
     textAlign: 'left',
     padding: theme.spacing.unit,
   },
+  searchBox: {
+    marginBottom: theme.spacing.unit * 2,
+  },
   fab: {
     float: 'right',
     position: 'sticky',
-    'margin-top': theme.spacing.unit * 2,
+    marginTop: theme.spacing.unit * 2,
     bottom: theme.spacing.unit * 2,
     right: theme.spacing.unit * 2,
   },
@@ -64,6 +67,18 @@ class HierarchicalTrackSelector extends React.Component {
     )
   }
 
+  addTrack = () => {
+    this.handleFabClose()
+    const { model } = this.props
+    const rootModel = getRoot(model)
+    rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
+      view: model.view.id,
+    })
+    rootModel.showDrawerWidget(
+      rootModel.drawerWidgets.get('addTrackDrawerWidget'),
+    )
+  }
+
   filter = trackConfig => {
     const { model } = this.props
     if (!model.filterText) return true
@@ -81,6 +96,7 @@ class HierarchicalTrackSelector extends React.Component {
     return (
       <div className={classes.root}>
         <TextField
+          className={classes.searchBox}
           label="Filter Tracks"
           value={model.filterText}
           error={filterError}
@@ -117,6 +133,7 @@ class HierarchicalTrackSelector extends React.Component {
           onClose={this.handleFabClose}
         >
           <MenuItem onClick={this.addDataHub}>Add Data Hub</MenuItem>
+          <MenuItem onClick={this.addTrack}>Add track</MenuItem>
         </Menu>
       </div>
     )

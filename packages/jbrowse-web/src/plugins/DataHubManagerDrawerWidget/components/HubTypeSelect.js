@@ -1,6 +1,7 @@
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
+import Link from '@material-ui/core/Link'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import propTypes from 'prop-types'
@@ -10,22 +11,26 @@ const hubTypeDescriptions = {
   ucsc: (
     <FormHelperText>
       A track or assembly hub in the{' '}
-      <a
+      <Link
         href="http://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
         rel="noopener noreferrer"
         target="_blank"
       >
         Track Hub
-      </a>{' '}
+      </Link>{' '}
       format
     </FormHelperText>
   ),
   jbrowse1: (
     <FormHelperText>
       A{' '}
-      <a href="https://jbrowse.org/" rel="noopener noreferrer" target="_blank">
+      <Link
+        href="https://jbrowse.org/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
         JBrowse 1
-      </a>{' '}
+      </Link>{' '}
       data directory
     </FormHelperText>
   ),

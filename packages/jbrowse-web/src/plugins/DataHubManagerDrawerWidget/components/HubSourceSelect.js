@@ -1,6 +1,7 @@
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
+import Link from '@material-ui/core/Link'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import propTypes from 'prop-types'
@@ -10,13 +11,13 @@ const hubSourceDescriptions = {
   trackHubRegistry: (
     <FormHelperText>
       Search{' '}
-      <a
+      <Link
         href="https://trackhubregistry.org/"
         rel="noopener noreferrer"
         target="_blank"
       >
         The Track Hub Registry
-      </a>
+      </Link>
     </FormHelperText>
   ),
   ucscCustom: <FormHelperText>User-provided track hub URL</FormHelperText>,

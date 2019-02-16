@@ -6,10 +6,12 @@ test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(
     {
       assemblyName: 'volvox',
-      bamLocation: { path: require.resolve('./test_data/volvox-sorted.bam') },
+      bamLocation: {
+        localPath: require.resolve('./test_data/volvox-sorted.bam'),
+      },
       index: {
         location: {
-          path: require.resolve('./test_data/volvox-sorted.bam.bai'),
+          localPath: require.resolve('./test_data/volvox-sorted.bam.bai'),
         },
         indexType: 'BAI',
       },

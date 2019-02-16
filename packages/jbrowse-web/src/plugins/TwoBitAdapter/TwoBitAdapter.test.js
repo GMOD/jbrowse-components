@@ -6,7 +6,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
   const adapter = new Adapter(
     {
       assemblyName: 'volvox',
-      twoBitLocation: { path: require.resolve('./test_data/volvox.2bit') },
+      twoBitLocation: { localPath: require.resolve('./test_data/volvox.2bit') },
     },
     {},
   )
