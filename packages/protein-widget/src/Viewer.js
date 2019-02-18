@@ -9,13 +9,13 @@ import RpcManager from '../../jbrowse-web/src/rpc/RpcManager'
 
 import LinearGenomeViewPlugin from '../../jbrowse-web/src/plugins/LinearGenomeView'
 import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
-import DivSequenceRendererPlugin from '../../jbrowse-web/src/plugins/DivSequenceRenderer'
+import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
 import { ConfigurationSchema } from '../../jbrowse-web/src/configuration'
 
 const plugins = [
   FromConfigAdapterPlugin,
   LinearGenomeViewPlugin,
-  DivSequenceRendererPlugin,
+  SequenceRendererPlugin,
 ]
 
 // want a lineargenomeview with a sequence track
@@ -51,6 +51,7 @@ export class Viewer {
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           sequenceTrack: {
+            renderer: { type: 'ProteinReferenceSequenceRenderer' },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
         },
@@ -95,6 +96,7 @@ export class Viewer {
           end: aaSequence.length,
           seq: aaSequence,
           seq_id: name,
+          type: 'protein',
         },
       ])
     })
