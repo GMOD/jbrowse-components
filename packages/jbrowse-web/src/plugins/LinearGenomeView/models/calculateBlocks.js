@@ -15,6 +15,8 @@ export function calculateBlocksReversed(self) {
 
 export function calculateBlocksForward(self) {
   const { offsetPx, bpPerPx, width, displayedRegions } = self
+  if (!width)
+    throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
   const blockSizePx = Math.ceil(width / 200) * 200

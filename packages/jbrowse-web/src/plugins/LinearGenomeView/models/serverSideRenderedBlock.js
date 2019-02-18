@@ -1,4 +1,4 @@
-import { types, getParent, isAlive } from 'mobx-state-tree'
+import { types, getParent, isAlive, getRoot } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
 import { getConf } from '../../../configuration'
@@ -15,7 +15,7 @@ import { getContainingView } from '../../../util/tracks'
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const root = getParent(view, 2)
+  const root = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
 

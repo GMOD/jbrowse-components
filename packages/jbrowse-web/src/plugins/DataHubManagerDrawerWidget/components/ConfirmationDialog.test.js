@@ -18,6 +18,7 @@ describe('<ConfirmationDialog />', () => {
     // classes = getClasses(<ConfirmationDialog rootModel={rootModel} />)
     jbrowse = new JBrowse().configure({
       configId: 'testing',
+      rpc: { configId: 'rpcConfig' },
     })
     rootModel = jbrowse.model
     const firstView = rootModel.addView(

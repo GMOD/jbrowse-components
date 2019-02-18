@@ -6,7 +6,6 @@ import TrackBlocks from './TrackBlocks'
 
 const styles = {
   track: {
-    color: 'white',
     position: 'relative',
     height: '100%',
     whiteSpace: 'nowrap',

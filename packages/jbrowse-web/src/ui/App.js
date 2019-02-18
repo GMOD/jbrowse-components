@@ -81,10 +81,9 @@ class App extends Component {
       getMenuBarType,
       rootModel,
     } = this.props
-    const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
+    const activeDrawerWidget = rootModel.visibleDrawerWidget
     let drawerComponent
-    if (drawerWidgets.length) {
-      const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
+    if (activeDrawerWidget) {
       const {
         LazyReactComponent,
         HeadingComponent,

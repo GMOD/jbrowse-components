@@ -25,11 +25,13 @@ const styles = (/* theme */) => ({
 function TrackControls({ track, classes, onConfigureClick }) {
   return (
     <>
-      <ConfigureToggleButton
-        onClick={onConfigureClick}
-        title="configure track"
-        model={track}
-      />
+      {track.showConfigurationButton ? (
+        <ConfigureToggleButton
+          onClick={onConfigureClick}
+          title="configure track"
+          model={track}
+        />
+      ) : null}
       <Typography variant="body1" className={classes.trackName}>
         {getConf(track, 'name') || track.id}
       </Typography>

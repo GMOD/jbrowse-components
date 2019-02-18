@@ -1,6 +1,5 @@
 import { transaction } from 'mobx'
 import {
-  getEnv,
   getRoot,
   isStateTreeNode,
   types,
@@ -19,10 +18,11 @@ import BaseTrack from './baseTrack'
 import calculateBlocks from './calculateBlocks'
 
 const validBpPerPx = [
-  0.05,
-  0.1,
-  0.2,
-  0.5,
+  1 / 50,
+  1 / 20,
+  1 / 10,
+  1 / 5,
+  1 / 2,
   1,
   2,
   5,
@@ -55,7 +55,7 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
-const minBpPerPx = 0.03
+const minBpPerPx = validBpPerPx[0]
 
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
@@ -74,14 +74,14 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         controlsWidth: 120,
+        width: 800,
         displayedRegions: types.array(Region),
         configuration: LinearGenomeViewConfigSchema,
+        // set this to true to hide the close, config, and tracksel buttons
+        hideControls: false,
       }),
     )
     .views(self => ({
-      get width() {
-        return getEnv(self).testEnv ? 800 : getRoot(self).viewsWidth
-      },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)
       },
@@ -109,6 +109,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
     }))
     .actions(self => ({
+      setWidth(newWidth) {
+        self.width = newWidth
+      },
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')

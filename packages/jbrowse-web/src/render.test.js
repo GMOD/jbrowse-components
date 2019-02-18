@@ -1,5 +1,5 @@
 import JBrowse from './JBrowse'
-import { renderRegion, freeResources } from './render.worker'
+import { renderRegion, freeResources } from './render'
 
 const jbrowse = new JBrowse().configure()
 

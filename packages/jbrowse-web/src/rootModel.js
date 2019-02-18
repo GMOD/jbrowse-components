@@ -1,6 +1,9 @@
-import { types, getRoot, getType } from 'mobx-state-tree'
+import { types, getRoot, getType, addDisposer } from 'mobx-state-tree'
+
+import { autorun } from 'mobx'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
+import RpcManager from './rpc/RpcManager'
 
 export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
@@ -51,6 +54,8 @@ export default app => {
 
           // A map of assembly name -> assembly details
           assemblies: types.map(Assembly),
+
+          rpc: RpcManager.configSchema,
         },
         {
           actions: self => ({
@@ -102,13 +107,27 @@ export default app => {
     .views(self => ({
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
-        return self.width
+        return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
       },
       get maxDrawerWidth() {
         return self.width - 256
       },
+
+      get visibleDrawerWidget() {
+        let activeDrawerWidget
+        for (activeDrawerWidget of self.activeDrawerWidgets.values());
+        return activeDrawerWidget
+      },
     }))
     .actions(self => ({
+      afterCreate() {
+        const disposer = autorun(() => {
+          self.views.forEach(view => {
+            view.setWidth(self.viewsWidth)
+          })
+        })
+        addDisposer(self, disposer)
+      },
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },

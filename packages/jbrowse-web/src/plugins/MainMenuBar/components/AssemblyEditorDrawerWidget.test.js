@@ -12,6 +12,7 @@ describe('<AssemblyEditorDrawerWidget />', () => {
     shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
     jbrowse = new JBrowse().configure({
       configId: 'testing',
+      rpc: { configId: 'also testing' },
       assemblies: {
         volvox: {
           aliases: ['vvx'],

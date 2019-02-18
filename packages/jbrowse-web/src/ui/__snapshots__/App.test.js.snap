@@ -5,6 +5,9 @@ Object {
   "activeDrawerWidgets": Object {},
   "configuration": Object {
     "configId": Any<String>,
+    "rpc": Object {
+      "configId": Any<String>,
+    },
   },
   "drawerWidgets": Object {},
   "drawerWidth": 384,

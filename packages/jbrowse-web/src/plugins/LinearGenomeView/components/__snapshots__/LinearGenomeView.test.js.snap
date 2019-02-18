@@ -12,6 +12,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px",
         "height": "55px",
+        "position": "relative",
         "width": "800px",
       }
     }
@@ -194,8 +195,8 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         </button>
         <div
           aria-orientation="horizontal"
-          aria-valuemax={4.321928094887363}
-          aria-valuemin={4.321928094887363}
+          aria-valuemax={5.643856189774724}
+          aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
           className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}
@@ -294,46 +295,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         }
       }
     >
-      <button
-        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
-        disabled={false}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onContextMenu={[Function]}
-        onFocus={[Function]}
-        onKeyDown={[Function]}
-        onKeyUp={[Function]}
-        onMouseDown={[Function]}
-        onMouseLeave={[Function]}
-        onMouseUp={[Function]}
-        onTouchEnd={[Function]}
-        onTouchMove={[Function]}
-        onTouchStart={[Function]}
-        size="small"
-        style={
-          Object {
-            "minWidth": 0,
-          }
-        }
-        tabIndex="0"
-        title="configure track"
-        type="button"
-        value="configure"
-      >
-        <span
-          className="MuiToggleButton-label-29"
-        >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-          >
-            settings
-          </span>
-        </span>
-        <span
-          className="MuiTouchRipple-root-48"
-        />
-      </button>
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
@@ -394,6 +355,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px",
         "height": "78px",
+        "position": "relative",
         "width": "800px",
       }
     }
@@ -693,8 +655,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         </button>
         <div
           aria-orientation="horizontal"
-          aria-valuemax={4.321928094887363}
-          aria-valuemin={4.321928094887363}
+          aria-valuemax={5.643856189774724}
+          aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
           className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}
@@ -793,46 +755,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
     >
-      <button
-        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
-        disabled={false}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onContextMenu={[Function]}
-        onFocus={[Function]}
-        onKeyDown={[Function]}
-        onKeyUp={[Function]}
-        onMouseDown={[Function]}
-        onMouseLeave={[Function]}
-        onMouseUp={[Function]}
-        onTouchEnd={[Function]}
-        onTouchMove={[Function]}
-        onTouchStart={[Function]}
-        size="small"
-        style={
-          Object {
-            "minWidth": 0,
-          }
-        }
-        tabIndex="0"
-        title="configure track"
-        type="button"
-        value="configure"
-      >
-        <span
-          className="MuiToggleButton-label-29"
-        >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-          >
-            settings
-          </span>
-        </span>
-        <span
-          className="MuiTouchRipple-root-48"
-        />
-      </button>
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
@@ -886,46 +808,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
     >
-      <button
-        className="MuiButtonBase-root-14 MuiToggleButton-root-26"
-        disabled={false}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onContextMenu={[Function]}
-        onFocus={[Function]}
-        onKeyDown={[Function]}
-        onKeyUp={[Function]}
-        onMouseDown={[Function]}
-        onMouseLeave={[Function]}
-        onMouseUp={[Function]}
-        onTouchEnd={[Function]}
-        onTouchMove={[Function]}
-        onTouchStart={[Function]}
-        size="small"
-        style={
-          Object {
-            "minWidth": 0,
-          }
-        }
-        tabIndex="0"
-        title="configure track"
-        type="button"
-        value="configure"
-      >
-        <span
-          className="MuiToggleButton-label-29"
-        >
-          <span
-            aria-hidden="true"
-            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
-          >
-            settings
-          </span>
-        </span>
-        <span
-          className="MuiTouchRipple-root-48"
-        />
-      </button>
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
@@ -986,6 +868,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto ",
         "height": "32px",
+        "position": "relative",
         "width": "800px",
       }
     }
@@ -1168,8 +1051,8 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         </button>
         <div
           aria-orientation="horizontal"
-          aria-valuemax={4.321928094887363}
-          aria-valuemin={4.321928094887363}
+          aria-valuemax={5.643856189774724}
+          aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
           className="MuiSlider-root-34 ZoomControls-slider-33"
           onClick={[Function]}

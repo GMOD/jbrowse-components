@@ -51,8 +51,6 @@ function LinearGenomeView(props) {
   const scaleBarHeight = 32
   const { classes, model, rootModel } = props
   const { id, blocks, tracks, bpPerPx, width, controlsWidth, offsetPx } = model
-  const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
-  const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
   // NOTE: offsetPx is the total offset in px of the viewing window into the
   // whole set of concatenated regions. this number is often quite large.
   // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
@@ -64,6 +62,7 @@ function LinearGenomeView(props) {
     display: 'grid',
     width: `${width}px`,
     height: `${height}px`,
+    position: 'relative',
     gridTemplateRows: `[scale-bar] auto ${tracks
       .map(
         t =>
@@ -86,32 +85,37 @@ function LinearGenomeView(props) {
           className={classnames(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
-          <ConfigureToggleButton
-            model={model}
-            onClick={model.activateConfigurationUI}
-            title="configure view"
-            style={{}}
-            fontSize="small"
-          />
-          <ToggleButton
-            onClick={model.activateTrackSelector}
-            title="select tracks"
-            selected={
-              activeDrawerWidget &&
-              activeDrawerWidget.id === 'hierarchicalTrackSelector' &&
-              activeDrawerWidget.view.id === model.id
-            }
-            value="track_select"
-          >
-            <Icon fontSize="small">line_style</Icon>
-          </ToggleButton>
+          {model.hideControls ? null : (
+            <>
+              <IconButton
+                onClick={model.closeView}
+                className={classes.iconButton}
+                title="close this view"
+              >
+                <Icon fontSize="small">close</Icon>
+              </IconButton>
+              <ConfigureToggleButton
+                model={model}
+                onClick={model.activateConfigurationUI}
+                title="configure view"
+                style={{}}
+                fontSize="small"
+              />
+              <ToggleButton
+                onClick={model.activateTrackSelector}
+                title="select tracks"
+                selected={
+                  rootModel.visibleDrawerWidget &&
+                  rootModel.visibleDrawerWidget.id ===
+                    'hierarchicalTrackSelector' &&
+                  rootModel.visibleDrawerWidget.view.id === model.id
+                }
+                value="track_select"
+              >
+                <Icon fontSize="small">line_style</Icon>
+              </ToggleButton>
+            </>
+          )}
         </div>
         <ScaleBar
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
@@ -125,9 +129,7 @@ function LinearGenomeView(props) {
         <div
           className={classes.zoomControls}
           style={{
-            right: rootModel.activeDrawerWidgets.size
-              ? rootModel.drawerWidth + 4
-              : 4,
+            right: 4,
           }}
         >
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />

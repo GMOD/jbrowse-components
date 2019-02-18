@@ -125,6 +125,10 @@ const BaseTrack = types
       )
       return adapter
     },
+
+    get showConfigurationButton() {
+      return !!getRoot(self).editConfiguration
+    },
   }))
   .actions(self => ({
     setHeight(trackHeight) {

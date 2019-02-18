@@ -29,6 +29,7 @@ describe('jbrowse-web app', () => {
     expect(getSnapshot(model)).toMatchSnapshot({
       configuration: {
         configId: expect.any(String),
+        rpc: { configId: expect.any(String) },
       },
     })
     render(model)

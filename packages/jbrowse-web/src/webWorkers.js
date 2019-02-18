@@ -1,4 +1,4 @@
-import RenderWorker from './render.worker'
+import RenderWorker from './rpc.worker'
 
 function registerRender() {
   const renderWorker = new RenderWorker()
@@ -11,7 +11,7 @@ export function register() {
   // in order to do it, we would need to implement shared state
   return {
     // hello: [registerHello()],
-    render: [registerRender()],
+    rpc: [registerRender()],
   }
 }
 
