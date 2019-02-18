@@ -51,6 +51,9 @@ export class Viewer {
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           sequenceTrack: {
+            name: 'Sequence',
+            description:
+              'Amino acid sequence, and the underlying DNA sequence if available',
             renderer: { type: 'ProteinReferenceSequenceRenderer' },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
@@ -75,48 +78,53 @@ export class Viewer {
 
   update({ protein }) {
     transaction(() => {
-      const { sequences, name } = protein
-      const aaSequence = sequences.aminoAcid.replace(/\s/g, '')
-      const dnaSequence = sequences.translatedDna.replace(/\s/g, '')
-      if (dnaSequence.length !== aaSequence.length * 3)
-        throw new Error(
-          'translatedDna sequence string must be exactly 3 times the length of the aminoAcid sequence string',
-        )
-      const region = {
-        assemblyName: 'protein',
-        refName: name,
-        start: 0,
-        end: aaSequence.length,
-      }
-      this.model.view.displayRegions([region])
-      const features = []
-      if (aaSequence)
-        features.push({
-          uniqueId: 'protein-ref',
-          start: 0,
-          end: aaSequence.length,
-          seq: aaSequence,
-          seq_id: name,
-          type: 'protein',
-        })
-      if (dnaSequence)
-        features.push({
-          uniqueId: 'dna-ref',
-          start: 0,
-          end: aaSequence.length, // we are doing things in aa seq coordinates
-          seq: dnaSequence,
-          seq_id: name,
-          type: 'dna',
-        })
-      this.model.configuration.sequenceTrack.adapter.features.set(features)
+      this.updateSequences(protein)
     })
   }
-}
 
-// function ensure(thing) {
-//   if (!thing) {
-//     debugger
-//     throw new Error('assertion failed')
-//   }
-//   return thing
-// }
+  /**
+   * updates the displayed region, and the sequences used in the sequences track
+   *
+   * @param {object} protein
+   */
+  updateSequences({ sequences, name }) {
+    const aaSequence = sequences.aminoAcid.replace(/\s/g, '')
+    const dnaSequence = sequences.translatedDna.replace(/\s/g, '')
+    const features = []
+    if (dnaSequence)
+      features.push({
+        uniqueId: 'dna-ref',
+        start: 0,
+        end: dnaSequence.length / 3, // we are doing things in aa seq coordinates
+        seq: dnaSequence,
+        seq_id: name,
+        type: 'dna',
+      })
+    if (aaSequence) {
+      features.push({
+        uniqueId: 'protein-ref',
+        start: 0,
+        end: aaSequence.length,
+        seq: aaSequence,
+        seq_id: name,
+        type: 'protein',
+      })
+    } else if (dnaSequence) {
+      // TODO: generate the AA sequence by translating the DNA sequence
+    }
+    if (dnaSequence.length !== aaSequence.length * 3)
+      throw new Error(
+        'translatedDna sequence string must be exactly 3 times the length of the aminoAcid sequence string',
+      )
+
+    const region = {
+      assemblyName: 'protein',
+      refName: name,
+      start: 0,
+      end: aaSequence.length,
+    }
+
+    this.model.view.displayRegions([region])
+    this.model.configuration.sequenceTrack.adapter.features.set(features)
+  }
+}
