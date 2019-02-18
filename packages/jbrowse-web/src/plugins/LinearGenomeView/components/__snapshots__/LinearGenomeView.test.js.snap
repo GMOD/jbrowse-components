@@ -12,6 +12,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px",
         "height": "55px",
+        "position": "relative",
         "width": "800px",
       }
     }
@@ -354,6 +355,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px",
         "height": "78px",
+        "position": "relative",
         "width": "800px",
       }
     }
@@ -866,6 +868,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto ",
         "height": "32px",
+        "position": "relative",
         "width": "800px",
       }
     }

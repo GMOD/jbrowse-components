@@ -62,6 +62,7 @@ function LinearGenomeView(props) {
     display: 'grid',
     width: `${width}px`,
     height: `${height}px`,
+    position: 'relative',
     gridTemplateRows: `[scale-bar] auto ${tracks
       .map(
         t =>
@@ -128,9 +129,7 @@ function LinearGenomeView(props) {
         <div
           className={classes.zoomControls}
           style={{
-            right: rootModel.visibleDrawerWidget
-              ? rootModel.drawerWidth + 4
-              : 4,
+            right: 4,
           }}
         >
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />

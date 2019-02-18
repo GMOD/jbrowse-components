@@ -109,6 +109,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
     }))
     .actions(self => ({
+      setWidth(newWidth) {
+        self.width = newWidth
+      },
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
