@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
-
 import { types } from 'mobx-state-tree'
 
 import PluginManager from '../../jbrowse-web/src/PluginManager'
@@ -32,9 +32,9 @@ export class Viewer {
     this.model = types
       .model({
         view: LinearGenomeViewType.stateModel,
-        sequenceTrackConfig: BasicTrackType.configSchema,
         configuration: ConfigurationSchema('ProteinViewer', {
           rpc: RpcManager.configSchema,
+          sequenceTrack: BasicTrackType.configSchema,
         }),
       })
       .volatile(() => ({
@@ -46,19 +46,23 @@ export class Viewer {
           type: 'LinearGenomeView',
           hideControls: true,
           width: widgetWidth,
+          bpPerPx: 1 / 20,
         },
-        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          sequenceTrack: {
+            adapter: { type: 'FromConfigAdapter', features: [] },
+          },
+        },
       })
     this.rpcManager = new RpcManager(
       this.pluginManager,
       this.model.configuration.rpc,
     )
 
-    if (initialState.region) {
-      this.model.view.displayRegions([initialState.region])
-    }
+    this.update(initialState)
 
-    this.model.view.showTrack(this.model.sequenceTrackConfig)
+    this.model.view.showTrack(this.model.configuration.sequenceTrack)
 
     ReactDOM.render(
       <Provider rootModel={this.model}>
@@ -68,7 +72,33 @@ export class Viewer {
     )
   }
 
-  update(newState) {}
+  update({ protein }) {
+    transaction(() => {
+      const { sequences, name } = protein
+      const aaSequence = sequences.aminoAcid.replace(/\s/g, '')
+      const dnaSequence = sequences.translatedDna.replace(/\s/g, '')
+      if (dnaSequence.length !== aaSequence.length * 3)
+        throw new Error(
+          'translatedDna sequence string must be exactly 3 times the length of the aminoAcid sequence string',
+        )
+      const region = {
+        assemblyName: 'protein',
+        refName: name,
+        start: 0,
+        end: aaSequence.length,
+      }
+      this.model.view.displayRegions([region])
+      this.model.configuration.sequenceTrack.adapter.features.set([
+        {
+          uniqueId: 'refseq',
+          start: 0,
+          end: aaSequence.length,
+          seq: aaSequence,
+          seq_id: name,
+        },
+      ])
+    })
+  }
 }
 
 // function ensure(thing) {
