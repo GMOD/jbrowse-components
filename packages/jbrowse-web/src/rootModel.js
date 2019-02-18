@@ -2,7 +2,7 @@ import { types, getRoot, getType } from 'mobx-state-tree'
 
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
-import rpcManagerConfigurationSchema from './rpc/configSchema'
+import RpcManager from './rpc/RpcManager'
 
 export const Assembly = ConfigurationSchema('Assembly', {
   aliases: {
@@ -54,7 +54,7 @@ export default app => {
           // A map of assembly name -> assembly details
           assemblies: types.map(Assembly),
 
-          rpc: rpcManagerConfigurationSchema,
+          rpc: RpcManager.configSchema,
         },
         {
           actions: self => ({

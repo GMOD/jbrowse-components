@@ -1,7 +1,9 @@
 import { decorate, observable } from 'mobx'
 import { readConfObject } from '../configuration'
 
+import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
+import MainThreadRpcDriver from './MainThreadRpcDriver'
 
 /*
  requirements
@@ -18,10 +20,13 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 */
 
 class RpcManager {
-  constructor(mainConfiguration, backendConfigurations = {}) {
+  static configSchema = rpcConfigSchema
+
+  constructor(pluginManager, mainConfiguration, backendConfigurations = {}) {
     if (!mainConfiguration)
       throw new Error('RpcManager requires at least a main configuration')
 
+    this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
   }
@@ -30,14 +35,12 @@ class RpcManager {
     const backendConfiguration = this.backendConfigurations[backendName]
     const DriverClass = {
       WebWorkerRpcDriver,
-      //     MainThreadRpcDriver,
+      MainThreadRpcDriver,
     }[backendName]
     if (!DriverClass) {
-      throw new Error(
-        `no RPC driver registered for RPC backend "${backendName}"`,
-      )
+      throw new Error(`requested RPC driver "${backendName}" is not installed`)
     }
-    return new DriverClass(backendConfiguration)
+    return new DriverClass(this.pluginManager, backendConfiguration)
   }
 
   getDriverForCall(/* stateGroupName, functionName, args */) {
@@ -50,8 +53,9 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
-  call(stateGroupName, functionName, args) {
+  call(stateGroupName, functionName, ...args) {
     return this.getDriverForCall(stateGroupName, functionName, args).call(
+      this.pluginManager,
       stateGroupName,
       functionName,
       args,

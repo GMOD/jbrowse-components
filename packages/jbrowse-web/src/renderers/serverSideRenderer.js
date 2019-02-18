@@ -74,7 +74,7 @@ export default class ServerSideRenderer extends RendererType {
   async renderInClient(app, args) {
     const serializedArgs = this.serializeArgsInClient(args)
 
-    const stateGroupName = 'TODO'
+    const stateGroupName = args.sessionId
     const result = await app.rpcManager.call(
       stateGroupName,
       'renderRegion',

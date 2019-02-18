@@ -28,7 +28,7 @@ export default class WebWorkerRpcDriver {
 
   workerAssignments = {} // stateGroupName -> worker number
 
-  constructor({ workers = [] }) {
+  constructor(pluginManager, { workers = [] }) {
     // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
     // because we want to do our own load balancing rather than using librpc's builtin round-robin
     this.workers = workers.map(worker => new Rpc.Client({ workers: [worker] }))
@@ -50,7 +50,7 @@ export default class WebWorkerRpcDriver {
     return worker
   }
 
-  call(stateGroupName, functionName, args, options = {}) {
+  call(pluginManager, stateGroupName, functionName, args, options = {}) {
     const worker = this.getWorker(stateGroupName)
     const filteredArgs = removeNonClonable(args)
     return worker.call(functionName, filteredArgs, {
