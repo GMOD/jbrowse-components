@@ -18,10 +18,11 @@ import BaseTrack from './baseTrack'
 import calculateBlocks from './calculateBlocks'
 
 const validBpPerPx = [
-  0.05,
-  0.1,
-  0.2,
-  0.5,
+  1 / 50,
+  1 / 20,
+  1 / 10,
+  1 / 5,
+  1 / 2,
   1,
   2,
   5,
@@ -54,7 +55,7 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
-const minBpPerPx = 0.03
+const minBpPerPx = validBpPerPx[0]
 
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
