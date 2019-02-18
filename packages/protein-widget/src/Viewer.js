@@ -89,16 +89,26 @@ export class Viewer {
         end: aaSequence.length,
       }
       this.model.view.displayRegions([region])
-      this.model.configuration.sequenceTrack.adapter.features.set([
-        {
-          uniqueId: 'refseq',
+      const features = []
+      if (aaSequence)
+        features.push({
+          uniqueId: 'protein-ref',
           start: 0,
           end: aaSequence.length,
           seq: aaSequence,
           seq_id: name,
           type: 'protein',
-        },
-      ])
+        })
+      if (dnaSequence)
+        features.push({
+          uniqueId: 'dna-ref',
+          start: 0,
+          end: aaSequence.length, // we are doing things in aa seq coordinates
+          seq: dnaSequence,
+          seq_id: name,
+          type: 'dna',
+        })
+      this.model.configuration.sequenceTrack.adapter.features.set(features)
     })
   }
 }
