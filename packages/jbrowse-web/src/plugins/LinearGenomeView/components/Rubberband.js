@@ -1,7 +1,17 @@
 import React, { Component } from 'react'
-import { PropTypes } from 'prop-types'
+import ReactPropTypes from 'prop-types'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { withStyles } from '@material-ui/core'
 
+const styles = {
+  rubberband: {
+    height: '100%',
+    background: '#aad8',
+    position: 'absolute',
+    gridColumn: '1 / auto',
+    zIndex: 9999,
+  },
+}
 function getBp(px, model) {
   const regions = model.displayedRegions
   const bp = (model.offsetPx + px - model.controlsWidth) * model.bpPerPx + 1
@@ -41,7 +51,6 @@ function navigateToLocation(start, end, model) {
     }
   }
   const bpPerPx = bpSoFar / model.width
-  console.log(bpToStart, bpPerPx)
   const offsetPx = bpToStart / bpPerPx
   model.setNewView(bpPerPx, offsetPx)
   return 0
@@ -49,14 +58,13 @@ function navigateToLocation(start, end, model) {
 
 class Rubberband extends Component {
   static defaultProps = {
-    style: {},
     children: undefined,
   }
 
   static propTypes = {
     model: MobxPropTypes.objectOrObservableObject.isRequired,
-    children: PropTypes.node,
-    style: PropTypes.objectOf(PropTypes.any),
+    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+    children: ReactPropTypes.node,
   }
 
   state = {}
@@ -80,7 +88,6 @@ class Rubberband extends Component {
       const leftBp = getBp(leftPx, model)
       const rightBp = getBp(rightPx, model)
       navigateToLocation(leftBp, rightBp, model)
-      console.log(leftBp, rightBp)
       // model.zoomToThisLocation()
     }
     this.setState(() => ({
@@ -100,7 +107,7 @@ class Rubberband extends Component {
   }
 
   render() {
-    const { style, children } = this.props
+    const { children, classes } = this.props
     const { rubberband } = this.state
 
     let leftPx
@@ -111,29 +118,26 @@ class Rubberband extends Component {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
     }
-
     return (
-      <>
+      <div
+        onMouseDown={this.onMouseDown}
+        role="presentation"
+        style={{ cursor: 'crosshair', zIndex: 999 }}
+      >
+        {rubberband ? (
+          <div
+            id="rubberband"
+            className={classes.rubberband}
+            style={{
+              left: `${leftPx}px`,
+              width: `${rightPx - leftPx}px`,
+            }}
+          />
+        ) : null}
         {children}
-        <div onMouseDown={this.onMouseDown} role="presentation" style={style}>
-          {rubberband ? (
-            <div
-              id="rubberband"
-              style={{
-                left: `${leftPx}px`,
-                width: `${rightPx - leftPx}px`,
-                height: '100%',
-                background: '#aad8',
-                position: 'absolute',
-                gridColumn: '1 / auto',
-                zIndex: 9999,
-              }}
-            />
-          ) : null}
-        </div>
-      </>
+      </div>
     )
   }
 }
 
-export default Rubberband
+export default withStyles(styles)(Rubberband)
