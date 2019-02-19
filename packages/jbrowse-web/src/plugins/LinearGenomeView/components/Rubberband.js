@@ -129,9 +129,7 @@ class Rubberband extends Component {
                 zIndex: 9999,
               }}
             />
-          ) : (
-            ''
-          )}
+          ) : null}
         </div>
       </>
     )
