@@ -23,6 +23,9 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "testid",
+        },
       },
       "drawerWidgets": Object {
         "addTrackDrawerWidget": Object {
@@ -42,10 +45,12 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testid",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
+          "width": 512,
         },
       ],
       "width": 512,
@@ -6063,6 +6068,9 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "testid",
+        },
         "tracks": Array [
           Object {
             "adapter": Object {
@@ -6113,6 +6121,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testid",
           "offsetPx": 0,
           "tracks": Array [
@@ -6127,6 +6136,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
             },
           ],
           "type": "LinearGenomeView",
+          "width": 512,
         },
       ],
       "width": 512,
@@ -12137,6 +12147,9 @@ exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "testid",
+        },
       },
       "drawerWidgets": Object {
         "addTrackDrawerWidget": Object {
@@ -12156,10 +12169,12 @@ exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
           "controlsWidth": 120,
           "displayedRegions": Array [],
           "flipped": false,
+          "hideControls": false,
           "id": "testid",
           "offsetPx": 0,
           "tracks": Array [],
           "type": "LinearGenomeView",
+          "width": 512,
         },
       ],
       "width": 512,

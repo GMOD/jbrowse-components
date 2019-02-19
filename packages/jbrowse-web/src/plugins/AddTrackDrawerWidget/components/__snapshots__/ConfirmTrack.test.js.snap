@@ -12,6 +12,9 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcTesting",
+        },
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,
@@ -2941,6 +2944,9 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcTesting",
+        },
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,
@@ -5535,6 +5541,9 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
       "activeDrawerWidgets": Object {},
       "configuration": Object {
         "configId": "testing",
+        "rpc": Object {
+          "configId": "rpcTesting",
+        },
       },
       "drawerWidgets": Object {},
       "drawerWidth": 384,

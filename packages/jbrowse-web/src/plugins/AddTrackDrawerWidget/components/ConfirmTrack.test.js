@@ -12,7 +12,10 @@ describe('<ConfirmTrack />', () => {
   beforeAll(() => {
     shallow = createShallow()
     mount = createMount()
-    jbrowse = new JBrowse().configure({ configId: 'testing' })
+    jbrowse = new JBrowse().configure({
+      configId: 'testing',
+      rpc: { configId: 'rpcTesting' },
+    })
     rootModel = jbrowse.model
   })
 
