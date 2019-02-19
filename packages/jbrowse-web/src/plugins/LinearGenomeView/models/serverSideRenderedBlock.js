@@ -1,4 +1,10 @@
-import { types, getParent, isAlive, getRoot } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  isAlive,
+  getRoot,
+  addDisposer,
+} from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
 import { getConf } from '../../../configuration'
@@ -78,51 +84,37 @@ export default types
     renderProps: undefined,
     renderInFlight: undefined,
   }))
-  .actions(self => {
-    let renderDisposer
-    return {
-      afterAttach() {
-        const track = getContainingView(self)
-        renderDisposer = reaction(
-          () => renderBlockData(self),
-          data => renderBlockEffect(self, data),
-          {
-            name: `${track.id}/${assembleLocString(self.region)} rendering`,
-            delay: 50,
-            fireImmediately: true,
-          },
-        )
-      },
-      setLoading(inProgressRecord) {
-        self.filled = false
-        self.html = ''
-        self.data = undefined
-        self.error = undefined
-        self.renderInProgress = inProgressRecord
-      },
-      setRendered(data, html, renderingComponent, renderProps) {
-        self.filled = true
-        self.data = data
-        self.html = html
-        self.renderingComponent = renderingComponent
-        self.renderProps = renderProps
-      },
-      setError(error) {
-        // the rendering failed for some reason
-        console.error(error)
-        self.error = error
-      },
-      beforeDetach() {
-        if (renderDisposer) {
-          renderDisposer()
-          renderDisposer = undefined
-        }
-      },
-      beforeDestroy() {
-        if (renderDisposer) {
-          renderDisposer()
-          renderDisposer = undefined
-        }
-      },
-    }
-  })
+  .actions(self => ({
+    afterAttach() {
+      const track = getContainingView(self)
+      const renderDisposer = reaction(
+        () => renderBlockData(self),
+        data => renderBlockEffect(self, data),
+        {
+          name: `${track.id}/${assembleLocString(self.region)} rendering`,
+          delay: 50,
+          fireImmediately: true,
+        },
+      )
+      addDisposer(self, renderDisposer)
+    },
+    setLoading(inProgressRecord) {
+      self.filled = false
+      self.html = ''
+      self.data = undefined
+      self.error = undefined
+      self.renderInProgress = inProgressRecord
+    },
+    setRendered(data, html, renderingComponent, renderProps) {
+      self.filled = true
+      self.data = data
+      self.html = html
+      self.renderingComponent = renderingComponent
+      self.renderProps = renderProps
+    },
+    setError(error) {
+      // the rendering failed for some reason
+      console.error(error)
+      self.error = error
+    },
+  }))

@@ -1,8 +1,8 @@
-import { types } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
-import LinearGenomeTrack from './baseTrack'
+import baseTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
 import CompositeMap from '../../../util/compositeMap'
@@ -10,7 +10,7 @@ import { getContainingView } from '../../../util/tracks'
 
 export default types.compose(
   'BlockBasedTrackState',
-  LinearGenomeTrack,
+  baseTrack,
   types
     .model({
       blockState: types.map(BlockState),
@@ -29,44 +29,36 @@ export default types.compose(
         return new CompositeMap(featureMaps)
       },
     }))
-    .actions(self => {
-      let blockWatchDisposer
-      function disposeBlockWatch() {
-        if (blockWatchDisposer) blockWatchDisposer()
-        blockWatchDisposer = undefined
-      }
-      return {
-        afterAttach() {
-          const view = getContainingView(self)
-          // watch the parent's blocks to update our block state when they change
-          blockWatchDisposer = autorun(() => {
-            // create any blocks that we need to create
-            const blocksPresent = {}
-            view.blocks.forEach(block => {
-              blocksPresent[block.key] = true
-              if (!self.blockState.has(block.key))
-                self.addBlock(block.key, block)
-            })
-            // delete any blocks we need to delete
-            self.blockState.forEach((value, key) => {
-              if (!blocksPresent[key]) self.deleteBlock(key)
-            })
+    .actions(self => ({
+      afterAttach() {
+        const view = getContainingView(self)
+        // watch the parent's blocks to update our block state when they change
+        const blockWatchDisposer = autorun(() => {
+          // create any blocks that we need to create
+          const blocksPresent = {}
+          view.blocks.forEach(block => {
+            blocksPresent[block.key] = true
+            if (!self.blockState.has(block.key)) self.addBlock(block.key, block)
           })
-        },
-        addBlock(key, region) {
-          self.blockState.set(
+          // delete any blocks we need to delete
+          self.blockState.forEach((value, key) => {
+            if (!blocksPresent[key]) self.deleteBlock(key)
+          })
+        })
+
+        addDisposer(self, blockWatchDisposer)
+      },
+      addBlock(key, region) {
+        self.blockState.set(
+          key,
+          BlockState.create({
             key,
-            BlockState.create({
-              key,
-              region,
-            }),
-          )
-        },
-        deleteBlock(key) {
-          self.blockState.delete(key)
-        },
-        beforeDetach: disposeBlockWatch,
-        beforeDestroy: disposeBlockWatch,
-      }
-    }),
+            region,
+          }),
+        )
+      },
+      deleteBlock(key) {
+        self.blockState.delete(key)
+      },
+    })),
 )
