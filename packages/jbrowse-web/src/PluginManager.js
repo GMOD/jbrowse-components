@@ -76,8 +76,8 @@ export default class PluginManager {
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
     // add all the initial plugins
-    initialPlugins.forEach(PluginClass => {
-      this.addPlugin(new PluginClass())
+    initialPlugins.forEach(plugin => {
+      this.addPlugin(plugin)
     })
   }
 

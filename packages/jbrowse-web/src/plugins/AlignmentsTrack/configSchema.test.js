@@ -8,8 +8,8 @@ import SvgFeatureRendererPlugin from '../SvgFeatureRenderer'
 test('has a viewType attr', () => {
   const configSchema = configSchemaFactory(
     new PluginManager([
-      PileupRendererPlugin,
-      SvgFeatureRendererPlugin,
+      new PileupRendererPlugin(),
+      new SvgFeatureRendererPlugin(),
     ]).configure(),
   )
   const config = configSchema.create({

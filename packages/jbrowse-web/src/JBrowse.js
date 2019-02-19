@@ -61,7 +61,7 @@ const corePlugins = [
 // the main class used to configure and start a new JBrowse app
 class JBrowse {
   constructor() {
-    this.pluginManager = new PluginManager(corePlugins)
+    this.pluginManager = new PluginManager(corePlugins.map(P => new P()))
     this.workerManager = new WorkerManager()
   }
 

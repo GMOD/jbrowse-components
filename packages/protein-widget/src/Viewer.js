@@ -22,7 +22,9 @@ const plugins = [
 // and a variants track
 export class Viewer {
   constructor(domElement, initialState = {}) {
-    this.pluginManager = new PluginManager(plugins).configure()
+    this.pluginManager = new PluginManager(
+      plugins.map(P => new P()),
+    ).configure()
     const LinearGenomeViewType = this.pluginManager.getViewType(
       'LinearGenomeView',
     )
