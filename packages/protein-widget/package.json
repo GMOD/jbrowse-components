@@ -5,7 +5,8 @@
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
     "test": "jest",
-    "build": "webpack"
+    "build": "webpack",
+    "lint": "eslint src/"
   },
   "unpkg": "umd/jbrowse-protein-viewer.js",
   "files": [

@@ -22,9 +22,9 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         // https://github.com/facebook/create-react-app/issues/2677
         ident: 'postcss',
         plugins: () => [
-          // eslint-disable-next-line global-require
+          // eslint-disable-next-line global-require, import/no-extraneous-dependencies
           require('postcss-flexbugs-fixes'),
-          // eslint-disable-next-line global-require
+          // eslint-disable-next-line global-require, import/no-extraneous-dependencies
           require('postcss-preset-env')({
             autoprefixer: {
               flexbox: 'no-2009',
