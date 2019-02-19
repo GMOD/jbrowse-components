@@ -53,36 +53,38 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-            plugins: ['@babel/plugin-proposal-class-properties'],
+        oneOf: [
+          {
+            test: /\.m?js$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env', '@babel/preset-react'],
+                plugins: ['@babel/plugin-proposal-class-properties'],
+              },
+            },
           },
-        },
-      },
-      {
-        test: /\.s?css$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-            plugins: ['@babel/plugin-proposal-class-properties'],
+          {
+            test: cssRegex,
+            use: getStyleLoaders({
+              importLoaders: 1,
+            }),
           },
-        },
-      },
-      {
-        test: cssRegex,
-        use: getStyleLoaders({
-          importLoaders: 1,
-        }),
-      },
-      {
-        test: sassRegex,
-        use: getStyleLoaders({ importLoaders: 2 }, 'sass-loader'),
+          {
+            test: sassRegex,
+            use: getStyleLoaders({ importLoaders: 2 }, 'sass-loader'),
+          },
+          {
+            loader: require.resolve('file-loader'),
+            exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
+            options: {
+              name: 'umd/static/media/[name].[hash:8].[ext]',
+            },
+          },
+          // ** STOP ** Are you adding a new loader?
+          // Make sure to add the new loader(s) before the "file" loader.
+        ],
       },
     ],
   },
