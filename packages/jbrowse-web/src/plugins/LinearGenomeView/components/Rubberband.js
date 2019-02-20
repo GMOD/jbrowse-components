@@ -8,8 +8,6 @@ const styles = {
     height: '100%',
     background: '#aad8',
     position: 'absolute',
-    gridColumn: '1 / auto',
-    zIndex: 9999,
   },
 }
 function getBp(px, model) {
@@ -131,6 +129,7 @@ class Rubberband extends Component {
             style={{
               left: `${leftPx}px`,
               width: `${rightPx - leftPx}px`,
+              zIndex: 9999,
             }}
           />
         ) : null}

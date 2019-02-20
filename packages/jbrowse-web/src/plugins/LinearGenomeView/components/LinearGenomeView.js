@@ -123,8 +123,6 @@ function LinearGenomeView(props) {
           style={{
             gridColumn: 'blocks',
             gridRow: 'scale-bar',
-            zIndex: 999,
-            cursor: 'crosshair',
           }}
           offsetPx={visibleBlocksOffsetPx}
           realOffsetPx={offsetPx}
