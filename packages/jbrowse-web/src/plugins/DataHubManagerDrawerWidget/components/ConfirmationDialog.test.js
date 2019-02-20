@@ -1,4 +1,5 @@
 import { createMount, createShallow } from '@material-ui/core/test-utils'
+import { Provider } from 'mobx-react'
 import { clone } from 'mobx-state-tree'
 import React from 'react'
 import JBrowse from '../../../JBrowse'
@@ -67,19 +68,20 @@ type bam
         ),
       )
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
-    let instance
-    const wrapper = mount(
-      <ConfirmationDialog
-        trackDbUrl={new URL('http://test.com/hg19/trackDb.txt')}
-        innerRef={node => {
-          instance = node
-        }}
-        assemblyName="hg38"
-        hubName="TestHub"
-        enableNext={() => {}}
-        rootModel={clone(rootModel)}
-      />,
+    const preWrap = mount(
+      <Provider rootModel={rootModel}>
+        <ConfirmationDialog
+          trackDbUrl={new URL('http://test.com/hg19/trackDb.txt')}
+          assemblyName="hg38"
+          hubName="TestHub"
+          enableNext={() => {}}
+          rootModel={clone(rootModel)}
+        />
+      </Provider>,
     )
+    const wrapper = preWrap.find('ConfirmationDialog')
+    const instance = wrapper.instance()
+    // instance = instance.wrappedInstance
 
     instance = instance.wrappedInstance
     await instance.componentDidMount()
@@ -91,20 +93,18 @@ type bam
   it('handles 404', async () => {
     const mockFetch = () => Promise.resolve(new Response('', { status: 404 }))
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
-    let instance
-    const wrapper = mount(
-      <ConfirmationDialog
-        trackDbUrl={new URL('http://test.com/trackDb.txt')}
-        assemblyName="hg38"
-        innerRef={node => {
-          instance = node
-        }}
-        hubName="TestHub"
-        enableNext={() => {}}
-        rootModel={rootModel}
-      />,
+    const preWrap = mount(
+      <Provider rootModel={rootModel}>
+        <ConfirmationDialog
+          trackDbUrl={new URL('http://test.com/trackDb.txt')}
+          assemblyName="hg38"
+          hubName="TestHub"
+          enableNext={() => {}}
+        />
+      </Provider>,
     )
-    instance = instance.wrappedInstance
+    const wrapper = preWrap.find('ConfirmationDialog')
+    const instance = wrapper.instance()
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })
@@ -114,20 +114,18 @@ type bam
       throw new Error()
     }
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
-    let instance
-    const wrapper = mount(
-      <ConfirmationDialog
-        trackDbUrl={new URL('http://test.com/trackDb.txt')}
-        assemblyName="hg38"
-        innerRef={node => {
-          instance = node
-        }}
-        hubName="TestHub"
-        enableNext={() => {}}
-        rootModel={rootModel}
-      />,
+    const preWrap = mount(
+      <Provider rootModel={rootModel}>
+        <ConfirmationDialog
+          trackDbUrl={new URL('http://test.com/trackDb.txt')}
+          assemblyName="hg38"
+          hubName="TestHub"
+          enableNext={() => {}}
+        />
+      </Provider>,
     )
-    instance = instance.wrappedInstance
+    const wrapper = preWrap.find('ConfirmationDialog')
+    const instance = wrapper.instance()
     await instance.componentDidMount()
     expect(wrapper).toMatchSnapshot()
   })

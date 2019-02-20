@@ -1,6 +1,6 @@
 import { createShallow, createMount } from '@material-ui/core/test-utils'
 import React from 'react'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import ConfirmTrack, { guessAdapter } from './ConfirmTrack'
 
 jest.mock('shortid', () => ({ generate: 'testid' }))
@@ -8,26 +8,29 @@ jest.mock('shortid', () => ({ generate: 'testid' }))
 describe('<ConfirmTrack />', () => {
   let shallow
   let mount
-  let jbrowse
   let rootModel
 
   beforeAll(async () => {
     shallow = createShallow()
     mount = createMount()
-    jbrowse = await new JBrowse().configure({ configId: 'testing' })
-    rootModel = jbrowse.model
+    ;({ rootModel } = await createTestEnv({ configId: 'testing' }))
   })
 
   it('shallowly renders', () => {
     const mockFunction = () => {}
     const wrapper = shallow(
       <ConfirmTrack
+        rootModel={rootModel}
         trackData={{ uri: 'test.bam' }}
         trackName=""
         updateTrackName={mockFunction}
         trackType="AlignmentsTrack"
         updateTrackType={mockFunction}
-        trackAdapter="BamAdapter"
+        trackAdapter={{
+          type: 'BamAdapter',
+          bamLocation: { uri: 'test.bam' },
+          index: { location: { uri: 'test.bam.bai' } },
+        }}
         updateTrackAdapter={mockFunction}
       />,
     )

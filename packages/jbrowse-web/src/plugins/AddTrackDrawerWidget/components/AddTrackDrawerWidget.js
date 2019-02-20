@@ -41,7 +41,8 @@ class AddTrackDrawerWidget extends React.Component {
 
   state = {
     activeStep: 0,
-    trackData: {},
+    trackSource: 'fromFile',
+    trackData: { uri: '' },
     trackName: '',
     trackType: '',
     trackAdapter: {},
@@ -49,6 +50,7 @@ class AddTrackDrawerWidget extends React.Component {
 
   get stepContent() {
     const {
+      trackSource,
       activeStep,
       trackData,
       trackName,
@@ -60,6 +62,11 @@ class AddTrackDrawerWidget extends React.Component {
       case 0:
         return (
           <TrackSourceSelect
+            trackSource={trackSource}
+            updateTrackSource={newTrackSource =>
+              this.setState({ trackSource: newTrackSource })
+            }
+            trackData={trackData}
             updateTrackData={newTrackData =>
               this.setState({ trackData: newTrackData })
             }
@@ -105,7 +112,7 @@ class AddTrackDrawerWidget extends React.Component {
         name: trackName,
         adapter: trackAdapter,
       })
-      rootModel.editConfiguration(trackConf)
+      model.view.showTrack(trackConf)
       rootModel.hideDrawerWidget(
         rootModel.drawerWidgets.get('addTrackDrawerWidget'),
       )
@@ -172,9 +179,7 @@ class AddTrackDrawerWidget extends React.Component {
                     onClick={this.handleNext}
                     className={classes.button}
                   >
-                    {activeStep === steps.length - 1
-                      ? 'Add and Configure'
-                      : 'Next'}
+                    {activeStep === steps.length - 1 ? 'Add' : 'Next'}
                   </Button>
                 </div>
               </StepContent>

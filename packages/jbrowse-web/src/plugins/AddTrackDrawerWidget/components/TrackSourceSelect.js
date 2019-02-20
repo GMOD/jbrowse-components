@@ -5,10 +5,8 @@ import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { onPatch } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { ConfigurationSchema } from '../../../configuration'
 import JsonEditor from '../../ConfigurationEditorDrawerWidget/components/JsonEditor'
 import { FileLocationEditor } from '../../ConfigurationEditorDrawerWidget/components/SlotEditor'
 
@@ -38,23 +36,8 @@ const fromConfigDefault = [
     end: 131,
   },
 ]
-const FromConfigSchema = ConfigurationSchema('FromConfig', {
-  configuration: {
-    description: 'A JSON representation of the features in the track',
-    type: 'frozen',
-    defaultValue: fromConfigDefault,
-  },
-})
-const fromConfig = FromConfigSchema.create()
 
 const fromFileDefault = { uri: '' }
-const FromFileSchema = ConfigurationSchema('FromFile', {
-  fileLocation: {
-    type: 'fileLocation',
-    defaultValue: fromFileDefault,
-  },
-})
-const fromFile = FromFileSchema.create()
 
 const styles = theme => ({
   root: {
@@ -66,82 +49,93 @@ const styles = theme => ({
   },
 })
 
-class TrackSourceSelect extends React.Component {
-  static propTypes = {
-    updateTrackData: PropTypes.func.isRequired,
-    classes: PropTypes.objectOf(PropTypes.string).isRequired,
+function getInputComponent(trackSource, trackData, updateTrackData) {
+  // mock the slots so we can use the slotEditor components here
+  switch (trackSource) {
+    case 'fromFile':
+      return (
+        <FileLocationEditor
+          slot={{
+            name: 'fileLocation',
+            description: '',
+            value: trackData,
+            set: value => updateTrackData(value),
+          }}
+        />
+      )
+    case 'fromConfig':
+      return (
+        <JsonEditor
+          slot={{
+            name: 'configuration',
+            description: 'A JSON representation of the features in the track',
+            value: trackData.config,
+            set: value => updateTrackData({ config: value }),
+          }}
+        />
+      )
+    default:
+      return <Typography>Unknown track source</Typography>
   }
+}
 
-  state = {
-    value: 'fromFile',
+function handleChange(event, updateTrackSource, updateTrackData) {
+  updateTrackSource(event.target.value)
+  switch (event.target.value) {
+    case 'fromFile':
+      updateTrackData(fromFileDefault)
+      break
+    case 'fromConfig':
+      updateTrackData({ config: fromConfigDefault })
+      break
+    default:
+      break
   }
+}
 
-  componentDidMount() {
-    const { updateTrackData } = this.props
-    onPatch(fromFile, patch => {
-      if (patch.path === '/fileLocation/value/uri')
-        updateTrackData({ uri: patch.value })
-      else if (patch.path === '/fileLocation/value/localPath')
-        updateTrackData({ localPath: patch.value })
-    })
-    onPatch(fromConfig, patch => updateTrackData({ config: patch.value }))
-  }
+function TrackSourceSelect(props) {
+  const {
+    trackSource,
+    updateTrackSource,
+    trackData,
+    updateTrackData,
+    classes,
+  } = props
+  return (
+    <div className={classes.root}>
+      <FormControl component="fieldset">
+        <RadioGroup
+          aria-label="Data location"
+          value={trackSource}
+          onChange={event =>
+            handleChange(event, updateTrackSource, updateTrackData)
+          }
+        >
+          <FormControlLabel
+            value="fromFile"
+            control={<Radio />}
+            label="From file"
+          />
+          <FormControlLabel
+            value="fromConfig"
+            control={<Radio />}
+            label="From configuration"
+          />
+        </RadioGroup>
+      </FormControl>
+      <Paper className={classes.paper}>
+        {getInputComponent(trackSource, trackData, updateTrackData)}
+      </Paper>
+    </div>
+  )
+}
 
-  getInputComponent(value) {
-    switch (value) {
-      case 'fromFile':
-        return <FileLocationEditor slot={fromFile.fileLocation} />
-      case 'fromConfig':
-        return <JsonEditor slot={fromConfig.configuration} />
-      default:
-        return <Typography>Unknown track source</Typography>
-    }
-  }
-
-  handleChange = event => {
-    const { updateTrackData } = this.props
-    this.setState({ value: event.target.value })
-    switch (event.target.value) {
-      case 'fromFile':
-        fromFile.fileLocation.set(fromFileDefault)
-        updateTrackData(fromFileDefault)
-        break
-      case 'fromConfig':
-        fromConfig.configuration.set(fromConfigDefault)
-        updateTrackData({ config: fromConfigDefault })
-        break
-      default:
-        break
-    }
-  }
-
-  render() {
-    const { value } = this.state
-    const { classes } = this.props
-    return (
-      <div className={classes.root}>
-        <FormControl component="fieldset">
-          <RadioGroup
-            aria-label="Data location"
-            value={value}
-            onChange={this.handleChange}
-          >
-            <FormControlLabel
-              value="fromFile"
-              control={<Radio />}
-              label="From file"
-            />
-            <FormControlLabel
-              value="fromConfig"
-              control={<Radio />}
-              label="From configuration"
-            />
-          </RadioGroup>
-        </FormControl>
-        <Paper className={classes.paper}>{this.getInputComponent(value)}</Paper>
-      </div>
-    )
-  }
+TrackSourceSelect.propTypes = {
+  trackSource: PropTypes.string.isRequired,
+  updateTrackSource: PropTypes.func.isRequired,
+  trackData: PropTypes.objectOf(PropTypes.any).isRequired,
+  updateTrackData: PropTypes.func.isRequired,
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
 export default withStyles(styles)(TrackSourceSelect)

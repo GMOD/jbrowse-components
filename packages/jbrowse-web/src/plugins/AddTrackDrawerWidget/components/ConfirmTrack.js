@@ -196,13 +196,17 @@ class ConfirmTrack extends React.Component {
     }).isRequired,
     trackName: PropTypes.string.isRequired,
     updateTrackName: PropTypes.func.isRequired,
-    trackType: PropTypes.string.isRequired,
+    trackType: PropTypes.string,
     updateTrackType: PropTypes.func.isRequired,
     trackAdapter: PropTypes.shape({
       type: PropTypes.string,
     }).isRequired,
     updateTrackAdapter: PropTypes.func.isRequired,
     rootModel: MobxPropTypes.observableObject.isRequired,
+  }
+
+  static defaultProps = {
+    trackType: '',
   }
 
   componentDidMount() {
