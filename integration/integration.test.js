@@ -6,7 +6,9 @@ test('JBrowse Web built', () => {
 })
 
 test('Protein Widget built', () => {
-  expect(fs.existsSync('packages/protein-widget/umd/jbrowse-protein-viewer.js')).toBeTruthy()
+  expect(
+    fs.existsSync('packages/protein-widget/umd/jbrowse-protein-viewer.js'),
+  ).toBeTruthy()
 })
 
 test('can import JBrowse Generator', () => {
