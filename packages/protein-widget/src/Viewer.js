@@ -11,6 +11,7 @@ import LinearGenomeViewPlugin from '../../jbrowse-web/src/plugins/LinearGenomeVi
 import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
 import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
 import { ConfigurationSchema } from '../../jbrowse-web/src/configuration'
+import '../../jbrowse-web/src/fonts/material-icons.css'
 
 const plugins = [
   FromConfigAdapterPlugin,

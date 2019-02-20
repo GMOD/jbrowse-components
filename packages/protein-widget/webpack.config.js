@@ -22,9 +22,9 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         // https://github.com/facebook/create-react-app/issues/2677
         ident: 'postcss',
         plugins: () => [
-          // eslint-disable-next-line global-require
+          // eslint-disable-next-line global-require, import/no-extraneous-dependencies
           require('postcss-flexbugs-fixes'),
-          // eslint-disable-next-line global-require
+          // eslint-disable-next-line global-require, import/no-extraneous-dependencies
           require('postcss-preset-env')({
             autoprefixer: {
               flexbox: 'no-2009',
@@ -46,6 +46,7 @@ module.exports = {
   entry: './src/Viewer.js',
   output: {
     path: path.resolve(__dirname, 'umd'),
+    publicPath: 'umd/',
     filename: 'jbrowse-protein-viewer.js',
     library: 'JBrowseProteinViewer',
     libraryTarget: 'umd',
@@ -53,36 +54,35 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-            plugins: ['@babel/plugin-proposal-class-properties'],
+        oneOf: [
+          {
+            test: /\.m?js$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env', '@babel/preset-react'],
+                plugins: ['@babel/plugin-proposal-class-properties'],
+              },
+            },
           },
-        },
-      },
-      {
-        test: /\.s?css$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-            plugins: ['@babel/plugin-proposal-class-properties'],
+          {
+            test: cssRegex,
+            use: getStyleLoaders({
+              importLoaders: 1,
+            }),
           },
-        },
-      },
-      {
-        test: cssRegex,
-        use: getStyleLoaders({
-          importLoaders: 1,
-        }),
-      },
-      {
-        test: sassRegex,
-        use: getStyleLoaders({ importLoaders: 2 }, 'sass-loader'),
+          {
+            test: sassRegex,
+            use: getStyleLoaders({ importLoaders: 2 }, 'sass-loader'),
+          },
+          {
+            loader: require.resolve('file-loader'),
+            exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
+          },
+          // ** STOP ** Are you adding a new loader?
+          // Make sure to add the new loader(s) before the "file" loader.
+        ],
       },
     ],
   },
