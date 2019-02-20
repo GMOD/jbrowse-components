@@ -10,49 +10,6 @@ const styles = {
     position: 'absolute',
   },
 }
-function getBp(px, model) {
-  const regions = model.displayedRegions
-  const bp = (model.offsetPx + px - model.controlsWidth) * model.bpPerPx + 1
-  let bpSoFar = 0
-  for (let i = 0; i < regions.length; i += 1) {
-    const region = regions[i]
-    if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
-      return Object.assign({}, region, { offset: bp - bpSoFar, index: i })
-    }
-    bpSoFar += region.end - region.start
-  }
-  return undefined
-}
-function navigateToLocation(start, end, model) {
-  // find locations in the modellist
-  let bpSoFar = 0
-  if (start.index === end.index) {
-    bpSoFar += end.offset - start.offset
-  } else {
-    bpSoFar += start.end - start.offset
-    bpSoFar += end.offset
-    if (end.index - start.index > 2) {
-      for (let i = start.index + 1; i < end.index - 1; i += 1) {
-        bpSoFar +=
-          model.displayedRegions[i].end - model.displayedRegions[i].start
-      }
-    }
-  }
-  let bpToStart = 0
-  for (let i = 0; i < model.displayedRegions.length; i += 1) {
-    const region = model.displayedRegions[i]
-    if (start.index === i) {
-      bpToStart += start.offset
-      break
-    } else {
-      bpToStart += region.end - region.start
-    }
-  }
-  const bpPerPx = bpSoFar / model.width
-  const offsetPx = bpToStart / bpPerPx
-  model.setNewView(bpPerPx, offsetPx)
-  return 0
-}
 
 class Rubberband extends Component {
   static defaultProps = {
@@ -83,10 +40,9 @@ class Rubberband extends Component {
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      const leftBp = getBp(leftPx, model)
-      const rightBp = getBp(rightPx, model)
-      navigateToLocation(leftBp, rightBp, model)
-      // model.zoomToThisLocation()
+      const leftOffset = model.pxToBp(leftPx)
+      const rightOffset = model.pxToBp(rightPx)
+      model.moveTo(leftOffset, rightOffset)
     }
     this.setState(() => ({
       rubberband: undefined,

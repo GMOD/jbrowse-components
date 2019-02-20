@@ -190,6 +190,58 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         )
       },
 
+      // input is a px in the view area, return value is the displayed regions
+      // that it lands in with format
+      pxToBp(px) {
+        const regions = self.displayedRegions
+        const bp = (self.offsetPx + px - self.controlsWidth) * self.bpPerPx + 1
+        let bpSoFar = 0
+        for (let i = 0; i < regions.length; i += 1) {
+          const region = regions[i]
+          if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
+            return Object.assign({}, region, { offset: bp - bpSoFar, index: i })
+          }
+          bpSoFar += region.end - region.start
+        }
+        return undefined
+      },
+
+      // start, end are objects with format {start, end, offset, index} where
+      // offset is the base-pair-offset in the displayed region, index is the index of the
+      // displayed region in the linear genome view
+      moveTo(start, end) {
+        // find locations in the modellist
+        let bpSoFar = 0
+        if (start.index === end.index) {
+          bpSoFar += end.offset - start.offset
+        } else {
+          bpSoFar += start.end - start.offset
+          bpSoFar += end.offset
+          if (end.index - start.index > 2) {
+            for (let i = start.index + 1; i < end.index - 1; i += 1) {
+              bpSoFar +=
+                self.displayedRegions[i].end - self.displayedRegions[i].start
+            }
+          }
+        }
+        let bpToStart = 0
+        for (let i = 0; i < self.displayedRegions.length; i += 1) {
+          const region = self.displayedRegions[i]
+          if (start.index === i) {
+            bpToStart += start.offset
+            break
+          } else {
+            bpToStart += region.end - region.start
+          }
+        }
+        const bpPerPx = clamp(
+          bpSoFar / self.width,
+          self.minBpPerPx,
+          self.maxBpPerPx,
+        )
+        self.bpPerPx = constrainBpPerPx(bpPerPx)
+        self.offsetPx = bpToStart / bpPerPx
+      },
       resizeTrack(trackId, distance) {
         const track = self.tracks.find(t => t.id === trackId)
         if (track) track.setHeight(track.height + distance)
