@@ -1,23 +1,26 @@
 import { createShallow, getClasses } from '@material-ui/core/test-utils'
 import React from 'react'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import DataHubDrawerWidget from './DataHubDrawerWidget'
 
 describe('<DataHubDrawerWidget />', () => {
   let shallow
   let classes
-  let jbrowse
-  let rootModel
+  let model
 
   beforeAll(async () => {
     shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
-    classes = getClasses(<DataHubDrawerWidget rootModel={rootModel} />)
-    jbrowse = await new JBrowse().configure({ configId: 'testing' })
-    rootModel = jbrowse.model
+    const { rootModel } = await createTestEnv({
+      configId: 'testing',
+      defaultSession: {},
+    })
+    rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
+    model = rootModel.drawerWidgets.get('dataHubDrawerWidget')
+    classes = getClasses(<DataHubDrawerWidget model={model} />)
   })
 
   it('renders', () => {
-    const wrapper = shallow(<DataHubDrawerWidget rootModel={rootModel} />)
+    const wrapper = shallow(<DataHubDrawerWidget model={model} />)
     expect(wrapper).toMatchSnapshot()
     expect(wrapper.hasClass(classes.root)).toBe(true)
     expect(wrapper.find('WithStyles(Stepper)').hasClass(classes.stepper)).toBe(
@@ -44,7 +47,7 @@ describe('<DataHubDrawerWidget />', () => {
   })
 
   it('can handle a custom UCSC URL', () => {
-    const wrapper = shallow(<DataHubDrawerWidget rootModel={rootModel} />)
+    const wrapper = shallow(<DataHubDrawerWidget model={model} />)
     expect(wrapper).toMatchSnapshot()
     const instance = wrapper.instance()
     instance.setHubType({ target: { value: 'ucsc' } })
@@ -66,7 +69,7 @@ describe('<DataHubDrawerWidget />', () => {
   })
 
   it('can handle a custom UCSC URL', () => {
-    const wrapper = shallow(<DataHubDrawerWidget rootModel={rootModel} />)
+    const wrapper = shallow(<DataHubDrawerWidget model={model} />)
     expect(wrapper).toMatchSnapshot()
     const instance = wrapper.instance()
     instance.setHubType({ target: { value: 'ucsc' } })

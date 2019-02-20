@@ -1,5 +1,4 @@
 import { createMount, createShallow } from '@material-ui/core/test-utils'
-import { Provider } from 'mobx-react'
 import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
@@ -32,11 +31,9 @@ describe('<AddTrackDrawerWidget />', () => {
 
   it('mounts', () => {
     const preWrap = mount(
-      <Provider rootModel={rootModel}>
-        <AddTrackDrawerWidget
-          model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
-        />
-      </Provider>,
+      <AddTrackDrawerWidget
+        model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
+      />,
     )
     const wrapper = preWrap.find('AddTrackDrawerWidget')
     expect(wrapper).toMatchSnapshot()

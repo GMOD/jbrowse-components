@@ -1,6 +1,5 @@
 import { transaction } from 'mobx'
 import {
-  getEnv,
   getRoot,
   isStateTreeNode,
   types,
@@ -79,7 +78,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
     )
     .views(self => ({
       get width() {
-        return getEnv(self).testEnv ? 800 : getRoot(self).viewsWidth
+        return getRoot(self).viewsWidth
       },
       get totalBlocksWidthPx() {
         return self.blocks.reduce((a, b) => a + b.widthPx, 0)

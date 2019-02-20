@@ -82,7 +82,7 @@ export default class PluginManager {
   }
 
   addPlugin(plugin) {
-    if (this.started)
+    if (this.configured)
       throw new Error('JBrowse already configured, cannot add plugins')
     if (this.plugins.includes(plugin))
       throw new Error(`plugin already installed`)

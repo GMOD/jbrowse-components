@@ -74,6 +74,7 @@ Object {
         "type": "MainMenuBar",
       },
     ],
+    "sessionName": "Volvox Example",
     "views": Array [
       Object {
         "bpPerPx": 0.05,

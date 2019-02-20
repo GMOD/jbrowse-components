@@ -1,64 +1,61 @@
-import { Provider } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import PluginManager from '../PluginManager'
-import RootModelFactory from '../rootModel'
 import App from './App'
+import { createTestEnv } from '../JBrowse'
 
 describe('jbrowse-web app', () => {
-  const pluginManager = new PluginManager()
   const div = document.createElement('div')
 
-  function render(model, mgr = pluginManager) {
+  function render(model, pluginManager) {
     ReactDOM.render(
-      <Provider rootModel={model}>
-        <App
-          getViewType={mgr.getViewType}
-          getDrawerWidgetType={mgr.getDrawerWidgetType}
-          getMenuBarType={mgr.getMenuBarType}
-        />
-      </Provider>,
+      <App
+        rootModel={model}
+        getViewType={pluginManager.getViewType}
+        getDrawerWidgetType={pluginManager.getDrawerWidgetType}
+        getMenuBarType={pluginManager.getMenuBarType}
+      />,
       div,
     )
     ReactDOM.unmountComponentAtNode(div)
   }
 
-  it('renders an empty model without crashing', () => {
-    const model = RootModelFactory({ pluginManager }).create()
-    expect(getSnapshot(model)).toMatchSnapshot({
+  it('renders an empty model without crashing', async () => {
+    const { rootModel, pluginManager } = await createTestEnv({
+      defaultSession: {},
+    })
+    expect(getSnapshot(rootModel)).toMatchSnapshot({
       configuration: {
         configId: expect.any(String),
       },
     })
-    render(model)
+    render(rootModel, pluginManager)
   })
 
-  it('accepts a custom drawer width', () => {
-    const model = RootModelFactory({ pluginManager }).create({
-      drawerWidth: 256,
+  it('accepts a custom drawer width', async () => {
+    const { rootModel, pluginManager } = await createTestEnv({
+      defaultSession: { drawerWidth: 256 },
     })
-    expect(model.drawerWidth).toBe(256)
-    expect(model.viewsWidth).toBe(512)
-    render(model)
+    expect(rootModel.drawerWidth).toBe(256)
+    expect(rootModel.viewsWidth).toBe(512)
+    render(rootModel, pluginManager)
   })
 
-  it('throws if drawer width is too small', () => {
-    expect(() =>
-      RootModelFactory({ pluginManager }).create({
-        drawerWidth: 50,
+  it('throws if drawer width is too small', async () => {
+    await expect(
+      createTestEnv({
+        defaultSession: { drawerWidth: 50 },
       }),
-    ).toThrow()
+    ).rejects.toThrow()
   })
 
-  it('shrinks a drawer width that is too big', () => {
-    const model = RootModelFactory({ pluginManager }).create({
-      width: 1024,
-      drawerWidth: 4096,
+  it('shrinks a drawer width that is too big', async () => {
+    const { rootModel, pluginManager } = await createTestEnv({
+      defaultSession: { width: 1024, drawerWidth: 256 },
     })
-    model.updateWidth(512)
-    expect(model.drawerWidth).toBe(256)
-    render(model)
+    rootModel.updateWidth(512)
+    expect(rootModel.drawerWidth).toBe(256)
+    render(rootModel, pluginManager)
   })
 
   // describe('restoring and rendering from snapshots', () => {

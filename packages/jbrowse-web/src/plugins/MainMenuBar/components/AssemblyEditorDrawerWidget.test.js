@@ -1,16 +1,15 @@
 import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import AssemblyEditorDrawerWidget from './AssemblyEditorDrawerWidget'
 
 describe('<AssemblyEditorDrawerWidget />', () => {
   let shallow
-  let jbrowse
-  let rootModel
+  let model
 
   beforeAll(async () => {
     shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
-    jbrowse = await new JBrowse().configure({
+    const { rootModel } = await createTestEnv({
       configId: 'testing',
       assemblies: {
         volvox: {
@@ -22,20 +21,20 @@ describe('<AssemblyEditorDrawerWidget />', () => {
         },
       },
     })
-    rootModel = jbrowse.model
+    rootModel.addDrawerWidget(
+      'HierarchicalTrackSelectorDrawerWidget',
+      'hierarchicalTrackSelectorDrawerWidget',
+    )
+    model = rootModel.drawerWidgets.get('hierarchicalTrackSelectorDrawerWidget')
   })
 
   it('renders', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
-    )
+    const wrapper = shallow(<AssemblyEditorDrawerWidget model={model} />)
     expect(wrapper).toMatchSnapshot()
   })
 
   it('opens and closes dialog on FAB click', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
-    )
+    const wrapper = shallow(<AssemblyEditorDrawerWidget model={model} />)
     const instance = wrapper.instance()
     const fabButton = wrapper.find('WithStyles(Fab)')
     // Click menu button to open
@@ -55,9 +54,7 @@ describe('<AssemblyEditorDrawerWidget />', () => {
   })
 
   it('opens and closes dialog on help click', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
-    )
+    const wrapper = shallow(<AssemblyEditorDrawerWidget model={model} />)
     const instance = wrapper.instance()
     const helpButton = wrapper.find('WithStyles(IconButton)')
     // Click menu button to open
@@ -77,9 +74,7 @@ describe('<AssemblyEditorDrawerWidget />', () => {
   })
 
   it('adds an assembly', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
-    )
+    const wrapper = shallow(<AssemblyEditorDrawerWidget model={model} />)
     const instance = wrapper.instance()
     instance.handleNewAssemblyChange({ target: { value: 'abc' } })
     expect(wrapper.state('newAssemblyName')).toBe('abc')

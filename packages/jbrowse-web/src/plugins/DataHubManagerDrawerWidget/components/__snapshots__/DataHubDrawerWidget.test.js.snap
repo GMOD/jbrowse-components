@@ -2,11 +2,11 @@
 
 exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
 <div
-  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+  className="DataHubDrawerWidget-root-1"
 >
   <WithStyles(Stepper)
     activeStep={0}
-    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    className="DataHubDrawerWidget-stepper-2"
     orientation="vertical"
   >
     <WithStyles(Step)
@@ -22,17 +22,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -56,17 +56,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -90,17 +90,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -124,17 +124,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -151,11 +151,11 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
 
 exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
 <div
-  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+  className="DataHubDrawerWidget-root-1"
 >
   <WithStyles(Stepper)
     activeStep={3}
-    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    className="DataHubDrawerWidget-stepper-2"
     orientation="vertical"
   >
     <WithStyles(Step)
@@ -165,24 +165,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub Type
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -200,24 +219,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub Source
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -235,24 +273,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Select a Data Hub
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -270,24 +327,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
         Confirm Selection
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -304,11 +380,11 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
 
 exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
 <div
-  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+  className="DataHubDrawerWidget-root-1"
 >
   <WithStyles(Stepper)
     activeStep={0}
-    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    className="DataHubDrawerWidget-stepper-2"
     orientation="vertical"
   >
     <WithStyles(Step)
@@ -324,17 +400,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -358,17 +434,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -392,17 +468,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -426,17 +502,17 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -453,11 +529,11 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
 
 exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
 <div
-  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+  className="DataHubDrawerWidget-root-1"
 >
   <WithStyles(Stepper)
     activeStep={3}
-    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    className="DataHubDrawerWidget-stepper-2"
     orientation="vertical"
   >
     <WithStyles(Step)
@@ -467,24 +543,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub Type
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -502,24 +597,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub Source
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -537,24 +651,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Select a Data Hub
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -572,24 +705,43 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
         Confirm Selection
       </WithStyles(StepLabel)>
       <WithStyles(StepContent)>
-        <WithStyles(inject-ConfirmationDialog-with-rootModel)
+        <WithStyles(ConfirmationDialog)
           assemblyName="testAssemblyName"
           enableNext={[Function]}
           hubName="testHubName"
+          rootModel={
+            Object {
+              "activeDrawerWidgets": Object {},
+              "configuration": Object {
+                "configId": "testing",
+              },
+              "drawerWidgets": Object {
+                "dataHubDrawerWidget": Object {
+                  "id": "dataHubDrawerWidget",
+                  "type": "DataHubDrawerWidget",
+                },
+              },
+              "drawerWidth": 384,
+              "menuBars": Array [],
+              "sessionName": "UnnamedSession",
+              "views": Array [],
+              "width": 512,
+            }
+          }
           trackDbUrl={"http://www.example.com/trackDb.txt"}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={false}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={false}
             onClick={[Function]}
@@ -606,11 +758,11 @@ exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
 
 exports[`<DataHubDrawerWidget /> renders 1`] = `
 <div
-  className="inject-DataHubDrawerWidget-with-rootModel-root-1"
+  className="DataHubDrawerWidget-root-1"
 >
   <WithStyles(Stepper)
     activeStep={0}
-    className="inject-DataHubDrawerWidget-with-rootModel-stepper-2"
+    className="DataHubDrawerWidget-stepper-2"
     orientation="vertical"
   >
     <WithStyles(Step)
@@ -626,17 +778,17 @@ exports[`<DataHubDrawerWidget /> renders 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -660,17 +812,17 @@ exports[`<DataHubDrawerWidget /> renders 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -694,17 +846,17 @@ exports[`<DataHubDrawerWidget /> renders 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}
@@ -728,17 +880,17 @@ exports[`<DataHubDrawerWidget /> renders 1`] = `
           setHubType={[Function]}
         />
         <div
-          className="inject-DataHubDrawerWidget-with-rootModel-actionsContainer-4"
+          className="DataHubDrawerWidget-actionsContainer-4"
         >
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             disabled={true}
             onClick={[Function]}
           >
             Back
           </WithStyles(Button)>
           <WithStyles(Button)
-            className="inject-DataHubDrawerWidget-with-rootModel-button-3"
+            className="DataHubDrawerWidget-button-3"
             color="primary"
             disabled={true}
             onClick={[Function]}

@@ -1,7 +1,7 @@
 import { types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
 import { TestStub as LinearGenomeModel } from '.'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types
@@ -31,12 +31,11 @@ test('can instantiate a mostly empty model and read a default configuration valu
 })
 
 it('can run configuration', async () => {
-  const jb = await new JBrowse().configure({
+  const { rootModel } = await createTestEnv({
     views: {
       LinearGenomeView: {},
     },
   })
-  const { model } = jb
-  const view = model.addView('LinearGenomeView')
+  const view = rootModel.addView('LinearGenomeView')
   view.activateConfigurationUI()
 })

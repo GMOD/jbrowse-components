@@ -52,6 +52,7 @@ function renderBlockEffect(
         self.setRendered(data, html, rendererType.ReactComponent, renderProps)
       })
       .catch(error => {
+        console.error(error)
         if (isAlive(self) && !inProgress.cancelled) self.setError(error)
       })
   } catch (error) {
@@ -109,7 +110,7 @@ export default types
       },
       setError(error) {
         // the rendering failed for some reason
-        console.error(error)
+        // console.error(error)
         self.error = error
       },
       beforeDetach() {

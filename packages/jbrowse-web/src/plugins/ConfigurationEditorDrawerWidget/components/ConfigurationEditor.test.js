@@ -5,7 +5,7 @@ import ConfigurationEditor from './ConfigurationEditor'
 import { ConfigurationSchema } from '../../../configuration'
 
 import AlignmentsTrackSchemaFactory from '../../AlignmentsTrack/configSchema'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 
 describe('ConfigurationEditor drawer widget', () => {
   it('renders with just the required model elements', () => {
@@ -83,10 +83,8 @@ describe('ConfigurationEditor drawer widget', () => {
   })
 
   it('renders with defaults of the AlignmentsTrack schema', async () => {
-    const jbrowse = await new JBrowse().configure()
-    const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(
-      jbrowse.pluginManager,
-    )
+    const { pluginManager } = await createTestEnv()
+    const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(pluginManager)
     const component = renderer.create(
       <ConfigurationEditor
         model={{ target: AlignmentsTrackSchema.create() }}

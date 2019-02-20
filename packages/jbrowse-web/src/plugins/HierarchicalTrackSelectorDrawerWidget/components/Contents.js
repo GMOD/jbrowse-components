@@ -12,7 +12,8 @@ import { withStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import { cancelIdleCallback, requestIdleCallback } from 'request-idle-callback'
@@ -124,7 +125,6 @@ const contentStyles = theme => ({
 class ContentsInner extends React.Component {
   static propTypes = {
     model: MobxPropTypes.observableObject.isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
     path: propTypes.arrayOf(propTypes.string),
     filterPredicate: propTypes.func,
     disabled: propTypes.bool,
@@ -184,14 +184,8 @@ class ContentsInner extends React.Component {
 
   render() {
     const { categories, trackConfigurations, doneLoading } = this.state
-    const {
-      model,
-      rootModel,
-      path,
-      filterPredicate,
-      disabled,
-      classes,
-    } = this.props
+    const { model, path, filterPredicate, disabled, classes } = this.props
+    const rootModel = getRoot(model)
     return (
       <>
         <FormGroup>
@@ -239,7 +233,5 @@ class ContentsInner extends React.Component {
   }
 }
 
-const Contents = withStyles(contentStyles)(
-  inject('rootModel')(observer(ContentsInner)),
-)
+const Contents = withStyles(contentStyles)(observer(ContentsInner))
 export default Contents

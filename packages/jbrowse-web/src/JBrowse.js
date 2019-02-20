@@ -20,6 +20,49 @@ import RootModelFactory from './rootModel'
 
 import WorkerManager from './WorkerManager'
 
+export async function createTestEnv(configSnapshot = {}) {
+  const { modelType, pluginManager } = createModelType([])
+  return {
+    ...(await createRootModel(modelType, configSnapshot)),
+    pluginManager,
+  }
+}
+
+function createModelType(workerGroups) {
+  const pluginManager = new PluginManager(corePlugins)
+  const workerManager = new WorkerManager()
+  workerManager.addWorkers(workerGroups)
+  pluginManager.configure()
+  const modelType = RootModelFactory(pluginManager, workerManager)
+  return { modelType, pluginManager }
+}
+
+async function createRootModel(modelType, config) {
+  let configSnapshot
+  if (config.uri || config.localPath) {
+    try {
+      configSnapshot = JSON.parse(
+        new TextDecoder('utf-8').decode(await openLocation(config).readFile()),
+      )
+    } catch (error) {
+      console.error('Failed to load config ', error)
+      throw error
+    }
+  } else configSnapshot = config
+
+  const {
+    defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
+  } = configSnapshot
+  const { sessionName = `Unnamed Session ${shortid.generate}` } = defaultSession
+  return {
+    sessionName,
+    rootModel: modelType.create({
+      ...defaultSession,
+      configuration: configSnapshot,
+    }),
+  }
+}
+
 // the main class used to configure and start a new JBrowse app
 class JBrowse extends React.Component {
   static propTypes = {
@@ -33,99 +76,44 @@ class JBrowse extends React.Component {
 
   state = {
     pluginManager: undefined,
-    workerManager: undefined,
-    modelType: undefined,
     sessions: undefined,
     activeSession: undefined,
-    configured: false,
   }
 
   async componentDidMount() {
     const { configs, workerGroups } = this.props
-    const pluginManager = new PluginManager(corePlugins)
-    const workerManager = new WorkerManager()
-    workerManager.addWorkers(workerGroups)
-    pluginManager.configure()
-    const modelType = RootModelFactory(pluginManager, workerManager)
+    const { modelType, pluginManager } = createModelType(workerGroups)
 
     const sessions = new Map()
     let activeSession
     for (const config of configs) {
-      let configSnapshot
-      if (config.uri || config.localPath) {
-        try {
-          configSnapshot = JSON.parse(
-            new TextDecoder('utf-8').decode(
-              // eslint-disable-next-line no-await-in-loop
-              await openLocation(config).readFile(),
-            ),
-          )
-        } catch (error) {
-          console.error('Failed to load config ', error)
-          throw error
-        }
-      } else configSnapshot = config
-
-      const {
-        defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
-      } = configSnapshot
-      const {
-        sessionName = `Unnamed Session ${shortid.generate()}`,
-      } = defaultSession
-      if (!activeSession) activeSession = sessionName
-      sessions.set(
-        sessionName,
-        modelType.create({
-          ...defaultSession,
-          configuration: configSnapshot,
-        }),
-      )
-
-      const configured = true
-      this.setState({
-        pluginManager,
-        workerManager,
+      // eslint-disable-next-line no-await-in-loop
+      const { sessionName, rootModel } = await createRootModel(
         modelType,
-        sessions,
-        activeSession,
-        configured,
-      })
-
-      // poke some things for testing (this stuff will eventually be removed)
-      window.getSnapshot = getSnapshot
-      window.resolveIdentifier = resolveIdentifier
+        config,
+      )
+      if (!activeSession) activeSession = sessionName
+      sessions.set(sessionName, rootModel)
     }
+
+    this.setState({
+      pluginManager,
+      sessions,
+      activeSession,
+    })
+
+    // poke some things for testing (this stuff will eventually be removed)
+    window.getSnapshot = getSnapshot
+    window.resolveIdentifier = resolveIdentifier
   }
 
   setSession = sessionName => {
     this.setState({ activeSession: sessionName })
   }
 
-  addPlugin(plugin) {
-    // just delegates to the plugin manager
-    this.pluginManager.addPlugin(plugin)
-    return this
-  }
-
   render() {
-    const {
-      pluginManager,
-      workerManager,
-      modelType,
-      sessions,
-      activeSession,
-      configured,
-    } = this.state
-    if (
-      !(
-        pluginManager &&
-        workerManager &&
-        modelType &&
-        sessions &&
-        activeSession &&
-        configured
-      )
-    )
+    const { pluginManager, sessions, activeSession } = this.state
+    if (!(pluginManager && sessions && activeSession))
       return <div>loading...</div>
 
     // poke some things for testing (this stuff will eventually be removed)

@@ -1,9 +1,9 @@
-import JBrowse from './JBrowse'
+import { createTestEnv } from './JBrowse'
 import { renderRegion, freeResources } from './render.worker'
 
-let jbrowse
+let pluginManager
 beforeAll(async () => {
-  jbrowse = await new JBrowse().configure()
+  ;({ pluginManager } = await createTestEnv())
 })
 
 const baseprops = {
@@ -31,7 +31,7 @@ const baseprops = {
 test('can render a single region with Pileup + BamAdapter', async () => {
   const testprops = { ...baseprops, rendererType: 'PileupRenderer' }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
@@ -44,13 +44,13 @@ test('can render a single region with Pileup + BamAdapter', async () => {
   expect(result.height).toBe(result.layout.totalHeight)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -63,7 +63,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
     region: { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 300 },
   }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['html', 'features', 'layout']),
   )
@@ -72,13 +72,13 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   expect(result.layout).toMatchSnapshot()
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -92,7 +92,7 @@ test('can regularize an assembly name from an alias', async () => {
     rootConfig: { assemblies: { volvox: { aliases: ['vvx'] } } },
   }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
@@ -105,13 +105,13 @@ test('can regularize an assembly name from an alias', async () => {
   expect(result.height).toBe(result.layout.totalHeight)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -125,7 +125,7 @@ test('can regularize an assembly name to an alias', async () => {
     rootConfig: { assemblies: { vvx: { aliases: ['volvox'] } } },
   }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
@@ -138,13 +138,13 @@ test('can regularize an assembly name to an alias', async () => {
   expect(result.height).toBe(result.layout.totalHeight)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -162,7 +162,7 @@ test('can regularize a reference sequence name from an alias', async () => {
     },
   }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
@@ -175,13 +175,13 @@ test('can regularize a reference sequence name from an alias', async () => {
   expect(result.height).toBe(result.layout.totalHeight)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -199,7 +199,7 @@ test('can regularize a reference sequence name to an alias', async () => {
     },
   }
 
-  const result = await renderRegion(jbrowse.pluginManager, testprops)
+  const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
@@ -212,13 +212,13 @@ test('can regularize a reference sequence name to an alias', async () => {
   expect(result.height).toBe(result.layout.totalHeight)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'knickers the cow',
     }),
   ).toBe(2)
 
   expect(
-    freeResources(jbrowse.pluginManager, {
+    freeResources(pluginManager, {
       sessionId: 'fozzy bear',
     }),
   ).toBe(0)
@@ -231,7 +231,7 @@ test('throws if no session ID', async () => {
     sessionId: undefined,
   }
 
-  await expect(renderRegion(jbrowse.pluginManager, testprops)).rejects.toThrow(
+  await expect(renderRegion(pluginManager, testprops)).rejects.toThrow(
     /must pass a unique session id/,
   )
 })
@@ -242,7 +242,7 @@ test('throws on unrecoginze worker', async () => {
     rendererType: 'NonexistentRenderer',
   }
 
-  await expect(renderRegion(jbrowse.pluginManager, testprops)).rejects.toThrow(
+  await expect(renderRegion(pluginManager, testprops)).rejects.toThrow(
     /renderer "NonexistentRenderer" not found/,
   )
 })

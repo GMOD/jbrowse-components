@@ -9,7 +9,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import { Category } from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
 const supportedTrackTypes = [
@@ -211,8 +211,7 @@ class ConfirmationDialog extends React.Component {
     for (const trackType of unsupportedTrackTypes) {
       const tracks = this.generateTracks(trackDb, trackType)
       // eslint-disable-next-line no-await-in-loop
-      const jbrowse = await new JBrowse().configure()
-      const { model: rootModel } = jbrowse
+      const { rootModel } = await createTestEnv()
       this.addTracksToModel(tracks, rootModel)
       const firstView = rootModel.addView('LinearGenomeView')
       firstView.activateTrackSelector()

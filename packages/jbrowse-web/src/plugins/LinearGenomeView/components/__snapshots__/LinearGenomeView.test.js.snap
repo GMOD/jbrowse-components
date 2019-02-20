@@ -12,7 +12,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px",
         "height": "55px",
-        "width": "800px",
+        "width": "512px",
       }
     }
   >
@@ -140,7 +140,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           "gridColumn": "blocks",
           "gridRow": "scale-bar",
           "height": "32px",
-          "width": "700px",
+          "width": "412px",
         }
       }
     />
@@ -337,7 +337,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
-        foo
+        Foo Track
       </p>
       <span
         className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
@@ -352,20 +352,26 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-foo",
-          "width": "700px",
+          "width": "412px",
         }
       }
     >
       <div
-        className="TrackRenderingNotImplemented"
+        className="BlockBasedTrack-track-94"
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseMove={[Function]}
+        onMouseUp={[Function]}
+        onWheel={[Function]}
+        role="presentation"
       >
-        Rendering not implemented for 
-        tester
-         tracks
+        <div
+          className="TrackBlocks-trackBlocks-95"
+        />
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -394,7 +400,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px",
         "height": "78px",
-        "width": "800px",
+        "width": "512px",
       }
     }
   >
@@ -522,12 +528,12 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           "gridColumn": "blocks",
           "gridRow": "scale-bar",
           "height": "32px",
-          "width": "700px",
+          "width": "412px",
         }
       }
     >
       <div
-        className="Block-block-95 Block-leftBorder-96 Block-rightBorder-97"
+        className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
         style={
           Object {
             "left": "0px",
@@ -540,7 +546,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           width={100}
         >
           <line
-            className="Ruler-majorTick-99"
+            className="Ruler-majorTick-101"
             data-bp={-1}
             stroke="#555"
             strokeWidth={1}
@@ -550,7 +556,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-100"
+            className="Ruler-minorTick-102"
             data-bp={19}
             stroke="#999"
             strokeWidth={1}
@@ -560,7 +566,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-100"
+            className="Ruler-minorTick-102"
             data-bp={39}
             stroke="#999"
             strokeWidth={1}
@@ -570,7 +576,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-100"
+            className="Ruler-minorTick-102"
             data-bp={59}
             stroke="#999"
             strokeWidth={1}
@@ -580,7 +586,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-minorTick-100"
+            className="Ruler-minorTick-102"
             data-bp={79}
             stroke="#999"
             strokeWidth={1}
@@ -590,7 +596,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <line
-            className="Ruler-majorTick-99"
+            className="Ruler-majorTick-101"
             data-bp={99}
             stroke="#555"
             strokeWidth={1}
@@ -600,7 +606,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={6}
           />
           <line
-            className="Ruler-minorTick-100"
+            className="Ruler-minorTick-102"
             data-bp={119}
             stroke="#999"
             strokeWidth={1}
@@ -610,7 +616,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             y2={4}
           />
           <text
-            className="Ruler-majorTickLabel-98"
+            className="Ruler-majorTickLabel-100"
             dominantBaseline="hanging"
             style={
               Object {
@@ -623,7 +629,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             0
           </text>
           <text
-            className="Ruler-majorTickLabel-98"
+            className="Ruler-majorTickLabel-100"
             dominantBaseline="hanging"
             style={
               Object {
@@ -836,7 +842,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
-        foo
+        Foo Track
       </p>
       <span
         className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
@@ -851,20 +857,40 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-foo",
-          "width": "700px",
+          "width": "412px",
         }
       }
     >
       <div
-        className="TrackRenderingNotImplemented"
+        className="BlockBasedTrack-track-94"
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseMove={[Function]}
+        onMouseUp={[Function]}
+        onWheel={[Function]}
+        role="presentation"
       >
-        Rendering not implemented for 
-        tester
-         tracks
+        <div
+          className="TrackBlocks-trackBlocks-95"
+        >
+          <div
+            className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
+            style={
+              Object {
+                "left": "0px",
+                "width": "100px",
+              }
+            }
+          >
+            <div>
+              Loading ...
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -929,7 +955,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       <p
         className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
       >
-        bar
+        Bar Track
       </p>
       <span
         className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
@@ -944,20 +970,40 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-bar",
-          "width": "700px",
+          "width": "412px",
         }
       }
     >
       <div
-        className="TrackRenderingNotImplemented"
+        className="BlockBasedTrack-track-94"
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseMove={[Function]}
+        onMouseUp={[Function]}
+        onWheel={[Function]}
+        role="presentation"
       >
-        Rendering not implemented for 
-        tester
-         tracks
+        <div
+          className="TrackBlocks-trackBlocks-95"
+        >
+          <div
+            className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
+            style={
+              Object {
+                "left": "0px",
+                "width": "100px",
+              }
+            }
+          >
+            <div>
+              Loading ...
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -986,7 +1032,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         "gridTemplateColumns": "[controls] 100px [blocks] auto",
         "gridTemplateRows": "[scale-bar] auto ",
         "height": "32px",
-        "width": "800px",
+        "width": "512px",
       }
     }
   >
@@ -1114,7 +1160,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           "gridColumn": "blocks",
           "gridRow": "scale-bar",
           "height": "32px",
-          "width": "700px",
+          "width": "412px",
         }
       }
     />
