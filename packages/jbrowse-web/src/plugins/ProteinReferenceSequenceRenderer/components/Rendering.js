@@ -35,9 +35,8 @@ function Sequence({
             key={`${region.start}-${iter}`}
             transform={`translate(${left}, 0)`}
           >
-            <rect x={0} y={0} width={letterWidth} height={height} fill={fill}>
-              <title>{getTitleForLetter(letter)}</title>
-            </rect>
+            <title>{getTitleForLetter(letter)}</title>
+            <rect x={0} y={0} width={letterWidth} height={height} fill={fill} />
             {letterWidth < height * 0.8 ? null : (
               <text
                 textAnchor="middle"
