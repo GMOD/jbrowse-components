@@ -140,7 +140,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style={
         Object {
           "cursor": "crosshair",
-          "zIndex": 999,
         }
       }
     >
@@ -148,8 +147,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         className="ScaleBar-scaleBar-31"
         style={
           Object {
-            "gridColumn": "blocks",
-            "gridRow": "scale-bar",
             "height": "32px",
             "width": "700px",
           }
@@ -495,7 +492,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style={
         Object {
           "cursor": "crosshair",
-          "zIndex": 999,
         }
       }
     >
@@ -503,8 +499,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         className="ScaleBar-scaleBar-31"
         style={
           Object {
-            "gridColumn": "blocks",
-            "gridRow": "scale-bar",
             "height": "32px",
             "width": "700px",
           }
@@ -1020,7 +1014,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       style={
         Object {
           "cursor": "crosshair",
-          "zIndex": 999,
         }
       }
     >
@@ -1028,8 +1021,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         className="ScaleBar-scaleBar-31"
         style={
           Object {
-            "gridColumn": "blocks",
-            "gridRow": "scale-bar",
             "height": "32px",
             "width": "700px",
           }

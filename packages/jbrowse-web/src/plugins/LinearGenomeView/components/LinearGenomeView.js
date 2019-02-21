@@ -123,18 +123,14 @@ function LinearGenomeView(props) {
           style={{
             gridColumn: 'blocks',
             gridRow: 'scale-bar',
+            zIndex: 999,
           }}
           offsetPx={visibleBlocksOffsetPx}
-          realOffsetPx={offsetPx}
           blocks={blocks}
           bpPerPx={bpPerPx}
           model={model}
         >
           <ScaleBar
-            style={{
-              gridColumn: 'blocks',
-              gridRow: 'scale-bar',
-            }}
             height={scaleBarHeight}
             bpPerPx={bpPerPx}
             blocks={blocks}

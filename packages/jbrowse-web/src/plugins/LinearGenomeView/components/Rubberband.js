@@ -80,7 +80,7 @@ class Rubberband extends Component {
       <div
         onMouseDown={this.onMouseDown}
         role="presentation"
-        style={{ cursor: 'crosshair', zIndex: 999 }}
+        style={{ cursor: 'crosshair' }}
       >
         {rubberband ? (
           <div
