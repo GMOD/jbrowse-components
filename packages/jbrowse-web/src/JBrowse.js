@@ -75,6 +75,7 @@ class JBrowse extends React.Component {
   }
 
   state = {
+    modelType: undefined,
     pluginManager: undefined,
     sessions: undefined,
     activeSession: undefined,
@@ -97,6 +98,7 @@ class JBrowse extends React.Component {
     }
 
     this.setState({
+      modelType,
       pluginManager,
       sessions,
       activeSession,
@@ -111,9 +113,15 @@ class JBrowse extends React.Component {
     this.setState({ activeSession: sessionName })
   }
 
+  addSession = async config => {
+    const { modelType, sessions } = this.state
+    const { sessionName, rootModel } = await createRootModel(modelType, config)
+    sessions.set(sessionName, rootModel)
+  }
+
   render() {
-    const { pluginManager, sessions, activeSession } = this.state
-    if (!(pluginManager && sessions && activeSession))
+    const { modelType, pluginManager, sessions, activeSession } = this.state
+    if (!(modelType && pluginManager && sessions && activeSession))
       return <div>loading...</div>
 
     // poke some things for testing (this stuff will eventually be removed)
