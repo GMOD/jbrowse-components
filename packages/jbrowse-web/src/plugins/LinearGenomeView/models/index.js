@@ -196,10 +196,14 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         const regions = self.displayedRegions
         const bp = (self.offsetPx + px - self.controlsWidth) * self.bpPerPx + 1
         let bpSoFar = 0
-        for (let i = 0; i < regions.length; i += 1) {
-          const region = regions[i]
+
+        for (let index = 0; index < regions.length; index += 1) {
+          const region = regions[index]
           if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
-            return Object.assign({}, region, { offset: bp - bpSoFar, index: i })
+            return Object.assign({}, region, {
+              offset: Math.round(bp - bpSoFar),
+              index,
+            })
           }
           bpSoFar += region.end - region.start
         }
@@ -215,14 +219,15 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          bpSoFar += start.end - start.offset
-          bpSoFar += end.offset
+          const s = self.displayedRegions[start.index]
+          bpSoFar += s.end - start.offset
           if (end.index - start.index > 2) {
             for (let i = start.index + 1; i < end.index - 1; i += 1) {
               bpSoFar +=
                 self.displayedRegions[i].end - self.displayedRegions[i].start
             }
           }
+          bpSoFar += end.offset
         }
         let bpToStart = 0
         for (let i = 0; i < self.displayedRegions.length; i += 1) {
@@ -234,13 +239,12 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        const bpPerPx = clamp(
+        self.bpPerPx = clamp(
           bpSoFar / self.width,
           self.minBpPerPx,
           self.maxBpPerPx,
         )
-        self.bpPerPx = constrainBpPerPx(bpPerPx)
-        self.offsetPx = bpToStart / bpPerPx
+        self.offsetPx = bpToStart / self.bpPerPx
       },
       resizeTrack(trackId, distance) {
         const track = self.tracks.find(t => t.id === trackId)
