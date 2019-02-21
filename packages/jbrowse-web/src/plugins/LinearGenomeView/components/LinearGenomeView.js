@@ -7,6 +7,7 @@ import React from 'react'
 
 import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 import ScaleBar from './ScaleBar'
+import Rubberband from './Rubberband'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
@@ -117,19 +118,33 @@ function LinearGenomeView(props) {
             </>
           )}
         </div>
-        <ScaleBar
-          style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
-          height={scaleBarHeight}
-          bpPerPx={bpPerPx}
-          blocks={blocks}
+
+        <Rubberband
+          style={{
+            gridColumn: 'blocks',
+            gridRow: 'scale-bar',
+            zIndex: 999,
+          }}
           offsetPx={visibleBlocksOffsetPx}
-          horizontallyFlipped={model.horizontallyFlipped}
-          width={width - controlsWidth}
-        />
+          blocks={blocks}
+          bpPerPx={bpPerPx}
+          model={model}
+        >
+          <ScaleBar
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={blocks}
+            offsetPx={visibleBlocksOffsetPx}
+            horizontallyFlipped={model.horizontallyFlipped}
+            width={width - controlsWidth}
+          />
+        </Rubberband>
+
         <div
           className={classes.zoomControls}
           style={{
             right: 4,
+            zIndex: 1000,
           }}
         >
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />
