@@ -24,7 +24,9 @@ class Rubberband extends Component {
 
   state = {}
 
-  onMouseDown = ({ clientX }) => {
+  onMouseDown = event => {
+    event.preventDefault()
+    const { clientX } = event
     this.setState({
       rubberband: [clientX, clientX + 1],
     })

@@ -12,7 +12,6 @@ const styles = (/* theme */) => ({
     textAlign: 'left',
     width: '100%',
     position: 'relative',
-    userSelect: 'none',
     background: '#555',
     // background: theme.palette.background.default,
     overflow: 'hidden',
