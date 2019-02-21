@@ -10,7 +10,6 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { getSnapshot } from 'mobx-state-tree'
 import { withSize } from 'react-sizeme'
 import { Scrollbars } from 'react-custom-scrollbars'
 
@@ -165,17 +164,7 @@ class App extends Component {
             })}
             <button
               type="button"
-              onClick={() =>
-                rootModel.addView(
-                  'LinearGenomeView',
-                  {},
-                  {
-                    displayedRegions: getSnapshot(
-                      rootModel.views[0].displayedRegions,
-                    ),
-                  },
-                )
-              }
+              onClick={() => rootModel.addView('LinearGenomeView', {})}
             >
               Add linear view
             </button>

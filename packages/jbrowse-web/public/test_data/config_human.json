@@ -90,7 +90,7 @@
             "configuration": "kgGeu2G_P"
           }
         ],
-        "displayedRegions": [
+        "displayedRegionsOverride": [
           {
             "assemblyName": "hg38",
             "refName": "chr1",

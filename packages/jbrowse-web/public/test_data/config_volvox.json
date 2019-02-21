@@ -179,6 +179,24 @@
           "ctgB",
           "contigB"
         ]
+      },
+      "sequence": {
+        "type": "FromFile",
+        "adapter": {
+          "configId": "t17b5y_Ydj",
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "/test_data/volvox.2bit"
+          },
+          "assemblyName": "volvox"
+        },
+        "rendering": {
+          "configId": "71P5Lys28o",
+          "type": "DivSequenceRenderer"
+        },
+        "sizes": {
+          "chr1": 500000
+        }
       }
     }
   },
@@ -227,7 +245,7 @@
             "configuration": "XqNsoIRXi3"
           }
         ],
-        "displayedRegions": [
+        "displayedRegionsOverrides": [
           {
             "assemblyName": "vvx",
             "refName": "contigA",
@@ -258,7 +276,7 @@
             "configuration": "PDWVXl3526"
           }
         ],
-        "displayedRegions": [
+        "displayedRegionsOverride": [
           {
             "assemblyName": "volvox",
             "refName": "ctgA",

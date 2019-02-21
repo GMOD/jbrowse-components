@@ -10,6 +10,7 @@ function isValidColorString(/* str */) {
 const typeModels = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
+  numberMap: types.map(types.number),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
   integer: types.integer,
@@ -22,6 +23,8 @@ const typeModels = {
 // default values we use if the defaultValue is malformed or does not work
 const fallbackDefaults = {
   stringArray: [],
+  stringArrayMap: {},
+  numberMap: {},
   boolean: true,
   color: 'black',
   integer: 1,

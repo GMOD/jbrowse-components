@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
 import { ElementId } from '../../mst-types'
-import { Assembly } from '../../rootModel'
+import { assemblyFactory } from '../../rootModel'
 
 export default pluginManager =>
   types
@@ -11,7 +11,7 @@ export default pluginManager =>
         types.union(
           pluginManager.pluggableConfigSchemaType('track'),
           pluginManager.pluggableConfigSchemaType('view'),
-          Assembly,
+          assemblyFactory(pluginManager),
         ),
       ),
     })

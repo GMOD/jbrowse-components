@@ -14,6 +14,20 @@ useStaticRendering(true)
 const jbPluginManager = new PluginManager(corePlugins)
 jbPluginManager.configure()
 
+export async function getRegions(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig, rootConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rootConfig,
+  )
+  return dataAdapter.getRegions()
+}
+
 /**
  * free up any resources (e.g. cached adapter objects)
  * that are only associated with the given track ID.
@@ -113,6 +127,7 @@ function wrapForRpc(func) {
 
 // eslint-disable-next-line no-restricted-globals
 self.rpcServer = new RpcServer.Server({
+  getRegions: wrapForRpc(getRegions),
   renderRegion: wrapForRpc(renderRegion),
   freeResources: wrapForRpc(freeResources),
 })

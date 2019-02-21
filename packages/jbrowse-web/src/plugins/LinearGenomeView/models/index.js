@@ -1,21 +1,27 @@
+import Rpc from '@librpc/web'
 import { transaction } from 'mobx'
 import {
+  flow,
+  getParent,
   getRoot,
+  getType,
   isStateTreeNode,
   types,
-  getType,
-  getParent,
+  getSnapshot,
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
-import { clamp } from '../../../util'
-import PluginManager from '../../../PluginManager'
 import TrackType from '../../../pluggableElementTypes/TrackType'
-
-import LinearGenomeViewConfigSchema from './configSchema'
-
+import PluginManager from '../../../PluginManager'
+import { clamp } from '../../../util'
 import BaseTrack from './baseTrack'
 import calculateBlocks from './calculateBlocks'
+import LinearGenomeViewConfigSchema from './configSchema'
+
+const getClient = workerManager =>
+  new Rpc.Client({
+    workers: workerManager.getWorkerGroup('render'),
+  })
 
 const validBpPerPx = [
   0.05,
@@ -54,8 +60,6 @@ const ViewStateBase = types.model({
   id: ElementId,
 })
 
-const minBpPerPx = 0.03
-
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
     .compose(
@@ -72,7 +76,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         controlsWidth: 120,
-        displayedRegions: types.array(Region),
+        displayedRegionsOverride: types.array(Region),
         configuration: LinearGenomeViewConfigSchema,
       }),
     )
@@ -92,7 +96,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         return constrainBpPerPx(totalbp / displayWidth)
       },
       get minBpPerPx() {
-        return constrainBpPerPx(minBpPerPx)
+        return constrainBpPerPx(0)
       },
 
       /**
@@ -105,8 +109,58 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       get horizontallyFlipped() {
         return getConf(self, 'reversed')
       },
+      get displayedRegions() {
+        if (self.displayedRegionsOverride.length)
+          return self.displayedRegionsOverride
+        return self.defaultDisplayedRegions
+      },
+    }))
+    .volatile(() => ({
+      defaultDisplayedRegions: [],
     }))
     .actions(self => ({
+      afterCreate() {
+        this.fetchDisplayedRegions()
+      },
+
+      fetchDisplayedRegions: flow(function* fetchProjects() {
+        const rootModel = getRoot(self)
+        const { workerManager, configuration: rootConfig } = rootModel
+        const regions = []
+        for (const [assemblyName, assembly] of rootConfig.assemblies) {
+          if (assembly.sequence.type === 'FromSizes') {
+            const sizes = readConfObject(assembly.sequence, 'sizes')
+            Object.keys(sizes).forEach(refName =>
+              regions.push({
+                assemblyName,
+                refName,
+                start: 0,
+                end: sizes[refName],
+              }),
+            )
+          } else if (assembly.sequence.type === 'FromFile') {
+            const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+            try {
+              regions.push(
+                ...(yield getClient(workerManager).call(
+                  'getRegions',
+                  {
+                    sessionId: 'abcd',
+                    adapterType: adapterConfig.type,
+                    adapterConfig,
+                    rootConfig: getSnapshot(rootConfig),
+                  },
+                  { timeout: 1000000 },
+                )),
+              )
+            } catch (error) {
+              console.error('Failed to fetch sequence', error)
+            }
+          }
+          self.defaultDisplayedRegions = regions
+        }
+      }),
+
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')

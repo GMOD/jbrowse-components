@@ -4,20 +4,50 @@ import { flow, getRoot, getType, types } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import { isConfigurationModel } from './configuration/configurationSchema'
 import { openLocation } from './util/io'
+import DivSequenceRendererConfigurationSchema from './plugins/DivSequenceRenderer/configSchema'
 
-export const Assembly = ConfigurationSchema('Assembly', {
-  aliases: {
-    type: 'stringArray',
-    defaultValue: [],
-    description: 'Other possible names for this assembly',
+function assemblyAdapterConfigSchemaFactory(pluginManager) {
+  return ConfigurationSchema(
+    'FromFile',
+    {
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      rendering: DivSequenceRendererConfigurationSchema,
+    },
+    { explicitlyTyped: true },
+  )
+}
+
+const SizesConfigSchema = ConfigurationSchema(
+  'FromSizes',
+  {
+    sizes: {
+      type: 'numberMap',
+      defaultValue: {},
+      description: 'Names and sizes of sequences',
+    },
   },
-  seqNameAliases: {
-    type: 'stringArrayMap',
-    defaultValue: {},
-    description:
-      'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
-  },
-})
+  { explicitlyTyped: true },
+)
+
+export function assemblyFactory(pluginManager) {
+  return ConfigurationSchema('Assembly', {
+    sequence: types.union(
+      assemblyAdapterConfigSchemaFactory(pluginManager),
+      SizesConfigSchema,
+    ),
+    aliases: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'Other possible names for this assembly',
+    },
+    seqNameAliases: {
+      type: 'stringArrayMap',
+      defaultValue: {},
+      description:
+        'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
+    },
+  })
+}
 
 export default (pluginManager, workerManager) => {
   const minWidth = 384
@@ -53,7 +83,7 @@ export default (pluginManager, workerManager) => {
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
 
           // A map of assembly name -> assembly details
-          assemblies: types.map(Assembly),
+          assemblies: types.map(assemblyFactory(pluginManager)),
           defaultSession: {
             type: 'frozen',
             defaultValue: null,
@@ -75,7 +105,7 @@ export default (pluginManager, workerManager) => {
             addAssembly(assemblyName, aliases = [], seqNameAliases = {}) {
               self.assemblies.set(
                 assemblyName,
-                Assembly.create({
+                assemblyFactory(pluginManager).create({
                   configId: assemblyName,
                   aliases,
                   seqNameAliases,
