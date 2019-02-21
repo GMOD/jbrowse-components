@@ -124,6 +124,37 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.bpPerPx).toEqual(2.5)
 })
 
+test('can instantiate a model that >2 regions', () => {
+  const root = types
+    .model({
+      view: types.maybe(LinearGenomeModel),
+    })
+    .actions(self => ({
+      setView(view) {
+        self.view = view
+        return view
+      },
+    }))
+    .create({
+      config: {},
+    })
+
+  const model = root.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      controlsWidth: 0,
+      displayedRegions: [
+        { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
+        { start: 0, end: 10000, refName: 'ctgB', assemblyName: 'volvox' },
+        { start: 0, end: 10000, refName: 'ctgC', assemblyName: 'volvox' },
+      ],
+      configuration: {},
+    }),
+  )
+  model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
+  expect(model.bpPerPx).toEqual(12.5)
+})
 it('can run configuration', () => {
   const jb = new JBrowse().configure({
     views: {

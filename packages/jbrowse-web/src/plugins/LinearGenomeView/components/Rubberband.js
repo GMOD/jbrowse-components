@@ -40,9 +40,11 @@ class Rubberband extends Component {
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      const leftOffset = model.pxToBp(leftPx)
-      const rightOffset = model.pxToBp(rightPx)
-      model.moveTo(leftOffset, rightOffset)
+      if (rightPx - leftPx > 3) {
+        const leftOffset = model.pxToBp(leftPx)
+        const rightOffset = model.pxToBp(rightPx)
+        model.moveTo(leftOffset, rightOffset)
+      }
     }
     this.setState(() => ({
       rubberband: undefined,
