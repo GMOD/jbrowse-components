@@ -33,7 +33,6 @@ describe('LinearGenomeView genome view component', () => {
         type: 'LinearGenomeView',
         offsetPx: 0,
         bpPerPx: 1,
-        blocks: [],
         tracks: [
           {
             id: 'foo',

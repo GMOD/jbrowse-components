@@ -14,8 +14,19 @@ export default types.compose(
   types
     .model({
       blockState: types.map(BlockState),
+      blockType: types.optional(
+        types.enumeration(['staticBlocks', 'dynamicBlocks']),
+        'staticBlocks',
+      ),
     })
     .views(self => ({
+      /**
+       * get an array of the viewing blocks that should be shown
+       */
+      get blockDefinitions() {
+        return getContainingView(self)[self.blockType]
+      },
+
       /**
        * a CompositeMap of featureId -> feature obj that
        * just looks in all the block data for that feature
@@ -31,14 +42,15 @@ export default types.compose(
     }))
     .actions(self => ({
       afterAttach() {
-        const view = getContainingView(self)
         // watch the parent's blocks to update our block state when they change
         const blockWatchDisposer = autorun(() => {
           // create any blocks that we need to create
           const blocksPresent = {}
-          view.blocks.forEach(block => {
+          self.blockDefinitions.forEach(block => {
             blocksPresent[block.key] = true
-            if (!self.blockState.has(block.key)) self.addBlock(block.key, block)
+            if (!self.blockState.has(block.key)) {
+              self.addBlock(block.key, block)
+            }
           })
           // delete any blocks we need to delete
           self.blockState.forEach((value, key) => {

@@ -5,7 +5,7 @@ import classnames from 'classnames'
 
 const styles = (/* theme */) => ({
   block: {
-    position: 'relative',
+    position: 'absolute',
     height: '100%',
     background: 'white',
     // background: theme.palette.background.default,
@@ -27,7 +27,7 @@ const styles = (/* theme */) => ({
 function Block({ classes, offset, children, width, leftBorder, rightBorder }) {
   return (
     <div
-      style={{ left: `${-offset}px`, width: `${width}px` }}
+      style={{ left: `${offset}px`, width: `${width}px` }}
       className={classnames(classes.block, {
         [classes.leftBorder]: leftBorder,
         [classes.rightBorder]: rightBorder,

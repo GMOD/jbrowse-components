@@ -70,7 +70,7 @@ function ScaleBar({
             end={block.end}
             width={block.widthPx}
             key={locString}
-            offset={offsetPx}
+            offset={block.offsetPx - offsetPx}
             bpPerPx={bpPerPx}
           >
             <svg height={height} width={block.widthPx}>

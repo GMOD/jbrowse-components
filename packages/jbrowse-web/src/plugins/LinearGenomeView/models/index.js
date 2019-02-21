@@ -15,7 +15,8 @@ import TrackType from '../../../pluggableElementTypes/TrackType'
 import LinearGenomeViewConfigSchema from './configSchema'
 
 import BaseTrack from './baseTrack'
-import calculateBlocks from './calculateBlocks'
+import calculateStaticBlocks from '../util/calculateStaticBlocks'
+import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
 
 const validBpPerPx = [
   1 / 50,
@@ -42,6 +43,9 @@ const validBpPerPx = [
   200000,
   500000,
 ]
+
+const minBpPerPx = validBpPerPx[0]
+
 function constrainBpPerPx(newBpPerPx) {
   // find the closest valid zoom level and return it
   // might consider reimplementing this later using a more efficient algorithm
@@ -50,41 +54,27 @@ function constrainBpPerPx(newBpPerPx) {
   )[0]
 }
 
-const ViewStateBase = types.model({
-  // views have an auto-generated ID by default
-  id: ElementId,
-})
-
-const minBpPerPx = validBpPerPx[0]
-
 export default function LinearGenomeViewStateFactory(pluginManager) {
   return types
-    .compose(
-      'LinearGenomeView',
-      ViewStateBase,
-      types.model({
-        id: ElementId,
-        type: types.literal('LinearGenomeView'),
-        offsetPx: 0,
-        bpPerPx: 1,
-        flipped: false,
-        // we use an array for the tracks because the tracks are displayed in a specific
-        // order that we need to keep.
-        tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        ),
-        controlsWidth: 120,
-        width: 800,
-        displayedRegions: types.array(Region),
-        configuration: LinearGenomeViewConfigSchema,
-        // set this to true to hide the close, config, and tracksel buttons
-        hideControls: false,
-      }),
-    )
+    .model('LinearGenomeView', {
+      id: ElementId,
+      type: types.literal('LinearGenomeView'),
+      offsetPx: 0,
+      bpPerPx: 1,
+      flipped: false,
+      // we use an array for the tracks because the tracks are displayed in a specific
+      // order that we need to keep.
+      tracks: types.array(
+        pluginManager.pluggableMstType('track', 'stateModel'),
+      ),
+      controlsWidth: 120,
+      width: 800,
+      displayedRegions: types.array(Region),
+      configuration: LinearGenomeViewConfigSchema,
+      // set this to true to hide the close, config, and tracksel buttons
+      hideControls: false,
+    })
     .views(self => ({
-      get totalBlocksWidthPx() {
-        return self.blocks.reduce((a, b) => a + b.widthPx, 0)
-      },
       get maxBpPerPx() {
         const displayWidth = self.width - self.controlsWidth
         let totalbp = 0
@@ -97,11 +87,12 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         return constrainBpPerPx(minBpPerPx)
       },
 
-      /**
-       * calculate the blocks we should be showing
-       */
-      get blocks() {
-        return calculateBlocks(self, self.horizontallyFlipped)
+      get staticBlocks() {
+        return calculateStaticBlocks(self, self.horizontallyFlipped)
+      },
+
+      get dynamicBlocks() {
+        return calculateDynamicBlocks(self, self.horizontallyFlipped)
       },
 
       get horizontallyFlipped() {

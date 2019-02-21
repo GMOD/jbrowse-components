@@ -1,7 +1,7 @@
 import {
   calculateBlocksForward,
   calculateBlocksReversed,
-} from './calculateBlocks'
+} from './calculateStaticBlocks'
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {

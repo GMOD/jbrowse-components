@@ -1,7 +1,7 @@
 import { withStyles } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
 import Block from './Block'
 
 const styles = {
@@ -16,60 +16,43 @@ const styles = {
   },
 }
 
-class TrackBlocks extends Component {
-  static propTypes = {
-    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-    offsetPx: ReactPropTypes.number.isRequired,
-    blockDefinitions: ReactPropTypes.arrayOf(ReactPropTypes.object).isRequired,
-    bpPerPx: ReactPropTypes.number.isRequired,
-    blockState: PropTypes.observableMap.isRequired,
-  }
+function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
+  const { blockDefinitions } = model
 
-  constructor(props) {
-    super(props)
-    const { bpPerPx, blockDefinitions } = props
-    this.blockWidths = blockDefinitions.map(
-      ({ start, end }) => Math.abs(end - start) / bpPerPx,
-    )
-    this.totalBlockWidths = this.blockWidths.reduce((a, b) => a + b, 0)
-  }
+  return (
+    <div className={classes.trackBlocks}>
+      {blockDefinitions.map(block => {
+        const state = blockState.get(block.key)
+        return (
+          <Block
+            leftBorder={block.isLeftEndOfDisplayedRegion}
+            rightBorder={block.isRightEndOfDisplayedRegion}
+            start={block.start}
+            end={block.end}
+            refName={block.refName}
+            width={block.widthPx}
+            key={block.key}
+            offset={block.offsetPx - offsetPx}
+            bpPerPx={bpPerPx}
+          >
+            {state && state.reactComponent ? (
+              <state.reactComponent model={state} />
+            ) : (
+              ' '
+            )}
+          </Block>
+        )
+      })}
+    </div>
+  )
+}
 
-  render() {
-    const {
-      classes,
-      blockDefinitions,
-      offsetPx,
-      bpPerPx,
-      blockState,
-    } = this.props
-    return (
-      <div className={classes.trackBlocks}>
-        {blockDefinitions.map(block => {
-          const state = blockState.get(block.key)
-          const comp = (
-            <Block
-              leftBorder={block.isLeftEndOfDisplayedRegion}
-              rightBorder={block.isRightEndOfDisplayedRegion}
-              start={block.start}
-              end={block.end}
-              refName={block.refName}
-              width={block.widthPx}
-              key={block.key}
-              offset={offsetPx}
-              bpPerPx={bpPerPx}
-            >
-              {state && state.reactComponent ? (
-                <state.reactComponent model={state} />
-              ) : (
-                ' '
-              )}
-            </Block>
-          )
-          return comp
-        })}
-      </div>
-    )
-  }
+TrackBlocks.propTypes = {
+  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+  offsetPx: ReactPropTypes.number.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  blockState: PropTypes.observableMap.isRequired,
+  model: PropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(TrackBlocks))

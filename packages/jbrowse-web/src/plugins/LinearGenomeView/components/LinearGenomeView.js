@@ -50,12 +50,17 @@ const styles = theme => ({
 function LinearGenomeView(props) {
   const scaleBarHeight = 32
   const { classes, model, rootModel } = props
-  const { id, blocks, tracks, bpPerPx, width, controlsWidth, offsetPx } = model
+  const {
+    id,
+    staticBlocks,
+    tracks,
+    bpPerPx,
+    width,
+    controlsWidth,
+    offsetPx,
+  } = model
   // NOTE: offsetPx is the total offset in px of the viewing window into the
   // whole set of concatenated regions. this number is often quite large.
-  // visibleBlocksOffsetPx is the offset of the viewing window into the set of blocks
-  // that are *currently* being displayed
-  const visibleBlocksOffsetPx = blocks[0] ? offsetPx - blocks[0].offsetPx : 0
   const height =
     scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
   const style = {
@@ -121,8 +126,8 @@ function LinearGenomeView(props) {
           style={{ gridColumn: 'blocks', gridRow: 'scale-bar' }}
           height={scaleBarHeight}
           bpPerPx={bpPerPx}
-          blocks={blocks}
-          offsetPx={visibleBlocksOffsetPx}
+          blocks={staticBlocks}
+          offsetPx={offsetPx}
           horizontallyFlipped={model.horizontallyFlipped}
           width={width - controlsWidth}
         />
@@ -154,8 +159,7 @@ function LinearGenomeView(props) {
           >
             <track.RenderingComponent
               model={track}
-              blockDefinitions={blocks}
-              offsetPx={visibleBlocksOffsetPx}
+              offsetPx={offsetPx}
               bpPerPx={bpPerPx}
               blockState={{}}
               onHorizontalScroll={model.horizontalScroll}
