@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const url = require('url')
 const express = require('express')
 const fetch = require('cross-fetch')
