@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `"adapter BigBedAdapter already registered, cannot register it again"`;
+
+exports[`plugin in a stock JBrowse 2`] = `
+Object {
+  "assemblyName": undefined,
+  "bigBedLocation": Object {
+    "uri": "/path/to/my.bb",
+  },
+  "configId": Any<String>,
+  "type": "BigBedAdapter",
+}
+`;
