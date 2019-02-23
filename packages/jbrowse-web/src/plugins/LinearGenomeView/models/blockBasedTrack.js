@@ -21,6 +21,14 @@ export default types.compose(
     })
     .views(self => ({
       /**
+       * how many milliseconds to wait for the display to
+       * "settle" before re-rendering a block
+       */
+      get renderDelay() {
+        return self.blockType === 'dynamicBlocks' ? 500 : 50
+      },
+
+      /**
        * get an array of the viewing blocks that should be shown
        */
       get blockDefinitions() {
@@ -60,12 +68,23 @@ export default types.compose(
 
         addDisposer(self, blockWatchDisposer)
       },
-      addBlock(key, region) {
+      addBlock(key, block) {
+        /*
+         * Regions can only be integer start and end, so we round the
+         * start and end of the block outward to make the region.
+         */
+        const region = {
+          ...block,
+          start: Math.floor(block.start),
+          end: Math.ceil(block.end),
+        }
         self.blockState.set(
           key,
           BlockState.create({
             key,
             region,
+            displayEndBp: block.end,
+            displayStartBp: block.start,
           }),
         )
       },

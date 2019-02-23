@@ -59,8 +59,10 @@ function LinearGenomeView(props) {
     controlsWidth,
     offsetPx,
   } = model
-  // NOTE: offsetPx is the total offset in px of the viewing window into the
-  // whole set of concatenated regions. this number is often quite large.
+  /*
+   * NOTE: offsetPx is the total offset in px of the viewing window into the
+   * whole set of concatenated regions. this number is often quite large.
+   */
   const height =
     scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
   const style = {

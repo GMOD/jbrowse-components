@@ -120,15 +120,15 @@ test('five', () => {
   ).toEqual([
     {
       assemblyName: 'volvox',
-      end: 73,
-      offsetPx: 520,
+      end: 72.4,
+      offsetPx: 521,
       refName: 'ctgA',
-      start: 26,
+      start: 26.05,
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: false,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:27-73',
-      widthPx: 940,
+      key: 'volvox:ctgA:27.05-72.4',
+      widthPx: 927.0000000000001,
     },
   ])
 })

@@ -35,11 +35,6 @@ export const Region = types
     },
   }))
 
-export const BlockState = types.model('BlockState', {
-  region: Region,
-  content: types.optional(types.string, ''),
-})
-
 export const FileLocalPath = types.model('FileLocalPath', {
   localPath: types.string, // TODO: refine
 })

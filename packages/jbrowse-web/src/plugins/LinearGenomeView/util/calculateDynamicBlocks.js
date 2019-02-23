@@ -44,21 +44,20 @@ export default function calculateDynamicBlocks(
         displayedRegionLeftPx,
         displayedRegionRightPx,
       )
-      // const regionOffsetPx = leftPx - windowLeftPx
       let startBp
       let endBp
       let isLeftEndOfDisplayedRegion
       let isRightEndOfDisplayedRegion
       let blockOffsetPx
       if (horizontallyFlipped) {
-        endBp = Math.ceil(end - (leftPx - displayedRegionLeftPx) * bpPerPx)
-        startBp = Math.floor(end - (rightPx - displayedRegionLeftPx) * bpPerPx)
+        endBp = end - (leftPx - displayedRegionLeftPx) * bpPerPx
+        startBp = end - (rightPx - displayedRegionLeftPx) * bpPerPx
         isRightEndOfDisplayedRegion = startBp === parentRegion.start
         isLeftEndOfDisplayedRegion = endBp === parentRegion.end
         blockOffsetPx = displayedRegionLeftPx + (end - endBp) / bpPerPx
       } else {
-        startBp = Math.floor((leftPx - displayedRegionLeftPx) * bpPerPx + start)
-        endBp = Math.ceil((rightPx - displayedRegionLeftPx) * bpPerPx + start)
+        startBp = (leftPx - displayedRegionLeftPx) * bpPerPx + start
+        endBp = (rightPx - displayedRegionLeftPx) * bpPerPx + start
         isLeftEndOfDisplayedRegion = startBp === parentRegion.start
         isRightEndOfDisplayedRegion = endBp === parentRegion.end
         blockOffsetPx = displayedRegionLeftPx + (startBp - start) / bpPerPx
@@ -73,9 +72,9 @@ export default function calculateDynamicBlocks(
         offsetPx: blockOffsetPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
+        widthPx: Math.abs(endBp - startBp) / bpPerPx,
       }
       newBlock.key = assembleLocString(newBlock)
-      newBlock.widthPx = Math.abs(newBlock.end - newBlock.start) / bpPerPx
       blocks.push(newBlock)
     }
     displayedRegionLeftPx += (end - start) / bpPerPx

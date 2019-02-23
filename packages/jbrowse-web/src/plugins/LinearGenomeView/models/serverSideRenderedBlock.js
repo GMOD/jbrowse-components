@@ -70,6 +70,8 @@ export default types
   .model('BlockState', {
     key: types.string,
     region: Region,
+    displayStartBp: types.number,
+    displayEndBp: types.number,
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })
@@ -92,7 +94,7 @@ export default types
         data => renderBlockEffect(self, data),
         {
           name: `${track.id}/${assembleLocString(self.region)} rendering`,
-          delay: 50,
+          delay: track.renderDelay,
           fireImmediately: true,
         },
       )
