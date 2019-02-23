@@ -21,7 +21,7 @@ import { assembleLocString } from '../../../util'
  * @returns {Array} of ` { assemblyName, refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
 export default function calculateDynamicBlocks(
-  { offsetPx, width, displayedRegions, bpPerPx },
+  { offsetPx, viewingRegionWidth: width, displayedRegions, bpPerPx },
   horizontallyFlipped,
 ) {
   const blocks = []

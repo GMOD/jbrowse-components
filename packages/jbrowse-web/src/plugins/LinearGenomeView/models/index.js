@@ -75,8 +75,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       hideControls: false,
     })
     .views(self => ({
+      get viewingRegionWidth() {
+        return self.width - self.controlsWidth
+      },
       get maxBpPerPx() {
-        const displayWidth = self.width - self.controlsWidth
+        const displayWidth = self.viewingRegionWidth
         let totalbp = 0
         self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
@@ -174,7 +177,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         self.bpPerPx = bpPerPx
 
         // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.width - self.controlsWidth
+        const viewWidth = self.viewingRegionWidth
         self.offsetPx = Math.round(
           ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
             viewWidth / 2,
@@ -194,7 +197,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           0,
         )
         const maxOffset = displayRegionsTotalPx - leftPadding
-        const displayWidth = self.width - self.controlsWidth
+        const displayWidth = self.viewingRegionWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },

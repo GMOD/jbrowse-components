@@ -129,7 +129,7 @@ function LinearGenomeView(props) {
           blocks={staticBlocks}
           offsetPx={offsetPx}
           horizontallyFlipped={model.horizontallyFlipped}
-          width={width - controlsWidth}
+          width={model.viewingRegionWidth}
         />
         <div
           className={classes.zoomControls}
@@ -155,7 +155,7 @@ function LinearGenomeView(props) {
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}
             trackId={track.id}
-            width={width - controlsWidth}
+            width={model.viewingRegionWidth}
           >
             <track.RenderingComponent
               model={track}
