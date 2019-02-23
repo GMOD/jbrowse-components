@@ -6,13 +6,13 @@ import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedT
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import { getContainingView } from '../../util/tracks'
 
-export default (pluginManager, configSchema) =>
+export default (pluginManager, configSchema, trackType) =>
   types.compose(
-    'SequenceTrack',
+    trackType,
     BlockBasedTrack,
     types
       .model({
-        type: types.literal('SequenceTrack'),
+        type: types.literal(trackType),
         configuration: ConfigurationReference(configSchema),
         height: 100,
       })
