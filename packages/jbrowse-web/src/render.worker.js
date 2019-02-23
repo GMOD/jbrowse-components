@@ -16,7 +16,7 @@ jbPluginManager.configure()
 
 export async function getRegions(
   pluginManager,
-  { sessionId, adapterType, adapterConfig, rootConfig },
+  { sessionId, adapterType, adapterConfig, rootConfig, assemblyName },
 ) {
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -25,7 +25,7 @@ export async function getRegions(
     adapterConfig,
     rootConfig,
   )
-  return dataAdapter.getRegions()
+  return dataAdapter.getRegions(assemblyName)
 }
 
 /**

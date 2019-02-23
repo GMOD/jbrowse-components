@@ -21,19 +21,17 @@ export default class TwoBitAdapter extends BaseAdapter {
     return this.twobit.getSequenceNames()
   }
 
-  async getRegions() {
-    const seqNames = await this.twobit.getSequenceNames()
+  async getRegions(assemblyName = '') {
+    const seqSizes = await this.twobit.getSequenceSizes()
     const regions = []
-    for (const seqName of seqNames) {
+    Object.keys(seqSizes).forEach(seqName => {
       regions.push({
-        assemblyName: '',
+        assemblyName,
         refName: seqName,
         start: 0,
-        // don't use `await Promise.all() because what if there are many seqNames?
-        // eslint-disable-next-line no-await-in-loop
-        end: await this.twobit.getSequenceSize(seqName),
+        end: seqSizes[seqName],
       })
-    }
+    })
     return regions
   }
 
