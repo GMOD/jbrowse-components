@@ -54,7 +54,7 @@ export default class WebWorkerRpcDriver {
     const worker = this.getWorker(stateGroupName)
     const filteredArgs = removeNonClonable(args)
     return worker.call(functionName, filteredArgs, {
-      timeout: 3000,
+      timeout: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
   }
