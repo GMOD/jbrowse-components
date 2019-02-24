@@ -1675,6 +1675,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                           BasicTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="DynamicTrack"
+                        >
+                          DynamicTrack
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="AlignmentsTrack"
                         >
                           AlignmentsTrack
@@ -1789,6 +1794,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                             BasicTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="DynamicTrack"
+                          >
+                            DynamicTrack
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="AlignmentsTrack"
                           >
                             AlignmentsTrack
@@ -1901,6 +1911,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                               value="BasicTrack"
                             >
                               BasicTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="DynamicTrack"
+                            >
+                              DynamicTrack
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="AlignmentsTrack"
@@ -2023,6 +2038,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                                 BasicTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="DynamicTrack"
+                              >
+                                DynamicTrack
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="AlignmentsTrack"
                               >
                                 AlignmentsTrack
@@ -2141,6 +2161,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                                   value="BasicTrack"
                                 >
                                   BasicTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="DynamicTrack"
+                                >
+                                  DynamicTrack
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="AlignmentsTrack"
@@ -4367,6 +4392,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                           BasicTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="DynamicTrack"
+                        >
+                          DynamicTrack
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="AlignmentsTrack"
                         >
                           AlignmentsTrack
@@ -4462,6 +4492,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                             BasicTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="DynamicTrack"
+                          >
+                            DynamicTrack
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="AlignmentsTrack"
                           >
                             AlignmentsTrack
@@ -4555,6 +4590,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                               value="BasicTrack"
                             >
                               BasicTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="DynamicTrack"
+                            >
+                              DynamicTrack
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="AlignmentsTrack"
@@ -4658,6 +4698,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                                 BasicTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="DynamicTrack"
+                              >
+                                DynamicTrack
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="AlignmentsTrack"
                               >
                                 AlignmentsTrack
@@ -4757,6 +4802,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                                   value="BasicTrack"
                                 >
                                   BasicTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="DynamicTrack"
+                                >
+                                  DynamicTrack
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="AlignmentsTrack"
@@ -7094,6 +7144,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                           BasicTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="DynamicTrack"
+                        >
+                          DynamicTrack
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="AlignmentsTrack"
                         >
                           AlignmentsTrack
@@ -7199,6 +7254,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                             BasicTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="DynamicTrack"
+                          >
+                            DynamicTrack
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="AlignmentsTrack"
                           >
                             AlignmentsTrack
@@ -7302,6 +7362,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                               value="BasicTrack"
                             >
                               BasicTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="DynamicTrack"
+                            >
+                              DynamicTrack
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="AlignmentsTrack"
@@ -7415,6 +7480,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                                 BasicTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="DynamicTrack"
+                              >
+                                DynamicTrack
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="AlignmentsTrack"
                               >
                                 AlignmentsTrack
@@ -7524,6 +7594,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                                   value="BasicTrack"
                                 >
                                   BasicTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="DynamicTrack"
+                                >
+                                  DynamicTrack
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="AlignmentsTrack"

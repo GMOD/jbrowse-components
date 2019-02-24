@@ -70,8 +70,6 @@ export default types
   .model('BlockState', {
     key: types.string,
     region: Region,
-    displayStartBp: types.number,
-    displayEndBp: types.number,
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })

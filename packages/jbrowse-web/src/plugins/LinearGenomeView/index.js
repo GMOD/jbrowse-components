@@ -6,6 +6,7 @@ import ViewType from '../../pluggableElementTypes/ViewType'
 
 import configSchema from './models/configSchema'
 import BasicTrackFactory from './BasicTrack'
+import DynamicTrackFactory from './DynamicTrack'
 import TrackType from '../../pluggableElementTypes/TrackType'
 
 export default class LinearGenomeViewPlugin extends Plugin {
@@ -17,6 +18,18 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
       return new TrackType({
         name: 'BasicTrack',
+        configSchema: trackConfig,
+        stateModel,
+      })
+    })
+
+    pluginManager.addTrackType(() => {
+      const { stateModel, configSchema: trackConfig } = DynamicTrackFactory(
+        pluginManager,
+      )
+
+      return new TrackType({
+        name: 'DynamicTrack',
         configSchema: trackConfig,
         stateModel,
       })

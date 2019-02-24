@@ -29,7 +29,7 @@ jbrowse.configure({
       },
     },
     {
-      type: 'BasicTrack',
+      type: 'DynamicTrack',
       name: 'Wiggle track',
       category: ['Bar Category'],
       renderer: { type: 'WiggleRenderer' },

@@ -1,48 +1,36 @@
 import { types } from 'mobx-state-tree'
+
+import BasicTrack from './BasicTrack'
 import {
-  ConfigurationReference,
   ConfigurationSchema,
+  ConfigurationReference,
 } from '../../configuration'
-import TrackComponent from './components/DynamicTrack'
-import baseTrack, { BaseTrackConfig } from './models/baseTrack'
-import { getContainingView } from '../../util/tracks'
 
 export default pluginManager => {
+  const {
+    stateModel: basicTrackStateModel,
+    configSchema: basicTrackConfigSchema,
+  } = BasicTrack(pluginManager)
+
   const configSchema = ConfigurationSchema(
     'DynamicTrack',
-    {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-    },
-    { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
+    {},
+    { baseConfiguration: basicTrackConfigSchema, explicitlyTyped: true },
   )
 
+  // a DynamicTrack is just a BasicTrack but with blockType hardcoded to 'dynamicBlocks'
   const stateModel = types.compose(
     'DynamicTrack',
-    baseTrack,
+    basicTrackStateModel,
     types
       .model({
         type: types.literal('DynamicTrack'),
         configuration: ConfigurationReference(configSchema),
-        height: 100,
       })
-      .views(self => ({
-        get renderProps() {
-          const view = getContainingView(self)
-          return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
-            trackModel: self,
-            config: self.configuration.renderer,
-          }
+      .views((/* self */) => ({
+        get blockType() {
+          return 'dynamicBlocks'
         },
-
-        get rendererTypeName() {
-          return self.configuration.renderer.type
-        },
-      }))
-      .volatile(() => ({
-        reactComponent: TrackComponent,
       })),
   )
 

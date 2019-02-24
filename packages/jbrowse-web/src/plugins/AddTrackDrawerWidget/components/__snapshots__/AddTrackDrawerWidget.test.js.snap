@@ -6127,7 +6127,6 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
           "tracks": Array [
             Object {
               "blockState": Object {},
-              "blockType": "staticBlocks",
               "configuration": "testid",
               "height": 100,
               "id": "testid",

@@ -26,8 +26,8 @@ export const Region = types
   .model('Region', {
     assemblyName: types.string,
     refName: types.string,
-    start: types.integer,
-    end: types.integer,
+    start: types.number,
+    end: types.number,
   })
   .views(self => ({
     get locString() {

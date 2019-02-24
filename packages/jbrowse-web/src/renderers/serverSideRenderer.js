@@ -96,7 +96,11 @@ export default class ServerSideRenderer extends RendererType {
     const { dataAdapter, region } = renderArgs
     const features = new Map()
     await dataAdapter
-      .getFeaturesInRegion(region)
+      .getFeaturesInRegion({
+        ...region,
+        start: Math.floor(region.start),
+        end: Math.ceil(region.end),
+      })
       .pipe(
         tap(feature => {
           if (this.featurePassesFilters(renderArgs, feature)) {

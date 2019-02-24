@@ -14,12 +14,12 @@ export default types.compose(
   types
     .model({
       blockState: types.map(BlockState),
-      blockType: types.optional(
-        types.enumeration(['staticBlocks', 'dynamicBlocks']),
-        'staticBlocks',
-      ),
     })
     .views(self => ({
+      get blockType() {
+        return 'staticBlocks'
+      },
+
       /**
        * how many milliseconds to wait for the display to
        * "settle" before re-rendering a block
@@ -69,22 +69,11 @@ export default types.compose(
         addDisposer(self, blockWatchDisposer)
       },
       addBlock(key, block) {
-        /*
-         * Regions can only be integer start and end, so we round the
-         * start and end of the block outward to make the region.
-         */
-        const region = {
-          ...block,
-          start: Math.floor(block.start),
-          end: Math.ceil(block.end),
-        }
         self.blockState.set(
           key,
           BlockState.create({
             key,
-            region,
-            displayEndBp: block.end,
-            displayStartBp: block.start,
+            region: block,
           }),
         )
       },
