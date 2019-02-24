@@ -1,4 +1,9 @@
 export default class MultiLayout {
+  /**
+   * layout class that just keeps a number of named sub-layouts.
+   * basically just a fancier
+   * `{ layout1: new GranularRectLayout(), layout2: new GranularRectLayout() ...}`
+   */
   constructor(SubLayoutClass, layoutArgs = {}) {
     this.subLayouts = new Map()
     this.SubLayoutClass = SubLayoutClass

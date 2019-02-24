@@ -5,21 +5,30 @@ import PrecomputedLayout from '../util/layouts/PrecomputedLayout'
 import MultiLayout from '../util/layouts/MultiLayout'
 import ServerSideRenderer from './serverSideRenderer'
 
-class LayoutSession {
+export class LayoutSession {
   update(props) {
     Object.assign(this, props)
   }
 
-  get layout() {
+  makeLayout() {
     const pitchX = this.bpPerPx
-    if (
-      !this.cachedLayout ||
-      this.cachedLayout.subLayoutConstructorArgs.pitchX !== pitchX
-    ) {
-      this.cachedLayout = new MultiLayout(GranularRectLayout, {
-        pitchX,
-        pitchY: 3,
-      })
+    return new MultiLayout(GranularRectLayout, {
+      pitchX,
+      pitchY: 3,
+    })
+  }
+
+  /**
+   * @param {*} layout
+   * @returns {boolean} true if the given layout is a valid one to use for this session
+   */
+  layoutIsValid(layout) {
+    return layout && layout.subLayoutConstructorArgs.pitchX === this.bpPerPx
+  }
+
+  get layout() {
+    if (!this.cachedLayout || !this.layoutIsValid(this.cachedLayout)) {
+      this.cachedLayout = this.makeLayout()
     }
     return this.cachedLayout
   }

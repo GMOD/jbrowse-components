@@ -4,7 +4,7 @@ import ReactPropTypes from 'prop-types'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { featureSpanPx } from '../../../util'
+import { featureSpanPx, bpToPx } from '../../../util'
 
 class Lollipop extends Component {
   static propTypes = {
@@ -65,8 +65,18 @@ class Lollipop extends Component {
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
     const radiusPx = readConfObject(args.config, 'radius', [feature])
     const radiusBp = radiusPx * bpPerPx
-    const startPx = (centerBp - radiusBp) / bpPerPx
-    const endPx = (centerBp + radiusBp) / bpPerPx
+    const startPx = bpToPx(
+      centerBp - radiusBp,
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const endPx = bpToPx(
+      centerBp + radiusBp,
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
 
     const topPx = layout.addRect(
       feature.id(),
