@@ -68,10 +68,6 @@ export default class BoxRenderer extends ServerSideRenderer {
     args.layout = subLayout
   }
 
-  async render() {
-    throw new Error('render not implemented')
-  }
-
   serializeResultsInWorker(results, features, args) {
     super.serializeResultsInWorker(results, features, args)
     results.layout = args.layout.toJSON()

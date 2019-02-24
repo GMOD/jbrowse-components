@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<svg
+  className="LollipopRendering"
+  height={20}
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width={100}
+/>
+`;
+
+exports[`one feature 1`] = `
+<svg
+  className="LollipopRendering"
+  height={30}
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width={333.3333333333333}
+>
+  <circle
+    cx={0.6666666666666661}
+    cy={15}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onMouseDown={[Function]}
+    onMouseEnter={[Function]}
+    onMouseLeave={[Function]}
+    onMouseMove={[Function]}
+    onMouseOut={[Function]}
+    onMouseOver={[Function]}
+    onMouseUp={[Function]}
+    r={15}
+    style={
+      Object {
+        "fill": "green",
+      }
+    }
+    title="one"
+  />
+</svg>
+`;

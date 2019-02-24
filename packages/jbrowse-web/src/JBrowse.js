@@ -36,6 +36,7 @@ import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
 import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 import WorkerManager from './WorkerManager'
 import RpcManager from './rpc/RpcManager'
+import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 const corePlugins = [
   MainMenuBarPlugin,
@@ -56,6 +57,7 @@ const corePlugins = [
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,
   WiggleRendererPlugin,
+  LollipopRendererPlugin,
 ]
 
 // the main class used to configure and start a new JBrowse app
