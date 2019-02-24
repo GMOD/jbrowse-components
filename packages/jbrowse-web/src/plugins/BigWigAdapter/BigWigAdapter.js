@@ -1,10 +1,9 @@
-import { Observable } from 'rxjs'
-
 import { BigWig } from '@gmod/bbi'
 
 import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
+import { ObservableCreate } from '../../util/rxjs'
 
 export default class BigWigAdapter extends BaseAdapter {
   constructor(config) {
@@ -33,9 +32,9 @@ export default class BigWigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeatures({ /* assembly, */ refName, start, end }) {
-    await this.loadData()
-    return Observable.create(async observer => {
+  getFeatures({ /* assembly, */ refName, start, end }) {
+    return ObservableCreate(async observer => {
+      await this.loadData()
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
         observer.next(

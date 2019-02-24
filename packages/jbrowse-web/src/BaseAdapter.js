@@ -1,4 +1,4 @@
-import { empty } from 'rxjs'
+import { ObservableCreate } from './util/rxjs'
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -38,10 +38,10 @@ export default class BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // eslint-disable-next-line no-unused-vars
-  async getFeatures({ assembly, refName, start, end }) {
+  getFeatures({ assembly, refName, start, end }) {
     throw new Error('getFeatures should be overridden by the subclass')
     // Subclass method should look something like this:
-    // return Observable.create(observer => {
+    // return ObservableCreate(observer => {
     //   const records = getRecords(assembly, refName, start, end)
     //   records.forEach(record => {
     //     observer.next(this.recordToFeature(record))
@@ -68,11 +68,14 @@ export default class BaseAdapter {
    * sequence, and then gets the features in the region if it does.
    * @param {Region} region see getFeatures()
    */
-  async getFeaturesInRegion(region) {
-    if (!(await this.hasDataForRefSeq(region))) {
-      return empty()
-    }
-    return this.getFeatures(region)
+  getFeaturesInRegion(region) {
+    return ObservableCreate(async observer => {
+      if (!(await this.hasDataForRefSeq(region))) {
+        observer.complete()
+      } else {
+        this.getFeatures(region).subscribe(observer)
+      }
+    })
   }
 
   /**

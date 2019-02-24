@@ -1,10 +1,9 @@
-import { Observable } from 'rxjs'
-
 import { TwoBitFile } from '@gmod/twobit'
 
 import { openLocation } from '../../util/io'
 import BaseAdapter from '../../BaseAdapter'
 import SimpleFeature from '../../util/simpleFeature'
+import { ObservableCreate } from '../../util/rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
   constructor(config) {
@@ -26,9 +25,9 @@ export default class TwoBitAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeatures({ refName, start, end }) {
-    await this.loadData()
-    return Observable.create(async observer => {
+  getFeatures({ refName, start, end }) {
+    return ObservableCreate(async observer => {
+      await this.loadData()
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(
         new SimpleFeature({

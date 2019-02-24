@@ -1,10 +1,9 @@
-import { Observable } from 'rxjs'
-
 import { IndexedFasta } from '@gmod/indexedfasta'
 
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 import BaseAdapter from '../../BaseAdapter'
+import { ObservableCreate } from '../../util/rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
   constructor(config) {
@@ -33,8 +32,8 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeatures({ /* assembly, */ refName, start, end }) {
-    return Observable.create(async observer => {
+  getFeatures({ /* assembly, */ refName, start, end }) {
+    return ObservableCreate(async observer => {
       await this.loadData()
       const seq = await this.fasta.getSequence(refName, start, end)
       if (seq)

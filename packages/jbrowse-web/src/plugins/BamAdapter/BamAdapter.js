@@ -1,10 +1,9 @@
-import { Observable } from 'rxjs'
-
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '../../util/io'
 import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
+import { ObservableCreate } from '../../util/rxjs'
 
 export default class BamAdapter extends BaseAdapter {
   constructor(config) {
@@ -62,9 +61,9 @@ export default class BamAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeatures({ refName, start, end }) {
-    await this.loadData()
-    return Observable.create(async observer => {
+  getFeatures({ refName, start, end }) {
+    return ObservableCreate(async observer => {
+      await this.loadData()
       const records = await this.bam.getRecordsForRange(refName, start, end)
       records.forEach(record => {
         observer.next(this.bamRecordToFeature(record))

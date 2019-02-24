@@ -95,8 +95,8 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs) {
     const { dataAdapter, region } = renderArgs
     const features = new Map()
-    const featureObservable = await dataAdapter.getFeaturesInRegion(region)
-    await featureObservable
+    await dataAdapter
+      .getFeaturesInRegion(region)
       .pipe(
         tap(feature => {
           if (this.featurePassesFilters(renderArgs, feature)) {

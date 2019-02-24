@@ -1,7 +1,6 @@
-import { Observable } from 'rxjs'
-
 import BaseAdapter from '../../BaseAdapter'
 import SimpleFeature from '../../util/simpleFeature'
+import { ObservableCreate } from '../../util/rxjs'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -45,8 +44,8 @@ export default class FromConfigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  async getFeatures({ refName, start, end }) {
-    return Observable.create(async observer => {
+  getFeatures({ refName, start, end }) {
+    return ObservableCreate(async observer => {
       const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
