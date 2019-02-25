@@ -2,26 +2,6 @@
   "configId": "tQ76_pSGI",
   "tracks": [
     {
-      "configId": "iTo6LoXUeI",
-      "type": "SequenceTrack",
-      "name": "Reference sequence",
-      "category": [
-        "Bar Category"
-      ],
-      "adapter": {
-        "configId": "t17b5y_Ydj",
-        "type": "TwoBitAdapter",
-        "twoBitLocation": {
-          "uri": "/test_data/volvox.2bit"
-        },
-        "assemblyName": "volvox"
-      },
-      "rendering": {
-        "configId": "71P5Lys28o",
-        "type": "DivSequenceRenderer"
-      }
-    },
-    {
       "configId": "PDWVXl3526",
       "type": "BasicTrack",
       "name": "Wiggle track",
@@ -166,7 +146,7 @@
   ],
   "assemblies": {
     "volvox": {
-      "configId": "rwbpxsYzXsU",
+      "configId": "volvox",
       "aliases": [
         "vvx"
       ],
@@ -181,21 +161,30 @@
         ]
       },
       "sequence": {
-        "type": "FromFile",
+        "configId": "iTo6LoXUeI",
+        "type": "ReferenceSequence",
         "adapter": {
           "configId": "t17b5y_Ydj",
           "type": "TwoBitAdapter",
           "twoBitLocation": {
             "uri": "/test_data/volvox.2bit"
-          },
-          "assemblyName": "volvox"
+          }
         },
         "rendering": {
           "configId": "71P5Lys28o",
           "type": "DivSequenceRenderer"
-        },
+        }
+      }
+    },
+    "volvox2": {
+      "configId": "volvox2",
+      "aliases": [],
+      "seqNameAliases": {},
+      "sequence": {
+        "configId": "iTo6LoXUeJ",
+        "type": "Sizes",
         "sizes": {
-          "chr1": 500000
+          "fakeContig": 100
         }
       }
     }
@@ -228,7 +217,7 @@
         "tracks": [
           {
             "id": "UNlXyrJy95",
-            "type": "SequenceTrack",
+            "type": "ReferenceSequence",
             "height": 110,
             "configuration": "iTo6LoXUeI"
           },
@@ -261,38 +250,6 @@
         ],
         "configuration": {
           "configId": "vVpZZU1XnD"
-        }
-      },
-      {
-        "id": "4n7uxLJ1DP",
-        "type": "LinearGenomeView",
-        "offsetPx": 0,
-        "bpPerPx": 1,
-        "tracks": [
-          {
-            "id": "2k2CNh5WPc",
-            "type": "BasicTrack",
-            "height": 100,
-            "configuration": "PDWVXl3526"
-          }
-        ],
-        "displayedRegionsOverride": [
-          {
-            "assemblyName": "volvox",
-            "refName": "ctgA",
-            "start": 0,
-            "end": 1000
-          },
-          {
-            "assemblyName": "volvox",
-            "refName": "ctgB",
-            "start": 0,
-            "end": 2000
-          }
-        ],
-        "configuration": {
-          "configId": "VMf1epQfFc",
-          "reversed": true
         }
       }
     ],

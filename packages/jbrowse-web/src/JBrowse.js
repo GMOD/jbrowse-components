@@ -38,7 +38,7 @@ function createModelType(workerGroups) {
 }
 
 async function createRootModel(modelType, config) {
-  let configSnapshot
+  let configSnapshot = config
   if (config.uri || config.localPath) {
     try {
       configSnapshot = JSON.parse(
@@ -48,7 +48,7 @@ async function createRootModel(modelType, config) {
       console.error('Failed to load config ', error)
       throw error
     }
-  } else configSnapshot = config
+  }
 
   const {
     defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },

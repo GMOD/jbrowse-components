@@ -531,124 +531,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           "width": "412px",
         }
       }
-    >
-      <div
-        className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
-        style={
-          Object {
-            "left": "0px",
-            "width": "100px",
-          }
-        }
-      >
-        <svg
-          height={32}
-          width={100}
-        >
-          <line
-            className="Ruler-majorTick-101"
-            data-bp={-1}
-            stroke="#555"
-            strokeWidth={1}
-            x1={-1}
-            x2={-1}
-            y1={0}
-            y2={6}
-          />
-          <line
-            className="Ruler-minorTick-102"
-            data-bp={19}
-            stroke="#999"
-            strokeWidth={1}
-            x1={19}
-            x2={19}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-102"
-            data-bp={39}
-            stroke="#999"
-            strokeWidth={1}
-            x1={39}
-            x2={39}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-102"
-            data-bp={59}
-            stroke="#999"
-            strokeWidth={1}
-            x1={59}
-            x2={59}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-102"
-            data-bp={79}
-            stroke="#999"
-            strokeWidth={1}
-            x1={79}
-            x2={79}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-majorTick-101"
-            data-bp={99}
-            stroke="#555"
-            strokeWidth={1}
-            x1={99}
-            x2={99}
-            y1={0}
-            y2={6}
-          />
-          <line
-            className="Ruler-minorTick-102"
-            data-bp={119}
-            stroke="#999"
-            strokeWidth={1}
-            x1={119}
-            x2={119}
-            y1={0}
-            y2={4}
-          />
-          <text
-            className="Ruler-majorTickLabel-100"
-            dominantBaseline="hanging"
-            style={
-              Object {
-                "fontSize": "11px",
-              }
-            }
-            x={-4}
-            y={7}
-          >
-            0
-          </text>
-          <text
-            className="Ruler-majorTickLabel-100"
-            dominantBaseline="hanging"
-            style={
-              Object {
-                "fontSize": "11px",
-              }
-            }
-            x={96}
-            y={7}
-          >
-            100
-          </text>
-        </svg>
-      </div>
-      <div
-        className="ScaleBar-refLabel-31"
-      >
-        ctgA
-      </div>
-    </div>
+    />
     <div
       className="LinearGenomeView-zoomControls-6"
       style={
@@ -872,21 +755,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-95"
-        >
-          <div
-            className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
-            style={
-              Object {
-                "left": "0px",
-                "width": "100px",
-              }
-            }
-          >
-            <div>
-              Loading ...
-            </div>
-          </div>
-        </div>
+        />
       </div>
     </div>
     <div
@@ -985,21 +854,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-95"
-        >
-          <div
-            className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
-            style={
-              Object {
-                "left": "0px",
-                "width": "100px",
-              }
-            }
-          >
-            <div>
-              Loading ...
-            </div>
-          </div>
-        </div>
+        />
       </div>
     </div>
     <div

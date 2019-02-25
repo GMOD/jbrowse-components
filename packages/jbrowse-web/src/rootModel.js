@@ -1,53 +1,8 @@
 // Polyfill for TextDecoder
 import 'fast-text-encoding'
-import { flow, getRoot, getType, types } from 'mobx-state-tree'
-import { ConfigurationSchema } from './configuration'
+import { flow, getType, types } from 'mobx-state-tree'
 import { isConfigurationModel } from './configuration/configurationSchema'
 import { openLocation } from './util/io'
-import DivSequenceRendererConfigurationSchema from './plugins/DivSequenceRenderer/configSchema'
-
-function assemblyAdapterConfigSchemaFactory(pluginManager) {
-  return ConfigurationSchema(
-    'FromFile',
-    {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      rendering: DivSequenceRendererConfigurationSchema,
-    },
-    { explicitlyTyped: true },
-  )
-}
-
-const SizesConfigSchema = ConfigurationSchema(
-  'FromSizes',
-  {
-    sizes: {
-      type: 'numberMap',
-      defaultValue: {},
-      description: 'Names and sizes of sequences',
-    },
-  },
-  { explicitlyTyped: true },
-)
-
-export function assemblyFactory(pluginManager) {
-  return ConfigurationSchema('Assembly', {
-    sequence: types.union(
-      assemblyAdapterConfigSchemaFactory(pluginManager),
-      SizesConfigSchema,
-    ),
-    aliases: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'Other possible names for this assembly',
-    },
-    seqNameAliases: {
-      type: 'stringArrayMap',
-      defaultValue: {},
-      description:
-        'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
-    },
-  })
-}
 
 export default (pluginManager, workerManager) => {
   const minWidth = 384
@@ -75,49 +30,7 @@ export default (pluginManager, workerManager) => {
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      configuration: ConfigurationSchema(
-        'JBrowseWebRoot',
-        {
-          // track configuration is an array of track config schemas. multiple instances of
-          // a track can exist that use the same configuration
-          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-
-          // A map of assembly name -> assembly details
-          assemblies: types.map(assemblyFactory(pluginManager)),
-          defaultSession: {
-            type: 'frozen',
-            defaultValue: null,
-            description: 'Snapshot representing a default session',
-          },
-        },
-        {
-          actions: self => ({
-            addTrackConf(typeName, data) {
-              const type = getRoot(self).pluginManager.getTrackType(typeName)
-              if (!type) throw new Error(`unknown track type ${typeName}`)
-              const schemaType = type.configSchema
-              const conf = schemaType.create(
-                Object.assign({ type: typeName }, data),
-              )
-              self.tracks.push(conf)
-              return conf
-            },
-            addAssembly(assemblyName, aliases = [], seqNameAliases = {}) {
-              self.assemblies.set(
-                assemblyName,
-                assemblyFactory(pluginManager).create({
-                  configId: assemblyName,
-                  aliases,
-                  seqNameAliases,
-                }),
-              )
-            },
-            removeAssembly(assemblyName) {
-              self.assemblies.delete(assemblyName)
-            },
-          }),
-        },
-      ),
+      configuration: pluginManager.rootConfig,
     })
     .volatile(() => ({
       pluginManager,
@@ -304,10 +217,10 @@ export default (pluginManager, workerManager) => {
           self.addDrawerWidget(
             'ConfigurationEditorDrawerWidget',
             'configEditor',
-            { target: configuration },
+            { target: configuration.configId },
           )
         const editor = self.drawerWidgets.get('configEditor')
-        editor.setTarget(configuration)
+        editor.setTarget(configuration.configId)
         self.showDrawerWidget(editor)
       },
     }))

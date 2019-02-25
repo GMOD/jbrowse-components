@@ -18,6 +18,10 @@ Object {
           "contigB",
         ],
       },
+      "sequence": Object {
+        "configId": "testid",
+        "type": "Sizes",
+      },
     },
   },
   "configId": "testid",
@@ -31,7 +35,7 @@ Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "rwbpxsYzXsU",
+      "configId": "volvox",
       "seqNameAliases": Object {
         "A": Array [
           "ctgA",
@@ -41,6 +45,31 @@ Object {
           "ctgB",
           "contigB",
         ],
+      },
+      "sequence": Object {
+        "adapter": Object {
+          "configId": "t17b5y_Ydj",
+          "twoBitLocation": Object {
+            "uri": "/test_data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "configId": "iTo6LoXUeI",
+        "rendering": Object {
+          "configId": "71P5Lys28o",
+          "type": "DivSequenceRenderer",
+        },
+        "type": "ReferenceSequence",
+      },
+    },
+    "volvox2": Object {
+      "configId": "volvox2",
+      "sequence": Object {
+        "configId": "iTo6LoXUeJ",
+        "sizes": Object {
+          "fakeContig": 100,
+        },
+        "type": "Sizes",
       },
     },
   },
@@ -81,7 +110,7 @@ Object {
         "configuration": Object {
           "configId": "vVpZZU1XnD",
         },
-        "displayedRegions": Array [
+        "displayedRegionsOverrides": Array [
           Object {
             "assemblyName": "vvx",
             "end": 50000,
@@ -102,7 +131,7 @@ Object {
             "configuration": "iTo6LoXUeI",
             "height": 110,
             "id": "UNlXyrJy95",
-            "type": "SequenceTrack",
+            "type": "ReferenceSequence",
           },
           Object {
             "configuration": "PDWVXl3526",
@@ -119,61 +148,9 @@ Object {
         ],
         "type": "LinearGenomeView",
       },
-      Object {
-        "bpPerPx": 1,
-        "configuration": Object {
-          "configId": "VMf1epQfFc",
-          "reversed": true,
-        },
-        "displayedRegions": Array [
-          Object {
-            "assemblyName": "volvox",
-            "end": 1000,
-            "refName": "ctgA",
-            "start": 0,
-          },
-          Object {
-            "assemblyName": "volvox",
-            "end": 2000,
-            "refName": "ctgB",
-            "start": 0,
-          },
-        ],
-        "id": "4n7uxLJ1DP",
-        "offsetPx": 0,
-        "tracks": Array [
-          Object {
-            "configuration": "PDWVXl3526",
-            "height": 100,
-            "id": "2k2CNh5WPc",
-            "type": "BasicTrack",
-          },
-        ],
-        "type": "LinearGenomeView",
-      },
     ],
   },
   "tracks": Array [
-    Object {
-      "adapter": Object {
-        "assemblyName": "volvox",
-        "configId": "t17b5y_Ydj",
-        "twoBitLocation": Object {
-          "uri": "/test_data/volvox.2bit",
-        },
-        "type": "TwoBitAdapter",
-      },
-      "category": Array [
-        "Bar Category",
-      ],
-      "configId": "iTo6LoXUeI",
-      "name": "Reference sequence",
-      "rendering": Object {
-        "configId": "71P5Lys28o",
-        "type": "DivSequenceRenderer",
-      },
-      "type": "SequenceTrack",
-    },
     Object {
       "adapter": Object {
         "assemblyName": "volvox",

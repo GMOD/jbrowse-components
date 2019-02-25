@@ -1515,6 +1515,11 @@ Array [
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -1629,6 +1634,11 @@ Array [
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -1741,6 +1751,11 @@ Array [
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -1863,6 +1878,11 @@ Array [
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -1981,6 +2001,11 @@ Array [
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"
@@ -4087,6 +4112,11 @@ Array [
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -4182,6 +4212,11 @@ Array [
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -4275,6 +4310,11 @@ Array [
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -4378,6 +4418,11 @@ Array [
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -4477,6 +4522,11 @@ Array [
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"
@@ -6664,6 +6714,11 @@ Array [
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -6769,6 +6824,11 @@ Array [
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -6872,6 +6932,11 @@ Array [
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -6985,6 +7050,11 @@ Array [
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -7094,6 +7164,11 @@ Array [
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"

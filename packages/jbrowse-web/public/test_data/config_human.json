@@ -2,23 +2,6 @@
   "configId": "tQ76_pSGI",
   "tracks": [
     {
-      "configId": "hWk07s1R6",
-      "type": "SequenceTrack",
-      "name": "hg38 Reference Sequence",
-      "adapter": {
-        "configId": "Fnry79fJDX",
-        "type": "TwoBitAdapter",
-        "twoBitLocation": {
-          "uri": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
-        },
-        "assemblyName": "hg38"
-      },
-      "rendering": {
-        "configId": "kK8MocBNRt",
-        "type": "DivSequenceRenderer"
-      }
-    },
-    {
       "configId": "kgGeu2G_P",
       "type": "AlignmentsTrack",
       "name": "1000 Genomes NA12878 Coverage",
@@ -40,7 +23,7 @@
   ],
   "assemblies": {
     "hg38": {
-      "configId": "rwbpxsYzXsU",
+      "configId": "hg38",
       "aliases": [
         "GRCh38"
       ],
@@ -48,6 +31,21 @@
         "chr1": [
           "1"
         ]
+      },
+      "sequence": {
+        "configId": "hWk07s1R6",
+        "type": "ReferenceSequence",
+        "adapter": {
+          "configId": "Fnry79fJDX",
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
+          }
+        },
+        "rendering": {
+        "configId": "kK8MocBNRt",
+        "type": "DivSequenceRenderer"
+        }
       }
     }
   },
@@ -79,7 +77,7 @@
         "tracks": [
           {
             "id": "GFanwdnRC",
-            "type": "SequenceTrack",
+            "type": "ReferenceSequence",
             "height": 100,
             "configuration": "hWk07s1R6"
           },
@@ -88,14 +86,6 @@
             "type": "AlignmentsTrack",
             "height": 100,
             "configuration": "kgGeu2G_P"
-          }
-        ],
-        "displayedRegionsOverride": [
-          {
-            "assemblyName": "hg38",
-            "refName": "chr1",
-            "start": 0,
-            "end": 248956422
           }
         ],
         "configuration": {

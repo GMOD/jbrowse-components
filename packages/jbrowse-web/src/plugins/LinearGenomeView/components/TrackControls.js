@@ -1,5 +1,6 @@
 import React from 'react'
 import { PropTypes, observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 
 import { withStyles } from '@material-ui/core'
@@ -22,7 +23,16 @@ const styles = (/* theme */) => ({
   },
 })
 
-function TrackControls({ track, classes, onConfigureClick }) {
+function TrackControls({ track, view, classes, onConfigureClick }) {
+  let trackName = getConf(track, 'name') || track.id
+  if (getConf(track, 'type') === 'ReferenceSequence') {
+    trackName = 'Refence Sequence'
+    const rootModel = getRoot(view)
+    rootModel.configuration.assemblies.forEach((assembly, assemblyName) => {
+      if (assembly.sequence === track.configuration)
+        trackName = `Reference Sequence (${assemblyName})`
+    })
+  }
   return (
     <>
       <ConfigureToggleButton
@@ -31,7 +41,7 @@ function TrackControls({ track, classes, onConfigureClick }) {
         model={track}
       />
       <Typography variant="body1" className={classes.trackName}>
-        {getConf(track, 'name') || track.id}
+        {trackName}
       </Typography>
       <Typography
         variant="caption"

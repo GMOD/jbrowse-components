@@ -9,6 +9,7 @@ import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import MenuBarType from './pluggableElementTypes/MenuBarType'
 
 import { ConfigurationSchema } from './configuration'
+import rootConfig from './rootConfig'
 
 // little helper class that keeps groups of callbacks that are
 // then run in a specified order by group
@@ -44,6 +45,7 @@ export default class PluginManager {
     'adapter',
     'track',
     'view',
+    'root',
     'drawer widget',
     'menu bar',
   )
@@ -75,10 +77,16 @@ export default class PluginManager {
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
+    this.elementCreationSchedule.add('root', this.addRootConfig.bind(this))
+
     // add all the initial plugins
     initialPlugins.forEach(PluginClass => {
       this.addPlugin(new PluginClass())
     })
+  }
+
+  addRootConfig() {
+    this.rootConfig = rootConfig(this)
   }
 
   addPlugin(plugin) {

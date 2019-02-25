@@ -127,8 +127,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         const rootModel = getRoot(self)
         const { workerManager, configuration: rootConfig } = rootModel
         const regions = []
-        for (const [assemblyName, assembly] of rootConfig.assemblies) {
-          if (assembly.sequence.type === 'FromSizes') {
+        const assemblies = rootConfig.assemblies || new Map()
+        for (const [assemblyName, assembly] of assemblies) {
+          if (assembly.sequence.type === 'Sizes') {
             const sizes = readConfObject(assembly.sequence, 'sizes')
             Object.keys(sizes).forEach(refName =>
               regions.push({
@@ -138,17 +139,18 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
                 end: sizes[refName],
               }),
             )
-          } else if (assembly.sequence.type === 'FromFile') {
+          } else if (assembly.sequence.type === 'ReferenceSequence') {
             const adapterConfig = readConfObject(assembly.sequence, 'adapter')
             try {
               regions.push(
                 ...(yield getClient(workerManager).call(
                   'getRegions',
                   {
-                    sessionId: 'abcd',
+                    sessionId: assemblyName,
                     adapterType: adapterConfig.type,
                     adapterConfig,
                     rootConfig: getSnapshot(rootConfig),
+                    assemblyName,
                   },
                   { timeout: 1000000 },
                 )),
