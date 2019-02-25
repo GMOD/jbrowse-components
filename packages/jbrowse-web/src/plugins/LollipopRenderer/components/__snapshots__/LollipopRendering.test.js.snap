@@ -25,7 +25,7 @@ exports[`no features 1`] = `
 exports[`one feature 1`] = `
 <svg
   className="LollipopRendering"
-  height={30}
+  height={100}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -43,7 +43,7 @@ exports[`one feature 1`] = `
   width={333.3333333333333}
 >
   <circle
-    cx={0.6666666666666661}
+    cx={0.6666666666666666}
     cy={15}
     onBlur={[Function]}
     onClick={[Function]}

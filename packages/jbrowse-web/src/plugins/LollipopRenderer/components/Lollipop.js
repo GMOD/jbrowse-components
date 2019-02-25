@@ -15,10 +15,10 @@ class Lollipop extends Component {
     // region: CommonPropTypes.Region.isRequired,
     // config: CommonPropTypes.ConfigSchema.isRequired,
     layoutRecord: ReactPropTypes.shape({
-      startPx: ReactPropTypes.number.isRequired,
-      endPx: ReactPropTypes.number.isRequired,
-      heightPx: ReactPropTypes.number.isRequired,
-      topPx: ReactPropTypes.number.isRequired,
+      x: ReactPropTypes.number.isRequired,
+      y: ReactPropTypes.number.isRequired,
+      width: ReactPropTypes.number.isRequired,
+      height: ReactPropTypes.number.isRequired,
     }).isRequired,
 
     selectedFeatureId: ReactPropTypes.string,
@@ -56,37 +56,16 @@ class Lollipop extends Component {
   static layout(args) {
     const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
 
-    // const [startPx, endPx] = featureSpanPx(
-    //   feature,
-    //   region,
-    //   bpPerPx,
-    //   horizontallyFlipped,
-    // )
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
+    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
     const radiusPx = readConfObject(args.config, 'radius', [feature])
-    const radiusBp = radiusPx * bpPerPx
-    const startPx = bpToPx(
-      centerBp - radiusBp,
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
-    const endPx = bpToPx(
-      centerBp + radiusBp,
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
+    // const radiusBp = radiusPx * bpPerPx
 
-    const topPx = layout.addRect(
-      feature.id(),
-      Math.floor(centerBp - radiusBp),
-      Math.ceil(centerBp + radiusBp),
-      radiusPx * 2,
-      feature,
-    )
-
-    return { startPx, endPx, heightPx: radiusPx * 2, topPx }
+    layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
+      featureId: feature.id(),
+      centerX: centerPx,
+      radiusPx,
+    })
   }
 
   onFeatureMouseDown = event => {
@@ -142,7 +121,13 @@ class Lollipop extends Component {
     const {
       feature,
       config,
-      layoutRecord: { startPx, endPx, heightPx, topPx },
+      layoutRecord: {
+        x,
+        y,
+        width,
+        height,
+        data: { centerX, radiusPx },
+      },
       selectedFeatureId,
     } = this.props
 
@@ -154,9 +139,9 @@ class Lollipop extends Component {
     return (
       <circle
         title={feature.id()}
-        cx={startPx + (endPx - startPx) / 2}
-        cy={topPx + heightPx / 2}
-        r={heightPx / 2}
+        cx={centerX}
+        cy={y + radiusPx}
+        r={radiusPx}
         style={style}
         onMouseDown={this.onFeatureMouseDown}
         onMouseEnter={this.onFeatureMouseEnter}

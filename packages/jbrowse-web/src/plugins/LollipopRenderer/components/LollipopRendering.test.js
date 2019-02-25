@@ -1,10 +1,9 @@
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
 import Rendering from './LollipopRendering'
-import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
 import SimpleFeature from '../../../util/simpleFeature'
-import GranularRectLayout from '../../../util/layouts/GranularRectLayout'
 import ConfigSchema from '../configSchema'
+import { PrecomputedFloatingLayout, FloatingLayout } from '../Layout';
 
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {
@@ -13,7 +12,7 @@ test('no features', () => {
       width={500}
       height={500}
       region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 300 }}
-      layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
+      layout={new PrecomputedFloatingLayout({ pairs: [], totalHeight: 20 })}
       config={{}}
       bpPerPx={3}
     />,
@@ -29,7 +28,7 @@ test('one feature', () => {
       width={500}
       height={500}
       region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
-      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      layout={new FloatingLayout({ width: 100 })}
       features={
         new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
       }

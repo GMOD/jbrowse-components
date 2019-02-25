@@ -61,20 +61,28 @@ export default class BoxRenderer extends ServerSideRenderer {
     return 0
   }
 
+  deserializeLayoutInClient(json) {
+    return new PrecomputedLayout(json)
+  }
+
   deserializeResultsInClient(result, args) {
     super.deserializeResultsInClient(result, args)
-    result.layout = new PrecomputedLayout(result.layout)
+    result.layout = this.deserializeLayoutInClient(result.layout)
     return result
   }
 
-  deserializeArgsInWorker(args) {
-    super.deserializeArgsInWorker(args)
+  deserializeLayoutInWorker(args) {
     const { region } = args
     const session = this.getWorkerSession(args)
     const subLayout = session.layout.getSublayout(
       `${region.assemblyName}:${region.refName}`,
     )
-    args.layout = subLayout
+    return subLayout
+  }
+
+  deserializeArgsInWorker(args) {
+    super.deserializeArgsInWorker(args)
+    args.layout = this.deserializeLayoutInWorker(args)
   }
 
   serializeResultsInWorker(results, features, args) {

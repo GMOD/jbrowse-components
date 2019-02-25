@@ -12,7 +12,7 @@ const styles = theme => ({})
 class LollipopRendering extends Component {
   static propTypes = {
     layout: ReactPropTypes.shape({
-      addRect: ReactPropTypes.func.isRequired,
+      add: ReactPropTypes.func.isRequired,
       getTotalHeight: ReactPropTypes.func.isRequired,
     }).isRequired,
 
@@ -111,7 +111,7 @@ class LollipopRendering extends Component {
     const featuresRendered = []
     for (const feature of features.values()) {
       const FeatureComponent = this.chooseGlyphComponent(feature)
-      const layoutRecord = FeatureComponent.layout({
+      FeatureComponent.layout({
         feature,
         horizontallyFlipped,
         bpPerPx,
@@ -119,6 +119,11 @@ class LollipopRendering extends Component {
         config,
         layout,
       })
+    }
+
+    for (const layoutRecord of layout.getLayout().values()) {
+      const feature = features.get(layoutRecord.data.featureId)
+      const FeatureComponent = this.chooseGlyphComponent(feature)
       featuresRendered.push(
         <FeatureComponent
           {...this.props}
