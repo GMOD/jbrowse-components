@@ -1,6 +1,13 @@
 export const functionRegexp = /^\s*function\s*\(([^)]*)\)\s*{([\w\W]*)/
 
 const compilationCache = {}
+/**
+ * compile a function to a string
+ *
+ * @param {string} str string of code like "function() { ... }"
+ * @param {object} options
+ * @param {object} options.verifyFunctionSignature if true, the compiled function will check at runtime that the proper number of arguments were passed to it
+ */
 export function stringToFunction(str, options = {}) {
   const { verifyFunctionSignature } = options
 
