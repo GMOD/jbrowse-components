@@ -106,11 +106,9 @@ class Stick extends Component {
       feature,
       config,
       layoutRecord: {
-        x,
+        anchorLocation,
         y,
-        width,
-        height,
-        data: { centerX, radiusPx },
+        data: { radiusPx },
       },
       selectedFeatureId,
     } = this.props
@@ -119,12 +117,11 @@ class Stick extends Component {
     if (String(selectedFeatureId) === String(feature.id())) {
       style.fill = 'red'
     }
-
     return (
       <line
-        x1={centerX}
+        x1={anchorLocation}
         y1={0}
-        x2={centerX}
+        x2={anchorLocation}
         y2={y + 2 * radiusPx}
         stroke={readConfObject(config, 'stickColor', [feature])}
         strokeWidth={readConfObject(config, 'stickWidth', ['feature'])}

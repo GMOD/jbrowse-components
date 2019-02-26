@@ -4,7 +4,46 @@ import ReactPropTypes from 'prop-types'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { bpToPx } from '../../../util'
+import { contrastingTextColor } from '../../../util/color'
+
+function ScoreText({
+  feature,
+  config,
+  layoutRecord: {
+    y,
+    data: { anchorX, radiusPx, score },
+  },
+}) {
+  const innerColor = readConfObject(config, 'innerColor', [feature])
+
+  const scoreString = String(score)
+  const fontWidth = (radiusPx * 2) / scoreString.length
+  const fontHeight = fontWidth * 1.3
+  if (fontWidth < 10) return null
+  return (
+    <text
+      style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
+      x={anchorX}
+      y={y + radiusPx - fontHeight / 2.4}
+      textAnchor="middle"
+      dominantBaseline="hanging"
+    >
+      {scoreString}
+    </text>
+  )
+}
+
+ScoreText.propTypes = {
+  feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
+    .isRequired,
+  layoutRecord: ReactPropTypes.shape({
+    x: ReactPropTypes.number.isRequired,
+    y: ReactPropTypes.number.isRequired,
+    width: ReactPropTypes.number.isRequired,
+    height: ReactPropTypes.number.isRequired,
+  }).isRequired,
+  config: CommonPropTypes.ConfigSchema.isRequired,
+}
 
 class Lollipop extends Component {
   static propTypes = {
@@ -51,22 +90,6 @@ class Lollipop extends Component {
     onFeatureMouseMove: undefined,
 
     onFeatureClick: undefined,
-  }
-
-  static layout(args) {
-    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
-
-    const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
-    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
-    const radiusPx = readConfObject(args.config, 'radius', [feature])
-    // const radiusBp = radiusPx * bpPerPx
-
-    layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
-      featureId: feature.id(),
-      centerX: centerPx,
-      radiusPx,
-      score: readConfObject(args.config, 'score', [feature]),
-    })
   }
 
   onFeatureMouseDown = event => {
@@ -123,40 +146,63 @@ class Lollipop extends Component {
       feature,
       config,
       layoutRecord: {
-        x,
+        anchorLocation,
         y,
-        width,
-        height,
-        data: { centerX, radiusPx },
+        data: { radiusPx, score },
       },
       selectedFeatureId,
     } = this.props
 
-    const style = { fill: readConfObject(config, 'bodyColor', [feature]) }
+    const styleOuter = {
+      fill: readConfObject(config, 'strokeColor', [feature]),
+    }
     if (String(selectedFeatureId) === String(feature.id())) {
-      style.fill = 'red'
+      styleOuter.fill = 'red'
     }
 
+    const styleInner = {
+      fill: readConfObject(config, 'innerColor', [feature]),
+    }
+
+    const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
+
     return (
-      <circle
-        title={feature.id()}
-        cx={centerX}
-        cy={y + radiusPx}
-        r={radiusPx}
-        style={style}
-        onMouseDown={this.onFeatureMouseDown}
-        onMouseEnter={this.onFeatureMouseEnter}
-        onMouseOut={this.onFeatureMouseOut}
-        onMouseOver={this.onFeatureMouseOver}
-        onMouseUp={this.onFeatureMouseUp}
-        onMouseLeave={this.onFeatureMouseLeave}
-        onMouseMove={this.onFeatureMouseMove}
-        onClick={this.onFeatureClick}
-        onFocus={this.onFeatureMouseOver}
-        onBlur={this.onFeatureMouseOut}
-      >
+      <g>
         <title>{readConfObject(config, 'caption', [feature])}</title>
-      </circle>
+        <circle
+          cx={anchorLocation}
+          cy={y + radiusPx}
+          r={radiusPx}
+          style={styleOuter}
+          onMouseDown={this.onFeatureMouseDown}
+          onMouseEnter={this.onFeatureMouseEnter}
+          onMouseOut={this.onFeatureMouseOut}
+          onMouseOver={this.onFeatureMouseOver}
+          onMouseUp={this.onFeatureMouseUp}
+          onMouseLeave={this.onFeatureMouseLeave}
+          onMouseMove={this.onFeatureMouseMove}
+          onClick={this.onFeatureClick}
+          onFocus={this.onFeatureMouseOver}
+          onBlur={this.onFeatureMouseOut}
+        />
+        <circle
+          cx={anchorLocation}
+          cy={y + radiusPx}
+          r={radiusPx - strokeWidth}
+          style={styleInner}
+          onMouseDown={this.onFeatureMouseDown}
+          onMouseEnter={this.onFeatureMouseEnter}
+          onMouseOut={this.onFeatureMouseOut}
+          onMouseOver={this.onFeatureMouseOver}
+          onMouseUp={this.onFeatureMouseUp}
+          onMouseLeave={this.onFeatureMouseLeave}
+          onMouseMove={this.onFeatureMouseMove}
+          onClick={this.onFeatureClick}
+          onFocus={this.onFeatureMouseOver}
+          onBlur={this.onFeatureMouseOut}
+        />
+        <ScoreText {...this.props} score={score} />
+      </g>
     )
   }
 }

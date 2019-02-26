@@ -3,16 +3,22 @@ import { ConfigurationSchema } from '../../configuration'
 export default ConfigurationSchema(
   'LollipopRenderer',
   {
-    bodyColor: {
+    strokeColor: {
       type: 'color',
-      description: 'the main color of each lollipop',
+      description: 'the outer color of each lollipop',
       defaultValue: 'green',
       functionSignature: ['feature'],
     },
     innerColor: {
       type: 'color',
       description: 'the inner color of each lollipop',
-      defaultValue: 'red',
+      defaultValue: '#7fc75f',
+      functionSignature: ['feature'],
+    },
+    strokeWidth: {
+      type: 'number',
+      description: 'width of the stroked border',
+      defaultValue: 4,
       functionSignature: ['feature'],
     },
     radius: {

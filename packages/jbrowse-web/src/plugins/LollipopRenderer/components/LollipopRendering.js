@@ -7,8 +7,10 @@ import { PropTypes as CommonPropTypes } from '../../../mst-types'
 
 import Lollipop from './Lollipop'
 import Stick from './Stick'
+import { bpToPx } from '../../../util'
+import { readConfObject } from '../../../configuration'
 
-const styles = theme => ({})
+const styles = (/* theme */) => ({})
 
 class LollipopRendering extends Component {
   static propTypes = {
@@ -94,6 +96,21 @@ class LollipopRendering extends Component {
     return handler(event)
   }
 
+  layout(args) {
+    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
+
+    const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
+    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
+    const radiusPx = readConfObject(args.config, 'radius', [feature])
+
+    layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
+      featureId: feature.id(),
+      anchorX: centerPx,
+      radiusPx,
+      score: readConfObject(args.config, 'score', [feature]),
+    })
+  }
+
   render() {
     const {
       region,
@@ -108,7 +125,7 @@ class LollipopRendering extends Component {
     const sticksRendered = []
     const lollipopsRendered = []
     for (const feature of features.values()) {
-      Lollipop.layout({
+      this.layout({
         feature,
         horizontallyFlipped,
         bpPerPx,
