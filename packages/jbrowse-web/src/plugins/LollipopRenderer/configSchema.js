@@ -26,8 +26,12 @@ export default ConfigurationSchema(
       description: 'radius in pixels of each lollipop body',
       defaultValue: `
 function(feature) {
-  const radius = feature.get('score')
-  return Math.min(Math.max(3, radius), 20)
+  // this default function makes the
+  // area of each head be 10 times
+  // the feature score
+  const area = feature.get('score')*10
+  const radius = Math.sqrt(area/3.14)
+  return Math.max(2,radius)
 }
 `,
       functionSignature: ['feature'],

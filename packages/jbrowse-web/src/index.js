@@ -32,7 +32,9 @@ jbrowse.configure({
       type: 'DynamicTrack',
       name: 'Lollipop track',
       category: ['Bar Category'],
-      renderer: { type: 'LollipopRenderer' },
+      renderer: {
+        type: 'LollipopRenderer',
+      },
       adapter: {
         type: 'FromConfigAdapter',
         assemblyName: 'volvox',
