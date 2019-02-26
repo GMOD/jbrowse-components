@@ -108,12 +108,14 @@ export function ConfigurationSchema(
     } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
       if (!slotDefinition.type)
-        throw new Error(`no type set for config slot ${slotName}`)
+        throw new Error(`no type set for config slot ${modelName}.${slotName}`)
       try {
         modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
       } catch (e) {
         throw new Error(
-          `invalid config slot definition for '${slotName}': ${e.message}`,
+          `invalid config slot definition for ${modelName}.${slotName}: ${
+            e.message
+          }`,
         )
       }
     } else if (
