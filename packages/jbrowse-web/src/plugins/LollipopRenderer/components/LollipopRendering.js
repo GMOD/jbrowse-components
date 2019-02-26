@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 
 import Lollipop from './Lollipop'
+import Stick from './Stick'
 
 const styles = theme => ({})
 
@@ -93,10 +94,6 @@ class LollipopRendering extends Component {
     return handler(event)
   }
 
-  chooseGlyphComponent(/* feature */) {
-    return Lollipop
-  }
-
   render() {
     const {
       region,
@@ -108,10 +105,10 @@ class LollipopRendering extends Component {
       trackModel: { selectedFeatureId },
     } = this.props
 
-    const featuresRendered = []
+    const sticksRendered = []
+    const lollipopsRendered = []
     for (const feature of features.values()) {
-      const FeatureComponent = this.chooseGlyphComponent(feature)
-      FeatureComponent.layout({
+      Lollipop.layout({
         feature,
         horizontallyFlipped,
         bpPerPx,
@@ -123,13 +120,25 @@ class LollipopRendering extends Component {
 
     for (const layoutRecord of layout.getLayout(config).values()) {
       const feature = features.get(layoutRecord.data.featureId)
-      const FeatureComponent = this.chooseGlyphComponent(feature)
-      featuresRendered.push(
-        <FeatureComponent
+      lollipopsRendered.push(
+        <Stick
           {...this.props}
           layoutRecord={layoutRecord}
           feature={feature}
-          key={feature.id()}
+          key={`stick-${feature.id()}`}
+          selectedFeatureId={selectedFeatureId}
+        />,
+      )
+    }
+
+    for (const layoutRecord of layout.getLayout(config).values()) {
+      const feature = features.get(layoutRecord.data.featureId)
+      lollipopsRendered.push(
+        <Lollipop
+          {...this.props}
+          layoutRecord={layoutRecord}
+          feature={feature}
+          key={`body-${feature.id()}`}
           selectedFeatureId={selectedFeatureId}
         />,
       )
@@ -156,7 +165,8 @@ class LollipopRendering extends Component {
         onBlur={this.onMouseLeave}
         onClick={this.onClick}
       >
-        {featuresRendered}
+        {sticksRendered}
+        {lollipopsRendered}
       </svg>
     )
   }

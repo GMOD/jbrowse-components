@@ -4,9 +4,8 @@ import ReactPropTypes from 'prop-types'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { bpToPx } from '../../../util'
 
-class Lollipop extends Component {
+class Stick extends Component {
   static propTypes = {
     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
       .isRequired,
@@ -51,22 +50,6 @@ class Lollipop extends Component {
     onFeatureMouseMove: undefined,
 
     onFeatureClick: undefined,
-  }
-
-  static layout(args) {
-    const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
-
-    const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
-    const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
-    const radiusPx = readConfObject(args.config, 'radius', [feature])
-    // const radiusBp = radiusPx * bpPerPx
-
-    layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
-      featureId: feature.id(),
-      centerX: centerPx,
-      radiusPx,
-      score: readConfObject(args.config, 'score', [feature]),
-    })
   }
 
   onFeatureMouseDown = event => {
@@ -138,27 +121,16 @@ class Lollipop extends Component {
     }
 
     return (
-      <circle
-        title={feature.id()}
-        cx={centerX}
-        cy={y + radiusPx}
-        r={radiusPx}
-        style={style}
-        onMouseDown={this.onFeatureMouseDown}
-        onMouseEnter={this.onFeatureMouseEnter}
-        onMouseOut={this.onFeatureMouseOut}
-        onMouseOver={this.onFeatureMouseOver}
-        onMouseUp={this.onFeatureMouseUp}
-        onMouseLeave={this.onFeatureMouseLeave}
-        onMouseMove={this.onFeatureMouseMove}
-        onClick={this.onFeatureClick}
-        onFocus={this.onFeatureMouseOver}
-        onBlur={this.onFeatureMouseOut}
-      >
-        <title>{readConfObject(config, 'caption', [feature])}</title>
-      </circle>
+      <line
+        x1={centerX}
+        y1={0}
+        x2={centerX}
+        y2={y + 2 * radiusPx}
+        stroke={readConfObject(config, 'stickColor', [feature])}
+        strokeWidth={readConfObject(config, 'stickWidth', ['feature'])}
+      />
     )
   }
 }
 
-export default observer(Lollipop)
+export default observer(Stick)
