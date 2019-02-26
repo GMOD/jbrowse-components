@@ -4,7 +4,7 @@ import ReactPropTypes from 'prop-types'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { featureSpanPx, bpToPx } from '../../../util'
+import { bpToPx } from '../../../util'
 
 class Lollipop extends Component {
   static propTypes = {
@@ -65,6 +65,7 @@ class Lollipop extends Component {
       featureId: feature.id(),
       centerX: centerPx,
       radiusPx,
+      score: readConfObject(args.config, 'score', [feature]),
     })
   }
 
@@ -137,23 +138,35 @@ class Lollipop extends Component {
     }
 
     return (
-      <circle
-        title={feature.id()}
-        cx={centerX}
-        cy={y + radiusPx}
-        r={radiusPx}
-        style={style}
-        onMouseDown={this.onFeatureMouseDown}
-        onMouseEnter={this.onFeatureMouseEnter}
-        onMouseOut={this.onFeatureMouseOut}
-        onMouseOver={this.onFeatureMouseOver}
-        onMouseUp={this.onFeatureMouseUp}
-        onMouseLeave={this.onFeatureMouseLeave}
-        onMouseMove={this.onFeatureMouseMove}
-        onClick={this.onFeatureClick}
-        onFocus={this.onFeatureMouseOver}
-        onBlur={this.onFeatureMouseOut}
-      />
+      <>
+        <line
+          x1={centerX}
+          y1={0}
+          x2={centerX}
+          y2={y + 2 * radiusPx}
+          stroke={readConfObject(config, 'stickColor', [feature])}
+          strokeWidth={readConfObject(config, 'stickWidth', ['feature'])}
+        />
+        <circle
+          title={feature.id()}
+          cx={centerX}
+          cy={y + radiusPx}
+          r={radiusPx}
+          style={style}
+          onMouseDown={this.onFeatureMouseDown}
+          onMouseEnter={this.onFeatureMouseEnter}
+          onMouseOut={this.onFeatureMouseOut}
+          onMouseOver={this.onFeatureMouseOver}
+          onMouseUp={this.onFeatureMouseUp}
+          onMouseLeave={this.onFeatureMouseLeave}
+          onMouseMove={this.onFeatureMouseMove}
+          onClick={this.onFeatureClick}
+          onFocus={this.onFeatureMouseOver}
+          onBlur={this.onFeatureMouseOut}
+        >
+          <title>{readConfObject(config, 'caption', [feature])}</title>
+        </circle>
+      </>
     )
   }
 }

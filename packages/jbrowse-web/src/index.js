@@ -43,6 +43,7 @@ jbrowse.configure({
             start: 190,
             end: 191,
             type: 'foo',
+            score: 200,
             name: 'Boris',
           },
           {
@@ -51,6 +52,7 @@ jbrowse.configure({
             start: 191,
             end: 192,
             type: 'bar',
+            score: 20,
             name: 'Theresa',
           },
           {
@@ -59,6 +61,7 @@ jbrowse.configure({
             start: 210,
             end: 211,
             type: 'baz',
+            score: 300,
             name: 'Nigel',
           },
           {
@@ -66,6 +69,7 @@ jbrowse.configure({
             seq_id: 'ctgA',
             start: 220,
             end: 221,
+            score: 2,
             type: 'quux',
             name: 'Geoffray',
           },

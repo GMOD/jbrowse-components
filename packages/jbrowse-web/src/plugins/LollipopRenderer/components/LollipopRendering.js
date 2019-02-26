@@ -121,7 +121,7 @@ class LollipopRendering extends Component {
       })
     }
 
-    for (const layoutRecord of layout.getLayout().values()) {
+    for (const layoutRecord of layout.getLayout(config).values()) {
       const feature = features.get(layoutRecord.data.featureId)
       const FeatureComponent = this.chooseGlyphComponent(feature)
       featuresRendered.push(

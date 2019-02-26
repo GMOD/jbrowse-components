@@ -3,7 +3,7 @@ import TestRenderer from 'react-test-renderer'
 import Rendering from './LollipopRendering'
 import SimpleFeature from '../../../util/simpleFeature'
 import ConfigSchema from '../configSchema'
-import { PrecomputedFloatingLayout, FloatingLayout } from '../Layout';
+import { PrecomputedFloatingLayout, FloatingLayout } from '../Layout'
 
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {
