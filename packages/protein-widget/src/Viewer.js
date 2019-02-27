@@ -77,9 +77,9 @@ export class Viewer {
               type: 'SvgFeatureRenderer',
               color1: `
 function(feature) {
-  const key = feature.get('type') || feature.id()
-  const colorNumber = key.split('').map(c => c.charCodeAt(0)).reduce((a,b) => a+b, 0) % 7
-  return ['red','green','blue','cyan', 'magenta', 'yellow', 'black'][colorNumber]
+  const key = feature.get('type')
+  const colorNumber = key.split('').map(c => c.charCodeAt(0)).reduce((a,b) => a+b, 0) % 6
+  return ['red','green','blue','cyan', 'magenta', 'black'][colorNumber]
 }`,
             },
             adapter: { type: 'FromConfigAdapter', features: [] },
