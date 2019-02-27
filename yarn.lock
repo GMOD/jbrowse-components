@@ -11191,10 +11191,10 @@ react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
-react-simple-code-editor@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/react-simple-code-editor/-/react-simple-code-editor-0.8.0.tgz#c0c36df276c49d3d4410b8457f7a0a15396acbbf"
-  integrity sha512-H3HknuOqH2h8Kbg+vCUXf7YwDMC8UI0pEx2j5sODFVdX/RBeGX+w0vB+7LLrCh1qaQ1nTycyXXKWZifL3Dt0gg==
+react-simple-code-editor@0.9.3:
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/react-simple-code-editor/-/react-simple-code-editor-0.9.3.tgz#12af0f85455eb1be1a86f15e325ec7861bc0db75"
+  integrity sha512-JexTKcpcOjArsXUDCWNoXgIdshoacJVSuf3LbdKG0tHw5ISREoh7wvNZlRRk2gncFRSixkkTI5E18svC966rYQ==
 
 react-sizeme@^2.5.2:
   version "2.5.2"
