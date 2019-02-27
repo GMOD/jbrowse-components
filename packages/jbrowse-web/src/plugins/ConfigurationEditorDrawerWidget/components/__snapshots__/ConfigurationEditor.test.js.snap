@@ -1915,6 +1915,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   style={
                     Object {
                       "boxSizing": "border-box",
+                      "overflow": "hidden",
                       "padding": 0,
                       "position": "relative",
                       "textAlign": "left",
@@ -1927,7 +1928,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     autoCapitalize="off"
                     autoComplete="off"
                     autoCorrect="off"
-                    className="npm__react-simple-code-editor__textarea "
+                    className="npm__react-simple-code-editor__textarea"
                     data-gramm={false}
                     onChange={[Function]}
                     onKeyDown={[Function]}
@@ -1986,6 +1987,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     }
                     style={
                       Object {
+                        "background": "none",
                         "border": 0,
                         "boxSizing": "inherit",
                         "display": "inherit",
@@ -2024,17 +2026,22 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
 }
 
 /**
- * IE doesn't support '-webkit-text-fill-color'
- * So we use 'color: transparent' to make the text transparent on IE
- * Unlike other browsers, it doesn't affect caret color in IE
+ * Hack to apply on some CSS on IE10 and IE11
  */
-.npm__react-simple-code-editor__textarea-ie {
-  color: transparent !important;
-}
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  /**
+    * IE doesn't support '-webkit-text-fill-color'
+    * So we use 'color: transparent' to make the text transparent on IE
+    * Unlike other browsers, it doesn't affect caret color in IE
+    */
+  .npm__react-simple-code-editor__textarea {
+    color: transparent !important;
+  }
 
-.npm__react-simple-code-editor__textarea-ie::selection {
-  background-color: #accef7 !important;
-  color: transparent !important;
+  .npm__react-simple-code-editor__textarea::selection {
+    background-color: #accef7 !important;
+    color: transparent !important;
+  }
 }
 ",
                       }
