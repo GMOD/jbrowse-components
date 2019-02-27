@@ -27,10 +27,20 @@ test('one feature', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
+      region={{
+        assemblyName: 'toaster',
+        refName: 'zonk',
+        start: 0,
+        end: 1000,
+      }}
       layout={new FloatingLayout({ width: 100 })}
       features={
-        new Map([['one', new SimpleFeature({ id: 'one', start: 1, end: 3 })]])
+        new Map([
+          [
+            'one',
+            new SimpleFeature({ id: 'one', score: 10, start: 1, end: 3 }),
+          ],
+        ])
       }
       config={ConfigSchema.create({})}
       bpPerPx={3}
