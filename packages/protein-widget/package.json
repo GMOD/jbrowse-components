@@ -15,6 +15,7 @@
   "dependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
+    "@gmod/gff": "^1.1.2",
     "babel-loader": "^8.0.5",
     "material-icons": "^0.3.0",
     "mobx": "^5.9.0",
