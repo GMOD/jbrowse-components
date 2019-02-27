@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable import/no-extraneous-dependencies */
 const url = require('url')
 const express = require('express')
 const fetch = require('cross-fetch')
