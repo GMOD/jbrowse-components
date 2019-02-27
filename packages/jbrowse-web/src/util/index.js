@@ -14,11 +14,15 @@ export function clamp(val, min, max) {
   return val
 }
 
+function roundToNearestPointOne(num) {
+  return Math.round(num * 10) / 10
+}
+
 export function bpToPx(bp, region, bpPerPx, flipped = false) {
   if (flipped) {
-    return (region.end - bp) / bpPerPx
+    return roundToNearestPointOne((region.end - bp) / bpPerPx)
   }
-  return (bp - region.start) / bpPerPx
+  return roundToNearestPointOne((bp - region.start) / bpPerPx)
 }
 
 export function featureSpanPx(feature, region, bpPerPx, flipped = false) {

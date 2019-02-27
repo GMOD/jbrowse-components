@@ -102,6 +102,7 @@ class LollipopRendering extends Component {
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
     const centerPx = bpToPx(centerBp, region, bpPerPx, horizontallyFlipped)
     const radiusPx = readConfObject(args.config, 'radius', [feature])
+
     if (!radiusPx)
       console.error(
         new Error(

@@ -18,8 +18,8 @@ function ScoreText({
 
   const scoreString = String(score)
   const fontWidth = (radiusPx * 2) / scoreString.length
-  const fontHeight = fontWidth * 1.3
-  if (fontWidth < 10) return null
+  const fontHeight = fontWidth * 1.1
+  if (fontHeight < 12) return null
   return (
     <text
       style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
@@ -185,22 +185,24 @@ class Lollipop extends Component {
           onFocus={this.onFeatureMouseOver}
           onBlur={this.onFeatureMouseOut}
         />
-        <circle
-          cx={anchorLocation}
-          cy={y + radiusPx}
-          r={radiusPx - strokeWidth}
-          style={styleInner}
-          onMouseDown={this.onFeatureMouseDown}
-          onMouseEnter={this.onFeatureMouseEnter}
-          onMouseOut={this.onFeatureMouseOut}
-          onMouseOver={this.onFeatureMouseOver}
-          onMouseUp={this.onFeatureMouseUp}
-          onMouseLeave={this.onFeatureMouseLeave}
-          onMouseMove={this.onFeatureMouseMove}
-          onClick={this.onFeatureClick}
-          onFocus={this.onFeatureMouseOver}
-          onBlur={this.onFeatureMouseOut}
-        />
+        {radiusPx - strokeWidth <= 2 ? null : (
+          <circle
+            cx={anchorLocation}
+            cy={y + radiusPx}
+            r={radiusPx - strokeWidth}
+            style={styleInner}
+            onMouseDown={this.onFeatureMouseDown}
+            onMouseEnter={this.onFeatureMouseEnter}
+            onMouseOut={this.onFeatureMouseOut}
+            onMouseOver={this.onFeatureMouseOver}
+            onMouseUp={this.onFeatureMouseUp}
+            onMouseLeave={this.onFeatureMouseLeave}
+            onMouseMove={this.onFeatureMouseMove}
+            onClick={this.onFeatureClick}
+            onFocus={this.onFeatureMouseOver}
+            onBlur={this.onFeatureMouseOut}
+          />
+        )}
         <ScoreText {...this.props} score={score} />
       </g>
     )

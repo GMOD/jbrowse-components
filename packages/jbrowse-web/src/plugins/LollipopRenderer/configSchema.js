@@ -31,7 +31,7 @@ function(feature) {
   // the feature score
   const area = feature.get('score')*10
   const radius = Math.sqrt(area/3.14)
-  return Math.max(2,radius)
+  return Math.max(3,radius)
 }
 `,
       functionSignature: ['feature'],

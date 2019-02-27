@@ -1,4 +1,5 @@
 import { readConfObject } from '../../configuration'
+import { doesIntersect2 } from '../../util/range'
 
 export class FloatingLayout {
   constructor({ width }) {
@@ -53,14 +54,13 @@ export class FloatingLayout {
         const prevEnd = prevStart + prevWidth
         const prevBottom = prevTop + prevHeight
         if (
-          prevStart < end &&
-          prevEnd > start && // they overlap in x space
-          prevTop < bottom &&
-          prevBottom > top // and they overlap in y space
+          doesIntersect2(prevStart, prevEnd, start, end) &&
+          doesIntersect2(prevTop, prevBottom, top, bottom)
         ) {
           // bump this one to the bottom of the previous one
           top = prevBottom
           bottom = top + height
+          j = -1 // we need to check all of them again after bumping
         }
       }
 
