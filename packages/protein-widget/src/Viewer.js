@@ -12,6 +12,7 @@ import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAda
 import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
 import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'
 import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
+import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
 import { ConfigurationSchema } from '../../jbrowse-web/src/configuration'
 
 // import { domains } from './TestVariants'
@@ -22,6 +23,7 @@ const plugins = [
   SequenceRendererPlugin,
   LollipopRendererPlugin,
   SvgFeatureRendererPlugin,
+  FilteringTrackPlugin,
 ]
 
 // want a lineargenomeview with a sequence track
@@ -36,6 +38,7 @@ export class Viewer {
     )
     const BasicTrackType = this.pluginManager.getTrackType('BasicTrack')
     const DynamicTrackType = this.pluginManager.getTrackType('DynamicTrack')
+    const FilteringTrackType = this.pluginManager.getTrackType('FilteringTrack')
 
     const widgetWidth = 800
     this.model = types
@@ -45,7 +48,7 @@ export class Viewer {
           rpc: RpcManager.configSchema,
           sequenceTrack: BasicTrackType.configSchema,
           variantTrack: DynamicTrackType.configSchema,
-          domainsTrack: BasicTrackType.configSchema,
+          domainsTrack: FilteringTrackType.configSchema,
         }),
       })
       .volatile(() => ({

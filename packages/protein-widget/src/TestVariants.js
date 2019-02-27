@@ -208,6 +208,7 @@ export const domains = arrayOfThings
     start: f.start,
     end: f.end + 1,
     seq_id: 'KRAS 2A',
+    type: f.type,
     note: f.attributes.Note && f.attributes.Note[0],
     score: scoreTestPattern.shift(),
   }))
