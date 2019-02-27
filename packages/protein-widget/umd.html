@@ -7,11 +7,12 @@
     <style>
       body {
         background: #dbd2fc;
-        padding: 50px 100px;
+        padding: 50px;
       }
       #protein-viewer {
         border: 1px solid black;
-        margin: 100px;
+        margin: 100px auto;
+        width: 800px;
       }
     </style>
   </head>
@@ -23,6 +24,7 @@
       var v = new JBrowseProteinViewer.Viewer(
         document.getElementById('protein-viewer'),
         {
+          width: 800,
           protein: {
             name: 'KRAS 2A',
             sequences: {

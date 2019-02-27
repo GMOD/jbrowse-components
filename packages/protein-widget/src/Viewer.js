@@ -78,8 +78,9 @@ export class Viewer {
     )
   }
 
-  update({ protein }) {
+  update({ width, protein }) {
     transaction(() => {
+      if (width) this.model.view.setWidth(width)
       this.updateSequences(protein)
     })
   }
