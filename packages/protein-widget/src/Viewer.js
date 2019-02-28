@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
+import 'typeface-roboto'
 
 import PluginManager from '../../jbrowse-web/src/PluginManager'
 import RpcManager from '../../jbrowse-web/src/rpc/RpcManager'
