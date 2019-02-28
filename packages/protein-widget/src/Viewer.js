@@ -81,6 +81,9 @@ function(feature) {
   const colorNumber = key.split('').map(c => c.charCodeAt(0)).reduce((a,b) => a+b, 0) % 6
   return ['red','green','blue','cyan', 'magenta', 'black'][colorNumber]
 }`,
+              labels: {
+                description: "function(feature) { return feature.get('type') }",
+              },
             },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
