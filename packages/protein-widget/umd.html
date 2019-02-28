@@ -11,7 +11,7 @@
       }
       #protein-viewer {
         border: 1px solid black;
-        margin: 100px auto;
+	margin: 100px auto;
         width: 800px;
       }
     </style>
@@ -19,6 +19,7 @@
   <body>
     <h1>Protein Widget Demo Page</h1>
     <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data.</tt></p>
+    
     <div id="protein-viewer"></div>
     <script type="text/javascript">
       var testData = {
@@ -597,12 +598,15 @@
       "score": 1
     }
   ]
-}
+};
+      (async function() {
+        const testData2 = await fetch('http://18.218.239.245/protein_data_service/?ensemblGeneId=ENSG00000000003').then(x => x.json())
 
-      var viewer = new JBrowseProteinViewer.Viewer(
-        document.getElementById('protein-viewer'),
-        testData,
-      );
+        const viewer = new JBrowseProteinViewer.Viewer(
+          document.getElementById('protein-viewer'),
+          testData2,
+        );
+      })()
     </script>
   </body>
 </html>
