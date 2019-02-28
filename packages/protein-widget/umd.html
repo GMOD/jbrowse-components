@@ -26,6 +26,7 @@
       </input>
       <button>Submit</button>
     </form>
+    <div id="spinner-container" style="display: inline"></div>
     <div id="protein-viewer"></div>
     <script type="text/javascript">
       const form = document.getElementById('myform')
@@ -35,10 +36,16 @@
       let signal
 
       async function updateProteinViewer(geneid) {
+        var target = document.getElementById('spinner-container');
+        const img = document.createElement('img')
+        img.src = 'http://www.bakerbotts.com/assets/src/images/loading_spinner.gif'
+        img.width=100
+        img.height=100
+        target.appendChild(img)
+
         const testData = await fetch(`http://18.218.239.245/protein_data_service/?ensemblGeneId=${geneid}`)
           .then(res => res.json())
-        console.log(testData)
-
+        target.innerHTML = ""
         if(viewer) {
           viewer.update(testData)
         } else {
@@ -76,7 +83,6 @@
           ret.hits.forEach(item => {
             if(item.ensembl) {
               var option = document.createElement('option');
-              console.log(item)
               option.value = item.ensembl.gene;
               option.label = `${item.symbol} - ${item.name} (${item.ensembl.gene})`
               mylist.append(option)
