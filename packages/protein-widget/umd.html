@@ -1,7 +1,6 @@
 <html>
   <head>
-   <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="umd/jbrowse-protein-viewer.js" type="text/javascript"></script>
 
     <style>
@@ -11,7 +10,11 @@
       }
       #protein-viewer {
         border: 1px solid black;
-	margin: 100px auto;
+      	margin: 100px auto;
+        width: 800px;
+      }
+      #error-bar {
+        background: #ffaaaa;
         width: 800px;
       }
     </style>
@@ -27,6 +30,7 @@
       <button>Submit</button>
     </form>
     <div id="spinner-container" style="display: inline"></div>
+    <div id="error-bar"></div>
     <div id="protein-viewer"></div>
     <script type="text/javascript">
       const form = document.getElementById('myform')
@@ -36,24 +40,31 @@
       let signal
 
       async function updateProteinViewer(geneid) {
-        var target = document.getElementById('spinner-container');
+        var spinner = document.getElementById('spinner-container');
         const img = document.createElement('img')
         img.src = 'http://www.bakerbotts.com/assets/src/images/loading_spinner.gif'
         img.width=100
         img.height=100
-        target.appendChild(img)
+        spinner.appendChild(img)
 
-        const testData = await fetch(`http://18.218.239.245/protein_data_service/?ensemblGeneId=${geneid}`)
+        fetch(`http://18.218.239.245/protein_data_service/?ensemblGeneId=${geneid}`)
           .then(res => res.json())
-        target.innerHTML = ""
-        if(viewer) {
-          viewer.update(testData)
-        } else {
-          viewer = new JBrowseProteinViewer.Viewer(
-            document.getElementById('protein-viewer'),
-            testData,
-          );
-        }
+          .then(res => {
+            if(viewer) {
+              viewer.update(res)
+            } else {
+              viewer = new JBrowseProteinViewer.Viewer(
+                document.getElementById('protein-viewer'),
+                res,
+              );
+            }
+          })
+          .catch(error => {
+            document.getElementById('error-bar').textContent = error.message
+          }).finally(() => {
+            spinner.innerHTML = ""
+          })
+
       }
       form.addEventListener('submit', event => {
         event.preventDefault()
