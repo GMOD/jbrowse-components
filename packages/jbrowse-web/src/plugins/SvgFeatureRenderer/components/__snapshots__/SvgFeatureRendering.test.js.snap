@@ -25,7 +25,7 @@ exports[`no features 1`] = `
 exports[`one feature 1`] = `
 <svg
   className="SvgFeatureRendering"
-  height="10px"
+  height="25px"
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -42,27 +42,44 @@ exports[`one feature 1`] = `
   }
   width="333.3333333333333px"
 >
-  <rect
-    height={10}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onMouseDown={[Function]}
-    onMouseEnter={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseOut={[Function]}
-    onMouseOver={[Function]}
-    onMouseUp={[Function]}
-    style={
-      Object {
-        "fill": "goldenrod",
+  <g
+    transform="translate(0.3 0)"
+  >
+    <rect
+      height={10}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onMouseDown={[Function]}
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      onMouseMove={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+      onMouseUp={[Function]}
+      style={
+        Object {
+          "fill": "goldenrod",
+        }
       }
-    }
-    title="one"
-    width={0.7}
-    x={0.3}
-    y={0}
-  />
+      title="one"
+      width={0.7}
+      x={0}
+      y={0}
+    />
+    <text
+      dominantBaseline="hanging"
+      style={
+        Object {
+          "fill": "black",
+          "fontSize": 13,
+        }
+      }
+      x={0}
+      y={12}
+    >
+      one
+    </text>
+  </g>
 </svg>
 `;

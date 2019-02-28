@@ -117,6 +117,7 @@ jbrowse.configure({
             end: 101,
             type: 'foo',
             name: 'Boris',
+            note: 'note for boris',
           },
           {
             uniqueId: 'two',
@@ -125,6 +126,7 @@ jbrowse.configure({
             end: 111,
             type: 'bar',
             name: 'Theresa',
+            note: 'note for theresa',
           },
           {
             uniqueId: 'three',
@@ -133,6 +135,7 @@ jbrowse.configure({
             end: 121,
             type: 'baz',
             name: 'Nigel',
+            note: 'note for nigel',
           },
           {
             uniqueId: 'four',
@@ -141,6 +144,7 @@ jbrowse.configure({
             end: 131,
             type: 'quux',
             name: 'Geoffray',
+            note: 'note for geoffray',
           },
         ],
       },
@@ -187,10 +191,8 @@ firstView.displayRegions([
   { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
-firstView.zoomTo(0.06) // bpPerPx
-firstView.showTrack(model.configuration.tracks[0], { height: 110 })
-firstView.showTrack(model.configuration.tracks[1], { height: 110 })
-firstView.showTrack(model.configuration.tracks[2], { height: 200 })
+// firstView.zoomTo(0.06) // bpPerPx
+firstView.showTrack(model.configuration.tracks[4], { height: 200 })
 
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })

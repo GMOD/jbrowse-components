@@ -7,6 +7,31 @@ import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
 import { featureSpanPx } from '../../../util'
+import SceneGraph from '../../../util/layouts/SceneGraph'
+
+function Label({ layoutRecord, fontHeight, color, children }) {
+  return (
+    <text
+      x={layoutRecord.left}
+      y={layoutRecord.top}
+      style={{ fontSize: fontHeight, fill: color }}
+      dominantBaseline="hanging"
+    >
+      {children}
+    </text>
+  )
+}
+Label.propTypes = {
+  layoutRecord: ReactPropTypes.shape({
+    left: ReactPropTypes.number.isRequired,
+  }).isRequired,
+  fontHeight: ReactPropTypes.number.isRequired,
+  children: ReactPropTypes.node.isRequired,
+  color: ReactPropTypes.string,
+}
+Label.defaultProps = {
+  color: 'black',
+}
 
 class Box extends Component {
   static propTypes = {
@@ -17,10 +42,14 @@ class Box extends Component {
     // region: CommonPropTypes.Region.isRequired,
     // config: CommonPropTypes.ConfigSchema.isRequired,
     layoutRecord: ReactPropTypes.shape({
-      startPx: ReactPropTypes.number.isRequired,
-      endPx: ReactPropTypes.number.isRequired,
-      heightPx: ReactPropTypes.number.isRequired,
-      topPx: ReactPropTypes.number.isRequired,
+      rootLayout: ReactPropTypes.shape({
+        left: ReactPropTypes.number.isRequired,
+      }).isRequired,
+      name: ReactPropTypes.string,
+      description: ReactPropTypes.string,
+      shouldShowDescription: ReactPropTypes.bool,
+      shouldShowName: ReactPropTypes.bool,
+      fontHeight: ReactPropTypes.number,
     }).isRequired,
 
     selectedFeatureId: ReactPropTypes.string,
@@ -58,24 +87,66 @@ class Box extends Component {
   static layout(args) {
     const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
 
-    // ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
     const [startPx, endPx] = featureSpanPx(
       feature,
       region,
       bpPerPx,
       horizontallyFlipped,
     )
-    const heightPx = readConfObject(args.config, 'height', [feature])
+    const rootLayout = new SceneGraph('root', startPx, 0, 0, 0)
+    const featureHeight = readConfObject(args.config, 'height', [feature])
+    rootLayout.addChild('feature', 0, 0, endPx - startPx, featureHeight)
+
+    const name =
+      readConfObject(args.config, ['labels', 'name'], [feature]) || ''
+    const description =
+      readConfObject(args.config, ['labels', 'description'], [feature]) || ''
+    const fontHeight = readConfObject(
+      args.config,
+      ['labels', 'fontSize'],
+      ['feature'],
+    )
+    const fontWidth = fontHeight * 0.75
+    const shouldShowName = /\S/.test(name)
+    const shouldShowDescription = /\S/.test(description)
+    const textVerticalPadding = 2
+    if (shouldShowName) {
+      rootLayout.addChild(
+        'nameLabel',
+        0,
+        rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
+        name.length * fontWidth,
+        fontHeight,
+      )
+    }
+    if (shouldShowDescription) {
+      rootLayout.addChild(
+        'descriptionLabel',
+        0,
+        rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature')
+          .bottom + textVerticalPadding,
+        description.length * fontWidth,
+        fontHeight,
+      )
+    }
 
     const topPx = layout.addRect(
       feature.id(),
-      feature.get('start'),
-      feature.get('end'),
-      heightPx, // height
-      feature,
+      rootLayout.left,
+      rootLayout.right,
+      rootLayout.height,
     )
 
-    return { startPx, endPx, heightPx, topPx }
+    rootLayout.move(0, topPx)
+
+    return {
+      rootLayout,
+      name,
+      description,
+      shouldShowDescription,
+      shouldShowName,
+      fontHeight,
+    }
   }
 
   onFeatureMouseDown = event => {
@@ -131,7 +202,14 @@ class Box extends Component {
     const {
       feature,
       config,
-      layoutRecord: { startPx, endPx, heightPx, topPx },
+      layoutRecord: {
+        rootLayout,
+        name,
+        description,
+        shouldShowDescription,
+        shouldShowName,
+        fontHeight,
+      },
       selectedFeatureId,
     } = this.props
 
@@ -140,25 +218,51 @@ class Box extends Component {
       style.fill = 'red'
     }
 
+    const featureLayout = rootLayout.getSubRecord('feature')
+
     return (
-      <rect
-        title={feature.id()}
-        x={startPx}
-        y={topPx}
-        width={endPx - startPx}
-        height={heightPx}
-        style={style}
-        onMouseDown={this.onFeatureMouseDown}
-        onMouseEnter={this.onFeatureMouseEnter}
-        onMouseOut={this.onFeatureMouseOut}
-        onMouseOver={this.onFeatureMouseOver}
-        onMouseUp={this.onFeatureMouseUp}
-        onMouseLeave={this.onFeatureMouseLeave}
-        onMouseMove={this.onFeatureMouseMove}
-        onClick={this.onFeatureClick}
-        onFocus={this.onFeatureMouseOver}
-        onBlur={this.onFeatureMouseOut}
-      />
+      <g transform={`translate(${rootLayout.left} ${rootLayout.top})`}>
+        <rect
+          title={feature.id()}
+          x={featureLayout.left}
+          y={featureLayout.top}
+          width={featureLayout.width}
+          height={featureLayout.height}
+          style={style}
+          onMouseDown={this.onFeatureMouseDown}
+          onMouseEnter={this.onFeatureMouseEnter}
+          onMouseOut={this.onFeatureMouseOut}
+          onMouseOver={this.onFeatureMouseOver}
+          onMouseUp={this.onFeatureMouseUp}
+          onMouseLeave={this.onFeatureMouseLeave}
+          onMouseMove={this.onFeatureMouseMove}
+          onClick={this.onFeatureClick}
+          onFocus={this.onFeatureMouseOver}
+          onBlur={this.onFeatureMouseOut}
+        />
+        {!shouldShowName ? null : (
+          <Label
+            layoutRecord={rootLayout.getSubRecord('nameLabel')}
+            fontHeight={fontHeight}
+            color={readConfObject(config, ['labels', 'nameColor'], [feature])}
+          >
+            {name}
+          </Label>
+        )}
+        {!shouldShowDescription ? null : (
+          <Label
+            layoutRecord={rootLayout.getSubRecord('descriptionLabel')}
+            fontHeight={fontHeight}
+            color={readConfObject(
+              config,
+              ['labels', 'descriptionColor'],
+              [feature],
+            )}
+          >
+            {description}
+          </Label>
+        )}
+      </g>
     )
   }
 }

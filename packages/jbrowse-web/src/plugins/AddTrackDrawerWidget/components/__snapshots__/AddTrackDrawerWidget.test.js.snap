@@ -6095,6 +6095,9 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
               },
               "SvgFeatureRenderer": Object {
                 "configId": "testid",
+                "labels": Object {
+                  "configId": "testid",
+                },
                 "type": "SvgFeatureRenderer",
               },
               "configId": "testid",

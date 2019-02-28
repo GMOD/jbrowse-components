@@ -109,24 +109,28 @@ class SvgFeatureRendering extends Component {
 
     const featuresRendered = []
     for (const feature of features.values()) {
-      const FeatureComponent = this.chooseGlyphComponent(feature)
-      const layoutRecord = FeatureComponent.layout({
-        feature,
-        horizontallyFlipped,
-        bpPerPx,
-        region,
-        config,
-        layout,
-      })
-      featuresRendered.push(
-        <FeatureComponent
-          {...this.props}
-          layoutRecord={layoutRecord}
-          feature={feature}
-          key={feature.id()}
-          selectedFeatureId={selectedFeatureId}
-        />,
-      )
+      try {
+        const FeatureComponent = this.chooseGlyphComponent(feature)
+        const layoutRecord = FeatureComponent.layout({
+          feature,
+          horizontallyFlipped,
+          bpPerPx,
+          region,
+          config,
+          layout,
+        })
+        featuresRendered.push(
+          <FeatureComponent
+            {...this.props}
+            layoutRecord={layoutRecord}
+            feature={feature}
+            key={feature.id()}
+            selectedFeatureId={selectedFeatureId}
+          />,
+        )
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     const width = (region.end - region.start) / bpPerPx

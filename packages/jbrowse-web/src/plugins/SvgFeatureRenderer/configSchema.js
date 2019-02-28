@@ -29,6 +29,41 @@ export default ConfigurationSchema(
       defaultValue: 10,
       functionSignature: ['feature'],
     },
+    labels: ConfigurationSchema('SvgFeatureLabels', {
+      name: {
+        type: 'string',
+        description:
+          'the primary name of the feature to show, if space is available',
+        defaultValue:
+          "function(feature) { return feature.get('name') || feature.id() }",
+        functionSignature: ['feature'],
+      },
+      nameColor: {
+        type: 'color',
+        description: 'the color of the name label, if shown',
+        defaultValue: 'black',
+        functionSignature: ['feature'],
+      },
+      description: {
+        type: 'string',
+        description: 'the text description to show, if space is available',
+        defaultValue: "function(feature) { return feature.get('note') }",
+        functionSignature: ['feature'],
+      },
+      descriptionColor: {
+        type: 'color',
+        description: 'the color of the description, if shown',
+        defaultValue: 'blue',
+        functionSignature: ['feature'],
+      },
+      fontSize: {
+        type: 'number',
+        description:
+          'height in pixels of the text to use for names and descriptions',
+        defaultValue: 13,
+        functionSignature: ['feature'],
+      },
+    }),
   },
   { explicitlyTyped: true },
 )
