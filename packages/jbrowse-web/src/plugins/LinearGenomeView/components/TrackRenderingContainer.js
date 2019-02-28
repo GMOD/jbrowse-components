@@ -5,7 +5,8 @@ import { withStyles } from '@material-ui/core'
 
 const styles = {
   trackRenderingContainer: {
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
     background: '#333',
     whiteSpace: 'nowrap',
   },
@@ -15,14 +16,15 @@ const styles = {
  * mostly does UI gestures: drag scrolling, etc
  */
 function TrackRenderingContainer(props) {
-  const { trackId, width, children, classes } = props
+  const { trackId, width, height, children, classes } = props
   return (
     <div
       className={classes.trackRenderingContainer}
       style={{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
-        width: `${width}px`,
+        width,
+        height,
       }}
       role="presentation"
     >
@@ -34,6 +36,7 @@ TrackRenderingContainer.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   trackId: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
   children: PropTypes.node,
 }
 

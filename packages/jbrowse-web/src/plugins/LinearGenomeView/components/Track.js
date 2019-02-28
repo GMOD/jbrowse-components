@@ -6,12 +6,11 @@ import { withStyles } from '@material-ui/core'
 const styles = {
   track: {
     position: 'relative',
-    height: '100%',
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
     background: '#555',
-    overflow: 'hidden',
+    minHeight: '100%',
   },
 }
 

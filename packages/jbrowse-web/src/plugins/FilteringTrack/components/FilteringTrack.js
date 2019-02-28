@@ -10,6 +10,12 @@ import FilterControlResizeHandle from './FilterControlsResizeHandle'
 const styles = theme => ({
   track: {
     background: 'white',
+    height: '100%',
+    overflow: 'hidden',
+  },
+  innerTrack: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
   filterControls: {
     background: theme.palette.background.default,

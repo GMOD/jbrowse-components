@@ -9,10 +9,8 @@ const styles = {
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    position: 'relative',
     background: '#404040',
-    overflow: 'hidden',
-    height: '100%',
+    minHeight: '100%',
   },
 }
 

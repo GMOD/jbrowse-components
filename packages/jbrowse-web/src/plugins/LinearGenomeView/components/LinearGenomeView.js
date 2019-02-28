@@ -158,6 +158,7 @@ function LinearGenomeView(props) {
             key={`track-rendering:${track.id}`}
             trackId={track.id}
             width={model.viewingRegionWidth}
+            height={track.height}
           >
             <track.RenderingComponent
               model={track}

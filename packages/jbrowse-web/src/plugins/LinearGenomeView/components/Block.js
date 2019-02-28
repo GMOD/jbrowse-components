@@ -6,13 +6,11 @@ import classnames from 'classnames'
 const styles = (/* theme */) => ({
   block: {
     position: 'absolute',
-    height: '100%',
+    minHeight: '100%',
     background: 'white',
     // background: theme.palette.background.default,
     boxSizing: 'border-box',
-    display: 'inline-block',
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
   },
   leftBorder: {
     borderLeft: `2px solid #333`,
