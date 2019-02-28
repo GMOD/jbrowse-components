@@ -19,594 +19,76 @@
   <body>
     <h1>Protein Widget Demo Page</h1>
     <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data.</tt></p>
-    
+    <form id="myform">
+      <input id="geneid" type="text" list="mylist">
+        <datalist id="mylist">
+        </datalist>
+      </input>
+      <button>Submit</button>
+    </form>
     <div id="protein-viewer"></div>
     <script type="text/javascript">
-      var testData = {
-  "protein": {
-    "name": "KRAS 2A",
-    "sequences": {
-      "aminoAcid": "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKCDL\n                PSRTVDTKQAQDLARSYGIPFIETSAKTRQRVEDAFYTLVREIRQYRLKKISKEEKTPGC\n                VKIKKCIIM\n              ",
-      "translatedDna": "ATGACTGAATATAAACTTGTGGTAGTTGGAGCTTGTGGCGTAGGCAAGAGTGCCTTGACG\n                ATACAGCTAATTCAGAATCATTTTGTGGACGAATATGATCCAACAATAGAGGATTCCTAC\n                AGGAAGCAAGTAGTAATTGATGGAGAAACCTGTCTCTTGGATATTCTCGACACAGCAGGT\n                CAAGAGGAGTACAGTGCAATGAGGGACCAGTACATGAGGACTGGGGAGGGCTTTCTTTGT\n                GTATTTGCCATAAATAATACTAAATCATTTGAAGATATTCACCATTATAGAGAACAAATT\n                AAAAGAGTTAAGGACTCTGAAGATGTACCTATGGTCCTAGTAGGAAATAAATGTGATTTG\n                CCTTCTAGAACAGTAGACACAAAACAGGCTCAGGACTTAGCAAGAAGTTATGGAATTCCT\n                TTTATTGAAACATCAGCAAAGACAAGACAGGGTGTTGATGATGCCTTCTATACATTAGTT\n                CGAGAAATTCGAAAACATAAAGAAAAGATGAGCAAAGATGGTAAAAAGAAGAAAAAGAAG\n                TCAAAGACAAAGTGTGTAATTATGTAA\n              "
-    }
-  },
-  "domains": [
-    {
-      "uniqueId": "Initiator methionine-0",
-      "start": 1,
-      "end": 2,
-      "seq_id": "KRAS 2A",
-      "type": "Initiator methionine",
-      "note": "Removed; alternate",
-      "score": 1
-    },
-    {
-      "uniqueId": "Nucleotide binding-1",
-      "start": 10,
-      "end": 19,
-      "seq_id": "KRAS 2A",
-      "type": "Nucleotide binding",
-      "note": "GTP",
-      "score": 1
-    },
-    {
-      "uniqueId": "Nucleotide binding-2",
-      "start": 29,
-      "end": 36,
-      "seq_id": "KRAS 2A",
-      "type": "Nucleotide binding",
-      "note": "GTP",
-      "score": 1
-    },
-    {
-      "uniqueId": "Nucleotide binding-3",
-      "start": 59,
-      "end": 61,
-      "seq_id": "KRAS 2A",
-      "type": "Nucleotide binding",
-      "note": "GTP",
-      "score": 1
-    },
-    {
-      "uniqueId": "Nucleotide binding-4",
-      "start": 116,
-      "end": 120,
-      "seq_id": "KRAS 2A",
-      "type": "Nucleotide binding",
-      "note": "GTP",
-      "score": 1000
-    },
-    {
-      "uniqueId": "Region-5",
-      "start": 166,
-      "end": 186,
-      "seq_id": "KRAS 2A",
-      "type": "Region",
-      "note": "Hypervariable region",
-      "score": 4
-    },
-    {
-      "uniqueId": "Motif-6",
-      "start": 32,
-      "end": 41,
-      "seq_id": "KRAS 2A",
-      "type": "Motif",
-      "note": "Effector region",
-      "score": 8
-    },
-    {
-      "uniqueId": "Modified residue-7",
-      "start": 1,
-      "end": 2,
-      "seq_id": "KRAS 2A",
-      "type": "Modified residue",
-      "note": "N-acetylmethionine; in GTPase KRas; alternate",
-      "score": 16
-    },
-    {
-      "uniqueId": "Modified residue-8",
-      "start": 2,
-      "end": 3,
-      "seq_id": "KRAS 2A",
-      "type": "Modified residue",
-      "note": "N-acetylthreonine; in GTPase KRas, N-terminally processed",
-      "score": 22
-    },
-    {
-      "uniqueId": "Modified residue-9",
-      "start": 104,
-      "end": 105,
-      "seq_id": "KRAS 2A",
-      "type": "Modified residue",
-      "note": "N6-acetyllysine",
-      "score": 240
-    },
-    {
-      "uniqueId": "Modified residue-10",
-      "start": 186,
-      "end": 187,
-      "seq_id": "KRAS 2A",
-      "type": "Modified residue",
-      "note": "Cysteine methyl ester",
-      "score": 1
-    },
-    {
-      "uniqueId": "Lipidation-11",
-      "start": 180,
-      "end": 181,
-      "seq_id": "KRAS 2A",
-      "type": "Lipidation",
-      "note": "S-palmitoyl cysteine",
-      "score": 1
-    },
-    {
-      "uniqueId": "Lipidation-12",
-      "start": 186,
-      "end": 187,
-      "seq_id": "KRAS 2A",
-      "type": "Lipidation",
-      "note": "S-farnesyl cysteine",
-      "score": 1
-    },
-    {
-      "uniqueId": "Cross-link-13",
-      "start": 170,
-      "end": 171,
-      "seq_id": "KRAS 2A",
-      "type": "Cross-link",
-      "note": "Glycyl lysine isopeptide (Lys-Gly) (interchain with G-Cter in ubiquitin)",
-      "score": 1
-    },
-    {
-      "uniqueId": "Mutagenesis-14",
-      "start": 164,
-      "end": 165,
-      "seq_id": "KRAS 2A",
-      "type": "Mutagenesis",
-      "note": "Loss of GTP-binding activity. R->A",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-15",
-      "start": 3,
-      "end": 10,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Helix-16",
-      "start": 16,
-      "end": 26,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-17",
-      "start": 27,
-      "end": 31,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-18",
-      "start": 38,
-      "end": 47,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 100
-    },
-    {
-      "uniqueId": "Beta strand-19",
-      "start": 49,
-      "end": 58,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 150
-    },
-    {
-      "uniqueId": "Helix-20",
-      "start": 60,
-      "end": 63,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 200
-    },
-    {
-      "uniqueId": "Helix-21",
-      "start": 65,
-      "end": 75,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 2
-    },
-    {
-      "uniqueId": "Beta strand-22",
-      "start": 76,
-      "end": 84,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Helix-23",
-      "start": 87,
-      "end": 92,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 1
-    },
-    {
-      "uniqueId": "Helix-24",
-      "start": 93,
-      "end": 105,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-25",
-      "start": 105,
-      "end": 108,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-26",
-      "start": 111,
-      "end": 117,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-27",
-      "start": 120,
-      "end": 123,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1000
-    },
-    {
-      "uniqueId": "Helix-28",
-      "start": 127,
-      "end": 138,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 4
-    },
-    {
-      "uniqueId": "Beta strand-29",
-      "start": 141,
-      "end": 144,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 8
-    },
-    {
-      "uniqueId": "Turn-30",
-      "start": 146,
-      "end": 149,
-      "seq_id": "KRAS 2A",
-      "type": "Turn",
-      "score": 16
-    },
-    {
-      "uniqueId": "Helix-31",
-      "start": 152,
-      "end": 168,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 22
-    },
-    {
-      "uniqueId": "Helix-32",
-      "start": 169,
-      "end": 173,
-      "seq_id": "KRAS 2A",
-      "type": "Helix",
-      "score": 240
-    },
-    {
-      "uniqueId": "Beta strand-33",
-      "start": 175,
-      "end": 178,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "Beta strand-34",
-      "start": 182,
-      "end": 185,
-      "seq_id": "KRAS 2A",
-      "type": "Beta strand",
-      "score": 1
-    },
-    {
-      "uniqueId": "PRO_0000082641",
-      "start": 1,
-      "end": 187,
-      "seq_id": "KRAS 2A",
-      "type": "Chain",
-      "note": "GTPase KRas",
-      "score": 1
-    },
-    {
-      "uniqueId": "PRO_0000326480",
-      "start": 2,
-      "end": 187,
-      "seq_id": "KRAS 2A",
-      "type": "Chain",
-      "note": "GTPase KRas, N-terminally processed",
-      "score": 1
-    },
-    {
-      "uniqueId": "PRO_0000281291",
-      "start": 187,
-      "end": 190,
-      "seq_id": "KRAS 2A",
-      "type": "Propeptide",
-      "note": "Removed in mature form",
-      "score": 1
-    },
-    {
-      "uniqueId": "VSP_011140",
-      "start": 151,
-      "end": 154,
-      "seq_id": "KRAS 2A",
-      "type": "Alternative sequence",
-      "note": "In isoform 2B. RVE->GVD",
-      "score": 1
-    },
-    {
-      "uniqueId": "VSP_011141",
-      "start": 165,
-      "end": 190,
-      "seq_id": "KRAS 2A",
-      "type": "Alternative sequence",
-      "note": "In isoform 2B. QYRLKKISKEEKTPGCVKIKKCIIM->KHKEKMSKDGKKKKKKSKTKCVIM",
-      "score": 1
-    }
-  ],
-  "variants": [
-    {
-      "uniqueId": "VAR_065144",
-      "start": 5,
-      "end": 6,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3. K->E",
-      "score": 100
-    },
-    {
-      "uniqueId": "VAR_064849",
-      "start": 5,
-      "end": 6,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC; found also in a patient with Costello syndrome; exhibits only minor alterations in its in vitro biochemical behavior compared to wild-type protein. K->N",
-      "score": 150
-    },
-    {
-      "uniqueId": "VAR_034601",
-      "start": 10,
-      "end": 11,
-      "seq_id": "KRAS 2A",
-      "note": "In AML; expression in 3T3 cell causes cellular transformation; expression in COS cells activates the Ras-MAPK signaling pathway; lower GTPase activity; faster GDP dissociation rate. G->GG",
-      "score": 200
-    },
-    {
-      "uniqueId": "VAR_036305",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In a colorectal cancer sample; somatic mutation. G->A",
-      "score": 2
-    },
-    {
-      "uniqueId": "VAR_006839",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In lung carcinoma; somatic mutation. G->C",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_016026",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC and JMML; also found in pancreatic carcinoma and lung carcinoma; somatic mutation. G->D",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_016027",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In lung cancer and bladder cancer; somatic mutation. G->R",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_016028",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC and JMML; also found in lung carcinoma; somatic mutation. G->S",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_006840",
-      "start": 12,
-      "end": 13,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC; also found in lung carcinoma, pancreatic carcinoma and colon cancer; somatic mutation; it is constitutively activated and stimulates transcription activation of tumor suppressor genes in non-transformed fibroblasts. G->V",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_016029",
-      "start": 13,
-      "end": 14,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC and JMML; also found in a breast carcinoma cell line; somatic mutation. G->D",
-      "score": 1000
-    },
-    {
-      "uniqueId": "VAR_065145",
-      "start": 13,
-      "end": 14,
-      "seq_id": "KRAS 2A",
-      "note": "In pylocytic astrocytoma; somatic mutation; increase activation of the Ras pathway. G->R",
-      "score": 4
-    },
-    {
-      "uniqueId": "VAR_026109",
-      "start": 14,
-      "end": 15,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3; affects activity and impairs responsiveness to GTPase activating proteins; characterized by a strong increase of both intrinsic and guanine nucleotide exchanged factor-catalyzed nucleotide exchange leading to an increased level of the activated state. V->I",
-      "score": 8
-    },
-    {
-      "uniqueId": "VAR_064850",
-      "start": 22,
-      "end": 23,
-      "seq_id": "KRAS 2A",
-      "note": "In CFC2; exhibits an increase in intrinsic and guanine nucleotide exchange factor catalyzed nucleotide exchange in combination with an impaired GTPase-activating protein-stimulated GTP hydrolysis but functional in interaction with effectors. Q->E",
-      "score": 16
-    },
-    {
-      "uniqueId": "VAR_064851",
-      "start": 22,
-      "end": 23,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3; impairs GTPase-activating protein stimulated GTP hydrolysis with unaffected intrinsic functions and a virtually functional effector interaction. Q->R",
-      "score": 22
-    },
-    {
-      "uniqueId": "VAR_064852",
-      "start": 34,
-      "end": 35,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3; characterized by a defective GTPase-activating protein sensitivity and a strongly reduced interaction with effectors. P->L",
-      "score": 240
-    },
-    {
-      "uniqueId": "VAR_064853",
-      "start": 34,
-      "end": 35,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3. P->Q",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_026110",
-      "start": 34,
-      "end": 35,
-      "seq_id": "KRAS 2A",
-      "note": "In CFC2; characterized by a defective GTPase-activating protein sensitivity and a strongly reduced interaction with effectors. P->R",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_064854",
-      "start": 36,
-      "end": 37,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3. I->M",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_026111",
-      "start": 58,
-      "end": 59,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3; affects activity and impairs responsiveness to GTPase activating proteins; exhibits only minor alterations in its in vitro biochemical behavior compared to wild-type protein. T->I",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_016030",
-      "start": 59,
-      "end": 60,
-      "seq_id": "KRAS 2A",
-      "note": "In GASC; also found in bladder cancer; somatic mutation. A->T",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_026112",
-      "start": 60,
-      "end": 61,
-      "seq_id": "KRAS 2A",
-      "note": "In CFC2; characterized by a defective GTPase-activating protein sensitivity and a strongly reduced interaction with effectors. G->R",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_065146",
-      "start": 60,
-      "end": 61,
-      "seq_id": "KRAS 2A",
-      "note": "In NS3. G->S",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_006841",
-      "start": 61,
-      "end": 62,
-      "seq_id": "KRAS 2A",
-      "note": "In lung carcinoma. Q->H",
-      "score": 1
-    },
-    {
-      "uniqueId": "VAR_036306",
-      "start": 61,
-      "end": 62,
-      "seq_id": "KRAS 2A",
-      "note": "In a colorectal cancer sample; somatic mutation. Q->R",
-      "score": 100
-    },
-    {
-      "uniqueId": "VAR_069784",
-      "start": 71,
-      "end": 72,
-      "seq_id": "KRAS 2A",
-      "note": "In CFC2. Y->H",
-      "score": 150
-    },
-    {
-      "uniqueId": "VAR_036307",
-      "start": 117,
-      "end": 118,
-      "seq_id": "KRAS 2A",
-      "note": "In a colorectal cancer sample; somatic mutation. K->N",
-      "score": 200
-    },
-    {
-      "uniqueId": "VAR_036308",
-      "start": 146,
-      "end": 147,
-      "seq_id": "KRAS 2A",
-      "note": "In a colorectal cancer sample; somatic mutation. A->T",
-      "score": 2
-    },
-    {
-      "uniqueId": "VAR_069785",
-      "start": 147,
-      "end": 148,
-      "seq_id": "KRAS 2A",
-      "note": "In CFC2. K->E",
-      "score": 1
-    }
-  ]
-};
-      (async function() {
-        const testData2 = await fetch('http://18.218.239.245/protein_data_service/?ensemblGeneId=ENSG00000000003').then(x => x.json())
+      const form = document.getElementById('myform')
 
-        const viewer = new JBrowseProteinViewer.Viewer(
-          document.getElementById('protein-viewer'),
-          testData2,
-        );
-      })()
+      let viewer
+      let controller
+      let signal
+
+      async function updateProteinViewer(geneid) {
+        const testData = await fetch(`http://18.218.239.245/protein_data_service/?ensemblGeneId=${geneid}`)
+          .then(res => res.json())
+        console.log(testData)
+
+        if(viewer) {
+          viewer.update(testData)
+        } else {
+          viewer = new JBrowseProteinViewer.Viewer(
+            document.getElementById('protein-viewer'),
+            testData,
+          );
+        }
+      }
+      form.addEventListener('submit', event => {
+        event.preventDefault()
+        const geneid = document.getElementById('geneid').value
+        updateProteinViewer(geneid)
+      })
+
+      document.getElementById('geneid').addEventListener('keyup', async (evt) => {
+        if (controller) {
+          controller.abort();
+        }
+        if (AbortController) {
+          controller = new AbortController();
+          var signal = controller.signal;
+        }
+
+        try {
+          var mylist = document.getElementById('mylist');
+          mylist.innerHTML = ""
+
+          const input = evt.target
+          const val = input.value
+          if (val.length < 2 ) {
+            return
+          }
+          const ret = await fetch(`https://mygene.info/v3/query?q=${val}&fields=ensembl,name,symbol&species=human`, {signal}).then(res => res.json())
+          ret.hits.forEach(item => {
+            if(item.ensembl) {
+              var option = document.createElement('option');
+              console.log(item)
+              option.value = item.ensembl.gene;
+              option.label = `${item.symbol} - ${item.name} (${item.ensembl.gene})`
+              mylist.append(option)
+            }
+          })
+        } catch(e) {
+          if (e.name !== "AbortError") {
+            console.error(e)
+          }
+        }
+      })
+      updateProteinViewer('ENSG00000000003')
     </script>
   </body>
 </html>
