@@ -184,6 +184,66 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         )
       },
 
+      /**
+       *
+       * @param {number} px px in the view area, return value is the displayed regions
+       * @returns {Array} of the displayed region that it lands in
+       */
+      pxToBp(px) {
+        const regions = self.displayedRegions
+        const bp = (self.offsetPx + px) * self.bpPerPx + 1
+        let bpSoFar = 0
+
+        for (let index = 0; index < regions.length; index += 1) {
+          const region = regions[index]
+          if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...region, offset: Math.round(bp - bpSoFar), index }
+          }
+          bpSoFar += region.end - region.start
+        }
+        return undefined
+      },
+
+      /**
+       * offset is the base-pair-offset in the displayed region, index is the index of the
+       * displayed region in the linear genome view
+       *
+       * @param {object} start object as {start, end, offset, index}
+       * @param {object} end object as {start, end, offset, index}
+       */
+      moveTo(start, end) {
+        // find locations in the modellist
+        let bpSoFar = 0
+        if (start.index === end.index) {
+          bpSoFar += end.offset - start.offset
+        } else {
+          const s = self.displayedRegions[start.index]
+          bpSoFar += s.end - start.offset
+          if (end.index - start.index > 2) {
+            for (let i = start.index + 1; i < end.index - 1; i += 1) {
+              bpSoFar +=
+                self.displayedRegions[i].end - self.displayedRegions[i].start
+            }
+          }
+          bpSoFar += end.offset
+        }
+        let bpToStart = 0
+        for (let i = 0; i < self.displayedRegions.length; i += 1) {
+          const region = self.displayedRegions[i]
+          if (start.index === i) {
+            bpToStart += start.offset
+            break
+          } else {
+            bpToStart += region.end - region.start
+          }
+        }
+        self.bpPerPx = clamp(
+          bpSoFar / self.width,
+          self.minBpPerPx,
+          self.maxBpPerPx,
+        )
+        self.offsetPx = bpToStart / self.bpPerPx
+      },
       resizeTrack(trackId, distance) {
         const track = self.tracks.find(t => t.id === trackId)
         if (track) track.setHeight(track.height + distance)
@@ -215,6 +275,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
 
       activateConfigurationUI() {
         getRoot(self).editConfiguration(self.configuration)
+      },
+
+      setNewView(bpPerPx, offsetPx) {
+        self.bpPerPx = bpPerPx
+        self.offsetPx = offsetPx
       },
     }))
 }

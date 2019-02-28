@@ -14,6 +14,7 @@ import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRender
 import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
 import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
 import { ConfigurationSchema } from '../../jbrowse-web/src/configuration'
+import '../../jbrowse-web/src/fonts/material-icons.css'
 
 // import { domains } from './TestVariants'
 

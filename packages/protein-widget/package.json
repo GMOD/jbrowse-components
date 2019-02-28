@@ -4,7 +4,9 @@
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack",
+    "lint": "eslint src/"
   },
   "unpkg": "umd/jbrowse-protein-viewer.js",
   "files": [
@@ -22,13 +24,6 @@
     "mobx-react": "^5.4.3",
     "mobx-state-tree": "^3.10.2",
     "react": "^16.8.1",
-    "react-dom": "^16.8.1",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.2.3"
-  },
-  "devDependencies": {
-    "postcss-flexbugs-fixes": "^4.1.0",
-    "postcss-preset-env": "^6.5.0",
-    "webpack-cli": "^3.2.3"
+    "react-dom": "^16.8.1"
   }
 }

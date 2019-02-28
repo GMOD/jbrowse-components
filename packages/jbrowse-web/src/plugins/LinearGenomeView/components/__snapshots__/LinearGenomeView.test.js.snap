@@ -55,7 +55,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -96,7 +96,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -130,31 +130,36 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-30"
-      style={
-        Object {
-          "gridColumn": "blocks",
-          "gridRow": "scale-bar",
-          "height": "32px",
-          "width": "700px",
+      className="Rubberband-rubberBandContainer-31"
+      onMouseDown={[Function]}
+      role="presentation"
+    >
+      <div
+        className="ScaleBar-scaleBar-32"
+        style={
+          Object {
+            "height": "32px",
+            "width": "700px",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="LinearGenomeView-zoomControls-6"
       style={
         Object {
           "right": 4,
+          "zIndex": 1000,
         }
       }
     >
       <div
-        className="ZoomControls-container-32"
+        className="ZoomControls-container-34"
         style={
           Object {
             "height": 32,
@@ -190,7 +195,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
         <div
@@ -198,7 +203,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           aria-valuemax={5.643856189774724}
           aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
-          className="MuiSlider-root-34 ZoomControls-slider-33"
+          className="MuiSlider-root-36 ZoomControls-slider-35"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -206,10 +211,10 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           role="slider"
         >
           <div
-            className="MuiSlider-container-35"
+            className="MuiSlider-container-37"
           >
             <div
-              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
+              className="MuiSlider-track-38 MuiSlider-trackBefore-39"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -217,7 +222,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-39"
+              className="MuiSlider-thumbWrapper-41"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -225,7 +230,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               }
             >
               <button
-                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-42"
                 onBlur={[Function]}
                 onContextMenu={[Function]}
                 onFocus={[Function]}
@@ -243,7 +248,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
               />
             </div>
             <div
-              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
+              className="MuiSlider-track-38 MuiSlider-trackAfter-40"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -281,7 +286,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
       </div>
@@ -296,24 +301,25 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     >
       <p
-        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
+        className="MuiTypography-root-59 MuiTypography-body1-68 TrackControls-trackName-57"
       >
         foo
       </p>
       <span
-        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
+        className="MuiTypography-root-59 MuiTypography-caption-69 MuiTypography-colorTextSecondary-92 TrackControls-trackDescription-58"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-93"
+      className="TrackRenderingContainer-trackRenderingContainer-95"
       role="presentation"
       style={
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-foo",
-          "width": "700px",
+          "height": 20,
+          "width": 700,
         }
       }
     >
@@ -326,7 +332,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -398,7 +404,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -439,7 +445,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -473,136 +479,140 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-30"
-      style={
-        Object {
-          "gridColumn": "blocks",
-          "gridRow": "scale-bar",
-          "height": "32px",
-          "width": "700px",
-        }
-      }
+      className="Rubberband-rubberBandContainer-31"
+      onMouseDown={[Function]}
+      role="presentation"
     >
       <div
-        className="Block-block-95 Block-leftBorder-96 Block-rightBorder-97"
+        className="ScaleBar-scaleBar-32"
         style={
           Object {
-            "left": "0px",
-            "width": "100px",
+            "height": "32px",
+            "width": "700px",
           }
         }
       >
-        <svg
-          height={32}
-          width={100}
+        <div
+          className="Block-block-97 Block-leftBorder-98 Block-rightBorder-99"
+          style={
+            Object {
+              "left": "0px",
+              "width": "100px",
+            }
+          }
         >
-          <line
-            className="Ruler-majorTick-99"
-            data-bp={-1}
-            stroke="#555"
-            strokeWidth={1}
-            x1={-1}
-            x2={-1}
-            y1={0}
-            y2={6}
-          />
-          <line
-            className="Ruler-minorTick-100"
-            data-bp={19}
-            stroke="#999"
-            strokeWidth={1}
-            x1={19}
-            x2={19}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-100"
-            data-bp={39}
-            stroke="#999"
-            strokeWidth={1}
-            x1={39}
-            x2={39}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-100"
-            data-bp={59}
-            stroke="#999"
-            strokeWidth={1}
-            x1={59}
-            x2={59}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-minorTick-100"
-            data-bp={79}
-            stroke="#999"
-            strokeWidth={1}
-            x1={79}
-            x2={79}
-            y1={0}
-            y2={4}
-          />
-          <line
-            className="Ruler-majorTick-99"
-            data-bp={99}
-            stroke="#555"
-            strokeWidth={1}
-            x1={99}
-            x2={99}
-            y1={0}
-            y2={6}
-          />
-          <line
-            className="Ruler-minorTick-100"
-            data-bp={119}
-            stroke="#999"
-            strokeWidth={1}
-            x1={119}
-            x2={119}
-            y1={0}
-            y2={4}
-          />
-          <text
-            className="Ruler-majorTickLabel-98"
-            dominantBaseline="hanging"
-            style={
-              Object {
-                "fontSize": "11px",
-              }
-            }
-            x={-4}
-            y={7}
+          <svg
+            height={32}
+            width={100}
           >
-            0
-          </text>
-          <text
-            className="Ruler-majorTickLabel-98"
-            dominantBaseline="hanging"
-            style={
-              Object {
-                "fontSize": "11px",
+            <line
+              className="Ruler-majorTick-101"
+              data-bp={-1}
+              stroke="#555"
+              strokeWidth={1}
+              x1={-1}
+              x2={-1}
+              y1={0}
+              y2={6}
+            />
+            <line
+              className="Ruler-minorTick-102"
+              data-bp={19}
+              stroke="#999"
+              strokeWidth={1}
+              x1={19}
+              x2={19}
+              y1={0}
+              y2={4}
+            />
+            <line
+              className="Ruler-minorTick-102"
+              data-bp={39}
+              stroke="#999"
+              strokeWidth={1}
+              x1={39}
+              x2={39}
+              y1={0}
+              y2={4}
+            />
+            <line
+              className="Ruler-minorTick-102"
+              data-bp={59}
+              stroke="#999"
+              strokeWidth={1}
+              x1={59}
+              x2={59}
+              y1={0}
+              y2={4}
+            />
+            <line
+              className="Ruler-minorTick-102"
+              data-bp={79}
+              stroke="#999"
+              strokeWidth={1}
+              x1={79}
+              x2={79}
+              y1={0}
+              y2={4}
+            />
+            <line
+              className="Ruler-majorTick-101"
+              data-bp={99}
+              stroke="#555"
+              strokeWidth={1}
+              x1={99}
+              x2={99}
+              y1={0}
+              y2={6}
+            />
+            <line
+              className="Ruler-minorTick-102"
+              data-bp={119}
+              stroke="#999"
+              strokeWidth={1}
+              x1={119}
+              x2={119}
+              y1={0}
+              y2={4}
+            />
+            <text
+              className="Ruler-majorTickLabel-100"
+              dominantBaseline="hanging"
+              style={
+                Object {
+                  "fontSize": "11px",
+                }
               }
-            }
-            x={96}
-            y={7}
-          >
-            100
-          </text>
-        </svg>
-      </div>
-      <div
-        className="ScaleBar-refLabel-31"
-      >
-        ctgA
+              x={-4}
+              y={7}
+            >
+              0
+            </text>
+            <text
+              className="Ruler-majorTickLabel-100"
+              dominantBaseline="hanging"
+              style={
+                Object {
+                  "fontSize": "11px",
+                }
+              }
+              x={96}
+              y={7}
+            >
+              100
+            </text>
+          </svg>
+        </div>
+        <div
+          className="ScaleBar-refLabel-33"
+        >
+          ctgA
+        </div>
       </div>
     </div>
     <div
@@ -610,11 +620,12 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style={
         Object {
           "right": 4,
+          "zIndex": 1000,
         }
       }
     >
       <div
-        className="ZoomControls-container-32"
+        className="ZoomControls-container-34"
         style={
           Object {
             "height": 32,
@@ -650,7 +661,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
         <div
@@ -658,7 +669,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           aria-valuemax={5.643856189774724}
           aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
-          className="MuiSlider-root-34 ZoomControls-slider-33"
+          className="MuiSlider-root-36 ZoomControls-slider-35"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -666,10 +677,10 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           role="slider"
         >
           <div
-            className="MuiSlider-container-35"
+            className="MuiSlider-container-37"
           >
             <div
-              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
+              className="MuiSlider-track-38 MuiSlider-trackBefore-39"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -677,7 +688,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-39"
+              className="MuiSlider-thumbWrapper-41"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -685,7 +696,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               }
             >
               <button
-                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-42"
                 onBlur={[Function]}
                 onContextMenu={[Function]}
                 onFocus={[Function]}
@@ -703,7 +714,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               />
             </div>
             <div
-              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
+              className="MuiSlider-track-38 MuiSlider-trackAfter-40"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -741,7 +752,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
       </div>
@@ -756,24 +767,25 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <p
-        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
+        className="MuiTypography-root-59 MuiTypography-body1-68 TrackControls-trackName-57"
       >
         foo
       </p>
       <span
-        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
+        className="MuiTypography-root-59 MuiTypography-caption-69 MuiTypography-colorTextSecondary-92 TrackControls-trackDescription-58"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-93"
+      className="TrackRenderingContainer-trackRenderingContainer-95"
       role="presentation"
       style={
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-foo",
-          "width": "700px",
+          "height": 20,
+          "width": 700,
         }
       }
     >
@@ -786,7 +798,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -809,24 +821,25 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <p
-        className="MuiTypography-root-57 MuiTypography-body1-66 TrackControls-trackName-55"
+        className="MuiTypography-root-59 MuiTypography-body1-68 TrackControls-trackName-57"
       >
         bar
       </p>
       <span
-        className="MuiTypography-root-57 MuiTypography-caption-67 MuiTypography-colorTextSecondary-90 TrackControls-trackDescription-56"
+        className="MuiTypography-root-59 MuiTypography-caption-69 MuiTypography-colorTextSecondary-92 TrackControls-trackDescription-58"
       >
         
       </span>
     </div>
     <div
-      className="TrackRenderingContainer-trackRenderingContainer-93"
+      className="TrackRenderingContainer-trackRenderingContainer-95"
       role="presentation"
       style={
         Object {
           "gridColumn": "blocks",
           "gridRow": "track-bar",
-          "width": "700px",
+          "height": 20,
+          "width": 700,
         }
       }
     >
@@ -839,7 +852,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-94"
+      className="TrackResizeHandle-dragHandle-96"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -911,7 +924,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -952,7 +965,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
       <button
@@ -986,31 +999,36 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           </span>
         </span>
         <span
-          className="MuiTouchRipple-root-48"
+          className="MuiTouchRipple-root-50"
         />
       </button>
     </div>
     <div
-      className="ScaleBar-scaleBar-30"
-      style={
-        Object {
-          "gridColumn": "blocks",
-          "gridRow": "scale-bar",
-          "height": "32px",
-          "width": "700px",
+      className="Rubberband-rubberBandContainer-31"
+      onMouseDown={[Function]}
+      role="presentation"
+    >
+      <div
+        className="ScaleBar-scaleBar-32"
+        style={
+          Object {
+            "height": "32px",
+            "width": "700px",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="LinearGenomeView-zoomControls-6"
       style={
         Object {
           "right": 4,
+          "zIndex": 1000,
         }
       }
     >
       <div
-        className="ZoomControls-container-32"
+        className="ZoomControls-container-34"
         style={
           Object {
             "height": 32,
@@ -1046,7 +1064,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
         <div
@@ -1054,7 +1072,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           aria-valuemax={5.643856189774724}
           aria-valuemin={5.643856189774724}
           aria-valuenow={-0}
-          className="MuiSlider-root-34 ZoomControls-slider-33"
+          className="MuiSlider-root-36 ZoomControls-slider-35"
           onClick={[Function]}
           onMouseDown={[Function]}
           onTouchMove={[Function]}
@@ -1062,10 +1080,10 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           role="slider"
         >
           <div
-            className="MuiSlider-container-35"
+            className="MuiSlider-container-37"
           >
             <div
-              className="MuiSlider-track-36 MuiSlider-trackBefore-37"
+              className="MuiSlider-track-38 MuiSlider-trackBefore-39"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(0)",
@@ -1073,7 +1091,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               }
             />
             <div
-              className="MuiSlider-thumbWrapper-39"
+              className="MuiSlider-thumbWrapper-41"
               style={
                 Object {
                   "transform": "translateX(0%)",
@@ -1081,7 +1099,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               }
             >
               <button
-                className="MuiButtonBase-root-14 MuiSlider-thumb-40"
+                className="MuiButtonBase-root-14 MuiSlider-thumb-42"
                 onBlur={[Function]}
                 onContextMenu={[Function]}
                 onFocus={[Function]}
@@ -1099,7 +1117,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               />
             </div>
             <div
-              className="MuiSlider-track-36 MuiSlider-trackAfter-38"
+              className="MuiSlider-track-38 MuiSlider-trackAfter-40"
               style={
                 Object {
                   "transform": "translateY(-50%) scaleX(1)",
@@ -1137,7 +1155,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-48"
+            className="MuiTouchRipple-root-50"
           />
         </button>
       </div>

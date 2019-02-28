@@ -11,8 +11,10 @@
         "test": "jest"
     },
     "devDependencies": {
-        "@babel/core": "^7.2.2",
-        "@babel/preset-env": "^7.3.1",
+        "@babel/core": "^7.3.4",
+        "@babel/plugin-proposal-class-properties": "^7.3.4",
+        "@babel/preset-env": "^7.3.4",
+        "@babel/preset-react": "^7.0.0",
         "@svgr/webpack": "^4.1.0",
         "@types/jest": "^24.0.6",
         "babel-eslint": "^10.0.1",
@@ -33,7 +35,7 @@
         "eslint": "^5.9.0",
         "eslint-config-airbnb": "^17.1.0",
         "eslint-config-airbnb-base": "^13.1.0",
-        "eslint-config-prettier": "^3.3.0",
+        "eslint-config-prettier": "^4.1.0",
         "eslint-config-react-app": "^3.0.3",
         "eslint-loader": "^2.1.1",
         "eslint-plugin-flowtype": "^3.2.1",
@@ -56,7 +58,7 @@
         "pnp-webpack-plugin": "^1.1.0",
         "postcss-flexbugs-fixes": "^4.1.0",
         "postcss-loader": "^3.0.0",
-        "postcss-preset-env": "^6.0.6",
+        "postcss-preset-env": "^6.5.0",
         "postcss-safe-parser": "^4.0.1",
         "prettier": "^1.15.3",
         "react": "^16.6.3",
@@ -70,9 +72,10 @@
         "thread-loader": "^2.1.1",
         "url-loader": "^1.1.1",
         "webpack": "^4.19.1",
+        "webpack-cli": "^3.2.3",
         "webpack-dev-server": "^3.1.14",
         "webpack-manifest-plugin": "^2.0.4",
-        "workbox-webpack-plugin": "^3.6.2",
+        "workbox-webpack-plugin": "^4.0.0",
         "worker-loader": "^2.0.0",
         "yeoman-test": "^1.9.1"
     }
