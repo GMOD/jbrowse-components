@@ -24,6 +24,7 @@
     "mobx-react": "^5.4.3",
     "mobx-state-tree": "^3.10.2",
     "react": "^16.8.1",
-    "react-dom": "^16.8.1"
+    "react-dom": "^16.8.1",
+    "typeface-roboto": "^0.0.54"
   }
 }

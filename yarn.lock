@@ -1217,6 +1217,16 @@
   dependencies:
     long "^4.0.0"
 
+"@gmod/gff@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.1.2.tgz#b436b8e322bb1364384db46e7d26ea2efbece7db"
+  integrity sha512-zuXx+UY8grX9denkns6l8hS+Uo9lGpoN2Wi7dDAfSrllWAQqg0hG6uX7CRfFRkt8ulxEWfIvqou2iqWwBaGBBA==
+  dependencies:
+    babel-runtime "^6.26.0"
+    es6-promisify "^6.0.0"
+    tmp-promise "^1.0.4"
+    typical "^2.6.1"
+
 "@gmod/indexedfasta@^1.0.11":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-1.0.11.tgz#a19d34d55790d088e306fede0975db6bf50c3fbd"
