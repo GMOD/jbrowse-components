@@ -122,39 +122,35 @@ export function guessAdapter(fileName, protocol) {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: { [protocol]: fileName },
-      faiLocation: { location: { [protocol]: `${fileName}.fai` } },
+      faiLocation: { [protocol]: `${fileName}.fai` },
     }
   if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName))
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: { [protocol]: fileName.replace(/\.fai$/i, '') },
-      faiLocation: { location: { [protocol]: fileName } },
+      faiLocation: { [protocol]: fileName },
     }
 
   if (/\.(fa|fasta|fna|mfa)\.gz$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName },
-      faiLocation: { location: { [protocol]: `${fileName}.fai` } },
-      gziLocation: { location: { [protocol]: `${fileName}.gzi` } },
+      faiLocation: { [protocol]: `${fileName}.fai` },
+      gziLocation: { [protocol]: `${fileName}.gzi` },
     }
   if (/\.(fa|fasta|fna|mfa)\.gz\.fai$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName.replace(/\.fai$/i, '') },
-      faiLocation: { location: { [protocol]: fileName } },
-      gziLocation: {
-        location: { [protocol]: `${fileName.replace(/\.fai$/i, '')}.gzi` },
-      },
+      faiLocation: { [protocol]: fileName },
+      gziLocation: { [protocol]: `${fileName.replace(/\.fai$/i, '')}.gzi` },
     }
   if (/\.(fa|fasta|fna|mfa)\.gz\.gzi$/i.test(fileName))
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: { [protocol]: fileName.replace(/\.gzi$/i, '') },
-      faiLocation: {
-        location: { [protocol]: `${fileName.replace(/\.gzi$/i, '')}.fai` },
-      },
-      gziLocation: { location: { [protocol]: fileName } },
+      faiLocation: { [protocol]: `${fileName.replace(/\.gzi$/i, '')}.fai` },
+      gziLocation: { [protocol]: fileName },
     }
 
   if (/\.2bit$/i.test(fileName))
