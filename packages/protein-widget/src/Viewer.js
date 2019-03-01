@@ -106,7 +106,9 @@ function(feature) {
     this.update(initialState)
 
     this.model.view.showTrack(this.model.configuration.sequenceTrack)
-    this.model.view.showTrack(this.model.configuration.domainsTrack)
+    this.model.view.showTrack(this.model.configuration.domainsTrack, {
+      height: 300,
+    })
     this.model.view.showTrack(this.model.configuration.variantTrack, {
       height: 300,
     })
