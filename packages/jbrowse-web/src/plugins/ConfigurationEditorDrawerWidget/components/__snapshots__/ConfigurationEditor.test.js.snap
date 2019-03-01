@@ -5,10 +5,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
   className="ConfigurationEditor-root-1"
 >
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -43,7 +43,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -81,10 +81,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <fieldset
         className="MuiFormControl-root-33"
@@ -227,7 +227,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -265,10 +265,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <label
         className="MuiFormLabel-root-48 MuiInputLabel-root-37 MuiInputLabel-animated-45"
@@ -467,7 +467,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </p>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -505,10 +505,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <label
         className="MuiFormLabel-root-48 MuiInputLabel-root-37 MuiInputLabel-animated-45"
@@ -516,7 +516,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         stringArrayMapTest
       </label>
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-202 StringArrayMapEditor-card-201"
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-202 Component-card-201"
       >
         <div
           className="MuiCardHeader-root-203"
@@ -763,7 +763,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         </div>
       </div>
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-202 StringArrayMapEditor-card-201"
+        className="MuiPaper-root-6 MuiPaper-elevation8-16 MuiPaper-rounded-7 MuiCard-root-202 Component-card-201"
       >
         <div
           className="MuiCardHeader-root-203"
@@ -835,7 +835,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </p>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -873,10 +873,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33"
@@ -911,7 +911,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -949,10 +949,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33"
@@ -987,7 +987,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1025,10 +1025,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1073,7 +1073,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1111,10 +1111,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33"
@@ -1178,7 +1178,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1223,10 +1223,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
   className="ConfigurationEditor-root-1"
 >
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1261,7 +1261,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1299,10 +1299,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1337,7 +1337,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1375,10 +1375,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <label
         className="MuiFormLabel-root-48 MuiInputLabel-root-37 MuiInputLabel-animated-45"
@@ -1455,7 +1455,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </p>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1564,10 +1564,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       className="MuiFormGroup-root-118"
     >
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+        className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
       >
         <div
-          className="_class-paperContent-4"
+          className="Component-paperContent-4"
         >
           <fieldset
             className="MuiFormControl-root-33"
@@ -1706,7 +1706,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           </div>
         </div>
         <div
-          className="_class-slotModeSwitch-5"
+          className="Component-slotModeSwitch-5"
         >
           <button
             className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1744,10 +1744,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         </div>
       </div>
       <div
-        className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+        className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
       >
         <div
-          className="_class-paperContent-4"
+          className="Component-paperContent-4"
         >
           <div
             className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1778,7 +1778,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           </div>
         </div>
         <div
-          className="_class-slotModeSwitch-5"
+          className="Component-slotModeSwitch-5"
         >
           <button
             className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1827,10 +1827,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           className="MuiFormGroup-root-118"
         >
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1882,7 +1882,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -1920,10 +1920,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <fieldset
                 className="MuiFormControl-root-33"
@@ -2062,7 +2062,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2104,10 +2104,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -2159,7 +2159,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2219,10 +2219,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           className="MuiFormGroup-root-118"
         >
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33"
@@ -2381,7 +2381,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2424,10 +2424,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33"
@@ -2462,7 +2462,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2513,10 +2513,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           className="MuiFormGroup-root-118"
         >
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -2561,7 +2561,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2599,10 +2599,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -2647,7 +2647,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2685,10 +2685,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -2733,7 +2733,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2771,10 +2771,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+            className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
           >
             <div
-              className="_class-paperContent-4"
+              className="Component-paperContent-4"
             >
               <div
                 className="MuiFormControl-root-33"
@@ -2809,7 +2809,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              className="_class-slotModeSwitch-5"
+              className="Component-slotModeSwitch-5"
             >
               <button
                 className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -2858,10 +2858,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               className="MuiFormGroup-root-118"
             >
               <div
-                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
               >
                 <div
-                  className="_class-paperContent-4"
+                  className="Component-paperContent-4"
                 >
                   <div
                     className="MuiFormControl-root-33"
@@ -3014,7 +3014,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  className="_class-slotModeSwitch-5"
+                  className="Component-slotModeSwitch-5"
                 >
                   <button
                     className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -3057,10 +3057,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
               >
                 <div
-                  className="_class-paperContent-4"
+                  className="Component-paperContent-4"
                 >
                   <div
                     className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -3105,7 +3105,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  className="_class-slotModeSwitch-5"
+                  className="Component-slotModeSwitch-5"
                 >
                   <button
                     className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -3143,10 +3143,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
               >
                 <div
-                  className="_class-paperContent-4"
+                  className="Component-paperContent-4"
                 >
                   <div
                     className="MuiFormControl-root-33"
@@ -3299,7 +3299,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  className="_class-slotModeSwitch-5"
+                  className="Component-slotModeSwitch-5"
                 >
                   <button
                     className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -3342,10 +3342,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
               >
                 <div
-                  className="_class-paperContent-4"
+                  className="Component-paperContent-4"
                 >
                   <div
                     className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -3390,7 +3390,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  className="_class-slotModeSwitch-5"
+                  className="Component-slotModeSwitch-5"
                 >
                   <button
                     className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -3428,10 +3428,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+                className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
               >
                 <div
-                  className="_class-paperContent-4"
+                  className="Component-paperContent-4"
                 >
                   <div
                     className="MuiFormControl-root-33"
@@ -3466,7 +3466,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  className="_class-slotModeSwitch-5"
+                  className="Component-slotModeSwitch-5"
                 >
                   <button
                     className="MuiButtonBase-root-91 MuiIconButton-root-85"
@@ -3517,10 +3517,10 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
   className="ConfigurationEditor-root-1"
 >
   <div
-    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-3"
+    className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-3"
   >
     <div
-      className="_class-paperContent-4"
+      className="Component-paperContent-4"
     >
       <div
         className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -3551,7 +3551,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
       </div>
     </div>
     <div
-      className="_class-slotModeSwitch-5"
+      className="Component-slotModeSwitch-5"
     >
       <button
         className="MuiButtonBase-root-91 MuiIconButton-root-85"

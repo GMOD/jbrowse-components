@@ -100,6 +100,21 @@ const typeModelExtensions = {
       },
     },
   }),
+  numberMap: self => ({
+    views: {
+      get valueJSON() {
+        return JSON.stringify(self.value)
+      },
+    },
+    actions: {
+      add(key, val) {
+        self.value.set(key, val)
+      },
+      remove(key) {
+        self.value.delete(key)
+      },
+    },
+  }),
 }
 
 const FunctionStringType = types.refinement(
