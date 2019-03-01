@@ -37,9 +37,12 @@
         "type": "ReferenceSequence",
         "adapter": {
           "configId": "Fnry79fJDX",
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
           }
         },
         "rendering": {

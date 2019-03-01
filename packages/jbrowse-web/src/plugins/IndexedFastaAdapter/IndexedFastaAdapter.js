@@ -27,6 +27,20 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     return this.fasta.getSequenceList()
   }
 
+  async getRegions(assemblyName = '') {
+    const seqSizes = await this.fasta.getSequenceSizes()
+    const regions = []
+    Object.keys(seqSizes).forEach(seqName => {
+      regions.push({
+        assemblyName,
+        refName: seqName,
+        start: 0,
+        end: seqSizes[seqName],
+      })
+    })
+    return regions
+  }
+
   /**
    * Fetch features for a certain region
    * @param {Region} param
