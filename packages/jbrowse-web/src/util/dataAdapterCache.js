@@ -63,7 +63,7 @@ export async function getAdapter(
         ;({ seqNameAliases = {} } = assemblies[assemblyName])
       } else
         Object.keys(assemblies).forEach(assembly => {
-          if (assemblies[assembly].aliases.includes(assemblyName)) {
+          if ((assemblies[assembly].aliases || []).includes(assemblyName)) {
             assemblyName = assembly
             assemblyAliases = assemblies[assembly].aliases || []
             ;({ seqNameAliases = {} } = assemblies[assembly])
