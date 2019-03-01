@@ -29,6 +29,28 @@ jbrowse.configure({
       },
     },
     {
+      type: 'BasicTrack',
+      name: 'Wiggle track',
+      category: ['Bar Category'],
+      renderer: { type: 'WiggleRenderer' },
+      adapter: {
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: '/test_data/volvox.bw' },
+        assemblyName: 'volvox',
+      },
+    },
+    {
+      type: 'AlignmentsTrack',
+      name: 'volvox-sorted red/blue',
+      category: ['Bar Category', 'Baz Category'],
+      adapter: {
+        type: 'BamAdapter',
+        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
+        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
+        assemblyName: 'volvox',
+      },
+    },
+    {
       type: 'DynamicTrack',
       name: 'Lollipop track',
       category: ['Bar Category'],
@@ -76,17 +98,6 @@ jbrowse.configure({
             name: 'Geoffray',
           },
         ],
-      },
-    },
-    {
-      type: 'AlignmentsTrack',
-      name: 'volvox-sorted red/blue',
-      category: ['Bar Category', 'Baz Category'],
-      adapter: {
-        type: 'BamAdapter',
-        bamLocation: { uri: '/test_data/volvox-sorted.bam' },
-        index: { location: { uri: '/test_data/volvox-sorted.bam.bai' } },
-        assemblyName: 'volvox',
       },
     },
     {
@@ -191,8 +202,10 @@ firstView.displayRegions([
   { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
 ])
 
-// firstView.zoomTo(0.06) // bpPerPx
-firstView.showTrack(model.configuration.tracks[4], { height: 200 })
+firstView.zoomTo(0.06) // bpPerPx
+firstView.showTrack(model.configuration.tracks[0], { height: 110 })
+firstView.showTrack(model.configuration.tracks[1], { height: 110 })
+firstView.showTrack(model.configuration.tracks[2], { height: 200 })
 
 const secondView = model.addView('LinearGenomeView')
 secondView.showTrack(model.configuration.tracks[1], { height: 100 })
