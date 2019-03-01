@@ -118,7 +118,7 @@ class HierarchicalTrackSelector extends React.Component {
             ),
           }}
         />
-        <Contents model={model} filterPredicate={this.filter} />
+        <Contents model={model} filterPredicate={this.filter} top />
         <Fab
           color="secondary"
           className={classes.fab}

@@ -1,98 +1,114 @@
-import { Provider } from 'mobx-react'
 import React from 'react'
 import renderer from 'react-test-renderer'
-import { TestStub as Model } from '../models'
 import LinearGenomeView from './LinearGenomeView'
+import { createTestEnv } from '../../../JBrowse'
 
 describe('LinearGenomeView genome view component', () => {
-  it('renders with an empty model', () => {
-    const model = Model.create(
-      {
-        type: 'LinearGenomeView',
-        offsetPx: 0,
-        bpPerPx: 1,
-        tracks: [],
-        controlsWidth: 100,
-        configuration: {},
+  it('renders with an empty model', async () => {
+    const { rootModel } = await createTestEnv({
+      defaultSession: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            tracks: [],
+            controlsWidth: 100,
+            configuration: {},
+          },
+        ],
       },
-      {
-        testEnv: true,
-      },
-    )
-    const component = renderer.create(
-      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
-        <LinearGenomeView model={model} />
-      </Provider>,
-    )
+    })
+    const model = rootModel.views[0]
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
-  it('renders one track, no blocks', () => {
-    const model = Model.create(
-      {
-        type: 'LinearGenomeView',
-        offsetPx: 0,
-        bpPerPx: 1,
-        tracks: [
+  it('renders one track, no blocks', async () => {
+    const { rootModel } = await createTestEnv({
+      tracks: [
+        {
+          configId: 'testConfig',
+          name: 'Foo Track',
+          type: 'BasicTrack',
+        },
+      ],
+      defaultSession: {
+        views: [
           {
-            id: 'foo',
-            name: 'Foo Track',
-            type: 'tester',
-            height: 20,
-            configuration: { name: 'foo' },
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            tracks: [
+              {
+                id: 'foo',
+                type: 'BasicTrack',
+                height: 20,
+                configuration: 'testConfig',
+              },
+            ],
+            controlsWidth: 100,
+            configuration: {},
           },
         ],
-        controlsWidth: 100,
-        configuration: {},
       },
-      {
-        testEnv: true,
-      },
-    )
-    const component = renderer.create(
-      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
-        <LinearGenomeView model={model} />
-      </Provider>,
-    )
+    })
+    const model = rootModel.views[0]
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })
-  it('renders two tracks, two regions', () => {
-    const model = Model.create(
-      {
-        type: 'LinearGenomeView',
-        offsetPx: 0,
-        bpPerPx: 1,
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 1000, end: 200 },
-        ],
-        tracks: [
+  it('renders two tracks, two regions', async () => {
+    const { rootModel } = await createTestEnv({
+      tracks: [
+        {
+          configId: 'testConfig',
+          name: 'Foo Track',
+          type: 'BasicTrack',
+        },
+        {
+          configId: 'testConfig2',
+          name: 'Bar Track',
+          type: 'BasicTrack',
+        },
+      ],
+      defaultSession: {
+        views: [
           {
-            id: 'foo',
-            type: 'tester',
-            height: 20,
-            configuration: { name: 'foo' },
-          },
-          {
-            id: 'bar',
-            name: 'Bar Track',
-            type: 'tester',
-            height: 20,
-            configuration: { name: 'bar' },
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgB',
+                start: 1000,
+                end: 200,
+              },
+            ],
+            tracks: [
+              {
+                id: 'foo',
+                type: 'BasicTrack',
+                height: 20,
+                configuration: 'testConfig',
+              },
+              {
+                id: 'bar',
+                type: 'BasicTrack',
+                height: 20,
+                configuration: 'testConfig2',
+              },
+            ],
+            controlsWidth: 100,
+            configuration: {},
           },
         ],
-        controlsWidth: 100,
       },
-      {
-        testEnv: true,
-      },
-    )
-    const component = renderer.create(
-      <Provider rootModel={{ activeDrawerWidgets: new Map() }}>
-        <LinearGenomeView model={model} />
-      </Provider>,
-    )
+    })
+    const model = rootModel.views[0]
+    const component = renderer.create(<LinearGenomeView model={model} />)
     const tree = component.toJSON()
     expect(tree).toMatchSnapshot()
   })

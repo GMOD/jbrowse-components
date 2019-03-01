@@ -1,14 +1,34 @@
 import { getSnapshot } from 'mobx-state-tree'
-import JBrowse from './JBrowse'
+import { createTestEnv } from './JBrowse'
 
-test('can load configuration with the configure() action and resolve references to view configurations', () => {
-  const jbrowse = new JBrowse().configure()
-  const { model } = jbrowse
-  model.configure({
-    configId: 'fogbat',
-    views: { LinearGenomeView: { configId: 'LinearGenomeView' } },
-    rpc: { configId: 'oh hi rpc' },
+jest.mock('shortid', () => ({ generate: 'testid' }))
+
+test('can load configuration with the configure() action and resolve references to view configurations', async () => {
+  const { rootModel } = await createTestEnv({ configId: 'fogbat' })
+
+  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
+})
+
+test('can load configuration from a config object', async () => {
+  const { rootModel } = await createTestEnv({
+    assemblies: {
+      volvox: {
+        aliases: ['vvx'],
+        seqNameAliases: {
+          A: ['ctgA', 'contigA'],
+          B: ['ctgB', 'contigB'],
+        },
+      },
+    },
   })
 
-  expect(getSnapshot(model.configuration)).toMatchSnapshot()
+  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
+})
+
+test('can load configuration from a file', async () => {
+  const { rootModel } = await createTestEnv({
+    localPath: require.resolve('../test_data/config_volvox.json'),
+  })
+
+  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
 })

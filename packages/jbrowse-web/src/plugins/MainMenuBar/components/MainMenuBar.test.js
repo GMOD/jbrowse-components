@@ -1,7 +1,7 @@
 import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
-import { MainMenuBarModel } from '../model'
 import MainMenuBar from './MainMenuBar'
+import { createTestEnv } from '../../../JBrowse'
 
 describe('<MainMenuBar />', () => {
   let shallow
@@ -10,17 +10,12 @@ describe('<MainMenuBar />', () => {
     shallow = createShallow()
   })
 
-  it('renders', () => {
-    const menubar = MainMenuBarModel.create({
-      id: 'testingId',
-      type: 'MainMenuBar',
+  it('renders', async () => {
+    const { rootModel } = await createTestEnv({
+      defaultSession: { menuBars: [{ id: 'testing', type: 'MainMenuBar' }] },
     })
-    const wrapper = shallow(
-      <MainMenuBar
-        model={menubar}
-        rootModel={{ activeDrawerWidgets: new Map() }}
-      />,
-    )
+    const model = rootModel.menuBars[0]
+    const wrapper = shallow(<MainMenuBar model={model} />)
       .first()
       .shallow()
     expect(wrapper).toMatchSnapshot()

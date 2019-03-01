@@ -20,6 +20,20 @@ export default class TwoBitAdapter extends BaseAdapter {
     return this.twobit.getSequenceNames()
   }
 
+  async getRegions(assemblyName = '') {
+    const seqSizes = await this.twobit.getSequenceSizes()
+    const regions = []
+    Object.keys(seqSizes).forEach(seqName => {
+      regions.push({
+        assemblyName,
+        refName: seqName,
+        start: 0,
+        end: seqSizes[seqName],
+      })
+    })
+    return regions
+  }
+
   /**
    * Fetch features for a certain region
    * @param {Region} param

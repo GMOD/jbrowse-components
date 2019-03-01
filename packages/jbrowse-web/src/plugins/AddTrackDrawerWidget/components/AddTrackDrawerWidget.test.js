@@ -1,7 +1,6 @@
 import { createMount, createShallow } from '@material-ui/core/test-utils'
-import { Provider } from 'mobx-react'
 import React from 'react'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
 jest.mock('shortid', () => ({ generate: 'testid' }))
@@ -9,14 +8,12 @@ jest.mock('shortid', () => ({ generate: 'testid' }))
 describe('<AddTrackDrawerWidget />', () => {
   let shallow
   let mount
-  let jbrowse
   let rootModel
 
-  beforeAll(() => {
+  beforeAll(async () => {
     shallow = createShallow()
     mount = createMount()
-    jbrowse = new JBrowse().configure({ configId: 'testing' })
-    rootModel = jbrowse.model
+    ;({ rootModel } = await createTestEnv({ configId: 'testing' }))
     const view = rootModel.addView('LinearGenomeView')
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: view.id,
@@ -24,17 +21,19 @@ describe('<AddTrackDrawerWidget />', () => {
   })
 
   it('shallowly renders', () => {
-    const wrapper = shallow(<AddTrackDrawerWidget rootModel={rootModel} />)
+    const wrapper = shallow(
+      <AddTrackDrawerWidget
+        model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
+      />,
+    )
     expect(wrapper).toMatchSnapshot()
   })
 
   it('mounts', () => {
     const preWrap = mount(
-      <Provider rootModel={rootModel}>
-        <AddTrackDrawerWidget
-          model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
-        />
-      </Provider>,
+      <AddTrackDrawerWidget
+        model={rootModel.drawerWidgets.get('addTrackDrawerWidget')}
+      />,
     )
     const wrapper = preWrap.find('AddTrackDrawerWidget')
     expect(wrapper).toMatchSnapshot()

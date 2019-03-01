@@ -4,11 +4,11 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
 <AddTrackDrawerWidget
   classes={
     Object {
-      "actionsContainer": "inject-AddTrackDrawerWidget-with-rootModel-actionsContainer-4",
-      "button": "inject-AddTrackDrawerWidget-with-rootModel-button-3",
-      "root": "inject-AddTrackDrawerWidget-with-rootModel-root-1",
-      "stepContent": "inject-AddTrackDrawerWidget-with-rootModel-stepContent-5",
-      "stepper": "inject-AddTrackDrawerWidget-with-rootModel-stepper-2",
+      "actionsContainer": "AddTrackDrawerWidget-actionsContainer-4",
+      "button": "AddTrackDrawerWidget-button-3",
+      "root": "AddTrackDrawerWidget-root-1",
+      "stepContent": "AddTrackDrawerWidget-stepContent-5",
+      "stepper": "AddTrackDrawerWidget-stepper-2",
     }
   }
   model={
@@ -18,57 +18,19 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
       "view": "testid",
     }
   }
-  rootModel={
-    Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "testid",
-        },
-      },
-      "drawerWidgets": Object {
-        "addTrackDrawerWidget": Object {
-          "id": "addTrackDrawerWidget",
-          "type": "AddTrackDrawerWidget",
-          "view": "testid",
-        },
-      },
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [
-        Object {
-          "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "testid",
-          },
-          "controlsWidth": 120,
-          "displayedRegions": Array [],
-          "flipped": false,
-          "hideControls": false,
-          "id": "testid",
-          "offsetPx": 0,
-          "tracks": Array [],
-          "type": "LinearGenomeView",
-          "width": 512,
-        },
-      ],
-      "width": 512,
-    }
-  }
 >
   <div
-    className="inject-AddTrackDrawerWidget-with-rootModel-root-1"
+    className="AddTrackDrawerWidget-root-1"
   >
     <WithStyles(Stepper)
       activeStep={0}
-      className="inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+      className="AddTrackDrawerWidget-stepper-2"
       orientation="vertical"
     >
       <Stepper
         activeStep={0}
         alternativeLabel={false}
-        className="inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+        className="AddTrackDrawerWidget-stepper-2"
         classes={
           Object {
             "alternativeLabel": "MuiStepper-alternativeLabel-9",
@@ -82,12 +44,12 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
         orientation="vertical"
       >
         <WithStyles(Paper)
-          className="MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+          className="MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
           elevation={0}
           square={true}
         >
           <Paper
-            className="MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+            className="MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
             classes={
               Object {
                 "elevation0": "MuiPaper-elevation0-12",
@@ -124,7 +86,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
             square={true}
           >
             <div
-              className="MuiPaper-root-10 MuiPaper-elevation0-12 MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+              className="MuiPaper-root-10 MuiPaper-elevation0-12 MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
             >
               <WithStyles(Step)
                 active={true}
@@ -4734,15 +4696,15 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                         </TrackSourceSelect>
                                       </WithStyles(TrackSourceSelect)>
                                       <div
-                                        className="inject-AddTrackDrawerWidget-with-rootModel-actionsContainer-4"
+                                        className="AddTrackDrawerWidget-actionsContainer-4"
                                       >
                                         <WithStyles(Button)
-                                          className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                          className="AddTrackDrawerWidget-button-3"
                                           disabled={true}
                                           onClick={[Function]}
                                         >
                                           <Button
-                                            className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                            className="AddTrackDrawerWidget-button-3"
                                             classes={
                                               Object {
                                                 "colorInherit": "MuiButton-colorInherit-211",
@@ -4785,7 +4747,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                             variant="text"
                                           >
                                             <WithStyles(ButtonBase)
-                                              className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                              className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                               component="button"
                                               disabled={true}
                                               focusRipple={true}
@@ -4795,7 +4757,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                             >
                                               <ButtonBase
                                                 centerRipple={false}
-                                                className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                 classes={
                                                   Object {
                                                     "disabled": "MuiButtonBase-disabled-140",
@@ -4814,7 +4776,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                                 type="button"
                                               >
                                                 <button
-                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                   disabled={true}
                                                   onBlur={[Function]}
                                                   onClick={[Function]}
@@ -4842,14 +4804,14 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                           </Button>
                                         </WithStyles(Button)>
                                         <WithStyles(Button)
-                                          className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                          className="AddTrackDrawerWidget-button-3"
                                           color="primary"
                                           disabled={true}
                                           onClick={[Function]}
                                           variant="contained"
                                         >
                                           <Button
-                                            className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                            className="AddTrackDrawerWidget-button-3"
                                             classes={
                                               Object {
                                                 "colorInherit": "MuiButton-colorInherit-211",
@@ -4892,7 +4854,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                             variant="contained"
                                           >
                                             <WithStyles(ButtonBase)
-                                              className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                              className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                               component="button"
                                               disabled={true}
                                               focusRipple={true}
@@ -4902,7 +4864,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                             >
                                               <ButtonBase
                                                 centerRipple={false}
-                                                className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                 classes={
                                                   Object {
                                                     "disabled": "MuiButtonBase-disabled-140",
@@ -4921,7 +4883,7 @@ exports[`<AddTrackDrawerWidget /> mounts 1`] = `
                                                 type="button"
                                               >
                                                 <button
-                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                   disabled={true}
                                                   onBlur={[Function]}
                                                   onClick={[Function]}
@@ -6049,11 +6011,11 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
 <AddTrackDrawerWidget
   classes={
     Object {
-      "actionsContainer": "inject-AddTrackDrawerWidget-with-rootModel-actionsContainer-4",
-      "button": "inject-AddTrackDrawerWidget-with-rootModel-button-3",
-      "root": "inject-AddTrackDrawerWidget-with-rootModel-root-1",
-      "stepContent": "inject-AddTrackDrawerWidget-with-rootModel-stepContent-5",
-      "stepper": "inject-AddTrackDrawerWidget-with-rootModel-stepper-2",
+      "actionsContainer": "AddTrackDrawerWidget-actionsContainer-4",
+      "button": "AddTrackDrawerWidget-button-3",
+      "root": "AddTrackDrawerWidget-root-1",
+      "stepContent": "AddTrackDrawerWidget-stepContent-5",
+      "stepper": "AddTrackDrawerWidget-stepper-2",
     }
   }
   model={
@@ -6063,101 +6025,19 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
       "view": "testid",
     }
   }
-  rootModel={
-    Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "testid",
-        },
-        "tracks": Array [
-          Object {
-            "adapter": Object {
-              "bamLocation": Object {
-                "uri": "test.bam",
-              },
-              "configId": "testid",
-              "index": Object {
-                "configId": "testid",
-                "location": Object {
-                  "uri": "test.bam.bai",
-                },
-              },
-              "type": "BamAdapter",
-            },
-            "configId": "testid",
-            "name": "test track",
-            "renderers": Object {
-              "PileupRenderer": Object {
-                "configId": "testid",
-                "type": "PileupRenderer",
-              },
-              "SvgFeatureRenderer": Object {
-                "configId": "testid",
-                "labels": Object {
-                  "configId": "testid",
-                },
-                "type": "SvgFeatureRenderer",
-              },
-              "configId": "testid",
-            },
-            "type": "AlignmentsTrack",
-          },
-        ],
-      },
-      "drawerWidgets": Object {
-        "addTrackDrawerWidget": Object {
-          "id": "addTrackDrawerWidget",
-          "type": "AddTrackDrawerWidget",
-          "view": "testid",
-        },
-      },
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [
-        Object {
-          "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "testid",
-          },
-          "controlsWidth": 120,
-          "displayedRegions": Array [],
-          "flipped": false,
-          "hideControls": false,
-          "id": "testid",
-          "offsetPx": 0,
-          "tracks": Array [
-            Object {
-              "blockState": Object {},
-              "configuration": "testid",
-              "height": 100,
-              "id": "testid",
-              "selectedRendering": "",
-              "subtracks": undefined,
-              "type": "AlignmentsTrack",
-            },
-          ],
-          "type": "LinearGenomeView",
-          "width": 512,
-        },
-      ],
-      "width": 512,
-    }
-  }
 >
   <div
-    className="inject-AddTrackDrawerWidget-with-rootModel-root-1"
+    className="AddTrackDrawerWidget-root-1"
   >
     <WithStyles(Stepper)
       activeStep={0}
-      className="inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+      className="AddTrackDrawerWidget-stepper-2"
       orientation="vertical"
     >
       <Stepper
         activeStep={0}
         alternativeLabel={false}
-        className="inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+        className="AddTrackDrawerWidget-stepper-2"
         classes={
           Object {
             "alternativeLabel": "MuiStepper-alternativeLabel-9",
@@ -6171,12 +6051,12 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
         orientation="vertical"
       >
         <WithStyles(Paper)
-          className="MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+          className="MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
           elevation={0}
           square={true}
         >
           <Paper
-            className="MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+            className="MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
             classes={
               Object {
                 "elevation0": "MuiPaper-elevation0-12",
@@ -6213,7 +6093,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
             square={true}
           >
             <div
-              className="MuiPaper-root-10 MuiPaper-elevation0-12 MuiStepper-root-6 MuiStepper-vertical-8 inject-AddTrackDrawerWidget-with-rootModel-stepper-2"
+              className="MuiPaper-root-10 MuiPaper-elevation0-12 MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
             >
               <WithStyles(Step)
                 active={true}
@@ -10823,15 +10703,15 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                         </TrackSourceSelect>
                                       </WithStyles(TrackSourceSelect)>
                                       <div
-                                        className="inject-AddTrackDrawerWidget-with-rootModel-actionsContainer-4"
+                                        className="AddTrackDrawerWidget-actionsContainer-4"
                                       >
                                         <WithStyles(Button)
-                                          className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                          className="AddTrackDrawerWidget-button-3"
                                           disabled={true}
                                           onClick={[Function]}
                                         >
                                           <Button
-                                            className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                            className="AddTrackDrawerWidget-button-3"
                                             classes={
                                               Object {
                                                 "colorInherit": "MuiButton-colorInherit-211",
@@ -10874,7 +10754,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                             variant="text"
                                           >
                                             <WithStyles(ButtonBase)
-                                              className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                              className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                               component="button"
                                               disabled={true}
                                               focusRipple={true}
@@ -10884,7 +10764,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                             >
                                               <ButtonBase
                                                 centerRipple={false}
-                                                className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                className="MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                 classes={
                                                   Object {
                                                     "disabled": "MuiButtonBase-disabled-140",
@@ -10903,7 +10783,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                                 type="button"
                                               >
                                                 <button
-                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                   disabled={true}
                                                   onBlur={[Function]}
                                                   onClick={[Function]}
@@ -10931,14 +10811,14 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                           </Button>
                                         </WithStyles(Button)>
                                         <WithStyles(Button)
-                                          className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                          className="AddTrackDrawerWidget-button-3"
                                           color="primary"
                                           disabled={true}
                                           onClick={[Function]}
                                           variant="contained"
                                         >
                                           <Button
-                                            className="inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                            className="AddTrackDrawerWidget-button-3"
                                             classes={
                                               Object {
                                                 "colorInherit": "MuiButton-colorInherit-211",
@@ -10981,7 +10861,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                             variant="contained"
                                           >
                                             <WithStyles(ButtonBase)
-                                              className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                              className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                               component="button"
                                               disabled={true}
                                               focusRipple={true}
@@ -10991,7 +10871,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                             >
                                               <ButtonBase
                                                 centerRipple={false}
-                                                className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                className="MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                 classes={
                                                   Object {
                                                     "disabled": "MuiButtonBase-disabled-140",
@@ -11010,7 +10890,7 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
                                                 type="button"
                                               >
                                                 <button
-                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 inject-AddTrackDrawerWidget-with-rootModel-button-3"
+                                                  className="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
                                                   disabled={true}
                                                   onBlur={[Function]}
                                                   onClick={[Function]}
@@ -12135,52 +12015,21 @@ exports[`<AddTrackDrawerWidget /> mounts 2`] = `
 `;
 
 exports[`<AddTrackDrawerWidget /> shallowly renders 1`] = `
-<inject-AddTrackDrawerWidget-with-rootModel
+<AddTrackDrawerWidget
   classes={
     Object {
-      "actionsContainer": "inject-AddTrackDrawerWidget-with-rootModel-actionsContainer-4",
-      "button": "inject-AddTrackDrawerWidget-with-rootModel-button-3",
-      "root": "inject-AddTrackDrawerWidget-with-rootModel-root-1",
-      "stepContent": "inject-AddTrackDrawerWidget-with-rootModel-stepContent-5",
-      "stepper": "inject-AddTrackDrawerWidget-with-rootModel-stepper-2",
+      "actionsContainer": "AddTrackDrawerWidget-actionsContainer-4",
+      "button": "AddTrackDrawerWidget-button-3",
+      "root": "AddTrackDrawerWidget-root-1",
+      "stepContent": "AddTrackDrawerWidget-stepContent-5",
+      "stepper": "AddTrackDrawerWidget-stepper-2",
     }
   }
-  rootModel={
+  model={
     Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "testid",
-        },
-      },
-      "drawerWidgets": Object {
-        "addTrackDrawerWidget": Object {
-          "id": "addTrackDrawerWidget",
-          "type": "AddTrackDrawerWidget",
-          "view": "testid",
-        },
-      },
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [
-        Object {
-          "bpPerPx": 1,
-          "configuration": Object {
-            "configId": "testid",
-          },
-          "controlsWidth": 120,
-          "displayedRegions": Array [],
-          "flipped": false,
-          "hideControls": false,
-          "id": "testid",
-          "offsetPx": 0,
-          "tracks": Array [],
-          "type": "LinearGenomeView",
-          "width": 512,
-        },
-      ],
-      "width": 512,
+      "id": "addTrackDrawerWidget",
+      "type": "AddTrackDrawerWidget",
+      "view": "testid",
     }
   }
 />

@@ -1,10 +1,12 @@
 import { transaction } from 'mobx'
 import {
+  flow,
+  getParent,
   getRoot,
+  getType,
   isStateTreeNode,
   types,
-  getType,
-  getParent,
+  getSnapshot,
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
@@ -17,6 +19,7 @@ import LinearGenomeViewConfigSchema from './configSchema'
 import BaseTrack from './baseTrack'
 import calculateStaticBlocks from '../util/calculateStaticBlocks'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
+import RpcManager from '../../../rpc/RpcManager'
 
 const validBpPerPx = [
   1 / 50,
@@ -44,8 +47,6 @@ const validBpPerPx = [
   500000,
 ]
 
-const minBpPerPx = validBpPerPx[0]
-
 function constrainBpPerPx(newBpPerPx) {
   // find the closest valid zoom level and return it
   // might consider reimplementing this later using a more efficient algorithm
@@ -69,7 +70,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       ),
       controlsWidth: 120,
       width: 800,
-      displayedRegions: types.array(Region),
+      displayedRegionsOverrides: types.array(Region),
       configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
@@ -87,7 +88,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         return constrainBpPerPx(totalbp / displayWidth)
       },
       get minBpPerPx() {
-        return constrainBpPerPx(minBpPerPx)
+        return constrainBpPerPx(0)
       },
 
       get staticBlocks() {
@@ -101,8 +102,66 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       get horizontallyFlipped() {
         return getConf(self, 'reversed')
       },
+      get displayedRegions() {
+        if (self.displayedRegionsOverrides.length)
+          return self.displayedRegionsOverrides
+        return self.defaultDisplayedRegions
+      },
+    }))
+    .volatile(() => ({
+      defaultDisplayedRegions: [],
     }))
     .actions(self => ({
+      afterAttach() {
+        this.fetchDisplayedRegions()
+      },
+
+      fetchDisplayedRegions: flow(function* fetchProjects() {
+        const rootModel = getRoot(self)
+        const { workerManager, configuration: rootConfig } = rootModel
+        const regions = []
+        const assemblies = rootConfig.assemblies || new Map()
+        for (const [assemblyName, assembly] of assemblies) {
+          if (assembly.sequence.type === 'Sizes') {
+            const sizes = readConfObject(assembly.sequence, 'sizes')
+            Object.keys(sizes).forEach(refName =>
+              regions.push({
+                assemblyName,
+                refName,
+                start: 0,
+                end: sizes[refName],
+              }),
+            )
+          } else if (assembly.sequence.type === 'ReferenceSequence') {
+            const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+            const rpcManager = new RpcManager(pluginManager, rootConfig.rpc, {
+              WebWorkerRpcDriver: {
+                workers: workerManager.getWorkerGroup('rpc'),
+              },
+            })
+            try {
+              regions.push(
+                ...(yield rpcManager.call(
+                  rootConfig.configId,
+                  'getRegions',
+                  {
+                    sessionId: assemblyName,
+                    adapterType: adapterConfig.type,
+                    adapterConfig,
+                    rootConfig: getSnapshot(rootConfig),
+                    assemblyName,
+                  },
+                  { timeout: 1000000 },
+                )),
+              )
+            } catch (error) {
+              console.error('Failed to fetch sequence', error)
+            }
+          }
+          self.defaultDisplayedRegions = regions
+        }
+      }),
+
       setWidth(newWidth) {
         self.width = newWidth
       },

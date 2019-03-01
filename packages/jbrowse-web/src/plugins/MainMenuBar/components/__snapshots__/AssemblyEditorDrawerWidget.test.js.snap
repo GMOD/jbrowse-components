@@ -2,13 +2,13 @@
 
 exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -22,7 +22,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -32,7 +32,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -58,7 +58,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -74,7 +74,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -109,7 +109,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -123,7 +123,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -148,7 +148,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -162,7 +162,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -178,7 +178,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="abc"
   >
     <WithStyles(CardHeader)
@@ -204,7 +204,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -232,7 +232,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -242,7 +242,7 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -255,13 +255,13 @@ exports[`<AssemblyEditorDrawerWidget /> adds an assembly 1`] = `
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -275,7 +275,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -285,7 +285,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -311,7 +311,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -327,7 +327,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -362,7 +362,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -376,7 +376,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -401,7 +401,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -415,7 +415,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -431,7 +431,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -442,7 +442,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
   <Popper
     anchorEl={
       <WithStyles(Fab)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+        className="AssemblyEditorDrawerWidget-fab-8"
         color="secondary"
         onClick={[Function]}
       >
@@ -451,7 +451,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
         </WithStyles(Icon)>
       </WithStyles(Fab)>
     }
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={true}
     placement="bottom"
@@ -464,13 +464,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 1`]
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -484,7 +484,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -494,7 +494,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -520,7 +520,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -536,7 +536,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -571,7 +571,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -585,7 +585,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -610,7 +610,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -624,7 +624,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -640,7 +640,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -651,7 +651,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
   <Popper
     anchorEl={
       <WithStyles(Fab)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+        className="AssemblyEditorDrawerWidget-fab-8"
         color="secondary"
         onClick={[Function]}
       >
@@ -660,7 +660,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
         </WithStyles(Icon)>
       </WithStyles(Fab)>
     }
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={true}
     placement="bottom"
@@ -673,13 +673,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 2`]
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -693,7 +693,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -703,7 +703,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -729,7 +729,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -745,7 +745,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -780,7 +780,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -794,7 +794,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -819,7 +819,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -833,7 +833,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -849,7 +849,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -859,7 +859,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -872,13 +872,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 3`]
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -892,7 +892,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -902,7 +902,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -928,7 +928,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -944,7 +944,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -979,7 +979,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -993,7 +993,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1018,7 +1018,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1032,7 +1032,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1048,7 +1048,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -1059,7 +1059,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
   <Popper
     anchorEl={
       <WithStyles(Fab)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+        className="AssemblyEditorDrawerWidget-fab-8"
         color="secondary"
         onClick={[Function]}
       >
@@ -1068,7 +1068,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
         </WithStyles(Icon)>
       </WithStyles(Fab)>
     }
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={true}
     placement="bottom"
@@ -1081,13 +1081,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 4`]
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -1101,7 +1101,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -1111,7 +1111,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -1137,7 +1137,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -1153,7 +1153,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -1188,7 +1188,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1202,7 +1202,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1227,7 +1227,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1241,7 +1241,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1257,7 +1257,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -1267,7 +1267,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -1280,13 +1280,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on FAB click 5`]
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -1308,7 +1308,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
           </WithStyles(Icon)>
         </WithStyles(IconButton)>
       }
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={true}
       placement="bottom"
@@ -1318,7 +1318,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -1344,7 +1344,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -1360,7 +1360,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -1395,7 +1395,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1409,7 +1409,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1434,7 +1434,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1448,7 +1448,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1464,7 +1464,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -1474,7 +1474,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -1487,13 +1487,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 1`
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -1515,7 +1515,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
           </WithStyles(Icon)>
         </WithStyles(IconButton)>
       }
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={true}
       placement="bottom"
@@ -1525,7 +1525,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -1551,7 +1551,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -1567,7 +1567,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -1602,7 +1602,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1616,7 +1616,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1641,7 +1641,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1655,7 +1655,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1671,7 +1671,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -1681,7 +1681,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -1694,13 +1694,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 2`
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -1714,7 +1714,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -1724,7 +1724,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -1750,7 +1750,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -1766,7 +1766,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -1801,7 +1801,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1815,7 +1815,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1840,7 +1840,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -1854,7 +1854,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -1870,7 +1870,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -1880,7 +1880,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -1893,13 +1893,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 3`
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -1921,7 +1921,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
           </WithStyles(Icon)>
         </WithStyles(IconButton)>
       }
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={true}
       placement="bottom"
@@ -1931,7 +1931,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -1957,7 +1957,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -1973,7 +1973,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -2008,7 +2008,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2022,7 +2022,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2047,7 +2047,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2061,7 +2061,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2077,7 +2077,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -2087,7 +2087,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -2100,13 +2100,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 4`
 
 exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -2120,7 +2120,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -2130,7 +2130,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -2156,7 +2156,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -2172,7 +2172,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -2207,7 +2207,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2221,7 +2221,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2246,7 +2246,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2260,7 +2260,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2276,7 +2276,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -2286,7 +2286,7 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"
@@ -2299,13 +2299,13 @@ exports[`<AssemblyEditorDrawerWidget /> opens and closes dialog on help click 5`
 
 exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
 <div
-  className="inject-AssemblyEditorDrawerWidget-with-rootModel-root-1"
+  className="AssemblyEditorDrawerWidget-root-1"
 >
   <div
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-header-2"
+    className="AssemblyEditorDrawerWidget-header-2"
   >
     <WithStyles(Typography)
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-headerText-3"
+      className="AssemblyEditorDrawerWidget-headerText-3"
       variant="subtitle1"
     >
       Configured assemblies
@@ -2319,7 +2319,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
     </WithStyles(IconButton)>
     <Popper
       anchorEl={null}
-      className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+      className="AssemblyEditorDrawerWidget-popper-5"
       disablePortal={false}
       open={false}
       placement="bottom"
@@ -2329,7 +2329,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
     </Popper>
   </div>
   <WithStyles(Card)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-assembly-6"
+    className="AssemblyEditorDrawerWidget-assembly-6"
     key="volvox"
   >
     <WithStyles(CardHeader)
@@ -2355,7 +2355,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
     />
     <WithStyles(CardContent)>
       <WithStyles(Paper)
-        className="inject-AssemblyEditorDrawerWidget-with-rootModel-paper-4"
+        className="AssemblyEditorDrawerWidget-paper-4"
       >
         <WithStyles(List)
           dense={true}
@@ -2371,7 +2371,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
           >
             <WithStyles(ListItemIcon)>
               <WithStyles(Avatar)
-                className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                className="AssemblyEditorDrawerWidget-listNumber-7"
               >
                 1
               </WithStyles(Avatar)>
@@ -2406,7 +2406,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2420,7 +2420,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2445,7 +2445,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   1
                 </WithStyles(Avatar)>
@@ -2459,7 +2459,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
             >
               <WithStyles(ListItemIcon)>
                 <WithStyles(Avatar)
-                  className="inject-AssemblyEditorDrawerWidget-with-rootModel-listNumber-7"
+                  className="AssemblyEditorDrawerWidget-listNumber-7"
                 >
                   2
                 </WithStyles(Avatar)>
@@ -2475,7 +2475,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
     </WithStyles(CardContent)>
   </WithStyles(Card)>
   <WithStyles(Fab)
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-fab-8"
+    className="AssemblyEditorDrawerWidget-fab-8"
     color="secondary"
     onClick={[Function]}
   >
@@ -2485,7 +2485,7 @@ exports[`<AssemblyEditorDrawerWidget /> renders 1`] = `
   </WithStyles(Fab)>
   <Popper
     anchorEl={null}
-    className="inject-AssemblyEditorDrawerWidget-with-rootModel-popper-5"
+    className="AssemblyEditorDrawerWidget-popper-5"
     disablePortal={false}
     open={false}
     placement="bottom"

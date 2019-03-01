@@ -5,7 +5,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
   assemblyName="hg38"
   classes={
     Object {
-      "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+      "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
     }
   }
   enableNext={[Function]}
@@ -18,7 +18,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
       "configuration": Object {
         "configId": "testing",
         "rpc": Object {
-          "configId": "rpcConfig",
+          "configId": "testid",
         },
       },
       "drawerWidgets": Object {
@@ -31,7 +31,14 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
+      "sessionName": "UnnamedSession",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -39,7 +46,7 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
             "configId": "testViewConfigId",
           },
           "controlsWidth": 120,
-          "displayedRegions": Array [],
+          "displayedRegionsOverrides": Array [],
           "flipped": false,
           "hideControls": false,
           "id": "testViewId",
@@ -60,39 +67,39 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
     <LinearProgress
       classes={
         Object {
-          "bar": "MuiLinearProgress-bar-212",
-          "bar1Buffer": "MuiLinearProgress-bar1Buffer-217",
-          "bar1Determinate": "MuiLinearProgress-bar1Determinate-216",
-          "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-215",
-          "bar2Buffer": "MuiLinearProgress-bar2Buffer-219",
-          "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-218",
-          "barColorPrimary": "MuiLinearProgress-barColorPrimary-213",
-          "barColorSecondary": "MuiLinearProgress-barColorSecondary-214",
-          "buffer": "MuiLinearProgress-buffer-207",
-          "colorPrimary": "MuiLinearProgress-colorPrimary-203",
-          "colorSecondary": "MuiLinearProgress-colorSecondary-204",
-          "dashed": "MuiLinearProgress-dashed-209",
-          "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-210",
-          "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-211",
-          "determinate": "MuiLinearProgress-determinate-205",
-          "indeterminate": "MuiLinearProgress-indeterminate-206",
-          "query": "MuiLinearProgress-query-208",
-          "root": "MuiLinearProgress-root-202",
+          "bar": "MuiLinearProgress-bar-213",
+          "bar1Buffer": "MuiLinearProgress-bar1Buffer-218",
+          "bar1Determinate": "MuiLinearProgress-bar1Determinate-217",
+          "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-216",
+          "bar2Buffer": "MuiLinearProgress-bar2Buffer-220",
+          "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-219",
+          "barColorPrimary": "MuiLinearProgress-barColorPrimary-214",
+          "barColorSecondary": "MuiLinearProgress-barColorSecondary-215",
+          "buffer": "MuiLinearProgress-buffer-208",
+          "colorPrimary": "MuiLinearProgress-colorPrimary-204",
+          "colorSecondary": "MuiLinearProgress-colorSecondary-205",
+          "dashed": "MuiLinearProgress-dashed-210",
+          "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-211",
+          "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-212",
+          "determinate": "MuiLinearProgress-determinate-206",
+          "indeterminate": "MuiLinearProgress-indeterminate-207",
+          "query": "MuiLinearProgress-query-209",
+          "root": "MuiLinearProgress-root-203",
         }
       }
       color="primary"
       variant="query"
     >
       <div
-        className="MuiLinearProgress-root-202 MuiLinearProgress-colorPrimary-203 MuiLinearProgress-query-208"
+        className="MuiLinearProgress-root-203 MuiLinearProgress-colorPrimary-204 MuiLinearProgress-query-209"
         role="progressbar"
       >
         <div
-          className="MuiLinearProgress-bar-212 MuiLinearProgress-barColorPrimary-213 MuiLinearProgress-bar1Indeterminate-215"
+          className="MuiLinearProgress-bar-213 MuiLinearProgress-barColorPrimary-214 MuiLinearProgress-bar1Indeterminate-216"
           style={Object {}}
         />
         <div
-          className="MuiLinearProgress-bar-212 MuiLinearProgress-barColorPrimary-213 MuiLinearProgress-bar2Indeterminate-218"
+          className="MuiLinearProgress-bar-213 MuiLinearProgress-barColorPrimary-214 MuiLinearProgress-bar2Indeterminate-219"
           style={Object {}}
         />
       </div>
@@ -106,7 +113,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
   assemblyName="hg38"
   classes={
     Object {
-      "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+      "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
     }
   }
   enableNext={[Function]}
@@ -119,7 +126,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       "configuration": Object {
         "configId": "testing",
         "rpc": Object {
-          "configId": "rpcConfig",
+          "configId": "testid",
         },
       },
       "drawerWidgets": Object {
@@ -132,7 +139,14 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
+      "sessionName": "UnnamedSession",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -140,7 +154,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
             "configId": "testViewConfigId",
           },
           "controlsWidth": 120,
-          "displayedRegions": Array [],
+          "displayedRegionsOverrides": Array [],
           "flipped": false,
           "hideControls": false,
           "id": "testViewId",
@@ -162,42 +176,42 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       align="inherit"
       classes={
         Object {
-          "alignCenter": "MuiTypography-alignCenter-297",
-          "alignJustify": "MuiTypography-alignJustify-299",
-          "alignLeft": "MuiTypography-alignLeft-296",
-          "alignRight": "MuiTypography-alignRight-298",
-          "body1": "MuiTypography-body1-283",
-          "body2": "MuiTypography-body2-282",
-          "button": "MuiTypography-button-285",
-          "caption": "MuiTypography-caption-284",
-          "colorError": "MuiTypography-colorError-308",
-          "colorInherit": "MuiTypography-colorInherit-303",
-          "colorPrimary": "MuiTypography-colorPrimary-304",
-          "colorSecondary": "MuiTypography-colorSecondary-305",
-          "colorTextPrimary": "MuiTypography-colorTextPrimary-306",
-          "colorTextSecondary": "MuiTypography-colorTextSecondary-307",
-          "display1": "MuiTypography-display1-278",
-          "display2": "MuiTypography-display2-277",
-          "display3": "MuiTypography-display3-276",
-          "display4": "MuiTypography-display4-275",
-          "gutterBottom": "MuiTypography-gutterBottom-301",
-          "h1": "MuiTypography-h1-286",
-          "h2": "MuiTypography-h2-287",
-          "h3": "MuiTypography-h3-288",
-          "h4": "MuiTypography-h4-289",
-          "h5": "MuiTypography-h5-290",
-          "h6": "MuiTypography-h6-291",
-          "headline": "MuiTypography-headline-279",
-          "inline": "MuiTypography-inline-309",
-          "noWrap": "MuiTypography-noWrap-300",
-          "overline": "MuiTypography-overline-294",
-          "paragraph": "MuiTypography-paragraph-302",
-          "root": "MuiTypography-root-274",
-          "srOnly": "MuiTypography-srOnly-295",
-          "subheading": "MuiTypography-subheading-281",
-          "subtitle1": "MuiTypography-subtitle1-292",
-          "subtitle2": "MuiTypography-subtitle2-293",
-          "title": "MuiTypography-title-280",
+          "alignCenter": "MuiTypography-alignCenter-298",
+          "alignJustify": "MuiTypography-alignJustify-300",
+          "alignLeft": "MuiTypography-alignLeft-297",
+          "alignRight": "MuiTypography-alignRight-299",
+          "body1": "MuiTypography-body1-284",
+          "body2": "MuiTypography-body2-283",
+          "button": "MuiTypography-button-286",
+          "caption": "MuiTypography-caption-285",
+          "colorError": "MuiTypography-colorError-309",
+          "colorInherit": "MuiTypography-colorInherit-304",
+          "colorPrimary": "MuiTypography-colorPrimary-305",
+          "colorSecondary": "MuiTypography-colorSecondary-306",
+          "colorTextPrimary": "MuiTypography-colorTextPrimary-307",
+          "colorTextSecondary": "MuiTypography-colorTextSecondary-308",
+          "display1": "MuiTypography-display1-279",
+          "display2": "MuiTypography-display2-278",
+          "display3": "MuiTypography-display3-277",
+          "display4": "MuiTypography-display4-276",
+          "gutterBottom": "MuiTypography-gutterBottom-302",
+          "h1": "MuiTypography-h1-287",
+          "h2": "MuiTypography-h2-288",
+          "h3": "MuiTypography-h3-289",
+          "h4": "MuiTypography-h4-290",
+          "h5": "MuiTypography-h5-291",
+          "h6": "MuiTypography-h6-292",
+          "headline": "MuiTypography-headline-280",
+          "inline": "MuiTypography-inline-310",
+          "noWrap": "MuiTypography-noWrap-301",
+          "overline": "MuiTypography-overline-295",
+          "paragraph": "MuiTypography-paragraph-303",
+          "root": "MuiTypography-root-275",
+          "srOnly": "MuiTypography-srOnly-296",
+          "subheading": "MuiTypography-subheading-282",
+          "subtitle1": "MuiTypography-subtitle1-293",
+          "subtitle2": "MuiTypography-subtitle2-294",
+          "title": "MuiTypography-title-281",
         }
       }
       color="error"
@@ -590,7 +604,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       }
     >
       <p
-        className="MuiTypography-root-274 MuiTypography-body1-283 MuiTypography-colorError-308"
+        className="MuiTypography-root-275 MuiTypography-body1-284 MuiTypography-colorError-309"
       >
         <span>
           <strong>
@@ -612,7 +626,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
   assemblyName="hg38"
   classes={
     Object {
-      "unsupportedHeader": "inject-ConfirmationDialog-with-rootModel-unsupportedHeader-1",
+      "unsupportedHeader": "ConfirmationDialog-unsupportedHeader-1",
     }
   }
   enableNext={[Function]}
@@ -625,7 +639,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
       "configuration": Object {
         "configId": "testing",
         "rpc": Object {
-          "configId": "rpcConfig",
+          "configId": "testid",
         },
       },
       "drawerWidgets": Object {
@@ -638,7 +652,14 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
         },
       },
       "drawerWidth": 384,
-      "menuBars": Array [],
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
+      "sessionName": "UnnamedSession",
       "views": Array [
         Object {
           "bpPerPx": 1,
@@ -646,7 +667,7 @@ exports[`<ConfirmationDialog /> mounts 1`] = `
             "configId": "testViewConfigId",
           },
           "controlsWidth": 120,
-          "displayedRegions": Array [],
+          "displayedRegionsOverrides": Array [],
           "flipped": false,
           "hideControls": false,
           "id": "testViewId",

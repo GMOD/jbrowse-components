@@ -1,183 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<ConfirmTrack /> mounts with config 1`] = `
-<ConfirmTrack
-  classes={
-    Object {
-      "spacing": "inject-ConfirmTrack-with-rootModel-spacing-1",
-    }
-  }
-  rootModel={
-    Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "rpcTesting",
-        },
-      },
-      "drawerWidgets": Object {},
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [],
-      "width": 512,
-    }
-  }
-  trackAdapter={
-    Object {
-      "type": "FromConfigAdapter",
-    }
-  }
-  trackData={
-    Object {
-      "config": Array [],
-      "uri": "test.bam",
-    }
-  }
-  trackName=""
-  trackType="AlignmentsTrack"
-  updateTrackAdapter={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-        Array [
-          Object {
-            "type": "FromConfigAdapter",
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackName={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-        Array [
-          Object {
-            "type": "FromConfigAdapter",
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackType={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-        Array [
-          Object {
-            "type": "FromConfigAdapter",
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
->
+Array [
   <WithStyles(Typography)
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
   >
     <Typography
       align="inherit"
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       classes={
         Object {
           "alignCenter": "MuiTypography-alignCenter-25",
@@ -608,7 +438,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
       }
     >
       <p
-        className="MuiTypography-root-2 MuiTypography-body1-11 inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="MuiTypography-root-2 MuiTypography-body1-11 ConfirmTrack-spacing-1"
       >
         Using adapter 
         <code>
@@ -621,9 +451,9 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
         . Please enter a track name and, if necessary, update the track type.
       </p>
     </Typography>
-  </WithStyles(Typography)>
+  </WithStyles(Typography)>,
   <TextField
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
     fullWidth={true}
     helperText="A name for this track"
     label="trackName"
@@ -678,13 +508,13 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
     variant="standard"
   >
     <WithStyles(FormControl)
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       fullWidth={true}
       required={false}
       variant="standard"
     >
       <FormControl
-        className="inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="ConfirmTrack-spacing-1"
         classes={
           Object {
             "fullWidth": "MuiFormControl-fullWidth-41",
@@ -702,7 +532,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
         variant="standard"
       >
         <div
-          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 inject-ConfirmTrack-with-rootModel-spacing-1"
+          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 ConfirmTrack-spacing-1"
         >
           <WithStyles(WithFormControlContext(InputLabel))>
             <WithFormControlContext(InputLabel)
@@ -1251,7 +1081,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
+  </TextField>,
   <TextField
     fullWidth={true}
     helperText="A track type"
@@ -1690,6 +1520,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -1809,6 +1644,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -1926,6 +1766,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -2053,6 +1898,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -2176,6 +2026,11 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"
@@ -2953,138 +2808,18 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
-</ConfirmTrack>
+  </TextField>,
+]
 `;
 
 exports[`<ConfirmTrack /> mounts with localPath 1`] = `
-<ConfirmTrack
-  classes={
-    Object {
-      "spacing": "inject-ConfirmTrack-with-rootModel-spacing-1",
-    }
-  }
-  rootModel={
-    Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "rpcTesting",
-        },
-      },
-      "drawerWidgets": Object {},
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [],
-      "width": 512,
-    }
-  }
-  trackAdapter={
-    Object {
-      "bamLocation": Object {
-        "localPath": "test.bam",
-      },
-      "index": Object {
-        "location": Object {
-          "localPath": "test.bam.bai",
-        },
-      },
-      "type": "BamAdapter",
-    }
-  }
-  trackData={
-    Object {
-      "localPath": "test.bam",
-    }
-  }
-  trackName=""
-  trackType="AlignmentsTrack"
-  updateTrackAdapter={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {},
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": undefined,
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackName={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {},
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": undefined,
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackType={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {},
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": undefined,
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
->
+Array [
   <WithStyles(Typography)
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
   >
     <Typography
       align="inherit"
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       classes={
         Object {
           "alignCenter": "MuiTypography-alignCenter-25",
@@ -3515,7 +3250,7 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
       }
     >
       <p
-        className="MuiTypography-root-2 MuiTypography-body1-11 inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="MuiTypography-root-2 MuiTypography-body1-11 ConfirmTrack-spacing-1"
       >
         Using adapter 
         <code>
@@ -3528,9 +3263,9 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
         . Please enter a track name and, if necessary, update the track type.
       </p>
     </Typography>
-  </WithStyles(Typography)>
+  </WithStyles(Typography)>,
   <TextField
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
     fullWidth={true}
     helperText="A name for this track"
     label="trackName"
@@ -3566,13 +3301,13 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
     variant="standard"
   >
     <WithStyles(FormControl)
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       fullWidth={true}
       required={false}
       variant="standard"
     >
       <FormControl
-        className="inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="ConfirmTrack-spacing-1"
         classes={
           Object {
             "fullWidth": "MuiFormControl-fullWidth-41",
@@ -3590,7 +3325,7 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
         variant="standard"
       >
         <div
-          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 inject-ConfirmTrack-with-rootModel-spacing-1"
+          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 ConfirmTrack-spacing-1"
         >
           <WithStyles(WithFormControlContext(InputLabel))>
             <WithFormControlContext(InputLabel)
@@ -4044,7 +3779,7 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
+  </TextField>,
   <TextField
     fullWidth={true}
     helperText="A track type"
@@ -4407,6 +4142,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -4507,6 +4247,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -4605,6 +4350,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -4713,6 +4463,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -4817,6 +4572,11 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"
@@ -5575,168 +5335,18 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
-</ConfirmTrack>
+  </TextField>,
+]
 `;
 
 exports[`<ConfirmTrack /> mounts with uri 1`] = `
-<ConfirmTrack
-  classes={
-    Object {
-      "spacing": "inject-ConfirmTrack-with-rootModel-spacing-1",
-    }
-  }
-  rootModel={
-    Object {
-      "activeDrawerWidgets": Object {},
-      "configuration": Object {
-        "configId": "testing",
-        "rpc": Object {
-          "configId": "rpcTesting",
-        },
-      },
-      "drawerWidgets": Object {},
-      "drawerWidth": 384,
-      "menuBars": Array [],
-      "views": Array [],
-      "width": 512,
-    }
-  }
-  trackAdapter={
-    Object {
-      "bamLocation": Object {
-        "uri": "test.bam",
-      },
-      "index": Object {
-        "location": Object {
-          "uri": "test.bam.bai",
-        },
-      },
-      "type": "BamAdapter",
-    }
-  }
-  trackData={
-    Object {
-      "uri": "test.bam",
-    }
-  }
-  trackName=""
-  trackType="AlignmentsTrack"
-  updateTrackAdapter={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackName={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
-  updateTrackType={
-    [MockFunction] {
-      "calls": Array [
-        Array [
-          Object {
-            "bamLocation": Object {
-              "uri": "test.bam",
-            },
-            "index": Object {
-              "location": Object {
-                "uri": "test.bam.bai",
-              },
-            },
-            "type": "BamAdapter",
-          },
-        ],
-        Array [
-          Object {
-            "target": Object {
-              "value": "AlignmentsTrack",
-            },
-          },
-        ],
-      ],
-      "results": Array [
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-        Object {
-          "type": "return",
-          "value": undefined,
-        },
-      ],
-    }
-  }
->
+Array [
   <WithStyles(Typography)
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
   >
     <Typography
       align="inherit"
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       classes={
         Object {
           "alignCenter": "MuiTypography-alignCenter-25",
@@ -6167,7 +5777,7 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
       }
     >
       <p
-        className="MuiTypography-root-2 MuiTypography-body1-11 inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="MuiTypography-root-2 MuiTypography-body1-11 ConfirmTrack-spacing-1"
       >
         Using adapter 
         <code>
@@ -6180,9 +5790,9 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
         . Please enter a track name and, if necessary, update the track type.
       </p>
     </Typography>
-  </WithStyles(Typography)>
+  </WithStyles(Typography)>,
   <TextField
-    className="inject-ConfirmTrack-with-rootModel-spacing-1"
+    className="ConfirmTrack-spacing-1"
     fullWidth={true}
     helperText="A name for this track"
     label="trackName"
@@ -6228,13 +5838,13 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
     variant="standard"
   >
     <WithStyles(FormControl)
-      className="inject-ConfirmTrack-with-rootModel-spacing-1"
+      className="ConfirmTrack-spacing-1"
       fullWidth={true}
       required={false}
       variant="standard"
     >
       <FormControl
-        className="inject-ConfirmTrack-with-rootModel-spacing-1"
+        className="ConfirmTrack-spacing-1"
         classes={
           Object {
             "fullWidth": "MuiFormControl-fullWidth-41",
@@ -6252,7 +5862,7 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
         variant="standard"
       >
         <div
-          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 inject-ConfirmTrack-with-rootModel-spacing-1"
+          className="MuiFormControl-root-38 MuiFormControl-fullWidth-41 ConfirmTrack-spacing-1"
         >
           <WithStyles(WithFormControlContext(InputLabel))>
             <WithFormControlContext(InputLabel)
@@ -6756,7 +6366,7 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
+  </TextField>,
   <TextField
     fullWidth={true}
     helperText="A track type"
@@ -7159,6 +6769,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                           SequenceTrack
                         </WithStyles(MenuItem)>,
                         <WithStyles(MenuItem)
+                          value="ReferenceSequence"
+                        >
+                          ReferenceSequence
+                        </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
                           value="FilteringTrack"
                         >
                           FilteringTrack
@@ -7269,6 +6884,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                             SequenceTrack
                           </WithStyles(MenuItem)>,
                           <WithStyles(MenuItem)
+                            value="ReferenceSequence"
+                          >
+                            ReferenceSequence
+                          </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
                             value="FilteringTrack"
                           >
                             FilteringTrack
@@ -7377,6 +6997,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                               value="SequenceTrack"
                             >
                               SequenceTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="ReferenceSequence"
+                            >
+                              ReferenceSequence
                             </WithStyles(MenuItem)>,
                             <WithStyles(MenuItem)
                               value="FilteringTrack"
@@ -7495,6 +7120,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                                 SequenceTrack
                               </WithStyles(MenuItem)>,
                               <WithStyles(MenuItem)
+                                value="ReferenceSequence"
+                              >
+                                ReferenceSequence
+                              </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
                                 value="FilteringTrack"
                               >
                                 FilteringTrack
@@ -7609,6 +7239,11 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
                                   value="SequenceTrack"
                                 >
                                   SequenceTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="ReferenceSequence"
+                                >
+                                  ReferenceSequence
                                 </WithStyles(MenuItem)>,
                                 <WithStyles(MenuItem)
                                   value="FilteringTrack"
@@ -8377,18 +8012,53 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
         </div>
       </FormControl>
     </WithStyles(FormControl)>
-  </TextField>
-</ConfirmTrack>
+  </TextField>,
+]
 `;
 
 exports[`<ConfirmTrack /> shallowly renders 1`] = `
-<inject-ConfirmTrack-with-rootModel
+<ConfirmTrack
   classes={
     Object {
-      "spacing": "inject-ConfirmTrack-with-rootModel-spacing-1",
+      "spacing": "ConfirmTrack-spacing-1",
     }
   }
-  trackAdapter="BamAdapter"
+  rootModel={
+    Object {
+      "activeDrawerWidgets": Object {},
+      "configuration": Object {
+        "configId": "testing",
+        "rpc": Object {
+          "configId": "testid",
+        },
+      },
+      "drawerWidgets": Object {},
+      "drawerWidth": 384,
+      "menuBars": Array [
+        Object {
+          "id": "testid",
+          "menus": Array [],
+          "type": "MainMenuBar",
+        },
+      ],
+      "sessionName": "UnnamedSession",
+      "views": Array [],
+      "width": 512,
+    }
+  }
+  trackAdapter={
+    Object {
+      "bamLocation": Object {
+        "uri": "test.bam",
+      },
+      "index": Object {
+        "location": Object {
+          "uri": "test.bam.bai",
+        },
+      },
+      "type": "BamAdapter",
+    }
+  }
   trackData={
     Object {
       "uri": "test.bam",

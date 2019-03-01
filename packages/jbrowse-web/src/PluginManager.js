@@ -9,6 +9,7 @@ import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import MenuBarType from './pluggableElementTypes/MenuBarType'
 
 import { ConfigurationSchema } from './configuration'
+import rootConfig from './rootConfig'
 
 // little helper class that keeps groups of callbacks that are
 // then run in a specified order by group
@@ -44,6 +45,7 @@ export default class PluginManager {
     'adapter',
     'track',
     'view',
+    'root',
     'drawer widget',
     'menu bar',
   )
@@ -75,17 +77,24 @@ export default class PluginManager {
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
+    this.elementCreationSchedule.add('root', this.addRootConfig.bind(this))
+
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
       this.addPlugin(plugin)
     })
   }
 
+  addRootConfig() {
+    this.rootConfig = rootConfig(this)
+  }
+
   addPlugin(plugin) {
-    if (this.started)
+    if (this.configured)
       throw new Error('JBrowse already configured, cannot add plugins')
     if (this.plugins.includes(plugin))
       throw new Error(`plugin already installed`)
+    if (!plugin.install) console.error('here')
     plugin.install(this)
     this.plugins.push(plugin)
     return this

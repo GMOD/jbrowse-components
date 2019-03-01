@@ -1,5 +1,19 @@
 import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
 
+export async function getRegions(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig, rootConfig, assemblyName },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rootConfig,
+  )
+  return dataAdapter.getRegions(assemblyName)
+}
+
 /**
  * free up any resources (e.g. cached adapter objects)
  * that are only associated with the given track ID.

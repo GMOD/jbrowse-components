@@ -1,12 +1,13 @@
 import { types } from 'mobx-state-tree'
 import { getConf } from '../../../configuration'
 import { TestStub as LinearGenomeModel } from '.'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types
     .model({
       view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
     })
     .actions(self => ({
       setView(view) {
@@ -30,10 +31,11 @@ test('can instantiate a mostly empty model and read a default configuration valu
   expect(getConf(model, 'trackSelectorType')).toBe('hierarchical')
 })
 
-test("can instantiate a model that let's you navigate", () => {
+test('can instantiate a model that lets you navigate', () => {
   const root = types
     .model({
       view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
     })
     .actions(self => ({
       setView(view) {
@@ -50,7 +52,7 @@ test("can instantiate a model that let's you navigate", () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
-      displayedRegions: [
+      displayedRegionsOverrides: [
         { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
       ],
       configuration: {},
@@ -90,6 +92,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
   const root = types
     .model({
       view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
     })
     .actions(self => ({
       setView(view) {
@@ -106,7 +109,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
-      displayedRegions: [
+      displayedRegionsOverrides: [
         { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
         { start: 0, end: 10000, refName: 'ctgB', assemblyName: 'volvox' },
       ],
@@ -128,6 +131,7 @@ test('can instantiate a model that >2 regions', () => {
   const root = types
     .model({
       view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
     })
     .actions(self => ({
       setView(view) {
@@ -144,7 +148,7 @@ test('can instantiate a model that >2 regions', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
-      displayedRegions: [
+      displayedRegionsOverrides: [
         { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
         { start: 0, end: 10000, refName: 'ctgB', assemblyName: 'volvox' },
         { start: 0, end: 10000, refName: 'ctgC', assemblyName: 'volvox' },
@@ -155,13 +159,12 @@ test('can instantiate a model that >2 regions', () => {
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   expect(model.bpPerPx).toEqual(12.5)
 })
-it('can run configuration', () => {
-  const jb = new JBrowse().configure({
+it('can run configuration', async () => {
+  const { rootModel } = await createTestEnv({
     views: {
       LinearGenomeView: {},
     },
   })
-  const { model } = jb
-  const view = model.addView('LinearGenomeView')
+  const view = rootModel.addView('LinearGenomeView')
   view.activateConfigurationUI()
 })

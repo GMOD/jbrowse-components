@@ -3,7 +3,7 @@ import Slide from '@material-ui/core/Slide'
 import { withStyles } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import DrawerResizeHandle from './DrawerResizeHandle'
 
 const styles = theme => ({
@@ -65,4 +65,4 @@ class Drawer extends React.Component {
   }
 }
 
-export default withStyles(styles)(inject('rootModel')(observer(Drawer)))
+export default withStyles(styles)(observer(Drawer))

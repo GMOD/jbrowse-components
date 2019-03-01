@@ -12,6 +12,7 @@ Object {
   "drawerWidgets": Object {},
   "drawerWidth": 384,
   "menuBars": Array [],
+  "sessionName": "UnnamedSession",
   "views": Array [],
   "width": 512,
 }

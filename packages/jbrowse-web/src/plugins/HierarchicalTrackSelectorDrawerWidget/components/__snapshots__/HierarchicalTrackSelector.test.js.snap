@@ -70,7 +70,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-117"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
@@ -82,10 +82,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-91"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-103 MuiFab-secondary-106 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-76 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -103,7 +103,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     type="button"
   >
     <span
-      className="MuiFab-label-104"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
@@ -113,7 +113,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-117"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>
@@ -189,7 +189,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-117"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
@@ -201,10 +201,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-91"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-103 MuiFab-secondary-106 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-76 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -222,7 +222,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     type="button"
   >
     <span
-      className="MuiFab-label-104"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
@@ -232,7 +232,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-117"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>
@@ -308,7 +308,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-117"
+            className="MuiTouchRipple-root-114"
           />
         </button>
       </div>
@@ -320,10 +320,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-91"
+    className="MuiFormGroup-root-88"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-103 MuiFab-secondary-106 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-76 MuiFab-root-100 MuiFab-secondary-103 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -341,7 +341,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
     type="button"
   >
     <span
-      className="MuiFab-label-104"
+      className="MuiFab-label-101"
     >
       <span
         aria-hidden="true"
@@ -351,7 +351,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-117"
+      className="MuiTouchRipple-root-114"
     />
   </button>
 </div>
