@@ -1,0 +1,321 @@
+{
+  "configId": "tQ76_pSGI",
+  "tracks": [
+    {
+      "configId": "PDWVXl3526",
+      "type": "DynamicTrack",
+      "name": "Lollipop track",
+      "category": [
+        "Bar Category"
+      ],
+      "renderer": {
+        "type": "LollipopRenderer"
+      },
+      "adapter": {
+        "configId": "GbpDGXt1G4",
+        "type": "FromConfigAdapter",
+        "assemblyName": "volvox",
+        "features": [
+          {
+            "uniqueId": "one",
+            "seq_id": "ctgA",
+            "start": 190,
+            "end": 191,
+            "type": "foo",
+            "score": 200,
+            "name": "Boris"
+          },
+          {
+            "uniqueId": "two",
+            "seq_id": "ctgA",
+            "start": 191,
+            "end": 192,
+            "type": "bar",
+            "score": 20,
+            "name": "Theresa"
+          },
+          {
+            "uniqueId": "three",
+            "seq_id": "ctgA",
+            "start": 210,
+            "end": 211,
+            "type": "baz",
+            "score": 300,
+            "name": "Nigel"
+          },
+          {
+            "uniqueId": "four",
+            "seq_id": "ctgA",
+            "start": 220,
+            "end": 221,
+            "score": 2,
+            "type": "quux",
+            "name": "Geoffray"
+          }
+        ]
+      }
+    },
+    {
+      "configId": "XqNsoIRXi3",
+      "type": "AlignmentsTrack",
+      "name": "volvox-sorted red/blue",
+      "category": [
+        "Bar Category",
+        "Baz Category"
+      ],
+      "adapter": {
+        "configId": "bEfF0TZF74",
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "/test_data/volvox-sorted.bam"
+        },
+        "assemblyName": "volvox",
+        "index": {
+          "configId": "og9sCU2st9",
+          "location": {
+            "uri": "/test_data/volvox-sorted.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "configId": "eBqTfMeT0E",
+        "PileupRenderer": {
+          "configId": "FfE7SAJR_i",
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "configId": "u7413cFlCR",
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "configId": "itQDGgsghD",
+      "type": "AlignmentsTrack",
+      "name": "volvox-sorted all green",
+      "category": [
+        "Bee Category",
+        "Boo Category"
+      ],
+      "adapter": {
+        "configId": "xrcAPC8w2X",
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "/test_data/volvox-sorted.bam"
+        },
+        "assemblyName": "vvx",
+        "index": {
+          "configId": "HFGUCFV5d2",
+          "location": {
+            "uri": "/test_data/volvox-sorted.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "configId": "hWUhhoNXr7_",
+        "PileupRenderer": {
+          "configId": "tWLLKEXJ1sL",
+          "type": "PileupRenderer",
+          "alignmentColor": "green"
+        },
+        "SvgFeatureRenderer": {
+          "configId": "5LSHv5xM2pB",
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "configId": "i3jUPmrgMOS",
+      "type": "FilteringTrack",
+      "name": "Filter Test",
+      "adapter": {
+        "configId": "Zd0NLmtxPZ1",
+        "type": "FromConfigAdapter",
+        "assemblyName": "volvox",
+        "features": [
+          {
+            "uniqueId": "one",
+            "seq_id": "ctgA",
+            "start": 100,
+            "end": 101,
+            "type": "foo",
+            "name": "Boris",
+            "note": "note for boris"
+          },
+          {
+            "uniqueId": "two",
+            "seq_id": "ctgA",
+            "start": 110,
+            "end": 111,
+            "type": "bar",
+            "name": "Theresa",
+            "note": "note for theresa"
+          },
+          {
+            "uniqueId": "three",
+            "seq_id": "ctgA",
+            "start": 120,
+            "end": 121,
+            "type": "baz",
+            "name": "Nigel",
+            "note": "note for nigel"
+          },
+          {
+            "uniqueId": "four",
+            "seq_id": "ctgA",
+            "start": 130,
+            "end": 131,
+            "type": "quux",
+            "name": "Geoffray",
+            "note": "note for geoffray"
+          }
+        ]
+      },
+      "renderer": {
+        "configId": "ofwb00qAvRE",
+        "type": "SvgFeatureRenderer"
+      },
+      "filterAttributes": [
+        "type",
+        "start",
+        "end"
+      ]
+    }
+  ],
+  "assemblies": {
+    "volvox": {
+      "configId": "volvox",
+      "aliases": [
+        "vvx"
+      ],
+      "seqNameAliases": {
+        "A": [
+          "ctgA",
+          "contigA"
+        ],
+        "B": [
+          "ctgB",
+          "contigB"
+        ]
+      },
+      "sequence": {
+        "configId": "iTo6LoXUeI",
+        "type": "ReferenceSequence",
+        "adapter": {
+          "configId": "t17b5y_Ydj",
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "/test_data/volvox.2bit"
+          }
+        },
+        "rendering": {
+          "configId": "71P5Lys28o",
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    "volvox2": {
+      "configId": "volvox2",
+      "aliases": [],
+      "seqNameAliases": {},
+      "sequence": {
+        "configId": "iTo6LoXUeJ",
+        "type": "Sizes",
+        "sizes": {
+          "fakeContig": 1000
+        }
+      }
+    }
+  },
+  "rpc": {
+    "configId": "3s78ao6xAWj",
+    "defaultDriver": "MainThreadRpcDriver"
+  },
+  "defaultSession": {
+    "sessionName": "Volvox Example",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Download configuration",
+                "icon": "get_app",
+                "callback": "downloadConfiguration"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "id": "BhLw7v7Nou",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "tracks": [
+          {
+            "id": "UNlXyrJy95",
+            "type": "ReferenceSequence",
+            "height": 80,
+            "configuration": "iTo6LoXUeI"
+          },
+          {
+            "id": "721mZQdXLH",
+            "type": "FilteringTrack",
+            "height": 200,
+            "configuration": "i3jUPmrgMOS"
+          }
+        ],
+        "configuration": {
+          "configId": "vVpZZU1XnE"
+        }
+      },
+      {
+        "id": "BhLw7v7Not",
+        "type": "LinearGenomeView",
+        "offsetPx": 1800,
+        "bpPerPx": 0.1,
+        "tracks": [
+          {
+            "id": "721mZQdXLI",
+            "type": "DynamicTrack",
+            "height": 200,
+            "configuration": "PDWVXl3526"
+          }
+        ],
+        "displayedRegionsOverrides": [
+          {
+            "assemblyName": "vvx",
+            "refName": "contigA",
+            "start": 0,
+            "end": 50000
+          },
+          {
+            "assemblyName": "volvox",
+            "refName": "ctgB",
+            "start": 0,
+            "end": 300
+          }
+        ],
+        "configuration": {
+          "configId": "vVpZZU1XnD"
+        }
+      }
+    ],
+    "drawerWidgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "filterText": "",
+        "view": "BhLw7v7Not"
+      }
+    },
+    "activeDrawerWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  }
+}

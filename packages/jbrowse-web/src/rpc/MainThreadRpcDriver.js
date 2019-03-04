@@ -1,8 +1,8 @@
-import { renderRegion, freeResources } from '../render'
+import { getRegions, renderRegion, freeResources } from '../render'
 
-const funcs = { renderRegion, freeResources }
+const funcs = { getRegions, renderRegion, freeResources }
 
-export default class WebWorkerRpcDriver {
+export default class MainThreadRpcDriver {
   call(pluginManager, stateGroupName, functionName, args) {
     const func = funcs[functionName]
     if (!func)

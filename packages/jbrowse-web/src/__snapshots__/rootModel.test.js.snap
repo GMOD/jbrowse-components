@@ -27,6 +27,7 @@ Object {
   "configId": "testid",
   "rpc": Object {
     "configId": "testid",
+    "defaultDriver": "MainThreadRpcDriver",
   },
 }
 `;
@@ -166,6 +167,7 @@ Object {
   },
   "rpc": Object {
     "configId": "3s78ao6xAWj",
+    "defaultDriver": "MainThreadRpcDriver",
   },
   "tracks": Array [
     Object {

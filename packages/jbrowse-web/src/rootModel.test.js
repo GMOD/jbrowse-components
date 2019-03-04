@@ -11,6 +11,7 @@ test('can load configuration with the configure() action and resolve references 
 
 test('can load configuration from a config object', async () => {
   const { rootModel } = await createTestEnv({
+    rpc: { defaultDriver: 'MainThreadRpcDriver' },
     assemblies: {
       volvox: {
         aliases: ['vvx'],
@@ -27,7 +28,7 @@ test('can load configuration from a config object', async () => {
 
 test('can load configuration from a file', async () => {
   const { rootModel } = await createTestEnv({
-    localPath: require.resolve('../test_data/config_volvox.json'),
+    localPath: require.resolve('../test_data/config_volvox_mainthread.json'),
   })
 
   expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
