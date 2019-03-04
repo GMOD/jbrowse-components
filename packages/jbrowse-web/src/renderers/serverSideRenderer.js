@@ -71,16 +71,16 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Primarily a wrapper
    * for `renderRegionWithWorker` that takes care of data serialization.
    */
-  async renderInClient(app, args) {
+  async renderInClient(rootModel, args) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const stateGroupName = args.sessionId
-    const result = await app.rpcManager.call(
+    const result = await rootModel.rpcManager.call(
       stateGroupName,
       'renderRegion',
       serializedArgs,
     )
-    // const result = await renderRegionWithWorker(app, serializedArgs)
+    // const result = await renderRegionWithWorker(rootModel, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result

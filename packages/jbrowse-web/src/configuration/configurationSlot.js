@@ -169,7 +169,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile this as a function
           return stringToFunction(String(self.value), {
-            bind: [getRoot(self).app],
+            bind: [getRoot(self)],
             verifyFunctionSignature: inDevelopment
               ? functionSignature
               : undefined,

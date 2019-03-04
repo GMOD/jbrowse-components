@@ -61,7 +61,7 @@ async function createRootModel(modelType, config) {
   }
 }
 
-// the main class used to configure and start a new JBrowse app
+// the main JBrowse component
 class JBrowse extends React.Component {
   static propTypes = {
     configs: PropTypes.arrayOf(PropTypes.shape()),
