@@ -7,10 +7,6 @@ import AdapterClass from './FromConfigAdapter'
 const configSchema = ConfigurationSchema(
   'FromConfigAdapter',
   {
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
-    },
     features: {
       type: 'frozen',
       defaultValue: {},

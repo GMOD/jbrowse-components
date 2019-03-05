@@ -11,10 +11,6 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bam' },
     },
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
-    },
     index: ConfigurationSchema('BamIndex', {
       indexType: {
         model: types.enumeration('IndexType', ['BAI', 'CSI']),

@@ -1,4 +1,4 @@
-import { types, addDisposer } from 'mobx-state-tree'
+import { getRoot, types, addDisposer } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
@@ -32,7 +32,16 @@ export default types.compose(
        * get an array of the viewing blocks that should be shown
        */
       get blockDefinitions() {
-        return getContainingView(self)[self.blockType]
+        const blockDefinitions = getContainingView(self)[self.blockType]
+        const { assemblyManager } = getRoot(self)
+        if (!assemblyManager) return blockDefinitions
+        const refNameMap = assemblyManager.getRefNameMap(self)
+        if (!refNameMap) return blockDefinitions
+        return blockDefinitions.map(blockDefinition => {
+          let { refName } = blockDefinition
+          refName = refNameMap.get(refName) || refName
+          return Object.assign({}, blockDefinition, { refName })
+        })
       },
 
       /**

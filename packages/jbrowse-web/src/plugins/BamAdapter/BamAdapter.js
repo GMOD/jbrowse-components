@@ -7,7 +7,7 @@ import { ObservableCreate } from '../../util/rxjs'
 
 export default class BamAdapter extends BaseAdapter {
   constructor(config) {
-    super(config)
+    super()
     const { bamLocation } = config
 
     const indexLocation = config.index.location

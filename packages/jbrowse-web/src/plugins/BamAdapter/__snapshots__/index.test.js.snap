@@ -2,7 +2,6 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "assemblyName": undefined,
   "bamLocation": Object {
     "uri": "/path/to/my.bam",
   },

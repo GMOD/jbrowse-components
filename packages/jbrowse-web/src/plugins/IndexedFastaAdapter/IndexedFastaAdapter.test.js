@@ -3,17 +3,12 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './IndexedFastaAdapter'
 
 test('adapter can fetch sequence from volvox.fa', async () => {
-  const adapter = new Adapter(
-    {
-      assemblyName: 'volvox',
-      fastaLocation: { localPath: require.resolve('./test_data/volvox.fa') },
-      faiLocation: { localPath: require.resolve('./test_data/volvox.fa.fai') },
-    },
-    {},
-  )
+  const adapter = new Adapter({
+    fastaLocation: { localPath: require.resolve('./test_data/volvox.fa') },
+    faiLocation: { localPath: require.resolve('./test_data/volvox.fa.fai') },
+  })
 
   const features = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -23,7 +18,6 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   expect(featuresArray).toMatchSnapshot()
 
   const features2 = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: 'ctgC',
     start: 0,
     end: 20000,

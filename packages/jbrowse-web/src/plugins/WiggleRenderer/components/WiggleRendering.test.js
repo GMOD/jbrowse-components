@@ -9,7 +9,7 @@ test('one', () => {
     <WiggleRendering
       width={500}
       height={500}
-      region={{ assemblyName: 'wookie', refName: 'chr1', start: 1, end: 3 }}
+      region={{ refName: 'chr1', start: 1, end: 3 }}
       bpPerPx={3}
     />,
   )

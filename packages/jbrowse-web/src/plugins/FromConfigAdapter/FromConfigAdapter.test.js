@@ -7,15 +7,8 @@ test('adapter can fetch features', async () => {
     { uniqueId: 'one', refName: 'ctgA', start: 20, end: 40 },
     { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter(
-    {
-      assemblyName: 'volvox',
-      features,
-    },
-    {},
-  )
+  const adapter = new Adapter({ features })
   const result = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,

@@ -3,16 +3,11 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './TwoBitAdapter'
 
 test('adapter can fetch features from volvox.2bit', async () => {
-  const adapter = new Adapter(
-    {
-      assemblyName: 'volvox',
-      twoBitLocation: { localPath: require.resolve('./test_data/volvox.2bit') },
-    },
-    {},
-  )
+  const adapter = new Adapter({
+    twoBitLocation: { localPath: require.resolve('./test_data/volvox.2bit') },
+  })
 
   const features = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,

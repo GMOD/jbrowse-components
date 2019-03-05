@@ -7,7 +7,7 @@ import { ObservableCreate } from '../../util/rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
   constructor(config) {
-    super(config)
+    super()
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
@@ -27,12 +27,11 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     return this.fasta.getSequenceList()
   }
 
-  async getRegions(assemblyName = '') {
+  async getRegions() {
     const seqSizes = await this.fasta.getSequenceSizes()
     const regions = []
     Object.keys(seqSizes).forEach(refName => {
       regions.push({
-        assemblyName,
         refName,
         start: 0,
         end: seqSizes[refName],

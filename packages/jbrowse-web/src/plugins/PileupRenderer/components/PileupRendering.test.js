@@ -10,7 +10,7 @@ test('one', () => {
     <PileupRendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 1, end: 3 }}
+      region={{ refName: 'zonk', start: 1, end: 3 }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       bpPerPx={3}
     />,

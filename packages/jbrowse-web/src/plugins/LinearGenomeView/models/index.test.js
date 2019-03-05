@@ -52,9 +52,7 @@ test('can instantiate a model that lets you navigate', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
-      displayedRegionsOverrides: [
-        { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
-      ],
+      displayedRegionsOverrides: [{ start: 0, end: 10000, refName: 'ctgA' }],
       configuration: {},
     }),
   )
@@ -110,8 +108,8 @@ test('can instantiate a model that has multiple displayed regions', () => {
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
       displayedRegionsOverrides: [
-        { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
-        { start: 0, end: 10000, refName: 'ctgB', assemblyName: 'volvox' },
+        { start: 0, end: 10000, refName: 'ctgA' },
+        { start: 0, end: 10000, refName: 'ctgB' },
       ],
       configuration: {},
     }),
@@ -149,9 +147,9 @@ test('can instantiate a model that >2 regions', () => {
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
       displayedRegionsOverrides: [
-        { start: 0, end: 10000, refName: 'ctgA', assemblyName: 'volvox' },
-        { start: 0, end: 10000, refName: 'ctgB', assemblyName: 'volvox' },
-        { start: 0, end: 10000, refName: 'ctgC', assemblyName: 'volvox' },
+        { start: 0, end: 10000, refName: 'ctgA' },
+        { start: 0, end: 10000, refName: 'ctgB' },
+        { start: 0, end: 10000, refName: 'ctgC' },
       ],
       configuration: {},
     }),

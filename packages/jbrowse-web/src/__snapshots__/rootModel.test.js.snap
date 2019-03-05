@@ -172,7 +172,6 @@ Object {
   "tracks": Array [
     Object {
       "adapter": Object {
-        "assemblyName": "volvox",
         "configId": "GbpDGXt1G4",
         "features": Array [
           Object {
@@ -227,7 +226,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "assemblyName": "volvox",
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
@@ -264,7 +262,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "assemblyName": "vvx",
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
@@ -302,7 +299,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "assemblyName": "volvox",
         "configId": "Zd0NLmtxPZ1",
         "features": Array [
           Object {

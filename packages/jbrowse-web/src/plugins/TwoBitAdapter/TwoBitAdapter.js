@@ -7,7 +7,7 @@ import { ObservableCreate } from '../../util/rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
   constructor(config) {
-    super(config)
+    super()
     const { twoBitLocation } = config
     const twoBitOpts = {
       filehandle: openLocation(twoBitLocation),
@@ -20,12 +20,11 @@ export default class TwoBitAdapter extends BaseAdapter {
     return this.twobit.getSequenceNames()
   }
 
-  async getRegions(assemblyName = '') {
+  async getRegions() {
     const refSizes = await this.twobit.getSequenceSizes()
     const regions = []
     Object.keys(refSizes).forEach(refName => {
       regions.push({
-        assemblyName,
         refName,
         start: 0,
         end: refSizes[refName],

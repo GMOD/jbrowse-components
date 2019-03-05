@@ -6,7 +6,7 @@ describe('base data adapter', () => {
   it('throws if instantiated directly', () => {
     expect(() => {
       // eslint-disable-next-line no-new
-      new BaseAdapter({}, {})
+      new BaseAdapter()
     }).toThrow(/Cannot create BaseAdapter instances directly/)
   })
 
@@ -25,10 +25,9 @@ describe('base data adapter', () => {
     }
 
     const p = new Promise((resolve, reject) => {
-      const adapter = new Adapter({ assemblyName: 'volvox' }, {})
+      const adapter = new Adapter()
       return adapter
         .getFeaturesInRegion({
-          assemblyName: 'volvox',
           refName: 'ctgA',
           start: 0,
           end: 20000,
@@ -46,12 +45,11 @@ describe('base data adapter', () => {
         return ['ctgA', 'ctgB']
       }
     }
-    const adapter = new Adapter({ assemblyName: 'volvox' }, {})
+    const adapter = new Adapter()
 
     expect(() =>
       adapter
         .getFeatures({
-          assemblyName: 'volvox',
           refName: 'ctgA',
           start: 0,
           end: 20000,
@@ -66,7 +64,7 @@ describe('base data adapter', () => {
         return ['ctgA', 'ctgB']
       }
     }
-    const adapter = new Adapter({ assemblyName: 'volvox' }, {})
+    const adapter = new Adapter()
     expect(() => adapter.freeResources()).toThrow(
       /freeResources should be overridden by the subclass/,
     )
@@ -84,9 +82,8 @@ describe('base data adapter', () => {
         )
       }
     }
-    const adapter = new Adapter({ assemblyName: 'volvox' }, {})
+    const adapter = new Adapter()
     const features = adapter.getFeaturesInRegion({
-      assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
       end: 20000,
@@ -112,9 +109,8 @@ describe('base data adapter', () => {
         })
       }
     }
-    const adapter = new Adapter({ assemblyName: 'volvox' }, {})
+    const adapter = new Adapter()
     const features = adapter.getFeaturesInRegion({
-      assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
       end: 20000,
@@ -130,7 +126,6 @@ Array [
 ]
 `)
     const features2 = adapter.getFeaturesInRegion({
-      assemblyName: 'volvox',
       refName: 'ctgC',
       start: 0,
       end: 20000,

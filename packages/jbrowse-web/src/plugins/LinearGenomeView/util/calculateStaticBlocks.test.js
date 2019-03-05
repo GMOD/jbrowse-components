@@ -9,9 +9,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-      ],
+      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -22,8 +20,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 30,
       displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 100, end: 200 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -35,8 +33,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1000,
       displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 100, end: 200 },
       ],
     })
     expect(blocks).toEqual([])
@@ -49,8 +47,8 @@ describe('block calculation', () => {
         width: 800,
         offsetPx: -1000,
         displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 200 },
+          { refName: 'ctgA', start: 0, end: 100 },
+          { refName: 'ctgB', start: 100, end: 200 },
         ],
       },
       {
@@ -66,8 +64,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 5000,
       displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 100, end: 10000 },
+        { refName: 'ctgA', start: 0, end: 10000 },
+        { refName: 'ctgB', start: 100, end: 10000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -79,13 +77,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       displayedRegions: [
-        {
-          assemblyName: 'volvox',
-          refName: 'ctgA',
-          start: 0,
-          end: 200,
-        },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+        { refName: 'ctgA', start: 0, end: 200 },
+        { refName: 'ctgB', start: 0, end: 1000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -97,8 +90,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 801,
       displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+        { refName: 'ctgA', start: 0, end: 200 },
+        { refName: 'ctgB', start: 0, end: 1000 },
       ],
     })
     expect(blocks).toMatchSnapshot()
@@ -110,8 +103,8 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1600,
       displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000000 },
+        { refName: 'ctgA', start: 0, end: 200 },
+        { refName: 'ctgB', start: 0, end: 10000000 },
       ],
       configuration: 'fakeReference',
     })
@@ -124,13 +117,8 @@ describe('block calculation', () => {
       offsetPx: 1069,
       bpPerPx: 2,
       displayedRegions: [
-        {
-          assemblyName: 'volvox',
-          refName: 'ctgA',
-          start: 0,
-          end: 50000,
-        },
-        { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 300 },
+        { refName: 'ctgA', start: 0, end: 50000 },
+        { refName: 'ctgB', start: 0, end: 300 },
       ],
       configuration: 'fakeReference',
     })
@@ -144,9 +132,7 @@ describe('reverse block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-      ],
+      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks).toMatchSnapshot()
   })

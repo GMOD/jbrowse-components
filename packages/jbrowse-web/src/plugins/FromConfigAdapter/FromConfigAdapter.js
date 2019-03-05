@@ -11,8 +11,8 @@ import { ObservableCreate } from '../../util/rxjs'
  */
 
 export default class FromConfigAdapter extends BaseAdapter {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super()
     const { features } = config
     this.features = this.makeFeatures(features || [])
   }

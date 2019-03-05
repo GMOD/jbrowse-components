@@ -74,9 +74,7 @@ export default class BoxRenderer extends ServerSideRenderer {
   deserializeLayoutInWorker(args) {
     const { region } = args
     const session = this.getWorkerSession(args)
-    const subLayout = session.layout.getSublayout(
-      `${region.assemblyName}:${region.refName}`,
-    )
+    const subLayout = session.layout.getSublayout(region.refName)
     return subLayout
   }
 

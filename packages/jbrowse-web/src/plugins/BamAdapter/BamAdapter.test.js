@@ -3,24 +3,19 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter'
 
 test('adapter can fetch features from volvox.bam', async () => {
-  const adapter = new Adapter(
-    {
-      assemblyName: 'volvox',
-      bamLocation: {
-        localPath: require.resolve('./test_data/volvox-sorted.bam'),
-      },
-      index: {
-        location: {
-          localPath: require.resolve('./test_data/volvox-sorted.bam.bai'),
-        },
-        indexType: 'BAI',
-      },
+  const adapter = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('./test_data/volvox-sorted.bam'),
     },
-    {},
-  )
+    index: {
+      location: {
+        localPath: require.resolve('./test_data/volvox-sorted.bam.bai'),
+      },
+      indexType: 'BAI',
+    },
+  })
 
   const features = await adapter.getFeatures({
-    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 20000,
@@ -35,10 +30,5 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(await adapter.refIdToName(0)).toBe('ctgA')
   expect(await adapter.refIdToName(1)).toBe(undefined)
 
-  expect(
-    await adapter.hasDataForRefName({
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-    }),
-  ).toBe(true)
+  expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })

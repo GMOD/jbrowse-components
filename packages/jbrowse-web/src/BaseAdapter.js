@@ -3,17 +3,14 @@ import { ObservableCreate } from './util/rxjs'
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
  * implement.
- * @property {string} assemblyName - The name of the assembly given in the
- * config
  */
 export default class BaseAdapter {
-  constructor(config) {
+  constructor() {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
       )
     }
-    this.assemblyName = config.assemblyName
   }
 
   /**
@@ -31,14 +28,13 @@ export default class BaseAdapter {
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @param {Region} region
-   * @param {string} region.assemblyName Name of the assembly
    * @param {string} region.refName Name of the reference sequence (e.g. chr1)
    * @param {int} region.start Start of the region
    * @param {int} region.end End of the region
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // eslint-disable-next-line no-unused-vars
-  getFeatures({ assembly, refName, start, end }) {
+  getFeatures({ refName, start, end }) {
     throw new Error('getFeatures should be overridden by the subclass')
     // Subclass method should look something like this:
     // return ObservableCreate(observer => {
@@ -70,7 +66,7 @@ export default class BaseAdapter {
    */
   getFeaturesInRegion(region) {
     return ObservableCreate(async observer => {
-      if (!(await this.hasDataForRefName(region))) {
+      if (!(await this.hasDataForRefName(region.refName))) {
         observer.complete()
       } else {
         this.getFeatures(region).subscribe(observer)
@@ -82,12 +78,9 @@ export default class BaseAdapter {
    * Check if the store has data for the given reference name. Also checks the
    * assembly name if one was specified in the initial adapter config.
    * @param {Region} region A sequence region
-   * @param {string} region.assemblyName Name of the assembly
    * @param {string} region.refName Name of the reference sequence
    */
-  async hasDataForRefName({ assemblyName, refName }) {
-    if (this.assemblyName && assemblyName && this.assemblyName !== assemblyName)
-      return false
+  async hasDataForRefName(refName) {
     const refNames = await this.loadData()
     if (refNames.includes(refName)) return true
     return false

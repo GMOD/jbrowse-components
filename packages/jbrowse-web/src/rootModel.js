@@ -6,6 +6,7 @@ import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 import { isConfigurationModel } from './configuration/configurationSchema'
 import RpcManager from './rpc/RpcManager'
 import { openLocation } from './util/io'
+import AssemblyManager from './managers/AssemblyManager'
 
 export default (pluginManager, workerManager) => {
   const minWidth = 384
@@ -43,6 +44,10 @@ export default (pluginManager, workerManager) => {
           workers: workerManager.getWorkerGroup('rpc'),
         },
       }),
+      assemblyManager: new AssemblyManager(
+        pluginManager,
+        self.configuration.assemblies,
+      ),
 
       /**
        * this is the globally "selected" object. can be anything.

@@ -11,7 +11,7 @@ test('no features', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 300 }}
+      region={{ refName: 'zonk', start: 0, end: 300 }}
       layout={new PrecomputedFloatingLayout({ pairs: [], totalHeight: 20 })}
       config={{}}
       bpPerPx={3}
@@ -28,7 +28,6 @@ test('one feature', () => {
       width={500}
       height={500}
       region={{
-        assemblyName: 'toaster',
         refName: 'zonk',
         start: 0,
         end: 1000,

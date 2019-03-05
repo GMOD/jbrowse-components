@@ -1,6 +1,6 @@
 import calculateVisibleRegions from './calculateDynamicBlocks'
 
-const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 }
+const ctgA = { refName: 'ctgA', start: 0, end: 50000 }
 
 test('one', () => {
   expect(
@@ -15,7 +15,6 @@ test('one', () => {
     ),
   ).toEqual([
     {
-      assemblyName: 'volvox',
       end: 200,
       offsetPx: 0,
       refName: 'ctgA',
@@ -23,7 +22,7 @@ test('one', () => {
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:1-200',
+      key: 'ctgA:1-200',
       widthPx: 200,
     },
   ])
@@ -41,7 +40,6 @@ test('two', () => {
     ),
   ).toEqual([
     {
-      assemblyName: 'volvox',
       end: 50000,
       offsetPx: 0,
       refName: 'ctgA',
@@ -49,7 +47,7 @@ test('two', () => {
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:49801-50000',
+      key: 'ctgA:49801-50000',
       widthPx: 200,
     },
   ])
@@ -67,7 +65,6 @@ test('three', () => {
     ),
   ).toEqual([
     {
-      assemblyName: 'volvox',
       end: 50000,
       offsetPx: 0,
       refName: 'ctgA',
@@ -75,7 +72,7 @@ test('three', () => {
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:49901-50000',
+      key: 'ctgA:49901-50000',
       widthPx: 100,
     },
   ])
@@ -93,7 +90,6 @@ test('four', () => {
     ),
   ).toEqual([
     {
-      assemblyName: 'volvox',
       end: 250,
       offsetPx: 0,
       refName: 'ctgA',
@@ -101,7 +97,7 @@ test('four', () => {
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: true,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:1-250',
+      key: 'ctgA:1-250',
       widthPx: 250,
     },
   ])
@@ -119,7 +115,6 @@ test('five', () => {
     ),
   ).toEqual([
     {
-      assemblyName: 'volvox',
       end: 72.4,
       offsetPx: 521,
       refName: 'ctgA',
@@ -127,7 +122,7 @@ test('five', () => {
       parentRegion: ctgA,
       isLeftEndOfDisplayedRegion: false,
       isRightEndOfDisplayedRegion: false,
-      key: 'volvox:ctgA:27.05-72.4',
+      key: 'ctgA:27.05-72.4',
       widthPx: 927.0000000000001,
     },
   ])

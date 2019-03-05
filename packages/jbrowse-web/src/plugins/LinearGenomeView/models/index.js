@@ -6,7 +6,6 @@ import {
   getType,
   isStateTreeNode,
   types,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
@@ -19,7 +18,6 @@ import LinearGenomeViewConfigSchema from './configSchema'
 import BaseTrack from './baseTrack'
 import calculateStaticBlocks from '../util/calculateStaticBlocks'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
-import RpcManager from '../../../rpc/RpcManager'
 
 const validBpPerPx = [
   1 / 50,
@@ -118,7 +116,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
 
       fetchDisplayedRegions: flow(function* fetchProjects() {
         const rootModel = getRoot(self)
-        const { workerManager, configuration: rootConfig } = rootModel
+        const { configuration: rootConfig } = rootModel
         const regions = []
         const assemblies = rootConfig.assemblies || new Map()
         for (const [assemblyName, assembly] of assemblies) {
@@ -134,11 +132,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
             )
           } else if (assembly.sequence.type === 'ReferenceSequence') {
             const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-            const rpcManager = new RpcManager(pluginManager, rootConfig.rpc, {
-              WebWorkerRpcDriver: {
-                workers: workerManager.getWorkerGroup('rpc'),
-              },
-            })
+            const { rpcManager } = rootModel
             try {
               regions.push(
                 ...(yield rpcManager.call(
@@ -148,7 +142,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
                     sessionId: assemblyName,
                     adapterType: adapterConfig.type,
                     adapterConfig,
-                    rootConfig: getSnapshot(rootConfig),
                     assemblyName,
                   },
                   { timeout: 1000000 },
@@ -326,9 +319,8 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * of the displayed regions, does nothing
        * @param {number} bp
        * @param {string} refName
-       * @param {string} assemblyName
        */
-      centerAt(/* bp, refName, assemblyName */) {
+      centerAt(/* bp, refName */) {
         /* TODO */
       },
 

@@ -79,13 +79,8 @@ describe('LinearGenomeView genome view component', () => {
             offsetPx: 0,
             bpPerPx: 1,
             displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-              {
-                assemblyName: 'volvox',
-                refName: 'ctgB',
-                start: 1000,
-                end: 200,
-              },
+              { refName: 'ctgA', start: 0, end: 100 },
+              { refName: 'ctgB', start: 1000, end: 200 },
             ],
             tracks: [
               {

@@ -21,7 +21,6 @@ exports[`one 1`] = `
     }
     region={
       Object {
-        "assemblyName": "toaster",
         "end": 3,
         "refName": "zonk",
         "start": 1,
