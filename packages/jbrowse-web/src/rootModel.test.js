@@ -15,7 +15,7 @@ test('can load configuration from a config object', async () => {
     assemblies: {
       volvox: {
         aliases: ['vvx'],
-        seqNameAliases: {
+        refNameAliases: {
           A: ['ctgA', 'contigA'],
           B: ['ctgB', 'contigB'],
         },

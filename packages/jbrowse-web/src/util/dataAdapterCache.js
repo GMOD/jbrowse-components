@@ -52,37 +52,37 @@ export async function getAdapter(
     // console.log('new adapter', cacheKey)
     const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
     let assemblyAliases = []
-    const seqNameMap = new Map()
+    const refNameMap = new Map()
 
     let { assemblyName } = adapterConfig
     if (assemblyName) {
       const assemblies = rootConfig.assemblies || {}
-      let seqNameAliases = {}
+      let refNameAliases = {}
       if (assemblies[assemblyName]) {
         assemblyAliases = assemblies[assemblyName].aliases || []
-        ;({ seqNameAliases = {} } = assemblies[assemblyName])
+        ;({ refNameAliases = {} } = assemblies[assemblyName])
       } else
         Object.keys(assemblies).forEach(assembly => {
           if ((assemblies[assembly].aliases || []).includes(assemblyName)) {
             assemblyName = assembly
             assemblyAliases = assemblies[assembly].aliases || []
-            ;({ seqNameAliases = {} } = assemblies[assembly])
+            ;({ refNameAliases = {} } = assemblies[assembly])
           }
         })
 
-      const refSeqs = await dataAdapter.loadData()
-      refSeqs.forEach(seqName => {
-        seqNameMap.set(seqName, seqName)
-        if (seqNameAliases[seqName])
-          seqNameAliases[seqName].forEach(seqNameAlias => {
-            seqNameMap.set(seqNameAlias, seqName)
+      const refNames = await dataAdapter.loadData()
+      refNames.forEach(refName => {
+        refNameMap.set(refName, refName)
+        if (refNameAliases[refName])
+          refNameAliases[refName].forEach(refNameAlias => {
+            refNameMap.set(refNameAlias, refName)
           })
         else
-          Object.keys(seqNameAliases).forEach(configSeqName => {
-            if (seqNameAliases[configSeqName].includes(seqName)) {
-              seqNameMap.set(configSeqName, seqName)
-              seqNameAliases[configSeqName].forEach(seqNameAlias => {
-                seqNameMap.set(seqNameAlias, seqName)
+          Object.keys(refNameAliases).forEach(configRefName => {
+            if (refNameAliases[configRefName].includes(refName)) {
+              refNameMap.set(configRefName, refName)
+              refNameAliases[configRefName].forEach(refNameAlias => {
+                refNameMap.set(refNameAlias, refName)
               })
             }
           })
@@ -93,7 +93,7 @@ export async function getAdapter(
       dataAdapter,
       sessionIds: new Set([sessionId]),
       assemblyAliases,
-      seqNameMap,
+      refNameMap,
     }
   }
   const cacheEntry = adapterCache[cacheKey]

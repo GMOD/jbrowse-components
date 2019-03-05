@@ -30,12 +30,12 @@ export default class IndexedFastaAdapter extends BaseAdapter {
   async getRegions(assemblyName = '') {
     const seqSizes = await this.fasta.getSequenceSizes()
     const regions = []
-    Object.keys(seqSizes).forEach(seqName => {
+    Object.keys(seqSizes).forEach(refName => {
       regions.push({
         assemblyName,
-        refName: seqName,
+        refName,
         start: 0,
-        end: seqSizes[seqName],
+        end: seqSizes[refName],
       })
     })
     return regions

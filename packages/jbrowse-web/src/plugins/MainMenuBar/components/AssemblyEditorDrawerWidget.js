@@ -211,12 +211,12 @@ class AssemblyEditorDrawerWidget extends React.Component {
                   }
                 >
                   <Divider />
-                  {Object.entries(readConfObject(val, 'seqNameAliases')).map(
-                    ([seqName, aliases]) => (
+                  {Object.entries(readConfObject(val, 'refNameAliases')).map(
+                    ([refName, aliases]) => (
                       <List
-                        key={seqName}
+                        key={refName}
                         dense
-                        subheader={<ListSubheader>{seqName}</ListSubheader>}
+                        subheader={<ListSubheader>{refName}</ListSubheader>}
                       >
                         {aliases.map((alias, idx) => (
                           <ListItem key={alias}>

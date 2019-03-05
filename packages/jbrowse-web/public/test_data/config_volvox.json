@@ -18,7 +18,7 @@
         "features": [
           {
             "uniqueId": "one",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 190,
             "end": 191,
             "type": "foo",
@@ -27,7 +27,7 @@
           },
           {
             "uniqueId": "two",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 191,
             "end": 192,
             "type": "bar",
@@ -36,7 +36,7 @@
           },
           {
             "uniqueId": "three",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 210,
             "end": 211,
             "type": "baz",
@@ -45,7 +45,7 @@
           },
           {
             "uniqueId": "four",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 220,
             "end": 221,
             "score": 2,
@@ -135,7 +135,7 @@
         "features": [
           {
             "uniqueId": "one",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 100,
             "end": 101,
             "type": "foo",
@@ -144,7 +144,7 @@
           },
           {
             "uniqueId": "two",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 110,
             "end": 111,
             "type": "bar",
@@ -153,7 +153,7 @@
           },
           {
             "uniqueId": "three",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 120,
             "end": 121,
             "type": "baz",
@@ -162,7 +162,7 @@
           },
           {
             "uniqueId": "four",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 130,
             "end": 131,
             "type": "quux",
@@ -188,7 +188,7 @@
       "aliases": [
         "vvx"
       ],
-      "seqNameAliases": {
+      "refNameAliases": {
         "A": [
           "ctgA",
           "contigA"
@@ -217,7 +217,7 @@
     "volvox2": {
       "configId": "volvox2",
       "aliases": [],
-      "seqNameAliases": {},
+      "refNameAliases": {},
       "sequence": {
         "configId": "iTo6LoXUeJ",
         "type": "Sizes",

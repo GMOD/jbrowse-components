@@ -25,7 +25,7 @@ export function assemblyFactory(pluginManager) {
       defaultValue: [],
       description: 'Other possible names for this assembly',
     },
-    seqNameAliases: {
+    refNameAliases: {
       type: 'stringArrayMap',
       defaultValue: {},
       description:
@@ -68,7 +68,7 @@ export default function(pluginManager) {
         addAssembly(
           assemblyName,
           aliases = [],
-          seqNameAliases = {},
+          refNameAliases = {},
           sequence = {
             type: 'Sizes',
             sizes: {},
@@ -78,7 +78,7 @@ export default function(pluginManager) {
           const assembly = assemblyModel.create({
             configId: assemblyName,
             aliases,
-            seqNameAliases,
+            refNameAliases,
             sequence,
           })
           self.assemblies.set(assemblyName, assembly)

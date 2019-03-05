@@ -27,7 +27,7 @@
       "aliases": [
         "GRCh38"
       ],
-      "seqNameAliases": {
+      "refNameAliases": {
         "chr1": [
           "1"
         ]

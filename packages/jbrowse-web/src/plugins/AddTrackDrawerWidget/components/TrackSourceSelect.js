@@ -13,25 +13,25 @@ import { FileLocationEditor } from '../../ConfigurationEditorDrawerWidget/compon
 const fromConfigDefault = [
   {
     uniqueId: 'one',
-    seq_id: 'chr1',
+    refName: 'chr1',
     start: 100,
     end: 101,
   },
   {
     uniqueId: 'two',
-    seq_id: 'chr1',
+    refName: 'chr1',
     start: 110,
     end: 111,
   },
   {
     uniqueId: 'three',
-    seq_id: 'chr1',
+    refName: 'chr1',
     start: 120,
     end: 121,
   },
   {
     uniqueId: 'four',
-    seq_id: 'chr1',
+    refName: 'chr1',
     start: 130,
     end: 131,
   },

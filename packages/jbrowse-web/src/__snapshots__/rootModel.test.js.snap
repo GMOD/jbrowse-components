@@ -8,7 +8,7 @@ Object {
         "vvx",
       ],
       "configId": "testid",
-      "seqNameAliases": Object {
+      "refNameAliases": Object {
         "A": Array [
           "ctgA",
           "contigA",
@@ -40,7 +40,7 @@ Object {
         "vvx",
       ],
       "configId": "volvox",
-      "seqNameAliases": Object {
+      "refNameAliases": Object {
         "A": Array [
           "ctgA",
           "contigA",
@@ -178,8 +178,8 @@ Object {
           Object {
             "end": 191,
             "name": "Boris",
+            "refName": "ctgA",
             "score": 200,
-            "seq_id": "ctgA",
             "start": 190,
             "type": "foo",
             "uniqueId": "one",
@@ -187,8 +187,8 @@ Object {
           Object {
             "end": 192,
             "name": "Theresa",
+            "refName": "ctgA",
             "score": 20,
-            "seq_id": "ctgA",
             "start": 191,
             "type": "bar",
             "uniqueId": "two",
@@ -196,8 +196,8 @@ Object {
           Object {
             "end": 211,
             "name": "Nigel",
+            "refName": "ctgA",
             "score": 300,
-            "seq_id": "ctgA",
             "start": 210,
             "type": "baz",
             "uniqueId": "three",
@@ -205,8 +205,8 @@ Object {
           Object {
             "end": 221,
             "name": "Geoffray",
+            "refName": "ctgA",
             "score": 2,
-            "seq_id": "ctgA",
             "start": 220,
             "type": "quux",
             "uniqueId": "four",
@@ -309,7 +309,7 @@ Object {
             "end": 101,
             "name": "Boris",
             "note": "note for boris",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 100,
             "type": "foo",
             "uniqueId": "one",
@@ -318,7 +318,7 @@ Object {
             "end": 111,
             "name": "Theresa",
             "note": "note for theresa",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 110,
             "type": "bar",
             "uniqueId": "two",
@@ -327,7 +327,7 @@ Object {
             "end": 121,
             "name": "Nigel",
             "note": "note for nigel",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 120,
             "type": "baz",
             "uniqueId": "three",
@@ -336,7 +336,7 @@ Object {
             "end": 131,
             "name": "Geoffray",
             "note": "note for geoffray",
-            "seq_id": "ctgA",
+            "refName": "ctgA",
             "start": 130,
             "type": "quux",
             "uniqueId": "four",

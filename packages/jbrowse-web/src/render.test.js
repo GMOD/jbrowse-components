@@ -157,7 +157,7 @@ test('can regularize a reference sequence name from an alias', async () => {
     region: { assemblyName: 'volvox', refName: 'contigA', start: 0, end: 800 },
     rootConfig: {
       assemblies: {
-        volvox: { seqNameAliases: { ctgA: ['contigA'] } },
+        volvox: { refNameAliases: { ctgA: ['contigA'] } },
       },
     },
   }
@@ -194,7 +194,7 @@ test('can regularize a reference sequence name to an alias', async () => {
     region: { assemblyName: 'volvox', refName: 'contigA', start: 0, end: 800 },
     rootConfig: {
       assemblies: {
-        volvox: { seqNameAliases: { contigA: ['ctgA'] } },
+        volvox: { refNameAliases: { contigA: ['ctgA'] } },
       },
     },
   }

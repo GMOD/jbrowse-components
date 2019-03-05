@@ -5,7 +5,7 @@ import { ObservableCreate } from '../../util/rxjs'
 /**
  * Adapter that just returns the features defined in its `features` configuration
  * key, like:
- *   "features": [ { "seq_id": "ctgA", "start":1, "end":20 },
+ *   "features": [ { "refName": "ctgA", "start":1, "end":20 },
  *                 ...
  *               ]
  */
@@ -22,7 +22,7 @@ export default class FromConfigAdapter extends BaseAdapter {
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
         const f = this.makeFeature(fdata[i])
-        const refName = f.get('seq_id')
+        const refName = f.get('refName')
         if (!features.get(refName)) features.set(refName, [])
         features.get(refName).push(f)
       }
@@ -35,8 +35,8 @@ export default class FromConfigAdapter extends BaseAdapter {
   }
 
   async loadData() {
-    const seqNames = Array.from(this.features.keys())
-    return seqNames
+    const refNames = Array.from(this.features.keys())
+    return refNames
   }
 
   /**

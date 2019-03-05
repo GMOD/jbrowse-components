@@ -27,7 +27,7 @@ test('adapter can fetch features from volvox.bam', async () => {
   })
 
   const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray[0].get('seq_id')).toBe('ctgA')
+  expect(featuresArray[0].get('refName')).toBe('ctgA')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(3809)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
@@ -36,6 +36,9 @@ test('adapter can fetch features from volvox.bam', async () => {
   expect(await adapter.refIdToName(1)).toBe(undefined)
 
   expect(
-    await adapter.hasDataForRefSeq({ assemblyName: 'volvox', refName: 'ctgA' }),
+    await adapter.hasDataForRefName({
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+    }),
   ).toBe(true)
 })

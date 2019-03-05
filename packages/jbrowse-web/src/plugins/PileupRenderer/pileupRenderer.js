@@ -38,7 +38,7 @@ class PileupRenderer extends BoxRenderer {
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
-    if (feature.get('seq_id') !== region.refName) {
+    if (feature.get('refName') !== region.refName) {
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
           region.refName

@@ -59,7 +59,7 @@ export async function renderRegion(
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
-  const { dataAdapter, assemblyAliases, seqNameMap } = await getAdapter(
+  const { dataAdapter, assemblyAliases, refNameMap } = await getAdapter(
     pluginManager,
     sessionId,
     adapterType,
@@ -84,7 +84,7 @@ export async function renderRegion(
     if (assemblyAliases.includes(region.assemblyName))
       region.assemblyName = assemblyName
   // Regularize reference name
-  region.refName = seqNameMap.get(region.refName) || region.refName
+  region.refName = refNameMap.get(region.refName) || region.refName
 
   return RendererType.renderInWorker({
     ...renderProps,

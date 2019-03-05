@@ -20,13 +20,19 @@ test('adapter can fetch features from volvox.bw', async () => {
   expect(await adapter.refIdToName(0)).toBe('ctgA')
   expect(await adapter.refIdToName(1)).toBe(undefined)
   expect(
-    await adapter.hasDataForRefSeq({ assemblyName: 'volvox', refName: 'ctgA' }),
+    await adapter.hasDataForRefName({
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+    }),
   ).toBe(true)
   expect(
-    await adapter.hasDataForRefSeq({ assemblyName: 'volvox', refName: 'ctgB' }),
+    await adapter.hasDataForRefName({
+      assemblyName: 'volvox',
+      refName: 'ctgB',
+    }),
   ).toBe(false)
   expect(
-    await adapter.hasDataForRefSeq({
+    await adapter.hasDataForRefName({
       assemblyName: 'nonexist',
       refName: 'ctgA',
     }),

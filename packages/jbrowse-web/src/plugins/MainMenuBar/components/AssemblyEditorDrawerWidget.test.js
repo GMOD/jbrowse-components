@@ -14,7 +14,7 @@ describe('<AssemblyEditorDrawerWidget />', () => {
       assemblies: {
         volvox: {
           aliases: ['vvx'],
-          seqNameAliases: {
+          refNameAliases: {
             A: ['ctgA', 'contigA'],
             B: ['ctgB', 'contigB'],
           },

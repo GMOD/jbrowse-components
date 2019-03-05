@@ -24,17 +24,17 @@ export default class BaseAdapter {
     throw new Error('loadData should be overridden by the subclass')
     // Subclass method should look something like this:
     // this.metadata = await this.store.getMetadata()
-    // const { seqNames } = this.metadata
-    // return seqNames
+    // const { refNames } = this.metadata
+    // return refNames
   }
 
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @param {Region} region
    * @param {string} region.assemblyName Name of the assembly
-   * @param {string} region.refName Name of the reference sequence
-   * @param {int} region.start Start of the reference sequence
-   * @param {int} region.end End of the reference sequence
+   * @param {string} region.refName Name of the reference sequence (e.g. chr1)
+   * @param {int} region.start Start of the region
+   * @param {int} region.end End of the region
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // eslint-disable-next-line no-unused-vars
@@ -70,7 +70,7 @@ export default class BaseAdapter {
    */
   getFeaturesInRegion(region) {
     return ObservableCreate(async observer => {
-      if (!(await this.hasDataForRefSeq(region))) {
+      if (!(await this.hasDataForRefName(region))) {
         observer.complete()
       } else {
         this.getFeatures(region).subscribe(observer)
@@ -85,11 +85,11 @@ export default class BaseAdapter {
    * @param {string} region.assemblyName Name of the assembly
    * @param {string} region.refName Name of the reference sequence
    */
-  async hasDataForRefSeq({ assemblyName, refName }) {
+  async hasDataForRefName({ assemblyName, refName }) {
     if (this.assemblyName && assemblyName && this.assemblyName !== assemblyName)
       return false
-    const refSeqs = await this.loadData()
-    if (refSeqs.includes(refName)) return true
+    const refNames = await this.loadData()
+    if (refNames.includes(refName)) return true
     return false
   }
 }
