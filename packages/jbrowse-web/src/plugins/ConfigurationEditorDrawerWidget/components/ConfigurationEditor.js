@@ -66,14 +66,24 @@ const Member = withStyles(memberStyles)(
   }),
 )
 
-const Schema = observer(({ schema }) =>
-  iterMap(
+const Schema = observer(({ schema }) => {
+  if (schema.length) {
+    return schema.map(s => {
+      return iterMap(
+        Object.entries(getMembers(s).properties),
+        ([slotName, slotSchema]) => (
+          <Member key={slotName} {...{ slotName, slotSchema, schema: s }} />
+        ),
+      )
+    })
+  }
+  return iterMap(
     Object.entries(getMembers(schema).properties),
     ([slotName, slotSchema]) => (
       <Member key={slotName} {...{ slotName, slotSchema, schema }} />
     ),
-  ),
-)
+  )
+})
 
 const styles = theme => ({
   root: {

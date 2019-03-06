@@ -120,6 +120,47 @@
       }
     },
     {
+      "configId": "wiggle_local_autoscale",
+      "type": "WiggleTrack",
+      "name": "Wiggle local autoscale track",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "subtracks": [
+        {
+          "renderer": {
+            "type": "WiggleRenderer"
+          },
+          "type": "BasicTrack",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox.bw"
+            },
+            "assemblyName": "volvox"
+          }
+        },
+        {
+          "renderer": {
+            "type": "WiggleRenderer",
+            "color": "orange",
+            "renderType": "density"
+          },
+          "type": "BasicTrack",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox.bw"
+            },
+            "assemblyName": "volvox"
+          }
+        }
+      ]
+    },
+    {
       "type": "AlignmentsTrack",
       "name": "volvox-sorted all green",
       "category": [
@@ -316,6 +357,11 @@
             "type": "FilteringTrack",
             "height": 100,
             "configuration": "i3jUPmrgMOS"
+          },
+          {
+            "type": "WiggleTrack",
+            "height": 250,
+            "configuration": "wiggle_local_autoscale"
           }
         ],
         "configuration": {}

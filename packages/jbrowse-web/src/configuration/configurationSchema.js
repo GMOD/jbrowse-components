@@ -4,6 +4,7 @@ import {
   isArrayType,
   isUnionType,
   isMapType,
+  isOptionalType,
   isStateTreeNode,
   getType,
 } from 'mobx-state-tree'
@@ -30,6 +31,9 @@ export function isConfigurationSchemaType(thing) {
       (!!thing.isJBrowseConfigurationSchema ||
         (thing.identifierAttribute === 'configId' &&
           thing.name.includes('ConfigurationSchema')))) ||
+    (isOptionalType(thing) &&
+      isArrayType(thing) &&
+      isConfigurationSchemaType(thing.type.subType)) ||
     (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
     (isUnionType(thing) &&
       thing.types.every(t => isConfigurationSchemaType(t))) ||

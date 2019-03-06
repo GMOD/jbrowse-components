@@ -4,7 +4,7 @@ import { ConfigurationReference } from '../../configuration'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
-import { getContainingView } from '../../util/tracks'
+import { getParentRenderProps } from '../../util/tracks'
 
 export default (pluginManager, configSchema, trackType) =>
   types.compose(
@@ -18,10 +18,8 @@ export default (pluginManager, configSchema, trackType) =>
       })
       .views(self => ({
         get renderProps() {
-          const view = getContainingView(self)
           return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
+            ...getParentRenderProps(self),
             trackModel: self,
             config: self.configuration.rendering,
           }

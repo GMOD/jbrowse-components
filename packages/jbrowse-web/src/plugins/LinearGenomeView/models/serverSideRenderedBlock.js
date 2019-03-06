@@ -47,6 +47,7 @@ function renderBlockData(self) {
 async function renderBlockEffect(self, props, allowRefetch = true) {
   const { rendererType, renderProps, rpcManager, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
+  if (renderProps.notReady) return
   if (!isAlive(self)) return
   if (self.renderInProgress) self.renderInProgress.abort()
   const aborter = new AbortController()
