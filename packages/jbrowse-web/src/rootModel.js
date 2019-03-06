@@ -36,33 +36,38 @@ export default (pluginManager, workerManager) => {
       ),
       configuration: pluginManager.rootConfig,
     })
-    .volatile(self => ({
-      pluginManager,
-      workerManager,
-      rpcManager: new RpcManager(pluginManager, self.configuration.rpc, {
+    .volatile(self => {
+      const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
         WebWorkerRpcDriver: {
           workers: workerManager.getWorkerGroup('rpc'),
         },
-      }),
-      assemblyManager: new AssemblyManager(
+      })
+      const assemblyManager = new AssemblyManager(
         pluginManager,
+        rpcManager,
         self.configuration.assemblies,
-      ),
-
+      )
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
        * kind of thing it is.
        */
-      selection: undefined,
-
+      const selection = undefined
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * { taskName: "configure", target: thing_being_configured }
        */
-      task: undefined,
-    }))
+      const task = undefined
+      return {
+        pluginManager,
+        workerManager,
+        rpcManager,
+        assemblyManager,
+        selection,
+        task,
+      }
+    })
     .views(self => ({
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width

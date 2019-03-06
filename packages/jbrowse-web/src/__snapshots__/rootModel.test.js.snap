@@ -137,20 +137,6 @@ Object {
         "configuration": Object {
           "configId": "vVpZZU1XnD",
         },
-        "displayedRegionsOverrides": Array [
-          Object {
-            "assemblyName": "vvx",
-            "end": 50000,
-            "refName": "contigA",
-            "start": 0,
-          },
-          Object {
-            "assemblyName": "volvox",
-            "end": 300,
-            "refName": "ctgB",
-            "start": 0,
-          },
-        ],
         "id": "BhLw7v7Not",
         "offsetPx": 1800,
         "tracks": Array [
@@ -213,6 +199,7 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
+      "assemblyName": "volvox",
       "category": Array [
         "Bar Category",
       ],
@@ -238,6 +225,7 @@ Object {
         },
         "type": "BamAdapter",
       },
+      "assemblyName": "volvox",
       "category": Array [
         "Bar Category",
         "Baz Category",
@@ -274,6 +262,7 @@ Object {
         },
         "type": "BamAdapter",
       },
+      "assemblyName": "vvx",
       "category": Array [
         "Bee Category",
         "Boo Category",
@@ -340,6 +329,7 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
+      "assemblyName": "volvox",
       "configId": "i3jUPmrgMOS",
       "filterAttributes": Array [
         "type",

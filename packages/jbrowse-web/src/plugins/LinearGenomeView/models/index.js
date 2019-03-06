@@ -1,6 +1,6 @@
-import { transaction } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import {
-  flow,
+  addDisposer,
   getParent,
   getRoot,
   getType,
@@ -68,7 +68,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       ),
       controlsWidth: 120,
       width: 800,
-      displayedRegionsOverrides: types.array(Region),
       configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
@@ -100,61 +99,23 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       get horizontallyFlipped() {
         return getConf(self, 'reversed')
       },
-      get displayedRegions() {
-        if (self.displayedRegionsOverrides.length)
-          return self.displayedRegionsOverrides
-        return self.defaultDisplayedRegions
-      },
     }))
     .volatile(() => ({
-      defaultDisplayedRegions: [],
+      displayedRegions: [],
     }))
     .actions(self => ({
       afterAttach() {
-        this.fetchDisplayedRegions()
+        const displayedRegionsDisposer = autorun(() => {
+          const { assemblyManager } = getRoot(self)
+          if (assemblyManager)
+            self.setDisplayedRegions(assemblyManager.displayedRegions)
+        })
+
+        addDisposer(self, displayedRegionsDisposer)
       },
-
-      fetchDisplayedRegions: flow(function* fetchProjects() {
-        const rootModel = getRoot(self)
-        const { configuration: rootConfig } = rootModel
-        const regions = []
-        const assemblies = rootConfig.assemblies || new Map()
-        for (const [assemblyName, assembly] of assemblies) {
-          if (assembly.sequence.type === 'Sizes') {
-            const sizes = readConfObject(assembly.sequence, 'sizes')
-            Object.keys(sizes).forEach(refName =>
-              regions.push({
-                assemblyName,
-                refName,
-                start: 0,
-                end: sizes[refName],
-              }),
-            )
-          } else if (assembly.sequence.type === 'ReferenceSequence') {
-            const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-            const { rpcManager } = rootModel
-            try {
-              regions.push(
-                ...(yield rpcManager.call(
-                  rootConfig.configId,
-                  'getRegions',
-                  {
-                    sessionId: assemblyName,
-                    adapterType: adapterConfig.type,
-                    adapterConfig,
-                    assemblyName,
-                  },
-                  { timeout: 1000000 },
-                )),
-              )
-            } catch (error) {
-              console.error('Failed to fetch sequence', error)
-            }
-          }
-          self.defaultDisplayedRegions = regions
-        }
-      }),
-
+      setDisplayedRegions(displayedRegions) {
+        self.displayedRegions = displayedRegions
+      },
       setWidth(newWidth) {
         self.width = newWidth
       },

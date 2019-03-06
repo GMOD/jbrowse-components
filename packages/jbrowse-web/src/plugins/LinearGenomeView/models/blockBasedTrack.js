@@ -29,22 +29,6 @@ export default types.compose(
       },
 
       /**
-       * get an array of the viewing blocks that should be shown
-       */
-      get blockDefinitions() {
-        const blockDefinitions = getContainingView(self)[self.blockType]
-        const { assemblyManager } = getRoot(self)
-        if (!assemblyManager) return blockDefinitions
-        const refNameMap = assemblyManager.getRefNameMap(self)
-        if (!refNameMap) return blockDefinitions
-        return blockDefinitions.map(blockDefinition => {
-          let { refName } = blockDefinition
-          refName = refNameMap.get(refName) || refName
-          return Object.assign({}, blockDefinition, { refName })
-        })
-      },
-
-      /**
        * a CompositeMap of featureId -> feature obj that
        * just looks in all the block data for that feature
        */
@@ -56,6 +40,9 @@ export default types.compose(
         }
         return new CompositeMap(featureMaps)
       },
+    }))
+    .volatile(() => ({
+      blockDefinitions: [],
     }))
     .actions(self => ({
       afterAttach() {
@@ -74,8 +61,26 @@ export default types.compose(
             if (!blocksPresent[key]) self.deleteBlock(key)
           })
         })
+        const blockDefinitionDisposer = autorun(() => {
+          const blockDefinitions = getContainingView(self)[self.blockType]
+          const { assemblyManager } = getRoot(self)
+          if (!assemblyManager) return
+          const refNameMap = assemblyManager.getRefNameMap(self)
+          if (!refNameMap) return
+          self.setBlockDefinitions(
+            blockDefinitions.map(blockDefinition => {
+              let { refName } = blockDefinition
+              refName = refNameMap.get(refName) || refName
+              return Object.assign({}, blockDefinition, { refName })
+            }),
+          )
+        })
 
         addDisposer(self, blockWatchDisposer)
+        addDisposer(self, blockDefinitionDisposer)
+      },
+      setBlockDefinitions(blockDefinitions) {
+        self.blockDefinitions = blockDefinitions
       },
       addBlock(key, block) {
         self.blockState.set(

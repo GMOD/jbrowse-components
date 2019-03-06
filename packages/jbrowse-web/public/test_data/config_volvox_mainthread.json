@@ -11,10 +11,10 @@
       "renderer": {
         "type": "LollipopRenderer"
       },
+      "assemblyName": "volvox",
       "adapter": {
         "configId": "GbpDGXt1G4",
         "type": "FromConfigAdapter",
-        "assemblyName": "volvox",
         "features": [
           {
             "uniqueId": "one",
@@ -63,13 +63,13 @@
         "Bar Category",
         "Baz Category"
       ],
+      "assemblyName": "volvox",
       "adapter": {
         "configId": "bEfF0TZF74",
         "type": "BamAdapter",
         "bamLocation": {
           "uri": "/test_data/volvox-sorted.bam"
         },
-        "assemblyName": "volvox",
         "index": {
           "configId": "og9sCU2st9",
           "location": {
@@ -97,13 +97,13 @@
         "Bee Category",
         "Boo Category"
       ],
+      "assemblyName": "vvx",
       "adapter": {
         "configId": "xrcAPC8w2X",
         "type": "BamAdapter",
         "bamLocation": {
           "uri": "/test_data/volvox-sorted.bam"
         },
-        "assemblyName": "vvx",
         "index": {
           "configId": "HFGUCFV5d2",
           "location": {
@@ -128,10 +128,10 @@
       "configId": "i3jUPmrgMOS",
       "type": "FilteringTrack",
       "name": "Filter Test",
+      "assemblyName": "volvox",
       "adapter": {
         "configId": "Zd0NLmtxPZ1",
         "type": "FromConfigAdapter",
-        "assemblyName": "volvox",
         "features": [
           {
             "uniqueId": "one",
@@ -285,20 +285,6 @@
             "type": "DynamicTrack",
             "height": 200,
             "configuration": "PDWVXl3526"
-          }
-        ],
-        "displayedRegionsOverrides": [
-          {
-            "assemblyName": "vvx",
-            "refName": "contigA",
-            "start": 0,
-            "end": 50000
-          },
-          {
-            "assemblyName": "volvox",
-            "refName": "ctgB",
-            "start": 0,
-            "end": 300
           }
         ],
         "configuration": {

@@ -1,12 +1,16 @@
 import { getSnapshot } from 'mobx-state-tree'
+import { decorate, observable } from 'mobx'
 import { readConfObject, getConf } from '../configuration'
 import { getAdapter } from '../util/dataAdapterCache'
 
 export default class AssemblyManager {
-  constructor(pluginManager, assemblies) {
+  constructor(pluginManager, rpcManager, assemblies) {
     this.pluginManager = pluginManager
+    this.rpcManager = rpcManager
     this.assemblies = assemblies
     this.adapterMaps = new Map()
+    this.displayedRegions = []
+    this.loadDisplayedRegions()
   }
 
   async addAdapter(track) {
@@ -58,6 +62,45 @@ export default class AssemblyManager {
     )
   }
 
+  async loadDisplayedRegions() {
+    const regions = []
+    const { assemblies, rpcManager } = this
+    for (const [assemblyName, assembly] of assemblies) {
+      if (assembly.sequence.type === 'Sizes') {
+        const sizes = readConfObject(assembly.sequence, 'sizes')
+        Object.keys(sizes).forEach(refName =>
+          regions.push({
+            assemblyName,
+            refName,
+            start: 0,
+            end: sizes[refName],
+          }),
+        )
+      } else if (assembly.sequence.type === 'ReferenceSequence') {
+        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+        try {
+          regions.push(
+            // eslint-disable-next-line no-await-in-loop
+            ...(await rpcManager.call(
+              assembly.configId,
+              'getRegions',
+              {
+                sessionId: assemblyName,
+                adapterType: adapterConfig.type,
+                adapterConfig,
+                assemblyName,
+              },
+              { timeout: 1000000 },
+            )),
+          )
+        } catch (error) {
+          console.error('Failed to fetch sequence', error)
+        }
+      }
+    }
+    this.displayedRegions = regions
+  }
+
   getRefNameMap(track) {
     const configId = readConfObject(track.configuration, 'configId')
     if (this.adapterMaps.has(configId)) return this.adapterMaps.get(configId)
@@ -69,3 +112,7 @@ export default class AssemblyManager {
     this.adapterMaps = new Map()
   }
 }
+
+decorate(AssemblyManager, {
+  displayedRegions: observable,
+})
