@@ -7,7 +7,7 @@ import {
 
 import FilteringTrackComponent from './components/FilteringTrack'
 import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
-import { getContainingView } from '../../util/tracks'
+import { getParentRenderProps } from '../../util/tracks'
 
 function makeFilters(trackModel) {
   const filters = []
@@ -60,11 +60,9 @@ export default pluginManager => {
       })
       .views(self => ({
         get renderProps() {
-          const view = getContainingView(self)
           const filters = makeFilters(self)
           return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
+            ...getParentRenderProps(self),
             trackModel: self,
             config: self.configuration.renderer,
             filters,

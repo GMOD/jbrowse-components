@@ -18,6 +18,7 @@ import LinearGenomeViewConfigSchema from './configSchema'
 import BaseTrack from './baseTrack'
 import calculateStaticBlocks from '../util/calculateStaticBlocks'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
+import { getParentRenderProps } from '../../../util/tracks'
 
 const validBpPerPx = [
   1 / 50,
@@ -105,6 +106,13 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           (a, b) => a + (b.end - b.start) / self.bpPerPx,
           0,
         )
+      },
+      get renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          bpPerPx: self.bpPerPx,
+          horizontallyFlipped: self.horizontallyFlipped,
+        }
       },
     }))
     .volatile(() => ({
@@ -272,7 +280,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       horizontalScroll(distance) {
         const leftPadding = 10
         const rightPadding = 10
-        const maxOffset = self.displayedRegionsTotalPx - leftPadding
+        const displayRegionsTotalPx = self.displayedRegions.reduce(
+          (a, b) => a + (b.end - b.start) / self.bpPerPx,
+          0,
+        )
+        const maxOffset = displayRegionsTotalPx - leftPadding
         const displayWidth = self.viewingRegionWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)

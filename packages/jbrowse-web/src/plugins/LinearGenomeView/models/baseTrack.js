@@ -8,7 +8,7 @@ import {
 import { ElementId } from '../../../mst-types'
 
 import TrackControls from '../components/TrackControls'
-import { getContainingView } from '../../../util/tracks'
+import { getContainingView, getParentRenderProps } from '../../../util/tracks'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -38,8 +38,6 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // a reference to a track configuration (stored under root.configuration.tracks).
 
 // note that multiple displayed tracks could use the same configuration.
-
-// note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 const BaseTrack = types
   .model('BaseTrack', {
@@ -49,7 +47,6 @@ const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       minTrackHeight,
     ),
-    subtracks: types.literal(undefined),
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
@@ -73,11 +70,8 @@ const BaseTrack = types
      * is rendered in this track
      */
     get renderProps() {
-      // view -> [tracks] -> [blocks]
-      const view = getContainingView(self)
       return {
-        bpPerPx: view.bpPerPx,
-        horizontallyFlipped: view.horizontallyFlipped,
+        ...getParentRenderProps(self),
         trackModel: self,
       }
     },

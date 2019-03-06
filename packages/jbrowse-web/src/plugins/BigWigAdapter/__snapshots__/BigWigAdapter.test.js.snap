@@ -64,3 +64,41 @@ Array [
   },
 ]
 `;
+
+exports[`adapter can fetch stats from volvox.bw 1`] = `
+Object {
+  "basesCovered": 49984,
+  "scoreMax": 38,
+  "scoreMin": 1,
+  "scoreSum": 959592,
+  "scoreSumSquares": 19461382,
+}
+`;
+
+exports[`adapter can fetch stats from volvox.bw 2`] = `
+Object {
+  "basesCovered": 30000,
+  "featureCount": 30001,
+  "featureDensity": 1.0000333333333333,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;
+
+exports[`adapter can fetch stats from volvox.bw 3`] = `
+Object {
+  "basesCovered": 30100,
+  "featureCount": 30001,
+  "featureDensity": 0.9967109634551495,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 0,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;

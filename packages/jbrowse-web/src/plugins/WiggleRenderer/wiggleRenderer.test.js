@@ -22,8 +22,8 @@ test('several features', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      scoreMax: 100,
+    yScale: {
+      max: 100,
     },
     bpPerPx: 3,
     horizontallyFlipped: false,
@@ -47,8 +47,8 @@ test('inverted mode and horizontally flipped', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      scoreMax: 100,
+    yScale: {
+      max: 100,
     },
     bpPerPx: 3,
     horizontallyFlipped: true,
@@ -76,8 +76,8 @@ test('test render', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      scoreMax: 100,
+    yScale: {
+      max: 100,
     },
     bpPerPx: 3,
     horizontallyFlipped: true,
