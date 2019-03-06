@@ -10,7 +10,7 @@ describe('base data adapter', () => {
     }).toThrow(/Cannot create BaseAdapter instances directly/)
   })
 
-  it('throws if loadData() is not overridden by the subclass', async () => {
+  it('throws if getRefNames() is not overridden by the subclass', async () => {
     class Adapter extends BaseAdapter {
       getFeatures() {
         return ObservableCreate(observer => {
@@ -36,12 +36,14 @@ describe('base data adapter', () => {
         .then(resolve, reject)
     })
 
-    expect(p).rejects.toThrow(/loadData should be overridden by the subclass/)
+    expect(p).rejects.toThrow(
+      /getRefNames should be overridden by the subclass/,
+    )
   })
 
   it('throws if getFeatures() is not overridden by the subclass', async () => {
     class Adapter extends BaseAdapter {
-      async loadData() {
+      async getRefNames() {
         return ['ctgA', 'ctgB']
       }
     }
@@ -60,7 +62,7 @@ describe('base data adapter', () => {
 
   it('throws if freeResources() is not overridden by the subclass', async () => {
     class Adapter extends BaseAdapter {
-      async loadData() {
+      async getRefNames() {
         return ['ctgA', 'ctgB']
       }
     }
@@ -72,7 +74,7 @@ describe('base data adapter', () => {
 
   it('properly propagates errors in feature fetching', async () => {
     class Adapter extends BaseAdapter {
-      async loadData() {
+      async getRefNames() {
         return ['ctgA', 'ctgB']
       }
 
@@ -94,7 +96,7 @@ describe('base data adapter', () => {
 
   it('retrieves features', async () => {
     class Adapter extends BaseAdapter {
-      async loadData() {
+      async getRefNames() {
         return ['ctgA', 'ctgB']
       }
 

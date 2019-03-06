@@ -26,7 +26,7 @@ export default class BamAdapter extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async loadData() {
+  async setup() {
     if (!this.samHeader) {
       const samHeader = await this.bam.getHeader()
       this.samHeader = {}
@@ -51,19 +51,23 @@ export default class BamAdapter extends BaseAdapter {
         this.samHeader.nameToId = nameToId
       }
     }
+  }
+
+  async getRefNames() {
+    await this.setup()
     return this.samHeader.idToName
   }
 
   /**
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given assembly and
-   * reference sequence before fetching.
+   * want to verify that the store has features for the given reference sequence
+   * before fetching.
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
+      await this.setup()
       const records = await this.bam.getRecordsForRange(refName, start, end)
       records.forEach(record => {
         observer.next(this.bamRecordToFeature(record))

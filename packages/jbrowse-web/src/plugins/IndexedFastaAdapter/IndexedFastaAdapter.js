@@ -23,7 +23,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  async loadData() {
+  async getRefNames() {
     return this.fasta.getSequenceList()
   }
 
@@ -47,7 +47,6 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    */
   getFeatures({ /* assembly, */ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const seq = await this.fasta.getSequence(refName, start, end)
       if (seq)
         observer.next(

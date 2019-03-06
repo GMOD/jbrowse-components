@@ -1,6 +1,6 @@
-import { getRegions, renderRegion, freeResources } from '../render'
+import { getRefNames, getRegions, renderRegion, freeResources } from '../render'
 
-const funcs = { getRegions, renderRegion, freeResources }
+const funcs = { getRefNames, getRegions, renderRegion, freeResources }
 
 export default class MainThreadRpcDriver {
   call(pluginManager, stateGroupName, functionName, args) {

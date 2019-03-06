@@ -34,7 +34,7 @@ export default class FromConfigAdapter extends BaseAdapter {
     return new SimpleFeature({ data, parent })
   }
 
-  async loadData() {
+  async getRefNames() {
     const refNames = Array.from(this.features.keys())
     return refNames
   }

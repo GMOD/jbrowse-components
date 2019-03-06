@@ -17,10 +17,10 @@ export default class BaseAdapter {
    * Subclasses should override this method. Method signature here for reference.
    * @returns {string[]} Observable of Feature objects in the region
    */
-  async loadData() {
-    throw new Error('loadData should be overridden by the subclass')
+  async getRefNames() {
+    throw new Error('getRefNames should be overridden by the subclass')
     // Subclass method should look something like this:
-    // this.metadata = await this.store.getMetadata()
+    // await this.setup()
     // const { refNames } = this.metadata
     // return refNames
   }
@@ -81,7 +81,7 @@ export default class BaseAdapter {
    * @param {string} region.refName Name of the reference sequence
    */
   async hasDataForRefName(refName) {
-    const refNames = await this.loadData()
+    const refNames = await this.getRefNames()
     if (refNames.includes(refName)) return true
     return false
   }

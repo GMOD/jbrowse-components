@@ -1,11 +1,9 @@
 import { getSnapshot } from 'mobx-state-tree'
 import { decorate, observable } from 'mobx'
 import { readConfObject, getConf } from '../configuration'
-import { getAdapter } from '../util/dataAdapterCache'
 
 export default class AssemblyManager {
-  constructor(pluginManager, rpcManager, assemblies) {
-    this.pluginManager = pluginManager
+  constructor(rpcManager, assemblies) {
     this.rpcManager = rpcManager
     this.assemblies = assemblies
     this.adapterMaps = new Map()
@@ -14,12 +12,6 @@ export default class AssemblyManager {
   }
 
   async addAdapter(track) {
-    const { dataAdapter } = getAdapter(
-      this.pluginManager,
-      track.id,
-      track.adapterType.name,
-      getConf(track, 'adapter'),
-    )
     const refNameMap = new Map()
     const assemblies = getSnapshot(this.assemblies)
 
@@ -37,7 +29,17 @@ export default class AssemblyManager {
           }
         })
 
-      const refNames = await dataAdapter.loadData()
+      const refNames = await this.rpcManager.call(
+        track.id,
+        'getRefNames',
+        {
+          sessionId: assemblyName,
+          adapterType: readConfObject(track.configuration, ['adapter', 'type']),
+          adapterConfig: getConf(track, 'adapter'),
+          assemblyName,
+        },
+        { timeout: 1000000 },
+      )
       refNames.forEach(refName => {
         refNameMap.set(refName, refName)
         if (refNameAliases[refName])

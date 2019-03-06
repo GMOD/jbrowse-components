@@ -2,7 +2,7 @@ import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
 
 export async function getRegions(
   pluginManager,
-  { sessionId, adapterType, adapterConfig, assemblyName },
+  { sessionId, adapterType, adapterConfig },
 ) {
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -10,7 +10,20 @@ export async function getRegions(
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getRegions(assemblyName)
+  return dataAdapter.getRegions()
+}
+
+export async function getRefNames(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getRefNames()
 }
 
 /**

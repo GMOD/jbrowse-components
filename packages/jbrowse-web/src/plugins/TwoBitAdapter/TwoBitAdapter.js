@@ -16,7 +16,7 @@ export default class TwoBitAdapter extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  async loadData() {
+  async getRefNames() {
     return this.twobit.getSequenceNames()
   }
 
@@ -40,7 +40,6 @@ export default class TwoBitAdapter extends BaseAdapter {
    */
   getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(
         new SimpleFeature({

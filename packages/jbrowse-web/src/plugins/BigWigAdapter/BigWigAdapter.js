@@ -13,7 +13,7 @@ export default class BigWigAdapter extends BaseAdapter {
     })
   }
 
-  async loadData() {
+  async getRefNames() {
     const header = await this.bigwig.getHeader()
     return Object.keys(header.refsByName)
   }
@@ -34,7 +34,6 @@ export default class BigWigAdapter extends BaseAdapter {
    */
   getFeatures({ /* assembly, */ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
         observer.next(

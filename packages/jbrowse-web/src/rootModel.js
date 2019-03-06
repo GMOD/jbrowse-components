@@ -43,7 +43,6 @@ export default (pluginManager, workerManager) => {
         },
       })
       const assemblyManager = new AssemblyManager(
-        pluginManager,
         rpcManager,
         self.configuration.assemblies,
       )
@@ -250,10 +249,10 @@ export default (pluginManager, workerManager) => {
           self.addDrawerWidget(
             'ConfigurationEditorDrawerWidget',
             'configEditor',
-            { target: configuration.configId },
+            { target: configuration },
           )
         const editor = self.drawerWidgets.get('configEditor')
-        editor.setTarget(configuration.configId)
+        editor.setTarget(configuration)
         self.showDrawerWidget(editor)
       },
     }))
