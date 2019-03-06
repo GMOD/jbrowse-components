@@ -21,3 +21,30 @@ test('adapter can fetch features from volvox.bw', async () => {
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
 })
+test('adapter can fetch stats from volvox.bw', async () => {
+  const adapter = new BigWigAdapter(
+    {
+      assemblyName: 'volvox',
+      bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
+    },
+    {},
+  )
+  expect(await adapter.getGlobalStats()).toMatchSnapshot()
+  expect(
+    await adapter.getRegionStats({
+      refName: 'ctgA',
+      start: 10000,
+      end: 40000,
+    }),
+  ).toMatchSnapshot()
+  expect(
+    await adapter.getLocalStats([
+      {
+        refName: 'ctgA',
+        start: 10000,
+        end: 40000,
+      },
+      { refName: 'ctgB', start: 0, end: 100 },
+    ]),
+  ).toMatchSnapshot()
+})

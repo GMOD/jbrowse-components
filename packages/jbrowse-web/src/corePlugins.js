@@ -11,6 +11,7 @@ import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
 import FilteringTrackPlugin from './plugins/FilteringTrack'
+import WiggleTrackPlugin from './plugins/WiggleTrack'
 
 // views
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
@@ -46,6 +47,7 @@ export default [
   DivSequenceRendererPlugin,
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,
+  WiggleTrackPlugin,
   WiggleRendererPlugin,
   LollipopRendererPlugin,
 ]

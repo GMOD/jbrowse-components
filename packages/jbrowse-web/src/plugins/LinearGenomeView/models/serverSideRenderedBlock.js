@@ -49,6 +49,7 @@ async function renderBlockEffect(
   { rendererType, renderProps, rpcManager, renderArgs },
 ) {
   // console.log(getContainingView(self).rendererType)
+  if (renderProps.notReady) return
   if (!isAlive(self)) return
   if (self.renderInProgress) self.renderInProgress.abort()
   const aborter = new AbortController()
