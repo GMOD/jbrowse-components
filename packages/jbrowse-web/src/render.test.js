@@ -84,6 +84,8 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   ).toBe(0)
 })
 
+test.todo('move the regularization tests somewhere else')
+
 xtest('can regularize an assembly name from an alias', async () => {
   const testprops = {
     ...baseprops,

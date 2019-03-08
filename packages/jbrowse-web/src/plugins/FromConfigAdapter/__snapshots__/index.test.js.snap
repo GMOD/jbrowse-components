@@ -4,6 +4,7 @@ exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "configId": Any<String>,
   "features": undefined,
+  "refNameAliases": undefined,
   "type": "FromConfigAdapter",
 }
 `;

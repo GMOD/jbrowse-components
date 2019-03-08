@@ -1,5 +1,4 @@
-import { getSnapshot } from 'mobx-state-tree'
-import { decorate, observable } from 'mobx'
+import { decorate, observable, values } from 'mobx'
 import { readConfObject, getConf } from '../configuration'
 
 export default class AssemblyManager {
@@ -11,23 +10,48 @@ export default class AssemblyManager {
     this.loadDisplayedRegions()
   }
 
+  async getRefNameAliases(assemblyName) {
+    const refNameAliases = {}
+    let assembly = this.assemblies.get(assemblyName)
+    if (!assembly) {
+      values(this.assemblies).forEach(otherAssembly => {
+        if (
+          (readConfObject(otherAssembly, 'aliases') || []).includes(
+            assemblyName,
+          )
+        )
+          assembly = otherAssembly
+      })
+    }
+
+    if (assembly) {
+      ;(await this.rpcManager.call(
+        assembly.configId,
+        'getRefNameAliases',
+        {
+          sessionId: assemblyName,
+          adapterType: readConfObject(assembly, [
+            'refNameAliases',
+            'adapter',
+            'type',
+          ]),
+          adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
+        },
+        { timeout: 1000000 },
+      )).forEach(alias => {
+        refNameAliases[alias.refName] = alias.aliases
+      })
+    }
+    return refNameAliases
+  }
+
   async addAdapter(track) {
     const refNameMap = new Map()
-    const assemblies = getSnapshot(this.assemblies)
 
-    let assemblyName = readConfObject(track.configuration, 'assemblyName')
+    const assemblyName = readConfObject(track.configuration, 'assemblyName')
 
     if (assemblyName) {
-      let refNameAliases = {}
-      if (assemblies[assemblyName]) {
-        ;({ refNameAliases = {} } = assemblies[assemblyName])
-      } else
-        Object.keys(assemblies).forEach(assembly => {
-          if ((assemblies[assembly].aliases || []).includes(assemblyName)) {
-            assemblyName = assembly
-            ;({ refNameAliases = {} } = assemblies[assembly])
-          }
-        })
+      const refNameAliases = await this.getRefNameAliases(assemblyName)
 
       const refNames = await this.rpcManager.call(
         track.id,
@@ -36,7 +60,6 @@ export default class AssemblyManager {
           sessionId: assemblyName,
           adapterType: readConfObject(track.configuration, ['adapter', 'type']),
           adapterConfig: getConf(track, 'adapter'),
-          assemblyName,
         },
         { timeout: 1000000 },
       )
@@ -72,7 +95,6 @@ export default class AssemblyManager {
         const sizes = readConfObject(assembly.sequence, 'sizes')
         Object.keys(sizes).forEach(refName =>
           regions.push({
-            assemblyName,
             refName,
             start: 0,
             end: sizes[refName],
@@ -90,7 +112,6 @@ export default class AssemblyManager {
                 sessionId: assemblyName,
                 adapterType: adapterConfig.type,
                 adapterConfig,
-                assemblyName,
               },
               { timeout: 1000000 },
             )),

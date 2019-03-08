@@ -26,6 +26,19 @@ export async function getRefNames(
   return dataAdapter.getRefNames()
 }
 
+export async function getRefNameAliases(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getRefNameAliases()
+}
+
 /**
  * free up any resources (e.g. cached adapter objects)
  * that are only associated with the given track ID.

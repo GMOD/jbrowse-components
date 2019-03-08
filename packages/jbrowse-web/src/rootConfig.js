@@ -1,4 +1,4 @@
-import { getRoot, getType, types } from 'mobx-state-tree'
+import { detach, getRoot, getType, types } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import RpcManager from './rpc/RpcManager'
 
@@ -25,12 +25,9 @@ export function assemblyFactory(pluginManager) {
       defaultValue: [],
       description: 'Other possible names for this assembly',
     },
-    refNameAliases: {
-      type: 'stringArrayMap',
-      defaultValue: {},
-      description:
-        'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
-    },
+    refNameAliases: ConfigurationSchema('RefNameAliases', {
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+    }),
   })
 }
 
@@ -68,7 +65,12 @@ export default function(pluginManager) {
         addAssembly(
           assemblyName,
           aliases = [],
-          refNameAliases = {},
+          refNameAliases = {
+            adapter: {
+              type: 'FromConfigAdapter',
+              refNameAliases: [],
+            },
+          },
           sequence = {
             type: 'Sizes',
             sizes: {},
@@ -84,6 +86,7 @@ export default function(pluginManager) {
           self.assemblies.set(assemblyName, assembly)
         },
         removeAssembly(assemblyName) {
+          detach(self.assemblies.get(assemblyName))
           self.assemblies.delete(assemblyName)
         },
       }),

@@ -189,14 +189,26 @@
         "vvx"
       ],
       "refNameAliases": {
-        "A": [
-          "ctgA",
-          "contigA"
-        ],
-        "B": [
-          "ctgB",
-          "contigB"
-        ]
+        "adapter": {
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter",
+          "refNameAliases": [
+            {
+              "refName": "ctgA",
+              "aliases": [
+                "A",
+                "contigA"
+              ]
+            },
+            {
+              "refName": "ctgB",
+              "aliases": [
+                "B",
+                "contigB"
+              ]
+            }
+          ]
+        }
       },
       "sequence": {
         "configId": "iTo6LoXUeI",
@@ -217,7 +229,13 @@
     "volvox2": {
       "configId": "volvox2",
       "aliases": [],
-      "refNameAliases": {},
+      "refNameAliases": {
+        "adapter": {
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter",
+          "refNameAliases": []
+        }
+      },
       "sequence": {
         "configId": "iTo6LoXUeJ",
         "type": "Sizes",

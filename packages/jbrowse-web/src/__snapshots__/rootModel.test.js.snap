@@ -9,14 +9,20 @@ Object {
       ],
       "configId": "testid",
       "refNameAliases": Object {
-        "A": Array [
-          "ctgA",
-          "contigA",
-        ],
-        "B": Array [
-          "ctgB",
-          "contigB",
-        ],
+        "adapter": Object {
+          "bamLocation": Object {
+            "uri": "/path/to/my.bam",
+          },
+          "configId": "testid",
+          "index": Object {
+            "configId": "testid",
+            "location": Object {
+              "uri": "/path/to/my.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
+        },
+        "configId": "testid",
       },
       "sequence": Object {
         "configId": "testid",
@@ -41,14 +47,20 @@ Object {
       ],
       "configId": "volvox",
       "refNameAliases": Object {
-        "A": Array [
-          "ctgA",
-          "contigA",
-        ],
-        "B": Array [
-          "ctgB",
-          "contigB",
-        ],
+        "adapter": Object {
+          "bamLocation": Object {
+            "uri": "/path/to/my.bam",
+          },
+          "configId": "testid",
+          "index": Object {
+            "configId": "testid",
+            "location": Object {
+              "uri": "/path/to/my.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
+        },
+        "configId": "testid",
       },
       "sequence": Object {
         "adapter": Object {
@@ -68,6 +80,22 @@ Object {
     },
     "volvox2": Object {
       "configId": "volvox2",
+      "refNameAliases": Object {
+        "adapter": Object {
+          "bamLocation": Object {
+            "uri": "/path/to/my.bam",
+          },
+          "configId": "testid",
+          "index": Object {
+            "configId": "testid",
+            "location": Object {
+              "uri": "/path/to/my.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
+        },
+        "configId": "testid",
+      },
       "sequence": Object {
         "configId": "iTo6LoXUeJ",
         "sizes": Object {

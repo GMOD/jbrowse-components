@@ -13,8 +13,9 @@ import { ObservableCreate } from '../../util/rxjs'
 export default class FromConfigAdapter extends BaseAdapter {
   constructor(config) {
     super()
-    const { features } = config
+    const { features, refNameAliases } = config
     this.features = this.makeFeatures(features || [])
+    this.refNameAliases = refNameAliases || []
   }
 
   makeFeatures(fdata) {
@@ -37,6 +38,10 @@ export default class FromConfigAdapter extends BaseAdapter {
   async getRefNames() {
     const refNames = Array.from(this.features.keys())
     return refNames
+  }
+
+  async getRefNameAliases() {
+    return this.refNameAliases
   }
 
   /**

@@ -9,7 +9,11 @@ const configSchema = ConfigurationSchema(
   {
     features: {
       type: 'frozen',
-      defaultValue: {},
+      defaultValue: [],
+    },
+    refNameAliases: {
+      type: 'frozen',
+      defaultValue: [],
     },
   },
   { explicitlyTyped: true },

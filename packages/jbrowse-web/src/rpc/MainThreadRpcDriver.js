@@ -1,10 +1,8 @@
-import { getRefNames, getRegions, renderRegion, freeResources } from '../render'
-
-const funcs = { getRefNames, getRegions, renderRegion, freeResources }
+import * as renderFuncs from '../render'
 
 export default class MainThreadRpcDriver {
   call(pluginManager, stateGroupName, functionName, args) {
-    const func = funcs[functionName]
+    const func = renderFuncs[functionName]
     if (!func)
       throw new Error(
         `MainThreadRpcDriver has no RPC function "${functionName}"`,

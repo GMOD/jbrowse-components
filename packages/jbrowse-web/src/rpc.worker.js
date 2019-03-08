@@ -6,7 +6,7 @@ import { useStaticRendering } from 'mobx-react'
 import PluginManager from './PluginManager'
 import corePlugins from './corePlugins'
 
-import { getRefNames, getRegions, renderRegion, freeResources } from './render'
+import * as renderFuncs from './render'
 
 // prevent mobx-react from doing funny things when we render in the worker
 useStaticRendering(true)
@@ -31,10 +31,11 @@ function wrapForRpc(func) {
   }
 }
 
-// eslint-disable-next-line no-restricted-globals
-self.rpcServer = new RpcServer.Server({
-  getRefNames: wrapForRpc(getRefNames),
-  getRegions: wrapForRpc(getRegions),
-  renderRegion: wrapForRpc(renderRegion),
-  freeResources: wrapForRpc(freeResources),
+const rpcConfig = {}
+
+Object.keys(renderFuncs).forEach(key => {
+  rpcConfig[key] = wrapForRpc(renderFuncs[key])
 })
+
+// eslint-disable-next-line no-restricted-globals
+self.rpcServer = new RpcServer.Server(rpcConfig)
