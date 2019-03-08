@@ -25,8 +25,25 @@ Object {
         "configId": "testid",
       },
       "sequence": Object {
+        "adapter": Object {
+          "bamLocation": Object {
+            "uri": "/path/to/my.bam",
+          },
+          "configId": "testid",
+          "index": Object {
+            "configId": "testid",
+            "location": Object {
+              "uri": "/path/to/my.bam.bai",
+            },
+          },
+          "type": "BamAdapter",
+        },
         "configId": "testid",
-        "type": "Sizes",
+        "renderer": Object {
+          "configId": "testid",
+          "type": "PileupRenderer",
+        },
+        "type": "BasicTrack",
       },
     },
   },
@@ -95,11 +112,16 @@ Object {
         "configId": "testid",
       },
       "sequence": Object {
-        "configId": "testid",
-        "sizes": Object {
-          "fakeContig": 1000,
+        "adapter": Object {
+          "configId": "Zd0NLmtxPZ3",
+          "type": "FromConfigAdapter",
         },
-        "type": "Sizes",
+        "configId": "iTo6LoXUeJ",
+        "rendering": Object {
+          "configId": "testid",
+          "type": "DivSequenceRenderer",
+        },
+        "type": "ReferenceSequence",
       },
     },
   },

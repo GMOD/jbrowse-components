@@ -45,7 +45,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }) {
+  getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
       const seq = await this.fasta.getSequence(refName, start, end)
       if (seq)

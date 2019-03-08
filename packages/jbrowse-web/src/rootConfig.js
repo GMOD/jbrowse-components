@@ -2,24 +2,9 @@ import { detach, getRoot, getType, types } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configuration'
 import RpcManager from './rpc/RpcManager'
 
-const SizesConfigSchema = ConfigurationSchema(
-  'Sizes',
-  {
-    sizes: {
-      type: 'numberMap',
-      defaultValue: {},
-      description: 'Names and sizes of sequences',
-    },
-  },
-  { explicitlyTyped: true },
-)
-
 export function assemblyFactory(pluginManager) {
   return ConfigurationSchema('Assembly', {
-    sequence: types.union(
-      SizesConfigSchema,
-      pluginManager.pluggableConfigSchemaType('track'),
-    ),
+    sequence: pluginManager.pluggableConfigSchemaType('track'),
     aliases: {
       type: 'stringArray',
       defaultValue: [],
@@ -72,8 +57,13 @@ export default function(pluginManager) {
             },
           },
           sequence = {
-            type: 'Sizes',
-            sizes: {},
+            configId: 'iTo6LoXUeJ',
+            type: 'ReferenceSequence',
+            adapter: {
+              configId: 'Zd0NLmtxPZ3',
+              type: 'FromConfigAdapter',
+              regions: [],
+            },
           },
         ) {
           const assemblyModel = getType(self.assemblies).subType.type

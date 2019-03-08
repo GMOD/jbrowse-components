@@ -91,34 +91,23 @@ export default class AssemblyManager {
     const regions = []
     const { assemblies, rpcManager } = this
     for (const [assemblyName, assembly] of assemblies) {
-      if (assembly.sequence.type === 'Sizes') {
-        const sizes = readConfObject(assembly.sequence, 'sizes')
-        Object.keys(sizes).forEach(refName =>
-          regions.push({
-            refName,
-            start: 0,
-            end: sizes[refName],
-          }),
+      const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+      try {
+        regions.push(
+          // eslint-disable-next-line no-await-in-loop
+          ...(await rpcManager.call(
+            assembly.configId,
+            'getRegions',
+            {
+              sessionId: assemblyName,
+              adapterType: adapterConfig.type,
+              adapterConfig,
+            },
+            { timeout: 1000000 },
+          )),
         )
-      } else if (assembly.sequence.type === 'ReferenceSequence') {
-        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-        try {
-          regions.push(
-            // eslint-disable-next-line no-await-in-loop
-            ...(await rpcManager.call(
-              assembly.configId,
-              'getRegions',
-              {
-                sessionId: assemblyName,
-                adapterType: adapterConfig.type,
-                adapterConfig,
-              },
-              { timeout: 1000000 },
-            )),
-          )
-        } catch (error) {
-          console.error('Failed to fetch sequence', error)
-        }
+      } catch (error) {
+        console.error('Failed to fetch sequence', error)
       }
     }
     this.displayedRegions = regions

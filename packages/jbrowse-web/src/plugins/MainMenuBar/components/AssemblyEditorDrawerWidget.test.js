@@ -46,9 +46,17 @@ describe('<AssemblyEditorDrawerWidget />', () => {
           },
           sequence: {
             configId: 'iTo6LoXUeJ',
-            type: 'Sizes',
-            sizes: {
-              fakeContig: 1000,
+            type: 'ReferenceSequence',
+            adapter: {
+              configId: 'Zd0NLmtxPZ3',
+              type: 'FromConfigAdapter',
+              regions: [
+                {
+                  refName: 'fakeContig',
+                  start: 0,
+                  end: 1000,
+                },
+              ],
             },
           },
         },

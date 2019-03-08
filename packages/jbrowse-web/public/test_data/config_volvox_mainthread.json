@@ -214,9 +214,18 @@
     "volvox2": {
       "configId": "volvox2",
       "sequence": {
-        "type": "Sizes",
-        "sizes": {
-          "fakeContig": 1000
+        "configId": "iTo6LoXUeJ",
+        "type": "ReferenceSequence",
+        "adapter": {
+          "configId": "Zd0NLmtxPZ3",
+          "type": "FromConfigAdapter",
+          "regions": [
+            {
+              "refName": "fakeContig",
+              "start": 0,
+              "end": 1000
+            }
+          ]
         }
       },
       "refNameAliases": {
