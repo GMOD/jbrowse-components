@@ -1,22 +1,28 @@
 {
-  "configId": "tQ76_pSGI",
   "tracks": [
     {
       "configId": "kgGeu2G_P",
       "type": "AlignmentsTrack",
       "name": "1000 Genomes NA12878 Coverage",
+      "assemblyName": "hg38",
       "adapter": {
-        "configId": "cpL7wSQq0-",
         "type": "BamAdapter",
         "bamLocation": {
           "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
         },
-        "assemblyName": "hg38",
         "index": {
-          "configId": "pUSN15LliE",
           "location": {
             "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
           }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer",
+          "labels": {}
         }
       }
     }
@@ -24,19 +30,10 @@
   "assemblies": {
     "hg38": {
       "configId": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
-      "refNameAliases": {
-        "chr1": [
-          "1"
-        ]
-      },
       "sequence": {
         "configId": "hWk07s1R6",
         "type": "ReferenceSequence",
         "adapter": {
-          "configId": "Fnry79fJDX",
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
             "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa"
@@ -46,15 +43,28 @@
           }
         },
         "rendering": {
-          "configId": "kK8MocBNRt",
           "type": "DivSequenceRenderer"
+        }
+      },
+      "aliases": [
+        "GRCh38"
+      ],
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "refNameAliases": [
+            {
+              "refName": "chr1",
+              "aliases": [
+                "1"
+              ]
+            }
+          ]
         }
       }
     }
   },
-  "rpc": {
-    "configId": "3s78ao6xAWk"
-  },
+  "rpc": {},
   "defaultSession": {
     "sessionName": "Human Example",
     "menuBars": [
@@ -76,27 +86,22 @@
     ],
     "views": [
       {
-        "id": "BhLw7v7Not",
         "type": "LinearGenomeView",
         "offsetPx": 8355300,
         "bpPerPx": 0.1,
         "tracks": [
           {
-            "id": "GFanwdnRC",
             "type": "ReferenceSequence",
             "height": 100,
             "configuration": "hWk07s1R6"
           },
           {
-            "id": "cR4NC5vd4",
             "type": "AlignmentsTrack",
             "height": 100,
             "configuration": "kgGeu2G_P"
           }
         ],
-        "configuration": {
-          "configId": "vVpZZU1XnD"
-        }
+        "configuration": {}
       }
     ]
   }

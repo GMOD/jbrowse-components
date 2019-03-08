@@ -52,9 +52,17 @@ export const MenuItemModel = types
     },
     downloadConfiguration() {
       const rootModel = getRoot(self)
+      const initialSnap = JSON.stringify(getSnapshot(rootModel.configuration))
+      const filter = (key, value) => {
+        if (key === 'configId' || key === 'id') {
+          const re = new RegExp(`"${value}"`, 'g')
+          if ((initialSnap.match(re) || []).length < 2) return undefined
+        }
+        return value
+      }
       const configSnap = JSON.stringify(
         getSnapshot(rootModel.configuration),
-        null,
+        filter,
         '  ',
       )
       saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')

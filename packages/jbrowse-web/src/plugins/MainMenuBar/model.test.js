@@ -17,10 +17,13 @@ test('can download configuration', () => {
       name: 'doonlood',
       callback: 'downloadConfiguration',
     },
+    configuration: {
+      foo: 99,
+    },
   })
 
   const jsonString = model.item.func()
-  expect(jsonString).toContain('"configId"')
+  expect(jsonString).toContain('"foo": 99')
 })
 
 test('can push menus', () => {

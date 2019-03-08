@@ -1,5 +1,4 @@
 {
-  "configId": "tQ76_pSGI",
   "tracks": [
     {
       "configId": "PDWVXl3526",
@@ -8,12 +7,8 @@
       "category": [
         "Bar Category"
       ],
-      "renderer": {
-        "type": "LollipopRenderer"
-      },
       "assemblyName": "volvox",
       "adapter": {
-        "configId": "GbpDGXt1G4",
         "type": "FromConfigAdapter",
         "features": [
           {
@@ -53,10 +48,12 @@
             "name": "Geoffray"
           }
         ]
+      },
+      "renderer": {
+        "type": "LollipopRenderer"
       }
     },
     {
-      "configId": "XqNsoIRXi3",
       "type": "AlignmentsTrack",
       "name": "volvox-sorted red/blue",
       "category": [
@@ -65,32 +62,27 @@
       ],
       "assemblyName": "volvox",
       "adapter": {
-        "configId": "bEfF0TZF74",
         "type": "BamAdapter",
         "bamLocation": {
           "uri": "/test_data/volvox-sorted.bam"
         },
         "index": {
-          "configId": "og9sCU2st9",
           "location": {
             "uri": "/test_data/volvox-sorted.bam.bai"
           }
         }
       },
       "renderers": {
-        "configId": "eBqTfMeT0E",
         "PileupRenderer": {
-          "configId": "FfE7SAJR_i",
           "type": "PileupRenderer"
         },
         "SvgFeatureRenderer": {
-          "configId": "u7413cFlCR",
-          "type": "SvgFeatureRenderer"
+          "type": "SvgFeatureRenderer",
+          "labels": {}
         }
       }
     },
     {
-      "configId": "itQDGgsghD",
       "type": "AlignmentsTrack",
       "name": "volvox-sorted all green",
       "category": [
@@ -99,28 +91,24 @@
       ],
       "assemblyName": "vvx",
       "adapter": {
-        "configId": "xrcAPC8w2X",
         "type": "BamAdapter",
         "bamLocation": {
           "uri": "/test_data/volvox-sorted.bam"
         },
         "index": {
-          "configId": "HFGUCFV5d2",
           "location": {
             "uri": "/test_data/volvox-sorted.bam.bai"
           }
         }
       },
       "renderers": {
-        "configId": "hWUhhoNXr7_",
         "PileupRenderer": {
-          "configId": "tWLLKEXJ1sL",
           "type": "PileupRenderer",
           "alignmentColor": "green"
         },
         "SvgFeatureRenderer": {
-          "configId": "5LSHv5xM2pB",
-          "type": "SvgFeatureRenderer"
+          "type": "SvgFeatureRenderer",
+          "labels": {}
         }
       }
     },
@@ -130,7 +118,6 @@
       "name": "Filter Test",
       "assemblyName": "volvox",
       "adapter": {
-        "configId": "Zd0NLmtxPZ1",
         "type": "FromConfigAdapter",
         "features": [
           {
@@ -172,8 +159,8 @@
         ]
       },
       "renderer": {
-        "configId": "ofwb00qAvRE",
-        "type": "SvgFeatureRenderer"
+        "type": "SvgFeatureRenderer",
+        "labels": {}
       },
       "filterAttributes": [
         "type",
@@ -185,50 +172,62 @@
   "assemblies": {
     "volvox": {
       "configId": "volvox",
-      "aliases": [
-        "vvx"
-      ],
-      "refNameAliases": {
-        "A": [
-          "ctgA",
-          "contigA"
-        ],
-        "B": [
-          "ctgB",
-          "contigB"
-        ]
-      },
       "sequence": {
         "configId": "iTo6LoXUeI",
         "type": "ReferenceSequence",
         "adapter": {
-          "configId": "t17b5y_Ydj",
           "type": "TwoBitAdapter",
           "twoBitLocation": {
             "uri": "/test_data/volvox.2bit"
           }
         },
         "rendering": {
-          "configId": "71P5Lys28o",
           "type": "DivSequenceRenderer"
+        }
+      },
+      "aliases": [
+        "vvx"
+      ],
+      "refNameAliases": {
+        "adapter": {
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter",
+          "refNameAliases": [
+            {
+              "refName": "ctgA",
+              "aliases": [
+                "A",
+                "contigA"
+              ]
+            },
+            {
+              "refName": "ctgB",
+              "aliases": [
+                "B",
+                "contigB"
+              ]
+            }
+          ]
         }
       }
     },
     "volvox2": {
       "configId": "volvox2",
-      "aliases": [],
-      "refNameAliases": {},
       "sequence": {
-        "configId": "iTo6LoXUeJ",
         "type": "Sizes",
         "sizes": {
           "fakeContig": 1000
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter"
         }
       }
     }
   },
   "rpc": {
-    "configId": "3s78ao6xAWj",
     "defaultDriver": "MainThreadRpcDriver"
   },
   "defaultSession": {
@@ -252,27 +251,22 @@
     ],
     "views": [
       {
-        "id": "BhLw7v7Nou",
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
         "tracks": [
           {
-            "id": "UNlXyrJy95",
             "type": "ReferenceSequence",
             "height": 80,
             "configuration": "iTo6LoXUeI"
           },
           {
-            "id": "721mZQdXLH",
             "type": "FilteringTrack",
             "height": 200,
             "configuration": "i3jUPmrgMOS"
           }
         ],
-        "configuration": {
-          "configId": "vVpZZU1XnE"
-        }
+        "configuration": {}
       },
       {
         "id": "BhLw7v7Not",
@@ -281,15 +275,12 @@
         "bpPerPx": 0.1,
         "tracks": [
           {
-            "id": "721mZQdXLI",
             "type": "DynamicTrack",
             "height": 200,
             "configuration": "PDWVXl3526"
           }
         ],
-        "configuration": {
-          "configId": "vVpZZU1XnD"
-        }
+        "configuration": {}
       }
     ],
     "drawerWidgets": {

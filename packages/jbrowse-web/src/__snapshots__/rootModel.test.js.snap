@@ -48,23 +48,30 @@ Object {
       "configId": "volvox",
       "refNameAliases": Object {
         "adapter": Object {
-          "bamLocation": Object {
-            "uri": "/path/to/my.bam",
-          },
-          "configId": "testid",
-          "index": Object {
-            "configId": "testid",
-            "location": Object {
-              "uri": "/path/to/my.bam.bai",
+          "configId": "Zd0NLmtxPZ2",
+          "refNameAliases": Array [
+            Object {
+              "aliases": Array [
+                "A",
+                "contigA",
+              ],
+              "refName": "ctgA",
             },
-          },
-          "type": "BamAdapter",
+            Object {
+              "aliases": Array [
+                "B",
+                "contigB",
+              ],
+              "refName": "ctgB",
+            },
+          ],
+          "type": "FromConfigAdapter",
         },
         "configId": "testid",
       },
       "sequence": Object {
         "adapter": Object {
-          "configId": "t17b5y_Ydj",
+          "configId": "testid",
           "twoBitLocation": Object {
             "uri": "/test_data/volvox.2bit",
           },
@@ -72,7 +79,7 @@ Object {
         },
         "configId": "iTo6LoXUeI",
         "rendering": Object {
-          "configId": "71P5Lys28o",
+          "configId": "testid",
           "type": "DivSequenceRenderer",
         },
         "type": "ReferenceSequence",
@@ -82,22 +89,13 @@ Object {
       "configId": "volvox2",
       "refNameAliases": Object {
         "adapter": Object {
-          "bamLocation": Object {
-            "uri": "/path/to/my.bam",
-          },
-          "configId": "testid",
-          "index": Object {
-            "configId": "testid",
-            "location": Object {
-              "uri": "/path/to/my.bam.bai",
-            },
-          },
-          "type": "BamAdapter",
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter",
         },
         "configId": "testid",
       },
       "sequence": Object {
-        "configId": "iTo6LoXUeJ",
+        "configId": "testid",
         "sizes": Object {
           "fakeContig": 1000,
         },
@@ -105,7 +103,7 @@ Object {
       },
     },
   },
-  "configId": "tQ76_pSGI",
+  "configId": "testid",
   "defaultSession": Object {
     "activeDrawerWidgets": Object {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector",
@@ -139,22 +137,17 @@ Object {
     "views": Array [
       Object {
         "bpPerPx": 0.05,
-        "configuration": Object {
-          "configId": "vVpZZU1XnE",
-        },
-        "id": "BhLw7v7Nou",
+        "configuration": Object {},
         "offsetPx": 2000,
         "tracks": Array [
           Object {
             "configuration": "iTo6LoXUeI",
             "height": 80,
-            "id": "UNlXyrJy95",
             "type": "ReferenceSequence",
           },
           Object {
             "configuration": "i3jUPmrgMOS",
             "height": 200,
-            "id": "721mZQdXLH",
             "type": "FilteringTrack",
           },
         ],
@@ -162,16 +155,13 @@ Object {
       },
       Object {
         "bpPerPx": 0.1,
-        "configuration": Object {
-          "configId": "vVpZZU1XnD",
-        },
+        "configuration": Object {},
         "id": "BhLw7v7Not",
         "offsetPx": 1800,
         "tracks": Array [
           Object {
             "configuration": "PDWVXl3526",
             "height": 200,
-            "id": "721mZQdXLI",
             "type": "DynamicTrack",
           },
         ],
@@ -180,13 +170,13 @@ Object {
     ],
   },
   "rpc": Object {
-    "configId": "3s78ao6xAWj",
+    "configId": "testid",
     "defaultDriver": "MainThreadRpcDriver",
   },
   "tracks": Array [
     Object {
       "adapter": Object {
-        "configId": "GbpDGXt1G4",
+        "configId": "testid",
         "features": Array [
           Object {
             "end": 191,
@@ -244,9 +234,9 @@ Object {
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
-        "configId": "bEfF0TZF74",
+        "configId": "testid",
         "index": Object {
-          "configId": "og9sCU2st9",
+          "configId": "testid",
           "location": Object {
             "uri": "/test_data/volvox-sorted.bam.bai",
           },
@@ -258,21 +248,21 @@ Object {
         "Bar Category",
         "Baz Category",
       ],
-      "configId": "XqNsoIRXi3",
+      "configId": "testid",
       "name": "volvox-sorted red/blue",
       "renderers": Object {
         "PileupRenderer": Object {
-          "configId": "FfE7SAJR_i",
+          "configId": "testid",
           "type": "PileupRenderer",
         },
         "SvgFeatureRenderer": Object {
-          "configId": "u7413cFlCR",
+          "configId": "testid",
           "labels": Object {
             "configId": "testid",
           },
           "type": "SvgFeatureRenderer",
         },
-        "configId": "eBqTfMeT0E",
+        "configId": "testid",
       },
       "type": "AlignmentsTrack",
     },
@@ -281,9 +271,9 @@ Object {
         "bamLocation": Object {
           "uri": "/test_data/volvox-sorted.bam",
         },
-        "configId": "xrcAPC8w2X",
+        "configId": "testid",
         "index": Object {
-          "configId": "HFGUCFV5d2",
+          "configId": "testid",
           "location": Object {
             "uri": "/test_data/volvox-sorted.bam.bai",
           },
@@ -295,28 +285,28 @@ Object {
         "Bee Category",
         "Boo Category",
       ],
-      "configId": "itQDGgsghD",
+      "configId": "testid",
       "name": "volvox-sorted all green",
       "renderers": Object {
         "PileupRenderer": Object {
           "alignmentColor": "green",
-          "configId": "tWLLKEXJ1sL",
+          "configId": "testid",
           "type": "PileupRenderer",
         },
         "SvgFeatureRenderer": Object {
-          "configId": "5LSHv5xM2pB",
+          "configId": "testid",
           "labels": Object {
             "configId": "testid",
           },
           "type": "SvgFeatureRenderer",
         },
-        "configId": "hWUhhoNXr7_",
+        "configId": "testid",
       },
       "type": "AlignmentsTrack",
     },
     Object {
       "adapter": Object {
-        "configId": "Zd0NLmtxPZ1",
+        "configId": "testid",
         "features": Array [
           Object {
             "end": 101,
@@ -366,7 +356,7 @@ Object {
       ],
       "name": "Filter Test",
       "renderer": Object {
-        "configId": "ofwb00qAvRE",
+        "configId": "testid",
         "labels": Object {
           "configId": "testid",
         },
