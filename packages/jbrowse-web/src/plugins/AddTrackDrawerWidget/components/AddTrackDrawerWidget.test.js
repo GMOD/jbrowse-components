@@ -3,7 +3,7 @@ import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
-jest.mock('shortid', () => ({ generate: 'testid' }))
+jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 describe('<AddTrackDrawerWidget />', () => {
   let shallow

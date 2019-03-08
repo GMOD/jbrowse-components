@@ -1,7 +1,7 @@
 import { getSnapshot } from 'mobx-state-tree'
 import { createTestEnv } from './JBrowse'
 
-jest.mock('shortid', () => ({ generate: 'testid' }))
+jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 test('can load configuration with the configure() action and resolve references to view configurations', async () => {
   const { rootModel } = await createTestEnv({ configId: 'fogbat' })

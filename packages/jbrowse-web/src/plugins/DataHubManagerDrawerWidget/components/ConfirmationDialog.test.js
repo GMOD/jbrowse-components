@@ -4,7 +4,7 @@ import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
 import ConfirmationDialog from './ConfirmationDialog'
 
-jest.mock('shortid', () => ({ generate: 'testid' }))
+jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 describe('<ConfirmationDialog />', () => {
   let shallow

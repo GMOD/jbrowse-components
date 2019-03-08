@@ -3,7 +3,7 @@ import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
 import ConfirmTrack, { guessAdapter } from './ConfirmTrack'
 
-jest.mock('shortid', () => ({ generate: 'testid' }))
+jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 describe('<ConfirmTrack />', () => {
   let shallow

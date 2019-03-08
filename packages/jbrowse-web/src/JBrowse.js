@@ -51,7 +51,9 @@ async function createRootModel(modelType, config) {
   const {
     defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
   } = configSnapshot
-  const { sessionName = `Unnamed Session ${shortid.generate}` } = defaultSession
+  const {
+    sessionName = `Unnamed Session ${shortid.generate()}`,
+  } = defaultSession
   return {
     sessionName,
     rootModel: modelType.create({
