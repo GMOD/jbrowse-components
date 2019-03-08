@@ -9096,7 +9096,7 @@ mobx-react@^5.4.3:
     hoist-non-react-statics "^3.0.0"
     react-lifecycles-compat "^3.0.2"
 
-mobx-state-tree@^3.10.2:
+mobx-state-tree@3.10.2:
   version "3.10.2"
   resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-3.10.2.tgz#1cbb99a65e7e0a8f91e2c2be44d23de9b1c71afc"
   integrity sha512-DCt05qayAaLEMldsNYicJiLUg5rFyEzivlD4oiy8HjTQ+M3aqRbgvz9kn0g1uR/5IT27jPMkAZO8MSICDGitDw==
