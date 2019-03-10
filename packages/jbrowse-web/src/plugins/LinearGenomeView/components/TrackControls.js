@@ -58,6 +58,7 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
 
 TrackControls.propTypes = {
   track: PropTypes.objectOrObservableObject.isRequired,
+  view: PropTypes.objectOrObservableObject.isRequired,
   onConfigureClick: ReactPropTypes.func,
   classes: ReactPropTypes.shape({ trackName: ReactPropTypes.string.isRequired })
     .isRequired,

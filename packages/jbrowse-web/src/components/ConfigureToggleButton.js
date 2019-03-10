@@ -5,13 +5,13 @@ import { observer, propTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 
 function ConfigureToggleButton(props) {
-  const { model, style, ...otherProps } = props
+  const { model, ...otherProps } = props
   const rootModel = getRoot(model)
   return (
     <ToggleButton
       type="button"
       size="small"
-      style={{ minWidth: 0, ...style }}
+      style={{ minWidth: 0 }}
       selected={
         rootModel.visibleDrawerWidget &&
         rootModel.visibleDrawerWidget.id === 'configEditor' &&

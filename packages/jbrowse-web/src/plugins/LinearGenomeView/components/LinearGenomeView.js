@@ -109,7 +109,6 @@ function LinearGenomeView(props) {
                 model={model}
                 onClick={model.activateConfigurationUI}
                 title="configure view"
-                style={{}}
                 fontSize="small"
               />
               <ToggleButton
