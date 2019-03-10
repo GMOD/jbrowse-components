@@ -63,7 +63,7 @@
         "prettier": "^1.15.3",
         "react": "^16.6.3",
         "react-app-polyfill": "^0.2.0",
-        "react-dev-utils": "^8.0.0",
+        "react-dev-utils": "<8.0.0",
         "react-test-renderer": "^16.5.2",
         "resolve": "^1.8.1",
         "sass-loader": "^7.1.0",
