@@ -20,10 +20,9 @@ export default class FromConfigAdapter extends BaseAdapter {
 
   constructor(config) {
     super()
-    const { features, refNameAliases, regions } = config
+    const { features, refNameAliases } = config
     this.features = this.makeFeatures(features || [])
     this.refNameAliases = refNameAliases || []
-    this.regions = regions || []
   }
 
   makeFeatures(fdata) {
@@ -48,8 +47,37 @@ export default class FromConfigAdapter extends BaseAdapter {
     return refNames
   }
 
+  /**
+   * Get refName, start, and end for all features after collapsing any overlaps
+   */
   async getRegions() {
-    return this.regions
+    const regions = []
+    const compareStart = (firstFeature, secondFeature) =>
+      firstFeature.get('start') - secondFeature.get('end')
+    for (const [refName, features] of this.features) {
+      features.sort(compareStart)
+      regions.push({
+        refName,
+        start: features[0].get('start'),
+        end: features[0].get('end'),
+      })
+      for (let i = 1; i < features.length; i += 1) {
+        const feature = features[i]
+        const lastRegion = regions[regions.length - 1]
+        if (lastRegion.end < feature.get('start'))
+          regions.push({
+            refName,
+            start: feature.get('start'),
+            end: feature.get('end'),
+          })
+        else if (lastRegion.end < feature.get('end')) {
+          lastRegion.end = feature.get('end')
+          regions.pop()
+          regions.push(lastRegion)
+        }
+      }
+    }
+    return regions
   }
 
   async getRefNameAliases() {

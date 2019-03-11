@@ -14,10 +14,22 @@ test('can load configuration from a config object', async () => {
     rpc: { defaultDriver: 'MainThreadRpcDriver' },
     assemblies: {
       volvox: {
+        configId: 'volvox',
+        sequence: {
+          type: 'ReferenceSequence',
+          adapter: {
+            configId: 'Zd0NLmtxPZ3',
+            type: 'FromConfigAdapter',
+            features: [],
+          },
+        },
         aliases: ['vvx'],
         refNameAliases: {
-          A: ['ctgA', 'contigA'],
-          B: ['ctgB', 'contigB'],
+          adapter: {
+            configId: 'Zd0NLmtxPZ2',
+            type: 'FromConfigAdapter',
+            refNameAliases: [],
+          },
         },
       },
     },

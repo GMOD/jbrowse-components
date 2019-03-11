@@ -7,43 +7,25 @@ Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "testid",
+      "configId": "volvox",
       "refNameAliases": Object {
         "adapter": Object {
-          "bamLocation": Object {
-            "uri": "/path/to/my.bam",
-          },
-          "configId": "testid",
-          "index": Object {
-            "configId": "testid",
-            "location": Object {
-              "uri": "/path/to/my.bam.bai",
-            },
-          },
-          "type": "BamAdapter",
+          "configId": "Zd0NLmtxPZ2",
+          "type": "FromConfigAdapter",
         },
         "configId": "testid",
       },
       "sequence": Object {
         "adapter": Object {
-          "bamLocation": Object {
-            "uri": "/path/to/my.bam",
-          },
-          "configId": "testid",
-          "index": Object {
-            "configId": "testid",
-            "location": Object {
-              "uri": "/path/to/my.bam.bai",
-            },
-          },
-          "type": "BamAdapter",
+          "configId": "Zd0NLmtxPZ3",
+          "type": "FromConfigAdapter",
         },
         "configId": "testid",
-        "renderer": Object {
+        "rendering": Object {
           "configId": "testid",
-          "type": "PileupRenderer",
+          "type": "DivSequenceRenderer",
         },
-        "type": "BasicTrack",
+        "type": "ReferenceSequence",
       },
     },
   },
@@ -114,6 +96,14 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "configId": "Zd0NLmtxPZ3",
+          "features": Array [
+            Object {
+              "end": 1000,
+              "refName": "fakeContig",
+              "start": 0,
+              "uniqueId": "firstId",
+            },
+          ],
           "type": "FromConfigAdapter",
         },
         "configId": "iTo6LoXUeJ",
