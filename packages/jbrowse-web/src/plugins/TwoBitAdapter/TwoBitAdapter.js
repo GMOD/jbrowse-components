@@ -6,6 +6,8 @@ import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+
   constructor(config) {
     super()
     const { twoBitLocation } = config

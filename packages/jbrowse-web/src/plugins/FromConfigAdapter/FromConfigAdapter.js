@@ -11,6 +11,13 @@ import { ObservableCreate } from '../../util/rxjs'
  */
 
 export default class FromConfigAdapter extends BaseAdapter {
+  static capabilities = [
+    'getFeatures',
+    'getRefNames',
+    'getRegions',
+    'getRefNameAliases',
+  ]
+
   constructor(config) {
     super()
     const { features, refNameAliases, regions } = config

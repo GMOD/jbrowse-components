@@ -5,12 +5,19 @@ import { ObservableCreate } from './util/rxjs'
  * implement.
  */
 export default class BaseAdapter {
+  // List of all possible capabilities
+  static capabilities = [
+    'getFeatures',
+    'getRefNames',
+    'getRegions',
+    'getRefNameAliases',
+  ]
+
   constructor() {
-    if (new.target === BaseAdapter) {
+    if (new.target === BaseAdapter)
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
       )
-    }
   }
 
   /**

@@ -6,6 +6,8 @@ import BaseAdapter from '../../BaseAdapter'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+
   constructor(config) {
     super()
     const { fastaLocation, faiLocation } = config

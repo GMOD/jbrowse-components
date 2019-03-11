@@ -6,6 +6,8 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class BamAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames']
+
   constructor(config) {
     super()
     const { bamLocation } = config
