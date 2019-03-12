@@ -21,19 +21,18 @@ import { getContainingView } from '../../../util/tracks'
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const rootModel = getRoot(view)
+  const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
 
   return {
     rendererType,
-    rootModel,
+    rpcManager,
     renderProps,
     renderArgs: {
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),
-      rootConfig: getConf(rootModel),
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,
@@ -43,7 +42,7 @@ function renderBlockData(self) {
 }
 function renderBlockEffect(
   self,
-  { rendererType, renderProps, rootModel, renderArgs },
+  { rendererType, renderProps, rpcManager, renderArgs },
 ) {
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
@@ -52,7 +51,7 @@ function renderBlockEffect(
   self.setLoading(inProgress)
   try {
     rendererType
-      .renderInClient(rootModel, renderArgs)
+      .renderInClient(rpcManager, renderArgs)
       .then(({ html, ...data }) => {
         if (!isAlive(self) || inProgress.cancelled) return
         self.setRendered(data, html, rendererType.ReactComponent, renderProps)
