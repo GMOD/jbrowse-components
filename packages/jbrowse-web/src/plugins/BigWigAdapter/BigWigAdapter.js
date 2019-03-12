@@ -6,6 +6,8 @@ import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class BigWigAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames']
+
   constructor(config) {
     super(config)
     this.bigwig = new BigWig({

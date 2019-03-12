@@ -5,12 +5,12 @@ import { ObservableCreate } from './util/rxjs'
  * implement.
  */
 export default class BaseAdapter {
-  // List of all possible capabilities
+  // List of all possible capabilities. Don't un-comment them here.
   static capabilities = [
-    'getFeatures',
-    'getRefNames',
-    'getRegions',
-    'getRefNameAliases',
+    // 'getFeatures',
+    // 'getRefNames',
+    // 'getRegions',
+    // 'getRefNameAliases',
   ]
 
   constructor() {

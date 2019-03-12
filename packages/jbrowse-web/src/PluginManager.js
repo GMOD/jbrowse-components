@@ -94,7 +94,6 @@ export default class PluginManager {
       throw new Error('JBrowse already configured, cannot add plugins')
     if (this.plugins.includes(plugin))
       throw new Error(`plugin already installed`)
-    if (!plugin.install) console.error('here')
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -131,6 +130,12 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const element = creationCallback(this)
+      if (groupName === 'adapter' && !element.AdapterClass.capabilities.length)
+        throw new Error(
+          `Adapter ${
+            element.AdapterClass.name
+          } must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
+        )
       if (this.elementTypes[groupName][element.name])
         throw new Error(
           `${groupName} ${
