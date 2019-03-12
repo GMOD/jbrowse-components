@@ -193,9 +193,10 @@
         "adapter": {
           "configId": "Zd0NLmtxPZ2",
           "type": "FromConfigAdapter",
-          "refNameAliases": [
+          "features": [
             {
               "refName": "ctgA",
+              "uniqueId": "alias1",
               "aliases": [
                 "A",
                 "contigA"
@@ -203,6 +204,7 @@
             },
             {
               "refName": "ctgB",
+              "uniqueId": "alias2",
               "aliases": [
                 "B",
                 "contigB"

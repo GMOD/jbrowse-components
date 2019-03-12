@@ -54,6 +54,7 @@
       }
     },
     {
+      "configId": "i3jUzmrgMOq",
       "type": "AlignmentsTrack",
       "name": "volvox-sorted red/blue",
       "category": [
@@ -116,7 +117,7 @@
       "configId": "i3jUPmrgMOS",
       "type": "FilteringTrack",
       "name": "Filter Test",
-      "assemblyName": "volvox",
+      "assemblyName": "volvox2",
       "adapter": {
         "type": "FromConfigAdapter",
         "features": [
@@ -192,9 +193,10 @@
         "adapter": {
           "configId": "Zd0NLmtxPZ2",
           "type": "FromConfigAdapter",
-          "refNameAliases": [
+          "features": [
             {
               "refName": "ctgA",
+              "uniqueId": "alias1",
               "aliases": [
                 "A",
                 "contigA"
@@ -202,6 +204,7 @@
             },
             {
               "refName": "ctgB",
+              "uniqueId": "alias2",
               "aliases": [
                 "B",
                 "contigB"
@@ -224,7 +227,8 @@
               "refName": "fakeContig",
               "uniqueId": "firstId",
               "start": 0,
-              "end": 1000
+              "end": 1000,
+              "seq": "cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg"
             }
           ]
         }
@@ -261,6 +265,7 @@
     ],
     "views": [
       {
+        "id": "BhLw7v7Not",
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
@@ -272,21 +277,33 @@
           },
           {
             "type": "FilteringTrack",
-            "height": 200,
+            "height": 100,
             "configuration": "i3jUPmrgMOS"
           }
         ],
         "configuration": {}
       },
       {
-        "id": "BhLw7v7Not",
+        "type": "LinearGenomeView",
+        "offsetPx": 200,
+        "bpPerPx": 2,
+        "tracks": [
+          {
+            "type": "AlignmentsTrack",
+            "height": 200,
+            "configuration": "i3jUzmrgMOq"
+          }
+        ],
+        "configuration": {}
+      },
+      {
         "type": "LinearGenomeView",
         "offsetPx": 1800,
         "bpPerPx": 0.1,
         "tracks": [
           {
             "type": "DynamicTrack",
-            "height": 200,
+            "height": 100,
             "configuration": "PDWVXl3526"
           }
         ],

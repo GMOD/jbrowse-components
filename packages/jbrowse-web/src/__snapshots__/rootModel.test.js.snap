@@ -48,13 +48,14 @@ Object {
       "refNameAliases": Object {
         "adapter": Object {
           "configId": "Zd0NLmtxPZ2",
-          "refNameAliases": Array [
+          "features": Array [
             Object {
               "aliases": Array [
                 "A",
                 "contigA",
               ],
               "refName": "ctgA",
+              "uniqueId": "alias1",
             },
             Object {
               "aliases": Array [
@@ -62,6 +63,7 @@ Object {
                 "contigB",
               ],
               "refName": "ctgB",
+              "uniqueId": "alias2",
             },
           ],
           "type": "FromConfigAdapter",
@@ -100,6 +102,7 @@ Object {
             Object {
               "end": 1000,
               "refName": "fakeContig",
+              "seq": "cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg",
               "start": 0,
               "uniqueId": "firstId",
             },
@@ -150,6 +153,7 @@ Object {
       Object {
         "bpPerPx": 0.05,
         "configuration": Object {},
+        "id": "BhLw7v7Not",
         "offsetPx": 2000,
         "tracks": Array [
           Object {
@@ -159,8 +163,21 @@ Object {
           },
           Object {
             "configuration": "i3jUPmrgMOS",
-            "height": 200,
+            "height": 100,
             "type": "FilteringTrack",
+          },
+        ],
+        "type": "LinearGenomeView",
+      },
+      Object {
+        "bpPerPx": 2,
+        "configuration": Object {},
+        "offsetPx": 200,
+        "tracks": Array [
+          Object {
+            "configuration": "i3jUzmrgMOq",
+            "height": 200,
+            "type": "AlignmentsTrack",
           },
         ],
         "type": "LinearGenomeView",
@@ -168,12 +185,11 @@ Object {
       Object {
         "bpPerPx": 0.1,
         "configuration": Object {},
-        "id": "BhLw7v7Not",
         "offsetPx": 1800,
         "tracks": Array [
           Object {
             "configuration": "PDWVXl3526",
-            "height": 200,
+            "height": 100,
             "type": "DynamicTrack",
           },
         ],
@@ -260,7 +276,7 @@ Object {
         "Bar Category",
         "Baz Category",
       ],
-      "configId": "testid",
+      "configId": "i3jUzmrgMOq",
       "name": "volvox-sorted red/blue",
       "renderers": Object {
         "PileupRenderer": Object {
@@ -359,7 +375,7 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
-      "assemblyName": "volvox",
+      "assemblyName": "volvox2",
       "configId": "i3jUPmrgMOS",
       "filterAttributes": Array [
         "type",

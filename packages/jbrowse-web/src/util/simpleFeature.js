@@ -22,7 +22,7 @@ export default class SimpleFeature {
     }
     this.uniqueId = String(this.uniqueId)
 
-    if (!(this.data.end - this.data.start >= 0)) {
+    if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
       throw new Error(`invalid feature data`)
     }
 
