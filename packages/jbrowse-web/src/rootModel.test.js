@@ -28,7 +28,7 @@ test('can load configuration from a config object', async () => {
           adapter: {
             configId: 'Zd0NLmtxPZ2',
             type: 'FromConfigAdapter',
-            refNameAliases: [],
+            features: [],
           },
         },
       },
