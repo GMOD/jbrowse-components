@@ -127,4 +127,5 @@ export default class AssemblyManager {
 
 decorate(AssemblyManager, {
   displayedRegions: observable,
+  adapterMaps: observable,
 })
