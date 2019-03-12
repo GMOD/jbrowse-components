@@ -125,17 +125,11 @@ const trackEntryStyles = theme => ({
 
 export const TrackEntry = withStyles(trackEntryStyles)(
   observer(props => {
-    const { model, trackConf, refName, classes } = props
-    let { disabled } = props
+    const { model, disabled, trackConf, assemblyName, classes } = props
     const rootModel = getRoot(model)
-    let titleText
-    if (refName)
-      if (readConfObject(trackConf, 'type') !== 'ReferenceSequence') {
-        titleText =
-          'This assembly sequence configuration does not support displaying a reference sequence track'
-        disabled = true
-      } else titleText = 'The reference sequence'
-    else titleText = readConfObject(trackConf, 'description')
+    const titleText = assemblyName
+      ? `The reference sequence for ${assemblyName}`
+      : readConfObject(trackConf, 'description')
     return (
       <Fade in>
         <div className={classes.track}>
@@ -144,8 +138,8 @@ export const TrackEntry = withStyles(trackEntryStyles)(
               className={classes.formControlLabel}
               control={<Checkbox className={classes.checkbox} />}
               label={
-                refName
-                  ? `Reference Sequence (${refName})`
+                assemblyName
+                  ? `Reference Sequence (${assemblyName})`
                   : readConfObject(trackConf, 'name')
               }
               checked={model.view.tracks.some(
@@ -252,7 +246,7 @@ class ContentsInner extends React.Component {
                     key={assembly.sequence.configId}
                     model={model}
                     trackConf={assembly.sequence}
-                    refName={assemblyName}
+                    assemblyName={assemblyName}
                   />
                 ),
               )}
