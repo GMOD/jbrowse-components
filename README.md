@@ -66,12 +66,30 @@ whole monorepo.
 
 ## Dependency management
 
+### TL;DR
+
+- All `dependencies` go in `<root>/packages/<package>/package.json`
+- All `devDependencies` go in `<root>/package.json`
+
+Or saying it a different way:
+- `<root>/package.json` should only list devDependencies and no dependencies
+- `<root>/packages/<package>/package.json` should only list dependencies and no devDependencies
+
+### Additional information
+
 Following the
 [Lerna philosophy](https://github.com/lerna/lerna#common-devdependencies), most
 `devDependencies` should be in the root `package.json` and not in the individual
 packages. This way they can be shared and updated more easily. The only
 exception should be if a package has a `devDependencies` that conflicts with one
 already in the root.
+
+- `dependencies` are any NPM package `import`ed or `require`d in a package's `src/` directory _except for any `*test.js` files, which follow the next rule_
+- `devDependencies` are any NPM package `import`ed or `require`d in any other files and not already in `dependencies`
+
+To add NPM packages:
+- `dependencies`: from root directory run `cd packages/<package> && yarn add <npm_package_name>`
+- `devDependencies`: from root directory run `yarn add --dev -W <npm_package_name>`
 
 Currently ESLint seems to have trouble when `dependencies` and `devDependencies`
 are in different `package.json` files (even though it should work), so you might

@@ -38,6 +38,9 @@
       let viewer
       let controller
       let signal
+      var searchParams = new URLSearchParams(window.location.search);
+      const geneid = searchParams.get("ensemblGeneId") || 'ENSG00000133703'
+      console.log('here',geneid)
 
       async function updateProteinViewer(geneid) {
         var spinner = document.getElementById('spinner-container');
@@ -69,6 +72,9 @@
       form.addEventListener('submit', event => {
         event.preventDefault()
         const geneid = document.getElementById('geneid').value
+        var searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('ensemblGeneId', geneid)
+        window.location.search = searchParams.toString();
         updateProteinViewer(geneid)
       })
 
@@ -105,7 +111,7 @@
           }
         }
       })
-      updateProteinViewer('ENSG00000133703')
+      updateProteinViewer(geneid)
     </script>
   </body>
 </html>
