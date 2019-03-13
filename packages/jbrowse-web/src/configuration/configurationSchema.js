@@ -47,7 +47,7 @@ export function isConfigurationModel(thing) {
  */
 export function getTypeNamesFromExplicitlyTypedUnion(thing) {
   if (isUnionType(thing)) {
-    let typeNames = []
+    const typeNames = []
     thing.types.forEach(type => {
       let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
       if (!typeName.length) typeName = [type.defaultValue.type]
@@ -55,7 +55,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(thing) {
         // debugger
         throw new Error('invalid config schema type', type)
       }
-      typeNames = typeNames.concat(typeName)
+      typeNames.push(...typeName)
     })
     return typeNames
   }

@@ -25,7 +25,7 @@ export default class AssemblyManager {
     }
 
     if (assembly) {
-      ;(await this.rpcManager.call(
+      const adapterRefNameAliases = await this.rpcManager.call(
         assembly.configId,
         'getRefNameAliases',
         {
@@ -38,7 +38,8 @@ export default class AssemblyManager {
           adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
         },
         { timeout: 1000000 },
-      )).forEach(alias => {
+      )
+      adapterRefNameAliases.forEach(alias => {
         refNameAliases[alias.refName] = alias.aliases
       })
     }
@@ -93,19 +94,18 @@ export default class AssemblyManager {
     for (const [assemblyName, assembly] of assemblies) {
       const adapterConfig = readConfObject(assembly.sequence, 'adapter')
       try {
-        regions.push(
-          // eslint-disable-next-line no-await-in-loop
-          ...(await rpcManager.call(
-            assembly.configId,
-            'getRegions',
-            {
-              sessionId: assemblyName,
-              adapterType: adapterConfig.type,
-              adapterConfig,
-            },
-            { timeout: 1000000 },
-          )),
+        // eslint-disable-next-line no-await-in-loop
+        const adapterRegions = await rpcManager.call(
+          assembly.configId,
+          'getRegions',
+          {
+            sessionId: assemblyName,
+            adapterType: adapterConfig.type,
+            adapterConfig,
+          },
+          { timeout: 1000000 },
         )
+        regions.push(...adapterRegions)
       } catch (error) {
         console.error('Failed to fetch sequence', error)
       }
