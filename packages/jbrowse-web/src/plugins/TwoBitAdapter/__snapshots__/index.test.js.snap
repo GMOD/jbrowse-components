@@ -1,10 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `"adapter TwoBitAdapter already registered, cannot register it again"`;
-
-exports[`plugin in a stock JBrowse 2`] = `
+exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "assemblyName": undefined,
   "configId": Any<String>,
   "twoBitLocation": Object {
     "uri": "/path/to/my.2bit",

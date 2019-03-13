@@ -1,10 +1,11 @@
-import { transaction } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import {
+  addDisposer,
+  getParent,
   getRoot,
+  getType,
   isStateTreeNode,
   types,
-  getType,
-  getParent,
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
@@ -44,8 +45,6 @@ const validBpPerPx = [
   500000,
 ]
 
-const minBpPerPx = validBpPerPx[0]
-
 function constrainBpPerPx(newBpPerPx) {
   // find the closest valid zoom level and return it
   // might consider reimplementing this later using a more efficient algorithm
@@ -69,7 +68,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       ),
       controlsWidth: 120,
       width: 800,
-      displayedRegions: types.array(Region),
       configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
@@ -87,7 +85,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         return constrainBpPerPx(totalbp / displayWidth)
       },
       get minBpPerPx() {
-        return constrainBpPerPx(minBpPerPx)
+        return constrainBpPerPx(0)
       },
 
       get staticBlocks() {
@@ -102,7 +100,22 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         return getConf(self, 'reversed')
       },
     }))
+    .volatile(() => ({
+      displayedRegions: [],
+    }))
     .actions(self => ({
+      afterAttach() {
+        const displayedRegionsDisposer = autorun(() => {
+          const { assemblyManager } = getRoot(self)
+          if (assemblyManager)
+            self.setDisplayedRegions(assemblyManager.allRegions)
+        })
+
+        addDisposer(self, displayedRegionsDisposer)
+      },
+      setDisplayedRegions(displayedRegions) {
+        self.displayedRegions = displayedRegions
+      },
       setWidth(newWidth) {
         self.width = newWidth
       },
@@ -267,9 +280,8 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * of the displayed regions, does nothing
        * @param {number} bp
        * @param {string} refName
-       * @param {string} assemblyName
        */
-      centerAt(/* bp, refName, assemblyName */) {
+      centerAt(/* bp, refName */) {
         /* TODO */
       },
 

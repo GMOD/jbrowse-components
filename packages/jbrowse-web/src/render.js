@@ -1,5 +1,44 @@
 import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
 
+export async function getRegions(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getRegions()
+}
+
+export async function getRefNames(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getRefNames()
+}
+
+export async function getRefNameAliases(
+  pluginManager,
+  { sessionId, adapterType, adapterConfig },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getRefNameAliases()
+}
+
 /**
  * free up any resources (e.g. cached adapter objects)
  * that are only associated with the given track ID.
@@ -33,24 +72,15 @@ export function freeResources(pluginManager, specification) {
  */
 export async function renderRegion(
   pluginManager,
-  {
-    region,
-    sessionId,
-    adapterType,
-    adapterConfig,
-    rootConfig,
-    rendererType,
-    renderProps,
-  },
+  { region, sessionId, adapterType, adapterConfig, rendererType, renderProps },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
 
-  const { dataAdapter, assemblyAliases, seqNameMap } = await getAdapter(
+  const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
     adapterType,
     adapterConfig,
-    rootConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
@@ -59,18 +89,6 @@ export async function renderRegion(
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
-
-  // Regularize assembly
-  const { assemblyName } = adapterConfig
-  if (
-    assemblyName &&
-    region.assemblyName &&
-    assemblyName !== region.assemblyName
-  )
-    if (assemblyAliases.includes(region.assemblyName))
-      region.assemblyName = assemblyName
-  // Regularize reference name
-  region.refName = seqNameMap.get(region.refName) || region.refName
 
   return RendererType.renderInWorker({
     ...renderProps,

@@ -6,8 +6,10 @@ import BaseAdapter from '../../BaseAdapter'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+
   constructor(config) {
-    super(config)
+    super()
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
@@ -23,8 +25,21 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  async loadData() {
+  async getRefNames() {
     return this.fasta.getSequenceList()
+  }
+
+  async getRegions() {
+    const seqSizes = await this.fasta.getSequenceSizes()
+    const regions = []
+    Object.keys(seqSizes).forEach(refName => {
+      regions.push({
+        refName,
+        start: 0,
+        end: seqSizes[refName],
+      })
+    })
+    return regions
   }
 
   /**
@@ -32,9 +47,8 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }) {
+  getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const seq = await this.fasta.getSequence(refName, start, end)
       if (seq)
         observer.next(

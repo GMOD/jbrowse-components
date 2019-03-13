@@ -5,11 +5,11 @@ import Icon from '@material-ui/core/Icon'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import { transaction } from 'mobx'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import { Category } from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
 
 const supportedTrackTypes = [
@@ -202,22 +202,22 @@ class ConfirmationDialog extends React.Component {
     return tracks
   }
 
-  generateUnsupportedTrackTypeModels() {
+  async generateUnsupportedTrackTypeModels() {
     const {
       unsupportedTrackTypes,
       trackDb,
       unsupportedTrackTypeModels,
     } = this.state
-    unsupportedTrackTypes.forEach(trackType => {
+    for (const trackType of unsupportedTrackTypes) {
       const tracks = this.generateTracks(trackDb, trackType)
-      const jbrowse = new JBrowse().configure()
-      const { model: rootModel } = jbrowse
+      // eslint-disable-next-line no-await-in-loop
+      const { rootModel } = await createTestEnv()
       this.addTracksToModel(tracks, rootModel)
       const firstView = rootModel.addView('LinearGenomeView')
       firstView.activateTrackSelector()
       const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
       unsupportedTrackTypeModels.set(trackType, model)
-    })
+    }
     this.setState({ unsupportedTrackTypeModels })
   }
 
@@ -304,6 +304,4 @@ class ConfirmationDialog extends React.Component {
   }
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(ConfirmationDialog)),
-)
+export default withStyles(styles)(observer(ConfirmationDialog))

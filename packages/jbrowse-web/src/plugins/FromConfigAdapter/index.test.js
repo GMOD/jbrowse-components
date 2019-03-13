@@ -1,14 +1,14 @@
 import MyPlugin from './index'
-import JBrowse from '../../JBrowse'
+import { createTestEnv } from '../../JBrowse'
 
-test('plugin in a stock JBrowse', () => {
+test('plugin in a stock JBrowse', async () => {
   // adding this plugin should fail because it is core
-  expect(() =>
-    new JBrowse().addPlugin(new MyPlugin()).configure(),
-  ).toThrowErrorMatchingSnapshot()
+  const { pluginManager } = await createTestEnv()
+  expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
+    /JBrowse already configured, cannot add plugins/,
+  )
 
-  const jbrowse = new JBrowse().configure()
-  const adapter = jbrowse.pluginManager.getAdapterType('FromConfigAdapter')
+  const adapter = pluginManager.getAdapterType('FromConfigAdapter')
   const config = adapter.configSchema.create({
     type: 'FromConfigAdapter',
   })

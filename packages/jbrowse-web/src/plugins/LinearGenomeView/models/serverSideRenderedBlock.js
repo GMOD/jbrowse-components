@@ -21,19 +21,18 @@ import { getContainingView } from '../../../util/tracks'
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const root = getRoot(view)
+  const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
 
   return {
     rendererType,
-    app: root.app,
+    rpcManager,
     renderProps,
     renderArgs: {
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),
-      rootConfig: getConf(root),
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,
@@ -43,7 +42,7 @@ function renderBlockData(self) {
 }
 function renderBlockEffect(
   self,
-  { rendererType, renderProps, app, renderArgs },
+  { rendererType, renderProps, rpcManager, renderArgs },
 ) {
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
@@ -52,12 +51,13 @@ function renderBlockEffect(
   self.setLoading(inProgress)
   try {
     rendererType
-      .renderInClient(app, renderArgs)
+      .renderInClient(rpcManager, renderArgs)
       .then(({ html, ...data }) => {
         if (!isAlive(self) || inProgress.cancelled) return
         self.setRendered(data, html, rendererType.ReactComponent, renderProps)
       })
       .catch(error => {
+        console.error(error)
         if (isAlive(self) && !inProgress.cancelled) self.setError(error)
       })
   } catch (error) {
@@ -114,7 +114,6 @@ export default types
     },
     setError(error) {
       // the rendering failed for some reason
-      console.error(error)
       self.error = error
     },
   }))

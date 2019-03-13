@@ -7,7 +7,7 @@ import { assembleLocString } from '../../../util'
  * are not feasible.
  *
  * each region is a plain JS object like:
- *   { assemblyName, refName, startBp, endBp, offsetPx, horizontallyFlipped? }
+ *   { refName, startBp, endBp, offsetPx, horizontallyFlipped? }
  *
  * startBp is always less than endBp, but if horizontallyFlipped is true, startBp will be on the
  * right side of the visible region.
@@ -18,7 +18,7 @@ import { assembleLocString } from '../../../util'
  *
  * NOTE: startBp, endBp, and offsetPx may all be fractional!
  *
- * @returns {Array} of ` { assemblyName, refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
+ * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
 export default function calculateDynamicBlocks(
   { offsetPx, viewingRegionWidth: width, displayedRegions, bpPerPx },
@@ -30,7 +30,7 @@ export default function calculateDynamicBlocks(
   const windowRightPx = windowLeftPx + width
   for (let i = 0; i < displayedRegions.length; i += 1) {
     const parentRegion = displayedRegions[i]
-    const { start, end, assemblyName, refName } = parentRegion
+    const { start, end, refName } = parentRegion
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
     if (
@@ -64,7 +64,6 @@ export default function calculateDynamicBlocks(
       }
 
       const newBlock = {
-        assemblyName,
         refName,
         start: startBp,
         end: endBp,

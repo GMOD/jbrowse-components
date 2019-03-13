@@ -1,10 +1,8 @@
-import { renderRegion, freeResources } from '../render'
+import * as renderFuncs from '../render'
 
-const funcs = { renderRegion, freeResources }
-
-export default class WebWorkerRpcDriver {
+export default class MainThreadRpcDriver {
   call(pluginManager, stateGroupName, functionName, args) {
-    const func = funcs[functionName]
+    const func = renderFuncs[functionName]
     if (!func)
       throw new Error(
         `MainThreadRpcDriver has no RPC function "${functionName}"`,

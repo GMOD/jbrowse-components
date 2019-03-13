@@ -1,0 +1,108 @@
+{
+  "tracks": [
+    {
+      "configId": "kgGeu2G_P",
+      "type": "AlignmentsTrack",
+      "name": "1000 Genomes NA12878 Coverage",
+      "assemblyName": "hg38",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer",
+          "labels": {}
+        }
+      }
+    }
+  ],
+  "assemblies": {
+    "hg38": {
+      "configId": "hg38",
+      "sequence": {
+        "configId": "hWk07s1R6",
+        "type": "ReferenceSequence",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      },
+      "aliases": [
+        "GRCh38"
+      ],
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "refNameAliases": [
+            {
+              "refName": "chr1",
+              "aliases": [
+                "1"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "rpc": {},
+  "defaultSession": {
+    "sessionName": "Human Example",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Download configuration",
+                "icon": "get_app",
+                "callback": "downloadConfiguration"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "offsetPx": 8355300,
+        "bpPerPx": 0.1,
+        "tracks": [
+          {
+            "type": "ReferenceSequence",
+            "height": 100,
+            "configuration": "hWk07s1R6"
+          },
+          {
+            "type": "AlignmentsTrack",
+            "height": 100,
+            "configuration": "kgGeu2G_P"
+          }
+        ],
+        "configuration": {}
+      }
+    ]
+  }
+}

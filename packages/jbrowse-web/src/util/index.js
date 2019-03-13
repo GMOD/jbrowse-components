@@ -4,8 +4,8 @@ if (!Object.fromEntries) {
   fromEntries.shim()
 }
 
-export function assembleLocString({ assemblyName, refName, start, end }) {
-  return `${assemblyName}:${refName}:${start + 1}-${end}`
+export function assembleLocString({ refName, start, end }) {
+  return `${refName}:${start + 1}-${end}`
 }
 
 export function clamp(val, min, max) {

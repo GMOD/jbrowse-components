@@ -15,7 +15,6 @@ exports[`one 1`] = `
     horizontallyFlipped={false}
     region={
       Object {
-        "assemblyName": "wookie",
         "end": 3,
         "refName": "chr1",
         "start": 1,

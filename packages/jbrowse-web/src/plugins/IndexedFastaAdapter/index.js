@@ -15,10 +15,6 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai' },
     },
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
-    },
   },
   { explicitlyTyped: true },
 )
@@ -37,10 +33,6 @@ const bgzipConfigSchema = ConfigurationSchema(
     gziLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.gz.gzi' },
-    },
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
     },
   },
   { explicitlyTyped: true },

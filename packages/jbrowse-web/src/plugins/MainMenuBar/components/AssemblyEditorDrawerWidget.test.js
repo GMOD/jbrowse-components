@@ -1,90 +1,133 @@
-import { createShallow } from '@material-ui/core/test-utils'
+import 'react-testing-library/cleanup-after-each'
+import { render, cleanup, fireEvent, wait } from 'react-testing-library'
 import React from 'react'
-import JBrowse from '../../../JBrowse'
+import { createTestEnv } from '../../../JBrowse'
 import AssemblyEditorDrawerWidget from './AssemblyEditorDrawerWidget'
 
-describe('<AssemblyEditorDrawerWidget />', () => {
-  let shallow
-  let jbrowse
-  let rootModel
+jest.mock('popper.js', () => {
+  const PopperJS = jest.requireActual('popper.js')
+  return class Popper {
+    static placements = PopperJS.placements
 
-  beforeAll(() => {
-    shallow = createShallow({ untilSelector: 'DataHubDrawerWidget' })
-    jbrowse = new JBrowse().configure({
+    constructor() {
+      return {
+        destroy: () => {},
+        scheduleUpdate: () => {},
+      }
+    }
+  }
+})
+
+describe('<AssemblyEditorDrawerWidget />', () => {
+  let model
+
+  beforeAll(async () => {
+    const { rootModel } = await createTestEnv({
       configId: 'testing',
-      rpc: { configId: 'also testing' },
+      rpc: { defaultDriver: 'MainThreadRpcDriver' },
       assemblies: {
         volvox: {
+          configId: 'volvox',
           aliases: ['vvx'],
-          seqNameAliases: {
-            A: ['ctgA', 'contigA'],
-            B: ['ctgB', 'contigB'],
+          refNameAliases: {
+            adapter: {
+              type: 'FromConfigAdapter',
+              refNameAliases: [
+                {
+                  refName: 'ctgA',
+                  aliases: ['A', 'contigA'],
+                },
+                {
+                  refName: 'ctgB',
+                  aliases: ['B', 'contigB'],
+                },
+              ],
+            },
+          },
+          sequence: {
+            configId: 'iTo6LoXUeJ',
+            type: 'ReferenceSequence',
+            adapter: {
+              configId: 'Zd0NLmtxPZ3',
+              type: 'FromConfigAdapter',
+              regions: [
+                {
+                  refName: 'fakeContig',
+                  start: 0,
+                  end: 1000,
+                },
+              ],
+            },
           },
         },
       },
     })
-    rootModel = jbrowse.model
+    rootModel.addDrawerWidget(
+      'HierarchicalTrackSelectorDrawerWidget',
+      'hierarchicalTrackSelectorDrawerWidget',
+    )
+    model = rootModel.drawerWidgets.get('hierarchicalTrackSelectorDrawerWidget')
   })
 
-  it('renders', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
+  afterEach(cleanup)
+
+  it('renders', async () => {
+    const { container, getByText } = render(
+      <AssemblyEditorDrawerWidget model={model} />,
     )
-    expect(wrapper).toMatchSnapshot()
+    await wait(() => getByText('volvox'))
+    expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('opens and closes dialog on FAB click', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
+  it('opens and closes dialog on FAB click', async () => {
+    const { getByTestId, getByText } = render(
+      <AssemblyEditorDrawerWidget model={model} />,
     )
-    const instance = wrapper.instance()
-    const fabButton = wrapper.find('WithStyles(Fab)')
-    // Click menu button to open
-    instance.handleFabClick({ currentTarget: fabButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button again to close (two events, one for menu click and one for ClickAwayListener)
-    instance.handleFabClose({ target: 'add' })
-    expect(wrapper).toMatchSnapshot()
-    instance.handleFabClick({ currentTarget: fabButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button to open
-    instance.handleFabClick({ currentTarget: fabButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click somewhere else on page to close with ClickAwayListener
-    instance.handleFabClose({ target: 'somewhereElseOnPage' })
-    expect(wrapper).toMatchSnapshot()
+    await wait(() => getByText('volvox'))
+    expect(() => getByText(/Enter the name/)).toThrow()
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetFAB'))
+    expect(getByTestId('AssemblyEditorDrawerWidgetAddPopper')).toMatchSnapshot()
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetFAB'))
+    expect(getByTestId('AssemblyEditorDrawerWidgetAddPopper')).toMatchSnapshot()
   })
 
-  it('opens and closes dialog on help click', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
+  it('opens and closes dialog on help click', async () => {
+    const { getByTestId, getByText } = render(
+      <AssemblyEditorDrawerWidget model={model} />,
     )
-    const instance = wrapper.instance()
-    const helpButton = wrapper.find('WithStyles(IconButton)')
-    // Click menu button to open
-    instance.handleHelpClick({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button again to close (two events, one for menu click and one for ClickAwayListener)
-    instance.handleHelpClose({ target: 'help' })
-    expect(wrapper).toMatchSnapshot()
-    instance.handleHelpClick({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button to open
-    instance.handleHelpClick({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click somewhere else on page to close with ClickAwayListener
-    instance.handleHelpClose({ target: 'somewhereElseOnPage' })
-    expect(wrapper).toMatchSnapshot()
+    await wait(() => getByText('volvox'))
+    expect(() => getByText(/JBrowse uses the assemblies/)).toThrow()
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetHelpButton'))
+    expect(
+      getByTestId('AssemblyEditorDrawerWidgetHelpPopper'),
+    ).toMatchSnapshot()
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetHelpButton'))
+    expect(
+      getByTestId('AssemblyEditorDrawerWidgetHelpPopper'),
+    ).toMatchSnapshot()
   })
 
-  it('adds an assembly', () => {
-    const wrapper = shallow(
-      <AssemblyEditorDrawerWidget rootModel={rootModel} />,
+  it('adds an assembly', async () => {
+    const { getByTestId, getByText, getByDisplayValue } = render(
+      <AssemblyEditorDrawerWidget model={model} />,
     )
-    const instance = wrapper.instance()
-    instance.handleNewAssemblyChange({ target: { value: 'abc' } })
-    expect(wrapper.state('newAssemblyName')).toBe('abc')
-    instance.handleAddAssembly({ target: 'theAddAssemblyButton' })
-    expect(wrapper).toMatchSnapshot()
+    await wait(() => getByText('volvox'))
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetFAB'))
+    fireEvent.change(getByDisplayValue(''), {
+      target: { value: 'testAssembly' },
+    })
+    fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetSubmitButton'))
+    await wait(() => getByText('testAssembly'))
+
+    // expect(getByTestId('AssemblyEditorDrawerWidgetAddPopper')).toMatchSnapshot()
+    // fireEvent.click(getByTestId('AssemblyEditorDrawerWidgetFAB'))
+    // expect(getByTestId('AssemblyEditorDrawerWidgetAddPopper')).toMatchSnapshot()
+
+    // const wrapper = shallow(<AssemblyEditorDrawerWidget model={model} />)
+    // const instance = wrapper.instance()
+    // instance.handleNewAssemblyChange({ target: { value: 'abc' } })
+    // expect(wrapper.state('newAssemblyName')).toBe('abc')
+    // instance.handleAddAssembly({ target: 'theAddAssemblyButton' })
+    // expect(wrapper).toMatchSnapshot()
   })
 })

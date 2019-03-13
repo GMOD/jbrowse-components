@@ -55,7 +55,7 @@ test('no features', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 300 }}
+      region={{ refName: 'zonk', start: 0, end: 300 }}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
       config={DivRenderingConfigSchema.create()}
       bpPerPx={3}
@@ -71,7 +71,7 @@ test('one feature with no seq, zoomed way out', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000 }}
       features={
         new Map([
           ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -92,12 +92,7 @@ test('one feature with no seq, zoomed in, should throw', () => {
       <Rendering
         width={500}
         height={500}
-        region={{
-          assemblyName: 'toaster',
-          refName: 'zonk',
-          start: 0,
-          end: 1000,
-        }}
+        region={{ refName: 'zonk', start: 0, end: 1000 }}
         features={
           new Map([
             ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -119,12 +114,7 @@ test('one feature with an incorrect seq, zoomed in, should throw', () => {
       <Rendering
         width={500}
         height={500}
-        region={{
-          assemblyName: 'toaster',
-          refName: 'zonk',
-          start: 0,
-          end: 1000,
-        }}
+        region={{ refName: 'zonk', start: 0, end: 1000 }}
         features={
           new Map([
             [
@@ -153,7 +143,7 @@ test('one feature with a correct seq, zoomed in, should render nicely', () => {
     <Rendering
       width={500}
       height={500}
-      region={{ assemblyName: 'toaster', refName: 'zonk', start: 0, end: 1000 }}
+      region={{ refName: 'zonk', start: 0, end: 1000 }}
       features={
         new Map([
           [

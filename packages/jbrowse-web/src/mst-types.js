@@ -10,7 +10,6 @@ export const ElementId = types.optional(types.identifier, shortid.generate)
 // PropTypes that are useful when working with instances of these in react components
 export const PropTypes = {
   Region: propTypes.shape({
-    assemblyName: propTypes.string.isRequired,
     refName: propTypes.string.isRequired,
     start: propTypes.number.isRequired,
     end: propTypes.number.isRequired,
@@ -24,7 +23,6 @@ export const PropTypes = {
 
 export const Region = types
   .model('Region', {
-    assemblyName: types.string,
     refName: types.string,
     start: types.number,
     end: types.number,

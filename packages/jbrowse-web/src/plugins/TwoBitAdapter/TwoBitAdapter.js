@@ -6,8 +6,10 @@ import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+
   constructor(config) {
-    super(config)
+    super()
     const { twoBitLocation } = config
     const twoBitOpts = {
       filehandle: openLocation(twoBitLocation),
@@ -16,8 +18,21 @@ export default class TwoBitAdapter extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  async loadData() {
+  async getRefNames() {
     return this.twobit.getSequenceNames()
+  }
+
+  async getRegions() {
+    const refSizes = await this.twobit.getSequenceSizes()
+    const regions = []
+    Object.keys(refSizes).forEach(refName => {
+      regions.push({
+        refName,
+        start: 0,
+        end: refSizes[refName],
+      })
+    })
+    return regions
   }
 
   /**
@@ -27,7 +42,6 @@ export default class TwoBitAdapter extends BaseAdapter {
    */
   getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(
         new SimpleFeature({

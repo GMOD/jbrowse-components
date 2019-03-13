@@ -1,30 +1,19 @@
-import { types, getRoot, getType, addDisposer } from 'mobx-state-tree'
-
+// Polyfill for TextDecoder
+import 'fast-text-encoding'
 import { autorun } from 'mobx'
-import { ConfigurationSchema } from './configuration'
+import { flow, types, getType, addDisposer } from 'mobx-state-tree'
+
 import { isConfigurationModel } from './configuration/configurationSchema'
 import RpcManager from './rpc/RpcManager'
+import { openLocation } from './util/io'
+import AssemblyManager from './managers/AssemblyManager'
 
-export const Assembly = ConfigurationSchema('Assembly', {
-  aliases: {
-    type: 'stringArray',
-    defaultValue: [],
-    description: 'Other possible names for this assembly',
-  },
-  seqNameAliases: {
-    type: 'stringArrayMap',
-    defaultValue: {},
-    description:
-      'Any sequence names for this assembly which may have alternate names, such as ctgA/contigA or 1/chr1',
-  },
-})
-
-export default app => {
-  const { pluginManager } = app
+export default (pluginManager, workerManager) => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebRootModel', {
+      sessionName: types.optional(types.string, 'UnnamedSession'),
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
         512,
@@ -45,65 +34,39 @@ export default app => {
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      configuration: ConfigurationSchema(
-        'JBrowseWebRoot',
-        {
-          // track configuration is an array of track config schemas. multiple instances of
-          // a track can exist that use the same configuration
-          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-
-          // A map of assembly name -> assembly details
-          assemblies: types.map(Assembly),
-
-          rpc: RpcManager.configSchema,
-        },
-        {
-          actions: self => ({
-            addTrackConf(typeName, data) {
-              const type = getRoot(self).pluginManager.getTrackType(typeName)
-              if (!type) throw new Error(`unknown track type ${typeName}`)
-              const schemaType = type.configSchema
-              const conf = schemaType.create(
-                Object.assign({ type: typeName }, data),
-              )
-              self.tracks.push(conf)
-              return conf
-            },
-            addAssembly(assemblyName, aliases = [], seqNameAliases = {}) {
-              self.assemblies.set(
-                assemblyName,
-                Assembly.create({
-                  configId: assemblyName,
-                  aliases,
-                  seqNameAliases,
-                }),
-              )
-            },
-            removeAssembly(assemblyName) {
-              self.assemblies.delete(assemblyName)
-            },
-          }),
-        },
-      ),
+      configuration: pluginManager.rootConfig,
     })
-    .volatile(() => ({
-      app,
-      pluginManager,
-
+    .volatile(self => {
+      const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
+        WebWorkerRpcDriver: {
+          workers: workerManager.getWorkerGroup('rpc'),
+        },
+      })
+      const assemblyManager = new AssemblyManager(
+        rpcManager,
+        self.configuration.assemblies,
+      )
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
        * kind of thing it is.
        */
-      selection: undefined,
-
+      const selection = undefined
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * { taskName: "configure", target: thing_being_configured }
        */
-      task: undefined,
-    }))
+      const task = undefined
+      return {
+        pluginManager,
+        workerManager,
+        rpcManager,
+        assemblyManager,
+        selection,
+        task,
+      }
+    })
     .views(self => ({
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
@@ -131,6 +94,22 @@ export default app => {
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
+
+      loadConfig: flow(function* loadConfig(configLocation) {
+        let configSnapshot
+        try {
+          configSnapshot = JSON.parse(
+            new TextDecoder('utf-8').decode(
+              yield openLocation(configLocation).readFile(),
+            ),
+          )
+          self.configure(configSnapshot)
+        } catch (error) {
+          console.error('Failed to load config ', error)
+          throw error
+        }
+        return configSnapshot
+      }),
 
       updateWidth(width) {
         let newWidth = Math.floor(width)

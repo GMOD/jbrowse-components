@@ -10,10 +10,6 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bw' },
     },
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
-    },
   },
   { explicitlyTyped: true },
 )

@@ -19,9 +19,11 @@ import Popper from '@material-ui/core/Popper'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { withStyles } from '@material-ui/core/styles'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react-lite'
+import { getRoot, getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { readConfObject } from '../../../configuration'
 
 const styles = theme => ({
@@ -67,216 +69,123 @@ const styles = theme => ({
   },
 })
 
-class AssemblyEditorDrawerWidget extends React.Component {
-  static propTypes = {
-    rootModel: MobxPropTypes.observableObject.isRequired,
-    classes: propTypes.objectOf(propTypes.string).isRequired,
+function AssemblyEditorDrawerWidget(props) {
+  const [addMenuAnchorEl, setAddMenuAnchorEl] = useState(null)
+  const [helpMenuAnchorEl, setHelpMenuAnchorEl] = useState(null)
+  const [newAssemblyName, setNewAssemblyName] = useState('')
+  const [assemblies, setAssemblies] = useState(new Map())
+
+  const { classes, model } = props
+  const rootModel = getRoot(model)
+
+  function handleHelpClick(event) {
+    setHelpMenuAnchorEl(helpMenuAnchorEl ? null : event.currentTarget)
   }
 
-  state = {
-    addMenuAnchorEl: null,
-    helpMenuAnchorEl: null,
-    newAssemblyName: '',
-  }
-
-  handleFabClick = event => {
-    const { addMenuAnchorEl } = this.state
-    this.setState({
-      addMenuAnchorEl: addMenuAnchorEl ? null : event.currentTarget,
-    })
-  }
-
-  handleHelpClick = event => {
-    const { helpMenuAnchorEl } = this.state
-    this.setState({
-      helpMenuAnchorEl: helpMenuAnchorEl ? null : event.currentTarget,
-    })
-  }
-
-  handleFabClose = event => {
-    const { addMenuAnchorEl } = this.state
-    if (addMenuAnchorEl && addMenuAnchorEl.contains(event.target)) return
-    this.setState({ addMenuAnchorEl: null })
-  }
-
-  handleHelpClose = event => {
-    const { helpMenuAnchorEl } = this.state
+  function handleHelpClose(event) {
     if (helpMenuAnchorEl && helpMenuAnchorEl.contains(event.target)) return
-    this.setState({ helpMenuAnchorEl: null })
+    setHelpMenuAnchorEl(null)
   }
 
-  handleNewAssemblyChange = event =>
-    this.setState({ newAssemblyName: event.target.value })
+  function handleFabClick(event) {
+    setAddMenuAnchorEl(addMenuAnchorEl ? null : event.currentTarget)
+  }
 
-  handleAddAssembly = event => {
-    const { newAssemblyName } = this.state
-    const { rootModel } = this.props
-    this.handleFabClose(event)
+  function handleFabClose(event) {
+    if (addMenuAnchorEl && addMenuAnchorEl.contains(event.target)) return
+    setAddMenuAnchorEl(null)
+  }
+
+  function handleNewAssemblyChange(event) {
+    setNewAssemblyName(event.target.value)
+  }
+
+  function handleAddAssembly(event) {
+    setAssemblies(new Map())
+    handleFabClose(event)
     rootModel.configuration.addAssembly(newAssemblyName)
-    this.setState({ newAssemblyName: '' })
+    setNewAssemblyName('')
   }
 
-  render() {
-    const { addMenuAnchorEl, helpMenuAnchorEl, newAssemblyName } = this.state
-    const { classes, rootModel } = this.props
-    return (
-      <div className={classes.root}>
-        <div className={classes.header}>
-          <Typography variant="subtitle1" className={classes.headerText}>
-            Configured assemblies
-          </Typography>
-          <IconButton onClick={this.handleHelpClick}>
-            <Icon>help</Icon>
-          </IconButton>
-          <Popper
-            className={classes.popper}
-            anchorEl={helpMenuAnchorEl}
-            open={Boolean(helpMenuAnchorEl)}
-            transition
-          >
-            {({ TransitionProps }) => (
-              <Grow {...TransitionProps} in={Boolean(helpMenuAnchorEl)}>
-                <Paper className={classes.menu}>
-                  <ClickAwayListener onClickAway={this.handleHelpClose}>
-                    <div>
-                      <Typography paragraph>
-                        JBrowse uses the assemblies listed here to help make
-                        sure that tracks appear on the correct reference
-                        sequence.
-                      </Typography>
-                      <Typography paragraph>
-                        You can define aliases for an assembly so that the two
-                        assembly names are treated as the same, e.g. GRCh37 and
-                        hg19.
-                      </Typography>
-                      <Typography paragraph>
-                        You can also define any reference sequences within that
-                        assembly that may have multiple names, such as 1 and
-                        chr1 or ctgA and contigA.
-                      </Typography>
-                    </div>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
-          </Popper>
-        </div>
-        {Array.from(rootModel.configuration.assemblies, ([key, val]) => (
-          <Card className={classes.assembly} key={key}>
-            <CardHeader
-              title={key}
-              action={
-                <>
-                  <IconButton
-                    onClick={() =>
-                      rootModel.editConfiguration(
-                        rootModel.configuration.assemblies.get(key),
-                      )
-                    }
-                  >
-                    <Icon>edit</Icon>
-                  </IconButton>
-                  <IconButton
-                    onClick={() => rootModel.configuration.removeAssembly(key)}
-                  >
-                    <Icon>delete</Icon>
-                  </IconButton>
-                </>
-              }
-            />
-            <CardContent>
-              <Paper className={classes.paper}>
-                <List dense subheader={<ListSubheader>Aliases:</ListSubheader>}>
-                  <Divider />
-                  {readConfObject(val, 'aliases').map((alias, idx) => (
-                    <ListItem key={alias}>
-                      <ListItemAvatar>
-                        <Avatar className={classes.listNumber}>
-                          {idx + 1}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText>{alias}</ListItemText>
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-              <Paper>
-                <List
-                  dense
-                  subheader={
-                    <ListSubheader>Reference Sequence Aliases:</ListSubheader>
-                  }
-                >
-                  <Divider />
-                  {Object.entries(readConfObject(val, 'seqNameAliases')).map(
-                    ([seqName, aliases]) => (
-                      <List
-                        key={seqName}
-                        dense
-                        subheader={<ListSubheader>{seqName}</ListSubheader>}
-                      >
-                        {aliases.map((alias, idx) => (
-                          <ListItem key={alias}>
-                            <ListItemAvatar>
-                              <Avatar className={classes.listNumber}>
-                                {idx + 1}
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText>{alias}</ListItemText>
-                          </ListItem>
-                        ))}
-                        <Divider />
-                      </List>
-                    ),
-                  )}
-                </List>
-              </Paper>
-            </CardContent>
-          </Card>
-        ))}
-        <Fab
-          color="secondary"
-          className={classes.fab}
-          onClick={this.handleFabClick}
+  async function fetchAssemblies(rootAssemblies) {
+    const results = []
+    for (const [assemblyName, assembly] of rootAssemblies) {
+      const { rpcManager } = rootModel
+      results.push(
+        rpcManager.call(
+          assembly.configId,
+          'getRefNameAliases',
+          {
+            sessionId: assemblyName,
+            adapterType: readConfObject(assembly, [
+              'refNameAliases',
+              'adapter',
+              'type',
+            ]),
+            adapterConfig: readConfObject(assembly, [
+              'refNameAliases',
+              'adapter',
+            ]),
+          },
+          { timeout: 1000000 },
+        ),
+      )
+    }
+    const assemblyRefNameAliases = await Promise.all(results)
+    const newAssemblies = new Map()
+    let idx = 0
+    for (const [assemblyName, assembly] of rootAssemblies) {
+      newAssemblies.set(assemblyName, [assembly, assemblyRefNameAliases[idx]])
+      idx += 1
+    }
+    setAssemblies(newAssemblies)
+  }
+
+  useEffect(
+    () => {
+      fetchAssemblies(rootModel.configuration.assemblies)
+    },
+    [getSnapshot(rootModel.configuration.assemblies)],
+  )
+
+  return (
+    <div className={classes.root}>
+      <div className={classes.header}>
+        <Typography variant="subtitle1" className={classes.headerText}>
+          Configured assemblies
+        </Typography>
+        <IconButton
+          onClick={handleHelpClick}
+          data-testid="AssemblyEditorDrawerWidgetHelpButton"
         >
-          <Icon>add</Icon>
-        </Fab>
+          <Icon>help</Icon>
+        </IconButton>
         <Popper
           className={classes.popper}
-          anchorEl={addMenuAnchorEl}
-          open={Boolean(addMenuAnchorEl)}
+          anchorEl={helpMenuAnchorEl}
+          open={Boolean(helpMenuAnchorEl)}
           transition
+          data-testid="AssemblyEditorDrawerWidgetHelpPopper"
         >
           {({ TransitionProps }) => (
-            <Grow {...TransitionProps} in={Boolean(addMenuAnchorEl)}>
+            <Grow {...TransitionProps} in={Boolean(helpMenuAnchorEl)}>
               <Paper className={classes.menu}>
-                <ClickAwayListener onClickAway={this.handleFabClose}>
+                <ClickAwayListener onClickAway={handleHelpClose}>
                   <div>
-                    <Typography
-                      component="p"
-                      variant="subtitle1"
-                      color="textSecondary"
-                    >
-                      Enter the name of the new assembly
+                    <Typography paragraph>
+                      JBrowse uses the assemblies listed here to help make sure
+                      that tracks appear on the correct reference sequence.
                     </Typography>
-                    <TextField
-                      autoFocus
-                      label="Assembly name"
-                      value={newAssemblyName}
-                      onChange={this.handleNewAssemblyChange}
-                    />
-                    <div className={classes.menuButtons}>
-                      <Button color="secondary" onClick={this.handleFabClose}>
-                        Cancel
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={this.handleAddAssembly}
-                        disabled={!newAssemblyName}
-                      >
-                        Add assembly
-                      </Button>
-                    </div>
+                    <Typography paragraph>
+                      You can define aliases for an assembly so that the two
+                      assembly names are treated as the same, e.g. GRCh37 and
+                      hg19.
+                    </Typography>
+                    <Typography paragraph>
+                      You can also define any reference sequences within that
+                      assembly that may have multiple names, such as 1 and chr1
+                      or ctgA and contigA.
+                    </Typography>
                   </div>
                 </ClickAwayListener>
               </Paper>
@@ -284,10 +193,136 @@ class AssemblyEditorDrawerWidget extends React.Component {
           )}
         </Popper>
       </div>
-    )
-  }
+      {Array.from(assemblies, ([assemblyName, [assembly, refNameAliases]]) => (
+        <Card className={classes.assembly} key={assemblyName}>
+          <CardHeader
+            title={assemblyName}
+            action={
+              <>
+                <IconButton
+                  onClick={() =>
+                    rootModel.editConfiguration(
+                      rootModel.configuration.assemblies.get(assemblyName),
+                    )
+                  }
+                >
+                  <Icon>edit</Icon>
+                </IconButton>
+                <IconButton
+                  onClick={() =>
+                    rootModel.configuration.removeAssembly(assemblyName)
+                  }
+                >
+                  <Icon>delete</Icon>
+                </IconButton>
+              </>
+            }
+          />
+          <CardContent>
+            <Paper className={classes.paper}>
+              <List dense subheader={<ListSubheader>Aliases:</ListSubheader>}>
+                <Divider />
+                {readConfObject(assembly, 'aliases').map((alias, idx) => (
+                  <ListItem key={alias}>
+                    <ListItemAvatar>
+                      <Avatar className={classes.listNumber}>{idx + 1}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText>{alias}</ListItemText>
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+            <Paper>
+              <List
+                dense
+                subheader={
+                  <ListSubheader>Reference Sequence Aliases:</ListSubheader>
+                }
+              >
+                <Divider />
+                {refNameAliases.map(({ refName, aliases }) => (
+                  <List
+                    key={refName}
+                    dense
+                    subheader={<ListSubheader>{refName}</ListSubheader>}
+                  >
+                    {aliases.map((alias, idx) => (
+                      <ListItem key={alias}>
+                        <ListItemAvatar>
+                          <Avatar className={classes.listNumber}>
+                            {idx + 1}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText>{alias}</ListItemText>
+                      </ListItem>
+                    ))}
+                    <Divider />
+                  </List>
+                ))}
+              </List>
+            </Paper>
+          </CardContent>
+        </Card>
+      ))}
+      <Fab
+        color="secondary"
+        className={classes.fab}
+        onClick={handleFabClick}
+        data-testid="AssemblyEditorDrawerWidgetFAB"
+      >
+        <Icon>add</Icon>
+      </Fab>
+      <Popper
+        className={classes.popper}
+        anchorEl={addMenuAnchorEl}
+        open={Boolean(addMenuAnchorEl)}
+        transition
+        data-testid="AssemblyEditorDrawerWidgetAddPopper"
+      >
+        {({ TransitionProps }) => (
+          <Grow {...TransitionProps} in={Boolean(addMenuAnchorEl)}>
+            <Paper className={classes.menu}>
+              <ClickAwayListener onClickAway={handleFabClose}>
+                <div>
+                  <Typography
+                    component="p"
+                    variant="subtitle1"
+                    color="textSecondary"
+                  >
+                    Enter the name of the new assembly
+                  </Typography>
+                  <TextField
+                    autoFocus
+                    label="Assembly name"
+                    value={newAssemblyName}
+                    onChange={handleNewAssemblyChange}
+                  />
+                  <div className={classes.menuButtons}>
+                    <Button color="secondary" onClick={handleFabClose}>
+                      Cancel
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={handleAddAssembly}
+                      disabled={!newAssemblyName}
+                      data-testid="AssemblyEditorDrawerWidgetSubmitButton"
+                    >
+                      Add assembly
+                    </Button>
+                  </div>
+                </div>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </div>
+  )
 }
 
-export default withStyles(styles)(
-  inject('rootModel')(observer(AssemblyEditorDrawerWidget)),
-)
+AssemblyEditorDrawerWidget.propTypes = {
+  model: MobxPropTypes.observableObject.isRequired,
+  classes: propTypes.objectOf(propTypes.string).isRequired,
+}
+
+export default withStyles(styles)(observer(AssemblyEditorDrawerWidget))

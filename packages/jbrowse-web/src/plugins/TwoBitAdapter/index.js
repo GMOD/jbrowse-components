@@ -10,10 +10,6 @@ const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.2bit' },
     },
-    assemblyName: {
-      type: 'string',
-      defaultValue: '',
-    },
   },
   { explicitlyTyped: true },
 )

@@ -76,7 +76,7 @@ function ScaleBar({
             <svg height={height} width={block.widthPx}>
               <Ruler
                 region={block}
-                showRefSeqLabel={
+                showRefNameLabel={
                   !!block.isLeftEndOfDisplayedRegion &&
                   block !== blockContainingLeftEndOfView
                 }

@@ -10,6 +10,7 @@ function isValidColorString(/* str */) {
 const typeModels = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
+  numberMap: types.map(types.number),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
   integer: types.integer,
@@ -22,6 +23,8 @@ const typeModels = {
 // default values we use if the defaultValue is malformed or does not work
 const fallbackDefaults = {
   stringArray: [],
+  stringArrayMap: {},
+  numberMap: {},
   boolean: true,
   color: 'black',
   integer: 1,
@@ -97,6 +100,21 @@ const typeModelExtensions = {
       },
     },
   }),
+  numberMap: self => ({
+    views: {
+      get valueJSON() {
+        return JSON.stringify(self.value)
+      },
+    },
+    actions: {
+      add(key, val) {
+        self.value.set(key, val)
+      },
+      remove(key) {
+        self.value.delete(key)
+      },
+    },
+  }),
 }
 
 const FunctionStringType = types.refinement(
@@ -151,7 +169,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile this as a function
           return stringToFunction(String(self.value), {
-            bind: [getRoot(self).app],
+            bind: [getRoot(self)],
             verifyFunctionSignature: inDevelopment
               ? functionSignature
               : undefined,

@@ -6,8 +6,10 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class BamAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames']
+
   constructor(config) {
-    super(config)
+    super()
     const { bamLocation } = config
 
     const indexLocation = config.index.location
@@ -26,44 +28,48 @@ export default class BamAdapter extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async loadData() {
+  async setup() {
     if (!this.samHeader) {
       const samHeader = await this.bam.getHeader()
       this.samHeader = {}
 
       // use the @SQ lines in the header to figure out the
-      // mapping between ref seq ID numbers and names
-      const refSeqIdToName = []
-      const refSeqNameToId = {}
+      // mapping between ref ref ID numbers and names
+      const idToName = []
+      const nameToId = {}
       const sqLines = samHeader.filter(l => l.tag === 'SQ')
-      sqLines.forEach((sqLine, seqId) => {
+      sqLines.forEach((sqLine, refId) => {
         sqLine.data.forEach(item => {
           if (item.tag === 'SN') {
-            // this is the seq name
-            const seqName = item.value
-            refSeqNameToId[seqName] = seqId
-            refSeqIdToName[seqId] = seqName
+            // this is the ref name
+            const refName = item.value
+            nameToId[refName] = refId
+            idToName[refId] = refName
           }
         })
       })
-      if (refSeqIdToName.length) {
-        this.samHeader.refSeqIdToName = refSeqIdToName
-        this.samHeader.refSeqNameToId = refSeqNameToId
+      if (idToName.length) {
+        this.samHeader.idToName = idToName
+        this.samHeader.nameToId = nameToId
       }
     }
-    return this.samHeader.refSeqIdToName
+  }
+
+  async getRefNames() {
+    await this.setup()
+    return this.samHeader.idToName
   }
 
   /**
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given assembly and
-   * reference sequence before fetching.
+   * want to verify that the store has features for the given reference sequence
+   * before fetching.
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures({ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
+      await this.setup()
       const records = await this.bam.getRecordsForRange(refName, start, end)
       records.forEach(record => {
         observer.next(this.bamRecordToFeature(record))
@@ -85,9 +91,9 @@ export default class BamAdapter extends BaseAdapter {
 
   refIdToName(refId) {
     // use info from the SAM header if possible, but fall back to using
-    // the ref seq order from when the browser's refseqs were loaded
-    if (this.samHeader.refSeqIdToName) {
-      return this.samHeader.refSeqIdToName[refId]
+    // the ref name order from when the browser's ref names were loaded
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName[refId]
     }
     return undefined
   }

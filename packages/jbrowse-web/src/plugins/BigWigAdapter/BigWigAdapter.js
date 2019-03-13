@@ -6,6 +6,8 @@ import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
 
 export default class BigWigAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames']
+
   constructor(config) {
     super(config)
     this.bigwig = new BigWig({
@@ -13,7 +15,7 @@ export default class BigWigAdapter extends BaseAdapter {
     })
   }
 
-  async loadData() {
+  async getRefNames() {
     const header = await this.bigwig.getHeader()
     return Object.keys(header.refsByName)
   }
@@ -34,7 +36,6 @@ export default class BigWigAdapter extends BaseAdapter {
    */
   getFeatures({ /* assembly, */ refName, start, end }) {
     return ObservableCreate(async observer => {
-      await this.loadData()
       const records = await this.bigwig.getFeatures(refName, start, end)
       records.forEach(record => {
         observer.next(

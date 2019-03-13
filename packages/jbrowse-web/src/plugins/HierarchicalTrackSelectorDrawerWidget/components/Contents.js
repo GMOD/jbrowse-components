@@ -1,5 +1,6 @@
 import Checkbox from '@material-ui/core/Checkbox'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import Divider from '@material-ui/core/Divider'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -12,7 +13,8 @@ import { withStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import { inject, observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import { cancelIdleCallback, requestIdleCallback } from 'request-idle-callback'
@@ -93,7 +95,7 @@ Category.propTypes = {
   disabled: propTypes.bool,
 }
 
-const contentStyles = theme => ({
+const trackEntryStyles = theme => ({
   formControlLabel: {
     marginLeft: 0,
     '&:hover': {
@@ -121,20 +123,66 @@ const contentStyles = theme => ({
   },
 })
 
+export const TrackEntry = withStyles(trackEntryStyles)(
+  observer(props => {
+    const { model, disabled, trackConf, assemblyName, classes } = props
+    const rootModel = getRoot(model)
+    const titleText = assemblyName
+      ? `The reference sequence for ${assemblyName}`
+      : readConfObject(trackConf, 'description')
+    return (
+      <Fade in>
+        <div className={classes.track}>
+          <Tooltip title={titleText} placement="left" enterDelay={500}>
+            <FormControlLabel
+              className={classes.formControlLabel}
+              control={<Checkbox className={classes.checkbox} />}
+              label={
+                assemblyName
+                  ? `Reference Sequence (${assemblyName})`
+                  : readConfObject(trackConf, 'name')
+              }
+              checked={model.view.tracks.some(
+                t => t.configuration === trackConf,
+              )}
+              onChange={() => model.view.toggleTrack(trackConf)}
+              disabled={disabled}
+            />
+          </Tooltip>
+          <IconButton
+            className={classes.configureButton}
+            onClick={() => rootModel.editConfiguration(trackConf)}
+          >
+            <Icon fontSize="small">settings</Icon>
+          </IconButton>
+        </div>
+      </Fade>
+    )
+  }),
+)
+
+const contentsStyles = theme => ({
+  divider: {
+    marginTop: theme.spacing.unit * 2,
+    marginBottom: theme.spacing.unit * 2,
+  },
+})
+
 class ContentsInner extends React.Component {
   static propTypes = {
     model: MobxPropTypes.observableObject.isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
     path: propTypes.arrayOf(propTypes.string),
     filterPredicate: propTypes.func,
     disabled: propTypes.bool,
     classes: propTypes.objectOf(propTypes.string).isRequired,
+    top: propTypes.bool,
   }
 
   static defaultProps = {
     filterPredicate: () => true,
     path: [],
     disabled: false,
+    top: false,
   }
 
   state = {
@@ -184,44 +232,36 @@ class ContentsInner extends React.Component {
 
   render() {
     const { categories, trackConfigurations, doneLoading } = this.state
-    const {
-      model,
-      rootModel,
-      path,
-      filterPredicate,
-      disabled,
-      classes,
-    } = this.props
+    const { model, path, filterPredicate, disabled, top, classes } = this.props
+    const rootModel = getRoot(model)
     return (
       <>
+        {top && rootModel.configuration.assemblies.size ? (
+          <>
+            <FormGroup>
+              {Array.from(
+                rootModel.configuration.assemblies,
+                ([assemblyName, assembly]) => (
+                  <TrackEntry
+                    key={assembly.sequence.configId}
+                    model={model}
+                    trackConf={assembly.sequence}
+                    assemblyName={assemblyName}
+                  />
+                ),
+              )}
+            </FormGroup>
+            <Divider className={classes.divider} />
+          </>
+        ) : null}
         <FormGroup>
           {trackConfigurations.filter(filterPredicate).map(trackConf => (
-            <Fade in key={trackConf.configId}>
-              <div className={classes.track}>
-                <Tooltip
-                  title={readConfObject(trackConf, 'description')}
-                  placement="left"
-                  enterDelay={500}
-                >
-                  <FormControlLabel
-                    className={classes.formControlLabel}
-                    control={<Checkbox className={classes.checkbox} />}
-                    label={readConfObject(trackConf, 'name')}
-                    checked={model.view.tracks.some(
-                      t => t.configuration === trackConf,
-                    )}
-                    onChange={() => model.view.toggleTrack(trackConf)}
-                    disabled={disabled}
-                  />
-                </Tooltip>
-                <IconButton
-                  className={classes.configureButton}
-                  onClick={() => rootModel.editConfiguration(trackConf)}
-                >
-                  <Icon fontSize="small">settings</Icon>
-                </IconButton>
-              </div>
-            </Fade>
+            <TrackEntry
+              key={trackConf.configId}
+              model={model}
+              trackConf={trackConf}
+              disabled={disabled}
+            />
           ))}
         </FormGroup>
         {doneLoading ? null : <CircularProgress />}
@@ -239,7 +279,5 @@ class ContentsInner extends React.Component {
   }
 }
 
-const Contents = withStyles(contentStyles)(
-  inject('rootModel')(observer(ContentsInner)),
-)
+const Contents = withStyles(contentsStyles)(observer(ContentsInner))
 export default Contents

@@ -49,7 +49,7 @@ export default class BamSlightlyLazyFeature {
     return this.record._get('cigar')
   }
 
-  _get_seq_id() {
+  _get_refname() {
     return this.adapter.refIdToName(this.record._refID)
   }
 
@@ -101,7 +101,7 @@ export default class BamSlightlyLazyFeature {
     return this.record.isSegmentUnmapped()
   }
 
-  _get_next_seq_id() {
+  _get_next_refname() {
     return this.adapter.refIdToName(this.record._next_refid())
   }
 

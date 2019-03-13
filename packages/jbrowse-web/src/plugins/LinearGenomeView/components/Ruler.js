@@ -90,12 +90,12 @@ const styles = (/* theme */) => ({
     stroke: '#999',
     // stroke: theme.palette.text.hint,
   },
-  refSeqLabel: {
+  refNameLabel: {
     fontSize: '16px',
     fontWeight: 'bold',
     // fill: theme.palette.text.primary,
   },
-  refSeqLabelBackground: {
+  refNameLabelBackground: {
     fontSize: '16px',
     fontWeight: 'bold',
     fill: 'white',
@@ -112,7 +112,7 @@ function Ruler(props) {
     flipped,
     major,
     minor,
-    showRefSeqLabel,
+    showRefNameLabel,
     classes,
   } = props
   const ticks = []
@@ -151,10 +151,10 @@ function Ruler(props) {
       )
   }
 
-  const refSeqLabels = []
-  if (showRefSeqLabel && region.refName) {
-    refSeqLabels.push(
-      <Fragment key="refseq-label">
+  const refNameLabels = []
+  if (showRefNameLabel && region.refName) {
+    refNameLabels.push(
+      <Fragment key="refname-label">
         <g>
           <defs>
             <filter id="dilate">
@@ -165,7 +165,7 @@ function Ruler(props) {
             x={0}
             y={2}
             alignmentBaseline="hanging"
-            className={classes.refSeqLabelBackground}
+            className={classes.refNameLabelBackground}
           >
             {region.refName}
           </text>
@@ -173,7 +173,7 @@ function Ruler(props) {
             x={0}
             y={2}
             alignmentBaseline="hanging"
-            className={classes.refSeqLabel}
+            className={classes.refNameLabel}
           >
             {region.refName}
           </text>
@@ -185,7 +185,7 @@ function Ruler(props) {
   // svg painting is based on the document order,
   // so the labels need to come after the ticks in the
   // doc, so that they draw over them.
-  return [...ticks, ...labels, ...refSeqLabels]
+  return [...ticks, ...labels, ...refNameLabels]
 }
 
 Ruler.propTypes = {
