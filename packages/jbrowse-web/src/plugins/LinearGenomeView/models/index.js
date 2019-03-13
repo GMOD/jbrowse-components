@@ -108,7 +108,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         const displayedRegionsDisposer = autorun(() => {
           const { assemblyManager } = getRoot(self)
           if (assemblyManager)
-            self.setDisplayedRegions(assemblyManager.displayedRegions)
+            self.setDisplayedRegions(assemblyManager.allRegions)
         })
 
         addDisposer(self, displayedRegionsDisposer)

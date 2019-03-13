@@ -65,8 +65,9 @@ export default types.compose(
           const blockDefinitions = getContainingView(self)[self.blockType]
           const { assemblyManager } = getRoot(self)
           if (!assemblyManager) return
-          const refNameMap = assemblyManager.getRefNameMap(self)
-          if (!refNameMap) return
+          const refNameMap = assemblyManager.getRefNameMapForTrack(
+            self.configuration,
+          )
           self.setBlockDefinitions(
             blockDefinitions.map(blockDefinition => {
               let { refName } = blockDefinition

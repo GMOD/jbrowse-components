@@ -1,15 +1,29 @@
 import { decorate, observable, values } from 'mobx'
-import { readConfObject, getConf } from '../configuration'
+import { readConfObject } from '../configuration'
 
+/**
+ * @property {Map} refNameMaps mobx observable map with entries like
+ * (track configId => refNameMap) (see `addRefNameMapForTrack` method)
+ * @property {Region[]} allRegions mobx observable array of all regions defined
+ * in all the assemblies of the root configuration
+ */
 export default class AssemblyManager {
   constructor(rpcManager, assemblies) {
     this.rpcManager = rpcManager
     this.assemblies = assemblies
-    this.adapterMaps = new Map()
-    this.displayedRegions = []
-    this.loadDisplayedRegions()
+    this.refNameMaps = new Map()
+    this.allRegions = []
+    this.loadRegions()
   }
 
+  /**
+   * Return an object like { refName1: ['alias1', 'alias2'], refName2:
+   * ['alias3', 'alias4'] } that describes the reference names and aliases of
+   * the given assembly. Returns empty object if the assembly is not found.
+   * @param {string} assemblyName The name of an assembly
+   * @returns {Promise<object>} Object like { refName1: ['alias1', 'alias2'],
+   * refName2: ['alias3', 'alias4'] }
+   */
   async getRefNameAliases(assemblyName) {
     const refNameAliases = {}
     let assembly = this.assemblies.get(assemblyName)
@@ -46,21 +60,27 @@ export default class AssemblyManager {
     return refNameAliases
   }
 
-  async addAdapter(track) {
+  /**
+   * Add a map with entries like (refName alias => refName used by this track).
+   * This is added to the `refNameMaps` attribute of the object, which is made
+   * observable by mobx.
+   * @param {trackConf} trackConf Configuration model of a track
+   */
+  async addRefNameMapForTrack(trackConf) {
     const refNameMap = new Map()
 
-    const assemblyName = readConfObject(track.configuration, 'assemblyName')
+    const assemblyName = readConfObject(trackConf, 'assemblyName')
 
     if (assemblyName) {
       const refNameAliases = await this.getRefNameAliases(assemblyName)
 
       const refNames = await this.rpcManager.call(
-        track.id,
+        readConfObject(trackConf, 'configId'),
         'getRefNames',
         {
           sessionId: assemblyName,
-          adapterType: readConfObject(track.configuration, ['adapter', 'type']),
-          adapterConfig: getConf(track, 'adapter'),
+          adapterType: readConfObject(trackConf, ['adapter', 'type']),
+          adapterConfig: readConfObject(trackConf, 'adapter'),
         },
         { timeout: 1000000 },
       )
@@ -82,13 +102,14 @@ export default class AssemblyManager {
       })
     }
 
-    this.adapterMaps.set(
-      readConfObject(track.configuration, 'configId'),
-      refNameMap,
-    )
+    this.refNameMaps.set(readConfObject(trackConf, 'configId'), refNameMap)
   }
 
-  async loadDisplayedRegions() {
+  /**
+   * Looks at all the assembly configurations and gets and regions they define,
+   * then stores them in the mobx observable `allRegions` attribute
+   */
+  async loadRegions() {
     const regions = []
     const { assemblies, rpcManager } = this
     for (const [assemblyName, assembly] of assemblies) {
@@ -110,22 +131,33 @@ export default class AssemblyManager {
         console.error('Failed to fetch sequence', error)
       }
     }
-    this.displayedRegions = regions
+    this.allRegions = regions
   }
 
-  getRefNameMap(track) {
-    const configId = readConfObject(track.configuration, 'configId')
-    if (this.adapterMaps.has(configId)) return this.adapterMaps.get(configId)
-    this.addAdapter(track)
-    return null
+  /**
+   * Retrieve the stored refNameMap for a track, or if none is found, start the
+   * asynchronous method for adding a refNameMap for that track and return an
+   * empty map.
+   * @param {trackConf} trackConf Configuration model of a track
+   * @returns {Map} See `addRefNameMapForTrack` for example Map, or an empty
+   * map if the track is not found.
+   */
+  getRefNameMapForTrack(trackConf) {
+    const configId = readConfObject(trackConf, 'configId')
+    if (this.refNameMaps.has(configId)) return this.refNameMaps.get(configId)
+    this.addRefNameMapForTrack(trackConf)
+    return new Map()
   }
 
+  /**
+   * Clear all stored refNameMaps
+   */
   clear() {
-    this.adapterMaps = new Map()
+    this.refNameMaps = new Map()
   }
 }
 
 decorate(AssemblyManager, {
-  displayedRegions: observable,
-  adapterMaps: observable,
+  allRegions: observable,
+  refNameMaps: observable,
 })

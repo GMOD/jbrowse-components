@@ -113,10 +113,12 @@ describe('Assembly Manager', () => {
     rootModel.views[0].showTrack(rootModel.configuration.tracks[0])
 
     assemblyManager.clear()
-    expect(assemblyManager.adapterMaps).toMatchInlineSnapshot(`Object {}`)
-    await assemblyManager.addAdapter(rootModel.views[0].tracks[0])
+    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`Object {}`)
+    await assemblyManager.addRefNameMapForTrack(
+      rootModel.views[0].tracks[0].configuration,
+    )
 
-    expect(assemblyManager.adapterMaps).toMatchInlineSnapshot(`
+    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
 Object {
   "testingId": Object {
     "A": "contigA",
