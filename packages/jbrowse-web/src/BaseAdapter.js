@@ -22,7 +22,8 @@ export default class BaseAdapter {
 
   /**
    * Subclasses should override this method. Method signature here for reference.
-   * @returns {string[]} Observable of Feature objects in the region
+   * @returns {Promise<string[]>} Array of reference sequence names used by the
+   * source being adapted.
    */
   async getRefNames() {
     throw new Error('getRefNames should be overridden by the subclass')
@@ -60,6 +61,9 @@ export default class BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    * @param {Region} region
+   * @param {string} region.refName Name of the reference sequence (e.g. chr1)
+   * @param {int} region.start Start of the region
+   * @param {int} region.end End of the region
    */
   // eslint-disable-next-line no-unused-vars
   freeResources(region) {
@@ -70,6 +74,7 @@ export default class BaseAdapter {
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.
    * @param {Region} region see getFeatures()
+   * @returns {Observable[Feature]} see getFeatures()
    */
   getFeaturesInRegion(region) {
     return ObservableCreate(async observer => {
@@ -84,8 +89,9 @@ export default class BaseAdapter {
   /**
    * Check if the store has data for the given reference name. Also checks the
    * assembly name if one was specified in the initial adapter config.
-   * @param {Region} region A sequence region
-   * @param {string} region.refName Name of the reference sequence
+   * @param {string} refName Name of the reference sequence
+   * @returns {Promise<boolean>} Whether data source has data for the given
+   * reference name
    */
   async hasDataForRefName(refName) {
     const refNames = await this.getRefNames()
