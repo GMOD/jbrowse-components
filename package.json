@@ -27,7 +27,7 @@
         "case-sensitive-paths-webpack-plugin": "^2.1.2",
         "chalk": "^2.4.1",
         "css-loader": "^2.1.0",
-        "dotenv": "^6.0.0",
+        "dotenv": "^7.0.0",
         "dotenv-expand": "^4.2.0",
         "enzyme": "^3.8.0",
         "enzyme-adapter-react-16": "^1.10.0",
