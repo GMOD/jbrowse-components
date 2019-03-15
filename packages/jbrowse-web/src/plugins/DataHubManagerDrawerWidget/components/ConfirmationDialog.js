@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '../../../configuration'
 import { createTestEnv } from '../../../JBrowse'
-import { Category } from '../../HierarchicalTrackSelectorDrawerWidget/components/Contents'
+import Category from '../../HierarchicalTrackSelectorDrawerWidget/components/Category'
 
 const supportedTrackTypes = [
   'bam',

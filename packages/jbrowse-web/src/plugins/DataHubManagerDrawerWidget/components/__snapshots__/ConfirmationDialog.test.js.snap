@@ -66,39 +66,39 @@ exports[`<ConfirmationDialog /> handles 404 1`] = `
     <LinearProgress
       classes={
         Object {
-          "bar": "MuiLinearProgress-bar-213",
-          "bar1Buffer": "MuiLinearProgress-bar1Buffer-218",
-          "bar1Determinate": "MuiLinearProgress-bar1Determinate-217",
-          "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-216",
-          "bar2Buffer": "MuiLinearProgress-bar2Buffer-220",
-          "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-219",
-          "barColorPrimary": "MuiLinearProgress-barColorPrimary-214",
-          "barColorSecondary": "MuiLinearProgress-barColorSecondary-215",
-          "buffer": "MuiLinearProgress-buffer-208",
-          "colorPrimary": "MuiLinearProgress-colorPrimary-204",
-          "colorSecondary": "MuiLinearProgress-colorSecondary-205",
-          "dashed": "MuiLinearProgress-dashed-210",
-          "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-211",
-          "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-212",
-          "determinate": "MuiLinearProgress-determinate-206",
-          "indeterminate": "MuiLinearProgress-indeterminate-207",
-          "query": "MuiLinearProgress-query-209",
-          "root": "MuiLinearProgress-root-203",
+          "bar": "MuiLinearProgress-bar-176",
+          "bar1Buffer": "MuiLinearProgress-bar1Buffer-181",
+          "bar1Determinate": "MuiLinearProgress-bar1Determinate-180",
+          "bar1Indeterminate": "MuiLinearProgress-bar1Indeterminate-179",
+          "bar2Buffer": "MuiLinearProgress-bar2Buffer-183",
+          "bar2Indeterminate": "MuiLinearProgress-bar2Indeterminate-182",
+          "barColorPrimary": "MuiLinearProgress-barColorPrimary-177",
+          "barColorSecondary": "MuiLinearProgress-barColorSecondary-178",
+          "buffer": "MuiLinearProgress-buffer-171",
+          "colorPrimary": "MuiLinearProgress-colorPrimary-167",
+          "colorSecondary": "MuiLinearProgress-colorSecondary-168",
+          "dashed": "MuiLinearProgress-dashed-173",
+          "dashedColorPrimary": "MuiLinearProgress-dashedColorPrimary-174",
+          "dashedColorSecondary": "MuiLinearProgress-dashedColorSecondary-175",
+          "determinate": "MuiLinearProgress-determinate-169",
+          "indeterminate": "MuiLinearProgress-indeterminate-170",
+          "query": "MuiLinearProgress-query-172",
+          "root": "MuiLinearProgress-root-166",
         }
       }
       color="primary"
       variant="query"
     >
       <div
-        className="MuiLinearProgress-root-203 MuiLinearProgress-colorPrimary-204 MuiLinearProgress-query-209"
+        className="MuiLinearProgress-root-166 MuiLinearProgress-colorPrimary-167 MuiLinearProgress-query-172"
         role="progressbar"
       >
         <div
-          className="MuiLinearProgress-bar-213 MuiLinearProgress-barColorPrimary-214 MuiLinearProgress-bar1Indeterminate-216"
+          className="MuiLinearProgress-bar-176 MuiLinearProgress-barColorPrimary-177 MuiLinearProgress-bar1Indeterminate-179"
           style={Object {}}
         />
         <div
-          className="MuiLinearProgress-bar-213 MuiLinearProgress-barColorPrimary-214 MuiLinearProgress-bar2Indeterminate-219"
+          className="MuiLinearProgress-bar-176 MuiLinearProgress-barColorPrimary-177 MuiLinearProgress-bar2Indeterminate-182"
           style={Object {}}
         />
       </div>
@@ -174,42 +174,42 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       align="inherit"
       classes={
         Object {
-          "alignCenter": "MuiTypography-alignCenter-298",
-          "alignJustify": "MuiTypography-alignJustify-300",
-          "alignLeft": "MuiTypography-alignLeft-297",
-          "alignRight": "MuiTypography-alignRight-299",
-          "body1": "MuiTypography-body1-284",
-          "body2": "MuiTypography-body2-283",
-          "button": "MuiTypography-button-286",
-          "caption": "MuiTypography-caption-285",
-          "colorError": "MuiTypography-colorError-309",
-          "colorInherit": "MuiTypography-colorInherit-304",
-          "colorPrimary": "MuiTypography-colorPrimary-305",
-          "colorSecondary": "MuiTypography-colorSecondary-306",
-          "colorTextPrimary": "MuiTypography-colorTextPrimary-307",
-          "colorTextSecondary": "MuiTypography-colorTextSecondary-308",
-          "display1": "MuiTypography-display1-279",
-          "display2": "MuiTypography-display2-278",
-          "display3": "MuiTypography-display3-277",
-          "display4": "MuiTypography-display4-276",
-          "gutterBottom": "MuiTypography-gutterBottom-302",
-          "h1": "MuiTypography-h1-287",
-          "h2": "MuiTypography-h2-288",
-          "h3": "MuiTypography-h3-289",
-          "h4": "MuiTypography-h4-290",
-          "h5": "MuiTypography-h5-291",
-          "h6": "MuiTypography-h6-292",
-          "headline": "MuiTypography-headline-280",
-          "inline": "MuiTypography-inline-310",
-          "noWrap": "MuiTypography-noWrap-301",
-          "overline": "MuiTypography-overline-295",
-          "paragraph": "MuiTypography-paragraph-303",
-          "root": "MuiTypography-root-275",
-          "srOnly": "MuiTypography-srOnly-296",
-          "subheading": "MuiTypography-subheading-282",
-          "subtitle1": "MuiTypography-subtitle1-293",
-          "subtitle2": "MuiTypography-subtitle2-294",
-          "title": "MuiTypography-title-281",
+          "alignCenter": "MuiTypography-alignCenter-261",
+          "alignJustify": "MuiTypography-alignJustify-263",
+          "alignLeft": "MuiTypography-alignLeft-260",
+          "alignRight": "MuiTypography-alignRight-262",
+          "body1": "MuiTypography-body1-247",
+          "body2": "MuiTypography-body2-246",
+          "button": "MuiTypography-button-249",
+          "caption": "MuiTypography-caption-248",
+          "colorError": "MuiTypography-colorError-272",
+          "colorInherit": "MuiTypography-colorInherit-267",
+          "colorPrimary": "MuiTypography-colorPrimary-268",
+          "colorSecondary": "MuiTypography-colorSecondary-269",
+          "colorTextPrimary": "MuiTypography-colorTextPrimary-270",
+          "colorTextSecondary": "MuiTypography-colorTextSecondary-271",
+          "display1": "MuiTypography-display1-242",
+          "display2": "MuiTypography-display2-241",
+          "display3": "MuiTypography-display3-240",
+          "display4": "MuiTypography-display4-239",
+          "gutterBottom": "MuiTypography-gutterBottom-265",
+          "h1": "MuiTypography-h1-250",
+          "h2": "MuiTypography-h2-251",
+          "h3": "MuiTypography-h3-252",
+          "h4": "MuiTypography-h4-253",
+          "h5": "MuiTypography-h5-254",
+          "h6": "MuiTypography-h6-255",
+          "headline": "MuiTypography-headline-243",
+          "inline": "MuiTypography-inline-273",
+          "noWrap": "MuiTypography-noWrap-264",
+          "overline": "MuiTypography-overline-258",
+          "paragraph": "MuiTypography-paragraph-266",
+          "root": "MuiTypography-root-238",
+          "srOnly": "MuiTypography-srOnly-259",
+          "subheading": "MuiTypography-subheading-245",
+          "subtitle1": "MuiTypography-subtitle1-256",
+          "subtitle2": "MuiTypography-subtitle2-257",
+          "title": "MuiTypography-title-244",
         }
       }
       color="error"
@@ -602,7 +602,7 @@ exports[`<ConfirmationDialog /> handles fetch error 1`] = `
       }
     >
       <p
-        className="MuiTypography-root-275 MuiTypography-body1-284 MuiTypography-colorError-309"
+        className="MuiTypography-root-238 MuiTypography-body1-247 MuiTypography-colorError-272"
       >
         <span>
           <strong>
