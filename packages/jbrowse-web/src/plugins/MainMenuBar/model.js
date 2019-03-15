@@ -58,6 +58,7 @@ export const MenuItemModel = types
           const re = new RegExp(`"${value}"`, 'g')
           if ((initialSnap.match(re) || []).length < 2) return undefined
         }
+        if (key === 'volatile') return undefined
         return value
       }
       const configSnap = JSON.stringify(

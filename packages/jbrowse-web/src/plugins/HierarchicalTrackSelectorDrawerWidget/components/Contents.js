@@ -22,9 +22,20 @@ function Contents(props) {
   const [categories, setCategories] = useState([])
   const [trackConfigurations, setTrackConfigurations] = useState([])
 
-  const { model, path, filterPredicate, disabled, top, classes } = props
+  const {
+    model,
+    path,
+    filterPredicate,
+    disabled,
+    connection,
+    top,
+    classes,
+  } = props
 
-  let { hierarchy } = model
+  let hierarchy = connection
+    ? model.volatileHierarchy(connection)
+    : model.hierarchy
+
   path.forEach(pathEntry => {
     hierarchy = hierarchy.get(pathEntry) || new Map()
   })
@@ -56,7 +67,7 @@ function Contents(props) {
         cancelIdleCallback(handle)
       }
     },
-    [categories.length, trackConfigurations.length],
+    [hierarchy.size, categories.length, trackConfigurations.length],
   )
 
   const rootModel = getRoot(model)
@@ -111,6 +122,7 @@ Contents.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
+  connection: propTypes.string,
   classes: propTypes.objectOf(propTypes.string).isRequired,
   top: propTypes.bool,
 }
@@ -119,6 +131,7 @@ Contents.defaultProps = {
   filterPredicate: () => true,
   path: [],
   disabled: false,
+  connection: '',
   top: false,
 }
 

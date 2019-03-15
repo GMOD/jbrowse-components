@@ -1,11 +1,12 @@
-import { IconButton } from '@material-ui/core'
 import Fab from '@material-ui/core/Fab'
 import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
@@ -35,6 +36,7 @@ function HierarchicalTrackSelector(props) {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const { model, classes } = props
+  const rootModel = getRoot(model)
 
   function handleFabClick(event) {
     setAnchorEl(event.currentTarget)
@@ -50,7 +52,6 @@ function HierarchicalTrackSelector(props) {
 
   function addDataHub() {
     handleFabClose()
-    const rootModel = getRoot(model)
     if (!rootModel.drawerWidgets.get('dataHubDrawerWidget'))
       rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
     rootModel.showDrawerWidget(
@@ -60,7 +61,6 @@ function HierarchicalTrackSelector(props) {
 
   function addTrack() {
     handleFabClose()
-    const rootModel = getRoot(model)
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: model.view.id,
     })
@@ -103,6 +103,20 @@ function HierarchicalTrackSelector(props) {
         }}
       />
       <Contents model={model} filterPredicate={filter} top />
+      <Typography variant="h5">Connections:</Typography>
+      {Array.from(rootModel.configuration.volatile.keys()).map(
+        connectionName => (
+          <React.Fragment key={connectionName}>
+            <Typography variant="h6">{connectionName}</Typography>
+            <Contents
+              model={model}
+              filterPredicate={filter}
+              connection={connectionName}
+            />
+          </React.Fragment>
+        ),
+      )}
+
       <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
         <Icon>add</Icon>
       </Fab>
