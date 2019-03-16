@@ -111,6 +111,7 @@ function Contents(props) {
           path={path.concat([name])}
           filterPredicate={filterPredicate}
           disabled={disabled}
+          connection={connection}
         />
       ))}
     </>

@@ -35,7 +35,7 @@ const styles = theme => ({
 })
 
 function Category(props) {
-  const { model, path, filterPredicate, disabled, classes } = props
+  const { model, path, filterPredicate, disabled, connection, classes } = props
   const pathName = path.join('|')
   const name = path[path.length - 1]
 
@@ -63,6 +63,7 @@ function Category(props) {
           path={path}
           filterPredicate={filterPredicate}
           disabled={disabled}
+          connection={connection}
         />
       </ExpansionPanelDetails>
     </ExpansionPanel>
@@ -74,6 +75,7 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
+  connection: propTypes.string,
   classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
@@ -81,6 +83,7 @@ Category.defaultProps = {
   filterPredicate: () => true,
   path: [],
   disabled: false,
+  connection: '',
 }
 
 export default withStyles(styles)(observer(Category))

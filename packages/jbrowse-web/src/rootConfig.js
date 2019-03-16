@@ -101,7 +101,6 @@ export default function(pluginManager) {
         },
 
         addConnection(connectionConf) {
-          console.log('adding', connectionConf)
           const { connectionType } = connectionConf
           if (!['trackHub'].includes(connectionType))
             throw new Error(

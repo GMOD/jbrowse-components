@@ -46,6 +46,9 @@ function TrackEntry(props) {
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
+  const unsupported =
+    readConfObject(trackConf, 'name') &&
+    readConfObject(trackConf, 'name').endsWith('(Unsupported)')
   return (
     <Fade in>
       <div className={classes.track}>
@@ -60,7 +63,7 @@ function TrackEntry(props) {
             }
             checked={model.view.tracks.some(t => t.configuration === trackConf)}
             onChange={() => model.view.toggleTrack(trackConf)}
-            disabled={disabled}
+            disabled={disabled || unsupported}
           />
         </Tooltip>
         <IconButton
