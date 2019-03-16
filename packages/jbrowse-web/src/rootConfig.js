@@ -6,6 +6,7 @@ import {
   fetchHubFile,
   fetchTrackDbFile,
   generateTracks,
+  ucscAssemblies,
 } from './connections/ucscHub'
 
 export function assemblyFactory(pluginManager) {
@@ -23,6 +24,7 @@ export function assemblyFactory(pluginManager) {
 }
 
 export default function(pluginManager) {
+  const Assemblies = assemblyFactory(pluginManager)
   return ConfigurationSchema(
     'JBrowseWebRoot',
     {
@@ -31,7 +33,7 @@ export default function(pluginManager) {
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
 
       // A map of assembly name -> assembly details
-      assemblies: types.map(assemblyFactory(pluginManager)),
+      assemblies: types.map(Assemblies),
 
       connections: types.array(
         ConfigurationSchema(
@@ -65,6 +67,7 @@ export default function(pluginManager) {
       volatile: types.map(
         ConfigurationSchema('volatile', {
           tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+          assemblies: types.map(Assemblies),
         }),
       ),
     },
@@ -140,21 +143,68 @@ export default function(pluginManager) {
             }
           else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
           const genomesFile = yield fetchGenomesFile(genomesFileLocation)
-          for (const genomeName of genomesFile.keys()) {
+          for (const assemblyName of genomesFile.keys()) {
+            const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
+            if (twoBitPath) {
+              let twoBitLocation
+              if (hubFileLocation.uri)
+                twoBitLocation = {
+                  uri: new URL(
+                    twoBitPath,
+                    new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+                  ).href,
+                }
+              else
+                twoBitLocation = {
+                  localPath: twoBitPath,
+                }
+              self.addAssembly(
+                assemblyName,
+                undefined,
+                undefined,
+                {
+                  type: 'ReferenceSequence',
+                  adapter: {
+                    type: 'TwoBitAdapter',
+                    twoBitLocation,
+                  },
+                },
+                readConfObject(connectionConf, 'connectionName'),
+              )
+            } else if (ucscAssemblies.includes(assemblyName))
+              self.addAssembly(
+                assemblyName,
+                undefined,
+                undefined,
+                {
+                  type: 'ReferenceSequence',
+                  adapter: {
+                    type: 'TwoBitAdapter',
+                    twoBitLocation: {
+                      uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
+                    },
+                  },
+                },
+                readConfObject(connectionConf, 'connectionName'),
+              )
             let trackDbFileLocation
             if (hubFileLocation.uri)
               trackDbFileLocation = {
                 uri: new URL(
-                  genomesFile.get(genomeName).get('trackDb'),
+                  genomesFile.get(assemblyName).get('trackDb'),
                   new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                ),
+                ).href,
               }
             else
               trackDbFileLocation = {
-                localPath: genomesFile.get(genomeName).get('trackDb'),
+                localPath: genomesFile.get(assemblyName).get('trackDb'),
               }
             const trackDbFile = yield fetchTrackDbFile(trackDbFileLocation)
-            const tracks = generateTracks(trackDbFile, trackDbFileLocation)
+            const tracks = generateTracks(
+              trackDbFile,
+              trackDbFileLocation,
+              assemblyName,
+            )
             tracks.forEach(track =>
               self.addTrackConf(
                 track.type,
@@ -175,14 +225,13 @@ export default function(pluginManager) {
             },
           },
           sequence = {
-            configId: 'iTo6LoXUeJ',
             type: 'ReferenceSequence',
             adapter: {
-              configId: 'Zd0NLmtxPZ3',
               type: 'FromConfigAdapter',
               regions: [],
             },
           },
+          connectionName,
         ) {
           const assemblyModel = getType(self.assemblies).subType.type
           const assembly = assemblyModel.create({
@@ -191,7 +240,18 @@ export default function(pluginManager) {
             refNameAliases,
             sequence,
           })
-          self.assemblies.set(assemblyName, assembly)
+          if (connectionName) {
+            const connectionNames = self.connections.map(connection =>
+              readConfObject(connection, 'connectionName'),
+            )
+            if (!connectionNames.includes(connectionName))
+              throw new Error(
+                `Cannot add assembly to non-existent connection: ${connectionName}`,
+              )
+            self.volatile
+              .get(connectionName)
+              .assemblies.set(assemblyName, assembly)
+          } else self.assemblies.set(assemblyName, assembly)
         },
 
         removeAssembly(assemblyName) {

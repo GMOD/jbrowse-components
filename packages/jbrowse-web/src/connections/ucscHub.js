@@ -2,6 +2,9 @@ import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 // Polyfill for TextDecoder
 import 'fast-text-encoding'
 import { openLocation } from '../util/io'
+import ucscAssemblies from './ucscAssemblies'
+
+export { ucscAssemblies }
 
 export async function fetchHubFile(hubFileLocation) {
   const hubFileText = new TextDecoder('utf-8').decode(
@@ -24,7 +27,11 @@ export async function fetchTrackDbFile(trackDbFileLocation) {
   return new TrackDbFile(trackDbFileText)
 }
 
-export function generateTracks(trackDb, trackDbFileLocation) {
+export function generateTracks(
+  trackDb,
+  trackDbFileLocation,
+  assemblyName = undefined,
+) {
   const tracks = []
 
   trackDb.forEach((track, trackName) => {
@@ -47,13 +54,20 @@ export function generateTracks(trackDb, trackDbFileLocation) {
     } while (currentTrackName)
     parentTracks.reverse()
     const categories = [].concat(parentTracks)
-    tracks.push(makeTrackConfig(track, categories, trackDbFileLocation))
+    tracks.push(
+      makeTrackConfig(track, categories, trackDbFileLocation, assemblyName),
+    )
   })
 
   return tracks
 }
 
-function makeTrackConfig(track, categories, trackDbFileLocation) {
+function makeTrackConfig(
+  track,
+  categories,
+  trackDbFileLocation,
+  assemblyName = undefined,
+) {
   const trackType = track.get('type')
   let baseTrackType = trackType.split(' ')[0]
   if (
@@ -94,6 +108,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation) {
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
+        assemblyName,
         adapter: {
           type: 'BamAdapter',
           bamLocation: bigDataLocation,
@@ -129,6 +144,7 @@ function makeTrackConfig(track, categories, trackDbFileLocation) {
         description: track.get('longLabel'),
         category: categories,
         renderer: { type: 'WiggleRenderer' },
+        assemblyName,
         adapter: {
           type: 'BigWigAdapter',
           bigWigLocation: bigDataLocation,

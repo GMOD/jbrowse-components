@@ -73,22 +73,22 @@ function Contents(props) {
   const rootModel = getRoot(model)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
+  const assemblies = connection
+    ? rootModel.configuration.volatile.get(connection).assemblies
+    : rootModel.configuration.assemblies
   return (
     <>
-      {top && rootModel.configuration.assemblies.size ? (
+      {top && assemblies ? (
         <>
           <FormGroup>
-            {Array.from(
-              rootModel.configuration.assemblies,
-              ([assemblyName, assembly]) => (
-                <TrackEntry
-                  key={assembly.sequence.configId}
-                  model={model}
-                  trackConf={assembly.sequence}
-                  assemblyName={assemblyName}
-                />
-              ),
-            )}
+            {Array.from(assemblies, ([assemblyName, assembly]) => (
+              <TrackEntry
+                key={assembly.sequence.configId}
+                model={model}
+                trackConf={assembly.sequence}
+                assemblyName={assemblyName}
+              />
+            ))}
           </FormGroup>
           <Divider className={classes.divider} />
         </>

@@ -103,19 +103,24 @@ function HierarchicalTrackSelector(props) {
         }}
       />
       <Contents model={model} filterPredicate={filter} top />
-      <Typography variant="h5">Connections:</Typography>
-      {Array.from(rootModel.configuration.volatile.keys()).map(
-        connectionName => (
-          <React.Fragment key={connectionName}>
-            <Typography variant="h6">{connectionName}</Typography>
-            <Contents
-              model={model}
-              filterPredicate={filter}
-              connection={connectionName}
-            />
-          </React.Fragment>
-        ),
-      )}
+      {rootModel.configuration.volatile.size ? (
+        <>
+          <Typography variant="h5">Connections:</Typography>
+          {Array.from(rootModel.configuration.volatile.keys()).map(
+            connectionName => (
+              <React.Fragment key={connectionName}>
+                <Typography variant="h6">{connectionName}</Typography>
+                <Contents
+                  model={model}
+                  filterPredicate={filter}
+                  connection={connectionName}
+                  top
+                />
+              </React.Fragment>
+            ),
+          )}
+        </>
+      ) : null}
 
       <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
         <Icon>add</Icon>
