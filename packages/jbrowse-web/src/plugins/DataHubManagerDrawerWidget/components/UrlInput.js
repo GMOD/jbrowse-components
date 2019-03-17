@@ -5,7 +5,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import GenomeSelector from './GenomeSelector'
 
 const styles = theme => ({
@@ -22,143 +22,127 @@ const styles = theme => ({
   },
 })
 
-class UrlInput extends React.Component {
-  static propTypes = {
-    classes: PropTypes.shape({
-      textField: PropTypes.string.isRequired,
-      validateButton: PropTypes.string.isRequired,
-    }).isRequired,
-    enableNext: PropTypes.func.isRequired,
-    disableNext: PropTypes.func.isRequired,
-    setTrackDbUrl: PropTypes.func.isRequired,
-    setHubName: PropTypes.func.isRequired,
-    setAssemblyName: PropTypes.func.isRequired,
-  }
+function UrlInput(props) {
+  const [url, setUrl] = useState('')
+  const [resolvedUrl, setResolvedUrl] = useState(null)
+  const [hubTxt, setHubTxt] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorHelperMessage, setErrorHelperMessage] = useState(null)
 
-  state = {
-    url: '',
-    resolvedUrl: null,
-    hubTxt: null,
-    errorMessage: null,
-    errorHelperMessage: null,
-  }
+  const {
+    classes,
+    enableNext,
+    disableNext,
+    setTrackDbUrl,
+    setAssemblyName,
+    setHubName,
+  } = props
 
-  handleChange = event => {
-    const { disableNext } = this.props
+  function handleChange(event) {
     disableNext()
-    this.setState({
-      url: event.target.value,
-      resolvedUrl: null,
-      hubTxt: null,
-      errorMessage: null,
-      errorHelperMessage: null,
-    })
+    setUrl(event.target.value)
+    setResolvedUrl(null)
+    setHubTxt(null)
+    setErrorMessage(null)
+    setErrorHelperMessage(null)
   }
 
-  validateUrl = async () => {
-    const { setHubName } = this.props
-    let { url } = this.state
-    if (url.endsWith('/')) url += 'hub.txt'
+  async function validateUrl() {
+    let newUrl = url
+    if (newUrl.endsWith('/')) newUrl += 'hub.txt'
     let response
     try {
-      response = await fetch(url)
+      response = await fetch(newUrl)
     } catch (error) {
-      this.setState({
-        errorMessage: 'Network error',
-        errorHelperMessage: error.message,
-      })
+      setErrorMessage('Network error')
+      setErrorHelperMessage(error.message)
       return
     }
     if (!response.ok) {
-      this.setState({
-        errorMessage: 'Could not access the URL',
-        errorHelperMessage: `${response.status}: ${response.statusText}`,
-      })
+      setErrorMessage('Could not access the URL')
+      setErrorHelperMessage(`${response.status}: ${response.statusText}`)
       return
     }
-    const resolvedUrl = new URL(response.url)
+    const newResolvedUrl = new URL(response.url)
     const responseText = await response.text()
-    let hubTxt
+    let newHubTxt
     try {
-      hubTxt = new HubFile(responseText)
+      newHubTxt = new HubFile(responseText)
     } catch (error) {
-      this.setState({
-        url,
-        errorMessage: 'Could not parse hub.txt file',
-        errorHelperMessage: error.message,
-      })
+      setUrl(newUrl)
+      setErrorMessage('Could not parse hub.txt file')
+      setErrorHelperMessage(error.message)
       return
     }
-    setHubName(hubTxt.get('shortLabel'))
-    this.setState({
-      url,
-      resolvedUrl,
-      hubTxt,
-    })
+    setHubName(newHubTxt.get('shortLabel'))
+    setUrl(newUrl)
+    setResolvedUrl(newResolvedUrl)
+    setHubTxt(newHubTxt)
   }
 
-  render() {
-    const { classes, enableNext, setTrackDbUrl, setAssemblyName } = this.props
-    const {
-      url,
-      hubTxt,
-      resolvedUrl,
-      errorMessage,
-      errorHelperMessage,
-    } = this.state
-
-    return (
+  return (
+    <div>
       <div>
-        <div>
-          <TextField
-            autoFocus
-            label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
-            className={classes.textField}
-            value={url}
-            onChange={this.handleChange}
-            helperText={
-              errorMessage
-                ? errorHelperMessage
-                : 'This is usually a URL that leads to a "hub.txt" file'
-            }
-            error={Boolean(errorMessage)}
-            type="url"
-            onKeyUp={event => {
-              if (event.keyCode === 13) this.validateUrl()
-            }}
-            InputProps={
-              resolvedUrl
-                ? {
-                    endAdornment: (
-                      <InputAdornment disableTypography position="end">
-                        <Icon style={{ color: 'green' }}>check_circle</Icon>
-                      </InputAdornment>
-                    ),
-                  }
-                : {}
-            }
-          />
-        </div>
-        <Button
-          variant="contained"
-          onClick={this.validateUrl}
-          disabled={Boolean(errorMessage)}
-          className={classes.validateButton}
-        >
-          Validate URL
-        </Button>
-        {resolvedUrl ? (
-          <GenomeSelector
-            hubTxtUrl={resolvedUrl}
-            hubTxt={hubTxt}
-            enableNext={enableNext}
-            setTrackDbUrl={setTrackDbUrl}
-            setAssemblyName={setAssemblyName}
-          />
-        ) : null}
+        <TextField
+          autoFocus
+          label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
+          className={classes.textField}
+          value={url}
+          onChange={handleChange}
+          helperText={
+            errorMessage
+              ? errorHelperMessage
+              : 'This is usually a URL that leads to a "hub.txt" file'
+          }
+          error={Boolean(errorMessage)}
+          type="url"
+          onKeyUp={event => {
+            if (event.keyCode === 13) validateUrl()
+          }}
+          InputProps={
+            resolvedUrl
+              ? {
+                  endAdornment: (
+                    <InputAdornment disableTypography position="end">
+                      <Icon style={{ color: 'green' }}>check_circle</Icon>
+                    </InputAdornment>
+                  ),
+                }
+              : {}
+          }
+        />
       </div>
-    )
-  }
+      <Button
+        variant="contained"
+        onClick={validateUrl}
+        disabled={Boolean(errorMessage)}
+        className={classes.validateButton}
+      >
+        Validate URL
+      </Button>
+      {hubTxt ? (
+        <GenomeSelector
+          hubTxtUrl={resolvedUrl}
+          hubTxt={hubTxt}
+          enableNext={enableNext}
+          setTrackDbUrl={setTrackDbUrl}
+          setAssemblyName={setAssemblyName}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+UrlInput.propTypes = {
+  classes: PropTypes.shape({
+    textField: PropTypes.string.isRequired,
+    validateButton: PropTypes.string.isRequired,
+  }).isRequired,
+  enableNext: PropTypes.func.isRequired,
+  disableNext: PropTypes.func.isRequired,
+  setTrackDbUrl: PropTypes.func.isRequired,
+  setHubName: PropTypes.func.isRequired,
+  setAssemblyName: PropTypes.func.isRequired,
 }
 
 export default withStyles(styles)(UrlInput)

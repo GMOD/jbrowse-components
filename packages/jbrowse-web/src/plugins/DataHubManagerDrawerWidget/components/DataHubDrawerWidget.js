@@ -5,10 +5,11 @@ import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getRoot, applySnapshot, getSnapshot } from 'mobx-state-tree'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react-lite'
+import { applySnapshot, getRoot, getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import ConfirmationDialog from './ConfirmationDialog'
 import HubSourceSelect from './HubSourceSelect'
 import HubTypeSelect from './HubTypeSelect'
@@ -38,63 +39,34 @@ const steps = [
   'Confirm Selection',
 ]
 
-class DataHubDrawerWidget extends React.Component {
-  static propTypes = {
-    classes: propTypes.shape({
-      root: propTypes.string.isRequired,
-      stepper: propTypes.string.isRequired,
-      button: propTypes.string.isRequired,
-      actionsContainer: propTypes.string.isRequired,
-    }).isRequired,
-    model: MobxPropTypes.observableObject.isRequired,
-  }
+function DataHubDrawerWidget(props) {
+  // Step 0
+  const [hubType, setHubType] = useState(null) // ucsc, jbrowse1
+  // Step 1
+  const [hubSource, setHubSource] = useState('') // trackHubRegistry, ucscCustom, jbrowseRegistry, jbrowseCustom
+  // Step 2
+  const [trackDbUrl, setTrackDbUrl] = useState('')
+  const [hubName, setHubName] = useState('')
+  const [assemblyName, setAssemblyName] = useState('')
+  // Step 3
+  // eslint-disable-next-line react/no-unused-state
+  const [backupRootModel, setBackupRootModel] = useState(null)
 
-  state = {
-    // Step 0
-    hubType: null, // ucsc, jbrowse1
-    // Step 1
-    hubSource: null, // trackHubRegistry, ucscCustom, jbrowseRegistry, jbrowseCustom
-    // Step 2
-    trackDbUrl: '',
-    hubName: '',
-    assemblyName: '',
-    // Step 3
-    // eslint-disable-next-line react/no-unused-state
-    backupRootModel: null,
+  const [activeStep, setActiveStep] = useState(0)
+  const [nextEnabledThroughStep, setNextEnabledThroughStep] = useState(-1)
 
-    activeStep: 0,
-    nextEnabledThroughStep: -1,
-  }
+  const { classes, model } = props
+  const rootModel = getRoot(model)
 
-  setHubType = event => this.setState({ hubType: event.target.value })
-
-  setHubSource = event => this.setState({ hubSource: event.target.value })
-
-  setTrackDbUrl = newUrl => this.setState({ trackDbUrl: newUrl })
-
-  setHubName = newHubName => this.setState({ hubName: newHubName })
-
-  setAssemblyName = newAssemblyName =>
-    this.setState({ assemblyName: newAssemblyName })
-
-  get stepContent() {
-    const {
-      activeStep,
-      hubType,
-      hubSource,
-      trackDbUrl,
-      hubName,
-      assemblyName,
-    } = this.state
-    const { model } = this.props
+  function stepContent() {
     let StepComponent
     switch (activeStep) {
       case 0:
         return (
           <HubTypeSelect
             hubType={hubType}
-            setHubType={this.setHubType}
-            enableNext={() => this.enableNextThrough(activeStep)}
+            setHubType={event => setHubType(event.target.value)}
+            enableNext={() => setNextEnabledThroughStep(activeStep)}
           />
         )
       case 1:
@@ -102,8 +74,8 @@ class DataHubDrawerWidget extends React.Component {
           <HubSourceSelect
             hubType={hubType}
             hubSource={hubSource}
-            setHubSource={this.setHubSource}
-            enableNext={() => this.enableNextThrough(activeStep)}
+            setHubSource={event => setHubSource(event.target.value)}
+            enableNext={() => setNextEnabledThroughStep(activeStep)}
           />
         )
       case 2:
@@ -114,11 +86,11 @@ class DataHubDrawerWidget extends React.Component {
           return <Typography color="error">Unknown Data Hub Source</Typography>
         return (
           <StepComponent
-            enableNext={() => this.enableNextThrough(activeStep)}
-            disableNext={() => this.enableNextThrough(activeStep - 1)}
-            setTrackDbUrl={this.setTrackDbUrl}
-            setHubName={this.setHubName}
-            setAssemblyName={this.setAssemblyName}
+            enableNext={() => setNextEnabledThroughStep(activeStep)}
+            disableNext={() => setNextEnabledThroughStep(activeStep - 1)}
+            setTrackDbUrl={setTrackDbUrl}
+            setHubName={setHubName}
+            setAssemblyName={setAssemblyName}
           />
         )
       case 3:
@@ -127,7 +99,7 @@ class DataHubDrawerWidget extends React.Component {
             hubName={hubName}
             assemblyName={assemblyName}
             trackDbUrl={trackDbUrl}
-            enableNext={() => this.enableNextThrough(activeStep)}
+            enableNext={() => setNextEnabledThroughStep(activeStep)}
             rootModel={getRoot(model)}
           />
         )
@@ -136,87 +108,80 @@ class DataHubDrawerWidget extends React.Component {
     }
   }
 
-  enableNextThrough = step => this.setState({ nextEnabledThroughStep: step })
-
-  handleNext = () => {
-    const { activeStep } = this.state
-    const { model } = this.props
-    const rootModel = getRoot(model)
+  function handleNext() {
     if (activeStep === steps.length - 1) {
       rootModel.hideAllDrawerWidgets()
       return
     }
     if (activeStep === steps.length - 2) {
-      const backupRootModel = getSnapshot(rootModel)
+      const newBackupRootModel = getSnapshot(rootModel)
       // eslint-disable-next-line react/no-unused-state
-      this.setState({ backupRootModel })
+      setBackupRootModel(newBackupRootModel)
     }
-    this.setState(state => ({
-      activeStep: state.activeStep + 1,
-    }))
+    setActiveStep(activeStep + 1)
   }
 
-  handleBack = () => {
-    this.setState((state, props) => {
-      let { hubSource, backupRootModel } = state
-      const { rootModel } = props
-      const { activeStep } = state
-      if (activeStep === steps.length - 1) {
-        applySnapshot(rootModel, backupRootModel)
-        backupRootModel = null
-      }
-      const newStep = activeStep - 1
-      if (newStep < 1) hubSource = null
-      return {
-        activeStep: newStep,
-        nextEnabledThroughStep: newStep,
-        hubSource,
-        backupRootModel,
-      }
-    })
+  function handleBack() {
+    let newBackupRootModel = backupRootModel
+    if (activeStep === steps.length - 1) {
+      applySnapshot(rootModel, backupRootModel)
+      newBackupRootModel = null
+    }
+    const newStep = activeStep - 1
+    let newHubSource = hubSource
+    if (newStep < 1) newHubSource = null
+    setActiveStep(newStep)
+    setNextEnabledThroughStep(newStep)
+    setHubSource(newHubSource)
+    setBackupRootModel(newBackupRootModel)
   }
 
-  render() {
-    const { classes } = this.props
-    const { activeStep, nextEnabledThroughStep } = this.state
+  return (
+    <div className={classes.root}>
+      <Stepper
+        className={classes.stepper}
+        activeStep={activeStep}
+        orientation="vertical"
+      >
+        {steps.map((label, index) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+            <StepContent>
+              {stepContent()}
+              <div className={classes.actionsContainer}>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  className={classes.button}
+                >
+                  Back
+                </Button>
+                <Button
+                  disabled={index > nextEnabledThroughStep}
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}
+                  className={classes.button}
+                >
+                  {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                </Button>
+              </div>
+            </StepContent>
+          </Step>
+        ))}
+      </Stepper>
+    </div>
+  )
+}
 
-    return (
-      <div className={classes.root}>
-        <Stepper
-          className={classes.stepper}
-          activeStep={activeStep}
-          orientation="vertical"
-        >
-          {steps.map((label, index) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-              <StepContent>
-                {this.stepContent}
-                <div className={classes.actionsContainer}>
-                  <Button
-                    disabled={activeStep === 0}
-                    onClick={this.handleBack}
-                    className={classes.button}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    disabled={index > nextEnabledThroughStep}
-                    variant="contained"
-                    color="primary"
-                    onClick={this.handleNext}
-                    className={classes.button}
-                  >
-                    {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                  </Button>
-                </div>
-              </StepContent>
-            </Step>
-          ))}
-        </Stepper>
-      </div>
-    )
-  }
+DataHubDrawerWidget.propTypes = {
+  classes: propTypes.shape({
+    root: propTypes.string.isRequired,
+    stepper: propTypes.string.isRequired,
+    button: propTypes.string.isRequired,
+    actionsContainer: propTypes.string.isRequired,
+  }).isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(DataHubDrawerWidget))
