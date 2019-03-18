@@ -30,7 +30,7 @@ const hubSourceDescriptions = {
 }
 
 function HubSourceSelect(props) {
-  const { hubSource, setHubSource, hubType, enableNext } = props
+  const { hubSource, setHubSource, hubType } = props
   let hubSources = []
   if (hubType === 'ucsc')
     hubSources = [
@@ -39,13 +39,7 @@ function HubSourceSelect(props) {
     ]
   return (
     <FormControl component="fieldset">
-      <RadioGroup
-        value={hubSource}
-        onChange={event => {
-          setHubSource(event)
-          enableNext()
-        }}
-      >
+      <RadioGroup value={hubSource} onChange={setHubSource}>
         {hubSources.map(entry => (
           <FormControlLabel
             key={entry.value}
@@ -69,7 +63,6 @@ HubSourceSelect.propTypes = {
   hubSource: propTypes.string,
   hubType: propTypes.string,
   setHubSource: propTypes.func.isRequired,
-  enableNext: propTypes.func.isRequired,
 }
 
 export default HubSourceSelect

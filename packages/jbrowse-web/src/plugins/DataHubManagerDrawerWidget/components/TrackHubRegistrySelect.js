@@ -1,18 +1,14 @@
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import Collapse from '@material-ui/core/Collapse'
-import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Icon from '@material-ui/core/Icon'
-import IconButton from '@material-ui/core/IconButton'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import { withStyles } from '@material-ui/core/styles'
+import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { fetchHubFile } from '../../../connections/ucscHub'
+import GenomeSelector from './GenomeSelector'
 import SelectBox from './SelectBox'
 
 function QueryStatus(props) {
@@ -39,33 +35,26 @@ const styles = theme => ({
 function TrackHubRegistrySelect(props) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [assemblies, setAssemblies] = useState(null)
-  const [hubs, setHubs] = useState(new Map())
   const [selectedSpecies, setSelectedSpecies] = useState('')
   const [selectedAssembly, setSelectedAssembly] = useState('')
-  const [selectedHub, setSelectedHub] = useState('')
+  const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
-  const [hubCardExpanded, setHubCardExpanded] = useState({})
+  const [selectedHub, setSelectedHub] = useState('')
+  const [hubTxt, setHubTxt] = useState(null)
 
   const {
-    classes,
-    enableNext,
-    disableNext,
-    setTrackDbUrl,
     setHubName,
-    setAssemblyName,
+    hubUrl,
+    setHubUrl,
+    assemblyNames,
+    setAssemblyNames,
   } = props
 
   useEffect(() => {
     if (errorMessage) return
-    if (!assemblies) {
-      getAssemblies()
-      return
-    }
-    if (selectedAssembly && !hubs.size) {
-      getHubs(true)
-      return
-    }
-    if (hubs.size && !allHubsRetrieved) getHubs()
+    if (!assemblies) getAssemblies()
+    else if (selectedAssembly && !hubs.size) getHubs(true)
+    else if (hubs.size && !allHubsRetrieved) getHubs()
   })
 
   async function getAssemblies() {
@@ -92,53 +81,51 @@ function TrackHubRegistrySelect(props) {
       { page, entries_per_page: 5 },
     )
     if (response) {
-      response.items.forEach(item => {
+      for (const item of response.items) {
+        if (item.hub.url.startsWith('ftp'))
+          item.error = 'JBrowse web cannot add connections from FTP sources'
+        else {
+          let rawResponse
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            rawResponse = await fetch(item.hub.url, { method: 'HEAD' })
+          } catch (error) {
+            item.error = error.message
+          }
+          if (rawResponse && !rawResponse.ok)
+            item.error = `${response.status}: ${response.statusText}`
+        }
         newHubs.set(item.id, item)
-      })
+      }
       setHubs(newHubs)
       if (newHubs.size === response.total_entries) setAllHubsRetrieved(true)
     }
   }
 
-  async function getTrackDbUrl(hub) {
-    const fullHub = await doGet(
-      `https://www.trackhubregistry.org/api/search/trackdb/${hub.id}`,
-    )
-    if (fullHub) return fullHub.source.url
-    return null
-  }
-
   function handleSelectSpecies(event) {
     setSelectedSpecies(event.target.value)
     setSelectedAssembly('')
+    setHubs(new Map())
     setSelectedHub('')
-    setHubCardExpanded({})
-    disableNext()
+    setAllHubsRetrieved(false)
+    setHubTxt(null)
   }
 
   function handleSelectAssembly(event) {
     setSelectedAssembly(event.target.value)
+    setHubs(new Map())
     setSelectedHub('')
-    setHubCardExpanded({})
-    disableNext()
-    setAssemblyName(event.target.value)
+    setAllHubsRetrieved(false)
+    setHubTxt(null)
   }
 
   async function handleSelectHub(event) {
     setSelectedHub(event.target.value)
-    setHubCardExpanded({})
     const selectedHubObj = hubs.get(event.target.value)
     setHubName(selectedHubObj.hub.shortLabel)
-    const trackDbUrl = await getTrackDbUrl(selectedHubObj)
-    if (!trackDbUrl) return
-    setTrackDbUrl(new URL(trackDbUrl))
-    enableNext()
-  }
-
-  function handleHubCardExpand(hub) {
-    if (!hubCardExpanded[hub]) hubCardExpanded[hub] = true
-    else hubCardExpanded[hub] = false
-    setHubCardExpanded({ ...hubCardExpanded })
+    setHubUrl(selectedHubObj.hub.url)
+    const hubFile = await fetchHubFile({ uri: selectedHubObj.hub.url })
+    setHubTxt(hubFile)
   }
 
   async function doGet(url, params = {}) {
@@ -221,7 +208,7 @@ function TrackHubRegistrySelect(props) {
 
   if (!assemblies) {
     renderItems.push(
-      <QueryStatus key="querystatus" status="Connecting to registry..." />,
+      <QueryStatus key="queryStatus" status="Connecting to registry..." />,
     )
     return <div>{renderItems}</div>
   }
@@ -230,7 +217,7 @@ function TrackHubRegistrySelect(props) {
 
   renderItems.push(
     <SelectBox
-      key="speciesselect"
+      key="speciesSelect"
       selectList={speciesList}
       selectedItem={selectedSpecies}
       handleSelect={handleSelectSpecies}
@@ -242,7 +229,7 @@ function TrackHubRegistrySelect(props) {
   if (selectedSpecies)
     renderItems.push(
       <SelectBox
-        key="assemblyselect"
+        key="assemblySelect"
         selectList={assemblies[selectedSpecies]}
         selectedItem={selectedAssembly}
         handleSelect={handleSelectAssembly}
@@ -253,63 +240,53 @@ function TrackHubRegistrySelect(props) {
 
   if (selectedAssembly) {
     renderItems.push(
-      <div key="hubselect">
+      <div key="hubSelect">
         <Typography>Hubs:</Typography>
         <RadioGroup value={selectedHub} onChange={handleSelectHub}>
-          {Array.from(hubs.values()).map(hub => (
-            <FormControlLabel
-              key={hub.id}
-              value={hub.id}
-              label={
-                <Fade in>
-                  <Card
-                    className={classes.card}
-                    raised={hub.id === selectedHub}
-                  >
-                    <CardHeader
-                      title={hub.hub.shortLabel}
-                      titleTypographyProps={{ variant: 'body1' }}
-                      action={
-                        <IconButton onClick={() => handleHubCardExpand(hub.id)}>
-                          <Icon>
-                            {hub.id === selectedHub || hubCardExpanded[hub.id]
-                              ? 'expand_less'
-                              : 'expand_more'}
-                          </Icon>
-                        </IconButton>
-                      }
-                    />
-                    <Collapse
-                      in={hub.id === selectedHub || hubCardExpanded[hub.id]}
-                      unmountOnExit
-                    >
-                      <CardContent>
-                        <Typography paragraph>{hub.hub.longLabel}</Typography>
-                      </CardContent>
-                    </Collapse>
-                  </Card>
-                </Fade>
-              }
-              control={<Radio />}
-            />
-          ))}
+          {Array.from(hubs.values()).map(hub => {
+            const disabled = Boolean(hub.error)
+            return (
+              <Tooltip
+                key={hub.id}
+                title={disabled ? hub.error : hub.hub.longLabel}
+                placement="left"
+              >
+                <FormControlLabel
+                  value={hub.id}
+                  label={hub.hub.shortLabel}
+                  disabled={disabled}
+                  control={<Radio />}
+                />
+              </Tooltip>
+            )
+          })}
         </RadioGroup>
       </div>,
     )
     if (!allHubsRetrieved)
-      renderItems.push(<QueryStatus key="hubstatus" status="Retrieving hubs" />)
+      renderItems.push(<QueryStatus key="hubStatus" status="Retrieving hubs" />)
   }
+
+  if (hubTxt)
+    renderItems.push(
+      <GenomeSelector
+        key="genomeSelect"
+        hubUrl={hubUrl}
+        hubTxt={hubTxt}
+        assemblyNames={assemblyNames}
+        setAssemblyNames={setAssemblyNames}
+      />,
+    )
 
   return <div>{renderItems}</div>
 }
 
 TrackHubRegistrySelect.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  enableNext: PropTypes.func.isRequired,
-  disableNext: PropTypes.func.isRequired,
-  setTrackDbUrl: PropTypes.func.isRequired,
   setHubName: PropTypes.func.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
+  hubUrl: PropTypes.string.isRequired,
+  setHubUrl: PropTypes.func.isRequired,
+  assemblyNames: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setAssemblyNames: PropTypes.func.isRequired,
 }
 
 export default withStyles(styles)(TrackHubRegistrySelect)

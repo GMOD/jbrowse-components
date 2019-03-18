@@ -49,13 +49,21 @@ export function generateTracks(
       currentTrackName = trackDb.get(currentTrackName).get('parent')
       if (currentTrackName) {
         ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.get(currentTrackName).get('shortLabel'))
+        parentTracks.push(trackDb.get(currentTrackName))
       }
     } while (currentTrackName)
     parentTracks.reverse()
-    const categories = [].concat(parentTracks)
+    const categories = parentTracks.map(parentTrack =>
+      parentTrack.get('shortLabel'),
+    )
     tracks.push(
-      makeTrackConfig(track, categories, trackDbFileLocation, assemblyName),
+      makeTrackConfig(
+        track,
+        categories,
+        trackDbFileLocation,
+        assemblyName,
+        trackDb,
+      ),
     )
   })
 
@@ -67,8 +75,10 @@ function makeTrackConfig(
   categories,
   trackDbFileLocation,
   assemblyName = undefined,
+  trackDb,
 ) {
-  const trackType = track.get('type')
+  let trackType = track.get('type')
+  if (!trackType) trackType = trackDb.get(track.get('parent')).get('type')
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&

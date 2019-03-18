@@ -23,36 +23,33 @@ const styles = theme => ({
 })
 
 function UrlInput(props) {
-  const [url, setUrl] = useState('')
-  const [resolvedUrl, setResolvedUrl] = useState(null)
   const [hubTxt, setHubTxt] = useState(null)
+  const [validated, setValidated] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [errorHelperMessage, setErrorHelperMessage] = useState(null)
 
   const {
     classes,
-    enableNext,
-    disableNext,
-    setTrackDbUrl,
-    setAssemblyName,
+    assemblyNames,
+    setAssemblyNames,
     setHubName,
+    hubUrl,
+    setHubUrl,
   } = props
 
   function handleChange(event) {
-    disableNext()
-    setUrl(event.target.value)
-    setResolvedUrl(null)
+    setValidated(false)
+    setHubUrl(event.target.value)
     setHubTxt(null)
     setErrorMessage(null)
     setErrorHelperMessage(null)
   }
 
   async function validateUrl() {
-    let newUrl = url
-    if (newUrl.endsWith('/')) newUrl += 'hub.txt'
+    setValidated(true)
     let response
     try {
-      response = await fetch(newUrl)
+      response = await fetch(hubUrl.endsWith('/') ? `${hubUrl}hub.txt` : hubUrl)
     } catch (error) {
       setErrorMessage('Network error')
       setErrorHelperMessage(error.message)
@@ -63,20 +60,19 @@ function UrlInput(props) {
       setErrorHelperMessage(`${response.status}: ${response.statusText}`)
       return
     }
-    const newResolvedUrl = new URL(response.url)
+    const resolvedUrl = response.url
     const responseText = await response.text()
     let newHubTxt
     try {
       newHubTxt = new HubFile(responseText)
     } catch (error) {
-      setUrl(newUrl)
+      setHubUrl(resolvedUrl)
       setErrorMessage('Could not parse hub.txt file')
       setErrorHelperMessage(error.message)
       return
     }
     setHubName(newHubTxt.get('shortLabel'))
-    setUrl(newUrl)
-    setResolvedUrl(newResolvedUrl)
+    setHubUrl(resolvedUrl)
     setHubTxt(newHubTxt)
   }
 
@@ -87,7 +83,7 @@ function UrlInput(props) {
           autoFocus
           label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
           className={classes.textField}
-          value={url}
+          value={hubUrl}
           onChange={handleChange}
           helperText={
             errorMessage
@@ -100,7 +96,7 @@ function UrlInput(props) {
             if (event.keyCode === 13) validateUrl()
           }}
           InputProps={
-            resolvedUrl
+            validated && !errorMessage
               ? {
                   endAdornment: (
                     <InputAdornment disableTypography position="end">
@@ -122,11 +118,10 @@ function UrlInput(props) {
       </Button>
       {hubTxt ? (
         <GenomeSelector
-          hubTxtUrl={resolvedUrl}
+          hubUrl={hubUrl}
           hubTxt={hubTxt}
-          enableNext={enableNext}
-          setTrackDbUrl={setTrackDbUrl}
-          setAssemblyName={setAssemblyName}
+          assemblyNames={assemblyNames}
+          setAssemblyNames={setAssemblyNames}
         />
       ) : null}
     </div>
@@ -134,15 +129,12 @@ function UrlInput(props) {
 }
 
 UrlInput.propTypes = {
-  classes: PropTypes.shape({
-    textField: PropTypes.string.isRequired,
-    validateButton: PropTypes.string.isRequired,
-  }).isRequired,
-  enableNext: PropTypes.func.isRequired,
-  disableNext: PropTypes.func.isRequired,
-  setTrackDbUrl: PropTypes.func.isRequired,
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   setHubName: PropTypes.func.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
+  hubUrl: PropTypes.string.isRequired,
+  setHubUrl: PropTypes.func.isRequired,
+  assemblyNames: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setAssemblyNames: PropTypes.func.isRequired,
 }
 
 export default withStyles(styles)(UrlInput)

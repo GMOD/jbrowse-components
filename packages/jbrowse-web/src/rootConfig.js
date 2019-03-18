@@ -51,6 +51,10 @@ export default function(pluginManager) {
               type: 'fileLocation',
               defaultValue: { uri: '/path/to/hub.txt' },
             },
+            connectionOptions: {
+              type: 'frozen',
+              defaultValue: {},
+            },
           },
           { explicitlyTyped: true },
         ),
@@ -80,6 +84,7 @@ export default function(pluginManager) {
         //     connectionLocation: {
         //       uri: 'https://jbrowse.org/volvoxhub/hub.txt',
         //     },
+        //     connectionOptions: { assemblyNames: ['volvox'] },
         //   })
         // },
 
@@ -131,6 +136,7 @@ export default function(pluginManager) {
         },
 
         fetchUcsc: flow(function* fetchUcsc(connectionConf) {
+          const opts = readConfObject(connectionConf, 'connectionOptions') || {}
           const hubFileLocation = readConfObject(
             connectionConf,
             'connectionLocation',
@@ -143,7 +149,8 @@ export default function(pluginManager) {
             }
           else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
           const genomesFile = yield fetchGenomesFile(genomesFileLocation)
-          for (const assemblyName of genomesFile.keys()) {
+          const assemblyNames = opts.assemblyNames || genomesFile.keys()
+          for (const assemblyName of assemblyNames) {
             const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
             if (twoBitPath) {
               let twoBitLocation

@@ -3,14 +3,14 @@ import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
+import Checkbox from '@material-ui/core/Checkbox'
 import FormControl from '@material-ui/core/FormControl'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import InputLabel from '@material-ui/core/InputLabel'
+import FormLabel from '@material-ui/core/FormLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
-import MenuItem from '@material-ui/core/MenuItem'
-import Select from '@material-ui/core/Select'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
@@ -18,24 +18,15 @@ import React, { useState, useEffect } from 'react'
 function GenomeSelector(props) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [genomesFile, setGenomesFile] = useState(null)
-  const [selectedGenome, setSelectedGenome] = useState('')
 
-  const {
-    enableNext,
-    hubTxt,
-    hubTxtUrl,
-    setTrackDbUrl,
-    setAssemblyName,
-  } = props
+  const { hubTxt, hubUrl, assemblyNames, setAssemblyNames } = props
 
   useEffect(() => {
-    if (!genomesFile) getGenomesFile()
-    if (genomesFile && !selectedGenome)
-      handleSelect(Array.from(genomesFile.values())[0].get('genome'))
-  })
+    getGenomesFile()
+  }, [])
 
   async function getGenomesFile() {
-    const genomesFileUrl = new URL(hubTxt.get('genomesFile'), hubTxtUrl)
+    const genomesFileUrl = new URL(hubTxt.get('genomesFile'), new URL(hubUrl))
     let response
     try {
       response = await fetch(genomesFileUrl)
@@ -75,14 +66,13 @@ function GenomeSelector(props) {
     setGenomesFile(newGenomesFile)
   }
 
-  function handleSelect(genomeName) {
-    setSelectedGenome(genomeName)
-    const trackDbUrl = genomesFile.get(genomeName).get('trackDb')
-    setTrackDbUrl(
-      new URL(trackDbUrl, new URL(hubTxt.get('genomesFile'), hubTxtUrl)),
-    )
-    setAssemblyName(genomesFile.get(genomeName).get('genome'))
-    enableNext()
+  function handleChange(event) {
+    const assemblyName = event.target.value
+    if (assemblyNames.includes(assemblyName))
+      setAssemblyNames(
+        assemblyNames.filter(assembly => assembly !== assemblyName),
+      )
+    else setAssemblyNames(assemblyNames.concat([assemblyName]))
   }
 
   if (errorMessage)
@@ -102,21 +92,26 @@ function GenomeSelector(props) {
         />
         <CardContent>
           <FormControl>
-            <InputLabel>Genome</InputLabel>
-            <Select
-              value={selectedGenome}
-              onChange={event => handleSelect(event.target.value)}
-            >
-              {Array.from(genomesFile.values()).map(genome => {
-                const genomeName = genome.get('genome')
-                return (
-                  <MenuItem key={genomeName} value={genomeName}>
-                    {genomeName}
-                  </MenuItem>
-                )
-              })}
-            </Select>
-            <FormHelperText>Genomes available in this hub</FormHelperText>
+            <FormLabel>Assemblies</FormLabel>
+            {Array.from(genomesFile.values()).map(genome => {
+              const genomeName = genome.get('genome')
+              return (
+                <FormControlLabel
+                  key={genomeName}
+                  control={
+                    <Checkbox
+                      checked={assemblyNames.includes(genomeName)}
+                      onChange={handleChange}
+                      value={genomeName}
+                    />
+                  }
+                  label={genomeName}
+                />
+              )
+            })}
+            <FormHelperText>
+              Select the assemblies you would like to add
+            </FormHelperText>
           </FormControl>
         </CardContent>
         <CardActions>
@@ -129,7 +124,7 @@ function GenomeSelector(props) {
           </IconButton>
           {hubTxt.get('descriptionUrl') ? (
             <IconButton
-              href={new URL(hubTxt.get('descriptionUrl'), hubTxtUrl).href}
+              href={new URL(hubTxt.get('descriptionUrl'), new URL(hubUrl)).href}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -143,15 +138,10 @@ function GenomeSelector(props) {
 }
 
 GenomeSelector.propTypes = {
-  hubTxtUrl: PropTypes.instanceOf(URL).isRequired,
+  hubUrl: PropTypes.string.isRequired,
   hubTxt: PropTypes.instanceOf(Map).isRequired,
-  enableNext: PropTypes.func,
-  setTrackDbUrl: PropTypes.func.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
-}
-
-GenomeSelector.defaultProps = {
-  enableNext: () => {},
+  assemblyNames: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setAssemblyNames: PropTypes.func.isRequired,
 }
 
 export default GenomeSelector
