@@ -40,7 +40,7 @@ export default class BigWigAdapter extends BaseAdapter {
       records.forEach(record => {
         observer.next(
           new SimpleFeature({
-            id: record.start,
+            id: record.start + 1,
             data: record,
           }),
         )
