@@ -84,6 +84,24 @@
       }
     },
     {
+      "type": "BasicTrack",
+      "name": "volvox bw",
+      "category": [
+        "Bee Category",
+        "Boo Category"
+      ],
+      "assemblyName": "vvx",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox.bw"
+        }
+      },
+      "renderer": {
+        "type": "WiggleRenderer"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "name": "volvox-sorted all green",
       "category": [
