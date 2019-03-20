@@ -4,6 +4,7 @@ import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
@@ -29,6 +30,9 @@ const styles = theme => ({
     marginTop: theme.spacing.unit * 2,
     bottom: theme.spacing.unit * 2,
     right: theme.spacing.unit * 2,
+  },
+  connectionsPaper: {
+    padding: theme.spacing.unit,
   },
 })
 
@@ -108,7 +112,11 @@ function HierarchicalTrackSelector(props) {
           <Typography variant="h5">Connections:</Typography>
           {Array.from(rootModel.configuration.volatile.keys()).map(
             connectionName => (
-              <React.Fragment key={connectionName}>
+              <Paper
+                key={connectionName}
+                className={classes.connectionsPaper}
+                elevation={8}
+              >
                 <Typography variant="h6">{connectionName}</Typography>
                 <Contents
                   model={model}
@@ -116,7 +124,7 @@ function HierarchicalTrackSelector(props) {
                   connection={connectionName}
                   top
                 />
-              </React.Fragment>
+              </Paper>
             ),
           )}
         </>

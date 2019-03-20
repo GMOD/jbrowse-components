@@ -5,31 +5,31 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-4 MuiFormControl-fullWidth-7 HierarchicalTrackSelector-searchBox-2"
+    className="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      className="MuiFormLabel-root-19 MuiFormLabel-error-22 MuiInputLabel-error-11 MuiInputLabel-root-8 MuiInputLabel-formControl-13 MuiInputLabel-animated-16 MuiInputLabel-shrink-15"
+      className="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
       data-shrink={true}
     >
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-39 MuiInput-root-26 MuiInput-underline-30 MuiInputBase-error-45 MuiInput-error-31 MuiInputBase-fullWidth-48 MuiInput-fullWidth-33 MuiInputBase-formControl-40 MuiInput-formControl-27 MuiInputBase-adornedStart-43 MuiInputBase-adornedEnd-44"
+      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
       onClick={[Function]}
     >
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionStart-58"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-61"
+          className="material-icons MuiIcon-root-62"
         >
           search
         </span>
       </div>
       <input
         aria-invalid={true}
-        className="MuiInputBase-input-49 MuiInput-input-34 MuiInputBase-inputAdornedStart-54 MuiInputBase-inputAdornedEnd-55"
+        className="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
         disabled={false}
         onBlur={[Function]}
         onChange={[Function]}
@@ -39,10 +39,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         value=""
       />
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionEnd-59"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
       >
         <button
-          className="MuiButtonBase-root-76 MuiIconButton-root-70"
+          className="MuiButtonBase-root-77 MuiIconButton-root-71"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
@@ -60,38 +60,38 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           type="button"
         >
           <span
-            className="MuiIconButton-label-75"
+            className="MuiIconButton-label-76"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-61"
+              className="material-icons MuiIcon-root-62"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-109"
+            className="MuiTouchRipple-root-110"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-79 MuiFormHelperText-error-80"
+      className="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <hr
-    className="MuiDivider-root-90 Contents-divider-87"
+    className="MuiDivider-root-91 Contents-divider-88"
   />
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-95 MuiFab-secondary-98 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -109,17 +109,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     type="button"
   >
     <span
-      className="MuiFab-label-96"
+      className="MuiFab-label-97"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+        className="material-icons MuiIcon-root-62"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-109"
+      className="MuiTouchRipple-root-110"
     />
   </button>
 </div>
@@ -130,31 +130,31 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-4 MuiFormControl-fullWidth-7 HierarchicalTrackSelector-searchBox-2"
+    className="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      className="MuiFormLabel-root-19 MuiFormLabel-error-22 MuiInputLabel-error-11 MuiInputLabel-root-8 MuiInputLabel-formControl-13 MuiInputLabel-animated-16 MuiInputLabel-shrink-15"
+      className="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
       data-shrink={true}
     >
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-39 MuiInput-root-26 MuiInput-underline-30 MuiInputBase-error-45 MuiInput-error-31 MuiInputBase-fullWidth-48 MuiInput-fullWidth-33 MuiInputBase-formControl-40 MuiInput-formControl-27 MuiInputBase-adornedStart-43 MuiInputBase-adornedEnd-44"
+      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
       onClick={[Function]}
     >
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionStart-58"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-61"
+          className="material-icons MuiIcon-root-62"
         >
           search
         </span>
       </div>
       <input
         aria-invalid={true}
-        className="MuiInputBase-input-49 MuiInput-input-34 MuiInputBase-inputAdornedStart-54 MuiInputBase-inputAdornedEnd-55"
+        className="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
         disabled={false}
         onBlur={[Function]}
         onChange={[Function]}
@@ -164,10 +164,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         value=""
       />
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionEnd-59"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
       >
         <button
-          className="MuiButtonBase-root-76 MuiIconButton-root-70"
+          className="MuiButtonBase-root-77 MuiIconButton-root-71"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
@@ -185,38 +185,38 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           type="button"
         >
           <span
-            className="MuiIconButton-label-75"
+            className="MuiIconButton-label-76"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-61"
+              className="material-icons MuiIcon-root-62"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-109"
+            className="MuiTouchRipple-root-110"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-79 MuiFormHelperText-error-80"
+      className="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <hr
-    className="MuiDivider-root-90 Contents-divider-87"
+    className="MuiDivider-root-91 Contents-divider-88"
   />
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-95 MuiFab-secondary-98 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -234,17 +234,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     type="button"
   >
     <span
-      className="MuiFab-label-96"
+      className="MuiFab-label-97"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+        className="material-icons MuiIcon-root-62"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-109"
+      className="MuiTouchRipple-root-110"
     />
   </button>
 </div>
@@ -255,31 +255,31 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
   className="HierarchicalTrackSelector-root-1"
 >
   <div
-    className="MuiFormControl-root-4 MuiFormControl-fullWidth-7 HierarchicalTrackSelector-searchBox-2"
+    className="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      className="MuiFormLabel-root-19 MuiFormLabel-error-22 MuiInputLabel-error-11 MuiInputLabel-root-8 MuiInputLabel-formControl-13 MuiInputLabel-animated-16 MuiInputLabel-shrink-15"
+      className="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
       data-shrink={true}
     >
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-39 MuiInput-root-26 MuiInput-underline-30 MuiInputBase-error-45 MuiInput-error-31 MuiInputBase-fullWidth-48 MuiInput-fullWidth-33 MuiInputBase-formControl-40 MuiInput-formControl-27 MuiInputBase-adornedStart-43 MuiInputBase-adornedEnd-44"
+      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
       onClick={[Function]}
     >
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionStart-58"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
       >
         <span
           aria-hidden="true"
-          className="material-icons MuiIcon-root-61"
+          className="material-icons MuiIcon-root-62"
         >
           search
         </span>
       </div>
       <input
         aria-invalid={true}
-        className="MuiInputBase-input-49 MuiInput-input-34 MuiInputBase-inputAdornedStart-54 MuiInputBase-inputAdornedEnd-55"
+        className="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
         disabled={false}
         onBlur={[Function]}
         onChange={[Function]}
@@ -289,10 +289,10 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
         value=""
       />
       <div
-        className="MuiInputAdornment-root-56 MuiInputAdornment-positionEnd-59"
+        className="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
       >
         <button
-          className="MuiButtonBase-root-76 MuiIconButton-root-70"
+          className="MuiButtonBase-root-77 MuiIconButton-root-71"
           disabled={false}
           onBlur={[Function]}
           onClick={[Function]}
@@ -310,38 +310,38 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
           type="button"
         >
           <span
-            className="MuiIconButton-label-75"
+            className="MuiIconButton-label-76"
           >
             <span
               aria-hidden="true"
-              className="material-icons MuiIcon-root-61"
+              className="material-icons MuiIcon-root-62"
             >
               clear
             </span>
           </span>
           <span
-            className="MuiTouchRipple-root-109"
+            className="MuiTouchRipple-root-110"
           />
         </button>
       </div>
     </div>
     <p
-      className="MuiFormHelperText-root-79 MuiFormHelperText-error-80"
+      className="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
     >
       No matches
     </p>
   </div>
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <hr
-    className="MuiDivider-root-90 Contents-divider-87"
+    className="MuiDivider-root-91 Contents-divider-88"
   />
   <div
-    className="MuiFormGroup-root-88"
+    className="MuiFormGroup-root-89"
   />
   <button
-    className="MuiButtonBase-root-76 MuiFab-root-95 MuiFab-secondary-98 HierarchicalTrackSelector-fab-3"
+    className="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
     disabled={false}
     onBlur={[Function]}
     onClick={[Function]}
@@ -359,17 +359,17 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
     type="button"
   >
     <span
-      className="MuiFab-label-96"
+      className="MuiFab-label-97"
     >
       <span
         aria-hidden="true"
-        className="material-icons MuiIcon-root-61"
+        className="material-icons MuiIcon-root-62"
       >
         add
       </span>
     </span>
     <span
-      className="MuiTouchRipple-root-109"
+      className="MuiTouchRipple-root-110"
     />
   </button>
 </div>
