@@ -46,6 +46,7 @@ function HubSourceSelect(props) {
             control={<Radio />}
             value={entry.value}
             label={entry.label}
+            data-testid={entry.value}
           />
         ))}
       </RadioGroup>

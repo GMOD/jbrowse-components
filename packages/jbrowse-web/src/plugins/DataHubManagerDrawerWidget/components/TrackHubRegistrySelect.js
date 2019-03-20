@@ -51,9 +51,12 @@ function TrackHubRegistrySelect(props) {
   } = props
 
   useEffect(() => {
+    getAssemblies()
+  }, [])
+
+  useEffect(() => {
     if (errorMessage) return
-    if (!assemblies) getAssemblies()
-    else if (selectedAssembly && !hubs.size) getHubs(true)
+    if (selectedAssembly && !hubs.size) getHubs(true)
     else if (hubs.size && !allHubsRetrieved) getHubs()
   })
 

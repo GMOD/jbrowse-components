@@ -24,7 +24,6 @@ const styles = theme => ({
 
 function UrlInput(props) {
   const [hubTxt, setHubTxt] = useState(null)
-  const [validated, setValidated] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [errorHelperMessage, setErrorHelperMessage] = useState(null)
 
@@ -38,7 +37,6 @@ function UrlInput(props) {
   } = props
 
   function handleChange(event) {
-    setValidated(false)
     setHubUrl(event.target.value)
     setHubTxt(null)
     setErrorMessage(null)
@@ -46,7 +44,6 @@ function UrlInput(props) {
   }
 
   async function validateUrl() {
-    setValidated(true)
     let response
     try {
       response = await fetch(hubUrl.endsWith('/') ? `${hubUrl}hub.txt` : hubUrl)
@@ -78,41 +75,42 @@ function UrlInput(props) {
 
   return (
     <div>
-      <div>
-        <TextField
-          autoFocus
-          label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
-          className={classes.textField}
-          value={hubUrl}
-          onChange={handleChange}
-          helperText={
-            errorMessage
-              ? errorHelperMessage
-              : 'This is usually a URL that leads to a "hub.txt" file'
-          }
-          error={Boolean(errorMessage)}
-          type="url"
-          onKeyUp={event => {
-            if (event.keyCode === 13) validateUrl()
-          }}
-          InputProps={
-            validated && !errorMessage
-              ? {
-                  endAdornment: (
-                    <InputAdornment disableTypography position="end">
-                      <Icon style={{ color: 'green' }}>check_circle</Icon>
-                    </InputAdornment>
-                  ),
-                }
-              : {}
-          }
-        />
-      </div>
+      <TextField
+        autoFocus
+        label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
+        className={classes.textField}
+        value={hubUrl}
+        onChange={handleChange}
+        helperText={
+          errorMessage
+            ? errorHelperMessage
+            : 'This is usually a URL that leads to a "hub.txt" file'
+        }
+        error={Boolean(errorMessage)}
+        type="url"
+        onKeyUp={event => {
+          if (event.keyCode === 13) validateUrl()
+        }}
+        inputProps={{ 'data-testid': 'trackHubUrlInput' }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
+        InputProps={
+          hubTxt && !errorMessage
+            ? {
+                endAdornment: (
+                  <InputAdornment disableTypography position="end">
+                    <Icon style={{ color: 'green' }}>check_circle</Icon>
+                  </InputAdornment>
+                ),
+              }
+            : {}
+        }
+      />
       <Button
         variant="contained"
         onClick={validateUrl}
         disabled={Boolean(errorMessage)}
         className={classes.validateButton}
+        data-testid="trackHubUrlInputValidate"
       >
         Validate URL
       </Button>

@@ -152,6 +152,7 @@ function DataHubDrawerWidget(props) {
                   color="primary"
                   onClick={handleNext}
                   className={classes.button}
+                  data-testid="dataHubNext"
                 >
                   {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                 </Button>
