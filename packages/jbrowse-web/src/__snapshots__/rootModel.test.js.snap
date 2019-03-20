@@ -148,7 +148,7 @@ Object {
         "type": "MainMenuBar",
       },
     ],
-    "sessionName": "Volvox Example",
+    "sessionName": "Volvox Example w/Mainthread driver",
     "views": Array [
       Object {
         "bpPerPx": 0.05,

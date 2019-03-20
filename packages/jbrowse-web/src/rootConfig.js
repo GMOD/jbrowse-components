@@ -77,16 +77,26 @@ export default function(pluginManager) {
     },
     {
       actions: self => ({
-        // afterAttach() {
-        //   self.addConnection({
-        //     connectionName: 'volvoxHub',
-        //     connectionType: 'trackHub',
-        //     connectionLocation: {
-        //       uri: 'https://jbrowse.org/volvoxhub/hub.txt',
-        //     },
-        //     connectionOptions: { assemblyNames: ['volvox'] },
-        //   })
-        // },
+        afterAttach() {
+          self.connections.forEach(connectionConf => {
+            const connectionType = readConfObject(
+              connectionConf,
+              'connectionType',
+            )
+            if (!['trackHub'].includes(connectionType))
+              throw new Error(
+                `Cannot add connection, unsupported connection type: ${connectionType}`,
+              )
+            const connectionName = readConfObject(
+              connectionConf,
+              'connectionName',
+            )
+            self.volatile.set(connectionName, {
+              configId: connectionName,
+            })
+            if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
+          })
+        },
 
         addTrackConf(typeName, data, connectionName) {
           const type = getRoot(self).pluginManager.getTrackType(typeName)
@@ -109,7 +119,10 @@ export default function(pluginManager) {
         },
 
         addConnection(connectionConf) {
-          const { connectionType } = connectionConf
+          const connectionType = readConfObject(
+            connectionConf,
+            'connectionType',
+          )
           if (!['trackHub'].includes(connectionType))
             throw new Error(
               `Cannot add connection, unsupported connection type: ${connectionType}`,
@@ -117,16 +130,18 @@ export default function(pluginManager) {
           const connectionNames = self.connections.map(connection =>
             readConfObject(connection, 'connectionName'),
           )
-          const { connectionName } = connectionConf
+          const connectionName = readConfObject(
+            connectionConf,
+            'connectionName',
+          )
           if (connectionNames.includes(connectionName))
             throw new Error(
               `Cannot add connection, connection name already exists: ${connectionName}`,
             )
+          self.connections.push(connectionConf)
           self.volatile.set(connectionName, {
             configId: connectionName,
-            tracks: [],
           })
-          self.connections.push(connectionConf)
           self.fetchUcsc(connectionConf)
         },
 

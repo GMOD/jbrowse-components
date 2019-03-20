@@ -245,7 +245,7 @@
     "defaultDriver": "MainThreadRpcDriver"
   },
   "defaultSession": {
-    "sessionName": "Volvox Example",
+    "sessionName": "Volvox Example w/Mainthread driver",
     "menuBars": [
       {
         "type": "MainMenuBar",
