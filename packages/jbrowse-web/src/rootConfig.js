@@ -87,14 +87,7 @@ export default function(pluginManager) {
               throw new Error(
                 `Cannot add connection, unsupported connection type: ${connectionType}`,
               )
-            const connectionName = readConfObject(
-              connectionConf,
-              'connectionName',
-            )
-            self.volatile.set(connectionName, {
-              configId: connectionName,
-            })
-            if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
+            self.configureConnection(connectionConf)
           })
         },
 
@@ -139,10 +132,22 @@ export default function(pluginManager) {
               `Cannot add connection, connection name already exists: ${connectionName}`,
             )
           self.connections.push(connectionConf)
+          self.configureConnection(connectionConf)
+        },
+
+        configureConnection(connectionConf) {
+          const connectionName = readConfObject(
+            connectionConf,
+            'connectionName',
+          )
+          const connectionType = readConfObject(
+            connectionConf,
+            'connectionType',
+          )
           self.volatile.set(connectionName, {
             configId: connectionName,
           })
-          self.fetchUcsc(connectionConf)
+          if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
         },
 
         removeConnection(connectionConf) {
@@ -235,7 +240,15 @@ export default function(pluginManager) {
               ),
             )
           }
+          self.updateAssemblyManager()
         }),
+
+        updateAssemblyManager() {
+          const rootModel = getRoot(self)
+          rootModel.assemblyManager.updateAssemblyConfigs(
+            rootModel.configuration,
+          )
+        },
 
         addAssembly(
           assemblyName,

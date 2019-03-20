@@ -170,78 +170,6 @@
         ]
       }
     ],
-    "assemblies": {
-      "volvox": {
-        "configId": "volvox",
-        "sequence": {
-          "configId": "iTo6LoXUeI",
-          "type": "ReferenceSequence",
-          "adapter": {
-            "type": "TwoBitAdapter",
-            "twoBitLocation": {
-              "uri": "/test_data/volvox.2bit"
-            }
-          },
-          "rendering": {
-            "type": "DivSequenceRenderer"
-          }
-        },
-        "aliases": [
-          "vvx"
-        ],
-        "refNameAliases": {
-          "adapter": {
-            "configId": "Zd0NLmtxPZ2",
-            "type": "FromConfigAdapter",
-            "features": [
-              {
-                "refName": "ctgA",
-                "uniqueId": "alias1",
-                "aliases": [
-                  "A",
-                  "contigA"
-                ]
-              },
-              {
-                "refName": "ctgB",
-                "uniqueId": "alias2",
-                "aliases": [
-                  "B",
-                  "contigB"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "volvox2": {
-        "configId": "volvox2",
-        "sequence": {
-          "type": "ReferenceSequence",
-          "adapter": {
-            "type": "FromConfigAdapter",
-            "features": [
-              {
-                "refName": "fakeContig",
-                "uniqueId": "firstId",
-                "start": 0,
-                "end": 1000,
-                "seq": "cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg"
-              }
-            ]
-          },
-          "rendering": {
-            "type": "DivSequenceRenderer"
-          }
-        },
-        "refNameAliases": {
-          "adapter": {
-            "configId": "Zd0NLmtxPZ2",
-            "type": "FromConfigAdapter"
-          }
-        }
-      }
-    },
     "connections": [
       {
         "type": "connection",
@@ -283,11 +211,6 @@
           "offsetPx": 2000,
           "bpPerPx": 0.05,
           "tracks": [
-            {
-              "type": "ReferenceSequence",
-              "height": 80,
-              "configuration": "iTo6LoXUeI"
-            },
             {
               "type": "FilteringTrack",
               "height": 100,
