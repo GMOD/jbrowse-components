@@ -127,7 +127,7 @@ function JBrowse(props) {
         getMenuBarType={pluginManager.getMenuBarType}
         sessionNames={Array.from(sessions.keys())}
         activeSession={activeSession}
-        setSession={setActiveSession}
+        setActiveSession={setActiveSession}
       />
     </MuiThemeProvider>
   )
