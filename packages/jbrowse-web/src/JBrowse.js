@@ -4,7 +4,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles'
 import 'fast-text-encoding'
 import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import shortid from 'shortid'
 import 'typeface-roboto'
 import './fonts/material-icons.css'
@@ -64,84 +64,82 @@ async function createRootModel(modelType, config) {
 }
 
 // the main JBrowse component
-class JBrowse extends React.Component {
-  static propTypes = {
-    configs: PropTypes.arrayOf(PropTypes.shape()),
-    workerGroups: PropTypes.shape().isRequired,
-  }
+function JBrowse(props) {
+  const [modelType, setModelType] = useState(undefined)
+  const [pluginManager, setPluginManager] = useState(undefined)
+  const [sessions, setSessions] = useState(undefined)
+  const [activeSession, setActiveSession] = useState(undefined)
 
-  static defaultProps = {
-    configs: [],
-  }
+  const { configs, workerGroups } = props
 
-  state = {
-    modelType: undefined,
-    pluginManager: undefined,
-    sessions: undefined,
-    activeSession: undefined,
-  }
+  useEffect(() => {
+    setup()
+  }, [])
 
-  async componentDidMount() {
-    const { configs, workerGroups } = this.props
-    const { modelType, pluginManager } = createModelType(workerGroups)
+  async function setup() {
+    const {
+      modelType: newModelType,
+      pluginManager: newPluginManager,
+    } = createModelType(workerGroups)
 
-    const sessions = new Map()
-    let activeSession
+    const newSessions = new Map()
+    let newActiveSession
     for (const config of configs) {
       // eslint-disable-next-line no-await-in-loop
       const { sessionName, rootModel } = await createRootModel(
-        modelType,
+        newModelType,
         config,
       )
-      if (!activeSession) activeSession = sessionName
-      sessions.set(sessionName, rootModel)
+      if (!newActiveSession) newActiveSession = sessionName
+      newSessions.set(sessionName, rootModel)
     }
 
-    this.setState({
-      modelType,
-      pluginManager,
-      sessions,
-      activeSession,
-    })
+    setModelType(newModelType)
+    setPluginManager(newPluginManager)
+    setSessions(newSessions)
+    setActiveSession(newActiveSession)
 
     // poke some things for testing (this stuff will eventually be removed)
     window.getSnapshot = getSnapshot
     window.resolveIdentifier = resolveIdentifier
   }
 
-  setSession = sessionName => {
-    this.setState({ activeSession: sessionName })
-  }
+  // async function addSession(config) {
+  //   const newSessions = sessions
+  //   const { sessionName, rootModel } = await createRootModel(modelType, config)
+  //   newSessions.set(sessionName, rootModel)
+  //   setSessions(newSessions)
+  // }
 
-  addSession = async config => {
-    const { modelType, sessions } = this.state
-    const { sessionName, rootModel } = await createRootModel(modelType, config)
-    sessions.set(sessionName, rootModel)
-  }
+  if (!(modelType && pluginManager && sessions && activeSession))
+    return <div>loading...</div>
 
-  render() {
-    const { modelType, pluginManager, sessions, activeSession } = this.state
-    if (!(modelType && pluginManager && sessions && activeSession))
-      return <div>loading...</div>
+  // poke some things for testing (this stuff will eventually be removed)
+  window.MODEL = sessions.get(activeSession)
 
-    // poke some things for testing (this stuff will eventually be removed)
-    window.MODEL = sessions.get(activeSession)
+  return (
+    <MuiThemeProvider theme={Theme}>
+      <CssBaseline />
+      <App
+        rootModel={sessions.get(activeSession)}
+        getViewType={pluginManager.getViewType}
+        getDrawerWidgetType={pluginManager.getDrawerWidgetType}
+        getMenuBarType={pluginManager.getMenuBarType}
+        sessionNames={Array.from(sessions.keys())}
+        activeSession={activeSession}
+        setSession={setActiveSession}
+      />
+    </MuiThemeProvider>
+  )
+}
 
-    return (
-      <MuiThemeProvider theme={Theme}>
-        <CssBaseline />
-        <App
-          rootModel={sessions.get(activeSession)}
-          getViewType={pluginManager.getViewType}
-          getDrawerWidgetType={pluginManager.getDrawerWidgetType}
-          getMenuBarType={pluginManager.getMenuBarType}
-          sessionNames={Array.from(sessions.keys())}
-          activeSession={activeSession}
-          setSession={this.setSession}
-        />
-      </MuiThemeProvider>
-    )
-  }
+JBrowse.propTypes = {
+  configs: PropTypes.arrayOf(PropTypes.shape()),
+  workerGroups: PropTypes.shape().isRequired,
+}
+
+JBrowse.defaultProps = {
+  configs: [],
 }
 
 export default JBrowse
