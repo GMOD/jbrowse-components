@@ -1,7 +1,7 @@
 {
     "tracks": [
       {
-        "configId": "PDWVXl3526",
+        "configId": "So_jqsV8r",
         "type": "DynamicTrack",
         "name": "Lollipop track",
         "category": [
@@ -54,7 +54,7 @@
         }
       },
       {
-        "configId": "i3jUzmrgMOq",
+        "configId": "NBN06jHCC",
         "type": "AlignmentsTrack",
         "name": "volvox-sorted red/blue",
         "category": [
@@ -114,7 +114,7 @@
         }
       },
       {
-        "configId": "i3jUPmrgMOS",
+        "configId": "sjbYnxXg1",
         "type": "FilteringTrack",
         "name": "Filter Test",
         "assemblyName": "volvox2",
@@ -206,7 +206,7 @@
       ],
       "views": [
         {
-          "id": "BhLw7v7Not",
+          "id": "DCot9WS0o",
           "type": "LinearGenomeView",
           "offsetPx": 2000,
           "bpPerPx": 0.05,
@@ -214,7 +214,7 @@
             {
               "type": "FilteringTrack",
               "height": 100,
-              "configuration": "i3jUPmrgMOS"
+              "configuration": "sjbYnxXg1"
             }
           ],
           "configuration": {}
@@ -227,7 +227,7 @@
             {
               "type": "AlignmentsTrack",
               "height": 200,
-              "configuration": "i3jUzmrgMOq"
+              "configuration": "NBN06jHCC"
             }
           ],
           "configuration": {}
@@ -240,7 +240,7 @@
             {
               "type": "DynamicTrack",
               "height": 100,
-              "configuration": "PDWVXl3526"
+              "configuration": "So_jqsV8r"
             }
           ],
           "configuration": {}
@@ -251,7 +251,7 @@
           "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
           "filterText": "",
-          "view": "BhLw7v7Not"
+          "view": "DCot9WS0o"
         }
       },
       "activeDrawerWidgets": {

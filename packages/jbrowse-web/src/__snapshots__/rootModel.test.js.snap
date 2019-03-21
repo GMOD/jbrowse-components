@@ -47,7 +47,7 @@ Object {
       "configId": "volvox",
       "refNameAliases": Object {
         "adapter": Object {
-          "configId": "Zd0NLmtxPZ2",
+          "configId": "cRFYYw83K",
           "features": Array [
             Object {
               "aliases": Array [
@@ -78,7 +78,7 @@ Object {
           },
           "type": "TwoBitAdapter",
         },
-        "configId": "iTo6LoXUeI",
+        "configId": "Ntr0BAB7d",
         "rendering": Object {
           "configId": "testid",
           "type": "DivSequenceRenderer",
@@ -90,14 +90,14 @@ Object {
       "configId": "volvox2",
       "refNameAliases": Object {
         "adapter": Object {
-          "configId": "Zd0NLmtxPZ2",
+          "configId": "cRFYYw83K",
           "type": "FromConfigAdapter",
         },
         "configId": "testid",
       },
       "sequence": Object {
         "adapter": Object {
-          "configId": "Zd0NLmtxPZ3",
+          "configId": "fo5knf1Wp",
           "features": Array [
             Object {
               "end": 1000,
@@ -109,7 +109,7 @@ Object {
           ],
           "type": "FromConfigAdapter",
         },
-        "configId": "iTo6LoXUeJ",
+        "configId": "fotPDlQyA",
         "rendering": Object {
           "configId": "testid",
           "type": "DivSequenceRenderer",
@@ -128,7 +128,7 @@ Object {
         "filterText": "",
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorDrawerWidget",
-        "view": "BhLw7v7Not",
+        "view": "xdTd_biFQ",
       },
     },
     "menuBars": Array [
@@ -153,16 +153,16 @@ Object {
       Object {
         "bpPerPx": 0.05,
         "configuration": Object {},
-        "id": "BhLw7v7Not",
+        "id": "xdTd_biFQ",
         "offsetPx": 2000,
         "tracks": Array [
           Object {
-            "configuration": "iTo6LoXUeI",
+            "configuration": "Ntr0BAB7d",
             "height": 80,
             "type": "ReferenceSequence",
           },
           Object {
-            "configuration": "i3jUPmrgMOS",
+            "configuration": "z3MB1J7HG",
             "height": 100,
             "type": "FilteringTrack",
           },
@@ -175,7 +175,7 @@ Object {
         "offsetPx": 200,
         "tracks": Array [
           Object {
-            "configuration": "i3jUzmrgMOq",
+            "configuration": "gTdYq_j8M",
             "height": 200,
             "type": "AlignmentsTrack",
           },
@@ -188,7 +188,7 @@ Object {
         "offsetPx": 1800,
         "tracks": Array [
           Object {
-            "configuration": "PDWVXl3526",
+            "configuration": "7f9MEYvnw",
             "height": 100,
             "type": "DynamicTrack",
           },
@@ -249,7 +249,7 @@ Object {
       "category": Array [
         "Bar Category",
       ],
-      "configId": "PDWVXl3526",
+      "configId": "7f9MEYvnw",
       "name": "Lollipop track",
       "renderer": Object {
         "configId": "testid",
@@ -276,7 +276,7 @@ Object {
         "Bar Category",
         "Baz Category",
       ],
-      "configId": "i3jUzmrgMOq",
+      "configId": "gTdYq_j8M",
       "name": "volvox-sorted red/blue",
       "renderers": Object {
         "PileupRenderer": Object {
@@ -376,7 +376,7 @@ Object {
         "type": "FromConfigAdapter",
       },
       "assemblyName": "volvox2",
-      "configId": "i3jUPmrgMOS",
+      "configId": "z3MB1J7HG",
       "filterAttributes": Array [
         "type",
         "start",
