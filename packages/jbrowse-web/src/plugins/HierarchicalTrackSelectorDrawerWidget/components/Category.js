@@ -54,7 +54,7 @@ function Category(props) {
         expandIcon={<Icon>expand_more</Icon>}
       >
         <Typography variant="button">{`${name} (${
-          Object.keys(model.allTracksInCategoryPath(path)).length
+          Object.keys(model.allTracksInCategoryPath(path, connection)).length
         })`}</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.expansionPanelDetails}>

@@ -79,8 +79,10 @@ export default pluginManager =>
       },
 
       // This recursively gets tracks from lower paths
-      allTracksInCategoryPath(path) {
-        let currentHier = self.hierarchy
+      allTracksInCategoryPath(path, connection) {
+        let currentHier = connection
+          ? self.volatileHierarchy(connection)
+          : self.hierarchy
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
         })
