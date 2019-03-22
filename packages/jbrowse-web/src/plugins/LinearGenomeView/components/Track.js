@@ -30,12 +30,19 @@ class Track extends Component {
   constructor(props) {
     super(props)
     this.state = { mouseDragging: false }
+    this.mainNode = React.createRef()
 
     this.mouseUp = this.mouseUp.bind(this)
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
     this.mouseLeave = this.mouseLeave.bind(this)
     this.wheel = this.wheel.bind(this)
+  }
+
+  componentDidMount() {
+    this.mainNode.current.addEventListener('wheel', this.wheel, {
+      passive: false,
+    })
   }
 
   mouseDown() {
@@ -99,7 +106,7 @@ class Track extends Component {
         onMouseMove={this.mouseMove}
         onMouseLeave={this.mouseLeave}
         onMouseUp={this.mouseUp}
-        onWheel={this.wheel}
+        ref={this.mainNode}
         role="presentation"
       >
         {children}
