@@ -1,4 +1,9 @@
 import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
+import {
+  isRemoteAbortSignal,
+  deserializeAbortSignal,
+} from './rpc/remoteAbortSignals'
+import { checkAbortSignal } from './util'
 
 export async function getRegions(
   pluginManager,
@@ -61,20 +66,34 @@ export function freeResources(pluginManager, specification) {
 
 /**
  * render a single region
- * @param {*} pluginManager
+ * @param {PluginManager} pluginManager
  * @param {object} args
- * @param {*} args.region
- * @param {*} args.sessionId
- * @param {*} args.adapterType
- * @param {*} args.adapterConfig
- * @param {*} args.rendererType
- * @param {*} args.renderProps
+ * @param {object} args.region
+ * @param {string} args.sessionId
+ * @param {string} args.adapterType
+ * @param {object} args.adapterConfig
+ * @param {string} args.rendererType
+ * @param {object} args.renderProps
+ * @param {AbortSignal} [args.signal]
  */
 export async function renderRegion(
   pluginManager,
-  { region, sessionId, adapterType, adapterConfig, rendererType, renderProps },
+  {
+    region,
+    sessionId,
+    adapterType,
+    adapterConfig,
+    rendererType,
+    renderProps,
+    signal,
+  },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
+
+  if (isRemoteAbortSignal(signal)) {
+    signal = deserializeAbortSignal(signal)
+  }
+  checkAbortSignal(signal)
 
   const { dataAdapter } = getAdapter(
     pluginManager,
@@ -90,10 +109,13 @@ export async function renderRegion(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
 
-  return RendererType.renderInWorker({
+  const result = await RendererType.renderInWorker({
     ...renderProps,
     sessionId,
     dataAdapter,
     region,
+    signal,
   })
+  checkAbortSignal(signal)
+  return result
 }

@@ -4,6 +4,7 @@ import { openLocation } from '../../util/io'
 import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { ObservableCreate } from '../../util/rxjs'
+import { checkAbortSignal } from '../../util'
 
 export default class BamAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']
@@ -65,12 +66,16 @@ export default class BamAdapter extends BaseAdapter {
    * want to verify that the store has features for the given reference sequence
    * before fetching.
    * @param {Region} param
+   * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }) {
+  getFeatures({ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
       await this.setup()
-      const records = await this.bam.getRecordsForRange(refName, start, end)
+      const records = await this.bam.getRecordsForRange(refName, start, end, {
+        signal,
+      })
+      checkAbortSignal(signal)
       records.forEach(record => {
         observer.next(this.bamRecordToFeature(record))
       })
