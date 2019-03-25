@@ -52,11 +52,19 @@
       "refNameAliases": {
         "adapter": {
           "type": "FromConfigAdapter",
-          "refNameAliases": [
+          "features": [
             {
               "refName": "chr1",
+              "uniqueId": "alias1",
               "aliases": [
                 "1"
+              ]
+            },
+            {
+              "refName": "chr2",
+              "uniqueId": "alias2",
+              "aliases": [
+                "2"
               ]
             }
           ]
@@ -86,6 +94,7 @@
     ],
     "views": [
       {
+        "id": "Cma34s8JJ",
         "type": "LinearGenomeView",
         "offsetPx": 8355300,
         "bpPerPx": 0.1,
@@ -103,6 +112,17 @@
         ],
         "configuration": {}
       }
-    ]
+    ],
+    "drawerWidgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "filterText": "",
+        "view": "Cma34s8JJ"
+      }
+    },
+    "activeDrawerWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
   }
 }

@@ -191,7 +191,6 @@
       ],
       "refNameAliases": {
         "adapter": {
-          "configId": "cRFYYw83K",
           "type": "FromConfigAdapter",
           "features": [
             {
@@ -235,7 +234,6 @@
       },
       "refNameAliases": {
         "adapter": {
-          "configId": "cRFYYw83K",
           "type": "FromConfigAdapter"
         }
       }
