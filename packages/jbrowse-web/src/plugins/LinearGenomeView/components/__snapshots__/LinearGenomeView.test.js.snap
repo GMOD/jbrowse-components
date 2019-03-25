@@ -301,6 +301,39 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       }
     >
       <button
+        className="MuiButtonBase-root-14 MuiIconButton-root-8"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="close this track"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-13"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
+          >
+            close
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-50"
+        />
+      </button>
+      <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
@@ -696,6 +729,39 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       }
     >
       <button
+        className="MuiButtonBase-root-14 MuiIconButton-root-8"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="close this track"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-13"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
+          >
+            close
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-50"
+        />
+      </button>
+      <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
         onBlur={[Function]}
@@ -795,6 +861,39 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         }
       }
     >
+      <button
+        className="MuiButtonBase-root-14 MuiIconButton-root-8"
+        disabled={false}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onContextMenu={[Function]}
+        onFocus={[Function]}
+        onKeyDown={[Function]}
+        onKeyUp={[Function]}
+        onMouseDown={[Function]}
+        onMouseLeave={[Function]}
+        onMouseUp={[Function]}
+        onTouchEnd={[Function]}
+        onTouchMove={[Function]}
+        onTouchStart={[Function]}
+        tabIndex="0"
+        title="close this track"
+        type="button"
+      >
+        <span
+          className="MuiIconButton-label-13"
+        >
+          <span
+            aria-hidden="true"
+            className="material-icons MuiIcon-root-17 MuiIcon-fontSizeSmall-24"
+          >
+            close
+          </span>
+        </span>
+        <span
+          className="MuiTouchRipple-root-50"
+        />
+      </button>
       <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
         disabled={false}
