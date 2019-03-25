@@ -1,7 +1,6 @@
 import BaseAdapter from '../../BaseAdapter'
 import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
-import { doesIntersect2 } from '../../util/range'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -67,12 +66,8 @@ export default class FromConfigAdapter extends BaseAdapter {
       for (const feature of features) {
         if (
           currentRegion &&
-          doesIntersect2(
-            currentRegion.start,
-            currentRegion.end,
-            feature.get('start'),
-            feature.get('end'),
-          )
+          currentRegion.end >= feature.get('start') &&
+          currentRegion.start <= feature.get('end')
         ) {
           currentRegion.end = feature.get('end')
         } else {

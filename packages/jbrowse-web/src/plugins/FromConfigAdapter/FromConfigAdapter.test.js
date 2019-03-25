@@ -60,3 +60,17 @@ test('adapter can fetch regions 3', async () => {
     { refName: 'ctgB', start: 50, end: 60 },
   ])
 })
+
+test('adapter can fetch regions 4', async () => {
+  const features = [
+    { uniqueId: 'two', refName: 'ctgA', start: 150, end: 300 },
+    { uniqueId: 'onePrime', refName: 'ctgA', start: 300, end: 400 },
+    { uniqueId: 'three', refName: 'ctgB', start: 50, end: 60 },
+  ]
+  const adapter = new Adapter({ features })
+  const result = await adapter.getRegions()
+  expect(result).toEqual([
+    { refName: 'ctgA', start: 150, end: 400 },
+    { refName: 'ctgB', start: 50, end: 60 },
+  ])
+})

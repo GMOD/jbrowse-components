@@ -30,6 +30,16 @@ export function intersection2(left1, right1, left2, right2) {
   return undefined
 }
 
+/**
+ * Return whether 2 interbase coordinate ranges intersect.
+ *
+ * @param {number} left1
+ * @param {number} right1
+ * @param {number} left2
+ * @param {number} right2
+ *
+ * @returns {boolean} true if the two ranges intersect
+ */
 export function doesIntersect2(left1, right1, left2, right2) {
   return right1 > left2 && left1 < right2
 }
