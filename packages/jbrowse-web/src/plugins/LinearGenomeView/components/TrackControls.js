@@ -3,7 +3,7 @@ import { PropTypes, observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 
-import { withStyles } from '@material-ui/core'
+import { withStyles, IconButton, Icon } from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 
 import { getConf } from '../../../configuration'
@@ -35,6 +35,13 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
   }
   return (
     <>
+      <IconButton
+        onClick={() => view.hideTrack(track.configuration)}
+        className={classes.iconButton}
+        title="close this track"
+      >
+        <Icon fontSize="small">close</Icon>
+      </IconButton>
       {track.showConfigurationButton ? (
         <ConfigureToggleButton
           onClick={onConfigureClick}
