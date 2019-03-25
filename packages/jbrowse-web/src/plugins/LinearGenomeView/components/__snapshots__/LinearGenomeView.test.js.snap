@@ -402,7 +402,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
         onMouseUp={[Function]}
-        onWheel={[Function]}
         role="presentation"
       >
         <div
@@ -830,7 +829,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
         onMouseUp={[Function]}
-        onWheel={[Function]}
         role="presentation"
       >
         <div
@@ -963,7 +961,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
         onMouseUp={[Function]}
-        onWheel={[Function]}
         role="presentation"
       >
         <div

@@ -40,9 +40,10 @@ class Track extends Component {
   }
 
   componentDidMount() {
-    this.mainNode.current.addEventListener('wheel', this.wheel, {
-      passive: false,
-    })
+    if (this.mainNode.current)
+      this.mainNode.current.addEventListener('wheel', this.wheel, {
+        passive: false,
+      })
   }
 
   mouseDown() {
