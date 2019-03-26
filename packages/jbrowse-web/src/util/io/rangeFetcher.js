@@ -117,24 +117,26 @@ class GloballyCachedFilehandle {
     this.url = url
   }
 
-  async read(buffer, offset = 0, length, position) {
+  async read(buffer, offset = 0, length, position, abortSignal) {
     let data
     if (length === undefined && offset === 0) {
       data = await this.readFile()
     } else {
-      data = (await globalCache.getRange(this.url, position, length)).buffer
+      data = (await globalCache.getRange(this.url, position, length, {
+        signal: abortSignal,
+      })).buffer
     }
     data.copy(buffer, offset)
     return data.length
   }
 
-  async readFile() {
-    const res = await getfetch(this.url)
+  async readFile(abortSignal) {
+    const res = await getfetch(this.url, { signal: abortSignal })
     return Buffer.from(await res.arrayBuffer())
   }
 
-  stat() {
-    return globalCache.stat(this.url)
+  stat(abortSignal) {
+    return globalCache.stat(this.url, { signal: abortSignal })
   }
 
   toString() {

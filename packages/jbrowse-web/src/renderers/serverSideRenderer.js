@@ -4,7 +4,7 @@ import { tap } from 'rxjs/operators'
 import RendererType from '../pluggableElementTypes/RendererType'
 
 import SimpleFeature from '../util/simpleFeature'
-import { iterMap } from '../util'
+import { iterMap, checkAbortSignal } from '../util'
 import SerializableFilterChain from './util/serializableFilterChain'
 
 export default class ServerSideRenderer extends RendererType {
@@ -68,8 +68,8 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   /**
-   * Render method called on the client. Primarily a wrapper
-   * for `renderRegionWithWorker` that takes care of data serialization.
+   * Render method called on the client. Serializes args, then
+   * calls `renderRegion` with the RPC manager.
    */
   async renderInClient(rpcManager, args) {
     const serializedArgs = this.serializeArgsInClient(args)
@@ -93,16 +93,20 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {Map} of features as { id => feature, ... }
    */
   async getFeatures(renderArgs) {
-    const { dataAdapter, region } = renderArgs
+    const { dataAdapter, region, signal } = renderArgs
     const features = new Map()
     await dataAdapter
-      .getFeaturesInRegion({
-        ...region,
-        start: Math.floor(region.start),
-        end: Math.ceil(region.end),
-      })
+      .getFeaturesInRegion(
+        {
+          ...region,
+          start: Math.floor(region.start),
+          end: Math.ceil(region.end),
+        },
+        signal,
+      )
       .pipe(
         tap(feature => {
+          checkAbortSignal(signal)
           if (this.featurePassesFilters(renderArgs, feature)) {
             const id = feature.id()
             if (!id) throw new Error(`invalid feature id "${id}"`)
@@ -129,12 +133,19 @@ export default class ServerSideRenderer extends RendererType {
   // render method called on the worker
   async renderInWorker(args) {
     this.deserializeArgsInWorker(args)
+
+    checkAbortSignal(args.signal)
+
     const features = await this.getFeatures(args)
     const renderProps = { ...args, features }
 
-    const results = await this.render(renderProps)
+    checkAbortSignal(args.signal)
+
+    const results = await this.render({ ...renderProps, signal: args.signal })
     results.html = renderToString(results.element)
     delete results.element
+
+    checkAbortSignal(args.signal)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
