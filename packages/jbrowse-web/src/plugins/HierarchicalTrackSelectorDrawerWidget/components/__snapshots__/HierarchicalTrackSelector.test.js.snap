@@ -8,13 +8,13 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     className="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      className="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
+      className="MuiFormLabel-root-20 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
       data-shrink={true}
     >
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
+      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
       onClick={[Function]}
     >
       <div
@@ -28,7 +28,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         </span>
       </div>
       <input
-        aria-invalid={true}
+        aria-invalid={false}
         className="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
         disabled={false}
         onBlur={[Function]}
@@ -75,11 +75,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         </button>
       </div>
     </div>
-    <p
-      className="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
-    >
-      No matches
-    </p>
+    
   </div>
   <div
     className="MuiFormGroup-root-89"
@@ -90,6 +86,31 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
   <div
     className="MuiFormGroup-root-89"
   />
+  <div
+    className="MuiCircularProgress-root-117 MuiCircularProgress-colorPrimary-120 MuiCircularProgress-indeterminate-119"
+    role="progressbar"
+    style={
+      Object {
+        "height": 40,
+        "width": 40,
+      }
+    }
+  >
+    <svg
+      className="MuiCircularProgress-svg-122"
+      viewBox="22 22 44 44"
+    >
+      <circle
+        className="MuiCircularProgress-circle-123 MuiCircularProgress-circleIndeterminate-125"
+        cx={44}
+        cy={44}
+        fill="none"
+        r={20.2}
+        strokeWidth={3.6}
+        style={Object {}}
+      />
+    </svg>
+  </div>
   <button
     className="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
     disabled={false}
@@ -133,13 +154,13 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     className="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      className="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
+      className="MuiFormLabel-root-20 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
       data-shrink={true}
     >
       Filter Tracks
     </label>
     <div
-      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
+      className="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
       onClick={[Function]}
     >
       <div
@@ -153,7 +174,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         </span>
       </div>
       <input
-        aria-invalid={true}
+        aria-invalid={false}
         className="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
         disabled={false}
         onBlur={[Function]}
@@ -200,11 +221,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         </button>
       </div>
     </div>
-    <p
-      className="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
-    >
-      No matches
-    </p>
+    
   </div>
   <div
     className="MuiFormGroup-root-89"
@@ -215,6 +232,31 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
   <div
     className="MuiFormGroup-root-89"
   />
+  <div
+    className="MuiCircularProgress-root-117 MuiCircularProgress-colorPrimary-120 MuiCircularProgress-indeterminate-119"
+    role="progressbar"
+    style={
+      Object {
+        "height": 40,
+        "width": 40,
+      }
+    }
+  >
+    <svg
+      className="MuiCircularProgress-svg-122"
+      viewBox="22 22 44 44"
+    >
+      <circle
+        className="MuiCircularProgress-circle-123 MuiCircularProgress-circleIndeterminate-125"
+        cx={44}
+        cy={44}
+        fill="none"
+        r={20.2}
+        strokeWidth={3.6}
+        style={Object {}}
+      />
+    </svg>
+  </div>
   <button
     className="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
     disabled={false}

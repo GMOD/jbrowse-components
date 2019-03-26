@@ -47,7 +47,7 @@ Object {
       "configId": "volvox",
       "refNameAliases": Object {
         "adapter": Object {
-          "configId": "cRFYYw83K",
+          "configId": "testid",
           "features": Array [
             Object {
               "aliases": Array [
@@ -90,7 +90,7 @@ Object {
       "configId": "volvox2",
       "refNameAliases": Object {
         "adapter": Object {
-          "configId": "cRFYYw83K",
+          "configId": "testid",
           "type": "FromConfigAdapter",
         },
         "configId": "testid",
