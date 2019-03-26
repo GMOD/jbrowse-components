@@ -162,7 +162,7 @@ export default class AssemblyManager {
     const configId = readConfObject(trackConf, 'configId')
     if (this.refNameMaps.has(configId)) return this.refNameMaps.get(configId)
     this.addRefNameMapForTrack(trackConf)
-    return new Map()
+    return null
   }
 
   /**

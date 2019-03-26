@@ -68,6 +68,7 @@ export default types.compose(
           const refNameMap = assemblyManager.getRefNameMapForTrack(
             self.configuration,
           )
+          if (!refNameMap) return
           self.setBlockDefinitions(
             blockDefinitions.map(blockDefinition => {
               let { refName } = blockDefinition
