@@ -2,8 +2,6 @@ import {
   types,
   getRoot,
   getParent,
-  onPatch,
-  isType,
   isArrayType,
   isMapType,
   resolveIdentifier,
@@ -71,7 +69,7 @@ function ConfigurationLayer(parentSchemaType) {
   }
 
   const schemaMetaData = parentSchemaType.create().jbrowseSchema
-  const { modelName, options, definition } = schemaMetaData
+  const { /* modelName, options, */ definition } = schemaMetaData
   Object.entries(definition).forEach(([memberName, memberDefinition]) => {
     const memberType = (parentSchemaType.type || parentSchemaType).properties[
       memberName
@@ -124,19 +122,6 @@ function ConfigurationLayer(parentSchemaType) {
       if (!snap.parentConfigPath) delete snap.parentConfigPath
       return snap
     })
-
-  // return types.optional(
-  //   types.model(layerModelDefinition),
-  //   options.explicitlyTyped ? { type: modelName } : {},
-  // )
-  // .actions(self => ({
-  //   afterCreate() {
-  //     console.log('created a layer')
-  //     onPatch(self, patch => {
-  //       console.log('patch', self.name, patch)
-  //     })
-  //   },
-  // }))
 }
 
 export default ConfigurationLayer
