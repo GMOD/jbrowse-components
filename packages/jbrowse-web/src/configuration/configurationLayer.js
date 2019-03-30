@@ -100,23 +100,30 @@ function ConfigurationLayer(parentSchemaType) {
   })
 
   // inspect the parent schema type and make slots with the same type but default-undefined
-  return types.model(layerModelDefinition).views(self => ({
-    get parent() {
-      if (self.parentConfigId)
-        return resolveIdentifier(
-          parentSchemaType,
-          getRoot(self),
-          self.parentConfigId,
-        )
-      if (self.parentConfigPath) {
-        return resolvePath(self, self.parentConfigPath)
-      }
+  return types
+    .model(layerModelDefinition)
+    .views(self => ({
+      get parent() {
+        if (self.parentConfigId)
+          return resolveIdentifier(
+            parentSchemaType,
+            getRoot(self),
+            self.parentConfigId,
+          )
+        if (self.parentConfigPath) {
+          return resolvePath(self, self.parentConfigPath)
+        }
 
-      throw new TypeError(
-        'node has neither parentConfigId nor parentConfigPath set',
-      )
-    },
-  }))
+        throw new TypeError(
+          'node has neither parentConfigId nor parentConfigPath set',
+        )
+      },
+    }))
+    .postProcessSnapshot(snap => {
+      if (!snap.parentConfigId) delete snap.parentConfigId
+      if (!snap.parentConfigPath) delete snap.parentConfigPath
+      return snap
+    })
 
   // return types.optional(
   //   types.model(layerModelDefinition),

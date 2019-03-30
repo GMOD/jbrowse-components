@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, getSnapshot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configurationSchema'
 import ConfigurationLayer from './configurationLayer'
 import { readConfObject } from '.'
@@ -133,4 +133,11 @@ test('can make a layer over a complex nested schema', () => {
   expect(
     readConfObject(parent, ['mapOfSubs', 'one', 'mapMemberAttr1']),
   ).toEqual('pluto')
+
+  expect(getSnapshot(root)).toMatchSnapshot({
+    parent: {
+      arrayOfSubs: [{ configId: expect.any(String) }],
+      sub1: { configId: expect.any(String) },
+    },
+  })
 })
