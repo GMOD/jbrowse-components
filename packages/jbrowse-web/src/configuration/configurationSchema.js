@@ -44,11 +44,14 @@ export function isConfigurationModel(thing) {
 /**
  * given a union of explicitly typed configuration schema types,
  * extract an array of the type names contained in the union
+ *
+ * @param {mst union type} unionType
+ * @returns {Array[string]} type names contained in the union
  */
-export function getTypeNamesFromExplicitlyTypedUnion(thing) {
-  if (isUnionType(thing)) {
+export function getTypeNamesFromExplicitlyTypedUnion(unionType) {
+  if (isUnionType(unionType)) {
     const typeNames = []
-    thing.types.forEach(type => {
+    unionType.types.forEach(type => {
       let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
       if (!typeName.length) typeName = [type.defaultValue.type]
       if (!typeName[0]) {
@@ -102,7 +105,14 @@ export function ConfigurationSchema(
   if (options.explicitlyTyped)
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
 
-  const volatileConstants = {}
+  const volatileConstants = {
+    isJBrowseConfigurationSchema: true,
+    jbrowseSchema: {
+      modelName,
+      definition: schemaDefinition,
+      options,
+    },
+  }
   Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
     if (isConfigurationSchemaType(slotDefinition)) {
       // this is a sub-configuration
@@ -163,6 +173,7 @@ export function ConfigurationSchema(
     Object.entries(snap).forEach(([key, value]) => {
       if (
         value !== undefined &&
+        volatileConstants[key] === undefined &&
         !isEmptyObject(value) &&
         !isEmptyArray(value)
       ) {

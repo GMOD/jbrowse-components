@@ -1,0 +1,135 @@
+import {
+  types,
+  getRoot,
+  getParent,
+  onPatch,
+  isType,
+  isArrayType,
+  isMapType,
+  resolveIdentifier,
+  resolvePath,
+} from 'mobx-state-tree'
+
+import ConfigurationSlot from './configurationSlot'
+import { inDevelopment } from '../util'
+import { stringToFunction } from '../util/functionStrings'
+import { isConfigurationSchemaType } from './configurationSchema'
+
+function ConfigurationLayerSlot(
+  slotName,
+  parentSlotType,
+  parentSlotDefinition,
+) {
+  let layerSlot = ConfigurationSlot(slotName, parentSlotDefinition)
+  layerSlot = types
+    .compose(
+      layerSlot.type,
+      types.model({
+        value: types.maybe(parentSlotType.properties.value.type),
+      }),
+    )
+    .views(self => ({
+      get func() {
+        if (self.value === undefined) {
+          return self.parentSlot.func
+        }
+        if (self.isCallback) {
+          // compile this as a function
+          return stringToFunction(String(self.value), {
+            bind: [getRoot(self)],
+            verifyFunctionSignature: inDevelopment
+              ? self.parentSlot.functionSignature
+              : undefined,
+          })
+        }
+        return () => self.value
+      },
+
+      get parentSlot() {
+        const schema = getParent(self, 1)
+        return schema.parent[self.name]
+      },
+    }))
+
+  return layerSlot
+}
+
+/**
+ * creates a configuration "layer" type, which is designed to inherit
+ * configuration values from a parent configuration
+ *
+ * @param {ConfigurationSchema} parentSchemaType
+ */
+function ConfigurationLayer(parentSchemaType) {
+  if (!isConfigurationSchemaType(parentSchemaType))
+    throw new TypeError('must pass a ConfigurationSchema type')
+  // iterate over the slots in the parent type and make layerSlots in this object for each of them
+
+  const layerModelDefinition = {
+    parentConfigId: types.maybe(types.string),
+    parentConfigPath: types.maybe(types.string),
+  }
+
+  const schemaMetaData = parentSchemaType.create().jbrowseSchema
+  const { modelName, options, definition } = schemaMetaData
+  Object.entries(definition).forEach(([memberName, memberDefinition]) => {
+    const memberType = (parentSchemaType.type || parentSchemaType).properties[
+      memberName
+    ].type
+    if (isArrayType(memberType)) {
+      // array of ConfigurationSchemas
+      layerModelDefinition[memberName] = types.array(
+        ConfigurationLayer(memberType.subType),
+      )
+    } else if (isMapType(memberType)) {
+      // map of id -> ConfigurationSchema
+      layerModelDefinition[memberName] = types.map(
+        ConfigurationLayer(memberType.subType),
+      )
+    } else if (isConfigurationSchemaType(memberType)) {
+      // single sub-schema
+      layerModelDefinition[memberName] = ConfigurationLayer(memberType)
+    } else {
+      // slot definition
+      layerModelDefinition[memberName] = ConfigurationLayerSlot(
+        memberName,
+        memberType,
+        memberDefinition,
+      )
+    }
+  })
+
+  // inspect the parent schema type and make slots with the same type but default-undefined
+  return types.model(layerModelDefinition).views(self => ({
+    get parent() {
+      if (self.parentConfigId)
+        return resolveIdentifier(
+          parentSchemaType,
+          getRoot(self),
+          self.parentConfigId,
+        )
+      if (self.parentConfigPath) {
+        return resolvePath(self, self.parentConfigPath)
+      }
+
+      throw new TypeError(
+        'node has neither parentConfigId nor parentConfigPath set',
+      )
+    },
+  }))
+
+  // return types.optional(
+  //   types.model(layerModelDefinition),
+  //   options.explicitlyTyped ? { type: modelName } : {},
+  // )
+  // .actions(self => ({
+  //   afterCreate() {
+  //     console.log('created a layer')
+  //     onPatch(self, patch => {
+  //       console.log('patch', self.name, patch)
+  //     })
+  //   },
+  // }))
+}
+
+export default ConfigurationLayer

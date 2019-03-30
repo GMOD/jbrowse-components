@@ -2,6 +2,8 @@ import {
   isStateTreeNode,
   getPropertyMembers,
   getSnapshot,
+  getType,
+  isMapType,
 } from 'mobx-state-tree'
 import { isObservableArray, isObservableObject, isObservableMap } from 'mobx'
 
@@ -54,7 +56,15 @@ function getConf(model, slotName, args) {
 function readConfObject(confObject, slotPath, args) {
   if (!slotPath) return getSnapshot(confObject)
   if (typeof slotPath === 'string') {
-    const slot = confObject[slotPath]
+    let slot = confObject[slotPath]
+    // check for the subconf being a map if we don't find it immediately
+    if (
+      !slot &&
+      isStateTreeNode(confObject) &&
+      isMapType(getType(confObject))
+    ) {
+      slot = confObject.get(slotName)
+    }
     if (!slot) {
       return undefined
       // if we want to be very strict about config slots, we could uncomment the below
@@ -80,8 +90,18 @@ function readConfObject(confObject, slotPath, args) {
   const slotName = slotPath[0]
   if (slotPath.length > 1) {
     const newPath = slotPath.slice(1)
-    const subConf = confObject[slotName]
-    if (!subConf) return undefined
+    let subConf = confObject[slotName]
+    // check for the subconf being a map if we don't find it immediately
+    if (
+      !subConf &&
+      isStateTreeNode(confObject) &&
+      isMapType(getType(confObject))
+    ) {
+      subConf = confObject.get(slotName)
+    }
+    if (!subConf) {
+      return undefined
+    }
     return readConfObject(subConf, newPath, args)
   }
   return readConfObject(confObject, slotName, args)
