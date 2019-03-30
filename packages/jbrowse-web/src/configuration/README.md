@@ -8,13 +8,26 @@ Each "configuration variable" is held in a ConfigurationSlot, which has a string
 
 These types are specific to configuration schemas.
 
-* string
-* number
-* integer
-* color
+* `string`
+* `number`
+* `integer`
+* `boolean`
+* `color` - a color, usually used in renderer configs
+* `stringArray` - an array of strings
+* `stringArrayMap` - map of string -> array[string]
+* `numberMap` - map of string -> number
+* `fileLocation` of the form
+  ```
+  { uri: 'http://example.com/path/to/resource.file' }
+  ```
+  or
+  ```
+  { path: '/filesystem/path/to/resource.file' }
+  ```
+* `frozen` - any data structure. assumed to be immutable; internal changes to it will not be noticed by any mobx observers
 
-## Configuration schemas
+## Configuration Layers
 
-## Overriding
+There is also a configuration construct called a `ConfigurationLayer` that acts as a "layer over" another configuration schema. It has the same slots, with the same types, but all of its slot values default to whatever the default of of the corresponding slot in the parent schema is.
 
-A configuration schema can also have a "layer parent"
+These are useful for "overriding" only some values of a parent schema, such as for providing a cascading configuration system for subtracks.
