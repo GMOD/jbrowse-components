@@ -6,6 +6,8 @@ import {
   isMapType,
   resolveIdentifier,
   resolvePath,
+  isUnionType,
+  isOptionalType,
 } from 'mobx-state-tree'
 
 import ConfigurationSlot from './configurationSlot'
@@ -70,30 +72,53 @@ function ConfigurationLayer(parentSchemaType) {
 
   const schemaMetaData = parentSchemaType.create().jbrowseSchema
   const { /* modelName, options, */ definition } = schemaMetaData
-  Object.entries(definition).forEach(([memberName, memberDefinition]) => {
-    const memberType = (parentSchemaType.type || parentSchemaType).properties[
-      memberName
-    ].type
-    if (isArrayType(memberType)) {
-      // array of ConfigurationSchemas
-      layerModelDefinition[memberName] = types.array(
-        ConfigurationLayer(memberType.subType),
-      )
-    } else if (isMapType(memberType)) {
-      // map of id -> ConfigurationSchema
-      layerModelDefinition[memberName] = types.map(
-        ConfigurationLayer(memberType.subType),
-      )
-    } else if (isConfigurationSchemaType(memberType)) {
-      // single sub-schema
-      layerModelDefinition[memberName] = ConfigurationLayer(memberType)
+  Object.entries(definition).forEach(([memberName, slotDefinition]) => {
+    if (
+      typeof slotDefinition === 'string' ||
+      typeof slotDefinition === 'number'
+    ) {
+      // this is a constant
+      layerModelDefinition[memberName] = types.literal(slotDefinition)
+      // throw new Error('fu')
     } else {
-      // slot definition
-      layerModelDefinition[memberName] = ConfigurationLayerSlot(
-        memberName,
-        memberType,
-        memberDefinition,
-      )
+      let parentActualType = parentSchemaType
+      if (isOptionalType(parentSchemaType))
+        parentActualType = parentSchemaType.type
+
+      if (!parentActualType.properties) debugger
+
+      let memberType = parentActualType.properties[memberName]
+
+      if (isUnionType(memberType)) {
+        layerModelDefinition[memberName] = types.union(
+          ...memberType.types.map(t => ConfigurationLayer(t)),
+        )
+        return
+      }
+
+      if (isOptionalType(memberType)) memberType = memberType.type
+
+      if (isArrayType(memberType)) {
+        // array of ConfigurationSchemas
+        layerModelDefinition[memberName] = types.array(
+          ConfigurationLayer(memberType.subType),
+        )
+      } else if (isMapType(memberType)) {
+        // map of id -> ConfigurationSchema
+        layerModelDefinition[memberName] = types.map(
+          ConfigurationLayer(memberType.subType),
+        )
+      } else if (isConfigurationSchemaType(memberType)) {
+        // single sub-schema
+        layerModelDefinition[memberName] = ConfigurationLayer(memberType)
+      } else {
+        // slot definition
+        layerModelDefinition[memberName] = ConfigurationLayerSlot(
+          memberName,
+          memberType,
+          slotDefinition,
+        )
+      }
     }
   })
 
