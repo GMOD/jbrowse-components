@@ -26,19 +26,35 @@ function isEmptyArray(thing) {
 }
 
 export function isConfigurationSchemaType(thing) {
-  return (
-    (isModelType(thing) &&
-      (!!thing.isJBrowseConfigurationSchema ||
-        (thing.identifierAttribute === 'configId' &&
-          thing.name.includes('ConfigurationSchema')))) ||
-    (isOptionalType(thing) &&
-      isArrayType(thing) &&
-      isConfigurationSchemaType(thing.type.subType)) ||
-    (isArrayType(thing) && isConfigurationSchemaType(thing.subType)) ||
-    (isUnionType(thing) &&
-      thing.types.every(t => isConfigurationSchemaType(t))) ||
-    (isMapType(thing) && isConfigurationSchemaType(thing.subType))
+  // written as a series of if-statements instead of a big logical OR
+  // because this construction gives much better debugging backtraces.
+
+  // also, note that the order of these statements matters, because
+  // for example some union types are also optional types
+
+  if (
+    isModelType(thing) &&
+    (!!thing.isJBrowseConfigurationSchema ||
+      (thing.identifierAttribute === 'configId' &&
+        thing.name.includes('ConfigurationSchema')))
   )
+    return true
+
+  if (
+    isUnionType(thing) &&
+    thing.types.every(t => isConfigurationSchemaType(t))
+  )
+    return true
+
+  if (isOptionalType(thing) && isConfigurationSchemaType(thing.type))
+    return true
+
+  if (isArrayType(thing) && isConfigurationSchemaType(thing.subType))
+    return true
+
+  if (isMapType(thing) && isConfigurationSchemaType(thing.subType)) return true
+
+  return false
 }
 
 export function isConfigurationModel(thing) {

@@ -4,7 +4,10 @@ import { withStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React from 'react'
+import React, { Fragment } from 'react'
+
+import { singular } from 'pluralize'
+
 import {
   isConfigurationSchemaType,
   isConfigurationSlotType,
@@ -24,14 +27,32 @@ const memberStyles = theme => ({
 })
 
 const Member = withStyles(memberStyles)(
-  observer(({ slotName, slotSchema, schema, classes }) => {
-    const slot = schema[slotName]
+  observer(props => {
+    const {
+      slotName,
+      slotSchema,
+      schema,
+      classes,
+      slot = schema[slotName],
+    } = props
     let typeSelector
     if (isConfigurationSchemaType(slotSchema)) {
-      // if (slotName === 'adapter') debugger
+      if (slot.length) {
+        return (
+          <Fragment>
+            {slot.map((subslot, slotIndex) => {
+              const key = `${singular(slotName)} ${slotIndex + 1}`
+              return (
+                <Member {...props} key={key} slot={subslot} slotName={key} />
+              )
+            })}
+          </Fragment>
+        )
+      }
+      // if this is an explicitly typed schema, make a type-selecting dropdown
+      // that can be used to change its type
       const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
       if (typeNameChoices.length) {
-        // do something
         typeSelector = (
           <TypeSelector
             typeNameChoices={typeNameChoices}
@@ -67,16 +88,6 @@ const Member = withStyles(memberStyles)(
 )
 
 const Schema = observer(({ schema }) => {
-  if (schema.length) {
-    return schema.map(s => {
-      return iterMap(
-        Object.entries(getMembers(s).properties),
-        ([slotName, slotSchema]) => (
-          <Member key={slotName} {...{ slotName, slotSchema, schema: s }} />
-        ),
-      )
-    })
-  }
   return iterMap(
     Object.entries(getMembers(schema).properties),
     ([slotName, slotSchema]) => (
