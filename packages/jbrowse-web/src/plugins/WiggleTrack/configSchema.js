@@ -1,14 +1,14 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/baseTrack'
+import ConfigurationLayer from '../../configuration/configurationLayer'
+import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
 
-export default pluginManager =>
-  ConfigurationSchema(
-    'WiggleTrack',
+export default pluginManager => {
+  const { configSchema: BasicTrackConfig } = BasicTrackFactory(pluginManager)
+
+  const baseConfig = ConfigurationSchema(
+    'WiggleTrackBase',
     {
-      subtracks: types.array(
-        pluginManager.getTrackType('BasicTrack').configSchema,
-      ),
       autoscale: {
         type: 'stringEnum',
         defaultValue: 'global',
@@ -26,5 +26,16 @@ export default pluginManager =>
         defaultValue: Infinity,
       },
     },
-    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+    { baseConfiguration: BasicTrackConfig, explicitlyTyped: true },
   )
+
+  const withSubtracks = ConfigurationSchema(
+    'WiggleTrack',
+    {
+      subtracks: types.array(ConfigurationLayer(baseConfig)),
+    },
+    { baseConfiguration: baseConfig, explicitlyTyped: true },
+  )
+
+  return withSubtracks
+}
