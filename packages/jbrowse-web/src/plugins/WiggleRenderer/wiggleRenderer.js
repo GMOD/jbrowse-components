@@ -7,7 +7,7 @@ import WiggleRendering from './components/WiggleRendering'
 
 import { readConfObject } from '../../configuration'
 import { bpToPx } from '../../util'
-import { getScale, getOrigin } from './util'
+import { getScale, bumpDomain, getOrigin } from './util'
 import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
@@ -17,18 +17,20 @@ class WiggleRenderer extends ServerSideRenderer {
     config,
     region,
     bpPerPx,
+    minScore,
+    maxScore,
+    height,
     horizontallyFlipped,
     yScale,
   }) {
     const width = (region.end - region.start) / bpPerPx
-    const height = readConfObject(config, 'height')
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
     const canvas = createCanvas(Math.ceil(width), height)
     const ctx = canvas.getContext('2d')
     const scaleType = readConfObject(config, 'scaleType')
-    const inverted = readConfObject(config, 'inverted')
+    const inv = readConfObject(config, 'inverted')
     const pivot = readConfObject(config, 'bicolorPivot')
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -39,9 +41,11 @@ class WiggleRenderer extends ServerSideRenderer {
     const highlightColor = readConfObject(config, 'clipColor')
 
     const originY = getOrigin(scaleType, pivot, yScale)
-    const scale = getScale(scaleType, [yScale.min, yScale.max], [0, height])
-
-    if (inverted) {
+    let [min, max] = bumpDomain([yScale.min, yScale.max], scaleType)
+    if (minScore !== -Infinity) min = minScore
+    if (maxScore !== Infinity) max = maxScore
+    const scale = getScale(scaleType, [min, max], [0, height], { inv })
+    if (inv) {
       ctx.transform(1, 0, 0, -1, 0, canvas.height)
     }
     for (const feature of features.values()) {
@@ -53,7 +57,8 @@ class WiggleRenderer extends ServerSideRenderer {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
       const score = feature.get('score')
-      const clipping = false
+      const lowClipping = score < min
+      const highClipping = score > max
       const toY = rawscore => height - scale(rawscore)
       const w = rightPx - leftPx + 0.7 // fudge factor for subpixel rendering
       let c = readConfObject(config, 'color', [feature])
@@ -91,9 +96,12 @@ class WiggleRenderer extends ServerSideRenderer {
           filled ? toY(originY) - toY(score) : 1,
         )
 
-        if (clipping) {
+        if (highClipping) {
           ctx.fillStyle = clipColor
-          ctx.fillRect(leftPx, height - 2, w, height)
+          ctx.fillRect(leftPx, 0, w, 4)
+        } else if (lowClipping) {
+          ctx.fillStyle = clipColor
+          ctx.fillRect(leftPx, height - 4, w, height)
         }
         if (feature.get('highlighted')) {
           ctx.fillStyle = highlightColor

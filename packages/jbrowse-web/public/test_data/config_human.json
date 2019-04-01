@@ -45,7 +45,7 @@
     {
       "configId": "wiggle_global_autoscale",
       "type": "WiggleTrack",
-      "name": "Global+xyplot/den",
+      "name": "Encode remote track",
       "category": [
         "Bar Category"
       ],

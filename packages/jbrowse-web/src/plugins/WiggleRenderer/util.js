@@ -1,9 +1,8 @@
 import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
 
-export function getScale(scaleType, [argMin, argMax], range, opts = {}) {
+export function getScale(scaleType, [min, max], range, opts = {}) {
   let scale
   const { pivotValue } = opts
-  const [min, max] = bumpDomain([argMin, argMax], scaleType)
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {

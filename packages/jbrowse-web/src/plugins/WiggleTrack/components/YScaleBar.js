@@ -1,13 +1,11 @@
 import React, { Fragment } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'
-import { getScale } from '../../WiggleRenderer/util'
-import { readConfObject } from '../../../configuration'
+import { getScale, bumpDomain } from '../../WiggleRenderer/util'
 
 const styles = (/* theme */) => ({
   majorTickLabel: {
     fontSize: '11px',
-    // fill: theme.palette.text.primary,
   },
   majorTick: {
     stroke: '#555',
@@ -34,17 +32,27 @@ function pickN(a, n) {
 }
 
 function YScaleBar(props) {
-  const { min, max, classes, model, scaleType } = props
-  const { height, configuration } = model
-  const inverted = readConfObject(configuration.renderer, 'inverted')
+  const {
+    statsMin,
+    statsMax,
+    classes,
+    minScore,
+    maxScore,
+    inverted,
+    scaleType,
+    height,
+  } = props
+  let [min, max] = bumpDomain([statsMin, statsMax], scaleType)
+  if (minScore !== -Infinity) min = minScore
+  if (maxScore !== Infinity) max = maxScore
   const scale = getScale(scaleType, [min, max], [0, height], { inverted })
   return (
-    <>
+    <svg height={height}>
       <line
         x1={100}
         x2={100}
         y1={0}
-        y2={100}
+        y2={height}
         strokeWidth={1}
         stroke="#555"
         className={classes.majorTick}
@@ -73,14 +81,27 @@ function YScaleBar(props) {
           </text>
         </Fragment>
       ))}
-    </>
+    </svg>
   )
 }
 
 YScaleBar.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  min: ReactPropTypes.number.isRequired,
-  max: ReactPropTypes.number.isRequired,
+  statsMin: ReactPropTypes.number.isRequired,
+  statsMax: ReactPropTypes.number.isRequired,
+  height: ReactPropTypes.number.isRequired,
+  minScore: ReactPropTypes.number,
+  maxScore: ReactPropTypes.number,
+  inverted: ReactPropTypes.bool,
+  scaleType: ReactPropTypes.string,
+  model: ReactPropTypes.shape({}),
+}
+YScaleBar.defaultProps = {
+  model: {},
+  inverted: false,
+  scaleType: 'linear',
+  minScore: -Infinity,
+  maxScore: Infinity,
 }
 
 export default withStyles(styles)(YScaleBar)
