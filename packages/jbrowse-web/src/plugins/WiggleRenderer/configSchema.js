@@ -4,11 +4,6 @@ import { ConfigurationSchema } from '../../configuration'
 export default ConfigurationSchema(
   'WiggleRenderer',
   {
-    height: {
-      type: 'number',
-      description: 'height in pixels of the track',
-      defaultValue: 100,
-    },
     color: {
       type: 'color',
       description: 'the color of track, overrides posColor and negColor',
@@ -80,16 +75,6 @@ export default ConfigurationSchema(
       type: 'number',
       defaultValue: 0,
       description: 'value to use for bicolor pivot',
-    },
-    minScore: {
-      type: 'number',
-      defaultValue: -Infinity,
-      description: 'value to use for minScore',
-    },
-    maxScore: {
-      type: 'number',
-      defaultValue: Infinity,
-      description: 'value to use for maxScore',
     },
   },
   { explicitlyTyped: true },

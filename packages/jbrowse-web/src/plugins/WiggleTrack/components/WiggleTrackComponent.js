@@ -3,12 +3,11 @@ import { observer } from 'mobx-react'
 
 import Track from '../../LinearGenomeView/components/Track'
 import YScaleBar from './YScaleBar'
-import { readConfObject } from '../../../configuration'
+import { readConfObject, getConf } from '../../../configuration'
 
 function WiggleTrackComponent(props) {
   const { model } = props
   const { yScale, ready, error } = model
-  const { min, max } = yScale || {}
 
   if (error) {
     return <div className="blur">{error}</div>
@@ -16,6 +15,9 @@ function WiggleTrackComponent(props) {
   if (!ready) {
     return <div className="blur">Loading stats</div>
   }
+  const minScore = getConf(model, 'minScore')
+  const maxScore = getConf(model, 'maxScore')
+  const height = getConf(model, 'defaultHeight')
   return (
     <Track {...props}>
       {model.subtracks.map(subtrack => (
@@ -32,17 +34,13 @@ function WiggleTrackComponent(props) {
           >
             {readConfObject(subtrack.configuration.renderer, 'renderType') ===
             'xyplot' ? (
-              <svg height={subtrack.height}>
-                <YScaleBar
-                  min={min}
-                  max={max}
-                  model={subtrack}
-                  scaleType={readConfObject(
-                    subtrack.configuration.renderer,
-                    'scaleType',
-                  )}
-                />
-              </svg>
+              <YScaleBar
+                statsMin={yScale.min}
+                statsMax={yScale.max}
+                height={height}
+                minScore={minScore}
+                maxScore={maxScore}
+              />
             ) : null}
           </div>
           <subtrack.reactComponent {...props} model={subtrack} />

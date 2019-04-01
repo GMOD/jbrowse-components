@@ -1,7 +1,7 @@
 import { types, addDisposer, flow } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { ConfigurationReference, readConfObject } from '../../configuration'
+import { ConfigurationReference, getConf } from '../../configuration'
 
 import BaseTrack from '../LinearGenomeView/models/baseTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
@@ -23,16 +23,15 @@ export default (pluginManager, configSchema) =>
         afterAttach() {
           const recreateSubtracks = autorun(
             function recreateSubtracksAutorun() {
-              const { configuration } = self
-              const subtrackConfs = readConfObject(configuration, 'subtracks')
+              const subtrackConfs = getConf(self, 'subtracks')
               self.updateSubtracks(subtrackConfs)
             },
           )
 
           const getYAxisScale = autorun(
             function getYAxisScaleAutorun() {
-              const { subtracks, configuration } = self
-              const autoscaleType = readConfObject(configuration, 'autoscale')
+              const { subtracks } = self
+              const autoscaleType = getConf(self, 'autoscale')
               let stats
 
               if (autoscaleType === 'global') {
@@ -61,15 +60,12 @@ export default (pluginManager, configSchema) =>
         processStats: flow(function* processStats(p) {
           try {
             self.yScale = yield Promise.all(p).then(s => {
-              let min = Math.min(...s.map(e => e.scoreMin))
-              let max = Math.max(...s.map(e => e.scoreMax))
-              const minScore = readConfObject(self.configuration, 'minScore')
-              const maxScore = readConfObject(self.configuration, 'maxScore')
+              const min = Math.min(...s.map(e => e.scoreMin))
+              const max = Math.max(...s.map(e => e.scoreMax))
               const mean =
                 s.reduce((a, b) => a + b.scoreMean * b.featureCount, 0) /
                 s.reduce((a, b) => a + b.featureCount, 0)
-              if (minScore !== -Infinity) min = minScore
-              if (maxScore !== Infinity) max = maxScore
+
               return { min, max, mean }
             })
             self.ready = true
@@ -86,6 +82,9 @@ export default (pluginManager, configSchema) =>
             trackModel: self,
             yScale: self.yScale,
             notReady: !self.ready,
+            minScore: getConf(self, 'minScore'),
+            maxScore: getConf(self, 'maxScore'),
+            height: getConf(self, 'defaultHeight'),
           }
         },
       }))

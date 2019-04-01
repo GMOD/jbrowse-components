@@ -104,18 +104,28 @@ export default class BigWigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }) {
+
+  getFeatures({ /* assembly, */ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
-      const records = await this.bigwig.getFeatures(refName, start, end)
-      records.forEach(record => {
-        observer.next(
-          new SimpleFeature({
-            id: record.start + 1,
-            data: record,
-          }),
-        )
+      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
+        signal,
       })
-      observer.complete()
+      ob2.subscribe(
+        chunk => {
+          chunk.forEach(record => {
+            observer.next(
+              new SimpleFeature({
+                id: record.start + 1,
+                data: record,
+              }),
+            )
+          })
+        },
+        error => {
+          throw new Error(error)
+        },
+        () => observer.complete(),
+      )
     })
   }
 }
