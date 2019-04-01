@@ -41,6 +41,46 @@
           }
         }
       }
+    },
+    {
+      "configId": "wiggle_global_autoscale",
+      "type": "WiggleTrack",
+      "name": "Global+xyplot/den",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "hg38",
+      "subtracks": [
+        {
+          "renderer": {
+            "type": "WiggleRenderer"
+          },
+          "type": "BasicTrack",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF633MKO/@@download/ENCFF633MKO.bigWig"
+            },
+            "assemblyName": "hg38"
+          }
+        },
+        {
+          "renderer": {
+            "type": "WiggleRenderer",
+            "renderType": "density"
+          },
+          "type": "BasicTrack",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF243WKQ/@@download/ENCFF243WKQ.bigWig"
+            },
+            "assemblyName": "hg38"
+          }
+        }
+      ]
     }
   ],
   "assemblies": {
