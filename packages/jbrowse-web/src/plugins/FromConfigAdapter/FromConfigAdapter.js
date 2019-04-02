@@ -98,11 +98,12 @@ export default class FromConfigAdapter extends BaseAdapter {
   /**
    * Fetch features for a certain region
    * @param {Region} param
+   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }) {
+  getFeatures({ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
-      const features = this.features.get(refName) || []
+      const features = this.features.get(refName, signal) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
         if (f.get('end') > start && f.get('start') < end) {

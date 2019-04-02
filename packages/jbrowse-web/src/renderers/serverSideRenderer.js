@@ -1,5 +1,5 @@
 import { renderToString } from 'react-dom/server'
-import { tap } from 'rxjs/operators'
+import { tap, filter, ignoreElements } from 'rxjs/operators'
 
 import RendererType from '../pluggableElementTypes/RendererType'
 
@@ -105,14 +105,14 @@ export default class ServerSideRenderer extends RendererType {
         signal,
       )
       .pipe(
+        tap(() => checkAbortSignal(signal)),
+        filter(feature => this.featurePassesFilters(renderArgs, feature)),
         tap(feature => {
-          checkAbortSignal(signal)
-          if (this.featurePassesFilters(renderArgs, feature)) {
-            const id = feature.id()
-            if (!id) throw new Error(`invalid feature id "${id}"`)
-            features.set(id, feature)
-          }
+          const id = feature.id()
+          if (!id) throw new Error(`invalid feature id "${id}"`)
+          features.set(id, feature)
         }),
+        ignoreElements(),
       )
       .toPromise()
     return features

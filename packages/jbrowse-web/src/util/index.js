@@ -58,7 +58,7 @@ export function iterMap(iterable, func, sizeHint) {
 export function checkAbortSignal(signal) {
   if (!signal) return
 
-  if (!(signal instanceof AbortSignal)) {
+  if (inDevelopment && !(signal instanceof AbortSignal)) {
     throw new TypeError('must pass an AbortSignal')
   }
 
