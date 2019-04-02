@@ -43,7 +43,7 @@ class ServerSideRenderedContent extends Component {
       // defer main-thread rendering and hydration for when
       // we have some free time. helps keep the framerate up.
       requestIdleCallback(() => {
-        if (!isAlive(model)) return
+        if (!isAlive(model) || !isAlive(region)) return
         const mainThreadRendering = React.createElement(
           renderingComponent,
           {
@@ -54,7 +54,7 @@ class ServerSideRenderedContent extends Component {
           null,
         )
         requestIdleCallback(() => {
-          if (!isAlive(model)) return
+          if (!isAlive(model) || !isAlive(region)) return
           hydrate(mainThreadRendering, domNode.firstChild)
           this.hydrated = true
         })

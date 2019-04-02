@@ -96,7 +96,7 @@ export default types
   }))
   .actions(self => ({
     afterAttach() {
-      const track = getContainingView(self)
+      const track = getParent(self, 2)
       const renderDisposer = reaction(
         () => renderBlockData(self),
         data => renderBlockEffect(self, data),
