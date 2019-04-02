@@ -127,11 +127,12 @@ const FunctionStringType = types.refinement(
  * builds a MST model for a configuration slot
  *
  * @param {*} slotName
- * @param {object} param1
- * @param {string} param1.description?
- * @param {object} param1.model? custom base MST model for the slot's value
- * @param {string} type name of the type of slot, e.g. "string", "number", "stringArray"
- * @param {*} defaultValue default value of the slot
+ * @param {object} definition
+ * @param {string} definition.description?
+ * @param {object} definition.model? custom base MST model for the slot's value
+ * @param {string} definition.type name of the type of slot, e.g. "string", "number", "stringArray"
+ * @param {*} definition.defaultValue default value of the slot
+ * @param {Array[string]} [definition.functionSignature] parameter names of the function callback, default []
  */
 export default function ConfigSlot(
   slotName,

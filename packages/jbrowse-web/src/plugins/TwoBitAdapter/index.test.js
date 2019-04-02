@@ -1,3 +1,4 @@
+import { getSnapshot } from 'mobx-state-tree'
 import MyPlugin from './index'
 import { createTestEnv } from '../../JBrowse'
 
@@ -9,7 +10,7 @@ test('plugin in a stock JBrowse', async () => {
 
   const TwoBitAdapter = pluginManager.getAdapterType('TwoBitAdapter')
   const config = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
-  expect(config).toMatchSnapshot({
+  expect(getSnapshot(config)).toMatchSnapshot({
     configId: expect.any(String),
   })
 })
