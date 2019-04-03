@@ -53,10 +53,10 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
   self.setLoading(aborter)
   try {
     renderArgs.signal = aborter.signal
-    const callId = [
-      assembleLocString(renderArgs.region),
-      renderArgs.rendererType,
-    ]
+    // const callId = [
+    //   assembleLocString(renderArgs.region),
+    //   renderArgs.rendererType,
+    // ]
     const { html, ...data } = await rendererType.renderInClient(
       rpcManager,
       renderArgs,
