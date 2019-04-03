@@ -1,5 +1,3 @@
-import React from 'react'
-import PropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
 import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import Grow from '@material-ui/core/Grow'
@@ -11,9 +9,11 @@ import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
 import { withStyles } from '@material-ui/core/styles'
-
 import { values } from 'mobx'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react-lite'
+import PropTypes from 'prop-types'
+import React, { useState } from 'react'
 
 const styles = theme => ({
   root: {
@@ -22,96 +22,89 @@ const styles = theme => ({
   popper: {
     zIndex: theme.zIndex.drawer + 50,
   },
+  grow: {
+    transformOrigin: 'left top',
+  },
 })
 
-class DropDownMenu extends React.Component {
-  static propTypes = {
-    classes: PropTypes.shape({
-      root: PropTypes.shape.isRequired,
-    }).isRequired,
-    menuTitle: PropTypes.string.isRequired,
-    menuItems: MobxPropTypes.observableArray.isRequired,
-    model: MobxPropTypes.observableObject.isRequired,
+function DropDownMenu(props) {
+  const [open, setOpen] = useState(false)
+  const anchorEl = React.useRef(null)
+
+  const { classes, menuTitle, menuItems } = props
+
+  function handleToggle() {
+    setOpen(!open)
   }
 
-  state = {
-    anchorEl: null,
+  function handleClose(event, callback) {
+    if (anchorEl.current.contains(event.target)) {
+      return
+    }
+
+    setOpen(false)
+    if (callback) callback(event)
   }
 
-  handleToggle = event => {
-    const { anchorEl } = this.state
-    this.setState({ anchorEl: anchorEl ? null : event.currentTarget })
-  }
+  return (
+    <div className={classes.root}>
+      <Button
+        buttonRef={anchorEl}
+        aria-owns={anchorEl ? 'menu-list-grow' : null}
+        aria-haspopup="true"
+        onClick={handleToggle}
+        color="inherit"
+      >
+        {menuTitle}
+        <Icon>arrow_drop_down</Icon>
+      </Button>
+      <Popper
+        className={classes.popper}
+        open={open}
+        anchorEl={anchorEl.current}
+        placement="bottom-start"
+        transition
+        // disablePortal
+      >
+        {({ TransitionProps }) => (
+          <Grow
+            {...TransitionProps}
+            id="menu-list-grow"
+            className={classes.grow}
+          >
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList>
+                  {values(menuItems).map(menuItem => (
+                    <MenuItem
+                      key={menuItem.name}
+                      onClick={event => handleClose(event, menuItem.func)}
+                    >
+                      {menuItem.icon ? (
+                        <ListItemIcon key={menuItem.name}>
+                          <Icon>{menuItem.icon}</Icon>
+                        </ListItemIcon>
+                      ) : null}
+                      <ListItemText
+                        inset={!menuItem.icon}
+                        primary={menuItem.name}
+                      />
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </div>
+  )
+}
 
-  handleClose = (event, callback) => {
-    const { anchorEl } = this.state
-    const { model } = this.props
-    if (anchorEl && anchorEl.contains(event.target)) return
-    this.setState({ anchorEl: null })
-    if (callback) callback(model)
-  }
-
-  render() {
-    const { classes, menuTitle, menuItems } = this.props
-    const { anchorEl } = this.state
-
-    return (
-      <div className={classes.root}>
-        <Button
-          aria-owns={anchorEl ? 'menu-list-grow' : null}
-          aria-haspopup="true"
-          onClick={this.handleToggle}
-          color="inherit"
-        >
-          {menuTitle}
-          <Icon>arrow_drop_down</Icon>
-        </Button>
-        <Popper
-          className={classes.popper}
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          placement="bottom-start"
-          transition
-          // disablePortal
-        >
-          {({ TransitionProps }) => (
-            <Grow
-              {...TransitionProps}
-              id="menu-list-grow"
-              style={{
-                transformOrigin: 'left top',
-              }}
-            >
-              <Paper>
-                <ClickAwayListener onClickAway={this.handleClose}>
-                  <MenuList>
-                    {values(menuItems).map(menuItem => (
-                      <MenuItem
-                        key={menuItem.name}
-                        onClick={event =>
-                          this.handleClose(event, menuItem.func)
-                        }
-                      >
-                        {menuItem.icon ? (
-                          <ListItemIcon key={menuItem.name}>
-                            <Icon>{menuItem.icon}</Icon>
-                          </ListItemIcon>
-                        ) : null}
-                        <ListItemText
-                          inset={!menuItem.icon}
-                          primary={menuItem.name}
-                        />
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </ClickAwayListener>
-              </Paper>
-            </Grow>
-          )}
-        </Popper>
-      </div>
-    )
-  }
+DropDownMenu.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  menuTitle: PropTypes.string.isRequired,
+  menuItems: MobxPropTypes.observableArray.isRequired,
 }
 
 export default withStyles(styles)(observer(DropDownMenu))

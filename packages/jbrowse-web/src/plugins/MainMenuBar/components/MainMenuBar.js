@@ -34,7 +34,6 @@ function MainMenuBar(props) {
             key={menu.name}
             menuTitle={menu.name}
             menuItems={menu.menuItems}
-            model={model}
           />
         ))}
         <div

@@ -177,9 +177,10 @@ exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 5`] = 
 `;
 
 exports[`<DropDownMenu /> renders 1`] = `
-<DropDownMenu
+<Component
   classes={
     Object {
+      "grow": "DropDownMenu-grow-3",
       "popper": "DropDownMenu-popper-2",
       "root": "DropDownMenu-root-1",
     }

@@ -50,7 +50,7 @@ export const MenuItemModel = types
         rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
       )
     },
-    downloadConfiguration() {
+    exportConfiguration() {
       const rootModel = getRoot(self)
       const initialSnap = JSON.stringify(getSnapshot(rootModel.configuration))
       const filter = (key, value) => {
@@ -68,6 +68,10 @@ export const MenuItemModel = types
       )
       saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')
       return configSnap
+    },
+    importConfiguration(event) {
+      console.log(event)
+      // TODO
     },
   }))
 

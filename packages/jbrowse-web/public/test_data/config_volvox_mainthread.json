@@ -252,9 +252,9 @@
             "name": "Admin",
             "menuItems": [
               {
-                "name": "Download configuration",
+                "name": "Export configuration",
                 "icon": "get_app",
-                "callback": "downloadConfiguration"
+                "callback": "exportConfiguration"
               }
             ]
           }
