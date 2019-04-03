@@ -105,7 +105,7 @@ function fetchBinaryRange(url, start, end) {
 
 const globalCache = new HttpRangeFetcher({
   fetch: fetchBinaryRange,
-  size: 50 * 1024, // 50MB
+  size: 100 * 1024 * 1024, // 100MB
   chunkSize: 2 ** 18, // 256KB
   aggregationTime: 50,
 })

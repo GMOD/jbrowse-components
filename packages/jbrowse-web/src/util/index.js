@@ -85,7 +85,9 @@ export function isAbortException(exception) {
     // standard-ish non-DOM abort exception
     exception.code === 'ERR_ABORTED' ||
     // stringified DOMException
-    exception.message === 'AbortError: aborted'
+    exception.message === 'AbortError: aborted' ||
+    // stringified standard-ish exception
+    exception.message === 'Error: aborted'
   )
 }
 

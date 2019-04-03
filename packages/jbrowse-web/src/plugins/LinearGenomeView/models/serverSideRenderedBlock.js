@@ -44,10 +44,8 @@ function renderBlockData(self) {
     },
   }
 }
-async function renderBlockEffect(
-  self,
-  { rendererType, renderProps, rpcManager, renderArgs },
-) {
+async function renderBlockEffect(self, props, allowRefetch = true) {
+  const { rendererType, renderProps, rpcManager, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
   if (self.renderInProgress) self.renderInProgress.abort()
@@ -63,14 +61,23 @@ async function renderBlockEffect(
       rpcManager,
       renderArgs,
     )
-    if (aborter.signal.aborted) {
-      console.log(...callId, 'request to abort render was ignored', html, data)
-    }
+    // if (aborter.signal.aborted) {
+    //   console.log(...callId, 'request to abort render was ignored', html, data)
+    // }
     checkAbortSignal(aborter.signal)
     self.setRendered(data, html, rendererType.ReactComponent, renderProps)
   } catch (error) {
-    if (isAbortException(error)) return
-    console.error(error)
+    if (!isAbortException(error)) console.error(error)
+    if (isAbortException(error) && !aborter.signal.aborted) {
+      // there is a bug in the underlying code and something is caching aborts. try to refetch once
+      const track = getParent(self, 2)
+      if (allowRefetch) {
+        console.warn(`cached abort detected, refetching ${track.name}`)
+        renderBlockEffect(self, props, false)
+        return
+      }
+      console.warn(`cached abort detected, failed to recover ${track.name}`)
+    }
     if (isAlive(self)) self.setError(error)
   }
 }
@@ -109,7 +116,8 @@ export default types
       addDisposer(self, renderDisposer)
     },
     setLoading(abortController) {
-      if (self.renderInProgress) self.renderInProgress.abort()
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
       self.filled = false
       self.html = ''
       self.data = undefined
@@ -124,7 +132,8 @@ export default types
       self.renderProps = renderProps
     },
     setError(error) {
-      if (self.renderInProgress) self.renderInProgress.abort()
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
       // the rendering failed for some reason
       self.error = error
       self.renderInProgress = undefined
@@ -133,6 +142,7 @@ export default types
       self.html = ''
     },
     beforeDestroy() {
-      if (self.renderInProgress) self.renderInProgress.abort()
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
     },
   }))
