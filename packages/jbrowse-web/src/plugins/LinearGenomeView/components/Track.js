@@ -70,7 +70,7 @@ class Track extends Component {
     delta.x = Math.round(delta.x)
     delta.y = Math.round(delta.y)
 
-    if (delta.x) onHorizontalScroll(delta.x)
+    if (delta.x) onHorizontalScroll(-delta.x)
     // TODO vertical scrolling
     // if (delta.y)
     //   // 60 pixels per mouse wheel event
