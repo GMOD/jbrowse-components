@@ -4,20 +4,42 @@ if (!Object.fromEntries) {
   fromEntries.shim()
 }
 
+/**
+ * Assemble a "locstring" from a location, like "ctgA:20-30".
+ * The locstring uses 1-based coordinates.
+ *
+ * @param {string} args.refName reference sequence name
+ * @param {number} args.start start coordinate
+ * @param {number} args.end end coordinate
+ * @returns {string} the locstring
+ */
 export function assembleLocString({ refName, start, end }) {
   return `${refName}:${start + 1}-${end}`
 }
 
-export function clamp(val, min, max) {
-  if (val < min) return min
-  if (val > max) return max
-  return val
+/**
+ * Ensure that a number is at least min and at most max.
+ *
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ */
+export function clamp(num, min, max) {
+  if (num < min) return min
+  if (num > max) return max
+  return num
 }
 
 function roundToNearestPointOne(num) {
   return Math.round(num * 10) / 10
 }
 
+/**
+ * @param {number} bp
+ * @param {Region} region
+ * @param {number} bpPerPx
+ * @param {boolean} [flipped] whether the current region is displayed flipped horizontally.  default false.
+ */
 export function bpToPx(bp, region, bpPerPx, flipped = false) {
   if (flipped) {
     return roundToNearestPointOne((region.end - bp) / bpPerPx)
