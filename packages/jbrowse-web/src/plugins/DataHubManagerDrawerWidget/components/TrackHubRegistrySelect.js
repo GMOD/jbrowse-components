@@ -9,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import sanitizeHtml from 'sanitize-html'
 import { fetchHubFile } from '../../../connections/ucscHub'
 import GenomeSelector from './GenomeSelector'
 import SelectBox from './SelectBox'
@@ -257,17 +258,42 @@ function TrackHubRegistrySelect(props) {
         <RadioGroup value={selectedHub} onChange={handleSelectHub}>
           {Array.from(hubs.values()).map(hub => {
             const disabled = Boolean(hub.error)
+            const allowedHtml = {
+              allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
+              allowedAttributes: {
+                a: ['href'],
+              },
+            }
+            const cleanShortLabel = (
+              <div
+                // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
+                }}
+              />
+            )
+            const cleanLongLabel = (
+              <div
+                // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
+                }}
+              />
+            )
             return (
               <Wire key={hub.id} value={hub.id}>
                 {formControlProps => (
                   <Tooltip
-                    title={disabled ? hub.error : hub.hub.longLabel}
+                    title={disabled ? hub.error : cleanLongLabel}
                     placement="left"
+                    interactive
                   >
                     <FormControlLabel
                       key={hub.id}
                       value={hub.id}
-                      label={hub.hub.shortLabel}
+                      label={cleanShortLabel}
                       disabled={disabled}
                       control={<Radio />}
                       {...formControlProps}
