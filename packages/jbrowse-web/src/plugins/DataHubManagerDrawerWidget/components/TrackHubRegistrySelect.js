@@ -1,4 +1,6 @@
+import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
+import FormLabel from '@material-ui/core/FormLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
@@ -23,6 +25,12 @@ function QueryStatus(props) {
 
 QueryStatus.propTypes = {
   status: PropTypes.string.isRequired,
+}
+
+// Need this for FormControlLabel to work with Tooltip
+// https://github.com/mui-org/material-ui/issues/2225#issuecomment-460041878
+function Wire({ children, ...props }) {
+  return children(props)
 }
 
 const styles = theme => ({
@@ -123,6 +131,7 @@ function TrackHubRegistrySelect(props) {
   }
 
   async function handleSelectHub(event) {
+    console.log(event.target.value)
     setSelectedHub(event.target.value)
     const selectedHubObj = hubs.get(event.target.value)
     setHubName(selectedHubObj.hub.shortLabel)
@@ -243,28 +252,33 @@ function TrackHubRegistrySelect(props) {
 
   if (selectedAssembly) {
     renderItems.push(
-      <div key="hubSelect">
-        <Typography>Hubs:</Typography>
+      <FormControl key="hubSelect">
+        <FormLabel>Hubs:</FormLabel>
         <RadioGroup value={selectedHub} onChange={handleSelectHub}>
           {Array.from(hubs.values()).map(hub => {
             const disabled = Boolean(hub.error)
             return (
-              <Tooltip
-                key={hub.id}
-                title={disabled ? hub.error : hub.hub.longLabel}
-                placement="left"
-              >
-                <FormControlLabel
-                  value={hub.id}
-                  label={hub.hub.shortLabel}
-                  disabled={disabled}
-                  control={<Radio />}
-                />
-              </Tooltip>
+              <Wire key={hub.id} value={hub.id}>
+                {formControlProps => (
+                  <Tooltip
+                    title={disabled ? hub.error : hub.hub.longLabel}
+                    placement="left"
+                  >
+                    <FormControlLabel
+                      key={hub.id}
+                      value={hub.id}
+                      label={hub.hub.shortLabel}
+                      disabled={disabled}
+                      control={<Radio />}
+                      {...formControlProps}
+                    />
+                  </Tooltip>
+                )}
+              </Wire>
             )
           })}
         </RadioGroup>
-      </div>,
+      </FormControl>,
     )
     if (!allHubsRetrieved)
       renderItems.push(<QueryStatus key="hubStatus" status="Retrieving hubs" />)
@@ -281,7 +295,7 @@ function TrackHubRegistrySelect(props) {
       />,
     )
 
-  return <div>{renderItems}</div>
+  return <>{renderItems}</>
 }
 
 TrackHubRegistrySelect.propTypes = {
