@@ -9,6 +9,7 @@ import {
   HelpDrawerWidgetModel,
   MainMenuBarModel,
   AssemblyEditorDrawerWidgetModel,
+  ImportConfigurationDrawerWidgetModel,
 } from './model'
 
 const MainMenuBarComponent = lazy(() => import('./components/MainMenuBar'))
@@ -20,6 +21,9 @@ const HelpDrawerWidgetComponent = lazy(() =>
 )
 const AssemblyEditorDrawerWidgetComponent = lazy(() =>
   import('./components/AssemblyEditorDrawerWidget'),
+)
+const ImportConfigurationDrawerWidgetComponent = lazy(() =>
+  import('./components/ImportConfigurationDrawerWidget'),
 )
 
 export default class MainMenuBar extends Plugin {
@@ -76,6 +80,23 @@ export default class MainMenuBar extends Plugin {
         configSchema,
         stateModel,
         LazyReactComponent: AssemblyEditorDrawerWidgetComponent,
+      })
+    })
+
+    pluginManager.addDrawerWidgetType(() => {
+      const stateModel = ImportConfigurationDrawerWidgetModel
+
+      const configSchema = ConfigurationSchema(
+        'ImportConfigurationDrawerWidget',
+        {},
+      )
+
+      return new DrawerWidgetType({
+        name: 'ImportConfigurationDrawerWidget',
+        heading: 'Import Configuration',
+        configSchema,
+        stateModel,
+        LazyReactComponent: ImportConfigurationDrawerWidgetComponent,
       })
     })
   }

@@ -50,6 +50,17 @@ export const MenuItemModel = types
         rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
       )
     },
+    openConfigurationImport() {
+      const rootModel = getRoot(self)
+      if (!rootModel.drawerWidgets.get('importConfigurationDrawerWidget'))
+        rootModel.addDrawerWidget(
+          'ImportConfigurationDrawerWidget',
+          'importConfigurationDrawerWidget',
+        )
+      rootModel.showDrawerWidget(
+        rootModel.drawerWidgets.get('importConfigurationDrawerWidget'),
+      )
+    },
     exportConfiguration() {
       const rootModel = getRoot(self)
       const initialSnap = JSON.stringify(getSnapshot(rootModel.configuration))
@@ -69,9 +80,8 @@ export const MenuItemModel = types
       saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')
       return configSnap
     },
-    importConfiguration(event) {
-      console.log(event)
-      // TODO
+    importConfiguration() {
+      self.openConfigurationImport()
     },
   }))
 
@@ -126,5 +136,13 @@ export const AssemblyEditorDrawerWidgetModel = types.model(
   {
     id: ElementId,
     type: types.literal('AssemblyEditorDrawerWidget'),
+  },
+)
+
+export const ImportConfigurationDrawerWidgetModel = types.model(
+  'ImportConfigurationDrawerWidget',
+  {
+    id: ElementId,
+    type: types.literal('ImportConfigurationDrawerWidget'),
   },
 )
