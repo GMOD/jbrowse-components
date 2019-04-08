@@ -11371,6 +11371,11 @@ react-custom-scrollbars@^4.2.1:
     prop-types "^15.5.10"
     raf "^3.1.0"
 
+react-d3-axis@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/react-d3-axis/-/react-d3-axis-0.1.1.tgz#de890587645e46b1c286314c4f352ebb94f5c522"
+  integrity sha1-3okFh2ReRrHChjFMTzUuu5T1xSI=
+
 react-dev-utils@<8.0.0:
   version "7.0.5"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-7.0.5.tgz#cb95375d01ae71ca27b3c7616006ef7a77d14e8e"

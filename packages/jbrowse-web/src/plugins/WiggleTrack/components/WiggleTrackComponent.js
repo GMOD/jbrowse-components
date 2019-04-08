@@ -1,13 +1,18 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
+import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import Track from '../../LinearGenomeView/components/Track'
-import YScaleBar from './YScaleBar'
-import { readConfObject, getConf } from '../../../configuration'
+import { readConfObject, getConfs } from '../../../configuration'
+import { getScale } from '../../WiggleRenderer/util'
 
+function pickN(a, n) {
+  const p = Math.floor(a.length / n) || 1
+  return a.slice(0, p * n).filter((_, i) => i % p === 0)
+}
 function WiggleTrackComponent(props) {
   const { model } = props
-  const { yScale, ready, error } = model
+  const { stats, ready, error } = model
 
   if (error) {
     return <div className="blur">{error}</div>
@@ -15,37 +20,61 @@ function WiggleTrackComponent(props) {
   if (!ready) {
     return <div className="blur">Loading stats</div>
   }
-  const minScore = getConf(model, 'minScore')
-  const maxScore = getConf(model, 'maxScore')
-  const height = getConf(model, 'defaultHeight')
+
+  const { min, max } = stats
+  const [maxScore, minScore, defaultHeight] = getConfs(model, [
+    'maxScore',
+    'minScore',
+    'defaultHeight',
+  ])
+  const getSubtrackRendererConf = (subtrack, slot) =>
+    readConfObject(subtrack.configuration.renderer, slot)
+
+  const getYScaleBar = subtrack => {
+    const scaleType = getSubtrackRendererConf(subtrack, 'scaleType')
+    const inverted = getSubtrackRendererConf(subtrack, 'inverted')
+    const opts = { minScore, maxScore, inverted }
+    const scale = getScale(scaleType, [min, max], [defaultHeight, 0], opts)
+    const axisProps = axisPropsFromTickScale(scale, 3)
+    const values = pickN(axisProps.values, 4)
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '0px',
+          pointerEvents: 'none',
+          zIndex: 100,
+          width: 35,
+        }}
+      >
+        <svg style={{ textShadow: '1px 1px #ccc' }}>
+          <Axis
+            {...axisProps}
+            values={values}
+            format={n => n}
+            style={{ orient: RIGHT }}
+          />
+        </svg>
+      </div>
+    )
+  }
+
+  const getSubtrack = subtrack => {
+    const needsScalebar =
+      getSubtrackRendererConf(subtrack, 'renderType') === 'xyplot'
+    return (
+      <div
+        key={subtrack.id}
+        style={{ position: 'relative', height: subtrack.height }}
+      >
+        {needsScalebar ? getYScaleBar(subtrack) : null}
+        <subtrack.reactComponent {...props} model={subtrack} />
+      </div>
+    )
+  }
   return (
     <Track {...props}>
-      {model.subtracks.map(subtrack => (
-        <div
-          key={subtrack.id}
-          style={{ position: 'relative', height: subtrack.height }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: '0px',
-              zIndex: 100,
-            }}
-          >
-            {readConfObject(subtrack.configuration.renderer, 'renderType') ===
-            'xyplot' ? (
-              <YScaleBar
-                statsMin={yScale.min}
-                statsMax={yScale.max}
-                height={height}
-                minScore={minScore}
-                maxScore={maxScore}
-              />
-            ) : null}
-          </div>
-          <subtrack.reactComponent {...props} model={subtrack} />
-        </div>
-      ))}
+      {model.subtracks.map(subtrack => getSubtrack(subtrack))}
     </Track>
   )
 }

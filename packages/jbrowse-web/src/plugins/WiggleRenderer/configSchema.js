@@ -49,17 +49,6 @@ export default ConfigurationSchema(
       description: 'fill in histogram',
       defaultValue: true,
     },
-    scaleType: {
-      type: 'stringEnum',
-      model: types.enumeration('Scale type', ['linear', 'log', 'z_scale']),
-      description: 'The type of scale to use',
-      defaultValue: 'linear',
-    },
-    highResolutionScaling: {
-      type: 'number',
-      description: 'used for high resolution or high-DPI rendering',
-      defaultValue: 2,
-    },
     bicolorPivot: {
       type: 'stringEnum',
       model: types.enumeration('Scale type', [
@@ -75,6 +64,12 @@ export default ConfigurationSchema(
       type: 'number',
       defaultValue: 0,
       description: 'value to use for bicolor pivot',
+    },
+    scaleType: {
+      type: 'stringEnum',
+      model: types.enumeration('Scale type', ['linear', 'log', 'z_scale']),
+      description: 'The type of scale to use',
+      defaultValue: 'linear',
     },
   },
   { explicitlyTyped: true },
