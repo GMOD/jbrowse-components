@@ -5,9 +5,9 @@ import {
 } from '../../util/offscreenCanvasPonyfill'
 import WiggleRendering from './components/WiggleRendering'
 
-import { readConfObject } from '../../configuration'
+import { readConfObjects, readConfObject } from '../../configuration'
 import { bpToPx } from '../../util'
-import { getScale, bumpDomain, getOrigin } from './util'
+import { getScale, getOrigin } from './util'
 import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
@@ -19,34 +19,54 @@ class WiggleRenderer extends ServerSideRenderer {
     bpPerPx,
     minScore,
     maxScore,
+    scaling,
     height,
     horizontallyFlipped,
-    yScale,
+    stats,
   }) {
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
-    const canvas = createCanvas(Math.ceil(width), height)
+    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
     const ctx = canvas.getContext('2d')
-    const scaleType = readConfObject(config, 'scaleType')
-    const inv = readConfObject(config, 'inverted')
-    const pivot = readConfObject(config, 'bicolorPivot')
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
-    const type = readConfObject(config, 'renderType')
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'clipColor')
+    const [
+      inverted,
+      scaleType,
+      pivot,
+      pivotValue,
+      negColor,
+      posColor,
+      filled,
+      type,
+      clipColor,
+      highlightColor,
+    ] = readConfObjects(config, [
+      'inverted',
+      'scaleType',
+      'bicolorPivot',
+      'bicolorPivotValue',
+      'negColor',
+      'posColor',
+      'filled',
+      'renderType',
+      'clipColor',
+      'highlightColor',
+    ])
+    const { min, max } = stats
+    const scale = getScale(scaleType, [min, max], [0, height], {
+      minScore,
+      maxScore,
+    })
+    const originY = getOrigin(scaleType)
+    const [niceMin, niceMax] = scale.domain()
+    const toY = rawscore => height - scale(rawscore)
+    if (scaling) {
+      ctx.scale(scaling, scaling)
+    }
 
-    const originY = getOrigin(scaleType, pivot, yScale)
-    let [min, max] = bumpDomain([yScale.min, yScale.max], scaleType)
-    if (minScore !== -Infinity) min = minScore
-    if (maxScore !== Infinity) max = maxScore
-    const scale = getScale(scaleType, [min, max], [0, height], { inv })
-    if (inv) {
-      ctx.transform(1, 0, 0, -1, 0, canvas.height)
+    if (inverted) {
+      ctx.transform(1, 0, 0, -1, 0, height)
     }
     for (const feature of features.values()) {
       const s = feature.get('start')
@@ -57,29 +77,18 @@ class WiggleRenderer extends ServerSideRenderer {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
       const score = feature.get('score')
-      const lowClipping = score < min
-      const highClipping = score > max
-      const toY = rawscore => height - scale(rawscore)
-      const w = rightPx - leftPx + 0.7 // fudge factor for subpixel rendering
+      const lowClipping = score < niceMin
+      const highClipping = score > niceMax
+      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       let c = readConfObject(config, 'color', [feature])
-      let colorScale
 
       if (type === 'density') {
         if (c === '#f0f') {
-          colorScale =
-            pivot !== 'none'
-              ? getScale(
-                  scaleType,
-                  [yScale.min, yScale.max],
-                  [negColor, 'white', posColor],
-                  { pivotValue },
-                )
-              : getScale(
-                  scaleType,
-                  [yScale.min, yScale.max],
-                  ['white', posColor],
-                )
-          c = colorScale(score)
+          c = (pivot !== 'none'
+            ? getScale(scaleType, [min, max], [negColor, 'white', posColor], {
+                pivotValue,
+              })
+            : getScale(scaleType, [min, max], ['white', posColor]))(score)
         }
         ctx.fillStyle = c
         ctx.fillRect(leftPx, 0, w, height)

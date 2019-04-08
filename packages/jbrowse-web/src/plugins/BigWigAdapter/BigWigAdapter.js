@@ -107,9 +107,14 @@ export default class BigWigAdapter extends BaseAdapter {
 
   getFeatures({ /* assembly, */ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
-      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
-        signal,
-      })
+      const ob2 = await this.bigwig.getFeatureStream(
+        refName,
+        start - 1000, // todo;used to fix across block boundaries for line type
+        end + 1000,
+        {
+          signal,
+        },
+      )
       ob2.subscribe(
         chunk => {
           chunk.forEach(record => {

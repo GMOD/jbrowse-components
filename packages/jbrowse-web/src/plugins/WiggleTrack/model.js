@@ -41,7 +41,7 @@ export default (pluginManager, configSchema) =>
                 if (!regions.length) return
                 stats = subtracks.map(s => s.adapter.getLocalStats(regions))
               }
-              self.processStats(stats)
+              self.getStats(stats)
             },
             { delay: 1000 },
           )
@@ -57,14 +57,14 @@ export default (pluginManager, configSchema) =>
         },
 
         // todo: need to send to RPC backend
-        processStats: flow(function* processStats(p) {
+        getStats: flow(function* processStats(p) {
           try {
-            self.yScale = yield Promise.all(p).then(s => {
+            self.stats = yield Promise.all(p).then(s => {
               const min = Math.min(...s.map(e => e.scoreMin))
               const max = Math.max(...s.map(e => e.scoreMax))
               const mean =
-                s.reduce((a, b) => a + b.scoreMean * b.featureCount, 0) /
-                s.reduce((a, b) => a + b.featureCount, 0)
+                s.reduce((a, b) => a + b.scoreMean * b.featureCount) /
+                s.reduce((a, b) => a + b.featureCount)
 
               return { min, max, mean }
             })
@@ -80,19 +80,15 @@ export default (pluginManager, configSchema) =>
           return {
             ...getParentRenderProps(self),
             trackModel: self,
-            yScale: self.yScale,
+            stats: self.stats,
             notReady: !self.ready,
             minScore: getConf(self, 'minScore'),
             maxScore: getConf(self, 'maxScore'),
             height: getConf(self, 'defaultHeight'),
+            scaling: 2, // todo global config?
           }
         },
       }))
-
-      // actions
-      // afterattach
-      // autorun
-      // add or remove subtracks from state model depending on changes to configSchema
       .volatile(() => ({
         reactComponent: WiggleTrackComponent,
         yScale: types.frozen(),
