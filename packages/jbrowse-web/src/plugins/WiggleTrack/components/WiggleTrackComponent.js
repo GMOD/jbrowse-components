@@ -30,6 +30,9 @@ function WiggleTrackComponent(props) {
   const getSubtrackRendererConf = (subtrack, slot) =>
     readConfObject(subtrack.configuration.renderer, slot)
 
+  const getSubtrackConf = (subtrack, slot) =>
+    readConfObject(subtrack.configuration, slot)
+
   const getYScaleBar = subtrack => {
     const scaleType = getSubtrackRendererConf(subtrack, 'scaleType')
     const inverted = getSubtrackRendererConf(subtrack, 'inverted')
@@ -41,7 +44,8 @@ function WiggleTrackComponent(props) {
       <div
         style={{
           position: 'absolute',
-          top: '0px',
+          top: 0,
+          left: 300,
           pointerEvents: 'none',
           zIndex: 100,
           width: 35,
@@ -58,6 +62,27 @@ function WiggleTrackComponent(props) {
       </div>
     )
   }
+  const getSubtrackLabel = subtrack => {
+    console.log(subtrack, getSubtrackConf(subtrack, 'name'))
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          zIndex: 100,
+          display: 'block',
+          backgroundColor: '#fffc',
+          border: '1px solid #ccc',
+          fontSize: '11px',
+        }}
+        className="subtrackLabel"
+      >
+        {getSubtrackConf(subtrack, 'name')}
+      </div>
+    )
+  }
 
   const getSubtrack = subtrack => {
     const needsScalebar =
@@ -68,6 +93,7 @@ function WiggleTrackComponent(props) {
         style={{ position: 'relative', height: subtrack.height }}
       >
         {needsScalebar ? getYScaleBar(subtrack) : null}
+        {getSubtrackLabel(subtrack)}
         <subtrack.reactComponent {...props} model={subtrack} />
       </div>
     )
