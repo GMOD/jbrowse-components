@@ -27,6 +27,7 @@ test('several features', async () => {
       max: 100,
     },
     bpPerPx: 3,
+    scaling: 1,
     horizontallyFlipped: false,
     height: 100,
     config: {
@@ -54,6 +55,7 @@ test('inverted mode and horizontally flipped', async () => {
       max: 100,
     },
     bpPerPx: 3,
+    scaling: 1,
     horizontallyFlipped: true,
     height: 100,
     config: {
