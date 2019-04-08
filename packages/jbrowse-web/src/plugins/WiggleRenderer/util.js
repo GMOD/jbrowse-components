@@ -32,7 +32,7 @@ export function getScale(scaleType, domain, range, opts = {}) {
   if (rangeMin === undefined || rangeMax === undefined) {
     throw new Error('invalid range')
   }
-  scale.range(inverted ? range.reverse() : range)
+  scale.range(inverted ? range.slice().reverse() : range)
   return scale
 }
 /**
