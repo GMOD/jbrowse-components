@@ -104,12 +104,12 @@ function JBrowse(props) {
     window.resolveIdentifier = resolveIdentifier
   }
 
-  // async function addSession(config) {
-  //   const newSessions = sessions
-  //   const { sessionName, rootModel } = await createRootModel(modelType, config)
-  //   newSessions.set(sessionName, rootModel)
-  //   setSessions(newSessions)
-  // }
+  async function addSession(config) {
+    const newSessions = sessions
+    const { sessionName, rootModel } = await createRootModel(modelType, config)
+    newSessions.set(sessionName, rootModel)
+    setSessions(newSessions)
+  }
 
   if (!(modelType && pluginManager && sessions && activeSession))
     return <div>loading...</div>
@@ -128,6 +128,7 @@ function JBrowse(props) {
         sessionNames={Array.from(sessions.keys())}
         activeSession={activeSession}
         setActiveSession={setActiveSession}
+        addSession={addSession}
       />
     </MuiThemeProvider>
   )

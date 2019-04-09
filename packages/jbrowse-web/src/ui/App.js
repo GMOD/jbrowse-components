@@ -61,6 +61,7 @@ function App(props) {
     sessionNames,
     activeSession,
     setActiveSession,
+    addSession,
     size,
   } = props
 
@@ -70,6 +71,8 @@ function App(props) {
     },
     [size],
   )
+
+  rootModel.setAddSession(addSession)
 
   const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
   let drawerComponent
@@ -187,6 +190,7 @@ App.propTypes = {
   sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
   activeSession: ReactPropTypes.string.isRequired,
   setActiveSession: ReactPropTypes.func.isRequired,
+  addSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))
