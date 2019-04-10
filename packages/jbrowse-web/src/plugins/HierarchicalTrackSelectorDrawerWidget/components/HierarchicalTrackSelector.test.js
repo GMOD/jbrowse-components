@@ -6,13 +6,9 @@ import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 describe('HierarchicalTrackSelector drawer widget', () => {
   it('renders with just the required model elements', async () => {
     const { rootModel } = await createTestEnv()
-    rootModel.addDrawerWidget(
-      'HierarchicalTrackSelectorDrawerWidget',
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
-    const model = rootModel.drawerWidgets.get(
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
+    const firstView = rootModel.addView('LinearGenomeView')
+    firstView.activateTrackSelector()
+    const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
 
     const component = renderer.create(
       <HierarchicalTrackSelector model={model} />,
@@ -28,13 +24,11 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         { configId: 'barC', type: 'AlignmentsTrack' },
       ],
     })
-    rootModel.addDrawerWidget(
-      'HierarchicalTrackSelectorDrawerWidget',
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
-    const model = rootModel.drawerWidgets.get(
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
+    const firstView = rootModel.addView('LinearGenomeView')
+    firstView.showTrack(rootModel.configuration.tracks[0])
+    firstView.showTrack(rootModel.configuration.tracks[1])
+    firstView.activateTrackSelector()
+    const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
 
     const component = renderer.create(
       <HierarchicalTrackSelector model={model} />,
@@ -50,14 +44,6 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         { configId: 'barC', type: 'AlignmentsTrack' },
       ],
     })
-    rootModel.addDrawerWidget(
-      'HierarchicalTrackSelectorDrawerWidget',
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
-    const model = rootModel.drawerWidgets.get(
-      'hierarchicalTrackSelectorDrawerWidget',
-    )
-
     const firstView = rootModel.addView('LinearGenomeView')
     firstView.showTrack(rootModel.configuration.tracks[0])
     firstView.showTrack(rootModel.configuration.tracks[1])
@@ -66,6 +52,9 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       'Foo Category',
       'Bar Category',
     ])
+    firstView.activateTrackSelector()
+    const model = rootModel.drawerWidgets.get('hierarchicalTrackSelector')
+
     const component = renderer.create(
       <HierarchicalTrackSelector model={model} />,
     )

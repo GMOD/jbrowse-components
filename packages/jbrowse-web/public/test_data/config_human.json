@@ -1,7 +1,7 @@
 {
   "tracks": [
     {
-      "configId": "kgGeu2G_P",
+      "configId": "q68ElFH9Y",
       "type": "AlignmentsTrack",
       "name": "1000 Genomes NA12878 Coverage",
       "assemblyName": "hg38",
@@ -47,7 +47,7 @@
     "hg38": {
       "configId": "hg38",
       "sequence": {
-        "configId": "hWk07s1R6",
+        "configId": "VKYdNPZZ0",
         "type": "ReferenceSequence",
         "adapter": {
           "type": "IndexedFastaAdapter",
@@ -110,6 +110,7 @@
     ],
     "views": [
       {
+        "id": "Cma34s8JJ",
         "type": "LinearGenomeView",
         "offsetPx": 8355300,
         "bpPerPx": 0.1,
@@ -117,16 +118,27 @@
           {
             "type": "ReferenceSequence",
             "height": 100,
-            "configuration": "hWk07s1R6"
+            "configuration": "VKYdNPZZ0"
           },
           {
             "type": "AlignmentsTrack",
             "height": 100,
-            "configuration": "kgGeu2G_P"
+            "configuration": "q68ElFH9Y"
           }
         ],
         "configuration": {}
       }
-    ]
+    ],
+    "drawerWidgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "filterText": "",
+        "view": "Cma34s8JJ"
+      }
+    },
+    "activeDrawerWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
   }
 }

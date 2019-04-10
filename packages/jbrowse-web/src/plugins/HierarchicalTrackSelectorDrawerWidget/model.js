@@ -59,13 +59,30 @@ export default pluginManager =>
         return relevantTrackConfigurations
       },
 
+      volatileTrackConfigurations(connection) {
+        if (!self.view) return []
+        const root = getRoot(self)
+        const trackConfigurations = root.configuration.volatile.get(connection)
+          .tracks
+        const relevantTrackConfigurations = trackConfigurations.filter(
+          conf => conf.viewType === self.view.type,
+        )
+        return relevantTrackConfigurations
+      },
+
       get hierarchy() {
         return generateHierarchy(self.trackConfigurations)
       },
 
+      volatileHierarchy(connection) {
+        return generateHierarchy(self.volatileTrackConfigurations(connection))
+      },
+
       // This recursively gets tracks from lower paths
-      allTracksInCategoryPath(path) {
-        let currentHier = self.hierarchy
+      allTracksInCategoryPath(path, connection) {
+        let currentHier = connection
+          ? self.volatileHierarchy(connection)
+          : self.hierarchy
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
         })

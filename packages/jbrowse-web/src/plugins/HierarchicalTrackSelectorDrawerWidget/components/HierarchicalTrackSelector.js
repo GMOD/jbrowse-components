@@ -1,15 +1,18 @@
-import { IconButton } from '@material-ui/core'
 import Fab from '@material-ui/core/Fab'
 import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import Typography from '@material-ui/core/Typography'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import { readConfObject } from '../../../configuration'
 import Contents from './Contents'
 
@@ -28,38 +31,31 @@ const styles = theme => ({
     bottom: theme.spacing.unit * 2,
     right: theme.spacing.unit * 2,
   },
+  connectionsPaper: {
+    padding: theme.spacing.unit,
+  },
 })
 
-class HierarchicalTrackSelector extends React.Component {
-  static propTypes = {
-    classes: propTypes.shape({
-      root: propTypes.string.isRequired,
-      fab: propTypes.string.isRequired,
-    }).isRequired,
-    model: MobxPropTypes.observableObject.isRequired,
+function HierarchicalTrackSelector(props) {
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const { model, classes } = props
+  const rootModel = getRoot(model)
+
+  function handleFabClick(event) {
+    setAnchorEl(event.currentTarget)
   }
 
-  state = {
-    anchorEl: null,
+  function handleFabClose() {
+    setAnchorEl(null)
   }
 
-  handleFabClick = event => {
-    this.setState({ anchorEl: event.currentTarget })
-  }
-
-  handleFabClose = () => {
-    this.setState({ anchorEl: null })
-  }
-
-  handleInputChange = event => {
-    const { model } = this.props
+  function handleInputChange(event) {
     model.setFilterText(event.target.value)
   }
 
-  addDataHub = () => {
-    this.handleFabClose()
-    const { model } = this.props
-    const rootModel = getRoot(model)
+  function addDataHub() {
+    handleFabClose()
     if (!rootModel.drawerWidgets.get('dataHubDrawerWidget'))
       rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
     rootModel.showDrawerWidget(
@@ -67,10 +63,8 @@ class HierarchicalTrackSelector extends React.Component {
     )
   }
 
-  addTrack = () => {
-    this.handleFabClose()
-    const { model } = this.props
-    const rootModel = getRoot(model)
+  function addTrack() {
+    handleFabClose()
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: model.view.id,
     })
@@ -79,65 +73,82 @@ class HierarchicalTrackSelector extends React.Component {
     )
   }
 
-  filter = trackConfig => {
-    const { model } = this.props
+  function filter(trackConfig) {
     if (!model.filterText) return true
     const name = readConfObject(trackConfig, 'name')
     return name.toLowerCase().includes(model.filterText.toLowerCase())
   }
 
-  render() {
-    const { anchorEl } = this.state
-    const { classes, model } = this.props
+  const filterError = model.trackConfigurations.filter(filter).length === 0
 
-    const filterError =
-      model.trackConfigurations.filter(this.filter).length === 0
+  return (
+    <div key={model.view.id} className={classes.root}>
+      <TextField
+        className={classes.searchBox}
+        label="Filter Tracks"
+        value={model.filterText}
+        error={filterError}
+        helperText={filterError ? 'No matches' : ''}
+        onChange={handleInputChange}
+        fullWidth
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Icon>search</Icon>
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={model.clearFilterText}>
+                <Icon>clear</Icon>
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+      <Contents model={model} filterPredicate={filter} top />
+      {rootModel.configuration.volatile.size ? (
+        <>
+          <Typography variant="h5">Connections:</Typography>
+          {Array.from(rootModel.configuration.volatile.keys()).map(
+            connectionName => (
+              <Paper
+                key={connectionName}
+                className={classes.connectionsPaper}
+                elevation={8}
+              >
+                <Typography variant="h6">{connectionName}</Typography>
+                <Contents
+                  model={model}
+                  filterPredicate={filter}
+                  connection={connectionName}
+                  top
+                />
+              </Paper>
+            ),
+          )}
+        </>
+      ) : null}
 
-    return (
-      <div className={classes.root}>
-        <TextField
-          className={classes.searchBox}
-          label="Filter Tracks"
-          value={model.filterText}
-          error={filterError}
-          helperText={filterError ? 'No matches' : ''}
-          onChange={this.handleInputChange}
-          fullWidth
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Icon>search</Icon>
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={model.clearFilterText}>
-                  <Icon>clear</Icon>
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Contents model={model} filterPredicate={this.filter} top />
-        <Fab
-          color="secondary"
-          className={classes.fab}
-          onClick={this.handleFabClick}
-        >
-          <Icon>add</Icon>
-        </Fab>
-        <Menu
-          id="simple-menu"
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={this.handleFabClose}
-        >
-          <MenuItem onClick={this.addDataHub}>Add Data Hub</MenuItem>
-          <MenuItem onClick={this.addTrack}>Add track</MenuItem>
-        </Menu>
-      </div>
-    )
-  }
+      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+        <Icon>add</Icon>
+      </Fab>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleFabClose}
+      >
+        <MenuItem onClick={addDataHub}>Add Data Hub</MenuItem>
+        <MenuItem onClick={addTrack}>Add track</MenuItem>
+      </Menu>
+    </div>
+  )
+}
+
+HierarchicalTrackSelector.propTypes = {
+  classes: propTypes.objectOf(propTypes.string).isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(HierarchicalTrackSelector))

@@ -1,4 +1,3 @@
-import 'react-testing-library/cleanup-after-each'
 import { render, cleanup, fireEvent, wait } from 'react-testing-library'
 import React from 'react'
 import { createTestEnv } from '../../../JBrowse'

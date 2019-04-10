@@ -44,7 +44,7 @@ export default (pluginManager, workerManager) => {
       })
       const assemblyManager = new AssemblyManager(
         rpcManager,
-        self.configuration.assemblies,
+        self.configuration,
       )
       /**
        * this is the globally "selected" object. can be anything.

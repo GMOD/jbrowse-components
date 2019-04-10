@@ -8,11 +8,22 @@ import { readConfObject } from '../configuration'
  * in all the assemblies of the root configuration
  */
 export default class AssemblyManager {
-  constructor(rpcManager, assemblies) {
+  constructor(rpcManager, rootConfig) {
     this.rpcManager = rpcManager
-    this.assemblies = assemblies
+    this.assemblyConfigs = [rootConfig.assemblies]
+    rootConfig.volatile.forEach(conf => {
+      this.assemblyConfigs.push(conf.assemblies)
+    })
     this.refNameMaps = new Map()
     this.allRegions = []
+    this.loadRegions()
+  }
+
+  updateAssemblyConfigs(rootConfig) {
+    this.assemblyConfigs = [rootConfig.assemblies]
+    rootConfig.volatile.forEach(conf => {
+      this.assemblyConfigs.push(conf.assemblies)
+    })
     this.loadRegions()
   }
 
@@ -26,36 +37,39 @@ export default class AssemblyManager {
    */
   async getRefNameAliases(assemblyName) {
     const refNameAliases = {}
-    let assembly = this.assemblies.get(assemblyName)
-    if (!assembly) {
-      values(this.assemblies).forEach(otherAssembly => {
-        if (
-          (readConfObject(otherAssembly, 'aliases') || []).includes(
-            assemblyName,
+    for (const assemblyConfig of this.assemblyConfigs) {
+      let assembly = assemblyConfig.get(assemblyName)
+      if (!assembly) {
+        values(assemblyConfig).forEach(otherAssembly => {
+          if (
+            (readConfObject(otherAssembly, 'aliases') || []).includes(
+              assemblyName,
+            )
           )
-        )
-          assembly = otherAssembly
-      })
-    }
+            assembly = otherAssembly
+        })
+      }
 
-    if (assembly) {
-      const adapterRefNameAliases = await this.rpcManager.call(
-        assembly.configId,
-        'getRefNameAliases',
-        {
-          sessionId: assemblyName,
-          adapterType: readConfObject(assembly, [
-            'refNameAliases',
-            'adapter',
-            'type',
-          ]),
-          adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
-        },
-        { timeout: 1000000 },
-      )
-      adapterRefNameAliases.forEach(alias => {
-        refNameAliases[alias.refName] = alias.aliases
-      })
+      if (assembly) {
+        // eslint-disable-next-line no-await-in-loop
+        const adapterRefNameAliases = await this.rpcManager.call(
+          assembly.configId,
+          'getRefNameAliases',
+          {
+            sessionId: assemblyName,
+            adapterType: readConfObject(assembly, [
+              'refNameAliases',
+              'adapter',
+              'type',
+            ]),
+            adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
+          },
+          { timeout: 1000000 },
+        )
+        adapterRefNameAliases.forEach(alias => {
+          refNameAliases[alias.refName] = alias.aliases
+        })
+      }
     }
     return refNameAliases
   }
@@ -111,24 +125,26 @@ export default class AssemblyManager {
    */
   async loadRegions() {
     const regions = []
-    const { assemblies, rpcManager } = this
-    for (const [assemblyName, assembly] of assemblies) {
-      const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const adapterRegions = await rpcManager.call(
-          assembly.configId,
-          'getRegions',
-          {
-            sessionId: assemblyName,
-            adapterType: adapterConfig.type,
-            adapterConfig,
-          },
-          { timeout: 1000000 },
-        )
-        regions.push(...adapterRegions)
-      } catch (error) {
-        console.error('Failed to fetch sequence', error)
+    const { rpcManager } = this
+    for (const assemblyConfig of this.assemblyConfigs) {
+      for (const [assemblyName, assembly] of assemblyConfig) {
+        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const adapterRegions = await rpcManager.call(
+            assembly.configId,
+            'getRegions',
+            {
+              sessionId: assemblyName,
+              adapterType: adapterConfig.type,
+              adapterConfig,
+            },
+            { timeout: 1000000 },
+          )
+          regions.push(...adapterRegions)
+        } catch (error) {
+          console.error('Failed to fetch sequence', error)
+        }
       }
     }
     this.allRegions = regions
@@ -146,7 +162,7 @@ export default class AssemblyManager {
     const configId = readConfObject(trackConf, 'configId')
     if (this.refNameMaps.has(configId)) return this.refNameMaps.get(configId)
     this.addRefNameMapForTrack(trackConf)
-    return new Map()
+    return null
   }
 
   /**

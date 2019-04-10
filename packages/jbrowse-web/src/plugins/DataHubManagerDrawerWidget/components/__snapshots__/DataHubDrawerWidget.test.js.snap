@@ -1,930 +1,291 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 1`] = `
-<div
-  className="DataHubDrawerWidget-root-1"
->
-  <WithStyles(Stepper)
-    activeStep={0}
-    className="DataHubDrawerWidget-stepper-2"
-    orientation="vertical"
-  >
-    <WithStyles(Step)
-      key="Select a Data Hub Type"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Type
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub Source"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Source
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Confirm Selection"
-    >
-      <WithStyles(StepLabel)>
-        Confirm Selection
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-  </WithStyles(Stepper)>
-</div>
-`;
-
-exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 2`] = `
-<div
-  className="DataHubDrawerWidget-root-1"
->
-  <WithStyles(Stepper)
-    activeStep={3}
-    className="DataHubDrawerWidget-stepper-2"
-    orientation="vertical"
-  >
-    <WithStyles(Step)
-      key="Select a Data Hub Type"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Type
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub Source"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Source
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Confirm Selection"
-    >
-      <WithStyles(StepLabel)>
-        Confirm Selection
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-  </WithStyles(Stepper)>
-</div>
-`;
-
-exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 3`] = `
-<div
-  className="DataHubDrawerWidget-root-1"
->
-  <WithStyles(Stepper)
-    activeStep={0}
-    className="DataHubDrawerWidget-stepper-2"
-    orientation="vertical"
-  >
-    <WithStyles(Step)
-      key="Select a Data Hub Type"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Type
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub Source"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Source
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Confirm Selection"
-    >
-      <WithStyles(StepLabel)>
-        Confirm Selection
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-  </WithStyles(Stepper)>
-</div>
-`;
-
-exports[`<DataHubDrawerWidget /> can handle a custom UCSC URL 4`] = `
-<div
-  className="DataHubDrawerWidget-root-1"
->
-  <WithStyles(Stepper)
-    activeStep={3}
-    className="DataHubDrawerWidget-stepper-2"
-    orientation="vertical"
-  >
-    <WithStyles(Step)
-      key="Select a Data Hub Type"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Type
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub Source"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Source
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub"
-    >
-      <WithStyles(StepLabel)>
-        Select a Data Hub
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Confirm Selection"
-    >
-      <WithStyles(StepLabel)>
-        Confirm Selection
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <WithStyles(ConfirmationDialog)
-          assemblyName="testAssemblyName"
-          enableNext={[Function]}
-          hubName="testHubName"
-          rootModel={
-            Object {
-              "activeDrawerWidgets": Object {},
-              "configuration": Object {
-                "configId": "testing",
-                "rpc": Object {
-                  "configId": "testingRpc",
-                },
-              },
-              "drawerWidgets": Object {
-                "dataHubDrawerWidget": Object {
-                  "id": "dataHubDrawerWidget",
-                  "type": "DataHubDrawerWidget",
-                },
-              },
-              "drawerWidth": 384,
-              "menuBars": Array [],
-              "sessionName": "UnnamedSession",
-              "views": Array [],
-              "width": 512,
-            }
-          }
-          trackDbUrl={"http://www.example.com/trackDb.txt"}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={false}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={false}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Finish
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-  </WithStyles(Stepper)>
-</div>
-`;
-
 exports[`<DataHubDrawerWidget /> renders 1`] = `
 <div
-  className="DataHubDrawerWidget-root-1"
+  class="DataHubDrawerWidget-root-1"
 >
-  <WithStyles(Stepper)
-    activeStep={0}
-    className="DataHubDrawerWidget-stepper-2"
-    orientation="vertical"
+  <div
+    class="MuiPaper-root-9 MuiPaper-elevation0-11 MuiStepper-root-5 MuiStepper-vertical-7 DataHubDrawerWidget-stepper-2"
   >
-    <WithStyles(Step)
-      key="Select a Data Hub Type"
+    <div
+      class="MuiStep-root-36 MuiStep-vertical-38"
     >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Type
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
+      <span
+        class="MuiStepLabel-root-41 MuiStepLabel-vertical-43"
+      >
+        <span
+          class="MuiStepLabel-iconContainer-49"
         >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root-57 MuiStepIcon-root-52 MuiStepIcon-active-54"
+            focusable="false"
+            role="presentation"
+            viewBox="0 0 24 24"
           >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text-53"
+              text-anchor="middle"
+              x="12"
+              y="16"
+            >
+              1
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer-51"
+        >
+          <span
+            class="MuiTypography-root-66 MuiTypography-body1-75 MuiStepLabel-label-44 MuiStepLabel-active-45"
           >
-            Next
-          </WithStyles(Button)>
+            Select a Data Hub Type
+          </span>
+        </span>
+      </span>
+      <div
+        class="MuiStepContent-root-102"
+        icon="1"
+      >
+        <div
+          class="MuiCollapse-container-105 MuiCollapse-entered-106 MuiStepContent-transition-104"
+          style="min-height: 0px;"
+        >
+          <div
+            class="MuiCollapse-wrapper-107"
+          >
+            <div
+              class="MuiCollapse-wrapperInner-108"
+            >
+              <fieldset
+                class="MuiFormControl-root-109"
+              >
+                <div
+                  class="MuiFormGroup-root-113"
+                  role="radiogroup"
+                >
+                  <label
+                    class="MuiFormControlLabel-root-115"
+                    data-testid="ucsc"
+                  >
+                    <span
+                      class="MuiButtonBase-root-136 MuiIconButton-root-130 MuiPrivateSwitchBase-root-126 MuiRadio-root-121 MuiRadio-colorSecondary-125"
+                    >
+                      <span
+                        class="MuiIconButton-label-135"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root-57"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                          />
+                        </svg>
+                        <input
+                          class="MuiPrivateSwitchBase-input-129"
+                          type="radio"
+                          value="ucsc"
+                        />
+                      </span>
+                      <span
+                        class="MuiTouchRipple-root-175"
+                      />
+                    </span>
+                    <span
+                      class="MuiTypography-root-66 MuiTypography-body1-75 MuiFormControlLabel-label-120"
+                    >
+                      Track or Assembly Hub
+                    </span>
+                  </label>
+                  <label
+                    class="MuiFormControlLabel-root-115 MuiFormControlLabel-disabled-119"
+                    data-testid="jbrowse1"
+                  >
+                    <span
+                      class="MuiButtonBase-root-136 MuiButtonBase-disabled-137 MuiIconButton-root-130 MuiIconButton-disabled-134 MuiPrivateSwitchBase-root-126 MuiRadio-root-121 MuiRadio-colorSecondary-125 MuiPrivateSwitchBase-disabled-128 MuiRadio-disabled-123"
+                      tabindex="-1"
+                    >
+                      <span
+                        class="MuiIconButton-label-135"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root-57"
+                          focusable="false"
+                          role="presentation"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                          />
+                        </svg>
+                        <input
+                          class="MuiPrivateSwitchBase-input-129"
+                          disabled=""
+                          type="radio"
+                          value="jbrowse1"
+                        />
+                      </span>
+                    </span>
+                    <span
+                      class="MuiTypography-root-66 MuiTypography-body1-75 MuiFormControlLabel-label-120 MuiFormControlLabel-disabled-119"
+                    >
+                      JBrowse Hub
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="DataHubDrawerWidget-actionsContainer-4"
+              >
+                <button
+                  class="MuiButtonBase-root-136 MuiButtonBase-disabled-137 MuiButton-root-139 MuiButton-text-141 MuiButton-flat-144 MuiButton-disabled-159 DataHubDrawerWidget-button-3"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label-140"
+                  >
+                    Back
+                  </span>
+                </button>
+                <button
+                  class="MuiButtonBase-root-136 MuiButtonBase-disabled-137 MuiButton-root-139 MuiButton-contained-150 MuiButton-containedPrimary-151 MuiButton-raised-153 MuiButton-raisedPrimary-154 MuiButton-disabled-159 DataHubDrawerWidget-button-3"
+                  data-testid="dataHubNext"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label-140"
+                  >
+                    Next
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub Source"
+      </div>
+    </div>
+    <div
+      class="MuiStepConnector-root-165 MuiStepConnector-vertical-167 MuiStepConnector-disabled-171"
     >
-      <WithStyles(StepLabel)>
-        Select a Data Hub Source
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
-        >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
-          >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
-          >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Select a Data Hub"
+      <span
+        class="MuiStepConnector-line-172 MuiStepConnector-lineVertical-174"
+      />
+    </div>
+    <div
+      class="MuiStep-root-36 MuiStep-vertical-38"
     >
-      <WithStyles(StepLabel)>
-        Select a Data Hub
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
+      <span
+        class="MuiStepLabel-root-41 MuiStepLabel-vertical-43 MuiStepLabel-disabled-48"
+      >
+        <span
+          class="MuiStepLabel-iconContainer-49"
         >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root-57 MuiStepIcon-root-52"
+            focusable="false"
+            role="presentation"
+            viewBox="0 0 24 24"
           >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text-53"
+              text-anchor="middle"
+              x="12"
+              y="16"
+            >
+              2
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer-51"
+        >
+          <span
+            class="MuiTypography-root-66 MuiTypography-body1-75 MuiStepLabel-label-44"
           >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-    <WithStyles(Step)
-      key="Confirm Selection"
+            Select a Data Hub Source
+          </span>
+        </span>
+      </span>
+      <div
+        class="MuiStepContent-root-102"
+        disabled=""
+        icon="2"
+      />
+    </div>
+    <div
+      class="MuiStepConnector-root-165 MuiStepConnector-vertical-167 MuiStepConnector-disabled-171"
     >
-      <WithStyles(StepLabel)>
-        Confirm Selection
-      </WithStyles(StepLabel)>
-      <WithStyles(StepContent)>
-        <HubTypeSelect
-          enableNext={[Function]}
-          hubType={null}
-          setHubType={[Function]}
-        />
-        <div
-          className="DataHubDrawerWidget-actionsContainer-4"
+      <span
+        class="MuiStepConnector-line-172 MuiStepConnector-lineVertical-174"
+      />
+    </div>
+    <div
+      class="MuiStep-root-36 MuiStep-vertical-38"
+    >
+      <span
+        class="MuiStepLabel-root-41 MuiStepLabel-vertical-43 MuiStepLabel-disabled-48"
+      >
+        <span
+          class="MuiStepLabel-iconContainer-49"
         >
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            disabled={true}
-            onClick={[Function]}
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root-57 MuiStepIcon-root-52"
+            focusable="false"
+            role="presentation"
+            viewBox="0 0 24 24"
           >
-            Back
-          </WithStyles(Button)>
-          <WithStyles(Button)
-            className="DataHubDrawerWidget-button-3"
-            color="primary"
-            disabled={true}
-            onClick={[Function]}
-            variant="contained"
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text-53"
+              text-anchor="middle"
+              x="12"
+              y="16"
+            >
+              3
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer-51"
+        >
+          <span
+            class="MuiTypography-root-66 MuiTypography-body1-75 MuiStepLabel-label-44"
           >
-            Next
-          </WithStyles(Button)>
-        </div>
-      </WithStyles(StepContent)>
-    </WithStyles(Step)>
-  </WithStyles(Stepper)>
+            Select a Data Hub
+          </span>
+        </span>
+      </span>
+      <div
+        class="MuiStepContent-root-102 MuiStepContent-last-103"
+        disabled=""
+        icon="3"
+      />
+    </div>
+  </div>
 </div>
 `;

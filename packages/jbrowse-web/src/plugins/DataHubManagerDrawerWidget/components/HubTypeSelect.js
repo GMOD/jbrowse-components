@@ -37,20 +37,14 @@ const hubTypeDescriptions = {
 }
 
 function HubTypeSelect(props) {
-  const { hubType, setHubType, enableNext } = props
+  const { hubType, setHubType } = props
   const hubTypes = [
     { value: 'ucsc', label: 'Track or Assembly Hub' },
     { value: 'jbrowse1', label: 'JBrowse Hub' },
   ]
   return (
     <FormControl component="fieldset">
-      <RadioGroup
-        value={hubType}
-        onChange={event => {
-          setHubType(event)
-          enableNext()
-        }}
-      >
+      <RadioGroup value={hubType} onChange={setHubType}>
         {hubTypes.map(entry => (
           <FormControlLabel
             key={entry.value}
@@ -58,6 +52,7 @@ function HubTypeSelect(props) {
             value={entry.value}
             label={entry.label}
             disabled={entry.value === 'jbrowse1'}
+            data-testid={entry.value}
           />
         ))}
       </RadioGroup>
@@ -73,7 +68,6 @@ HubTypeSelect.defaultProps = {
 HubTypeSelect.propTypes = {
   hubType: propTypes.string,
   setHubType: propTypes.func.isRequired,
-  enableNext: propTypes.func.isRequired,
 }
 
 export default HubTypeSelect
