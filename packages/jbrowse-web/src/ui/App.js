@@ -72,8 +72,6 @@ function App(props) {
     [size],
   )
 
-  rootModel.setAddSession(addSession)
-
   const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
   let drawerComponent
   if (drawerWidgets.length) {
@@ -118,7 +116,10 @@ function App(props) {
               />
             }
           >
-            <LazyReactComponent model={activeDrawerWidget} />
+            <LazyReactComponent
+              model={activeDrawerWidget}
+              addSession={addSession}
+            />
           </React.Suspense>
         </div>
       </Slide>

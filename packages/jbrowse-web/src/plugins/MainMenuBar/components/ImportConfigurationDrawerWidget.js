@@ -12,7 +12,6 @@ import { makeStyles } from '@material-ui/styles'
 import { observer } from 'mobx-react-lite'
 import React from 'react'
 import { useDropzone } from 'react-dropzone'
-import { getRoot } from 'mobx-state-tree'
 
 function styledBy(property, mapping) {
   return props => mapping[props[property]]
@@ -70,7 +69,7 @@ function ImportConfiguration(props) {
   })
   const classes = useStyles({ isDragActive })
 
-  const { model } = props
+  const { addSession } = props
 
   function importConfigs() {
     acceptedFiles.forEach(file => {
@@ -83,13 +82,11 @@ function ImportConfiguration(props) {
         let config
         try {
           config = JSON.parse(reader.result)
-          // console.log(config)
         } catch (error) {
           console.error('error parsing file', file.path, error)
         }
         try {
-          const rootModel = getRoot(model)
-          rootModel.addSession(config)
+          addSession(config)
         } catch (error) {
           console.error('config does not appear to be valid', file.path, error)
         }

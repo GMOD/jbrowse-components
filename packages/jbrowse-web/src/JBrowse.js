@@ -105,10 +105,10 @@ function JBrowse(props) {
   }
 
   async function addSession(config) {
-    const newSessions = sessions
+    const newSessions = new Map()
     const { sessionName, rootModel } = await createRootModel(modelType, config)
     newSessions.set(sessionName, rootModel)
-    setSessions(newSessions)
+    setSessions(new Map([...sessions, ...newSessions]))
   }
 
   if (!(modelType && pluginManager && sessions && activeSession))

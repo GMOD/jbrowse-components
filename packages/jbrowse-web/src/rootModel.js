@@ -65,7 +65,6 @@ export default (pluginManager, workerManager) => {
         assemblyManager,
         selection,
         task,
-        addSession: undefined,
       }
     })
     .views(self => ({
@@ -255,10 +254,6 @@ export default (pluginManager, workerManager) => {
         const editor = self.drawerWidgets.get('configEditor')
         editor.setTarget(configuration)
         self.showDrawerWidget(editor)
-      },
-
-      setAddSession(callback) {
-        self.addSession = callback
       },
     }))
 }
