@@ -33,7 +33,7 @@ test('can push menus', () => {
     menuItems: [
       {
         name: 'Export configuration',
-        icon: 'get_app',
+        icon: 'cloud_download',
         callback: 'export',
       },
     ],
@@ -50,7 +50,7 @@ test('can unshift menus', () => {
     menuItems: [
       {
         name: 'Export configuration',
-        icon: 'get_app',
+        icon: 'cloud_download',
         callback: 'exportConfiguration',
       },
     ],

@@ -253,8 +253,13 @@
             "menuItems": [
               {
                 "name": "Export configuration",
-                "icon": "get_app",
+                "icon": "cloud_download",
                 "callback": "exportConfiguration"
+              },
+              {
+                "name": "Import configuration",
+                "icon": "cloud_upload",
+                "callback": "importConfiguration"
               }
             ]
           }
