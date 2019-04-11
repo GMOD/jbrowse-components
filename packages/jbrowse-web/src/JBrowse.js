@@ -104,10 +104,20 @@ function JBrowse(props) {
     window.resolveIdentifier = resolveIdentifier
   }
 
-  async function addSession(config) {
+  /**
+   *
+   * @param {Object[]} newConfigs An array of config objects
+   */
+  async function addSessions(newConfigs) {
     const newSessions = new Map()
-    const { sessionName, rootModel } = await createRootModel(modelType, config)
-    newSessions.set(sessionName, rootModel)
+    for (const config of newConfigs) {
+      // eslint-disable-next-line no-await-in-loop
+      const { sessionName, rootModel } = await createRootModel(
+        modelType,
+        config,
+      )
+      newSessions.set(sessionName, rootModel)
+    }
     setSessions(new Map([...sessions, ...newSessions]))
   }
 
@@ -128,7 +138,7 @@ function JBrowse(props) {
         sessionNames={Array.from(sessions.keys())}
         activeSession={activeSession}
         setActiveSession={setActiveSession}
-        addSession={addSession}
+        addSessions={addSessions}
       />
     </MuiThemeProvider>
   )

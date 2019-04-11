@@ -10,7 +10,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/styles'
 import { observer } from 'mobx-react-lite'
-import React from 'react'
+import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 
 function styledBy(property, mapping) {
@@ -52,7 +52,33 @@ const useStyles = makeStyles(theme => ({
   rejectedFiles: {
     marginTop: theme.spacing.unit * 4,
   },
+  errorMsg: {
+    marginTop: theme.spacing.unit * 4,
+    textAlign: 'center',
+  },
 }))
+
+// Using this you can "await" the file text like a normal promise
+// https://blog.shovonhasan.com/using-promises-with-filereader/
+function readUploadedFileAsText(inputFile) {
+  const temporaryFileReader = new FileReader()
+
+  return new Promise((resolve, reject) => {
+    temporaryFileReader.onerror = () => {
+      temporaryFileReader.abort()
+      reject(new Error(`problem reading input file "${inputFile.path}"`))
+    }
+
+    temporaryFileReader.onabort = () => {
+      reject(new Error(`file reading was aborted: "${inputFile.path}"`))
+    }
+
+    temporaryFileReader.onload = () => {
+      resolve(temporaryFileReader.result)
+    }
+    temporaryFileReader.readAsText(inputFile)
+  })
+}
 
 function ImportConfiguration(props) {
   const {
@@ -66,33 +92,29 @@ function ImportConfiguration(props) {
       'application/json',
       // 'application/x-yaml'
     ],
+    onDrop: () => setErrorMessage(''),
   })
   const classes = useStyles({ isDragActive })
+  const [errorMsg, setErrorMessage] = useState('')
 
-  const { addSession } = props
+  const { addSessions } = props
 
-  function importConfigs() {
-    acceptedFiles.forEach(file => {
-      const reader = new FileReader()
+  async function importConfigs() {
+    const configs = []
+    for (const file of acceptedFiles) {
+      // const reader = new FileReader()
 
-      reader.onabort = () =>
-        console.error('file reading was aborted', file.path)
-      reader.onerror = () => console.error('file reading has failed', file.path)
-      reader.onload = () => {
-        let config
-        try {
-          config = JSON.parse(reader.result)
-        } catch (error) {
-          console.error('error parsing file', file.path, error)
-        }
-        try {
-          addSession(config)
-        } catch (error) {
-          console.error('config does not appear to be valid', file.path, error)
-        }
-      }
-      reader.readAsBinaryString(file)
-    })
+      configs.push(readUploadedFileAsText(file))
+    }
+    let configsUnparsed
+    try {
+      configsUnparsed = await Promise.all(configs)
+    } catch (error) {
+      console.error(error)
+      setErrorMessage(`${error}`)
+      return
+    }
+    addSessions(configsUnparsed.map(JSON.parse))
   }
 
   return (
@@ -129,7 +151,12 @@ function ImportConfiguration(props) {
               </ListItem>
             ))}
           </List>
-          <Button color="primary" variant="contained" onClick={importConfigs}>
+          <Button
+            color="primary"
+            variant="contained"
+            disabled={Boolean(errorMsg)}
+            onClick={importConfigs}
+          >
             Import
           </Button>
         </>
@@ -148,12 +175,22 @@ function ImportConfiguration(props) {
                   <Icon>error</Icon>
                 </ListItemIcon>
                 <ListItemText
-                  primary={`${file.path} - ${file.size} bytes`}
+                  primary={file.path}
                   secondary={`${file.lastModifiedDate}`}
                 />
               </ListItem>
             ))}
           </List>
+        </div>
+      ) : null}
+      {errorMsg ? (
+        <div className={classes.errorMsg}>
+          <Icon color="error" fontSize="large">
+            error
+          </Icon>
+          <Typography color="error" align="center">
+            {errorMsg}
+          </Typography>
         </div>
       ) : null}
     </div>
