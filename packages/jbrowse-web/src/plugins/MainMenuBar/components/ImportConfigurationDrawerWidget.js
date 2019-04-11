@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
   rejectedFiles: {
     marginTop: theme.spacing.unit * 4,
   },
-  errorMsg: {
+  errorMessage: {
     marginTop: theme.spacing.unit * 4,
     textAlign: 'center',
   },
@@ -81,6 +81,7 @@ function readUploadedFileAsText(inputFile) {
 }
 
 function ImportConfiguration(props) {
+  const [errorMessage, setErrorMessage] = useState('')
   const {
     acceptedFiles,
     rejectedFiles,
@@ -95,7 +96,6 @@ function ImportConfiguration(props) {
     onDrop: () => setErrorMessage(''),
   })
   const classes = useStyles({ isDragActive })
-  const [errorMsg, setErrorMessage] = useState('')
 
   const { addSessions } = props
 
@@ -106,15 +106,27 @@ function ImportConfiguration(props) {
 
       configs.push(readUploadedFileAsText(file))
     }
-    let configsUnparsed
+    let unparsedConfigs
     try {
-      configsUnparsed = await Promise.all(configs)
+      unparsedConfigs = await Promise.all(configs)
     } catch (error) {
       console.error(error)
       setErrorMessage(`${error}`)
       return
     }
-    addSessions(configsUnparsed.map(JSON.parse))
+    const parsedConfigs = []
+    for (let i = 0; i < unparsedConfigs.length; i += 1) {
+      const unparsedConfig = unparsedConfigs[i]
+      let config
+      try {
+        config = JSON.parse(unparsedConfig)
+      } catch (error) {
+        setErrorMessage(`Error parsing ${acceptedFiles[i].path}: ${error}`)
+        return
+      }
+      parsedConfigs.push(config)
+    }
+    addSessions(parsedConfigs)
   }
 
   return (
@@ -154,7 +166,7 @@ function ImportConfiguration(props) {
           <Button
             color="primary"
             variant="contained"
-            disabled={Boolean(errorMsg)}
+            disabled={Boolean(errorMessage)}
             onClick={importConfigs}
           >
             Import
@@ -183,13 +195,13 @@ function ImportConfiguration(props) {
           </List>
         </div>
       ) : null}
-      {errorMsg ? (
-        <div className={classes.errorMsg}>
+      {errorMessage ? (
+        <div className={classes.errorMessage}>
           <Icon color="error" fontSize="large">
             error
           </Icon>
           <Typography color="error" align="center">
-            {errorMsg}
+            {errorMessage}
           </Typography>
         </div>
       ) : null}
