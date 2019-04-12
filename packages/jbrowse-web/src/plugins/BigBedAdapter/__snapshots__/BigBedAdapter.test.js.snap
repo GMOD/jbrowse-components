@@ -1,34 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`adapter can fetch features from volvox.bb 1`] = `
-Array [
-  Object {
-    "chromId": 0,
-    "end": 9000,
-    "rest": "EDEN.1	1000	+	1200	7608	0,0,0	4	451,903,501,2001	0,1950,3950,5950	EDEN	EDEN	-	-	-",
-    "start": 1049,
-    "uniqueId": "1049",
-  },
-  Object {
-    "chromId": 0,
-    "end": 9000,
-    "rest": "EDEN.2	1000	+	1200	7608	0,0,0	3	451,501,2001	0,3950,5950	EDEN	EDEN	-	-	-",
-    "start": 1049,
-    "uniqueId": "1049",
-  },
-  Object {
-    "chromId": 0,
-    "end": 9000,
-    "rest": "EDEN.3	1000	+	3300	7600	0,0,0	4	201,903,501,2001	0,1700,3700,5700	EDEN	EDEN	-	-	-",
-    "start": 1299,
-    "uniqueId": "1299",
-  },
-  Object {
-    "chromId": 0,
-    "end": 23000,
-    "rest": "rna-Apple3	1000	+	17999	21200	0,0,0	3	1401,501,2001	0,1600,3600	rna-Apple3	rna-Apple3	-	-	-",
-    "start": 17399,
-    "uniqueId": "17399",
-  },
-]
-`;
+exports[`adapter can fetch features from volvox.bw 1`] = `Array []`;

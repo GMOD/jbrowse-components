@@ -93,7 +93,7 @@
       "assemblyName": "vvx",
       "adapter": {
         "type": "BigBedAdapter",
-        "bigWigLocation": {
+        "bigBedLocation": {
           "uri": "/test_data/volvox.bb"
         }
       },
