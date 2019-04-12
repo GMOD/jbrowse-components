@@ -22,11 +22,18 @@ test('can make a layer over a very simple schema', () => {
   })
   const { layer, parent } = root
 
+  // initially the layer has the same values as the parent
   expect(readConfObject(layer, 'foo')).toBe('bar')
   expect(readConfObject(parent, 'foo')).toBe('bar')
+
+  // if you set something in the parent, the change propagates
+  // to the layer, if the layer is not overriding it
   parent.foo.set('zonk')
   expect(readConfObject(parent, 'foo')).toBe('zonk')
   expect(readConfObject(layer, 'foo')).toBe('zonk')
+
+  // if you set something in the layer, the change is stored in
+  // the layer, but the parent's value stays the same
   layer.foo.set('zee')
   expect(readConfObject(layer, 'foo')).toBe('zee')
   expect(readConfObject(parent, 'foo')).toBe('zonk')
