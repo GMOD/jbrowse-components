@@ -7,6 +7,8 @@ import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 
 export default class BigBedAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures', 'getRefNames']
+
   constructor(config) {
     super(config)
     this.bigbed = new BigBed({
@@ -14,8 +16,8 @@ export default class BigBedAdapter extends BaseAdapter {
     })
   }
 
-  async loadData() {
-    const header = await this.bigbed.getHeader()
+  async getRefNames() {
+    const header = await this.bigwig.getHeader()
     return Object.keys(header.refsByName)
   }
 

@@ -5,6 +5,7 @@ import BamAdapterPlugin from './plugins/BamAdapter'
 import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
 import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 import BigWigAdapterPlugin from './plugins/BigWigAdapter'
+import BigBedAdapterPlugin from './plugins/BigBedAdapter'
 import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 
 // tracks
@@ -35,6 +36,7 @@ export default [
   TwoBitAdapterPlugin,
   IndexedFastaAdapterPlugin,
   BigWigAdapterPlugin,
+  BigBedAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,
