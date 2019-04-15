@@ -1,4 +1,7 @@
 import Button from '@material-ui/core/Button'
+import ExpansionPanel from '@material-ui/core/ExpansionPanel'
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import Icon from '@material-ui/core/Icon'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -12,6 +15,7 @@ import { makeStyles } from '@material-ui/styles'
 import { observer } from 'mobx-react-lite'
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { openLocation } from '../../../util/io'
 
 function styledBy(property, mapping) {
   return props => mapping[props[property]]
@@ -58,28 +62,6 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-// Using this you can "await" the file text like a normal promise
-// https://blog.shovonhasan.com/using-promises-with-filereader/
-function readUploadedFileAsText(inputFile) {
-  const temporaryFileReader = new FileReader()
-
-  return new Promise((resolve, reject) => {
-    temporaryFileReader.onerror = () => {
-      temporaryFileReader.abort()
-      reject(new Error(`problem reading input file "${inputFile.path}"`))
-    }
-
-    temporaryFileReader.onabort = () => {
-      reject(new Error(`file reading was aborted: "${inputFile.path}"`))
-    }
-
-    temporaryFileReader.onload = () => {
-      resolve(temporaryFileReader.result)
-    }
-    temporaryFileReader.readAsText(inputFile)
-  })
-}
-
 function ImportConfiguration(props) {
   const [errorMessage, setErrorMessage] = useState('')
   const {
@@ -102,16 +84,24 @@ function ImportConfiguration(props) {
   async function importConfigs() {
     const configs = []
     for (const file of acceptedFiles) {
-      // const reader = new FileReader()
-
-      configs.push(readUploadedFileAsText(file))
+      const fileHandle = openLocation({ blob: file })
+      configs.push(fileHandle.readFile('utf8'))
     }
     let unparsedConfigs
     try {
       unparsedConfigs = await Promise.all(configs)
     } catch (error) {
       console.error(error)
-      setErrorMessage(`${error}`)
+      if (acceptedFiles.length === 1)
+        setErrorMessage(
+          `Problem opening file ${acceptedFiles[0].path}: ${error}`,
+        )
+      else
+        setErrorMessage(
+          `Problem opening one of the files ${acceptedFiles
+            .map(f => f.path)
+            .join(' ')}: ${error}`,
+        )
       return
     }
     const parsedConfigs = []
@@ -126,7 +116,11 @@ function ImportConfiguration(props) {
       }
       parsedConfigs.push(config)
     }
-    addSessions(parsedConfigs)
+    try {
+      await addSessions(parsedConfigs)
+    } catch (error) {
+      setErrorMessage(`Error parsing: ${error}`)
+    }
   }
 
   return (
@@ -196,14 +190,29 @@ function ImportConfiguration(props) {
         </div>
       ) : null}
       {errorMessage ? (
-        <div className={classes.errorMessage}>
-          <Icon color="error" fontSize="large">
-            error
-          </Icon>
-          <Typography color="error" align="center">
-            {errorMessage}
-          </Typography>
-        </div>
+        <>
+          <div className={classes.errorMessage}>
+            <Icon color="error" fontSize="large">
+              error
+            </Icon>
+          </div>
+          <div>
+            <ExpansionPanel style={{ marginTop: 4 }}>
+              <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+                <Typography color="error" align="center">
+                  There was an error importing the file
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails>
+                <div style={{ overflowX: 'auto' }}>
+                  <Typography color="error" align="center">
+                    {errorMessage}
+                  </Typography>
+                </div>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          </div>
+        </>
       ) : null}
     </div>
   )
