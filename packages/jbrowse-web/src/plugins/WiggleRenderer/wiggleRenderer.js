@@ -19,7 +19,9 @@ class WiggleRenderer extends ServerSideRenderer {
     bpPerPx,
     minScore,
     maxScore,
-    scaling,
+    highResolutionScaling,
+    scaleType,
+    inverted,
     height,
     horizontallyFlipped,
     stats,
@@ -28,11 +30,12 @@ class WiggleRenderer extends ServerSideRenderer {
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
-    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
     const ctx = canvas.getContext('2d')
     const [
-      inverted,
-      scaleType,
       pivot,
       pivotValue,
       negColor,
@@ -42,8 +45,6 @@ class WiggleRenderer extends ServerSideRenderer {
       clipColor,
       highlightColor,
     ] = readConfObjects(config, [
-      'inverted',
-      'scaleType',
       'bicolorPivot',
       'bicolorPivotValue',
       'negColor',
@@ -61,8 +62,8 @@ class WiggleRenderer extends ServerSideRenderer {
     const originY = getOrigin(scaleType)
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
-    if (scaling) {
-      ctx.scale(scaling, scaling)
+    if (highResolutionScaling) {
+      ctx.scale(highResolutionScaling, highResolutionScaling)
     }
 
     if (inverted) {

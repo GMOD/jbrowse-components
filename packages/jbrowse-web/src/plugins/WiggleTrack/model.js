@@ -15,7 +15,6 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('WiggleTrack'),
         configuration: ConfigurationReference(configSchema),
-        error: types.maybe(types.string),
       })
       .actions(self => ({
         afterAttach() {
@@ -31,6 +30,7 @@ export default (pluginManager, configSchema) =>
                 if (!regions.length) return
                 stats = self.adapter.getLocalStats(regions)
               }
+              self.setLoading()
               stats.then(s => self.setStats(s)).catch(e => self.setError(e))
             },
             { delay: 1000 },
@@ -43,9 +43,6 @@ export default (pluginManager, configSchema) =>
           self.stats = { min, max, mean }
           self.ready = true
         },
-        setError(e) {
-          self.error = `${e}`
-        },
       }))
       .views(self => ({
         get renderProps() {
@@ -54,17 +51,18 @@ export default (pluginManager, configSchema) =>
             trackModel: self,
             stats: self.stats,
             notReady: !self.ready,
-            minScore: getConf(self, 'minScore'),
+            minScore: getConf(self, 'minScore'), // todo: passing config this way needed?
             maxScore: getConf(self, 'maxScore'),
+            scaleType: getConf(self, 'scaleType'),
+            inverted: getConf(self, 'inverted'),
             height: self.height,
-            scaling: 2, // todo global config?
+            highResolutionScaling: 2, // todo global config?
           }
         },
       }))
       .volatile(() => ({
         reactComponent: WiggleTrackComponent,
-        rendererTypeName: 'WiggleRenderer',
-        ready: false,
+        rendererTypeName: 'WiggleRenderer', // todo is this needed?
         stats: types.frozen(),
       })),
   )
