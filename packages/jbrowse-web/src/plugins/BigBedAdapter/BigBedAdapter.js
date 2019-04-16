@@ -45,13 +45,29 @@ export default class BigBedAdapter extends BaseAdapter {
       const parser = await this.parser
       const records = await this.bigbed.getFeatures(refName, start, end)
       records.forEach(r => {
-        const data = parser.parseBedText(refName, r.start, r.end, r.rest, {
-          offset: 3,
-          uniqueId: r.uniqueId,
-        })
+        const data = regularizeFeat(
+          parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
+            uniqueId: r.uniqueId,
+          }),
+        )
         observer.next(new SimpleFeature({ data }))
       })
       observer.complete()
     })
   }
+}
+
+/*
+ * regularizes a feature by modifying the {chrom,chromStart,chromEnd} to {refName,start,end}
+ * @params featureData a feature to regularize
+ * @return a regularized feature
+ */
+export function regularizeFeat(featureData) {
+  const {
+    chrom: refName,
+    chromStart: start,
+    chromEnd: end,
+    ...rest
+  } = featureData
+  return { ...rest, refName, start, end }
 }
