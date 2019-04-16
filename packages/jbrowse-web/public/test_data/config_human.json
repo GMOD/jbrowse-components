@@ -52,100 +52,17 @@
       "height": 300,
       "autoscale": "global",
       "assemblyName": "hg38",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF826FLP/@@download/ENCFF826FLP.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
+      "renderer": {
+        "type": "WiggleRenderer"
+      },
+      "type": "BasicTrack",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF826FLP/@@download/ENCFF826FLP.bigWig"
         },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF659SMB/@@download/ENCFF659SMB.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF466OTZ/@@download/ENCFF466OTZ.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF865SNR/@@download/ENCFF865SNR.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF011CZU/@@download/ENCFF011CZU.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "renderType": "density"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "https://www.encodeproject.org/files/ENCFF243WKQ/@@download/ENCFF243WKQ.bigWig"
-            },
-            "assemblyName": "hg38"
-          }
-        }
-      ]
+        "assemblyName": "hg38"
+      }
     }
   ],
   "assemblies": {
