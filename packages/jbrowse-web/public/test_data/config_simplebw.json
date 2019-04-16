@@ -3,253 +3,23 @@
     {
       "configId": "wiggle_local_autoscale",
       "type": "WiggleTrack",
-      "name": "Local+xyplot/den",
+      "name": "Local xyplot",
       "category": [
         "Bar Category"
       ],
       "height": 300,
       "autoscale": "local",
       "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray normal",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
+      "renderer": {
+        "type": "WiggleRenderer"
+      },
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
         },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "renderType": "density"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray density",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
-      "configId": "wiggle_with_inverted",
-      "type": "WiggleTrack",
-      "name": "Global+linear+inverted",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "inverted": true
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray inverted",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
-      "configId": "wiggle_global_autoscale_log",
-      "type": "WiggleTrack",
-      "name": "Global+log+inverted",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "scaleType": "log"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray normal",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "scaleType": "log",
-            "inverted": true
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray invert",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
-      "configId": "wiggle_global_autoscale",
-      "type": "WiggleTrack",
-      "name": "Global+xyplot/den",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray xyplot",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "renderType": "density"
-          },
-          "type": "BasicTrack",
-          "name": "volvox microarray density",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
-      "configId": "wiggle_global_autoscale_sine",
-      "type": "WiggleTrack",
-      "name": "Sine track",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "name": "volvox sine xyplot",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_sine.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "renderType": "density"
-          },
-          "type": "BasicTrack",
-          "name": "volvox sine density",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_sine.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
-      "configId": "wiggle_pos_neg",
-      "type": "WiggleTrack",
-      "name": "Global pos/neg",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "local",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_negative.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
+        "assemblyName": "volvox"
+      }
     }
   ],
   "assemblies": {
@@ -353,7 +123,7 @@
           {
             "type": "WiggleTrack",
             "height": 250,
-            "configuration": "wiggle_global_autoscale_log"
+            "configuration": "wiggle_local_autoscale"
           }
         ],
         "configuration": {}
