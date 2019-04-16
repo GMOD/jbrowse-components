@@ -23,11 +23,6 @@ export default pluginManager =>
         description: 'maximum value for the y-scale',
         defaultValue: Infinity,
       },
-      defaultHeight: {
-        type: 'number',
-        description: 'default height for a subtrack',
-        defaultValue: 100,
-      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: WiggleRendererConfigSchema,
     },
