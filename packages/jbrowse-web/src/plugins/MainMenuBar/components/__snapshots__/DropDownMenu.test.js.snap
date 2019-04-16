@@ -1,305 +1,63 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 1`] = `
-<div
-  className="DropDownMenu-root-1"
+exports[`<DropDownMenu /> opens a menu and selects a menu item 1`] = `
+<li
+  class="MuiButtonBase-root-78 MuiListItem-root-131 MuiListItem-default-134 MuiListItem-gutters-139 MuiListItem-button-140 MuiMenuItem-root-128 MuiMenuItem-gutters-129"
+  data-testid="menuItemId"
+  role="menuitem"
+  tabindex="0"
 >
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns="menu-list-grow"
-    color="inherit"
-    onClick={[Function]}
+  <div
+    class="MuiListItemIcon-root-143"
   >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={
-      <WithStyles(Button)
-        aria-haspopup="true"
-        aria-owns={null}
-        color="inherit"
-        onClick={[Function]}
-      >
-        Help
-        <WithStyles(Icon)>
-          arrow_drop_down
-        </WithStyles(Icon)>
-      </WithStyles(Button)>
-    }
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={true}
-    placement="bottom-start"
-    transition={true}
+    <span
+      aria-hidden="true"
+      class="material-icons MuiIcon-root-81"
+    >
+      info
+    </span>
+  </div>
+  <div
+    class="MuiListItemText-root-144"
   >
-    <Component />
-  </Popper>
-</div>
-`;
-
-exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 2`] = `
-<div
-  className="DropDownMenu-root-1"
->
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns="menu-list-grow"
-    color="inherit"
-    onClick={[Function]}
-  >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={
-      <WithStyles(Button)
-        aria-haspopup="true"
-        aria-owns={null}
-        color="inherit"
-        onClick={[Function]}
-      >
-        Help
-        <WithStyles(Icon)>
-          arrow_drop_down
-        </WithStyles(Icon)>
-      </WithStyles(Button)>
-    }
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={true}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
-</div>
-`;
-
-exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 3`] = `
-<div
-  className="DropDownMenu-root-1"
->
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns={null}
-    color="inherit"
-    onClick={[Function]}
-  >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={null}
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={false}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
-</div>
-`;
-
-exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 4`] = `
-<div
-  className="DropDownMenu-root-1"
->
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns="menu-list-grow"
-    color="inherit"
-    onClick={[Function]}
-  >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={
-      <WithStyles(Button)
-        aria-haspopup="true"
-        aria-owns={null}
-        color="inherit"
-        onClick={[Function]}
-      >
-        Help
-        <WithStyles(Icon)>
-          arrow_drop_down
-        </WithStyles(Icon)>
-      </WithStyles(Button)>
-    }
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={true}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
-</div>
-`;
-
-exports[`<DropDownMenu /> opens and closes a menu and selects a menu item 5`] = `
-<div
-  className="DropDownMenu-root-1"
->
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns={null}
-    color="inherit"
-    onClick={[Function]}
-  >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={null}
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={false}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
-</div>
+    <span
+      class="MuiTypography-root-150 MuiTypography-subheading-157 MuiListItemText-primary-147"
+    >
+      Test Item
+    </span>
+  </div>
+  <span
+    class="MuiTouchRipple-root-90"
+  />
+</li>
 `;
 
 exports[`<DropDownMenu /> renders 1`] = `
-<Component
-  classes={
-    Object {
-      "grow": "DropDownMenu-grow-3",
-      "popper": "DropDownMenu-popper-2",
-      "root": "DropDownMenu-root-1",
-    }
-  }
-  menuItems={
-    Array [
-      Object {
-        "callback": "openAbout",
-        "icon": "info",
-        "name": "About",
-      },
-      Object {
-        "callback": "openHelp",
-        "icon": "help",
-        "name": "Help",
-      },
-      Object {
-        "callback": "openAssemblyEditor",
-        "icon": "edit",
-        "name": "Assemblies",
-      },
-    ]
-  }
-  menuTitle="Help"
-  model={
-    Object {
-      "id": "testingId",
-      "menus": Array [
-        Object {
-          "menuItems": Array [
-            Object {
-              "callback": "openAbout",
-              "icon": "info",
-              "name": "About",
-            },
-            Object {
-              "callback": "openHelp",
-              "icon": "help",
-              "name": "Help",
-            },
-            Object {
-              "callback": "openAssemblyEditor",
-              "icon": "edit",
-              "name": "Assemblies",
-            },
-          ],
-          "name": "Help",
-        },
-      ],
-      "type": "MainMenuBar",
-    }
-  }
-/>
-`;
-
-exports[`<DropDownMenu /> selects a menu item 1`] = `
 <div
-  className="DropDownMenu-root-1"
+  class="DropDownMenu-root-1"
 >
-  <WithStyles(Button)
+  <button
     aria-haspopup="true"
     aria-owns="menu-list-grow"
-    color="inherit"
-    onClick={[Function]}
+    class="MuiButtonBase-root-30 MuiButton-root-4 MuiButton-text-6 MuiButton-flat-9 MuiButton-colorInherit-25"
+    data-testid="dropDownMenuButton"
+    tabindex="0"
+    type="button"
   >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={
-      <WithStyles(Button)
-        aria-haspopup="true"
-        aria-owns={null}
-        color="inherit"
-        onClick={[Function]}
+    <span
+      class="MuiButton-label-5"
+    >
+      Test Menu
+      <span
+        aria-hidden="true"
+        class="material-icons MuiIcon-root-33"
       >
-        Help
-        <WithStyles(Icon)>
-          arrow_drop_down
-        </WithStyles(Icon)>
-      </WithStyles(Button)>
-    }
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={true}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
-</div>
-`;
-
-exports[`<DropDownMenu /> selects a menu item 2`] = `
-<div
-  className="DropDownMenu-root-1"
->
-  <WithStyles(Button)
-    aria-haspopup="true"
-    aria-owns={null}
-    color="inherit"
-    onClick={[Function]}
-  >
-    Help
-    <WithStyles(Icon)>
-      arrow_drop_down
-    </WithStyles(Icon)>
-  </WithStyles(Button)>
-  <Popper
-    anchorEl={null}
-    className="DropDownMenu-popper-2"
-    disablePortal={false}
-    open={false}
-    placement="bottom-start"
-    transition={true}
-  >
-    <Component />
-  </Popper>
+        arrow_drop_down
+      </span>
+    </span>
+    <span
+      class="MuiTouchRipple-root-42"
+    />
+  </button>
 </div>
 `;

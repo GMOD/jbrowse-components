@@ -31,7 +31,7 @@ function DropDownMenu(props) {
   const [open, setOpen] = useState(false)
   const anchorEl = React.useRef(null)
 
-  const { classes, menuTitle, menuItems } = props
+  const { classes, menuTitle, menuItems, rootModel } = props
 
   function handleToggle() {
     setOpen(!open)
@@ -43,7 +43,7 @@ function DropDownMenu(props) {
     }
 
     setOpen(false)
-    if (callback) callback(event)
+    if (callback) callback(rootModel)
   }
 
   return (
@@ -54,6 +54,7 @@ function DropDownMenu(props) {
         aria-haspopup="true"
         onClick={handleToggle}
         color="inherit"
+        data-testid="dropDownMenuButton"
       >
         {menuTitle}
         <Icon>arrow_drop_down</Icon>
@@ -79,6 +80,7 @@ function DropDownMenu(props) {
                     <MenuItem
                       key={menuItem.name}
                       onClick={event => handleClose(event, menuItem.func)}
+                      data-testid="menuItemId"
                     >
                       {menuItem.icon ? (
                         <ListItemIcon key={menuItem.name}>
@@ -105,6 +107,7 @@ DropDownMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   menuTitle: PropTypes.string.isRequired,
   menuItems: MobxPropTypes.observableArray.isRequired,
+  rootModel: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(DropDownMenu))

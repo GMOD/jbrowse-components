@@ -104,7 +104,7 @@ export const MainMenuBarModel = types
   })
   .actions(self => ({
     afterCreate() {
-      this.pushMenu({
+      self.pushMenu({
         name: 'Help',
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
