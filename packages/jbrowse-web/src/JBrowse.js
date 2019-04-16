@@ -48,9 +48,10 @@ async function createRootModel(modelType, config) {
     }
   }
 
-  const {
-    defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
-  } = configSnapshot
+  let { defaultSession } = configSnapshot
+  if (!defaultSession) defaultSession = {}
+  if (!defaultSession.menuBars)
+    defaultSession.menuBars = [{ type: 'MainMenuBar' }]
   const {
     sessionName = `Unnamed Session ${shortid.generate()}`,
   } = defaultSession

@@ -10,10 +10,12 @@ import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/styles'
 import { observer } from 'mobx-react-lite'
-import React, { useState } from 'react'
+import { getRoot } from 'mobx-state-tree'
+import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { openLocation } from '../../../util/io'
 
@@ -64,6 +66,7 @@ const useStyles = makeStyles(theme => ({
 
 function ImportConfiguration(props) {
   const [errorMessage, setErrorMessage] = useState('')
+  const [acceptedFilesParsed, setAcceptedFilesParsed] = useState([])
   const {
     acceptedFiles,
     rejectedFiles,
@@ -77,50 +80,74 @@ function ImportConfiguration(props) {
     ],
     onDrop: () => setErrorMessage(''),
   })
+  useEffect(
+    () => {
+      getConfigs()
+    },
+    [acceptedFiles],
+  )
   const classes = useStyles({ isDragActive })
 
-  const { addSessions } = props
+  const { addSessions, setActiveSession, model } = props
+  const rootModel = getRoot(model)
 
-  async function importConfigs() {
-    const configs = []
+  async function getConfigs() {
+    const newConfigs = []
     for (const file of acceptedFiles) {
       const fileHandle = openLocation({ blob: file })
-      configs.push(fileHandle.readFile('utf8'))
-    }
-    let unparsedConfigs
-    try {
-      unparsedConfigs = await Promise.all(configs)
-    } catch (error) {
-      console.error(error)
-      if (acceptedFiles.length === 1)
-        setErrorMessage(
-          `Problem opening file ${acceptedFiles[0].path}: ${error}`,
-        )
-      else
-        setErrorMessage(
-          `Problem opening one of the files ${acceptedFiles
-            .map(f => f.path)
-            .join(' ')}: ${error}`,
-        )
-      return
-    }
-    const parsedConfigs = []
-    for (let i = 0; i < unparsedConfigs.length; i += 1) {
-      const unparsedConfig = unparsedConfigs[i]
+      let configContents
       let config
       try {
-        config = JSON.parse(unparsedConfig)
+        // eslint-disable-next-line no-await-in-loop
+        configContents = await fileHandle.readFile('utf8')
       } catch (error) {
-        setErrorMessage(`Error parsing ${acceptedFiles[i].path}: ${error}`)
-        return
+        console.error(error)
+        config = {
+          error: `Problem opening file ${file.path}: ${error}`,
+        }
       }
-      parsedConfigs.push(config)
+      if (configContents)
+        try {
+          config = JSON.parse(configContents)
+        } catch (error) {
+          console.error(error)
+          config = { error: `Error parsing ${file.path}: ${error}` }
+        }
+      if (!config.error) {
+        if (!config.defaultSession) config.defaultSession = {}
+        if (!config.defaultSession.sessionName)
+          config.defaultSession.sessionName = `Imported Config ${file.path}`
+      }
+      newConfigs.push(config)
     }
+
+    setAcceptedFilesParsed(
+      acceptedFiles.map((file, idx) => {
+        file.config = newConfigs[idx]
+        return file
+      }),
+    )
+  }
+
+  async function importConfigs() {
     try {
-      await addSessions(parsedConfigs)
+      await addSessions(acceptedFilesParsed.map(file => file.config))
+      setActiveSession(acceptedFilesParsed[0].config.defaultSession.sessionName)
+      rootModel.hideDrawerWidget(
+        rootModel.drawerWidgets.get('importConfigurationDrawerWidget'),
+      )
     } catch (error) {
-      setErrorMessage(`Error parsing: ${error}`)
+      setErrorMessage(`${error}`)
     }
+  }
+
+  function updateConfigName(newName, idx) {
+    setAcceptedFilesParsed(
+      acceptedFilesParsed.map((file, fileIdx) => {
+        if (idx === fileIdx) file.config.defaultSession.sessionName = newName
+        return file
+      }),
+    )
   }
 
   return (
@@ -142,25 +169,36 @@ function ImportConfiguration(props) {
           </Button>
         </div>
       </Paper>
-      {acceptedFiles.length ? (
+      {acceptedFilesParsed.length ? (
         <>
           <List subheader={<ListSubheader>Files</ListSubheader>}>
-            {acceptedFiles.map(file => (
+            {acceptedFilesParsed.map((file, idx) => (
               <ListItem key={file.path}>
                 <ListItemIcon>
-                  <Icon>check_circle</Icon>
+                  <Icon>{file.config.error ? 'error' : 'check_circle'}</Icon>
                 </ListItemIcon>
-                <ListItemText
-                  primary={file.path}
-                  secondary={`${file.lastModifiedDate}`}
-                />
+                {file.config.error ? (
+                  <Typography color="error">{file.config.error}</Typography>
+                ) : (
+                  <TextField
+                    value={file.config.defaultSession.sessionName}
+                    fullWidth
+                    helperText={file.path}
+                    onChange={event => {
+                      updateConfigName(event.target.value, idx)
+                    }}
+                  />
+                )}
               </ListItem>
             ))}
           </List>
           <Button
             color="primary"
             variant="contained"
-            disabled={Boolean(errorMessage)}
+            disabled={Boolean(
+              errorMessage ||
+                acceptedFilesParsed.some(file => file.config.error),
+            )}
             onClick={importConfigs}
           >
             Import
@@ -170,9 +208,8 @@ function ImportConfiguration(props) {
       {rejectedFiles.length ? (
         <div className={classes.rejectedFiles}>
           <Typography color="error">
-            Warning: some files were not of the correct type (JSON
-            {/* or YAML */}
-            )and will not be imported
+            Warning: some files were not JSON{/* or YAML */} and will not be
+            imported
           </Typography>
           <List>
             {rejectedFiles.map(file => (
@@ -200,7 +237,7 @@ function ImportConfiguration(props) {
             <ExpansionPanel style={{ marginTop: 4 }}>
               <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
                 <Typography color="error" align="center">
-                  There was an error importing the file
+                  Import error: File does not appear to be a valid configuration
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>

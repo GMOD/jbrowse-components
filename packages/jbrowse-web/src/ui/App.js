@@ -119,6 +119,7 @@ function App(props) {
             <LazyReactComponent
               model={activeDrawerWidget}
               addSessions={addSessions}
+              setActiveSession={setActiveSession}
             />
           </React.Suspense>
         </div>
