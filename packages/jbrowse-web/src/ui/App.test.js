@@ -29,6 +29,7 @@ describe('jbrowse-web app', () => {
         configId: expect.any(String),
         rpc: { configId: expect.any(String) },
       },
+      menuBars: [{ id: expect.any(String) }],
     })
     render(rootModel, pluginManager)
   })
