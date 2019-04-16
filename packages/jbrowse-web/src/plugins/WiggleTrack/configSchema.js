@@ -23,6 +23,17 @@ export default pluginManager =>
         description: 'maximum value for the y-scale',
         defaultValue: Infinity,
       },
+      scaleType: {
+        type: 'stringEnum',
+        model: types.enumeration('Scale type', ['linear', 'log']), // todo zscale
+        description: 'The type of scale to use',
+        defaultValue: 'linear',
+      },
+      inverted: {
+        type: 'boolean',
+        description: 'draw upside down',
+        defaultValue: false,
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: WiggleRendererConfigSchema,
     },

@@ -116,11 +116,11 @@ export default types
       )
       addDisposer(self, renderDisposer)
     },
-    setLoading(abortController) {
+    setLoading(abortController, loadingMessage = '') {
       if (self.renderInProgress && !self.renderInProgress.signal.aborted)
         self.renderInProgress.abort()
       self.filled = false
-      self.html = ''
+      self.html = loadingMessage
       self.data = undefined
       self.error = undefined
       self.renderInProgress = abortController

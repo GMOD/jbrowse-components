@@ -20,6 +20,28 @@
         },
         "assemblyName": "volvox"
       }
+    },
+    {
+      "configId": "wiggle_log",
+      "type": "WiggleTrack",
+      "name": "Log scale xyplot",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "scaleType": "log",
+      "renderer": {
+        "type": "WiggleRenderer"
+      },
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
     }
   ],
   "assemblies": {

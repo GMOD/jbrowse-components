@@ -33,11 +33,6 @@ export default ConfigurationSchema(
       description: 'the color of the clipping marker',
       defaultValue: 'red',
     },
-    inverted: {
-      type: 'boolean',
-      description: 'draw upside down',
-      defaultValue: false,
-    },
     renderType: {
       type: 'stringEnum',
       model: types.enumeration('Rendering type', ['xyplot', 'density']),
@@ -64,12 +59,6 @@ export default ConfigurationSchema(
       type: 'number',
       defaultValue: 0,
       description: 'value to use for bicolor pivot',
-    },
-    scaleType: {
-      type: 'stringEnum',
-      model: types.enumeration('Scale type', ['linear', 'log', 'z_scale']),
-      description: 'The type of scale to use',
-      defaultValue: 'linear',
     },
   },
   { explicitlyTyped: true },
