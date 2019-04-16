@@ -15,6 +15,7 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('WiggleTrack'),
         configuration: ConfigurationReference(configSchema),
+        error: types.maybe(types.string),
       })
       .actions(self => ({
         afterAttach() {
@@ -30,7 +31,7 @@ export default (pluginManager, configSchema) =>
                 if (!regions.length) return
                 stats = self.adapter.getLocalStats(regions)
               }
-              stats.then(s => self.setStats(s))
+              stats.then(s => self.setStats(s)).catch(e => self.setError(e))
             },
             { delay: 1000 },
           )
@@ -42,6 +43,9 @@ export default (pluginManager, configSchema) =>
           self.stats = { min, max, mean }
           self.ready = true
         },
+        setError(e) {
+          self.error = `${e}`
+        },
       }))
       .views(self => ({
         get renderProps() {
@@ -52,7 +56,7 @@ export default (pluginManager, configSchema) =>
             notReady: !self.ready,
             minScore: getConf(self, 'minScore'),
             maxScore: getConf(self, 'maxScore'),
-            height: getConf(self, 'defaultHeight'),
+            height: self.height,
             scaling: 2, // todo global config?
           }
         },
@@ -61,5 +65,6 @@ export default (pluginManager, configSchema) =>
         reactComponent: WiggleTrackComponent,
         rendererTypeName: 'WiggleRenderer',
         ready: false,
+        stats: types.frozen(),
       })),
   )
