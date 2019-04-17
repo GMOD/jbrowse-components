@@ -6,7 +6,7 @@ import {
 } from '../../configuration'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
-import { getContainingView } from '../../util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export default pluginManager => {
   const configSchema = ConfigurationSchema(

@@ -1,8 +1,12 @@
 /**
+ * Algorithmically pick a contrasting text color that will
+ * be visible on top of the given background color. Either
+ * black or white.
+ *
  * @param {string} rgb color string
  * @returns {string} 'black' or 'white'
  */
-export function contrastingTextColor(rgb) {
+export function contrastingTextColor(rgb: string): string {
   let r
   let g
   let b
@@ -22,10 +26,9 @@ export function contrastingTextColor(rgb) {
     b = parseInt(triplet.substr(4, 2), 16)
   }
 
-  const luminance =
-    (Math.round(r * 299) + Math.round(g * 587) + Math.round(b * 114)) / 1000
+  const luminance = (Math.round(r * 299) + Math.round(g * 587) + Math.round(b * 114)) / 1000
 
   return luminance >= 128 ? 'black' : 'white'
 }
 
-export function mollifyEslint() {}
+export function mollifyEslint(): void {}

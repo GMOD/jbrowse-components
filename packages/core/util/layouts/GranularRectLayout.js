@@ -94,16 +94,16 @@ class LayoutRow {
       const currLength = this.bits.length
 
       if (right - this.offset >= this.bits.length) {
-        const additionalLength =
-          right - this.offset - this.bits.length + 1 + this.bits.length
+        const additionalLength = right - this.offset - this.bits.length + 1 + this.bits.length
         if (this.bits.length + additionalLength > this.sizeLimit) {
           console.warn(
-            `Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.`,
+            'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
           )
           this.initialize(left, right)
         } else if (additionalLength > 0) {
           this.bits = this.bits.concat(new Array(additionalLength))
-          // this.log(`expand right (${additionalLength}): ${this.offset} | ${this.min} - ${this.max}`)
+          // this.log(`expand right (${additionalLength}): ${this.offset} | ${
+          // this.min} - ${this.max}`)
         }
       }
 
@@ -112,13 +112,14 @@ class LayoutRow {
         const additionalLength = this.offset - left + currLength
         if (this.bits.length + additionalLength > this.sizeLimit) {
           console.warn(
-            `Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.`,
+            'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
           )
           this.initialize(left, right)
         } else {
           this.bits = new Array(additionalLength).concat(this.bits)
           this.offset -= additionalLength
-          // this.log(`expand left (${additionalLength}): ${this.offset} | ${this.min} - ${this.max}`)
+          // this.log(`expand left (${additionalLength}): ${this.offset} | ${
+          //   this.min} - ${this.max}`)
         }
       }
     }
@@ -132,8 +133,8 @@ class LayoutRow {
     // if (oRight > this.bits.length) debugger
     if (oRight - oLeft > maxFeaturePitchWidth) {
       console.warn(
-        `Layout X pitch set too low, feature spans ${oRight -
-          oLeft} bits in a single row.`,
+        `Layout X pitch set too low, feature spans ${oRight
+          - oLeft} bits in a single row.`,
         rect,
         data,
       )
@@ -182,8 +183,8 @@ class LayoutRow {
 
     // now trim the left, right, or both sides of the array
     if (
-      this.offset < this.min - minSizeToBotherWith &&
-      this.bits.length > this.max + minSizeToBotherWith - this.offset
+      this.offset < this.min - minSizeToBotherWith
+      && this.bits.length > this.max + minSizeToBotherWith - this.offset
     ) {
       // trim both sides
       const leftTrimAmount = this.min - this.offset
@@ -208,12 +209,11 @@ class LayoutRow {
       // if (this.offset > this.min) debugger
       // if (this.bits.length <= this.max - this.offset) debugger
     } else if (
-      this.bits.length >
-      this.max - this.offset + minSizeToBotherWith
+      this.bits.length
+      > this.max - this.offset + minSizeToBotherWith
     ) {
       // trim right side
-      const desiredLength =
-        this.max - this.offset + 1 + Math.floor(minSizeToBotherWith / 2)
+      const desiredLength = this.max - this.offset + 1 + Math.floor(minSizeToBotherWith / 2)
       // this.log(`trim right side by ${this.bits.length-desiredLength}`)
       // if (desiredLength > this.bits.length) debugger
       this.bits.length = desiredLength
@@ -257,7 +257,8 @@ export default class GranularRectLayout {
   }
 
   /**
-   * @returns {Number} top position for the rect, or Null if laying out the rect would exceed maxHeight
+   * @returns {Number} top position for the rect, or Null if laying
+   *  out the rect would exceed maxHeight
    */
   addRect(id, left, right, height, data) {
     // if we have already laid it out, return its layout
@@ -404,7 +405,9 @@ export default class GranularRectLayout {
   getRectangles() {
     return new Map(
       Object.entries(this.rectangles).map(([id, rect]) => {
-        const { l, r, originalHeight, top } = rect
+        const {
+          l, r, originalHeight, top,
+        } = rect
         const t = top * this.pitchY
         const b = t + originalHeight
         return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom

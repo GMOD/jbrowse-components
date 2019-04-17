@@ -1,6 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import BaseAdapter from './BaseAdapter'
-import { ObservableCreate } from './util/rxjs'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
 describe('base data adapter', () => {
   it('throws if instantiated directly', () => {

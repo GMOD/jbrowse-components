@@ -27,7 +27,8 @@ const adapterCache = {}
  * configuration
  *
  * @param {PluginManager} pluginManager
- * @param {string} sessionId session ID of the associated worker session. used for reference counting
+ * @param {string} sessionId session ID of the associated worker session.
+ *   used for reference counting
  * @param {string} adapterType type name of the adapter to instantiate
  * @param {object} adapterConfig plain-JS configuration snapshot for the adapter
  */
@@ -41,8 +42,7 @@ export function getAdapter(
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfig)
   if (!adapterCache[cacheKey]) {
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
-    if (!dataAdapterType)
-      throw new Error(`unknown data adapter type ${adapterType}`)
+    if (!dataAdapterType) { throw new Error(`unknown data adapter type ${adapterType}`) }
     // console.log('new adapter', cacheKey)
     const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
 
@@ -73,10 +73,9 @@ export function freeAdapterResources(specification) {
         delete adapterCache[cacheKey]
       }
     })
-  }
-  // otherwise call freeResources on all the cached data adapters
-  else {
-    Object.values(adapterCache).forEach(cacheEntry => {
+  } else {
+    // otherwise call freeResources on all the cached data adapters
+    Object.values(adapterCache).forEach((cacheEntry) => {
       cacheEntry.adapter.freeResources(specification)
     })
   }

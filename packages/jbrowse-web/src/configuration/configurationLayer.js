@@ -11,8 +11,8 @@ import {
 } from 'mobx-state-tree'
 
 import ConfigurationSlot from './configurationSlot'
-import { inDevelopment } from '../util'
-import { stringToFunction } from '../util/functionStrings'
+import { inDevelopment } from '@gmod/jbrowse-core/util'
+import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 import { isConfigurationSchemaType } from './configurationSchema'
 
 function ConfigurationLayerSlot(

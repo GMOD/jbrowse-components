@@ -6,17 +6,18 @@ const compilationCache = {}
  *
  * @param {string} str string of code like "function() { ... }"
  * @param {object} options
- * @param {object} options.verifyFunctionSignature if true, the compiled function will check at runtime that the proper number of arguments were passed to it
+ * @param {object} options.verifyFunctionSignature if true, the
+ *  compiled function will check at runtime that the proper number
+ *  of arguments were passed to it
  */
 export function stringToFunction(str, options = {}) {
   const { verifyFunctionSignature } = options
 
-  const cacheKey = `${verifyFunctionSignature &&
-    verifyFunctionSignature.join(',')}|${str}`
+  const cacheKey = `${verifyFunctionSignature
+    && verifyFunctionSignature.join(',')}|${str}`
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
-    if (!match)
-      throw new Error('string does not appear to be a function declaration')
+    if (!match) { throw new Error('string does not appear to be a function declaration') }
     const paramList = match[1].split(',').map(s => s.trim())
     let code = match[2].replace(/}\s*$/, '')
     if (verifyFunctionSignature) {

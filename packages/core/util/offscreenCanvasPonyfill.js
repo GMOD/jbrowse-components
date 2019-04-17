@@ -1,5 +1,7 @@
 /* eslint-disable global-require */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
 
@@ -11,8 +13,8 @@ export let ImageBitmapType
 // sniff environments
 const weHave = {
   realOffscreenCanvas:
-    typeof __webpack_require__ === 'function' &&
-    typeof OffscreenCanvas === 'function',
+    typeof __webpack_require__ === 'function'
+    && typeof OffscreenCanvas === 'function',
   node: typeof process === 'object',
 }
 
@@ -25,10 +27,11 @@ if (weHave.realOffscreenCanvas) {
   const { createCanvas: nodeCreateCanvas, Image } = require('canvas')
   createCanvas = nodeCreateCanvas
   createImageBitmap = async (canvas, ...otherargs) => {
-    if (otherargs.length)
+    if (otherargs.length) {
       throw new Error(
         'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
       )
+    }
     const dataUri = canvas.toDataURL()
     const img = new Image()
     return new Promise((resolve, reject) => {

@@ -6,8 +6,8 @@ import './SvgFeatureRendering.scss'
 import { observer } from 'mobx-react'
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { featureSpanPx } from '../../../util'
-import SceneGraph from '../../../util/layouts/SceneGraph'
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 
 function Label({ layoutRecord, fontHeight, color, children }) {
   return (

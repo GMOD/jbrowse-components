@@ -6,16 +6,16 @@ export default class SceneGraph {
    */
   constructor(name, left, top, width, height, data) {
     if (
-      inDevelopment &&
-      (typeof name !== 'string' ||
-        typeof left !== 'number' ||
-        Number.isNaN(left) ||
-        typeof top !== 'number' ||
-        Number.isNaN(top) ||
-        typeof width !== 'number' ||
-        Number.isNaN(width) ||
-        typeof height !== 'number' ||
-        Number.isNaN(height))
+      inDevelopment
+      && (typeof name !== 'string'
+        || typeof left !== 'number'
+        || Number.isNaN(left)
+        || typeof top !== 'number'
+        || Number.isNaN(top)
+        || typeof width !== 'number'
+        || Number.isNaN(width)
+        || typeof height !== 'number'
+        || Number.isNaN(height))
     ) {
       throw new TypeError('invalid SceneGraph arguments')
     }
@@ -41,12 +41,13 @@ export default class SceneGraph {
       )
     }
 
-    if (this.children.has(child.name))
-      throw new Error(`child named "${child.name}" already exists`)
+    if (this.children.has(child.name)) throw new Error(`child named "${child.name}" already exists`)
 
     // update the bounds to match the child
     child.parent = this
-    const { left, right, top, bottom } = child.absolute
+    const {
+      left, right, top, bottom,
+    } = child.absolute
     this.expand(left, right, top, bottom)
     this.children.set(child.name, child)
   }
@@ -65,7 +66,9 @@ export default class SceneGraph {
    * @param {number} bottom
    */
   expand(newLeft, newRight, newTop, newBottom) {
-    const { left, right, top, bottom } = this.absolute
+    const {
+      left, right, top, bottom,
+    } = this.absolute
     if (newLeft < left) {
       const diff = left - newLeft
       this.width += diff
@@ -112,7 +115,7 @@ export default class SceneGraph {
     if (this.absoluteCache.dirty) {
       let xOffset = 0
       let yOffset = 0
-      this.walkParents(node => {
+      this.walkParents((node) => {
         xOffset += node.left
         yOffset += node.top
       })
@@ -134,7 +137,7 @@ export default class SceneGraph {
     this.top += y
 
     this.absoluteCache.dirty = true
-    this.walkChildren(c => {
+    this.walkChildren((c) => {
       c.absoluteCache.dirty = true
     })
   }

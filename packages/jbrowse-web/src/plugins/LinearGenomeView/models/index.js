@@ -9,7 +9,7 @@ import {
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../../configuration'
 import { ElementId, Region } from '../../../mst-types'
-import { clamp } from '../../../util'
+import { clamp } from '@gmod/jbrowse-core/util'
 import PluginManager from '../../../PluginManager'
 import TrackType from '../../../pluggableElementTypes/TrackType'
 

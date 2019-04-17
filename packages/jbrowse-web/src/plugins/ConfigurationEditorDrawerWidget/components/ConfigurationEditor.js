@@ -10,7 +10,7 @@ import {
   isConfigurationSlotType,
   getTypeNamesFromExplicitlyTypedUnion,
 } from '../../../configuration/configurationSchema'
-import { iterMap } from '../../../util'
+import { iterMap } from '@gmod/jbrowse-core/util'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 

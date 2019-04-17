@@ -16,8 +16,8 @@ import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
-} from '../../../util'
-import { getContainingView } from '../../../util/tracks'
+} from '@gmod/jbrowse-core/util'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't

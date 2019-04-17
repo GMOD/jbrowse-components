@@ -1,24 +1,29 @@
 {
-  "extends": [
-    "airbnb-base",
-    "prettier",
-    "plugin:monorepo/recommended"
-  ],
-  "env": {
-    "jest": true,
-    "node": true
-  },
+  "parser": "@typescript-eslint/parser",
   "plugins": [
     "prettier"
   ],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "airbnb-base",
+    "plugin:monorepo/recommended"
+  ],
   "rules": {
-    "prettier/prettier": [
-      "error",
-      {
-        "singleQuote": true,
-        "semi": false,
-        "trailingComma": "all"
+    "class-methods-use-this": "off",
+    "no-restricted-syntax": "off",
+    "no-param-reassign": "warn",
+    "semi": ["error", "never"]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.js"
+      ],
+      "env": {
+        "jest": true,
+        "node": true
       }
-    ]
-  }
+    }
+  ]
 }

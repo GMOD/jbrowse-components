@@ -1,6 +1,6 @@
 import Rpc from '@librpc/web'
 
-import { objectFromEntries } from '../util'
+import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {

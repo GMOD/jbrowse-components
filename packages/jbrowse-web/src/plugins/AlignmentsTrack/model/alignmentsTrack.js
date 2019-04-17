@@ -6,9 +6,9 @@ import BlockBasedTrackComponent from '../../LinearGenomeView/components/BlockBas
 
 import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
-import CompositeMap from '../../../util/compositeMap'
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import TrackControls from '../components/TrackControls'
-import { getContainingView } from '../../../util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 // using a map because it preserves order
 const rendererTypes = new Map([

@@ -1,4 +1,4 @@
-import { assembleLocString } from '../../../util'
+import { assembleLocString } from '@gmod/jbrowse-core/util'
 
 export function calculateBlocksReversed(self) {
   return calculateBlocksForward(self).map(fwdBlock => {

@@ -1,5 +1,5 @@
-import { intersection2 } from '../../../util/range'
-import { assembleLocString } from '../../../util'
+import { intersection2 } from '@gmod/jbrowse-core/util/range'
+import { assembleLocString } from '@gmod/jbrowse-core/util'
 
 /**
  * returns an array of 'dynamic blocks', which are blocks representing only the regions that

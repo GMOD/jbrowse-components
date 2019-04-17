@@ -1,6 +1,6 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 
-import { openLocation } from '../../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import IndexedFasta from './IndexedFastaAdapter'
 
 export default class BgzipFastaAdapter extends IndexedFasta {

@@ -1,9 +1,9 @@
 import { TwoBitFile } from '@gmod/twobit'
 
-import { openLocation } from '../../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import BaseAdapter from '../../BaseAdapter'
-import SimpleFeature from '../../util/simpleFeature'
-import { ObservableCreate } from '../../util/rxjs'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames', 'getRegions']

@@ -23,7 +23,7 @@ export default class SimpleFeature {
     this.uniqueId = String(this.uniqueId)
 
     if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
-      throw new Error(`invalid feature data`)
+      throw new Error('invalid feature data')
     }
 
     // inflate any subfeatures that are not already feature objects

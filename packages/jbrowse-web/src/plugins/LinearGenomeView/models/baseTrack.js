@@ -8,7 +8,7 @@ import {
 import { ElementId } from '../../../mst-types'
 
 import TrackControls from '../components/TrackControls'
-import { getContainingView } from '../../../util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',

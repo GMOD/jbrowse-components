@@ -4,10 +4,10 @@ import ReactPropTypes from 'prop-types'
 
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
 import { readConfObject } from '../../../configuration'
-import { objectFromEntries } from '../../../util'
+import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import aminoAcids from '../aminoAcids'
-import { featuresConsensusSequence, contrastingTextColor } from '../util'
-import SimpleFeature from '../../../util/simpleFeature'
+import { featuresConsensusSequence, contrastingTextColor } from '@gmod/jbrowse-core/util'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import nucleotides from '../nucleotides'
 
 function Sequence({

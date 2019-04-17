@@ -2,7 +2,8 @@ import { objectFromEntries } from '../index'
 
 export default class PrecomputedLayout {
   constructor({ rectangles, totalHeight }) {
-    this.rectangles = new Map(Object.entries(rectangles)) // of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
+    this.rectangles = new Map(Object.entries(rectangles))
+    // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
   }
 

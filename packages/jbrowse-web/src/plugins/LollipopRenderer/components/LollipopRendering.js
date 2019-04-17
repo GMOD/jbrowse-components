@@ -7,7 +7,7 @@ import { PropTypes as CommonPropTypes } from '../../../mst-types'
 
 import Lollipop from './Lollipop'
 import Stick from './Stick'
-import { bpToPx } from '../../../util'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '../../../configuration'
 
 const styles = (/* theme */) => ({})

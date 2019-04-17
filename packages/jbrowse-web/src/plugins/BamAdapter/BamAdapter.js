@@ -1,10 +1,10 @@
 import { BamFile } from '@gmod/bam'
 
-import { openLocation } from '../../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import BaseAdapter from '../../BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { ObservableCreate } from '../../util/rxjs'
-import { checkAbortSignal } from '../../util'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 export default class BamAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']

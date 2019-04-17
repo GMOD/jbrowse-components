@@ -5,7 +5,7 @@ import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 
 import { isConfigurationModel } from './configuration/configurationSchema'
 import RpcManager from './rpc/RpcManager'
-import { openLocation } from './util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import AssemblyManager from './managers/AssemblyManager'
 
 export default (pluginManager, workerManager) => {

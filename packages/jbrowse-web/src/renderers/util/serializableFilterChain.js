@@ -1,4 +1,4 @@
-import { stringToFunction } from '../../util/functionStrings'
+import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 
 export default class SerializableFilterChain {
   constructor({ filters = [] }) {

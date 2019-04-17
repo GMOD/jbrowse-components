@@ -4,6 +4,11 @@ if (!Object.fromEntries) {
   fromEntries.shim()
 }
 
+export const inDevelopment = typeof process === 'object'
+  && process.env
+  && process.env.NODE_ENV === 'development'
+export const inProduction = !inDevelopment
+
 /**
  * Assemble a "locstring" from a location, like "ctgA:20-30".
  * The locstring uses 1-based coordinates.
@@ -38,7 +43,8 @@ function roundToNearestPointOne(num) {
  * @param {number} bp
  * @param {Region} region
  * @param {number} bpPerPx
- * @param {boolean} [flipped] whether the current region is displayed flipped horizontally.  default false.
+ * @param {boolean} [flipped] whether the current region
+ *  is displayed flipped horizontally.  default false.
  */
 export function bpToPx(bp, region, bpPerPx, flipped = false) {
   if (flipped) {
@@ -85,9 +91,7 @@ export function checkAbortSignal(signal) {
   }
 
   if (signal.aborted) {
-    if (typeof DOMException !== 'undefined')
-      throw new DOMException('aborted', 'AbortError')
-    else {
+    if (typeof DOMException !== 'undefined') { throw new DOMException('aborted', 'AbortError') } else {
       const e = new Error('aborted')
       e.code = 'ERR_ABORTED'
       throw e
@@ -103,19 +107,12 @@ export function checkAbortSignal(signal) {
 export function isAbortException(exception) {
   return (
     // DOMException
-    exception.name === 'AbortError' ||
+    exception.name === 'AbortError'
     // standard-ish non-DOM abort exception
-    exception.code === 'ERR_ABORTED' ||
+    || exception.code === 'ERR_ABORTED'
     // stringified DOMException
-    exception.message === 'AbortError: aborted' ||
+    || exception.message === 'AbortError: aborted'
     // stringified standard-ish exception
-    exception.message === 'Error: aborted'
+    || exception.message === 'Error: aborted'
   )
 }
-
-export const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-
-export const inProduction = !inDevelopment

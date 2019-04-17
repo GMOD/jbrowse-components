@@ -4,7 +4,7 @@ import { ConfigurationReference } from '../../configuration'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
-import { getContainingView } from '../../util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export default (pluginManager, configSchema, trackType) =>
   types.compose(

@@ -6,7 +6,7 @@ import './PileupRendering.scss'
 import PrerenderedCanvas from './PrerenderedCanvas'
 
 import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { bpToPx } from '../../../util'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 
 const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,

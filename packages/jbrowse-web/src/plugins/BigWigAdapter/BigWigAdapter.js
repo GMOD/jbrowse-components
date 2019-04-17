@@ -1,9 +1,9 @@
 import { BigWig } from '@gmod/bbi'
 
 import BaseAdapter from '../../BaseAdapter'
-import { openLocation } from '../../util/io'
-import SimpleFeature from '../../util/simpleFeature'
-import { ObservableCreate } from '../../util/rxjs'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
 export default class BigWigAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']

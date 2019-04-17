@@ -1,9 +1,9 @@
-import { freeAdapterResources, getAdapter } from './util/dataAdapterCache'
+import { freeAdapterResources, getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import {
   isRemoteAbortSignal,
   deserializeAbortSignal,
 } from './rpc/remoteAbortSignals'
-import { checkAbortSignal } from './util'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 export async function getRegions(
   pluginManager,

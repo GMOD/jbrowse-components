@@ -1,5 +1,5 @@
-import { ObservableCreate } from './util/rxjs'
-import { checkAbortSignal } from './util'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must

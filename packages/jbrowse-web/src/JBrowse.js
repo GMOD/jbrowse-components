@@ -14,7 +14,7 @@ import PluginManager from './PluginManager'
 import RootModelFactory from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
-import { openLocation } from './util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 import WorkerManager from './WorkerManager'
 

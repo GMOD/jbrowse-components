@@ -209,7 +209,7 @@ module.exports = {
     // https://github.com/facebook/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
-    extensions: ['.mjs', '.web.js', '.js', '.json', '.web.jsx', '.jsx'],
+    extensions: ['.mjs', '.web.js', '.js', '.ts', '.tsx', '.json', '.web.jsx', '.jsx'],
     alias: {
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
@@ -313,13 +313,8 @@ module.exports = {
           {
             test: /\.(js|mjs|jsx)$/,
             include: paths.appSrc,
-
             loader: require.resolve('babel-loader'),
             options: {
-              customize: require.resolve(
-                'babel-preset-react-app/webpack-overrides'
-              ),
-
               plugins: [
                 [
                   require.resolve('babel-plugin-named-asset-import'),
@@ -341,12 +336,10 @@ module.exports = {
           // Process any JS outside of the app with Babel.
           // Unlike the application JS, we only compile the standard ES features.
           {
-            test: /\.(js|mjs)$/,
+            test: /\.(js|ts|mjs)$/,
             exclude: /@babel(?:\/|\\{1,2})runtime/,
             loader: require.resolve('babel-loader'),
             options: {
-              babelrc: false,
-              configFile: false,
               compact: false,
               presets: [
                 [

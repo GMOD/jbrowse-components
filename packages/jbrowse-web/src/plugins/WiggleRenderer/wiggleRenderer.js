@@ -3,12 +3,12 @@ import React from 'react'
 import {
   createCanvas,
   createImageBitmap,
-} from '../../util/offscreenCanvasPonyfill'
+} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 
 import WiggleRendering from './components/WiggleRendering'
 
 import { readConfObject } from '../../configuration'
-import { bpToPx, iterMap } from '../../util'
+import { bpToPx, iterMap } from '@gmod/jbrowse-core/util'
 
 import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'

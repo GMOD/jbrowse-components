@@ -7,7 +7,7 @@ import {
 
 import FilteringTrackComponent from './components/FilteringTrack'
 import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
-import { getContainingView } from '../../util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 function makeFilters(trackModel) {
   const filters = []

@@ -1,7 +1,7 @@
 import React from 'react'
 import ShallowRenderer from 'react-test-renderer/shallow'
 import PileupRendering from './PileupRendering'
-import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
+import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 
 // these tests do very little, let's try to expand them at some point
 test('one', () => {

@@ -1,7 +1,7 @@
 import { types, getRoot } from 'mobx-state-tree'
 import { FileLocation } from '../mst-types'
-import { stringToFunction, functionRegexp } from '../util/functionStrings'
-import { inDevelopment } from '../util'
+import { stringToFunction, functionRegexp } from '@gmod/jbrowse-core/util/functionStrings'
+import { inDevelopment } from '@gmod/jbrowse-core/util'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string

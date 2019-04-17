@@ -1,5 +1,5 @@
 import { readConfObject } from '../../configuration'
-import { doesIntersect2 } from '../../util/range'
+import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 
 export class FloatingLayout {
   constructor({ width }) {

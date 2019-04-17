@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
-import { assembleLocString } from './util'
+import { assembleLocString } from '@gmod/jbrowse-core/util'
 
 export const ElementId = types.optional(types.identifier, shortid.generate)
 
