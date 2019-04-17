@@ -7,10 +7,6 @@ import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
 import { readConfObject, getConf, getConfs } from '../../../configuration'
 import { getScale } from '../../WiggleRenderer/util'
 
-function pickN(a, n) {
-  const p = Math.floor(a.length / n) || 1
-  return a.slice(0, p * n).filter((_, i) => i % p === 0)
-}
 function makeFilterFunc(howMany) {
   return function filterFunc(elt, idx, arr) {
     return (
@@ -35,8 +31,7 @@ function WiggleTrackComponent(props) {
     const opts = { minScore, maxScore, inverted }
     const scale = getScale(scaleType, [min, max], [height, 0], opts)
     const axisProps = axisPropsFromTickScale(scale, 5)
-    const values = axisProps.values.filter(makeFilterFunc(3))
-    console.log(values)
+    // const values = axisProps.values.filter(makeFilterFunc(3))
     return (
       <div
         style={{
@@ -50,12 +45,7 @@ function WiggleTrackComponent(props) {
         }}
       >
         <svg style={{ height }}>
-          <Axis
-            {...axisProps}
-            values={values}
-            format={n => n}
-            style={{ orient: RIGHT }}
-          />
+          <Axis {...axisProps} format={n => n} style={{ orient: RIGHT }} />
         </svg>
       </div>
     )
@@ -63,13 +53,10 @@ function WiggleTrackComponent(props) {
 
   const needsScalebar = getRendererConf(model, 'renderType') === 'xyplot'
 
-  // {needsScalebar ? getYScaleBar(model) : null}
   return (
     <Track {...props}>
       <TrackBlocks {...props} blockState={model.blockState} />
-      <div style={{ position: 'relative', height }}>
-        {ready && needsScalebar ? getYScaleBar(model) : null}
-      </div>
+      {ready && needsScalebar ? getYScaleBar(model) : null}
     </Track>
   )
 }

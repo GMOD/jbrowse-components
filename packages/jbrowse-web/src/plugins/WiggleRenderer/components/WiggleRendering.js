@@ -58,12 +58,12 @@ class WiggleRendering extends Component {
         >
           <PrerenderedCanvas {...this.props} width={width} />
           {feature ? (
-            <>
+            <div style={{ pointerEvents: 'none' }}>
               <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
                 {parseFloat(feature.get('score').toPrecision(6))}
               </div>
               <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
-            </>
+            </div>
           ) : null}
         </div>
       </>
