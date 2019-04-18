@@ -239,7 +239,9 @@ function ImportConfiguration(props) {
             <ExpansionPanel style={{ marginTop: 4 }}>
               <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
                 <Typography color="error" align="center">
-                  Import error: File does not appear to be a valid configuration
+                  {acceptedFilesParsed.length === 1
+                    ? 'Import error: File does not appear to be a valid configuration'
+                    : 'Import error: One of the files is likely an invalid configuration. Try importing them one at a time.'}
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails>
