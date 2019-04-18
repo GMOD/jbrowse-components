@@ -3,10 +3,11 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -62,6 +63,9 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing.unit * 4,
     textAlign: 'center',
   },
+  listItem: {
+    padding: `0 ${theme.spacing.unit * 4}px`,
+  },
 }))
 
 function ImportConfiguration(props) {
@@ -69,15 +73,10 @@ function ImportConfiguration(props) {
   const [acceptedFilesParsed, setAcceptedFilesParsed] = useState([])
   const {
     acceptedFiles,
-    rejectedFiles,
     getRootProps,
     getInputProps,
     isDragActive,
   } = useDropzone({
-    accept: [
-      'application/json',
-      // 'application/x-yaml'
-    ],
     onDrop: () => setErrorMessage(''),
   })
   useEffect(
@@ -94,29 +93,39 @@ function ImportConfiguration(props) {
   async function getConfigs() {
     const newConfigs = []
     for (const file of acceptedFiles) {
-      const fileHandle = openLocation({ blob: file })
-      let configContents
       let config
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        configContents = await fileHandle.readFile('utf8')
-      } catch (error) {
-        console.error(error)
+      if (
+        !['application/json' /* , 'application/x-yaml' */].includes(file.type)
+      )
+        config = { error: `File is not in JSON format: ${file.path}` }
+      else if (file.size > 512 * 1024 ** 2)
         config = {
-          error: `Problem opening file ${file.path}: ${error}`,
+          error: `File is too large (${file.size} bytes, max of 512 MiB): ${
+            file.path
+          }`,
         }
-      }
-      if (configContents)
+      else {
+        const fileHandle = openLocation({ blob: file })
+        let configContents
         try {
-          config = JSON.parse(configContents)
+          // eslint-disable-next-line no-await-in-loop
+          configContents = await fileHandle.readFile('utf8')
         } catch (error) {
           console.error(error)
-          config = { error: `Error parsing ${file.path}: ${error}` }
+          config = { error: `Problem opening file ${file.path}: ${error}` }
         }
-      if (!config.error) {
-        if (!config.defaultSession) config.defaultSession = {}
-        if (!config.defaultSession.sessionName)
-          config.defaultSession.sessionName = `Imported Config ${file.path}`
+        if (configContents)
+          try {
+            config = JSON.parse(configContents)
+          } catch (error) {
+            console.error(error)
+            config = { error: `Error parsing ${file.path}: ${error}` }
+          }
+        if (!config.error) {
+          if (!config.defaultSession) config.defaultSession = {}
+          if (!config.defaultSession.sessionName)
+            config.defaultSession.sessionName = `Imported Config ${file.path}`
+        }
       }
       newConfigs.push(config)
     }
@@ -178,7 +187,9 @@ function ImportConfiguration(props) {
                   <Icon>{file.config.error ? 'error' : 'check_circle'}</Icon>
                 </ListItemIcon>
                 {file.config.error ? (
-                  <Typography color="error">{file.config.error}</Typography>
+                  <Typography color="error" className={classes.listItem}>
+                    {file.config.error}
+                  </Typography>
                 ) : (
                   <TextField
                     value={file.config.defaultSession.sessionName}
@@ -187,8 +198,20 @@ function ImportConfiguration(props) {
                     onChange={event => {
                       updateConfigName(event.target.value, idx)
                     }}
+                    className={classes.listItem}
                   />
                 )}
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={() => {
+                      acceptedFilesParsed.splice(idx, 1)
+                      if (acceptedFilesParsed.length === 0) setErrorMessage('')
+                      setAcceptedFilesParsed(acceptedFilesParsed.map(e => e))
+                    }}
+                  >
+                    <Icon>delete</Icon>
+                  </IconButton>
+                </ListItemSecondaryAction>
               </ListItem>
             ))}
           </List>
@@ -204,27 +227,6 @@ function ImportConfiguration(props) {
             Import
           </Button>
         </>
-      ) : null}
-      {rejectedFiles.length ? (
-        <div className={classes.rejectedFiles}>
-          <Typography color="error">
-            Warning: some files were not JSON{/* or YAML */} and will not be
-            imported
-          </Typography>
-          <List>
-            {rejectedFiles.map(file => (
-              <ListItem key={file.path}>
-                <ListItemIcon>
-                  <Icon>error</Icon>
-                </ListItemIcon>
-                <ListItemText
-                  primary={file.path}
-                  secondary={`${file.lastModifiedDate}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </div>
       ) : null}
       {errorMessage ? (
         <>
