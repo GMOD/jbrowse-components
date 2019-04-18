@@ -61,7 +61,10 @@ export default class BigWigAdapter extends BaseAdapter {
   // todo: add caching
   // todo: incorporate summary blocks
   async getRegionStats({ refName, start, end }) {
+    console.time('getf')
     const feats = await this.bigwig.getFeatures(refName, start, end)
+    console.timeEnd('getf')
+    console.log(refName, start, end)
     const blank = blankStats(end - start)
     if (!feats.length) {
       blank.scoreMax = 0
@@ -82,7 +85,7 @@ export default class BigWigAdapter extends BaseAdapter {
   }
 
   // todo: add caching
-  async getLocalStats(regions = []) {
+  async getMultiRegionStats(regions = []) {
     if (!regions.length) return undefined
     const ret = await Promise.all(regions.map(r => this.getRegionStats(r)))
     const s = ret.reduce((a, b) => {
@@ -107,14 +110,9 @@ export default class BigWigAdapter extends BaseAdapter {
 
   getFeatures({ /* assembly, */ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
-      const ob2 = await this.bigwig.getFeatureStream(
-        refName,
-        start - 1000, // todo;used to fix across block boundaries for line type
-        end + 1000,
-        {
-          signal,
-        },
-      )
+      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
+        signal,
+      })
       ob2.subscribe(
         chunk => {
           chunk.forEach(record => {

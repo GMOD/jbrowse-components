@@ -27,12 +27,10 @@ test('several features', async () => {
       max: 100,
     },
     bpPerPx: 3,
-    scaling: 1,
+    scaleType: 'linear',
+    highResolutionScaling: 1,
     horizontallyFlipped: false,
     height: 100,
-    config: {
-      scaleType: 'linear',
-    },
   })
 
   expect(result).toMatchSnapshot({
@@ -55,13 +53,11 @@ test('inverted mode and horizontally flipped', async () => {
       max: 100,
     },
     bpPerPx: 3,
-    scaling: 1,
+    highResolutionScaling: 1,
+    inverted: true,
+    scaleType: 'linear',
     horizontallyFlipped: true,
     height: 100,
-    config: {
-      inverted: true,
-      scaleType: 'linear',
-    },
   })
 
   expect(result).toMatchSnapshot({

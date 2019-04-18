@@ -14,17 +14,17 @@ import ServerSideRenderer from '../../renderers/serverSideRenderer'
 class WiggleRenderer extends ServerSideRenderer {
   async makeImageData({
     features,
-    config,
     region,
     bpPerPx,
     minScore,
     maxScore,
-    highResolutionScaling,
-    scaleType,
-    inverted,
     height,
-    horizontallyFlipped,
     stats,
+    config = {},
+    highResolutionScaling = 1,
+    scaleType = 'linear',
+    inverted = false,
+    horizontallyFlipped = false,
   }) {
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
@@ -55,12 +55,14 @@ class WiggleRenderer extends ServerSideRenderer {
       'highlightColor',
     ])
     const { min, max } = stats
+    console.log(scaleType, min, max)
     const scale = getScale(scaleType, [min, max], [0, height], {
       minScore,
       maxScore,
     })
     const originY = getOrigin(scaleType)
     const [niceMin, niceMax] = scale.domain()
+    console.log(niceMin, niceMax)
     const toY = rawscore => height - scale(rawscore)
     if (highResolutionScaling) {
       ctx.scale(highResolutionScaling, highResolutionScaling)

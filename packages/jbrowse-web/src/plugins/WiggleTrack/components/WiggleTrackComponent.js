@@ -24,7 +24,7 @@ function WiggleTrackComponent(props) {
     readConfObject(model.configuration.renderer, slot)
 
   const scaleType = getConf(model, 'scaleType')
-  const inverted = getRendererConf(model, 'inverted')
+  const inverted = getConf(model, 'inverted')
   const getYScaleBar = () => {
     const { min, max } = stats
     const [maxScore, minScore] = getConfs(model, ['maxScore', 'minScore'])

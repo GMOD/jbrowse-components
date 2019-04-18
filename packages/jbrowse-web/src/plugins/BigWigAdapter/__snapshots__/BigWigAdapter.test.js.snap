@@ -65,6 +65,109 @@ Array [
 ]
 `;
 
+exports[`adapter can fetch features from volvox.bw adapter can fetch stats from volvox.bw 1`] = `
+Object {
+  "basesCovered": 49984,
+  "scoreMax": 38,
+  "scoreMin": 1,
+  "scoreSum": 959592,
+  "scoreSumSquares": 19461382,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get local stats 1`] = `
+Object {
+  "basesCovered": 30100,
+  "featureCount": 30001,
+  "featureDensity": 0.9967109634551495,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 0,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get region stats 1`] = `
+Object {
+  "basesCovered": 30000,
+  "featureCount": 30001,
+  "featureDensity": 1.0000333333333333,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw test basic aspects of getfeatures 1`] = `
+Array [
+  Object {
+    "end": 1003,
+    "score": 18,
+    "start": 1002,
+    "uniqueId": "1003",
+  },
+  Object {
+    "end": 1004,
+    "score": 18,
+    "start": 1003,
+    "uniqueId": "1004",
+  },
+  Object {
+    "end": 1005,
+    "score": 18,
+    "start": 1004,
+    "uniqueId": "1005",
+  },
+  Object {
+    "end": 1006,
+    "score": 19,
+    "start": 1005,
+    "uniqueId": "1006",
+  },
+  Object {
+    "end": 1007,
+    "score": 20,
+    "start": 1006,
+    "uniqueId": "1007",
+  },
+  Object {
+    "end": 1008,
+    "score": 20,
+    "start": 1007,
+    "uniqueId": "1008",
+  },
+  Object {
+    "end": 1009,
+    "score": 20,
+    "start": 1008,
+    "uniqueId": "1009",
+  },
+  Object {
+    "end": 1010,
+    "score": 20,
+    "start": 1009,
+    "uniqueId": "1010",
+  },
+  Object {
+    "end": 1011,
+    "score": 20,
+    "start": 1010,
+    "uniqueId": "1011",
+  },
+  Object {
+    "end": 1012,
+    "score": 19,
+    "start": 1011,
+    "uniqueId": "1012",
+  },
+]
+`;
+
 exports[`adapter can fetch stats from volvox.bw 1`] = `
 Object {
   "basesCovered": 49984,
