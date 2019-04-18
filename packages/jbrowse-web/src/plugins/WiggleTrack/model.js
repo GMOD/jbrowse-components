@@ -28,9 +28,8 @@ export default (pluginManager, configSchema) =>
               } else if (autoscaleType === 'local') {
                 const regions = getContainingView(self).dynamicBlocks
                 if (!regions.length) return
-                stats = self.adapter.getLocalStats(regions)
+                stats = self.adapter.getMultiRegionStats(regions)
               }
-              self.setLoading()
               stats.then(s => self.setStats(s)).catch(e => self.setError(e))
             },
             { delay: 1000 },
@@ -39,8 +38,8 @@ export default (pluginManager, configSchema) =>
           addDisposer(self, getYAxisScale)
         },
         setStats(s) {
-          const { scoreMin: min, scoreMax: max, scoreMean: mean } = s
-          self.stats = { min, max, mean }
+          console.log('got stats', s)
+          self.stats.setStats(s)
           self.ready = true
         },
       }))
@@ -63,6 +62,20 @@ export default (pluginManager, configSchema) =>
       .volatile(() => ({
         reactComponent: WiggleTrackComponent,
         rendererTypeName: 'WiggleRenderer', // todo is this needed?
-        stats: types.frozen(),
+        ready: false,
+        stats: types
+          .model({
+            min: 0,
+            max: 0,
+            mean: 0,
+          })
+          .actions(self => ({
+            setStats(s) {
+              self.min = s.scoreMin
+              self.max = s.scoreMax
+              self.mean = s.scoreMean
+            },
+          }))
+          .create(),
       })),
   )

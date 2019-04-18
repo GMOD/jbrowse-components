@@ -61,10 +61,7 @@ export default class BigWigAdapter extends BaseAdapter {
   // todo: add caching
   // todo: incorporate summary blocks
   async getRegionStats({ refName, start, end }) {
-    console.time('getf')
     const feats = await this.bigwig.getFeatures(refName, start, end)
-    console.timeEnd('getf')
-    console.log(refName, start, end)
     const blank = blankStats(end - start)
     if (!feats.length) {
       blank.scoreMax = 0

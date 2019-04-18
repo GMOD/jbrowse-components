@@ -94,6 +94,7 @@ export default types.compose(
         )
       },
       setError(error) {
+        console.error(error)
         self.blockState.forEach(value => {
           value.setError(error)
         })
