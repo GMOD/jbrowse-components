@@ -38,7 +38,6 @@ export default (pluginManager, configSchema) =>
           addDisposer(self, getYAxisScale)
         },
         setStats(s) {
-          console.log('got stats', s)
           self.stats.setStats(s)
           self.ready = true
         },

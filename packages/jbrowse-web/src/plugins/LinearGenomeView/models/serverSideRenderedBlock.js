@@ -47,11 +47,12 @@ function renderBlockData(self) {
 async function renderBlockEffect(self, props, allowRefetch = true) {
   const { rendererType, renderProps, rpcManager, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
-  if (renderProps.notReady) return
   if (!isAlive(self)) return
   if (self.renderInProgress) self.renderInProgress.abort()
   const aborter = new AbortController()
   self.setLoading(aborter)
+  if (renderProps.notReady) return
+
   try {
     renderArgs.signal = aborter.signal
     // const callId = [
@@ -116,11 +117,11 @@ export default types
       )
       addDisposer(self, renderDisposer)
     },
-    setLoading(abortController, loadingMessage = '') {
+    setLoading(abortController) {
       if (self.renderInProgress && !self.renderInProgress.signal.aborted)
         self.renderInProgress.abort()
       self.filled = false
-      self.html = loadingMessage
+      self.html = ''
       self.data = undefined
       self.error = undefined
       self.renderInProgress = abortController
