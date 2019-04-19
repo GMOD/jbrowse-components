@@ -49,25 +49,15 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: add caching
   // todo: incorporate summary blocks
-  async getRegionStats({ refName, start, end }, abortSignal) {
-    const feats = await this.bigwig.getFeatures(refName, start, end, {
-      signal: abortSignal,
-    })
+  async getRegionStats({ refName, start, end }, opts) {
+    const feats = await this.bigwig.getFeatures(refName, start, end, opts)
+    const scores = feats.map(s => s.score)
 
-    const scoreMax = feats.reduce(
-      (acc, curr) => Math.max(acc, curr.score),
-      -Infinity,
-    )
-    const scoreMin = feats.reduce(
-      (acc, curr) => Math.min(acc, curr.score),
-      Infinity,
-    )
-    const scoreSum = feats.reduce((acc, curr) => curr.score + acc, 0)
-    const scoreSumSquares = feats.reduce((acc, curr) => {
-      const s = curr.score
-      return s * s + acc
-    }, 0)
-    const featureCount = feats.length
+    const scoreMax = Math.max(...scores)
+    const scoreMin = Math.min(...scores)
+    const scoreSum = scores.reduce((a, b) => a + b, 0)
+    const scoreSumSquares = scores.reduce((a, b) => a + b * b, 0)
+    const featureCount = scores.length
     const basesCovered = end - start
 
     return rectifyStats({
@@ -87,21 +77,18 @@ export default class BigWigAdapter extends BaseAdapter {
       regions.map(r => this.getRegionStats(r, abortSignal)),
     )
 
-    const scoreMax = feats.reduce(
-      (acc, curr) => Math.max(acc, curr.scoreMax),
-      -Infinity,
-    )
-    const scoreMin = feats.reduce(
-      (acc, curr) => Math.min(acc, curr.scoreMin),
-      Infinity,
-    )
-    const scoreSum = feats.reduce((acc, curr) => curr.scoreSum + acc, 0)
-    const scoreSumSquares = feats.reduce(
-      (acc, curr) => curr.scoreSumSquares + acc,
-      0,
-    )
-    const featureCount = feats.reduce((acc, curr) => curr.featureCount + acc, 0)
-    const basesCovered = feats.reduce((acc, curr) => curr.basesCovered + acc, 0)
+    const scoreMax = Math.max(...feats.map(s => s.scoreMax))
+    const scoreMin = Math.min(...feats.map(s => s.scoreMin))
+    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
+    const scoreSumSquares = feats
+      .map(s => s.scoreSumSquares)
+      .reduce((a, b) => a + b, 0)
+    const featureCount = feats
+      .map(s => s.featureCount)
+      .reduce((a, b) => a + b, 0)
+    const basesCovered = feats
+      .map(s => s.basesCovered)
+      .reduce((a, b) => a + b, 0)
 
     return rectifyStats({
       scoreMin,
@@ -119,11 +106,9 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures({ /* assembly, */ refName, start, end }, signal) {
+  getFeatures({ /* assembly, */ refName, start, end }, opts = {}) {
     return ObservableCreate(async observer => {
-      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
-        signal,
-      })
+      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, opts)
       ob2.subscribe(
         chunk => {
           chunk.forEach(record => {
