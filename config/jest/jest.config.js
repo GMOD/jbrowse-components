@@ -14,7 +14,7 @@ module.exports = {
     '^.+\\.module\\.(css|sass|scss)$',
   ],
   testMatch: [
-    '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
-    '<rootDir>/src/**/?(*.)(spec|test).{js,jsx}',
+    '<rootDir>/**/__tests__/**/*.{js,jsx}',
+    '<rootDir>/**/*.(spec|test).{js,jsx}',
   ],
 }

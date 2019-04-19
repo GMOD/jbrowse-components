@@ -3,7 +3,7 @@ import blockBasedTrack from './models/blockBasedTrack'
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '../../configuration'
+} from '@gmod/jbrowse-core/configuration'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'

@@ -9,7 +9,10 @@ import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import MenuBarType from './pluggableElementTypes/MenuBarType'
 
 import { ConfigurationSchema } from './configuration'
-import rootConfig from './rootConfig'
+
+// TODO: remove this
+// eslint-disable-next-line monorepo/no-relative-import
+import rootConfig from '../jbrowse-web/src/rootConfig'
 
 // little helper class that keeps groups of callbacks that are
 // then run in a specified order by group
@@ -21,16 +24,14 @@ class PhasedScheduler {
   }
 
   add(phase, callback) {
-    if (!this.phaseOrder.includes(phase))
-      throw new Error(`unknown phase ${phase}`)
+    if (!this.phaseOrder.includes(phase)) { throw new Error(`unknown phase ${phase}`) }
     if (!this.phaseCallbacks[phase]) this.phaseCallbacks[phase] = []
     this.phaseCallbacks[phase].push(callback)
   }
 
   run() {
-    this.phaseOrder.forEach(phaseName => {
-      if (this.phaseCallbacks[phaseName])
-        this.phaseCallbacks[phaseName].forEach(callback => callback())
+    this.phaseOrder.forEach((phaseName) => {
+      if (this.phaseCallbacks[phaseName]) { this.phaseCallbacks[phaseName].forEach(callback => callback()) }
     })
   }
 }
@@ -80,7 +81,7 @@ export default class PluginManager {
     this.elementCreationSchedule.add('root', this.addRootConfig.bind(this))
 
     // add all the initial plugins
-    initialPlugins.forEach(plugin => {
+    initialPlugins.forEach((plugin) => {
       this.addPlugin(plugin)
     })
   }
@@ -90,10 +91,8 @@ export default class PluginManager {
   }
 
   addPlugin(plugin) {
-    if (this.configured)
-      throw new Error('JBrowse already configured, cannot add plugins')
-    if (this.plugins.includes(plugin))
-      throw new Error(`plugin already installed`)
+    if (this.configured) { throw new Error('JBrowse already configured, cannot add plugins') }
+    if (this.plugins.includes(plugin)) { throw new Error('plugin already installed') }
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -121,27 +120,27 @@ export default class PluginManager {
   }
 
   addElementType(groupName, creationCallback) {
-    if (typeof creationCallback !== 'function')
-      throw new Error('must provide a callback function')
+    if (typeof creationCallback !== 'function') { throw new Error('must provide a callback function') }
     const typeBaseClass = this.typeBaseClasses[groupName]
-    if (!typeBaseClass)
-      throw new Error(`unknown pluggable element type ${groupName}, cannot add`)
+    if (!typeBaseClass) { throw new Error(`unknown pluggable element type ${groupName}, cannot add`) }
     if (!this.elementTypes[groupName]) this.elementTypes[groupName] = {}
 
     this.elementCreationSchedule.add(groupName, () => {
       const element = creationCallback(this)
-      if (groupName === 'adapter' && !element.AdapterClass.capabilities.length)
+      if (groupName === 'adapter' && !element.AdapterClass.capabilities.length) {
         throw new Error(
           `Adapter ${
             element.AdapterClass.name
           } must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
         )
-      if (this.elementTypes[groupName][element.name])
+      }
+      if (this.elementTypes[groupName][element.name]) {
         throw new Error(
           `${groupName} ${
             element.name
           } already registered, cannot register it again`,
         )
+      }
 
       this.elementTypes[groupName][element.name] = element
     })

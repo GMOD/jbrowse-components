@@ -1,4 +1,4 @@
-import RenderWorker from './rpc.worker'
+import RenderWorker from '@gmod/jbrowse-core/rpc.worker'
 
 function registerRender() {
   const renderWorker = new RenderWorker()

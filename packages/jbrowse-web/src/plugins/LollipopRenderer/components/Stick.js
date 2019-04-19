@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 
 import { observer } from 'mobx-react'
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { readConfObject } from '../../../configuration'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 class Stick extends Component {
   static propTypes = {

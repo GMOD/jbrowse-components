@@ -1,6 +1,6 @@
 import Rpc from '@librpc/web'
 
-import { objectFromEntries } from '@gmod/jbrowse-core/util'
+import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {
@@ -49,14 +49,13 @@ export default class WebWorkerRpcDriver {
 
   getWorker(stateGroupName) {
     if (!this.workerAssignments[stateGroupName]) {
-      const workerAssignment =
-        (this.lastWorkerAssignment + 1) % this.workers.length
+      const workerAssignment = (this.lastWorkerAssignment + 1) % this.workers.length
       this.workerAssignments[stateGroupName] = workerAssignment
       this.lastWorkerAssignment = workerAssignment
     }
 
     const worker = this.workers[this.workerAssignments[stateGroupName]]
-    if (!worker) throw new Error(`no web workers registered for RPC`)
+    if (!worker) throw new Error('no web workers registered for RPC')
     return worker
   }
 

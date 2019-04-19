@@ -3,7 +3,7 @@ import { tap, filter, ignoreElements } from 'rxjs/operators'
 
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { iterMap, checkAbortSignal } from '@gmod/jbrowse-core/util'
-import RendererType from '../pluggableElementTypes/RendererType'
+import RendererType from '@gmod/jbrowse-core/pluggableElementTypes/RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
 export default class ServerSideRenderer extends RendererType {

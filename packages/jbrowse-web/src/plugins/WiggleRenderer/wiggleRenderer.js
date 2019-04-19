@@ -7,7 +7,7 @@ import {
 
 import WiggleRendering from './components/WiggleRendering'
 
-import { readConfObject } from '../../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { bpToPx, iterMap } from '@gmod/jbrowse-core/util'
 
 import ConfigSchema from './configSchema'

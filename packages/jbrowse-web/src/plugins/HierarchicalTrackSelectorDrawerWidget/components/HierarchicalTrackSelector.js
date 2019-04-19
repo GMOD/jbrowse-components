@@ -13,7 +13,7 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
-import { readConfObject } from '../../../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Contents from './Contents'
 
 const styles = theme => ({

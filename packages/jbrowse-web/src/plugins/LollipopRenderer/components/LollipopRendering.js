@@ -3,12 +3,12 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
 import { withStyles } from '@material-ui/core'
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 
 import Lollipop from './Lollipop'
 import Stick from './Stick'
 import { bpToPx } from '@gmod/jbrowse-core/util'
-import { readConfObject } from '../../../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 const styles = (/* theme */) => ({})
 

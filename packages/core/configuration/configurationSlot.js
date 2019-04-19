@@ -1,7 +1,7 @@
 import { types, getRoot } from 'mobx-state-tree'
+import { stringToFunction, functionRegexp } from '../util/functionStrings'
+import { inDevelopment } from '../util'
 import { FileLocation } from '../mst-types'
-import { stringToFunction, functionRegexp } from '@gmod/jbrowse-core/util/functionStrings'
-import { inDevelopment } from '@gmod/jbrowse-core/util'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
@@ -136,16 +136,19 @@ const FunctionStringType = types.refinement(
  */
 export default function ConfigSlot(
   slotName,
-  { description = '', model, type, defaultValue, functionSignature = [] },
+  {
+    description = '', model, type, defaultValue, functionSignature = [],
+  },
 ) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]
-  if (!model)
+  if (!model) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
+  }
 
-  if (defaultValue === undefined) throw new Error(`no 'defaultValue' provided`)
+  if (defaultValue === undefined) throw new Error('no \'defaultValue\' provided')
 
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
@@ -193,15 +196,14 @@ export default function ConfigSlot(
       },
     }))
     .preProcessSnapshot(
-      val =>
-        typeof val === 'object' && val.name === slotName
-          ? val
-          : {
-              name: slotName,
-              description,
-              type,
-              value: val,
-            },
+      val => (typeof val === 'object' && val.name === slotName
+        ? val
+        : {
+          name: slotName,
+          description,
+          type,
+          value: val,
+        }),
       // ({
       //   name: slotName,
       //   description,
@@ -209,9 +211,7 @@ export default function ConfigSlot(
       //   value: val,
       // }),
     )
-    .postProcessSnapshot(snap =>
-      snap.value !== defaultValue ? snap.value : undefined,
-    )
+    .postProcessSnapshot(snap => (snap.value !== defaultValue ? snap.value : undefined))
     .actions(self => ({
       set(newVal) {
         self.value = newVal
@@ -239,8 +239,7 @@ export default function ConfigSlot(
         // if it is still a callback (happens if the defaultValue is a callback),
         // then use the last-resort fallback default
         if (self.isCallback) {
-          if (!(type in fallbackDefaults))
-            throw new Error(`no fallbackDefault defined for type ${type}`)
+          if (!(type in fallbackDefaults)) { throw new Error(`no fallbackDefault defined for type ${type}`) }
           self.value = fallbackDefaults[type]
         }
       },

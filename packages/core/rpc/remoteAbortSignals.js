@@ -6,7 +6,8 @@ const abortSignalIds = new WeakMap() // map of abortsignal => numerical ID
 /**
  * assign an ID to the given abort signal and return a plain object representation
  * @param {AbortSignal} signal the signal to serialize
- * @param {function} callfunc function used to call a remote method, will be called like callfunc('signalAbort', signalId)
+ * @param {function} callfunc function used to call
+ *  a remote method, will be called like callfunc('signalAbort', signalId)
  */
 export function serializeAbortSignal(signal, callfunc) {
   if (!abortSignalIds.has(signal)) {

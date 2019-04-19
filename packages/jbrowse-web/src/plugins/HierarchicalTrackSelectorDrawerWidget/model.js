@@ -1,6 +1,6 @@
 import { getRoot, types } from 'mobx-state-tree'
-import { readConfObject } from '../../configuration'
-import { ElementId } from '../../mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 export function generateHierarchy(trackConfigurations) {
   const hierarchy = new Map()

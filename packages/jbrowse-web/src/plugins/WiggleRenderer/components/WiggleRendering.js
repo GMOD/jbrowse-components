@@ -5,7 +5,7 @@ import ReactPropTypes from 'prop-types'
 import './WiggleRendering.scss'
 import PrerenderedCanvas from './PrerenderedCanvas'
 
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 
 function WiggleRendering(props) {
   const { width } = props

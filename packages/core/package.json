@@ -34,12 +34,15 @@
     "genomics"
   ],
   "dependencies": {
+    "@librpc/web": "^1.1.0",
     "canvas": "^2.3.1",
     "generic-filehandle": "^1.0.8",
     "http-range-fetcher": "^1.1.0",
     "json-stable-stringify": "^1.0.1",
-    "mobx-state-tree": "^3.14.0",
+    "mobx": "^5.9.4",
+    "mobx-state-tree": "3.10.2",
     "object.fromentries": "^2.0.0",
+    "react": "^16.8.6",
     "rxjs": "^6.4.0",
     "tenacious-fetch": "^2.1.0",
     "util.promisify": "^1.0.0",

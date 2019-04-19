@@ -2,7 +2,7 @@ import { freeAdapterResources, getAdapter } from '@gmod/jbrowse-core/util/dataAd
 import {
   isRemoteAbortSignal,
   deserializeAbortSignal,
-} from './rpc/remoteAbortSignals'
+} from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 export async function getRegions(

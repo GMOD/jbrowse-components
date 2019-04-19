@@ -1,7 +1,7 @@
 import { withStyles } from '@material-ui/core/styles'
 import React, { Fragment } from 'react'
 import ReactPropTypes from 'prop-types'
-import { PropTypes } from '../../../mst-types'
+import { PropTypes } from '@gmod/jbrowse-core/mst-types'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major

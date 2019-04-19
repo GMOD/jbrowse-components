@@ -1,6 +1,6 @@
 import saveAs from 'file-saver'
 import { getRoot, types, getSnapshot } from 'mobx-state-tree'
-import { ElementId } from '../../mst-types'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 
 export const MenuItemModel = types

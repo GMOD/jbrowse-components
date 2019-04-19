@@ -7,9 +7,9 @@ import {
 } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
-import { getConf } from '../../../configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 
-import { Region } from '../../../mst-types'
+import { Region } from '@gmod/jbrowse-core/mst-types'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 import {

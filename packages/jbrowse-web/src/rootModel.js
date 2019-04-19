@@ -3,10 +3,12 @@ import 'fast-text-encoding'
 import { autorun } from 'mobx'
 import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 
-import { isConfigurationModel } from './configuration/configurationSchema'
-import RpcManager from './rpc/RpcManager'
+import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import AssemblyManager from './managers/AssemblyManager'
+
+import * as rpcFuncs from './render'
 
 export default (pluginManager, workerManager) => {
   const minWidth = 384
@@ -40,6 +42,9 @@ export default (pluginManager, workerManager) => {
       const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
         WebWorkerRpcDriver: {
           workers: workerManager.getWorkerGroup('rpc'),
+        },
+        MainThreadRpcDriver: {
+          rpcFuncs,
         },
       })
       const assemblyManager = new AssemblyManager(

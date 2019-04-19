@@ -1,13 +1,13 @@
 import modelFactory from './models'
 import ReactComponent from './components/LinearGenomeView'
 
-import Plugin from '../../Plugin'
-import ViewType from '../../pluggableElementTypes/ViewType'
+import Plugin from '@gmod/jbrowse-core/Plugin'
+import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 
 import configSchema from './models/configSchema'
 import BasicTrackFactory from './BasicTrack'
 import DynamicTrackFactory from './DynamicTrack'
-import TrackType from '../../pluggableElementTypes/TrackType'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager) {

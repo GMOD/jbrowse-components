@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '../../configuration'
+} from '@gmod/jbrowse-core/configuration'
 
 import FilteringTrackComponent from './components/FilteringTrack'
 import BasicTrackFactory from '../LinearGenomeView/BasicTrack'

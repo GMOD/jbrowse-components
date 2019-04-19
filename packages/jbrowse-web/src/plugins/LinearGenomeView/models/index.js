@@ -7,11 +7,11 @@ import {
   isStateTreeNode,
   types,
 } from 'mobx-state-tree'
-import { getConf, readConfObject } from '../../../configuration'
-import { ElementId, Region } from '../../../mst-types'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
-import PluginManager from '../../../PluginManager'
-import TrackType from '../../../pluggableElementTypes/TrackType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 
 import LinearGenomeViewConfigSchema from './configSchema'
 

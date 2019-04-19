@@ -1,6 +1,6 @@
 import { types, getRoot } from 'mobx-state-tree'
 
-import { ConfigurationReference, getConf } from '../../../configuration'
+import { ConfigurationReference, getConf } from '@gmod/jbrowse-core/configuration'
 
 import BlockBasedTrackComponent from '../../LinearGenomeView/components/BlockBasedTrack'
 

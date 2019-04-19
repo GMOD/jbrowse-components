@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ConfigurationSchema } from '../../configuration'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/baseTrack'
 
 export default pluginManager => {

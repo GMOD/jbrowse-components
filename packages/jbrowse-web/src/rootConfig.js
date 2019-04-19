@@ -1,6 +1,6 @@
 import { detach, getRoot, getType, types, flow } from 'mobx-state-tree'
-import { ConfigurationSchema, readConfObject } from './configuration'
-import RpcManager from './rpc/RpcManager'
+import { ConfigurationSchema, readConfObject } from '@gmod/jbrowse-core/configuration'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import {
   fetchGenomesFile,
   fetchHubFile,
@@ -70,8 +70,8 @@ export default function(pluginManager) {
 
       volatile: types.map(
         ConfigurationSchema('volatile', {
-          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-          assemblies: types.map(Assemblies),
+          tracks: types.maybe(types.array(pluginManager.pluggableConfigSchemaType('track'))),
+          assemblies: types.maybe(types.map(Assemblies)),
         }),
       ),
     },

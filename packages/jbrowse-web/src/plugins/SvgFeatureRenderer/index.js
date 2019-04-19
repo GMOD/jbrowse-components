@@ -1,4 +1,4 @@
-import Plugin from '../../Plugin'
+import Plugin from '@gmod/jbrowse-core/Plugin'
 
 import renderer from './svgFeatureRenderer'
 

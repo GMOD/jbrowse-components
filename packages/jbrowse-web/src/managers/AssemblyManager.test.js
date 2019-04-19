@@ -6,7 +6,6 @@ describe('Assembly Manager', () => {
 
   beforeAll(async () => {
     ;({ rootModel } = await createTestEnv({
-      rpc: { defaultDriver: 'MainThreadRpcDriver' },
       tracks: [
         {
           configId: 'testingId',

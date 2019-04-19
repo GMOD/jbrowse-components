@@ -2,11 +2,11 @@ import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { bpToPx } from '@gmod/jbrowse-core/util'
+
 import './PileupRendering.scss'
 import PrerenderedCanvas from './PrerenderedCanvas'
-
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { bpToPx } from '@gmod/jbrowse-core/util'
 
 const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,

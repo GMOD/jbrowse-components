@@ -4,8 +4,8 @@ import {
   ConfigurationSchema,
   ConfigurationReference,
   getConf,
-} from '../../../configuration'
-import { ElementId } from '../../../mst-types'
+} from '@gmod/jbrowse-core/configuration'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 import TrackControls from '../components/TrackControls'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'

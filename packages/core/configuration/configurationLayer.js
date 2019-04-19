@@ -10,10 +10,11 @@ import {
   isOptionalType,
 } from 'mobx-state-tree'
 
+import { inDevelopment } from '../util'
+import { stringToFunction } from '../util/functionStrings'
 import ConfigurationSlot from './configurationSlot'
-import { inDevelopment } from '@gmod/jbrowse-core/util'
-import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 import { isConfigurationSchemaType } from './configurationSchema'
+import { getSubType, getUnionSubTypes, getPropertyType } from '../util/mst-reflection'
 
 function ConfigurationLayerSlot(
   slotName,
@@ -23,9 +24,9 @@ function ConfigurationLayerSlot(
   let layerSlot = ConfigurationSlot(slotName, parentSlotDefinition)
   layerSlot = types
     .compose(
-      layerSlot.type,
+      getSubType(layerSlot),
       types.model({
-        value: types.maybe(parentSlotType.properties.value.type),
+        value: types.maybe(getSubType(getPropertyType(parentSlotType, 'value'))),
       }),
     )
     .views(self => ({
@@ -61,8 +62,7 @@ function ConfigurationLayerSlot(
  * @param {ConfigurationSchema} parentSchemaType
  */
 function ConfigurationLayer(parentSchemaType) {
-  if (!isConfigurationSchemaType(parentSchemaType))
-    throw new TypeError('must pass a ConfigurationSchema type')
+  if (!isConfigurationSchemaType(parentSchemaType)) { throw new TypeError('must pass a ConfigurationSchema type') }
   // iterate over the slots in the parent type and make layerSlots in this object for each of them
 
   const layerModelDefinition = {
@@ -74,39 +74,38 @@ function ConfigurationLayer(parentSchemaType) {
   const { /* modelName, options, */ definition } = schemaMetaData
   Object.entries(definition).forEach(([memberName, slotDefinition]) => {
     if (
-      typeof slotDefinition === 'string' ||
-      typeof slotDefinition === 'number'
+      typeof slotDefinition === 'string'
+      || typeof slotDefinition === 'number'
     ) {
       // this is a constant
       layerModelDefinition[memberName] = types.literal(slotDefinition)
       // throw new Error('fu')
     } else {
       let parentActualType = parentSchemaType
-      if (isOptionalType(parentSchemaType))
-        parentActualType = parentSchemaType.type
+      if (isOptionalType(parentSchemaType)) { parentActualType = getSubType(parentSchemaType) }
 
       if (!parentActualType.properties) debugger
 
-      let memberType = parentActualType.properties[memberName]
+      let memberType = getPropertyType(parentActualType, memberName)
 
       if (isUnionType(memberType)) {
         layerModelDefinition[memberName] = types.union(
-          ...memberType.types.map(t => ConfigurationLayer(t)),
+          ...getUnionSubTypes(memberType).map(t => ConfigurationLayer(t)),
         )
         return
       }
 
-      if (isOptionalType(memberType)) memberType = memberType.type
+      if (isOptionalType(memberType)) memberType = getSubType(memberType)
 
       if (isArrayType(memberType)) {
         // array of ConfigurationSchemas
         layerModelDefinition[memberName] = types.array(
-          ConfigurationLayer(memberType.subType),
+          ConfigurationLayer(getSubType(memberType)),
         )
       } else if (isMapType(memberType)) {
         // map of id -> ConfigurationSchema
         layerModelDefinition[memberName] = types.map(
-          ConfigurationLayer(memberType.subType),
+          ConfigurationLayer(getSubType(memberType)),
         )
       } else if (isConfigurationSchemaType(memberType)) {
         // single sub-schema
@@ -127,12 +126,13 @@ function ConfigurationLayer(parentSchemaType) {
     .model(layerModelDefinition)
     .views(self => ({
       get parent() {
-        if (self.parentConfigId)
+        if (self.parentConfigId) {
           return resolveIdentifier(
             parentSchemaType,
             getRoot(self),
             self.parentConfigId,
           )
+        }
         if (self.parentConfigPath) {
           return resolvePath(self, self.parentConfigPath)
         }
@@ -142,7 +142,7 @@ function ConfigurationLayer(parentSchemaType) {
         )
       },
     }))
-    .postProcessSnapshot(snap => {
+    .postProcessSnapshot((snap) => {
       if (!snap.parentConfigId) delete snap.parentConfigId
       if (!snap.parentConfigPath) delete snap.parentConfigPath
       return snap
