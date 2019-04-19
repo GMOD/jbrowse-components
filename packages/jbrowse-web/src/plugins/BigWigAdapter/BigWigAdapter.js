@@ -83,21 +83,34 @@ export default class BigWigAdapter extends BaseAdapter {
   // todo: add caching
   async getMultiRegionStats(regions = [], abortSignal) {
     if (!regions.length) return undefined
-    const ret = await Promise.all(
+    const feats = await Promise.all(
       regions.map(r => this.getRegionStats(r, abortSignal)),
     )
-    const s = ret.reduce((a, b) => {
-      return {
-        ...a,
-        scoreMax: Math.max(a.scoreMax, b.scoreMax),
-        scoreMin: Math.min(a.scoreMin, b.scoreMin),
-        scoreSum: a.scoreSum + b.scoreSum,
-        scoreSumSquares: a.scoreSumSquares + b.scoreSumSquares,
-        featureCount: a.featureCount + b.featureCount,
-        basesCovered: a.basesCovered + b.basesCovered,
-      }
+
+    const scoreMax = feats.reduce(
+      (acc, curr) => Math.max(acc, curr.scoreMax),
+      -Infinity,
+    )
+    const scoreMin = feats.reduce(
+      (acc, curr) => Math.min(acc, curr.scoreMin),
+      Infinity,
+    )
+    const scoreSum = feats.reduce((acc, curr) => curr.scoreSum + acc, 0)
+    const scoreSumSquares = feats.reduce(
+      (acc, curr) => curr.scoreSumSquares + acc,
+      0,
+    )
+    const featureCount = feats.reduce((acc, curr) => curr.featureCount + acc, 0)
+    const basesCovered = feats.reduce((acc, curr) => curr.basesCovered + acc, 0)
+
+    return rectifyStats({
+      scoreMin,
+      scoreMax,
+      featureCount,
+      basesCovered,
+      scoreSumSquares,
+      scoreSum,
     })
-    return rectifyStats(s)
   }
 
   /**

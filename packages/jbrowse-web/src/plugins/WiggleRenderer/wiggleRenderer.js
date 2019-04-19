@@ -26,6 +26,7 @@ class WiggleRenderer extends ServerSideRenderer {
     inverted = false,
     horizontallyFlipped = false,
   }) {
+    console.log('stats', stats)
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }

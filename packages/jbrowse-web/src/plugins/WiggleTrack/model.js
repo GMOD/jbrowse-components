@@ -34,9 +34,7 @@ export default (pluginManager, configSchema) =>
                   aborter,
                 )
               }
-              self.statsPromise
-                .then(s => self.setStats(s))
-                .catch(e => self.setError(e))
+              self.statsPromise.then(s => self.setStats(s))
             },
             { delay: 1000 },
           )
@@ -44,7 +42,7 @@ export default (pluginManager, configSchema) =>
           addDisposer(self, getYAxisScale)
         },
         setStats(s) {
-          self.stats = s
+          self.stats = { min: s.scoreMin, max: s.scoreMax }
           self.ready = true
         },
         setLoading(abortSignal) {
