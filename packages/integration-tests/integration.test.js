@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable global-require */
 const fs = require('fs')
 
@@ -12,6 +13,6 @@ test('Protein Widget built', () => {
 })
 
 test('can import JBrowse Generator', () => {
-  const generatorJbrowse = require('../packages/generator-jbrowse')
+  const generatorJbrowse = require('../generator-jbrowse')
   expect(typeof generatorJbrowse).toBe('object')
 })

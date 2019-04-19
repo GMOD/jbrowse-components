@@ -65,12 +65,10 @@ module.exports = class extends Generator {
 
   _writeHelloWorldMenuBar() {
     const pluginFiles = ['components/HelloWorld.js', 'index.js', 'model.js']
-    pluginFiles.forEach(pluginFile =>
-      this.fs.copy(
-        this.templatePath(path.join('HelloWorldMenuBar', pluginFile)),
-        this.destinationPath(path.join('HelloWorldMenuBar', pluginFile)),
-      ),
-    )
+    pluginFiles.forEach(pluginFile => this.fs.copy(
+      this.templatePath(path.join('HelloWorldMenuBar', pluginFile)),
+      this.destinationPath(path.join('HelloWorldMenuBar', pluginFile)),
+    ))
   }
 
   _writeHelloWorldMenuBarAndDrawerWidget() {
@@ -80,15 +78,13 @@ module.exports = class extends Generator {
       'index.js',
       'model.js',
     ]
-    pluginFiles.forEach(pluginFile =>
-      this.fs.copy(
-        this.templatePath(
-          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
-        ),
-        this.destinationPath(
-          path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
-        ),
+    pluginFiles.forEach(pluginFile => this.fs.copy(
+      this.templatePath(
+        path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
       ),
-    )
+      this.destinationPath(
+        path.join('HelloWorldMenuBarAndDrawerWidget', pluginFile),
+      ),
+    ))
   }
 }

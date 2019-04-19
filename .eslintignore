@@ -1,8 +1,9 @@
 **/coverage/**
 **/templates
-node_modules
+**/node_modules/**
 **/build/**
 **/dist/**
+**/umd/**
 # TODO: decide whether or not to bring these up to eslint standards
 packages/jbrowse-web/scripts/**
 packages/jbrowse-web/config/**
