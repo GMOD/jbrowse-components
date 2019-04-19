@@ -61,6 +61,7 @@ function App(props) {
     sessionNames,
     activeSession,
     setActiveSession,
+    addSessions,
     size,
   } = props
 
@@ -115,7 +116,11 @@ function App(props) {
               />
             }
           >
-            <LazyReactComponent model={activeDrawerWidget} />
+            <LazyReactComponent
+              model={activeDrawerWidget}
+              addSessions={addSessions}
+              setActiveSession={setActiveSession}
+            />
           </React.Suspense>
         </div>
       </Slide>
@@ -187,6 +192,7 @@ App.propTypes = {
   sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
   activeSession: ReactPropTypes.string.isRequired,
   setActiveSession: ReactPropTypes.func.isRequired,
+  addSessions: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

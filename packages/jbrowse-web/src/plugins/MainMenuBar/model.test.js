@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '../../configuration'
 
 jest.mock('file-saver')
 
-test('can download configuration', () => {
+test('can export configuration', () => {
   const rootSchema = types.model({
     configuration: ConfigurationSchema('Toaster', {
       foo: { type: 'number', defaultValue: 42 },
@@ -14,8 +14,8 @@ test('can download configuration', () => {
 
   const model = rootSchema.create({
     item: {
-      name: 'doonlood',
-      callback: 'downloadConfiguration',
+      name: 'export',
+      callback: 'exportConfiguration',
     },
     configuration: {
       foo: 99,
@@ -32,9 +32,9 @@ test('can push menus', () => {
     name: 'Admin',
     menuItems: [
       {
-        name: 'Download configuration',
-        icon: 'get_app',
-        callback: 'downloadConfiguration',
+        name: 'Export configuration',
+        icon: 'cloud_download',
+        callback: 'export',
       },
     ],
   })
@@ -49,9 +49,9 @@ test('can unshift menus', () => {
     name: 'Admin',
     menuItems: [
       {
-        name: 'Download configuration',
-        icon: 'get_app',
-        callback: 'downloadConfiguration',
+        name: 'Export configuration',
+        icon: 'cloud_download',
+        callback: 'exportConfiguration',
       },
     ],
   })

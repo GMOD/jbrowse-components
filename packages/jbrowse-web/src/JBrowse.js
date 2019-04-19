@@ -48,9 +48,10 @@ async function createRootModel(modelType, config) {
     }
   }
 
-  const {
-    defaultSession = { menuBars: [{ type: 'MainMenuBar' }] },
-  } = configSnapshot
+  let { defaultSession } = configSnapshot
+  if (!defaultSession) defaultSession = {}
+  if (!defaultSession.menuBars)
+    defaultSession.menuBars = [{ type: 'MainMenuBar' }]
   const {
     sessionName = `Unnamed Session ${shortid.generate()}`,
   } = defaultSession
@@ -104,12 +105,22 @@ function JBrowse(props) {
     window.resolveIdentifier = resolveIdentifier
   }
 
-  // async function addSession(config) {
-  //   const newSessions = sessions
-  //   const { sessionName, rootModel } = await createRootModel(modelType, config)
-  //   newSessions.set(sessionName, rootModel)
-  //   setSessions(newSessions)
-  // }
+  /**
+   *
+   * @param {Object[]} newConfigs An array of config objects
+   */
+  async function addSessions(newConfigs) {
+    const newSessions = new Map()
+    for (const config of newConfigs) {
+      // eslint-disable-next-line no-await-in-loop
+      const { sessionName, rootModel } = await createRootModel(
+        modelType,
+        config,
+      )
+      newSessions.set(sessionName, rootModel)
+    }
+    setSessions(new Map([...sessions, ...newSessions]))
+  }
 
   if (!(modelType && pluginManager && sessions && activeSession))
     return <div>loading...</div>
@@ -128,6 +139,7 @@ function JBrowse(props) {
         sessionNames={Array.from(sessions.keys())}
         activeSession={activeSession}
         setActiveSession={setActiveSession}
+        addSessions={addSessions}
       />
     </MuiThemeProvider>
   )

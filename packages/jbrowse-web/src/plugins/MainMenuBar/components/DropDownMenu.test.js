@@ -1,88 +1,71 @@
-import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
-import { MainMenuBarModel } from '../model'
+import { cleanup, fireEvent, render } from 'react-testing-library'
+import { createTestEnv } from '../../../JBrowse'
 import DropDownMenu from './DropDownMenu'
 
-describe('<DropDownMenu />', () => {
-  let shallow
+jest.mock('popper.js', () => {
+  const PopperJS = jest.requireActual('popper.js')
+  return class Popper {
+    static placements = PopperJS.placements
 
-  beforeAll(() => {
-    shallow = createShallow()
+    constructor() {
+      return {
+        destroy: () => {},
+        scheduleUpdate: () => {},
+      }
+    }
+  }
+})
+
+describe('<DropDownMenu />', () => {
+  let rootModel
+
+  beforeAll(async () => {
+    ;({ rootModel } = await createTestEnv({
+      configId: 'testing',
+      rpc: { defaultDriver: 'MainThreadRpcDriver' },
+    }))
+    rootModel.menuBars[0].unshiftMenu({
+      name: 'Test Menu',
+      menuItems: [
+        {
+          name: 'Test Item',
+          icon: 'info',
+          callback: 'function(rootModel){rootModel.updateDrawerWidth(200)}',
+        },
+      ],
+    })
   })
+
+  afterEach(cleanup)
 
   it('renders', () => {
-    const menubar = MainMenuBarModel.create({
-      id: 'testingId',
-      type: 'MainMenuBar',
-    })
-    const menu = menubar.menus[0]
-    const wrapper = shallow(
+    const [menu] = rootModel.menuBars[0].menus
+    const { container } = render(
       <DropDownMenu
-        model={menubar}
         menuTitle={menu.name}
         menuItems={menu.menuItems}
+        rootModel={rootModel}
       />,
     )
-    expect(wrapper).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('opens and closes a menu and selects a menu item', () => {
-    const menubar = MainMenuBarModel.create({
-      id: 'testingId',
-      type: 'MainMenuBar',
-    })
-    const menu = menubar.menus[0]
-    const wrapper = shallow(
+  it('opens a menu and selects a menu item', async () => {
+    const [menu] = rootModel.menuBars[0].menus
+    const { getByTestId } = render(
       <DropDownMenu
-        model={menubar}
         menuTitle={menu.name}
         menuItems={menu.menuItems}
+        rootModel={rootModel}
       />,
     )
-      .first()
-      .shallow()
-    const instance = wrapper.instance()
-    const helpButton = wrapper.find('WithStyles(Button)')
-    // Click menu button to open
-    instance.handleToggle({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button again to close (two events, one for menu click and one for ClickAwayListener)
-    instance.handleClose({ target: 'Help' })
-    expect(wrapper).toMatchSnapshot()
-    instance.handleToggle({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu button to open
-    instance.handleToggle({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click somewhere else on page to close with ClickAwayListener
-    instance.handleClose({ target: 'somewhereElseOnPage' })
-    expect(wrapper).toMatchSnapshot()
-  })
-
-  it('selects a menu item', () => {
-    const menubar = MainMenuBarModel.create({
-      id: 'testingId',
-      type: 'MainMenuBar',
-    })
-    const menu = menubar.menus[0]
-    const wrapper = shallow(
-      <DropDownMenu
-        model={menubar}
-        menuTitle={menu.name}
-        menuItems={menu.menuItems}
-      />,
-    )
-      .first()
-      .shallow()
-    const instance = wrapper.instance()
-    const helpButton = wrapper.find('WithStyles(Button)')
-    const callback = jest.fn(() => {})
-    // Click menu button to open
-    instance.handleToggle({ currentTarget: helpButton })
-    expect(wrapper).toMatchSnapshot()
-    // Click menu item to close and activate callback
-    instance.handleClose({ target: 'someMenuItem' }, callback)
-    expect(wrapper).toMatchSnapshot()
-    expect(callback.mock.calls.length).toBe(1)
+    fireEvent.click(getByTestId('dropDownMenuButton'))
+    const aboutMenuItem = getByTestId('menuItemId')
+    expect(aboutMenuItem).toMatchSnapshot()
+    rootModel.updateDrawerWidth(256)
+    expect(rootModel.drawerWidth).toBe(256)
+    fireEvent.click(aboutMenuItem)
+    expect(rootModel.drawerWidth).toBe(200)
   })
 })

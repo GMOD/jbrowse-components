@@ -50,7 +50,18 @@ export const MenuItemModel = types
         rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
       )
     },
-    downloadConfiguration() {
+    openConfigurationImport() {
+      const rootModel = getRoot(self)
+      if (!rootModel.drawerWidgets.get('importConfigurationDrawerWidget'))
+        rootModel.addDrawerWidget(
+          'ImportConfigurationDrawerWidget',
+          'importConfigurationDrawerWidget',
+        )
+      rootModel.showDrawerWidget(
+        rootModel.drawerWidgets.get('importConfigurationDrawerWidget'),
+      )
+    },
+    exportConfiguration() {
       const rootModel = getRoot(self)
       const initialSnap = JSON.stringify(getSnapshot(rootModel.configuration))
       const filter = (key, value) => {
@@ -68,6 +79,9 @@ export const MenuItemModel = types
       )
       saveAs(new Blob([configSnap]), 'jbrowse_configuration.json')
       return configSnap
+    },
+    importConfiguration() {
+      self.openConfigurationImport()
     },
   }))
 
@@ -90,7 +104,7 @@ export const MainMenuBarModel = types
   })
   .actions(self => ({
     afterCreate() {
-      this.pushMenu({
+      self.pushMenu({
         name: 'Help',
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
@@ -122,5 +136,13 @@ export const AssemblyEditorDrawerWidgetModel = types.model(
   {
     id: ElementId,
     type: types.literal('AssemblyEditorDrawerWidget'),
+  },
+)
+
+export const ImportConfigurationDrawerWidgetModel = types.model(
+  'ImportConfigurationDrawerWidget',
+  {
+    id: ElementId,
+    type: types.literal('ImportConfigurationDrawerWidget'),
   },
 )
