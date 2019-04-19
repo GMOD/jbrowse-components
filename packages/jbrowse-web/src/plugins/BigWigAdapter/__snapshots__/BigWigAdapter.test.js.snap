@@ -17,7 +17,7 @@ Object {
   "featureDensity": 0.9967109634551495,
   "scoreMax": 38,
   "scoreMean": 19.297356754774842,
-  "scoreMin": 0,
+  "scoreMin": 5,
   "scoreStdDev": 4.380921822290578,
   "scoreSum": 578940,
   "scoreSumSquares": 11747786,

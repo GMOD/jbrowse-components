@@ -21,16 +21,22 @@ export default (pluginManager, configSchema) =>
           const getYAxisScale = autorun(
             function getYAxisScaleAutorun() {
               const autoscaleType = getConf(self, 'autoscale')
-              let stats
+              const aborter = new AbortController()
+              self.setLoading(aborter)
 
               if (autoscaleType === 'global') {
-                stats = self.adapter.getGlobalStats()
+                self.statsPromise = self.adapter.getGlobalStats(aborter)
               } else if (autoscaleType === 'local') {
                 const regions = getContainingView(self).dynamicBlocks
                 if (!regions.length) return
-                stats = self.adapter.getMultiRegionStats(regions)
+                self.statsPromise = self.adapter.getMultiRegionStats(
+                  regions,
+                  aborter,
+                )
               }
-              stats.then(s => self.setStats(s)).catch(e => self.setError(e))
+              self.statsPromise
+                .then(s => self.setStats(s))
+                .catch(e => self.setError(e))
             },
             { delay: 1000 },
           )
@@ -38,12 +44,21 @@ export default (pluginManager, configSchema) =>
           addDisposer(self, getYAxisScale)
         },
         setStats(s) {
-          self.stats.setStats(s)
+          self.stats = s
           self.ready = true
+        },
+        setLoading(abortSignal) {
+          if (
+            self.statsFetchInProgress &&
+            !self.statsFetchInProgress.signal.aborted
+          )
+            self.statsFetchInProgress.abort()
+          self.statsFetchInProgress = abortSignal
         },
       }))
       .views(self => ({
         get renderProps() {
+          console.log('stats', self.stats.min, self.stats.max)
           return {
             ...getParentRenderProps(self),
             trackModel: self,
@@ -62,19 +77,6 @@ export default (pluginManager, configSchema) =>
         reactComponent: WiggleTrackComponent,
         rendererTypeName: 'WiggleRenderer', // todo is this needed?
         ready: false,
-        stats: types
-          .model({
-            min: 0,
-            max: 0,
-            mean: 0,
-          })
-          .actions(self => ({
-            setStats(s) {
-              self.min = s.scoreMin
-              self.max = s.scoreMax
-              self.mean = s.scoreMean
-            },
-          }))
-          .create(),
+        stats: types.frozen(),
       })),
   )

@@ -93,17 +93,6 @@ export default types.compose(
           }),
         )
       },
-      setError(error) {
-        console.error(error)
-        self.blockState.forEach(value => {
-          value.setError(error)
-        })
-      },
-      setLoading() {
-        self.blockState.forEach(value => {
-          value.setLoading()
-        })
-      },
       deleteBlock(key) {
         self.blockState.delete(key)
       },
