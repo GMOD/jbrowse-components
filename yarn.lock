@@ -1151,7 +1151,7 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.6":
+"@gmod/bbi@^1.0.15":
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.15.tgz#d6d60ed6372a67c6b208b221fc01dbf026a527df"
   integrity sha512-fY7+me1ICD4VTxMNOIMEz1et1o5xAfPHosav9YBgN0VtiSwJGb+siJr3zfqUzaeZK62yasBaYXWpAdYf7/eVZA==
@@ -1164,6 +1164,14 @@
     generic-filehandle "^1.0.8"
     quick-lru "^3.0.0"
     rxjs "^6.4.0"
+
+"@gmod/bed@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.0.tgz#c5cfb9930db2a4abcef8881fe44b865d94e609d9"
+  integrity sha512-hGI0AZb/gmEVSUVfS/B7eOVfqwwqxvcZoiBdHlfkRmY6udWD8M/tH9+OoxHACpGjY5gQWEl+KafFgFMtu2lAoQ==
+  dependencies:
+    pegjs "^0.10.0"
+    snake-case "^2.1.0"
 
 "@gmod/bgzf-filehandle@^1.2.2":
   version "1.2.2"
@@ -10192,6 +10200,11 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+pegjs@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/pegjs/-/pegjs-0.10.0.tgz#cf8bafae6eddff4b5a7efb185269eaaf4610ddbd"
+  integrity sha1-z4uvrm7d/0tafvsYUmnqr0YQ3b0=
+
 performance-now@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
@@ -12438,6 +12451,13 @@ smart-buffer@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.0.1.tgz#07ea1ca8d4db24eb4cac86537d7d18995221ace3"
   integrity sha512-RFqinRVJVcCAL9Uh1oVqE6FZkqsyLiVOYEZ20TqIOjuX7iFVJ+zsbs4RIghnw/pTs7mZvt8ZHhvm1ZUrR4fykg==
+
+snake-case@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/snake-case/-/snake-case-2.1.0.tgz#41bdb1b73f30ec66a04d4e2cad1b76387d4d6d9f"
+  integrity sha1-Qb2xtz8w7GagTU4srRt2OH1NbZ8=
+  dependencies:
+    no-case "^2.2.0"
 
 snapdragon-node@^2.0.1:
   version "2.1.1"

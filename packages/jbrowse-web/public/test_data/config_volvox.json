@@ -85,6 +85,24 @@
     },
     {
       "type": "BasicTrack",
+      "name": "volvox bigbed",
+      "category": [
+        "Bee Category",
+        "Boo Category"
+      ],
+      "assemblyName": "vvx",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "/test_data/volvox.bb"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
+      "type": "BasicTrack",
       "name": "volvox bw",
       "category": [
         "Bee Category",
