@@ -70,8 +70,8 @@ export default function(pluginManager) {
 
       volatile: types.map(
         ConfigurationSchema('volatile', {
-          tracks: types.maybe(types.array(pluginManager.pluggableConfigSchemaType('track'))),
-          assemblies: types.maybe(types.map(Assemblies)),
+          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+          assemblies: types.map(Assemblies),
         }),
       ),
     },
