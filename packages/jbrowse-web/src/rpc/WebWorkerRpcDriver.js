@@ -1,26 +1,12 @@
 import Rpc from '@librpc/web'
+
 import { objectFromEntries } from '../util'
+import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {
   if (typeof thing === 'function') return false
   if (thing instanceof Error) return false
   return true
-}
-
-// filter the given object and just remove any non-clonable things from it
-function removeNonClonable(thing) {
-  if (Array.isArray(thing)) {
-    return thing.filter(isClonable).map(removeNonClonable)
-  }
-  if (typeof thing === 'object') {
-    const newobj = objectFromEntries(
-      Object.entries(thing)
-        .filter(e => isClonable(e[1]))
-        .map(([k, v]) => [k, removeNonClonable(v)]),
-    )
-    return newobj
-  }
-  return thing
 }
 
 export default class WebWorkerRpcDriver {
@@ -35,6 +21,30 @@ export default class WebWorkerRpcDriver {
     if (!this.workers.length) {
       throw new Error('no workers defined')
     }
+  }
+
+  // filter the given object and just remove any non-clonable things from it
+  filterArgs(thing, pluginManager, stateGroupName) {
+    if (Array.isArray(thing)) {
+      return thing.filter(isClonable).map(this.filterArgs, this)
+    }
+    if (typeof thing === 'object') {
+      // AbortSignals are specially handled
+      if (thing instanceof AbortSignal) {
+        return serializeAbortSignal(
+          thing,
+          this.call.bind(this, pluginManager, stateGroupName),
+        )
+      }
+
+      const newobj = objectFromEntries(
+        Object.entries(thing)
+          .filter(e => isClonable(e[1]))
+          .map(([k, v]) => [k, this.filterArgs(v)]),
+      )
+      return newobj
+    }
+    return thing
   }
 
   getWorker(stateGroupName) {
@@ -52,7 +62,7 @@ export default class WebWorkerRpcDriver {
 
   call(pluginManager, stateGroupName, functionName, args, options = {}) {
     const worker = this.getWorker(stateGroupName)
-    const filteredArgs = removeNonClonable(args)
+    const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     return worker.call(functionName, filteredArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       ...options,

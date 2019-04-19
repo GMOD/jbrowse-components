@@ -99,6 +99,13 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       get horizontallyFlipped() {
         return getConf(self, 'reversed')
       },
+
+      get displayedRegionsTotalPx() {
+        return self.displayedRegions.reduce(
+          (a, b) => a + (b.end - b.start) / self.bpPerPx,
+          0,
+        )
+      },
     }))
     .volatile(() => ({
       displayedRegions: [],
@@ -265,11 +272,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       horizontalScroll(distance) {
         const leftPadding = 10
         const rightPadding = 10
-        const displayRegionsTotalPx = self.displayedRegions.reduce(
-          (a, b) => a + (b.end - b.start) / self.bpPerPx,
-          0,
-        )
-        const maxOffset = displayRegionsTotalPx - leftPadding
+        const maxOffset = self.displayedRegionsTotalPx - leftPadding
         const displayWidth = self.viewingRegionWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)

@@ -2,7 +2,7 @@ import { types, getRoot } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../../configuration'
 
-import AlignmentsTrack from '../components/AlignmentsTrack'
+import BlockBasedTrackComponent from '../../LinearGenomeView/components/BlockBasedTrack'
 
 import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
@@ -30,7 +30,7 @@ export default (pluginManager, configSchema) =>
         height: types.optional(types.integer, 100),
       })
       .volatile(() => ({
-        reactComponent: AlignmentsTrack,
+        reactComponent: BlockBasedTrackComponent,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       // .actions(self => ({

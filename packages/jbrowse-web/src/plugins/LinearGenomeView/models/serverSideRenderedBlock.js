@@ -12,7 +12,11 @@ import { getConf } from '../../../configuration'
 import { Region } from '../../../mst-types'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
-import { assembleLocString } from '../../../util'
+import {
+  assembleLocString,
+  checkAbortSignal,
+  isAbortException,
+} from '../../../util'
 import { getContainingView } from '../../../util/tracks'
 
 // calls the render worker to render the block content
@@ -40,28 +44,41 @@ function renderBlockData(self) {
     },
   }
 }
-function renderBlockEffect(
-  self,
-  { rendererType, renderProps, rpcManager, renderArgs },
-) {
+async function renderBlockEffect(self, props, allowRefetch = true) {
+  const { rendererType, renderProps, rpcManager, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
-  if (self.renderInFlight) self.renderInFlight.cancelled = true
-  const inProgress = {}
-  self.setLoading(inProgress)
+  if (self.renderInProgress) self.renderInProgress.abort()
+  const aborter = new AbortController()
+  self.setLoading(aborter)
   try {
-    rendererType
-      .renderInClient(rpcManager, renderArgs)
-      .then(({ html, ...data }) => {
-        if (!isAlive(self) || inProgress.cancelled) return
-        self.setRendered(data, html, rendererType.ReactComponent, renderProps)
-      })
-      .catch(error => {
-        console.error(error)
-        if (isAlive(self) && !inProgress.cancelled) self.setError(error)
-      })
+    renderArgs.signal = aborter.signal
+    // const callId = [
+    //   assembleLocString(renderArgs.region),
+    //   renderArgs.rendererType,
+    // ]
+    const { html, ...data } = await rendererType.renderInClient(
+      rpcManager,
+      renderArgs,
+    )
+    // if (aborter.signal.aborted) {
+    //   console.log(...callId, 'request to abort render was ignored', html, data)
+    // }
+    checkAbortSignal(aborter.signal)
+    self.setRendered(data, html, rendererType.ReactComponent, renderProps)
   } catch (error) {
-    if (isAlive(self) && !inProgress.cancelled) self.setError(error)
+    if (!isAbortException(error)) console.error(error)
+    if (isAbortException(error) && !aborter.signal.aborted) {
+      // there is a bug in the underlying code and something is caching aborts. try to refetch once
+      const track = getParent(self, 2)
+      if (allowRefetch) {
+        console.warn(`cached abort detected, refetching ${track.name}`)
+        renderBlockEffect(self, props, false)
+        return
+      }
+      console.warn(`cached abort detected, failed to recover ${track.name}`)
+    }
+    if (isAlive(self)) self.setError(error)
   }
 }
 
@@ -82,11 +99,11 @@ export default types
     reactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined,
     renderProps: undefined,
-    renderInFlight: undefined,
+    renderInProgress: undefined,
   }))
   .actions(self => ({
     afterAttach() {
-      const track = getContainingView(self)
+      const track = getParent(self, 2)
       const renderDisposer = reaction(
         () => renderBlockData(self),
         data => renderBlockEffect(self, data),
@@ -98,12 +115,14 @@ export default types
       )
       addDisposer(self, renderDisposer)
     },
-    setLoading(inProgressRecord) {
+    setLoading(abortController) {
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
       self.filled = false
       self.html = ''
       self.data = undefined
       self.error = undefined
-      self.renderInProgress = inProgressRecord
+      self.renderInProgress = abortController
     },
     setRendered(data, html, renderingComponent, renderProps) {
       self.filled = true
@@ -113,7 +132,17 @@ export default types
       self.renderProps = renderProps
     },
     setError(error) {
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
       // the rendering failed for some reason
       self.error = error
+      self.renderInProgress = undefined
+      self.data = undefined
+      self.filled = false
+      self.html = ''
+    },
+    beforeDestroy() {
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+        self.renderInProgress.abort()
     },
   }))

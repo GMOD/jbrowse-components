@@ -1,4 +1,5 @@
 import { ObservableCreate } from './util/rxjs'
+import { checkAbortSignal } from './util'
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -74,14 +75,17 @@ export default class BaseAdapter {
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.
    * @param {Region} region see getFeatures()
+   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} see getFeatures()
    */
-  getFeaturesInRegion(region) {
+  getFeaturesInRegion(region, signal) {
     return ObservableCreate(async observer => {
-      if (!(await this.hasDataForRefName(region.refName))) {
+      const hasData = await this.hasDataForRefName(region.refName)
+      checkAbortSignal(signal)
+      if (!hasData) {
         observer.complete()
       } else {
-        this.getFeatures(region).subscribe(observer)
+        this.getFeatures(region, signal).subscribe(observer)
       }
     })
   }

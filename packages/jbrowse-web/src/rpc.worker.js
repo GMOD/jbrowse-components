@@ -7,6 +7,8 @@ import PluginManager from './PluginManager'
 import corePlugins from './corePlugins'
 
 import * as renderFuncs from './render'
+import { remoteAbortRpcHandler } from './rpc/remoteAbortSignals'
+import { isAbortException } from './util'
 
 // prevent mobx-react from doing funny things when we render in the worker
 useStaticRendering(true)
@@ -14,20 +16,41 @@ useStaticRendering(true)
 const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))
 jbPluginManager.configure()
 
-function wrapForRpc(func) {
-  return async args => {
-    // console.log(`${func.name} args`, args)
-    let result
-    try {
-      result = func(jbPluginManager, ...args)
-    } catch (error) {
-      console.error(error)
-      throw error
+const logBuffer = []
+function flushLog() {
+  if (logBuffer.length) {
+    for (const l of logBuffer) {
+      console.log(...l)
     }
-    // uncomment the below to log the data that the worker is
-    // returning to the main thread
-    // console.log(`${func.name} returned`, await result)
-    return result
+    logBuffer.length = 0
+  }
+}
+setInterval(flushLog, 1000)
+
+let callCounter = 0
+function wrapForRpc(func) {
+  return args => {
+    callCounter += 1
+    const myId = callCounter
+    // logBuffer.push(['rpc-call', myId, func.name, ...args])
+    const retP = func(jbPluginManager, ...args).catch(error => {
+      if (isAbortException(error)) {
+        logBuffer.push(['rpc-abort', myId, func.name, ...args])
+      } else {
+        console.error(error)
+        logBuffer.push(['rpc-error', myId, func.name, error])
+        flushLog()
+      }
+      throw error
+    })
+
+    // uncomment below to log returns
+    // retP.then(
+    //   result => logBuffer.push(['rpc-return', myId, func.name, result]),
+    //   err => {},
+    // )
+
+    return retP
   }
 }
 
@@ -38,4 +61,7 @@ Object.keys(renderFuncs).forEach(key => {
 })
 
 // eslint-disable-next-line no-restricted-globals
-self.rpcServer = new RpcServer.Server(rpcConfig)
+self.rpcServer = new RpcServer.Server({
+  ...rpcConfig,
+  ...remoteAbortRpcHandler(),
+})

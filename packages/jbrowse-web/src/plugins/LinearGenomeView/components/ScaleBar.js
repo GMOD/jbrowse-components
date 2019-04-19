@@ -29,10 +29,10 @@ const styles = (/* theme */) => ({
 })
 
 function findBlockContainingLeftSideOfView(offsetPx, blocks) {
-  const pxSoFar = 0
   for (let i = 0; i < blocks.length; i += 1) {
     const block = blocks[i]
-    if (block.widthPx + pxSoFar > offsetPx && pxSoFar <= offsetPx) return block
+    if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
+      return block
   }
   return undefined
 }

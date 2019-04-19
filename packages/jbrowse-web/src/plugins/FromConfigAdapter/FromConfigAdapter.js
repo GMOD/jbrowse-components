@@ -31,10 +31,17 @@ export default class FromConfigAdapter extends BaseAdapter {
       if (fdata[i]) {
         const f = this.makeFeature(fdata[i])
         const refName = f.get('refName')
-        if (!features.get(refName)) features.set(refName, [])
+        if (!features.has(refName)) features.set(refName, [])
         features.get(refName).push(f)
       }
     }
+
+    // sort the features on each reference sequence by start coordinate
+    const byStartCoordinate = (a, b) => a.get('start') - b.get('start')
+    for (const refFeatures of features.values()) {
+      refFeatures.sort(byStartCoordinate) // Array.sort sorts in-place!
+    }
+
     return features
   }
 
@@ -52,31 +59,32 @@ export default class FromConfigAdapter extends BaseAdapter {
    */
   async getRegions() {
     const regions = []
-    const compareStart = (firstFeature, secondFeature) =>
-      firstFeature.get('start') - secondFeature.get('end')
+
+    // recall: features are stored in this object sorted by start coordinate
     for (const [refName, features] of this.features) {
-      features.sort(compareStart)
-      regions.push({
-        refName,
-        start: features[0].get('start'),
-        end: features[0].get('end'),
-      })
-      for (let i = 1; i < features.length; i += 1) {
-        const feature = features[i]
-        const lastRegion = regions[regions.length - 1]
-        if (lastRegion.end < feature.get('start'))
-          regions.push({
+      let currentRegion
+      for (const feature of features) {
+        if (
+          currentRegion &&
+          currentRegion.end >= feature.get('start') &&
+          currentRegion.start <= feature.get('end')
+        ) {
+          currentRegion.end = feature.get('end')
+        } else {
+          if (currentRegion) regions.push(currentRegion)
+          currentRegion = {
             refName,
             start: feature.get('start'),
             end: feature.get('end'),
-          })
-        else if (lastRegion.end < feature.get('end')) {
-          lastRegion.end = feature.get('end')
-          regions.pop()
-          regions.push(lastRegion)
+          }
         }
       }
+      if (currentRegion) regions.push(currentRegion)
     }
+
+    // sort the regions by refName
+    regions.sort((a, b) => a.refName.localeCompare(b.refName))
+
     return regions
   }
 
@@ -90,11 +98,12 @@ export default class FromConfigAdapter extends BaseAdapter {
   /**
    * Fetch features for a certain region
    * @param {Region} param
+   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }) {
+  getFeatures({ refName, start, end }, signal) {
     return ObservableCreate(async observer => {
-      const features = this.features.get(refName) || []
+      const features = this.features.get(refName, signal) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
         if (f.get('end') > start && f.get('start') < end) {

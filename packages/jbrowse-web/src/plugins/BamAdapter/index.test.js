@@ -1,3 +1,4 @@
+import { getSnapshot } from 'mobx-state-tree'
 import MyPlugin from './index'
 import { createTestEnv } from '../../JBrowse'
 
@@ -9,7 +10,7 @@ test('plugin in a stock JBrowse', async () => {
 
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
-  expect(config).toMatchSnapshot({
+  expect(getSnapshot(config)).toMatchSnapshot({
     configId: expect.any(String),
     index: { configId: expect.any(String) },
   })

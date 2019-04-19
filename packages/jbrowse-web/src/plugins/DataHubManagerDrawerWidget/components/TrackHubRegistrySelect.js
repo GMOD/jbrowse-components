@@ -1,4 +1,6 @@
+import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
+import FormLabel from '@material-ui/core/FormLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
@@ -7,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import sanitizeHtml from 'sanitize-html'
 import { fetchHubFile } from '../../../connections/ucscHub'
 import GenomeSelector from './GenomeSelector'
 import SelectBox from './SelectBox'
@@ -25,10 +28,19 @@ QueryStatus.propTypes = {
   status: PropTypes.string.isRequired,
 }
 
+// Need this for FormControlLabel to work with Tooltip
+// https://github.com/mui-org/material-ui/issues/2225#issuecomment-460041878
+function Wire({ children, ...props }) {
+  return children(props)
+}
+
 const styles = theme => ({
-  card: {
-    width: 300,
-    marginBottom: theme.spacing.unit,
+  hubList: {
+    maxHeight: 400,
+    overflowY: 'auto',
+  },
+  genomeSelector: {
+    marginTop: theme.spacing.unit,
   },
 })
 
@@ -43,6 +55,7 @@ function TrackHubRegistrySelect(props) {
   const [hubTxt, setHubTxt] = useState(null)
 
   const {
+    classes,
     setHubName,
     hubUrl,
     setHubUrl,
@@ -76,12 +89,13 @@ function TrackHubRegistrySelect(props) {
   }
 
   async function getHubs(reset) {
+    const entriesPerPage = 10
     const newHubs = reset ? new Map() : new Map(hubs)
-    const page = Math.floor(hubs.size / 5) + 1
+    const page = Math.floor(hubs.size / entriesPerPage) + 1
     const response = await doPost(
       'https://www.trackhubregistry.org/api/search',
       { assembly: selectedAssembly },
-      { page, entries_per_page: 5 },
+      { page, entries_per_page: entriesPerPage },
     )
     if (response) {
       for (const item of response.items) {
@@ -123,6 +137,7 @@ function TrackHubRegistrySelect(props) {
   }
 
   async function handleSelectHub(event) {
+    console.log(event.target.value)
     setSelectedHub(event.target.value)
     const selectedHubObj = hubs.get(event.target.value)
     setHubName(selectedHubObj.hub.shortLabel)
@@ -244,26 +259,60 @@ function TrackHubRegistrySelect(props) {
   if (selectedAssembly) {
     renderItems.push(
       <div key="hubSelect">
-        <Typography>Hubs:</Typography>
-        <RadioGroup value={selectedHub} onChange={handleSelectHub}>
-          {Array.from(hubs.values()).map(hub => {
-            const disabled = Boolean(hub.error)
-            return (
-              <Tooltip
-                key={hub.id}
-                title={disabled ? hub.error : hub.hub.longLabel}
-                placement="left"
-              >
-                <FormControlLabel
-                  value={hub.id}
-                  label={hub.hub.shortLabel}
-                  disabled={disabled}
-                  control={<Radio />}
-                />
-              </Tooltip>
-            )
-          })}
-        </RadioGroup>
+        <FormControl>
+          <FormLabel>Hubs:</FormLabel>
+          <div className={classes.hubList}>
+            <RadioGroup value={selectedHub} onChange={handleSelectHub}>
+              {Array.from(hubs.values()).map(hub => {
+                const disabled = Boolean(hub.error)
+                const allowedHtml = {
+                  allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
+                  allowedAttributes: {
+                    a: ['href'],
+                  },
+                }
+                const cleanShortLabel = (
+                  <div
+                    // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
+                    }}
+                  />
+                )
+                const cleanLongLabel = (
+                  <div
+                    // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
+                    }}
+                  />
+                )
+                return (
+                  <Wire key={hub.id} value={hub.id}>
+                    {formControlProps => (
+                      <Tooltip
+                        title={disabled ? hub.error : cleanLongLabel}
+                        placement="left"
+                        interactive
+                      >
+                        <FormControlLabel
+                          key={hub.id}
+                          value={hub.id}
+                          label={cleanShortLabel}
+                          disabled={disabled}
+                          control={<Radio />}
+                          {...formControlProps}
+                        />
+                      </Tooltip>
+                    )}
+                  </Wire>
+                )
+              })}
+            </RadioGroup>
+          </div>
+        </FormControl>
       </div>,
     )
     if (!allHubsRetrieved)
@@ -272,16 +321,18 @@ function TrackHubRegistrySelect(props) {
 
   if (hubTxt)
     renderItems.push(
-      <GenomeSelector
-        key="genomeSelect"
-        hubUrl={hubUrl}
-        hubTxt={hubTxt}
-        assemblyNames={assemblyNames}
-        setAssemblyNames={setAssemblyNames}
-      />,
+      <div className={classes.genomeSelector}>
+        <GenomeSelector
+          key="genomeSelect"
+          hubUrl={hubUrl}
+          hubTxt={hubTxt}
+          assemblyNames={assemblyNames}
+          setAssemblyNames={setAssemblyNames}
+        />
+      </div>,
     )
 
-  return <div>{renderItems}</div>
+  return <>{renderItems}</>
 }
 
 TrackHubRegistrySelect.propTypes = {

@@ -25,6 +25,22 @@
           "labels": {}
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "name": "1000 Genomes HG00096 High Coverage",
+      "assemblyName": "hg38",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+          }
+        }
+      }
     }
   ],
   "assemblies": {
