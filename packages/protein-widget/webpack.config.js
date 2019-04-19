@@ -56,13 +56,13 @@ module.exports = {
       {
         oneOf: [
           {
-            test: /\.m?js$/,
+            test: /\.m?[tj]s$/,
             exclude: /(node_modules|bower_components)/,
             use: {
               loader: 'babel-loader',
               options: {
-                presets: ['@babel/preset-env', '@babel/preset-react'],
-                plugins: ['@babel/plugin-proposal-class-properties'],
+                rootMode: 'upward',
+                presets: ['@babel/preset-react'],
               },
             },
           },
