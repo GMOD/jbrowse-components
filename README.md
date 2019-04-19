@@ -1,7 +1,7 @@
 [![Build Status](https://img.shields.io/travis/com/GMOD/jbrowse-components/master.svg?logo=travis&style=for-the-badge)](https://travis-ci.com/GMOD/jbrowse-components)
 [![Coverage Status](https://img.shields.io/codecov/c/github/GMOD/jbrowse-components/master.svg?logo=codecov&style=for-the-badge)](https://codecov.io/gh/GMOD/jbrowse-components/branch/master)
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/GMOD/jbrowse-components.svg)](https://greenkeeper.io/)
+<!-- [![Greenkeeper badge](https://badges.greenkeeper.io/GMOD/jbrowse-components.svg)](https://greenkeeper.io/) -->
 
 # jbrowse-components
 
