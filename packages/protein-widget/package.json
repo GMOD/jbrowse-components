@@ -4,7 +4,6 @@
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
-    "test": "jest",
     "build": "webpack",
     "lint": "eslint src/"
   },
