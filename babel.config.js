@@ -5,6 +5,7 @@ module.exports = (api) => {
     comments: true,
     presets: [
       '@babel/preset-typescript',
+      'react-app',
       [
         '@babel/preset-env',
         {
