@@ -40,19 +40,33 @@ export default class BigBedAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }) {
+  getFeatures({ /* assembly, */ refName, start, end }, signal) {
     return Observable.create(async observer => {
       const parser = await this.parser
-      const records = await this.bigbed.getFeatures(refName, start, end)
-      records.forEach(r => {
-        const data = regularizeFeat(
-          parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
-            uniqueId: r.uniqueId,
-          }),
-        )
-        observer.next(new SimpleFeature({ data }))
+      const ob2 = await this.bigbed.getFeatureStream(refName, start, end, {
+        signal,
       })
-      observer.complete()
+      ob2.subscribe(
+        chunk => {
+          chunk.forEach(r => {
+            const data = regularizeFeat(
+              parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
+                uniqueId: r.uniqueId,
+              }),
+            )
+
+            observer.next(
+              new SimpleFeature({
+                data,
+              }),
+            )
+          })
+        },
+        error => {
+          throw new Error(error)
+        },
+        () => observer.complete(),
+      )
     })
   }
 }
