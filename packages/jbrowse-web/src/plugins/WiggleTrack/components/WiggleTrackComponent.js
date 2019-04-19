@@ -7,15 +7,11 @@ import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
 import { readConfObject, getConf, getConfs } from '../../../configuration'
 import { getScale } from '../../WiggleRenderer/util'
 
-function makeFilterFunc(howMany) {
-  return function filterFunc(elt, idx, arr) {
-    return (
-      idx === 0 || // first element
-      idx === arr.length - 1 || // last element
-      idx % Math.floor(arr.length / howMany) === 0
-    )
-  }
+const powersOfTen = []
+for (let i = -20; i < 20; i += 1) {
+  powersOfTen.push(10 ** i)
 }
+
 function WiggleTrackComponent(props) {
   const { model } = props
   const { stats, ready, height } = model
@@ -30,8 +26,11 @@ function WiggleTrackComponent(props) {
     const [maxScore, minScore] = getConfs(model, ['maxScore', 'minScore'])
     const opts = { minScore, maxScore, inverted }
     const scale = getScale(scaleType, [min, max], [height, 0], opts)
-    const axisProps = axisPropsFromTickScale(scale, 5)
-    // const values = axisProps.values.filter(makeFilterFunc(3))
+    const axisProps = axisPropsFromTickScale(scale, 4)
+    const values =
+      scaleType === 'log'
+        ? axisProps.values.filter(s => powersOfTen.includes(s))
+        : axisProps.values
     return (
       <div
         style={{
@@ -45,7 +44,12 @@ function WiggleTrackComponent(props) {
         }}
       >
         <svg style={{ height }}>
-          <Axis {...axisProps} format={n => n} style={{ orient: RIGHT }} />
+          <Axis
+            {...axisProps}
+            values={values}
+            format={n => n}
+            style={{ orient: RIGHT }}
+          />
         </svg>
       </div>
     )

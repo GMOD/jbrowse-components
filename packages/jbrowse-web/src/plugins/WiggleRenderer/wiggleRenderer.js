@@ -56,14 +56,12 @@ class WiggleRenderer extends ServerSideRenderer {
       'highlightColor',
     ])
     const { min, max } = stats
-    console.log(scaleType, min, max)
     const scale = getScale(scaleType, [min, max], [0, height], {
       minScore,
       maxScore,
     })
     const originY = getOrigin(scaleType)
     const [niceMin, niceMax] = scale.domain()
-    console.log(niceMin, niceMax)
     const toY = rawscore => height - scale(rawscore)
     if (highResolutionScaling) {
       ctx.scale(highResolutionScaling, highResolutionScaling)
