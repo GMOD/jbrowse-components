@@ -1,0 +1,27 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "> 0.5%"
+          ],
+          "node": "8.0"
+        }
+      }
+    ]
+  ],
+  "retainLines": true,
+  "sourceMaps": true,
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "corejs": 2,
+        "helpers": true,
+      }
+    ]
+  ]
+}
