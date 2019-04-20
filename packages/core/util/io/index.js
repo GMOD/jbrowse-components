@@ -1,5 +1,7 @@
 import { LocalFile, BlobFile } from 'generic-filehandle'
-import { openUrl } from './rangeFetcher'
+import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
+
+export const openUrl = rangeFetcherOpenUrl
 
 // eslint-disable-next-line import/prefer-default-export
 export function openLocation(location) {

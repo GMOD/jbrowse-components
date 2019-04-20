@@ -1,8 +1,11 @@
 import 'whatwg-fetch'
 import tenaciousFetch from 'tenacious-fetch'
+import uri2path from 'file-uri-to-path'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
+
+import LocalFile from './localFile'
 
 function isElectron() {
   return false // TODO
@@ -116,6 +119,17 @@ export default globalCache
 class GloballyCachedFilehandle {
   constructor(url) {
     this.url = url
+
+    // if it is a file URL, monkey-patch ourselves to act like a LocalFile
+    if (String(url).startsWith('file://')) {
+      const path = uri2path(url)
+      if (!path) throw new TypeError('invalid file url')
+      const localFile = new LocalFile(path)
+      this.read = localFile.read.bind(localFile)
+      this.readFile = localFile.readFile.bind(localFile)
+      this.stat = localFile.stat.bind(localFile)
+      this.fetch = () => {}
+    }
   }
 
   async read(buffer, offset = 0, length, position, abortSignal) {
