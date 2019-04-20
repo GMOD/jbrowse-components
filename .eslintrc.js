@@ -1,4 +1,4 @@
-{
+ module.exports = {
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "prettier"
@@ -17,6 +17,7 @@
     "@typescript-eslint/no-var-requires": "off",
     "monorepo/no-internal-import": "off"
   },
+  "env": { "browser": true },
   "overrides": [
     {
       "files": [
@@ -24,7 +25,8 @@
       ],
       "env": {
         "jest": true,
-        "node": true
+        "node": true,
+        "browser": false
       }
     }
   ]
