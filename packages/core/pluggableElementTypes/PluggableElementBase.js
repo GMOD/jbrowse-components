@@ -16,6 +16,6 @@ export default class PluggableElementType {
     )
     Object.freeze(this)
 
-    if (!this.name) throw new Error(`no "name" defined for pluggable element`)
+    if (!this.name) throw new Error('no "name" defined for pluggable element')
   }
 }

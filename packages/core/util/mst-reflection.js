@@ -1,4 +1,7 @@
-import { isOptionalType, isUnionType, isArrayType , isMapType } from 'mobx-state-tree'
+/* eslint-disable no-underscore-dangle */
+import {
+  isOptionalType, isUnionType, isArrayType, isMapType,
+} from 'mobx-state-tree'
 
 
 /**
@@ -10,7 +13,6 @@ import { isOptionalType, isUnionType, isArrayType , isMapType } from 'mobx-state
 export function getSubType(type) {
   let t
   if (isOptionalType(type)) {
-    // eslint-disable-next-line no-underscore-dangle
     t = type._subtype || type.type
   } else if (isArrayType(type) || isMapType(type)) {
     t = type._subtype || type._subType || type.subType
@@ -18,7 +20,7 @@ export function getSubType(type) {
     throw new TypeError('unsupported mst type')
   }
   if (!t) {
-    debugger
+    // debugger
     throw new Error('failed to get subtype')
   }
   return t
@@ -34,7 +36,7 @@ export function getUnionSubTypes(unionType) {
   // eslint-disable-next-line no-underscore-dangle
   const t = unionType._types || unionType.types
   if (!t) {
-    debugger
+    // debugger
     throw new Error('failed to extract subtypes from mst union')
   }
   return t

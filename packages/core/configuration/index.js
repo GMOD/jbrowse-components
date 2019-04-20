@@ -27,7 +27,7 @@ function getModelConfig(tree) {
         keys = Object.keys(getPropertyMembers(tree).properties)
       }
       config = {}
-      keys.forEach(key => {
+      keys.forEach((key) => {
         config[key] = getModelConfig(tree[key])
       })
     } else if (isObservableArray(tree)) config = tree.map(getModelConfig)
@@ -43,12 +43,6 @@ function getModelConfig(tree) {
   return tree
 }
 
-function getConf(model, slotName, args) {
-  if (!model.configuration)
-    throw new Error(`cannot getConf on this model, it has no configuration`)
-  return readConfObject(model.configuration, slotName, args)
-}
-
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
  * read the configuration variable at the given path
@@ -59,11 +53,11 @@ function readConfObject(confObject, slotPath, args) {
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
     if (
-      !slot &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
+      !slot
+      && isStateTreeNode(confObject)
+      && isMapType(getType(confObject))
     ) {
-      slot = confObject.get(slotName)
+      slot = confObject.get(slotPath)
     }
     if (!slot) {
       return undefined
@@ -93,9 +87,9 @@ function readConfObject(confObject, slotPath, args) {
     let subConf = confObject[slotName]
     // check for the subconf being a map if we don't find it immediately
     if (
-      !subConf &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
+      !subConf
+      && isStateTreeNode(confObject)
+      && isMapType(getType(confObject))
     ) {
       subConf = confObject.get(slotName)
     }
@@ -106,6 +100,12 @@ function readConfObject(confObject, slotPath, args) {
   }
   return readConfObject(confObject, slotName, args)
 }
+
+function getConf(model, slotName, args) {
+  if (!model.configuration) { throw new Error('cannot getConf on this model, it has no configuration') }
+  return readConfObject(model.configuration, slotName, args)
+}
+
 
 export {
   ConfigurationSchema,

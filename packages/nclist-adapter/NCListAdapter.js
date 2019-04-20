@@ -1,9 +1,9 @@
 import { NCListStore } from '@gmod/nclist'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '../../BaseAdapter'
-import { ObservableCreate } from '../../util/rxjs'
-import { checkAbortSignal } from '../../util'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 export default class BamAdapter extends BaseAdapter {
   constructor(config) {

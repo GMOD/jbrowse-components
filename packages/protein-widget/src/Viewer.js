@@ -10,7 +10,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-import LinearGenomeViewPlugin from '../jbrowse-web/src/plugins/LinearGenomeView'
+import LinearGenomeViewPlugin from '../../jbrowse-web/src/plugins/LinearGenomeView'
 import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
 import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
 import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'

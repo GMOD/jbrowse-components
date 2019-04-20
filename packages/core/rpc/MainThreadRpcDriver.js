@@ -12,7 +12,7 @@ export default class MainThreadRpcDriver {
   call(pluginManager, stateGroupName, functionName, args) {
     const func = this.rpcFuncs[functionName]
     if (!func) {
-      debugger
+      // debugger
       throw new Error(
         `MainThreadRpcDriver has no RPC function "${functionName}"`,
       )

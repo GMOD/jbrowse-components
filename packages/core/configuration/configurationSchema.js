@@ -74,7 +74,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(unionType) {
       let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
       if (!typeName.length) typeName = [getDefaultValue(type).type]
       if (!typeName[0]) {
-        debugger
+        // debugger
         throw new Error('invalid config schema type', type)
       }
       typeNames.push(...typeName)

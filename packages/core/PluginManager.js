@@ -31,7 +31,9 @@ class PhasedScheduler {
 
   run() {
     this.phaseOrder.forEach((phaseName) => {
-      if (this.phaseCallbacks[phaseName]) { this.phaseCallbacks[phaseName].forEach(callback => callback()) }
+      if (this.phaseCallbacks[phaseName]) {
+        this.phaseCallbacks[phaseName].forEach(callback => callback())
+      }
     })
   }
 }

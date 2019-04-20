@@ -14,7 +14,8 @@
     "no-restricted-syntax": "off",
     "no-param-reassign": "warn",
     "semi": ["error", "never"],
-    "@typescript-eslint/no-var-requires": "off"
+    "@typescript-eslint/no-var-requires": "off",
+    "monorepo/no-internal-import": "off"
   },
   "overrides": [
     {

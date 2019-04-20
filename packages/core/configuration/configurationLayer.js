@@ -84,7 +84,7 @@ function ConfigurationLayer(parentSchemaType) {
       let parentActualType = parentSchemaType
       if (isOptionalType(parentSchemaType)) { parentActualType = getSubType(parentSchemaType) }
 
-      if (!parentActualType.properties) debugger
+      // if (!parentActualType.properties) debugger
 
       let memberType = getPropertyType(parentActualType, memberName)
 
