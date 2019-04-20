@@ -1,4 +1,4 @@
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 

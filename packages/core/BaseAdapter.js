@@ -1,5 +1,5 @@
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import { ObservableCreate } from './util/rxjs'
+import { checkAbortSignal } from './util'
 
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -15,10 +15,11 @@ export default class BaseAdapter {
   ]
 
   constructor() {
-    if (new.target === BaseAdapter)
+    if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
       )
+    }
   }
 
   /**
@@ -79,7 +80,7 @@ export default class BaseAdapter {
    * @returns {Observable[Feature]} see getFeatures()
    */
   getFeaturesInRegion(region, signal) {
-    return ObservableCreate(async observer => {
+    return ObservableCreate(async (observer) => {
       const hasData = await this.hasDataForRefName(region.refName)
       checkAbortSignal(signal)
       if (!hasData) {

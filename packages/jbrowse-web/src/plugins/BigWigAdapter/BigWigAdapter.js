@@ -1,6 +1,6 @@
 import { BigWig } from '@gmod/bbi'
 
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'

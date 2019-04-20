@@ -1,6 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import BaseAdapter from './BaseAdapter'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { ObservableCreate } from './util/rxjs'
 
 describe('base data adapter', () => {
   it('throws if instantiated directly', () => {
@@ -13,7 +13,7 @@ describe('base data adapter', () => {
   it('throws if getRefNames() is not overridden by the subclass', async () => {
     class Adapter extends BaseAdapter {
       getFeatures() {
-        return ObservableCreate(observer => {
+        return ObservableCreate((observer) => {
           observer.next({
             id: 'testFeature',
             start: 100,
@@ -49,15 +49,13 @@ describe('base data adapter', () => {
     }
     const adapter = new Adapter()
 
-    expect(() =>
-      adapter
-        .getFeatures({
-          refName: 'ctgA',
-          start: 0,
-          end: 20000,
-        })
-        .toPromise(),
-    ).toThrow(/getFeatures should be overridden by the subclass/)
+    expect(() => adapter
+      .getFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 20000,
+      })
+      .toPromise()).toThrow(/getFeatures should be overridden by the subclass/)
   })
 
   it('throws if freeResources() is not overridden by the subclass', async () => {
@@ -79,9 +77,7 @@ describe('base data adapter', () => {
       }
 
       getFeatures() {
-        return ObservableCreate(() =>
-          Promise.reject(new Error('something blew up')),
-        )
+        return ObservableCreate(() => Promise.reject(new Error('something blew up')))
       }
     }
     const adapter = new Adapter()
@@ -101,7 +97,7 @@ describe('base data adapter', () => {
       }
 
       getFeatures() {
-        return ObservableCreate(observer => {
+        return ObservableCreate((observer) => {
           observer.next({
             id: 'testFeature',
             start: 100,
@@ -133,6 +129,6 @@ Array [
       end: 20000,
     })
     const featuresArray2 = await features2.pipe(toArray()).toPromise()
-    expect(featuresArray2).toMatchInlineSnapshot(`Array []`)
+    expect(featuresArray2).toMatchInlineSnapshot('Array []')
   })
 })

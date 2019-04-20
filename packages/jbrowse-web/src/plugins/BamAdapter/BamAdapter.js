@@ -1,7 +1,7 @@
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'

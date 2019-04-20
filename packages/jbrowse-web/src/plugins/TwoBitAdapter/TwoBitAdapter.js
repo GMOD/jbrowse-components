@@ -1,7 +1,7 @@
 import { TwoBitFile } from '@gmod/twobit'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 

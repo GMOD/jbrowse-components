@@ -2,7 +2,7 @@ import { IndexedFasta } from '@gmod/indexedfasta'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import BaseAdapter from '../../BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
