@@ -1,34 +1,25 @@
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './BamAdapter'
+import Adapter from './NCListAdapter'
 
-test('adapter can fetch features from volvox.bam', async () => {
+test('adapter can fetch features from ensembl_genes test set', async () => {
   const adapter = new Adapter({
-    bamLocation: {
-      localPath: require.resolve('./test_data/volvox-sorted.bam'),
-    },
-    index: {
-      location: {
-        localPath: require.resolve('./test_data/volvox-sorted.bam.bai'),
-      },
-      indexType: 'BAI',
-    },
+    rootUrlTemplate: `file://${process.cwd()}/test_data/ensembl_genes/{refseq}/trackData.json`,
   })
 
   const features = await adapter.getFeatures({
-    refName: 'ctgA',
-    start: 0,
-    end: 20000,
+    refName: '21',
+    start: 34960388,
+    end: 35960388,
   })
 
   const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray[0].get('refName')).toBe('ctgA')
+  expect(featuresArray[0].get('refName')).toBe('21')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray.length).toEqual(3809)
-  expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
+  expect(featuresJsonArray.length).toEqual(94)
+  expect(featuresJsonArray).toMatchSnapshot()
 
-  expect(await adapter.refIdToName(0)).toBe('ctgA')
-  expect(await adapter.refIdToName(1)).toBe(undefined)
-
-  expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
+  expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
+  expect(await adapter.hasDataForRefName('21')).toBe(true)
+  expect(await adapter.hasDataForRefName('20')).toBe(false)
 })

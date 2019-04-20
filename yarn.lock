@@ -1236,6 +1236,15 @@
     "@gmod/bgzf-filehandle" "^1.2.4"
     es6-promisify "^6.0.1"
 
+"@gmod/nclist@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.0.2.tgz#4abbad2e87bf3a08309cf907b245e7432b927966"
+  integrity sha512-q6IFETZNs0X04Uiha3cY9FgCMcR7mdlRMcDw4EaRHPoKINrdz6+NXGCl/cFB0oAnwXWOSm4W9/pKvqShfyw9MQ==
+  dependencies:
+    "@babel/runtime-corejs2" "^7.4.3"
+    abortable-promise-cache "^1.0.1"
+    quick-lru "^4.0.0"
+
 "@gmod/twobit@^1.1.3":
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-1.1.8.tgz#5ecc419744b551405ea7870ee6f098da4513358f"
@@ -11982,6 +11991,11 @@ quick-lru@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-3.0.0.tgz#2f96145481567e5bc442c6c4a66e86158405c696"
   integrity sha512-WLzHLB/msD8Q/5jNh4LviurG896aIEJRS1M3gHz91nSmaXn8q+/q4yOQvNMIETl9f5pAu3igqexB62ARWOUoOg==
+
+quick-lru@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.0.tgz#a44d44010a776d787af65b1226566dd1ae7b9649"
+  integrity sha512-5cS39FEMrySKt/8c66v10HrmoexP2iYOsJBhtbVrlAr6Cbuc6khFMN8CHJG87c+QsdxBABivfVscgk20I/rPDw==
 
 raf@3.4.1, raf@^3.1.0, raf@^3.4.0:
   version "3.4.1"

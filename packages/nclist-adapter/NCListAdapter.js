@@ -1,61 +1,55 @@
-import { NCListStore } from '@gmod/nclist'
+import NCListStore from '@gmod/nclist'
+import { openUrl } from '@gmod/jbrowse-core/util/io'
 
-import { openLocation } from '@gmod/jbrowse-core/util/io'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
+/**
+ * wrapper to adapt nclist features to act like jbrowse 2 features
+ */
+class NCListFeature {
+  static tagMap = { refName: 'seq_id' }
+
+  constructor(ncFeature) {
+    this.ncFeature = ncFeature
+  }
+
+  mapTagName(ncTagName) {
+    const mapped = NCListFeature.tagMap[ncTagName] || ncTagName
+    return mapped.toLowerCase()
+  }
+
+  get(attrName) {
+    return this.ncFeature.get(this.mapTagName(attrName))
+  }
+
+  toJSON() {
+    const data = {}
+    this.ncFeature.tags().forEach((tag) => {
+      const mappedTag = this.mapTagName(tag)
+      const value = this.ncFeature.get(tag)
+      if (mappedTag === 'subfeatures') {
+        data.subfeatures = (value || []).map(f => new NCListFeature(f).toJSON())
+      } else {
+        data[this.mapTagName(tag)] = value
+      }
+    })
+    return data
+  }
+}
 export default class BamAdapter extends BaseAdapter {
+  static capabilities = ['getFeatures']
+
   constructor(config) {
     super()
-    const { bamLocation } = config
+    const { rootUrlTemplate } = config
 
-    const indexLocation = config.index.location
-    const { indexType } = config.index
-    const bamOpts = {
-      bamFilehandle: openLocation(bamLocation),
-    }
-
-    const indexFile = openLocation(indexLocation)
-    if (indexType === 'CSI') {
-      bamOpts.csiFilehandle = indexFile
-    } else {
-      bamOpts.baiFilehandle = indexFile
-    }
-
-    this.bam = new BamFile(bamOpts)
-  }
-
-  async setup() {
-    if (!this.samHeader) {
-      const samHeader = await this.bam.getHeader()
-      this.samHeader = {}
-
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ref ID numbers and names
-      const idToName = []
-      const nameToId = {}
-      const sqLines = samHeader.filter(l => l.tag === 'SQ')
-      sqLines.forEach((sqLine, refId) => {
-        sqLine.data.forEach((item) => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
-          }
-        })
-      })
-      if (idToName.length) {
-        this.samHeader.idToName = idToName
-        this.samHeader.nameToId = nameToId
-      }
-    }
-  }
-
-  async getRefNames() {
-    await this.setup()
-    return this.samHeader.idToName
+    this.nclist = new NCListStore({
+      baseUrl: '',
+      urlTemplate: rootUrlTemplate,
+      readFile: url => openUrl(url).readFile(),
+    })
   }
 
   /**
@@ -68,16 +62,21 @@ export default class BamAdapter extends BaseAdapter {
    */
   getFeatures({ refName, start, end }, signal) {
     return ObservableCreate(async (observer) => {
-      await this.setup()
-      const records = await this.bam.getRecordsForRange(refName, start, end, {
-        signal,
-      })
-      checkAbortSignal(signal)
-      records.forEach((record) => {
-        observer.next(this.bamRecordToFeature(record))
-      })
+      for await (const feature of this.nclist.getFeatures({ refName, start, end }, { signal })) {
+        checkAbortSignal(signal)
+        observer.next(this.wrapFeature(feature))
+      }
       observer.complete()
     })
+  }
+
+  wrapFeature(ncFeature) {
+    return new NCListFeature(ncFeature)
+  }
+
+  async hasDataForRefName(refName) {
+    const root = await this.nclist.getDataRoot(refName)
+    return !!(root && root.stats && root.stats.featureCount)
   }
 
   /**
@@ -86,17 +85,4 @@ export default class BamAdapter extends BaseAdapter {
    * from caches, etc
    */
   freeResources(/* { region } */) {}
-
-  bamRecordToFeature(record) {
-    return new BamSlightlyLazyFeature(record, this)
-  }
-
-  refIdToName(refId) {
-    // use info from the SAM header if possible, but fall back to using
-    // the ref name order from when the browser's ref names were loaded
-    if (this.samHeader.idToName) {
-      return this.samHeader.idToName[refId]
-    }
-    return undefined
-  }
 }

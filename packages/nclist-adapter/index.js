@@ -1,36 +1,24 @@
-import { types } from 'mobx-state-tree'
 import Plugin from '@gmod/jbrowse-core/Plugin'
 import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import AdapterClass from './NCListAdapter'
 
 const configSchema = ConfigurationSchema(
-  'BamAdapter',
+  'NCListAdapter',
   {
-    bamLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam' },
+    rootUrlTemplate: {
+      type: 'string',
+      defaultValue: '/path/to/my/trackData.json',
     },
-    index: ConfigurationSchema('BamIndex', {
-      indexType: {
-        model: types.enumeration('IndexType', ['BAI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'BAI',
-      },
-      location: {
-        type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bam.bai' },
-      },
-    }),
   },
   { explicitlyTyped: true },
 )
 
-export default class BamAdapterPlugin extends Plugin {
+export default class NCListAdapterPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addAdapterType(
       () => new AdapterType({
-        name: 'BamAdapter',
+        name: 'NCListAdapter',
         configSchema,
         AdapterClass,
       }),

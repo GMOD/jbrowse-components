@@ -9,7 +9,9 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/nclist": "^0.0.2",
     "mobx-state-tree": "^3.14.0",
-    "@gmod/jbrowse-core": "^2.0.0"
+    "rxjs": "^6.4.0"
   }
 }

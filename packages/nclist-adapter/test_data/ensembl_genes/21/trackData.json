@@ -1,0 +1,793 @@
+{
+  "featureCount": 2979,
+  "formatVersion": 1,
+  "histograms": {
+    "meta": [
+      {
+        "arrayParams": {
+          "chunkSize": 10000,
+          "length": 963,
+          "urlTemplate": "hist-50000-{Chunk}.json"
+        },
+        "basesPerBin": "50000"
+      },
+      {
+        "arrayParams": {
+          "chunkSize": 10000,
+          "length": 482,
+          "urlTemplate": "hist-100000-{Chunk}.json"
+        },
+        "basesPerBin": "100000"
+      },
+      {
+        "arrayParams": {
+          "chunkSize": 10000,
+          "length": 193,
+          "urlTemplate": "hist-250000-{Chunk}.json"
+        },
+        "basesPerBin": "250000"
+      },
+      {
+        "arrayParams": {
+          "chunkSize": 10000,
+          "length": 97,
+          "urlTemplate": "hist-500000-{Chunk}.json"
+        },
+        "basesPerBin": "500000"
+      }
+    ],
+    "stats": [
+      {
+        "basesPerBin": "50000",
+        "max": 87,
+        "mean": 4.53894080996885
+      },
+      {
+        "basesPerBin": "100000",
+        "max": 140,
+        "mean": 7.61203319502075
+      },
+      {
+        "basesPerBin": "250000",
+        "max": 140,
+        "mean": 16.880829015544
+      },
+      {
+        "basesPerBin": "500000",
+        "max": 154,
+        "mean": 32.1649484536082
+      }
+    ]
+  },
+  "intervals": {
+    "classes": [
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Alias",
+          "Id",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {
+          "Alias": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "External_name",
+          "Logic_name",
+          "Score",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Logic_name",
+          "Score",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Description",
+          "Gene_id",
+          "Id",
+          "Logic_name",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Havana_transcript",
+          "Havana_version",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Tag",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Constitutive",
+          "Ensembl_end_phase",
+          "Ensembl_phase",
+          "Exon_id",
+          "Name",
+          "Rank",
+          "Seq_id",
+          "Source",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Havana_transcript",
+          "Havana_version",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Tag",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "External_name",
+          "Logic_name",
+          "Score",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Ccdsid",
+          "Havana_transcript",
+          "Havana_version",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Tag",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Id",
+          "Phase",
+          "Protein_id",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Gene_id",
+          "Id",
+          "Logic_name",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Ccdsid",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Tag",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Biotype",
+          "Ccdsid",
+          "Havana_transcript",
+          "Havana_version",
+          "Id",
+          "Name",
+          "Seq_id",
+          "Source",
+          "Subfeatures",
+          "Transcript_id",
+          "Type",
+          "Version"
+        ],
+        "isArrayAttr": {
+          "Subfeatures": 1
+        }
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Strand",
+          "Id",
+          "Seq_id",
+          "Source",
+          "Type"
+        ],
+        "isArrayAttr": {}
+      },
+      {
+        "attributes": [
+          "Start",
+          "End",
+          "Chunk"
+        ],
+        "isArrayAttr": {
+          "Sublist": 1
+        }
+      }
+    ],
+    "count": 2979,
+    "lazyClass": 17,
+    "maxEnd": 48129895,
+    "minStart": 0,
+    "nclist": [
+      [
+        17,
+        0,
+        48129895,
+        1,
+        {
+          "Sublist": [
+            [
+              17,
+              10996025,
+              15516789,
+              2
+            ],
+            [
+              17,
+              15481133,
+              17065622,
+              3
+            ],
+            [
+              17,
+              17066618,
+              18827177,
+              4
+            ],
+            [
+              17,
+              18872996,
+              19858917,
+              5
+            ],
+            [
+              17,
+              19933582,
+              25351370,
+              6
+            ],
+            [
+              17,
+              25415571,
+              27108211,
+              7
+            ],
+            [
+              17,
+              27106880,
+              27543446,
+              8
+            ],
+            [
+              17,
+              27306372,
+              30276019,
+              9
+            ],
+            [
+              17,
+              30300465,
+              30426809,
+              10
+            ],
+            [
+              17,
+              30428125,
+              30660526,
+              11
+            ],
+            [
+              17,
+              30566391,
+              31003071,
+              12
+            ],
+            [
+              17,
+              30909253,
+              31809282,
+              13
+            ],
+            [
+              17,
+              31812596,
+              33041244,
+              14
+            ],
+            [
+              17,
+              33043345,
+              33785717,
+              15
+            ],
+            [
+              17,
+              33784313,
+              33997406,
+              16
+            ],
+            [
+              17,
+              34001068,
+              34115433,
+              17
+            ],
+            [
+              17,
+              34106209,
+              34603265,
+              18
+            ],
+            [
+              17,
+              34602205,
+              34851655,
+              19
+            ],
+            [
+              17,
+              34804791,
+              34915797,
+              20
+            ],
+            [
+              17,
+              34890916,
+              35284635,
+              21,
+              {
+                "Sublist": [
+                  [
+                    17,
+                    34960388,
+                    35016232,
+                    22
+                  ],
+                  [
+                    17,
+                    35014705,
+                    35272165,
+                    23
+                  ]
+                ]
+              }
+            ],
+            [
+              17,
+              35015108,
+              35884573,
+              24
+            ],
+            [
+              17,
+              35885439,
+              37376965,
+              25
+            ],
+            [
+              17,
+              37270352,
+              37529850,
+              26
+            ],
+            [
+              17,
+              37529079,
+              38073891,
+              27
+            ],
+            [
+              17,
+              38071432,
+              38446497,
+              28
+            ],
+            [
+              17,
+              38445525,
+              38575413,
+              29
+            ],
+            [
+              17,
+              38445536,
+              39289267,
+              30
+            ],
+            [
+              17,
+              39323727,
+              39748643,
+              31
+            ],
+            [
+              17,
+              39751948,
+              40544292,
+              32
+            ],
+            [
+              17,
+              40546694,
+              40556117,
+              33
+            ],
+            [
+              17,
+              40556101,
+              40693485,
+              34
+            ],
+            [
+              17,
+              40556394,
+              40800454,
+              35
+            ],
+            [
+              17,
+              40777769,
+              41174023,
+              36
+            ],
+            [
+              17,
+              41239242,
+              42729358,
+              37
+            ],
+            [
+              17,
+              42689079,
+              42831141,
+              38
+            ],
+            [
+              17,
+              42836477,
+              43199338,
+              39
+            ],
+            [
+              17,
+              43218384,
+              43299591,
+              40
+            ],
+            [
+              17,
+              43222342,
+              43445060,
+              41
+            ],
+            [
+              17,
+              43483067,
+              43613385,
+              42
+            ],
+            [
+              17,
+              43619798,
+              43786703,
+              43
+            ],
+            [
+              17,
+              43791998,
+              44001550,
+              44
+            ],
+            [
+              17,
+              43928733,
+              44074650,
+              45
+            ],
+            [
+              17,
+              44073745,
+              44195619,
+              46
+            ],
+            [
+              17,
+              44073765,
+              44453691,
+              47
+            ],
+            [
+              17,
+              44473300,
+              44535819,
+              48
+            ],
+            [
+              17,
+              44547629,
+              45139831,
+              49
+            ],
+            [
+              17,
+              45138974,
+              45285899,
+              50
+            ],
+            [
+              17,
+              45285066,
+              45527813,
+              51
+            ],
+            [
+              17,
+              45527170,
+              45706044,
+              52
+            ],
+            [
+              17,
+              45705720,
+              45760353,
+              53
+            ],
+            [
+              17,
+              45767649,
+              46131495,
+              54
+            ],
+            [
+              17,
+              45937098,
+              46294807,
+              55
+            ],
+            [
+              17,
+              46305867,
+              46360423,
+              56
+            ],
+            [
+              17,
+              46359924,
+              46678645,
+              57
+            ],
+            [
+              17,
+              46683842,
+              46826234,
+              58
+            ],
+            [
+              17,
+              46825051,
+              46980904,
+              59
+            ],
+            [
+              17,
+              46994283,
+              47504416,
+              60
+            ],
+            [
+              17,
+              47513177,
+              47552763,
+              61
+            ],
+            [
+              17,
+              47556175,
+              47608855,
+              62
+            ],
+            [
+              17,
+              47608054,
+              47679304,
+              63
+            ],
+            [
+              17,
+              47655046,
+              47745351,
+              64
+            ],
+            [
+              17,
+              47744035,
+              47879576,
+              65
+            ],
+            [
+              17,
+              47878811,
+              47989926,
+              66
+            ],
+            [
+              17,
+              47882383,
+              48119402,
+              67
+            ]
+          ]
+        }
+      ]
+    ],
+    "urlTemplate": "lf-{Chunk}.json"
+  }
+}
