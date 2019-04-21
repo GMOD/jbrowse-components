@@ -163,7 +163,14 @@ export function guessAdapter(fileName, protocol) {
     return {
       type: unsupported,
     }
-  return {}
+
+  if (/\/trackData.json$/i.test(fileName))
+    return {
+      type: 'NCListAdapter',
+      rootUrlTemplate: fileName
+    }
+
+    return {}
 }
 
 function guessTrackType(adapterType) {

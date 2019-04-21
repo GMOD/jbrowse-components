@@ -8,7 +8,7 @@ const configSchema = ConfigurationSchema(
   {
     rootUrlTemplate: {
       type: 'string',
-      defaultValue: '/path/to/my/trackData.json',
+      defaultValue: '/path/to/my/{refseq}/trackData.json',
     },
   },
   { explicitlyTyped: true },
