@@ -1236,10 +1236,10 @@
     "@gmod/bgzf-filehandle" "^1.2.4"
     es6-promisify "^6.0.1"
 
-"@gmod/nclist@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.0.2.tgz#4abbad2e87bf3a08309cf907b245e7432b927966"
-  integrity sha512-q6IFETZNs0X04Uiha3cY9FgCMcR7mdlRMcDw4EaRHPoKINrdz6+NXGCl/cFB0oAnwXWOSm4W9/pKvqShfyw9MQ==
+"@gmod/nclist@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.1.0.tgz#56ad4e4d411c87dd75b5770761406d8d7386bbf5"
+  integrity sha512-isRSW4Evf4C8100M7+aQXnC9f4YZ3h5SDuTCkbO8tj1vqhRMzsa414QiFYYnZaxQ/Uz90oBX0tMd3n14dVub/g==
   dependencies:
     "@babel/runtime-corejs2" "^7.4.3"
     abortable-promise-cache "^1.0.1"
