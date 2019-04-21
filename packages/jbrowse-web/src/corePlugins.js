@@ -7,6 +7,7 @@ import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 import BigWigAdapterPlugin from './plugins/BigWigAdapter'
 import BigBedAdapterPlugin from './plugins/BigBedAdapter'
 import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
+import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -50,4 +51,5 @@ export default [
   FilteringTrackPlugin,
   WiggleRendererPlugin,
   LollipopRendererPlugin,
+  NCListAdapterPlugin,
 ]
