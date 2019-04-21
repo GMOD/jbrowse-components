@@ -51,6 +51,18 @@ module.exports = {
     library: 'JBrowseProteinViewer',
     libraryTarget: 'umd',
   },
+  resolve: {
+    extensions: [
+      '.mjs',
+      '.web.js',
+      '.js',
+      '.ts',
+      '.tsx',
+      '.json',
+      '.web.jsx',
+      '.jsx',
+    ],
+  },
   module: {
     rules: [
       {
@@ -78,7 +90,7 @@ module.exports = {
           },
           {
             loader: require.resolve('file-loader'),
-            exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
+            exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
           },
           // ** STOP ** Are you adding a new loader?
           // Make sure to add the new loader(s) before the "file" loader.

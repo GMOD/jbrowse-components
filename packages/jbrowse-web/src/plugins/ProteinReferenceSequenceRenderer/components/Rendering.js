@@ -6,9 +6,10 @@ import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { objectFromEntries } from '@gmod/jbrowse-core/util'
 import aminoAcids from '../aminoAcids'
-import { featuresConsensusSequence, contrastingTextColor } from '@gmod/jbrowse-core/util'
+import {contrastingTextColor} from '@gmod/jbrowse-core/util/color'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import nucleotides from '../nucleotides'
+import { featuresConsensusSequence } from '../util'
 
 function Sequence({
   getColorForLetter,
