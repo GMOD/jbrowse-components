@@ -5,39 +5,8 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
-/**
- * wrapper to adapt nclist features to act like jbrowse 2 features
- */
-class NCListFeature {
-  static tagMap = { refName: 'seq_id' }
+import NCListFeature from './NCListFeature'
 
-  constructor(ncFeature) {
-    this.ncFeature = ncFeature
-  }
-
-  mapTagName(ncTagName) {
-    const mapped = NCListFeature.tagMap[ncTagName] || ncTagName
-    return mapped.toLowerCase()
-  }
-
-  get(attrName) {
-    return this.ncFeature.get(this.mapTagName(attrName))
-  }
-
-  toJSON() {
-    const data = {}
-    this.ncFeature.tags().forEach((tag) => {
-      const mappedTag = this.mapTagName(tag)
-      const value = this.ncFeature.get(tag)
-      if (mappedTag === 'subfeatures') {
-        data.subfeatures = (value || []).map(f => new NCListFeature(f).toJSON())
-      } else {
-        data[this.mapTagName(tag)] = value
-      }
-    })
-    return data
-  }
-}
 export default class BamAdapter extends BaseAdapter {
   static capabilities = ['getFeatures']
 
@@ -71,6 +40,7 @@ export default class BamAdapter extends BaseAdapter {
   }
 
   wrapFeature(ncFeature) {
+    // eslint-disable-next-line no-underscore-dangle
     return new NCListFeature(ncFeature)
   }
 
