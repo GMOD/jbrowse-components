@@ -7,6 +7,7 @@ import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configura
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import AssemblyManager from './managers/AssemblyManager'
+import rootConfig from './rootConfig'
 
 import * as rpcFuncs from './render'
 
@@ -36,7 +37,7 @@ export default (pluginManager, workerManager) => {
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      configuration: pluginManager.rootConfig,
+      configuration: rootConfig(pluginManager),
     })
     .volatile(self => {
       const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {

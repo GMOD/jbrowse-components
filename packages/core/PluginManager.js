@@ -10,10 +10,6 @@ import MenuBarType from './pluggableElementTypes/MenuBarType'
 
 import { ConfigurationSchema } from './configuration'
 
-// TODO: remove this
-// eslint-disable-next-line monorepo/no-relative-import
-import rootConfig from '../jbrowse-web/src/rootConfig'
-
 // little helper class that keeps groups of callbacks that are
 // then run in a specified order by group
 class PhasedScheduler {
@@ -80,16 +76,10 @@ export default class PluginManager {
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
-    this.elementCreationSchedule.add('root', this.addRootConfig.bind(this))
-
     // add all the initial plugins
     initialPlugins.forEach((plugin) => {
       this.addPlugin(plugin)
     })
-  }
-
-  addRootConfig() {
-    this.rootConfig = rootConfig(this)
   }
 
   addPlugin(plugin) {

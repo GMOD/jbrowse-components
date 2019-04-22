@@ -5,12 +5,8 @@ import Adapter from './BgzipFastaAdapter'
 test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter({
     fastaLocation: { localPath: require.resolve('./test_data/volvox.fa.gz') },
-    faiLocation: {
-      localPath: require.resolve('./test_data/volvox.fa.gz.fai'),
-    },
-    gziLocation: {
-      localPath: require.resolve('./test_data/volvox.fa.gz.gzi'),
-    },
+    faiLocation: { localPath: require.resolve('./test_data/volvox.fa.gz.fai') },
+    gziLocation: { localPath: require.resolve('./test_data/volvox.fa.gz.gzi') },
   })
 
   const features = await adapter.getFeatures({
