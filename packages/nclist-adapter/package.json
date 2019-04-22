@@ -2,7 +2,7 @@
   "name": "@gmod/jbrowse-plugin-nclist-adapter",
   "version": "2.0.0",
   "description": "JBrowse 2 adapter for reading JBrowse 1 nested containment lists",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "cd ../..; jest packages/nclist-adapter"
   },
