@@ -25,13 +25,13 @@ export default (pluginManager, configSchema) =>
               self.setLoading(aborter)
 
               if (autoscaleType === 'global') {
-                self.statsPromise = self.adapter.getGlobalStats(aborter)
+                self.statsPromise = self.adapter.getGlobalStats(aborter.signal)
               } else if (autoscaleType === 'local') {
                 const regions = getContainingView(self).dynamicBlocks
                 if (!regions.length) return
                 self.statsPromise = self.adapter.getMultiRegionStats(
                   regions,
-                  aborter,
+                  aborter.signal,
                 )
               }
               self.statsPromise.then(s => self.setStats(s))

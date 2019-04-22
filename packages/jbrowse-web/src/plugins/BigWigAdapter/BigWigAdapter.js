@@ -41,16 +41,14 @@ export default class BigWigAdapter extends BaseAdapter {
     return header.totalSummary
   }
 
-  // todo: add caching
   // todo: incorporate summary blocks
-  async getRegionStats(region, abortSignal) {
+  getRegionStats(region, abortSignal) {
     const { refName, start, end } = region
-    const ret = await this.statsCache.get(
+    return this.statsCache.get(
       `${refName}_${start}_${end}`,
       region,
       abortSignal,
     )
-    return ret
   }
 
   // todo: add caching
