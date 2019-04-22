@@ -14,7 +14,7 @@ for (let i = -20; i < 20; i += 1) {
 
 function WiggleTrackComponent(props) {
   const { model } = props
-  const { stats, ready, height } = model
+  const { domain, ready, height } = model
 
   const getRendererConf = (subtrack, slot) =>
     readConfObject(model.configuration.renderer, slot)
@@ -22,7 +22,7 @@ function WiggleTrackComponent(props) {
   const scaleType = getConf(model, 'scaleType')
   const inverted = getConf(model, 'inverted')
   const getYScaleBar = () => {
-    const { min, max } = stats
+    const { min, max } = domain
     const [maxScore, minScore] = getConfs(model, ['maxScore', 'minScore'])
     const opts = { minScore, maxScore, inverted }
     const scale = getScale(scaleType, [min, max], [height, 0], opts)

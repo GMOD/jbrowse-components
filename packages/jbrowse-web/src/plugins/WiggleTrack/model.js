@@ -6,6 +6,7 @@ import { ConfigurationReference, getConf } from '../../configuration'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getParentRenderProps, getContainingView } from '../../util/tracks'
+import { getNiceDomain } from '../WiggleRenderer/util'
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -34,6 +35,7 @@ export default (pluginManager, configSchema) =>
                   aborter.signal,
                 )
               }
+
               self.statsPromise.then(s => self.setStats(s))
             },
             { delay: 1000 },
@@ -43,8 +45,10 @@ export default (pluginManager, configSchema) =>
         },
         setStats(s) {
           const { scoreMin: min, scoreMax: max } = s
-          console.log(self.stats)
-          self.stats.setStats({ min, max })
+          const scaleType = getConf(self, 'scaleType')
+          const minScore = getConf(self, 'minScore')
+          const maxScore = getConf(self, 'maxScore')
+          self.domain.setStats({ min, max }, scaleType, minScore, maxScore)
           self.ready = true
         },
         setLoading(abortSignal) {
@@ -62,8 +66,8 @@ export default (pluginManager, configSchema) =>
             ...getParentRenderProps(self),
             trackModel: self,
             notReady: !self.ready,
-            min: self.stats.min,
-            max: self.stats.max,
+            min: self.domain.min,
+            max: self.domain.max,
             minScore: getConf(self, 'minScore'), // todo: passing config this way needed?
             maxScore: getConf(self, 'maxScore'),
             scaleType: getConf(self, 'scaleType'),
@@ -77,12 +81,17 @@ export default (pluginManager, configSchema) =>
         reactComponent: WiggleTrackComponent,
         rendererTypeName: 'WiggleRenderer', // todo is this needed?
         ready: false,
-        stats: types
-          .model('stats', { min: 0, max: 0, mean: 0 })
+        domain: types
+          .model('domain', { min: 0, max: 0, mean: 0 })
           .actions(self => ({
-            setStats(s) {
-              self.min = s.min
-              self.max = s.max
+            setStats(s, scaleType, minScore, maxScore) {
+              const [min, max] = getNiceDomain(scaleType, [s.min, s.max], {
+                minScore,
+                maxScore,
+              })
+              console.log(min, max, scaleType, minScore, maxScore)
+              self.min = min
+              self.max = max
               self.mean = s.mean
             },
           }))

@@ -10,9 +10,9 @@ import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
  */
 export function getScale(scaleType, domain, range, opts = {}) {
   let scale
-  let [min, max] = domain
+  const [min, max] = domain
   if (min === undefined || max === undefined) throw new Error('invalid domain')
-  const { pivotValue, minScore, maxScore, inverted } = opts
+  const { pivotValue, inverted } = opts
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
@@ -21,9 +21,6 @@ export function getScale(scaleType, domain, range, opts = {}) {
     scale = scaleQuantize()
   } else {
     throw new Error('undefined scaleType')
-  }
-  if (minScore !== undefined || maxScore !== undefined) {
-    ;[min, max] = getNiceDomain(scaleType, [min, max], { minScore, maxScore })
   }
   scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
   scale.nice()
@@ -68,6 +65,7 @@ export function getOrigin(scaleType /* , pivot, stats */) {
  */
 export function getNiceDomain(scaleType, [min, max], opts = {}) {
   const { minScore, maxScore } = opts
+
   if (scaleType === 'linear') {
     if (max < 0) max = 0
     if (min > 0) min = 0
@@ -79,5 +77,19 @@ export function getNiceDomain(scaleType, [min, max], opts = {}) {
   }
   if (minScore !== undefined && minScore !== -Infinity) min = minScore
   if (maxScore !== undefined && maxScore !== Infinity) max = maxScore
-  return [min, max]
+  let scale
+  if (min === undefined || max === undefined) throw new Error('invalid domain')
+  const { pivotValue, inverted } = opts
+  if (scaleType === 'linear') {
+    scale = scaleLinear()
+  } else if (scaleType === 'log') {
+    scale = scaleLog()
+  } else if (scaleType === 'quantize') {
+    scale = scaleQuantize()
+  } else {
+    throw new Error('undefined scaleType')
+  }
+  scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
+  scale.nice()
+  return scale.domain()
 }
