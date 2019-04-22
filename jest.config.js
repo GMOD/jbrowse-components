@@ -12,6 +12,7 @@ module.exports = {
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
     '^.+\\.module\\.(css|sass|scss)$',
+    'generator-jbrowse',
   ],
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{js,jsx}',
