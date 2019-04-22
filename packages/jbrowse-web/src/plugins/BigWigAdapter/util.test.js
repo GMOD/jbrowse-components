@@ -6,4 +6,6 @@ test('calc std', () => {
   const sumSq = s.reduce((a, b) => a + b * b)
   const stddev = calcStdFromSums(sum, sumSq, s.length)
   expect(stddev).toBeCloseTo(0.8164965809) // calculated from a webapp
+  expect(calcStdFromSums(100, 100, 0)).toEqual(0)
+  expect(calcStdFromSums(100, 10000, 0)).toEqual(0)
 })
