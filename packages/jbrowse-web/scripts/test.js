@@ -49,5 +49,7 @@ if (
   argv.push(hasSourceControl ? '--watch' : '--watchAll');
 }
 
+argv.push('--config')
+argv.push('../../jest.config.js')
 
 jest.run(argv);
