@@ -1,6 +1,7 @@
 import { BigWig } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
+import { mergeAll, map } from 'rxjs/operators'
 import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
@@ -89,26 +90,42 @@ export default class BigWigAdapter extends BaseAdapter {
 
   getFeatures({ /* assembly, */ refName, start, end, bpPerPx }, abortSignal) {
     return ObservableCreate(async observer => {
-      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
-        signal: abortSignal,
-        basesPerSpan: bpPerPx,
-      })
-      ob2.subscribe(
-        chunk => {
-          chunk.forEach(record => {
-            observer.next(
-              new SimpleFeature({
-                id: record.start + 1,
-                data: record,
-              }),
-            )
-          })
+      const observable2 = await this.bigwig.getFeatureStream(
+        refName,
+        start,
+        end,
+        {
+          signal: abortSignal,
+          basesPerSpan: bpPerPx,
         },
-        error => {
-          throw new Error(error)
-        },
-        () => observer.complete(),
       )
+      return observable2
+        .pipe(
+          mergeAll(),
+          map(record => {
+            return new SimpleFeature({
+              id: record.start + 1,
+              data: record,
+            })
+          }),
+        )
+        .subscribe(observer)
+      // subscribe(
+      //   chunk => {
+      //     chunk.forEach(record => {
+      //       observer.next(
+      //         new SimpleFeature({
+      //           id: record.start + 1,
+      //           data: record,
+      //         }),
+      //       )
+      //     })
+      //   },
+      //   error => {
+      //     throw new Error(error)
+      //   },
+      //   () => observer.complete(),
+      // )
     })
   }
 }

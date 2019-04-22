@@ -7,6 +7,7 @@ import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getParentRenderProps, getContainingView } from '../../util/tracks'
 import { getNiceDomain } from '../WiggleRenderer/util'
+import { checkAbortSignal } from '../../util'
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -36,7 +37,14 @@ export default (pluginManager, configSchema) =>
                 )
               }
 
-              self.statsPromise.then(s => self.setStats(s))
+              self.statsPromise
+                .then(s => {
+                  checkAbortSignal(aborter.signal)
+                  self.setStats(s)
+                })
+                .catch(e => {
+                  console.warn('received abort', e)
+                })
             },
             { delay: 1000 },
           )
@@ -89,7 +97,6 @@ export default (pluginManager, configSchema) =>
                 minScore,
                 maxScore,
               })
-              console.log(min, max, scaleType, minScore, maxScore)
               self.min = min
               self.max = max
               self.mean = s.mean
