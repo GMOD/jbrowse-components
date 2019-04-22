@@ -19,7 +19,8 @@ class WiggleRenderer extends ServerSideRenderer {
     minScore,
     maxScore,
     height,
-    stats,
+    min,
+    max,
     config = {},
     highResolutionScaling = 1,
     scaleType = 'linear',
@@ -54,7 +55,6 @@ class WiggleRenderer extends ServerSideRenderer {
       'clipColor',
       'highlightColor',
     ])
-    const { min, max } = stats
     const scale = getScale(scaleType, [min, max], [0, height], {
       minScore,
       maxScore,

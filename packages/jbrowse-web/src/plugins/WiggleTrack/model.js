@@ -42,7 +42,9 @@ export default (pluginManager, configSchema) =>
           addDisposer(self, getYAxisScale)
         },
         setStats(s) {
-          self.stats = { min: s.scoreMin, max: s.scoreMax }
+          const { scoreMin: min, scoreMax: max } = s
+          console.log(self.stats)
+          self.stats.setStats({ min, max })
           self.ready = true
         },
         setLoading(abortSignal) {
@@ -59,8 +61,9 @@ export default (pluginManager, configSchema) =>
           return {
             ...getParentRenderProps(self),
             trackModel: self,
-            stats: self.stats,
             notReady: !self.ready,
+            min: self.stats.min,
+            max: self.stats.max,
             minScore: getConf(self, 'minScore'), // todo: passing config this way needed?
             maxScore: getConf(self, 'maxScore'),
             scaleType: getConf(self, 'scaleType'),
@@ -74,6 +77,15 @@ export default (pluginManager, configSchema) =>
         reactComponent: WiggleTrackComponent,
         rendererTypeName: 'WiggleRenderer', // todo is this needed?
         ready: false,
-        stats: types.frozen(),
+        stats: types
+          .model('stats', { min: 0, max: 0, mean: 0 })
+          .actions(self => ({
+            setStats(s) {
+              self.min = s.min
+              self.max = s.max
+              self.mean = s.mean
+            },
+          }))
+          .create(),
       })),
   )
