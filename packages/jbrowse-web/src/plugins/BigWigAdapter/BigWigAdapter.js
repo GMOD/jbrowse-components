@@ -21,7 +21,9 @@ export default class BigWigAdapter extends BaseAdapter {
       cache: new QuickLRU({ maxSize: 1000 }),
       async fill(region, abortSignal) {
         const { refName: ref, start, end } = region
-        const feats = await bigwigRef.getFeatures(ref, start, end, abortSignal)
+        const feats = await bigwigRef.getFeatures(ref, start, end, {
+          signal: abortSignal,
+        })
         const scores = feats.map(s => s.score)
         return scoresToStats(region, scores)
       },

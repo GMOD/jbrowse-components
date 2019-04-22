@@ -44,11 +44,12 @@ function renderBlockData(self) {
     },
   }
 }
+
 async function renderBlockEffect(self, props, allowRefetch = true) {
   const { rendererType, renderProps, rpcManager, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
-  if (self.renderInProgress) self.renderInProgress.abort()
+
   const aborter = new AbortController()
   self.setLoading(aborter)
   if (renderProps.notReady) return
@@ -80,7 +81,11 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
       }
       console.warn(`cached abort detected, failed to recover ${track.name}`)
     }
-    if (isAlive(self)) self.setError(error)
+    if (isAlive(self) && !isAbortException(error)) {
+      // setting the aborted exception as an error will draw the "aborted" error, and we don't
+      // have not found how to create a re-render if this occurs
+      self.setError(error)
+    }
   }
 }
 
@@ -118,8 +123,9 @@ export default types
       addDisposer(self, renderDisposer)
     },
     setLoading(abortController) {
-      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
+      }
       self.filled = false
       self.html = ''
       self.data = undefined
@@ -127,6 +133,7 @@ export default types
       self.renderInProgress = abortController
     },
     setRendered(data, html, renderingComponent, renderProps) {
+      self.error = undefined
       self.filled = true
       self.data = data
       self.html = html
@@ -134,8 +141,9 @@ export default types
       self.renderProps = renderProps
     },
     setError(error) {
-      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
+      }
       // the rendering failed for some reason
       self.error = error
       self.renderInProgress = undefined
@@ -144,7 +152,8 @@ export default types
       self.html = ''
     },
     beforeDestroy() {
-      if (self.renderInProgress && !self.renderInProgress.signal.aborted)
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
+      }
     },
   }))
