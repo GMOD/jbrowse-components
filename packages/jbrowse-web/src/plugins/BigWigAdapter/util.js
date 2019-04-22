@@ -24,6 +24,10 @@ export function calcStdFromSums(sum, sumSquares, n, population = false) {
   return variance < 0 ? 0 : Math.sqrt(variance)
 }
 
+/*
+ * @param s - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
+ * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
+ */
 export function rectifyStats(s) {
   return {
     ...s,
@@ -33,6 +37,12 @@ export function rectifyStats(s) {
   }
 }
 
+/*
+ * calculates per-base scores for variable width features over a region
+ * @param region - object contains start, end
+ * @param features - list of features with start, end, score
+ * @return array of numeric scores
+ */
 export function calcRealStats(region, features) {
   const { start, end } = region
   const scores = []
@@ -59,6 +69,12 @@ export function calcRealStats(region, features) {
   return scores
 }
 
+/*
+ * transform a list of scores to summary statistics
+ * @param region - object with start, end
+ * @param scores - array of score values
+ * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
+ */
 export function scoresToStats(region, scores) {
   const { start, end } = region
   const scoreMax = Math.max(...scores)
@@ -75,25 +91,5 @@ export function scoresToStats(region, scores) {
     scoreSumSquares,
     featureCount,
     basesCovered,
-  })
-}
-
-export function summaryScoresToStats(region, feats) {
-  const scoreMax = Math.max(...feats.map(s => s.scoreMax))
-  const scoreMin = Math.min(...feats.map(s => s.scoreMin))
-  const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-  const scoreSumSquares = feats
-    .map(s => s.scoreSumSquares)
-    .reduce((a, b) => a + b, 0)
-  const featureCount = feats.map(s => s.featureCount).reduce((a, b) => a + b, 0)
-  const basesCovered = feats.map(s => s.basesCovered).reduce((a, b) => a + b, 0)
-
-  return rectifyStats({
-    scoreMin,
-    scoreMax,
-    featureCount,
-    basesCovered,
-    scoreSumSquares,
-    scoreSum,
   })
 }

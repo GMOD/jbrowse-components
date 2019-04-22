@@ -40,15 +40,30 @@ describe('adapter can fetch features from volvox.bw', () => {
       }),
     ).toMatchSnapshot()
   })
+  it('get region stats', async () => {
+    const ret = await adapter.getRegionStats({
+      refName: 'ctgA',
+      start: 10000,
+      end: 40000,
+    })
+
+    ret.theCacheWorks = true
+    const ret2 = await adapter.getRegionStats({
+      refName: 'ctgA',
+      start: 10000,
+      end: 40000,
+    })
+    expect(ret2.theCacheWorks).toEqual(true)
+  })
   it('get local stats', async () => {
     expect(
       await adapter.getMultiRegionStats([
         {
           refName: 'ctgA',
           start: 10000,
-          end: 40000,
+          end: 39999,
         },
-        { refName: 'ctgB', start: 0, end: 100 },
+        { refName: 'ctgB', start: 0, end: 99 },
       ]),
     ).toMatchSnapshot()
   })
