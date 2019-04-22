@@ -17,7 +17,7 @@ exports[`<MainMenuBar /> renders 1`] = `
     <div
       className="MainMenuBar-grow-2"
     />
-    <Component
+    <WithStyles(DropDownMenu)
       key="Help"
       menuItems={
         Array [
@@ -54,6 +54,7 @@ exports[`<MainMenuBar /> renders 1`] = `
             },
             "rpc": Object {
               "configId": "testid",
+              "defaultDriver": "MainThreadRpcDriver",
             },
           },
           "drawerWidgets": Object {},

@@ -3,9 +3,9 @@ import { Observable } from 'rxjs'
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 
-import BaseAdapter from '../../BaseAdapter'
-import { openLocation } from '../../util/io'
-import SimpleFeature from '../../util/simpleFeature'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default class BigBedAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']
