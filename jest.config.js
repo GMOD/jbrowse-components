@@ -12,16 +12,20 @@ module.exports = {
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
     '^.+\\.module\\.(css|sass|scss)$',
-    'generator-jbrowse',
   ],
   testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx}',
-    '<rootDir>/**/*.(spec|test).{js,jsx}',
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
   testPathIgnorePatterns: [
     '/dist/',
   ],
-  collectCoverageFrom: ['src/**/*.{js,jsx}'],
+  collectCoverageFrom: [
+    'packages/*/src/**/*.{js,jsx,ts,tsx}',
+    // most packages have their src in src/, except for jbrowse-core
+    'packages/jbrowse-core/**/*.{js,jsx,ts,tsx}',
+    'packages/jbrowse-core/dist/*',
+  ],
   resolver: 'jest-pnp-resolver',
   setupFiles: [
     'react-app-polyfill/jsdom',

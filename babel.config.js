@@ -18,6 +18,7 @@ module.exports = (api) => {
     ],
     ignore: ['./node_modules', './packages/*/node_modules'],
     plugins: [
+      '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-proposal-export-default-from',
       [
@@ -26,6 +27,23 @@ module.exports = (api) => {
           regenerator: true,
         },
       ],
+    ],
+    overrides: [
+      {
+        test: /generator-jbrowse/,
+        presets: [
+          '@babel/preset-typescript',
+          'react-app',
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                node: 'current',
+              },
+            },
+          ],
+        ],
+      },
     ],
   }
 }
