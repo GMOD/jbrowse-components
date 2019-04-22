@@ -18,6 +18,9 @@ module.exports = {
     '<rootDir>/**/__tests__/**/*.{js,jsx}',
     '<rootDir>/**/*.(spec|test).{js,jsx}',
   ],
+  testPathIgnorePatterns: [
+    '/dist/',
+  ],
   collectCoverageFrom: ['src/**/*.{js,jsx}'],
   resolver: 'jest-pnp-resolver',
   setupFiles: [
