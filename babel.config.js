@@ -18,7 +18,7 @@ module.exports = (api) => {
     ],
     ignore: ['./node_modules', './packages/*/node_modules'],
     plugins: [
-      '@babel/proposal-class-properties',
+      '@babel/plugin-proposal-class-properties',
       '@babel/plugin-proposal-export-default-from',
       [
         '@babel/transform-runtime',
