@@ -1,4 +1,6 @@
 import { BigWig } from '@gmod/bbi'
+import AbortablePromiseCache from 'abortable-promise-cache'
+import QuickLRU from 'quick-lru'
 import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
@@ -12,6 +14,16 @@ export default class BigWigAdapter extends BaseAdapter {
     super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
+    })
+    const bigwigRef = this.bigwig
+    this.statsCache = new AbortablePromiseCache({
+      cache: new QuickLRU({ maxSize: 1000 }),
+      async fill(region, abortSignal) {
+        const { refName: ref, start, end } = region
+        const feats = await bigwigRef.getFeatures(ref, start, end, abortSignal)
+        const scores = feats.map(s => s.score)
+        return scoresToStats(region, scores)
+      },
     })
   }
 
@@ -31,10 +43,14 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: add caching
   // todo: incorporate summary blocks
-  async getRegionStats({ refName, start, end }, opts) {
-    const feats = await this.bigwig.getFeatures(refName, start, end, opts)
-    const scores = feats.map(s => s.score)
-    return scoresToStats(scores)
+  async getRegionStats(region, abortSignal) {
+    const { refName, start, end } = region
+    const ret = await this.statsCache.get(
+      `${refName}_${start}_${end}`,
+      region,
+      abortSignal,
+    )
+    return ret
   }
 
   // todo: add caching
@@ -73,9 +89,11 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures({ /* assembly, */ refName, start, end }, opts = {}) {
+  getFeatures({ /* assembly, */ refName, start, end }, abortSignal) {
     return ObservableCreate(async observer => {
-      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, opts)
+      const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
+        signal: abortSignal,
+      })
       ob2.subscribe(
         chunk => {
           chunk.forEach(record => {

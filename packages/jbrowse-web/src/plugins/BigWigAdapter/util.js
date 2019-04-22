@@ -1,7 +1,10 @@
 export function calcStdFromSums(sum, sumSquares, n) {
   if (n === 0) return 0
+  let variance = sumSquares / n - (sum * sum) / (n * n)
+  if (n > 1) {
+    variance /= n - 1
+  }
 
-  const variance = sumSquares / n - (sum * sum) / (n * n)
   return variance < 0 ? 0 : Math.sqrt(variance)
 }
 
@@ -23,25 +26,23 @@ export function calcRealStats(region, features) {
   let i = 0
   while (pos < end) {
     while (currentFeat < feats.length && pos >= feats[currentFeat].end) {
-      // console.log(
-      //   `currentPos ${pos}`,
-      //   `currentFeat ${JSON.stringify(feats[currentFeat])}`,
-      // )
-      currentFeat++
+      currentFeat += 1
     }
     const f = feats[currentFeat]
     // console.log('currentPos', pos, currentFeat)
     if (!f) {
-      scores[i++] = 0
+      scores[i] = 0
     } else if (pos >= f.start && pos < f.end) {
-      scores[i++] = f.score
+      scores[i] = f.score
     } else {
-      scores[i++] = 0
+      scores[i] = 0
     }
-    pos++
+    i += 1
+    pos += 1
   }
   return scores
 }
+
 export function scoresToStats(region, scores) {
   const { start, end } = region
   const scoreMax = Math.max(...scores)
@@ -58,5 +59,25 @@ export function scoresToStats(region, scores) {
     scoreSumSquares,
     featureCount,
     basesCovered,
+  })
+}
+
+export function summaryScoresToStats(region, feats) {
+  const scoreMax = Math.max(...feats.map(s => s.scoreMax))
+  const scoreMin = Math.min(...feats.map(s => s.scoreMin))
+  const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
+  const scoreSumSquares = feats
+    .map(s => s.scoreSumSquares)
+    .reduce((a, b) => a + b, 0)
+  const featureCount = feats.map(s => s.featureCount).reduce((a, b) => a + b, 0)
+  const basesCovered = feats.map(s => s.basesCovered).reduce((a, b) => a + b, 0)
+
+  return rectifyStats({
+    scoreMin,
+    scoreMax,
+    featureCount,
+    basesCovered,
+    scoreSumSquares,
+    scoreSum,
   })
 }

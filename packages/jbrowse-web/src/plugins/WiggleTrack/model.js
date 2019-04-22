@@ -56,7 +56,6 @@ export default (pluginManager, configSchema) =>
       }))
       .views(self => ({
         get renderProps() {
-          console.log('stats', self.stats.min, self.stats.max)
           return {
             ...getParentRenderProps(self),
             trackModel: self,
