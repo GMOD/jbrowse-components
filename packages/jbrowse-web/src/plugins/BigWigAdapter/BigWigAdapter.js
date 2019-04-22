@@ -87,10 +87,11 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures({ /* assembly, */ refName, start, end }, abortSignal) {
+  getFeatures({ /* assembly, */ refName, start, end, bpPerPx }, abortSignal) {
     return ObservableCreate(async observer => {
       const ob2 = await this.bigwig.getFeatureStream(refName, start, end, {
         signal: abortSignal,
+        basesPerSpan: bpPerPx,
       })
       ob2.subscribe(
         chunk => {

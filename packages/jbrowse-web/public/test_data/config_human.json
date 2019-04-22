@@ -55,7 +55,6 @@
       "renderer": {
         "type": "WiggleRenderer"
       },
-      "type": "BasicTrack",
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -148,9 +147,9 @@
             "configuration": "VKYdNPZZ0"
           },
           {
-            "type": "AlignmentsTrack",
+            "type": "WiggleTrack",
             "height": 100,
-            "configuration": "q68ElFH9Y"
+            "configuration": "wiggle_global_autoscale"
           }
         ],
         "configuration": {}
