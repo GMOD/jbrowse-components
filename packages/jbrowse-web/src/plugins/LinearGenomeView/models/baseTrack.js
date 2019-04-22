@@ -41,13 +41,14 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
+const defaultTrackHeight = 100
 const BaseTrack = types
   .model('BaseTrack', {
     id: ElementId,
     type: types.string,
     height: types.optional(
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
-      minTrackHeight,
+      defaultTrackHeight,
     ),
     subtracks: types.literal(undefined),
     configuration: ConfigurationReference(BaseTrackConfig),

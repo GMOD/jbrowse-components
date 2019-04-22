@@ -137,9 +137,14 @@ Object {
           Object {
             "menuItems": Array [
               Object {
-                "callback": "downloadConfiguration",
-                "icon": "get_app",
-                "name": "Download configuration",
+                "callback": "exportConfiguration",
+                "icon": "cloud_download",
+                "name": "Export configuration",
+              },
+              Object {
+                "callback": "importConfiguration",
+                "icon": "cloud_upload",
+                "name": "Import configuration",
               },
             ],
             "name": "Admin",

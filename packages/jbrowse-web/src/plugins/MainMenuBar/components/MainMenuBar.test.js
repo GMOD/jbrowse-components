@@ -3,6 +3,8 @@ import React from 'react'
 import MainMenuBar from './MainMenuBar'
 import { createTestEnv } from '../../../JBrowse'
 
+jest.mock('shortid', () => ({ generate: () => 'testid' }))
+
 describe('<MainMenuBar />', () => {
   let shallow
 

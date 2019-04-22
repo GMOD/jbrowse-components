@@ -17,7 +17,7 @@ exports[`<MainMenuBar /> renders 1`] = `
     <div
       className="MainMenuBar-grow-2"
     />
-    <WithStyles(DropDownMenu)
+    <Component
       key="Help"
       menuItems={
         Array [
@@ -39,32 +39,56 @@ exports[`<MainMenuBar /> renders 1`] = `
         ]
       }
       menuTitle="Help"
-      model={
+      rootModel={
         Object {
-          "id": "testing",
-          "menus": Array [
-            Object {
-              "menuItems": Array [
+          "activeDrawerWidgets": Object {},
+          "configuration": Object {
+            "configId": "testid",
+            "defaultSession": Object {
+              "menuBars": Array [
                 Object {
-                  "callback": "openAbout",
-                  "icon": "info",
-                  "name": "About",
-                },
-                Object {
-                  "callback": "openHelp",
-                  "icon": "help",
-                  "name": "Help",
-                },
-                Object {
-                  "callback": "openAssemblyEditor",
-                  "icon": "edit",
-                  "name": "Assemblies",
+                  "id": "testing",
+                  "type": "MainMenuBar",
                 },
               ],
-              "name": "Help",
+            },
+            "rpc": Object {
+              "configId": "testid",
+            },
+          },
+          "drawerWidgets": Object {},
+          "drawerWidth": 384,
+          "menuBars": Array [
+            Object {
+              "id": "testing",
+              "menus": Array [
+                Object {
+                  "menuItems": Array [
+                    Object {
+                      "callback": "openAbout",
+                      "icon": "info",
+                      "name": "About",
+                    },
+                    Object {
+                      "callback": "openHelp",
+                      "icon": "help",
+                      "name": "Help",
+                    },
+                    Object {
+                      "callback": "openAssemblyEditor",
+                      "icon": "edit",
+                      "name": "Assemblies",
+                    },
+                  ],
+                  "name": "Help",
+                },
+              ],
+              "type": "MainMenuBar",
             },
           ],
-          "type": "MainMenuBar",
+          "sessionName": "UnnamedSession",
+          "views": Array [],
+          "width": 512,
         }
       }
     />

@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import './bootstrap'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
 import * as webWorkers from './webWorkers'
