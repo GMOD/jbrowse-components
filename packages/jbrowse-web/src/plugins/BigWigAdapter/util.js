@@ -1,8 +1,24 @@
-export function calcStdFromSums(sum, sumSquares, n) {
+/*
+ * calculate standard deviation using the 'shortcut method' that accepts
+ * the sum and the sum squares of the elements
+ *
+ * @param sum - sum(i, 1..n)
+ * @param sumSquares - sum(i^2, 1..n)
+ * @param n - number of elements
+ * @param population - boolean: use population instead of sample correction
+ * @return the estimated std deviation
+ */
+export function calcStdFromSums(sum, sumSquares, n, population = false) {
   if (n === 0) return 0
-  let variance = sumSquares / n - (sum * sum) / (n * n)
-  if (n > 1) {
-    variance /= n - 1
+  let variance
+  if (population) {
+    variance = sumSquares / n - (sum * sum) / (n * n)
+  } else {
+    // sample correction is n-1
+    variance = sumSquares - (sum * sum) / n
+    if (n > 1) {
+      variance /= n - 1
+    }
   }
 
   return variance < 0 ? 0 : Math.sqrt(variance)
