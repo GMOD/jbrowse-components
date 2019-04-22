@@ -1,10 +1,13 @@
+import { promises as fsPromises } from 'fs'
 import { toArray } from 'rxjs/operators'
 
 import Adapter from './NCListAdapter'
 
 test('adapter can fetch features from ensembl_genes test set', async () => {
+  const rootTemplate = `${process.cwd()}/packages/nclist-adapter/test_data/ensembl_genes/{refseq}/trackData.json`
+  await fsPromises.stat(rootTemplate.replace('{refseq}', 21)) // will throw if doesnt exist
   const adapter = new Adapter({
-    rootUrlTemplate: `file://${process.cwd()}/test_data/ensembl_genes/{refseq}/trackData.json`,
+    rootUrlTemplate: `file://${rootTemplate}`,
   })
 
   const features = await adapter.getFeatures({
