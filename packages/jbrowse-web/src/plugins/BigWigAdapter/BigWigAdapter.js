@@ -3,7 +3,7 @@ import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
-import { calcStdFromSums, rectifyStats } from './util'
+import { calcStdFromSums, rectifyStats, scoresToStats } from './util'
 
 export default class BigWigAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']
@@ -34,22 +34,7 @@ export default class BigWigAdapter extends BaseAdapter {
   async getRegionStats({ refName, start, end }, opts) {
     const feats = await this.bigwig.getFeatures(refName, start, end, opts)
     const scores = feats.map(s => s.score)
-
-    const scoreMax = Math.max(...scores)
-    const scoreMin = Math.min(...scores)
-    const scoreSum = scores.reduce((a, b) => a + b, 0)
-    const scoreSumSquares = scores.reduce((a, b) => a + b * b, 0)
-    const featureCount = scores.length
-    const basesCovered = end - start
-
-    return rectifyStats({
-      scoreMax,
-      scoreMin,
-      scoreSum,
-      scoreSumSquares,
-      featureCount,
-      basesCovered,
-    })
+    return scoresToStats(scores)
   }
 
   // todo: add caching
