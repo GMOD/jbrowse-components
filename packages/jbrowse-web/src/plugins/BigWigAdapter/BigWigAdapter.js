@@ -3,25 +3,7 @@ import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
-
-function calcStdFromSums(sum, sumSquares, n) {
-  if (n === 0) return 0
-
-  let variance = sumSquares - (sum * sum) / n
-  if (n > 1) {
-    variance /= n - 1
-  }
-  return variance < 0 ? 0 : Math.sqrt(variance)
-}
-
-function rectifyStats(s) {
-  return {
-    ...s,
-    scoreMean: s.featureCount ? s.scoreSum / s.featureCount : 0,
-    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, s.featureCount),
-    featureDensity: s.featureCount / s.basesCovered,
-  }
-}
+import { calcStdFromSums, rectifyStats } from './util'
 
 export default class BigWigAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']
