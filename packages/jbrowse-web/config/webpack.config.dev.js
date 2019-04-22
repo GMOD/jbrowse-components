@@ -207,6 +207,7 @@ module.exports = {
               {
                 loader: require.resolve('babel-loader'),
                 options: {
+                  rootMode: 'upward',
                   customize: require.resolve(
                     'babel-preset-react-app/webpack-overrides'
                   ),
@@ -240,7 +241,8 @@ module.exports = {
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
-              customize: require.resolve(
+                  rootMode: 'upward',
+                  customize: require.resolve(
                 'babel-preset-react-app/webpack-overrides',
               ),
 

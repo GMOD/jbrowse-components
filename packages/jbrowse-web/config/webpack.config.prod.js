@@ -243,7 +243,7 @@ module.exports = {
       // First, run the linter.
       // It's important to do this before Babel processes the JS.
       {
-        test: /\.(js|mjs|jsx)$/,
+        test: /\.(js|mjs|ts|tsx|jsx)$/,
         enforce: 'pre',
         use: [
           {
@@ -282,6 +282,7 @@ module.exports = {
               {
                 loader: require.resolve('babel-loader'),
                 options: {
+                  rootMode: 'upward',
                   customize: require.resolve(
                     'babel-preset-react-app/webpack-overrides'
                   ),
@@ -311,10 +312,11 @@ module.exports = {
           // Process application JS with Babel.
           // The preset includes JSX, Flow, and some ESnext features.
           {
-            test: /\.(js|mjs|jsx)$/,
+            test: /\.(js|ts|tsx|mjs|jsx)$/,
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
+              rootMode: 'upward',
               plugins: [
                 [
                   require.resolve('babel-plugin-named-asset-import'),
@@ -340,6 +342,7 @@ module.exports = {
             exclude: /@babel(?:\/|\\{1,2})runtime/,
             loader: require.resolve('babel-loader'),
             options: {
+              rootMode: 'upward',
               compact: false,
               presets: [
                 [
