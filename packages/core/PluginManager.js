@@ -44,7 +44,6 @@ export default class PluginManager {
     'adapter',
     'track',
     'view',
-    'root',
     'drawer widget',
     'menu bar',
   )
