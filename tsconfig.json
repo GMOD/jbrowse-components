@@ -9,7 +9,6 @@
     "module": "commonjs",
     "declaration": true,
     "noEmit": true,
-    "outDir": "./build",
     "strict": true,
     "removeComments": false
   }
