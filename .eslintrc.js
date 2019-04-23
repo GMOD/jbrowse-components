@@ -1,5 +1,5 @@
 module.exports = {
-  parser: 'babel-eslint',
+  parser: '@typescript-eslint/parser',
   extends: [
     'airbnb-base',
     'react-app',
@@ -9,12 +9,15 @@ module.exports = {
     'prettier/react',
     'prettier/@typescript-eslint',
   ],
-  plugins: ['prettier'],
+  plugins: ['@typescript-eslint', 'prettier'],
+  parserOptions: { ecmaFeatures: { jsx: true } },
   env: {
     browser: true,
   },
   rules: {
     'class-methods-use-this': 'off',
+    'import/no-cycle': 'warn',
+    'import/prefer-default-export': 'off',
     'monorepo/no-internal-import': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'warn',
@@ -38,17 +41,18 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
   },
+  settings: {
+    "import/resolver": {
+      node: {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
   overrides: [
     {
-        files: ['packages/generator-jbrowse/**/*'],
-        env: {node: true},
-        rules: {'@typescript-eslint/no-var-requires': 'off'}
-      },
-    {
-      files: ['*.ts', '*.tsx'],
-      parser: '@typescript-eslint/parser',
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      plugins: ['@typescript-eslint', 'prettier'],
+      files: ['packages/generator-jbrowse/**/*'],
+      env: { node: true },
+      rules: { '@typescript-eslint/no-var-requires': 'off' }
     },
     {
       files: ['**/*.worker.js'],
