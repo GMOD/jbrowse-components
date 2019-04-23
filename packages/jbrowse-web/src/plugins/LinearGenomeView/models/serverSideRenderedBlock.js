@@ -55,7 +55,6 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
   if (renderProps.notReady) return
 
   try {
-    console.log(renderArgs)
     renderArgs.signal = aborter.signal
     // const callId = [
     //   assembleLocString(renderArgs.region),

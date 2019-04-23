@@ -23,7 +23,7 @@ export default class BigWigAdapter extends BaseAdapter {
         const { refName, start, end, bpPerPx } = region
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
-          basesPerSpan: bpPerPx * 10,
+          basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
         })
         const scores = feats.map(s => s.score)
         return scoresToStats(region, scores)
@@ -103,7 +103,7 @@ export default class BigWigAdapter extends BaseAdapter {
         end,
         {
           signal: abortSignal,
-          basesPerSpan: bpPerPx * 10,
+          basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
         },
       )
       return observable2

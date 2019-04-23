@@ -7,7 +7,7 @@ import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getParentRenderProps, getContainingView } from '../../util/tracks'
 import { getNiceDomain } from '../WiggleRenderer/util'
-import { checkAbortSignal } from '../../util'
+import { checkAbortSignal, isAbortException } from '../../util'
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -34,9 +34,8 @@ export default (pluginManager, configSchema) =>
                 const { dynamicBlocks, bpPerPx } = getContainingView(self)
                 if (!dynamicBlocks.length) return
 
-                // possibly useful to the rpc group name the same group as getFeatures
+                // possibly useful for the rpc group name to be the same group as getFeatures
                 // reason: local stats fetches feature data that might get cached which getFeatures can use
-                console.log(dynamicBlocks, bpPerPx)
                 self.statsPromise = rpcManager.call(
                   'statsGathering',
                   'getMultiRegionStats',
@@ -55,7 +54,9 @@ export default (pluginManager, configSchema) =>
                   self.setStats(s)
                 })
                 .catch(e => {
-                  console.warn('received abort', e)
+                  if (!isAbortException(e)) {
+                    throw e
+                  }
                 })
             },
             { delay: 1000 },
@@ -95,7 +96,6 @@ export default (pluginManager, configSchema) =>
             max,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
-              console.log(self.features)
               const feature = self.features.get(featureId)
               self.selectFeature(feature)
             },
@@ -107,7 +107,10 @@ export default (pluginManager, configSchema) =>
             scaleType: getConf(self, 'scaleType'),
             inverted: getConf(self, 'inverted'),
             height,
-            highResolutionScaling: 2, // todo global config?
+            highResolutionScaling: getConf(
+              getRoot(self),
+              'highResolutionScaling',
+            ), // todo global config?
           }
         },
       }))
