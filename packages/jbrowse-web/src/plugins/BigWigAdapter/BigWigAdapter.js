@@ -20,9 +20,10 @@ export default class BigWigAdapter extends BaseAdapter {
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
       async fill(region, abortSignal) {
-        const { refName: ref, start, end } = region
-        const feats = await bigwigRef.getFeatures(ref, start, end, {
+        const { refName, start, end, bpPerPx } = region
+        const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
+          basesPerSpan: bpPerPx * 10,
         })
         const scores = feats.map(s => s.score)
         return scoresToStats(region, scores)
@@ -46,9 +47,9 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: incorporate summary blocks
   getRegionStats(region, abortSignal) {
-    const { refName, start, end } = region
+    const { refName, start, end, bpPerPx } = region
     return this.statsCache.get(
-      `${refName}_${start}_${end}`,
+      `${refName}_${start}_${end}_${bpPerPx}`,
       region,
       abortSignal,
     )
@@ -61,8 +62,12 @@ export default class BigWigAdapter extends BaseAdapter {
       regions.map(r => this.getRegionStats(r, abortSignal)),
     )
 
-    const scoreMax = Math.max(...feats.map(s => s.scoreMax))
-    const scoreMin = Math.min(...feats.map(s => s.scoreMin))
+    const scoreMax = feats
+      .map(s => s.scoreMax)
+      .reduce((acc, curr) => Math.max(acc, curr))
+    const scoreMin = feats
+      .map(s => s.scoreMin)
+      .reduce((acc, curr) => Math.min(acc, curr))
     const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
     const scoreSumSquares = feats
       .map(s => s.scoreSumSquares)
@@ -98,7 +103,7 @@ export default class BigWigAdapter extends BaseAdapter {
         end,
         {
           signal: abortSignal,
-          basesPerSpan: bpPerPx,
+          basesPerSpan: bpPerPx * 10,
         },
       )
       return observable2

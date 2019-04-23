@@ -31,18 +31,19 @@ export default (pluginManager, configSchema) =>
               if (autoscaleType === 'global') {
                 self.statsPromise = self.adapter.getGlobalStats(aborter.signal)
               } else if (autoscaleType === 'local') {
-                const regions = getContainingView(self).dynamicBlocks
-                if (!regions.length) return
+                const { dynamicBlocks, bpPerPx } = getContainingView(self)
+                if (!dynamicBlocks.length) return
 
                 // possibly useful to the rpc group name the same group as getFeatures
                 // reason: local stats fetches feature data that might get cached which getFeatures can use
+                console.log(dynamicBlocks, bpPerPx)
                 self.statsPromise = rpcManager.call(
                   'statsGathering',
                   'getMultiRegionStats',
                   {
                     adapterConfig: getSnapshot(self.configuration.adapter),
                     adapterType: self.configuration.adapter.type,
-                    regions,
+                    regions: dynamicBlocks.map(r => ({ ...r, bpPerPx })),
                     signal: aborter.signal,
                   },
                 )
@@ -81,15 +82,15 @@ export default (pluginManager, configSchema) =>
       }))
       .views(self => ({
         get renderProps() {
-          console.log('self', self)
           const {
             height,
+            ready,
             domain: { min, max },
           } = self
           return {
             ...getParentRenderProps(self),
             trackModel: self,
-            notReady: !self.ready,
+            notReady: !ready,
             min,
             max,
             onFeatureClick(event, featureId) {

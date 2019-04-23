@@ -138,14 +138,10 @@
       {
         "id": "Cma34s8JJ",
         "type": "LinearGenomeView",
-        "offsetPx": 8355300,
-        "bpPerPx": 0.1,
+        "offsetPx": 835,
+        "bpPerPx": 50,
         "tracks": [
-          {
-            "type": "ReferenceSequence",
-            "height": 100,
-            "configuration": "VKYdNPZZ0"
-          },
+
           {
             "type": "WiggleTrack",
             "height": 100,

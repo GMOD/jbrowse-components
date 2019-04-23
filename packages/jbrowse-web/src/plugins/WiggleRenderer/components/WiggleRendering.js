@@ -34,7 +34,6 @@ class WiggleRendering extends Component {
     this.callMouseHandler('MouseDown', evt)
     if (this.state.featureUnderMouse) {
       evt.persist()
-      console.log(this.state.lastFeatureMouseDown)
       this.setState(oldState => ({
         lastFeatureMouseDown: {
           featureId: oldState.featureUnderMouse,

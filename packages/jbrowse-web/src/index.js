@@ -10,8 +10,8 @@ serviceWorker.register()
 const workerGroups = webWorkers.register()
 
 const configs = [
-  { uri: 'test_data/config_simplebw.json' },
   { uri: 'test_data/config_human.json' },
+  { uri: 'test_data/config_simplebw.json' },
   { uri: 'test_data/config_volvox.json' },
   { uri: 'test_data/config_volvox_connection.json' },
   { uri: 'test_data/config_volvox_mainthread.json' },

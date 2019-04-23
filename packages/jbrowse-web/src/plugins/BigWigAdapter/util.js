@@ -77,8 +77,8 @@ export function calcRealStats(region, features) {
  */
 export function scoresToStats(region, scores) {
   const { start, end } = region
-  const scoreMax = Math.max(...scores)
-  const scoreMin = Math.min(...scores)
+  const scoreMax = scores.reduce((acc, curr) => Math.max(acc, curr))
+  const scoreMin = scores.reduce((acc, curr) => Math.min(acc, curr))
   const scoreSum = scores.reduce((a, b) => a + b, 0)
   const scoreSumSquares = scores.reduce((a, b) => a + b * b, 0)
   const featureCount = scores.length
