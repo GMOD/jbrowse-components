@@ -23,7 +23,6 @@ export default (pluginManager, configSchema) =>
           const getYAxisScale = autorun(
             function getYAxisScaleAutorun() {
               const { rpcManager } = getRoot(self)
-              console.log(rpcManager)
 
               const autoscaleType = getConf(self, 'autoscale')
               const aborter = new AbortController()
@@ -34,10 +33,9 @@ export default (pluginManager, configSchema) =>
               } else if (autoscaleType === 'local') {
                 const regions = getContainingView(self).dynamicBlocks
                 if (!regions.length) return
-                // self.statsPromise = self.adapter.getMultiRegionStats(
-                //   regions,
-                //   aborter.signal,
-                // )
+
+                // possibly useful to the rpc group name the same group as getFeatures
+                // reason: local stats fetches feature data that might get cached which getFeatures can use
                 self.statsPromise = rpcManager.call(
                   'statsGathering',
                   'getMultiRegionStats',
@@ -83,17 +81,31 @@ export default (pluginManager, configSchema) =>
       }))
       .views(self => ({
         get renderProps() {
+          console.log('self', self)
+          const {
+            height,
+            domain: { min, max },
+          } = self
           return {
             ...getParentRenderProps(self),
             trackModel: self,
             notReady: !self.ready,
-            min: self.domain.min,
-            max: self.domain.max,
+            min,
+            max,
+            onFeatureClick(event, featureId) {
+              // try to find the feature in our layout
+              console.log(self.features)
+              const feature = self.features.get(featureId)
+              self.selectFeature(feature)
+            },
+            onClick() {
+              self.clearFeatureSelection()
+            },
             minScore: getConf(self, 'minScore'), // todo: passing config this way needed?
             maxScore: getConf(self, 'maxScore'),
             scaleType: getConf(self, 'scaleType'),
             inverted: getConf(self, 'inverted'),
-            height: self.height,
+            height,
             highResolutionScaling: 2, // todo global config?
           }
         },

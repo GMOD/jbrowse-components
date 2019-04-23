@@ -5,7 +5,7 @@ import {
 } from '../../util/offscreenCanvasPonyfill'
 import WiggleRendering from './components/WiggleRendering'
 
-import { readConfObjects, readConfObject } from '../../configuration'
+import { readConfObjects, readConfObject, getConf } from '../../configuration'
 import { bpToPx } from '../../util'
 import { getScale, getOrigin } from './util'
 import ConfigSchema from './configSchema'
@@ -22,6 +22,7 @@ class WiggleRenderer extends ServerSideRenderer {
     min,
     max,
     config = {},
+    trackModel,
     highResolutionScaling = 1,
     scaleType = 'linear',
     inverted = false,
