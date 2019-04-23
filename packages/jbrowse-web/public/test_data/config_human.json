@@ -45,12 +45,33 @@
     {
       "configId": "wiggle_global_autoscale",
       "type": "WiggleTrack",
-      "name": "Encode remote track",
+      "name": "Encode global autoscale",
       "category": [
         "Bar Category"
       ],
       "height": 300,
       "autoscale": "global",
+      "assemblyName": "hg38",
+      "renderer": {
+        "type": "WiggleRenderer"
+      },
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF826FLP/@@download/ENCFF826FLP.bigWig"
+        },
+        "assemblyName": "hg38"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale",
+      "type": "WiggleTrack",
+      "name": "Encode local autoscale",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "local",
       "assemblyName": "hg38",
       "renderer": {
         "type": "WiggleRenderer"
