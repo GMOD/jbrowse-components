@@ -5,6 +5,32 @@ import {
 } from './rpc/remoteAbortSignals'
 import { checkAbortSignal } from './util'
 
+export async function getRegionStats(
+  pluginManager,
+  { region, adapterType, adapterConfig, signal, sessionId },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getGlobalStats(region, signal)
+}
+
+export async function getMultiRegionStats(
+  pluginManager,
+  { regions, adapterType, adapterConfig, signal, sessionId },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getMultiRegionStats(regions, signal)
+}
+
 export async function getRegions(
   pluginManager,
   { sessionId, adapterType, adapterConfig },

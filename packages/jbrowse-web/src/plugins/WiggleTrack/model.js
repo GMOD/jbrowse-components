@@ -1,4 +1,4 @@
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, getRoot, getSnapshot } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration'
@@ -22,6 +22,9 @@ export default (pluginManager, configSchema) =>
         afterAttach() {
           const getYAxisScale = autorun(
             function getYAxisScaleAutorun() {
+              const { rpcManager } = getRoot(self)
+              console.log(rpcManager)
+
               const autoscaleType = getConf(self, 'autoscale')
               const aborter = new AbortController()
               self.setLoading(aborter)
@@ -31,9 +34,19 @@ export default (pluginManager, configSchema) =>
               } else if (autoscaleType === 'local') {
                 const regions = getContainingView(self).dynamicBlocks
                 if (!regions.length) return
-                self.statsPromise = self.adapter.getMultiRegionStats(
-                  regions,
-                  aborter.signal,
+                // self.statsPromise = self.adapter.getMultiRegionStats(
+                //   regions,
+                //   aborter.signal,
+                // )
+                self.statsPromise = rpcManager.call(
+                  'statsGathering',
+                  'getMultiRegionStats',
+                  {
+                    adapterConfig: getSnapshot(self.configuration.adapter),
+                    adapterType: self.configuration.adapter.type,
+                    regions,
+                    signal: aborter.signal,
+                  },
                 )
               }
 
