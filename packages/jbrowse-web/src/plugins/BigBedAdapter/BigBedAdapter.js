@@ -30,6 +30,9 @@ export default class BigBedAdapter extends BaseAdapter {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
+  /**
+   * @return promise for the totalSummary element from the bigbed's header
+   */
   async getGlobalStats() {
     const header = await this.bigbed.getHeader()
     return header.totalSummary
@@ -38,6 +41,7 @@ export default class BigBedAdapter extends BaseAdapter {
   /**
    * Fetch features for a certain region
    * @param {Region} param
+   * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures({ /* assembly, */ refName, start, end }, abortSignal) {
