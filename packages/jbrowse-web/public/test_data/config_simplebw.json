@@ -10,9 +10,6 @@
       "height": 300,
       "autoscale": "global",
       "assemblyName": "volvox",
-      "renderer": {
-        "type": "WiggleRenderer"
-      },
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -21,7 +18,66 @@
         "assemblyName": "volvox"
       }
     },
-
+{
+      "configId": "wiggle_local_autoscale_density",
+      "type": "WiggleTrack",
+      "name": "Local density",
+      "category": [
+        "Bar Category"
+      ],
+      "renderer": {
+        "renderType": "density"
+      },
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+{
+      "configId": "wiggle_local_autoscale_negative",
+      "type": "WiggleTrack",
+      "name": "Local xyplot negative",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray_negative.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+{
+      "configId": "wiggle_local_autoscale_density_negative",
+      "type": "WiggleTrack",
+      "name": "Local density negative",
+      "category": [
+        "Bar Category"
+      ],
+      "renderer": {
+        "renderType": "density"
+      },
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray_negative.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
     {
       "configId": "wiggle_local_autoscale",
       "type": "WiggleTrack",
@@ -32,9 +88,6 @@
       "height": 300,
       "autoscale": "local",
       "assemblyName": "volvox",
-      "renderer": {
-        "type": "WiggleRenderer"
-      },
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

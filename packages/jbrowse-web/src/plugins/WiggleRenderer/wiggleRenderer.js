@@ -46,8 +46,28 @@ class WiggleRenderer extends ServerSideRenderer {
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
     const toHeight = rawscore => toY(originY) - toY(rawscore)
-    if (highResolutionScaling) {
-      ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    let callback
+    if (readConfObject(config, 'color') === '#f0f') {
+      if (renderType === 'xyplot') {
+        callback = feature =>
+          feature.get('score') < pivotValue ? negColor : posColor
+      } else {
+        // default color, use posColor/negColor instead
+        callback = feature => {
+          return (pivot !== 'none'
+            ? getScale({
+                ...scaleOpts,
+                pivotValue,
+                range: [negColor, 'white', posColor],
+              })
+            : getScale({ ...scaleOpts, range: ['white', posColor] }))(
+            feature.get('score'),
+          )
+        }
+      }
+    } else {
+      callback = feature => readConfObject(config, 'color', [feature])
     }
 
     for (const feature of features.values()) {
@@ -65,22 +85,12 @@ class WiggleRenderer extends ServerSideRenderer {
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-      let c = readConfObject(config, 'color', [feature])
 
       if (renderType === 'density') {
-        if (c === '#f0f') {
-          c = (pivot !== 'none'
-            ? getScale({ ...scaleOpts, range: [negColor, 'white', posColor] })
-            : getScale({ ...scaleOpts, range: ['white', posColor] }))(score)
-        }
-        ctx.fillStyle = c
+        ctx.fillStyle = callback(feature)
         ctx.fillRect(leftPx, 0, w, height)
       } else if (renderType === 'xyplot') {
-        if (c === '#f0f') {
-          if (score < pivotValue) c = negColor
-          else c = posColor
-        }
-
+        const c = callback(feature)
         if (summaryScoreMode === 'max' || summaryScoreMode === 'whiskers') {
           ctx.fillStyle = Color(c)
             .lighten(0.6)
