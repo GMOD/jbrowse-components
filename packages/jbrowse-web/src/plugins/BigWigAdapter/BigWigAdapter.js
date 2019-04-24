@@ -6,7 +6,7 @@ import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
 import { ObservableCreate } from '../../util/rxjs'
-import { calcStdFromSums, rectifyStats, scoresToStats } from './util'
+import { rectifyStats, scoresToStats } from './util'
 
 export default class BigWigAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']

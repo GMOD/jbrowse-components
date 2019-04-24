@@ -8,6 +8,7 @@ import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getParentRenderProps, getContainingView } from '../../util/tracks'
 import { getNiceDomain } from '../WiggleRenderer/util'
 import { checkAbortSignal, isAbortException } from '../../util'
+import WiggleRendererConfigSchema from '../WiggleRenderer/configSchema'
 
 export default (pluginManager, configSchema) =>
   types.compose(
@@ -17,6 +18,7 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('WiggleTrack'),
         configuration: ConfigurationReference(configSchema),
+        height: types.optional(types.integer, 100),
       })
       .actions(self => ({
         afterAttach() {
@@ -82,18 +84,22 @@ export default (pluginManager, configSchema) =>
         },
       }))
       .views(self => ({
+        get rendererTypeName() {
+          return self.configuration.renderer.type
+        },
         get renderProps() {
-          const {
-            height,
-            ready,
-            domain: { min, max },
-          } = self
+          // console.log(getSnapshot(self.configuration.renderer))
+          const config = WiggleRendererConfigSchema.create(
+            getConf(self, 'renderer'),
+          )
+          // console.log(getSnapshot(config))
           return {
             ...getParentRenderProps(self),
             trackModel: self,
-            notReady: !ready,
-            min,
-            max,
+            notReady: !self.ready,
+            config, // : self.configuration.renderer,
+            min: self.domain.min,
+            max: self.domain.max,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
               const feature = self.features.get(featureId)
@@ -102,21 +108,20 @@ export default (pluginManager, configSchema) =>
             onClick() {
               self.clearFeatureSelection()
             },
-            minScore: getConf(self, 'minScore'), // todo: passing config this way needed?
+            minScore: getConf(self, 'minScore'),
             maxScore: getConf(self, 'maxScore'),
             scaleType: getConf(self, 'scaleType'),
             inverted: getConf(self, 'inverted'),
-            height,
+            height: self.height,
             highResolutionScaling: getConf(
               getRoot(self),
               'highResolutionScaling',
-            ), // todo global config?
+            ),
           }
         },
       }))
       .volatile(() => ({
         reactComponent: WiggleTrackComponent,
-        rendererTypeName: 'WiggleRenderer', // todo is this needed?
         ready: false,
         domain: types
           .model('domain', { min: 0, max: 0, mean: 0 })

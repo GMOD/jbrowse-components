@@ -72,36 +72,31 @@ export function calcRealStats(region, features) {
 /*
  * transform a list of scores to summary statistics
  * @param region - object with start, end
- * @param scores - array of score values
+ * @param feats - array of features which are possibly summary features
+ * @param summaryBlock - boolean indicating that features are summary features
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
-export function scoresToStats(region, feats) {
+export function scoresToStats(region, feats, summaryBlock) {
   const { start, end } = region
   let scoreMax
   let scoreMin
-  const scores = feats.map(s => s.score)
-  if (feats[0].summary) {
-    scoreMax = feats
-      .map(s => s.maxScore)
-      .reduce((acc, curr) => Math.max(acc, curr))
-    scoreMin = feats
-      .map(s => s.minScore)
-      .reduce((acc, curr) => Math.min(acc, curr))
-  } else {
-    scoreMax = scores.reduce((acc, curr) => Math.max(acc, curr))
-    scoreMin = scores.reduce((acc, curr) => Math.min(acc, curr))
+  let scoreSum
+  let scoreSumSquares
+
+  for (let i = 0; i < feats.length; i += 1) {
+    const f = feats[i]
+    scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : f.score)
+    scoreMin = Math.min(scoreMax, f.summary ? f.minScore : f.score)
+    scoreSum += f.score
+    scoreSumSquares += f.score * f.score
   }
-  const scoreSum = scores.reduce((a, b) => a + b, 0)
-  const scoreSumSquares = scores.reduce((a, b) => a + b * b, 0)
-  const featureCount = scores.length
-  const basesCovered = end - start + 1
 
   return rectifyStats({
     scoreMax,
     scoreMin,
     scoreSum,
     scoreSumSquares,
-    featureCount,
-    basesCovered,
+    featureCount: feats.length,
+    basesCovered: end - start + 1,
   })
 }

@@ -32,15 +32,16 @@ class WiggleRendering extends Component {
 
   onMouseDown(evt) {
     this.callMouseHandler('MouseDown', evt)
-    if (this.state.featureUnderMouse) {
+    const { featureUnderMouse } = this.state
+    if (featureUnderMouse) {
       evt.persist()
-      this.setState(oldState => ({
+      this.setState({
         lastFeatureMouseDown: {
-          featureId: oldState.featureUnderMouse,
+          featureId: featureUnderMouse,
           x: evt.clientX,
           y: evt.clientY,
         },
-      }))
+      })
     } else {
       this.setState({ lastFeatureMouseDown: undefined })
     }
@@ -71,13 +72,13 @@ class WiggleRendering extends Component {
   callMouseHandler(handlerName, event, always = false) {
     // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = this.props[`onFeature${handlerName}`]
-    console.log(handlerName, event)
     // eslint-disable-next-line react/destructuring-assignment
     const canvasHandler = this.props[`on${handlerName}`]
-    if (featureHandler && (always || this.state.featureUnderMouse)) {
-      featureHandler(event, this.state.featureUnderMouse)
+    const { featureUnderMouse } = this.state
+    if (featureHandler && (always || featureUnderMouse)) {
+      featureHandler(event, featureUnderMouse)
     } else if (canvasHandler) {
-      canvasHandler(event, this.state.featureUnderMouse)
+      canvasHandler(event, featureUnderMouse)
     }
   }
 

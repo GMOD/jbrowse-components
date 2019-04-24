@@ -79,7 +79,7 @@ export function getNiceDomain(scaleType, [min, max], opts = {}) {
   if (maxScore !== undefined && maxScore !== Infinity) max = maxScore
   let scale
   if (min === undefined || max === undefined) throw new Error('invalid domain')
-  const { pivotValue, inverted } = opts
+  const { pivotValue } = opts
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
@@ -91,5 +91,6 @@ export function getNiceDomain(scaleType, [min, max], opts = {}) {
   }
   scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
   scale.nice()
-  return scale.domain()
+  const ret = scale.domain()
+  return ret
 }

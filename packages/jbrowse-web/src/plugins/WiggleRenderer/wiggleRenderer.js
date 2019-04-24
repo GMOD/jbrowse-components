@@ -6,7 +6,7 @@ import {
 } from '../../util/offscreenCanvasPonyfill'
 import WiggleRendering from './components/WiggleRendering'
 
-import { readConfObjects, readConfObject, getConf } from '../../configuration'
+import { readConfObject } from '../../configuration'
 import { bpToPx } from '../../util'
 import { getScale, getOrigin } from './util'
 import ConfigSchema from './configSchema'
@@ -22,7 +22,7 @@ class WiggleRenderer extends ServerSideRenderer {
     height,
     min,
     max,
-    config = {},
+    config,
     trackModel,
     highResolutionScaling = 1,
     scaleType = 'linear',
@@ -38,28 +38,17 @@ class WiggleRenderer extends ServerSideRenderer {
       height * highResolutionScaling,
     )
     const ctx = canvas.getContext('2d')
-    const [
-      pivot,
-      pivotValue,
-      negColor,
-      posColor,
-      filled,
-      type,
-      clipColor,
-      highlightColor,
-      summaryScoreMode,
-    ] = readConfObjects(config, [
-      'bicolorPivot',
-      'bicolorPivotValue',
-      'negColor',
-      'posColor',
-      'filled',
-      'renderType',
-      'clipColor',
-      'highlightColor',
-      'summaryScoreMode',
-    ])
+    const pivot = readConfObject(config, 'bicolorPivot')
+    const pivotValue = readConfObject(config, 'bicolorPivotValue')
+    const negColor = readConfObject(config, 'negColor')
+    const posColor = readConfObject(config, 'posColor')
+    const filled = readConfObject(config, 'filled')
+    const renderType = readConfObject(config, 'renderType')
+    const clipColor = readConfObject(config, 'clipColor')
+    const highlightColor = readConfObject(config, 'highlightColor')
+    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
     const scale = getScale(scaleType, [min, max], [0, height], {
+      inverted,
       minScore,
       maxScore,
     })
@@ -71,9 +60,9 @@ class WiggleRenderer extends ServerSideRenderer {
       ctx.scale(highResolutionScaling, highResolutionScaling)
     }
 
-    if (inverted) {
-      ctx.transform(1, 0, 0, -1, 0, height)
-    }
+    // if (!inverted) {
+    //   ctx.transform(1, 0, 0, -1, 0, height)
+    // }
     for (const feature of features.values()) {
       const s = feature.get('start')
       const e = feature.get('end')
@@ -85,12 +74,13 @@ class WiggleRenderer extends ServerSideRenderer {
       const score = feature.get('score')
       const maxr = feature.get('maxScore')
       const minr = feature.get('minScore')
+
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       let c = readConfObject(config, 'color', [feature])
 
-      if (type === 'density') {
+      if (renderType === 'density') {
         if (c === '#f0f') {
           c = (pivot !== 'none'
             ? getScale(scaleType, [min, max], [negColor, 'white', posColor], {
@@ -100,7 +90,7 @@ class WiggleRenderer extends ServerSideRenderer {
         }
         ctx.fillStyle = c
         ctx.fillRect(leftPx, 0, w, height)
-      } else if (type === 'xyplot') {
+      } else if (renderType === 'xyplot') {
         if (c === '#f0f') {
           if (score < pivotValue) c = negColor
           else c = posColor

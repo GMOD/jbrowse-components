@@ -1,5 +1,27 @@
 {
   "tracks": [
+{
+      "configId": "wiggle_global_autoscale",
+      "type": "WiggleTrack",
+      "name": "Global xyplot",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "renderer": {
+        "type": "WiggleRenderer"
+      },
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+
     {
       "configId": "wiggle_local_autoscale",
       "type": "WiggleTrack",
@@ -145,7 +167,7 @@
           {
             "type": "WiggleTrack",
             "height": 250,
-            "configuration": "wiggle_local_autoscale"
+            "configuration": "wiggle_global_autoscale"
           }
         ],
         "configuration": {}
