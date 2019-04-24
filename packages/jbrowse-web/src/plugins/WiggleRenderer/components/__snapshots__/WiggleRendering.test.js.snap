@@ -1,33 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`one 1`] = `
-<React.Fragment>
-  <div
-    className="WiggleRendering"
-    onFocus={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    style={
+<div
+  className="WiggleRendering"
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseLeave={[Function]}
+  onMouseMove={[Function]}
+  role="presentation"
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+>
+  <PrerenderedCanvas
+    bpPerPx={3}
+    height={500}
+    horizontallyFlipped={false}
+    region={
       Object {
-        "position": "relative",
+        "end": 3,
+        "refName": "chr1",
+        "start": 1,
       }
     }
-  >
-    <PrerenderedCanvas
-      bpPerPx={3}
-      height={500}
-      horizontallyFlipped={false}
-      region={
-        Object {
-          "end": 3,
-          "refName": "chr1",
-          "start": 1,
-        }
-      }
-      scale={2}
-      trackModel={Object {}}
-      width={500}
-    />
-  </div>
-</React.Fragment>
+    scale={2}
+    trackModel={Object {}}
+    width={500}
+  />
+</div>
 `;

@@ -3,16 +3,18 @@ import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
  *
- * @param {strig} scaleType string specifying linear, log or quantize
- * @param {array} domain array containing min/max for domain
- * @param {array} range array containing min/max for range
- * @param {object} opts object which can have minScore, maxScore, pivotValue, and inverted
+ * @param {opts} object containing attributes
+ *   - domain [min,max]
+ *   - range [min,max]
+ *   - bounds [min,max]
+ *   - scaleType (linear or log)
+ *   - pivotValue (number)
+ *   - inverted (boolean)
  */
-export function getScale(scaleType, domain, range, opts = {}) {
+export function getScale({ domain, range, scaleType, pivotValue, inverted }) {
   let scale
   const [min, max] = domain
   if (min === undefined || max === undefined) throw new Error('invalid domain')
-  const { pivotValue, inverted } = opts
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
@@ -55,16 +57,19 @@ export function getOrigin(scaleType /* , pivot, stats */) {
   }
   return 0
 }
+
 /**
  * produces a "nice" domain that actually roungs down to 0 for the min
  * or 0 to the max depending on if all values are positive or negative
  *
- * @param {object} scaleType instance of mst model with a configuration object
- * @param {array} domain array of config paths to read
- * @param {object} opts extra argument blob which can include minScore and maxScore
+ * @param {opts} object containing attributes
+ *   - domain {min,max}
+ *   - bounds {min,max}
+ *   - scaleType (linear or log)
  */
-export function getNiceDomain(scaleType, [min, max], opts = {}) {
-  const { minScore, maxScore } = opts
+export function getNiceDomain({ scaleType, domain = [], bounds = {} }) {
+  const { min: minScore, max: maxScore } = bounds
+  let [min, max] = domain
 
   if (scaleType === 'linear') {
     if (max < 0) max = 0
@@ -75,11 +80,10 @@ export function getNiceDomain(scaleType, [min, max], opts = {}) {
       min = 1
     }
   }
+  if (min === undefined || max === undefined) throw new Error('invalid domain')
   if (minScore !== undefined && minScore !== -Infinity) min = minScore
   if (maxScore !== undefined && maxScore !== Infinity) max = maxScore
   let scale
-  if (min === undefined || max === undefined) throw new Error('invalid domain')
-  const { pivotValue } = opts
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
@@ -89,8 +93,7 @@ export function getNiceDomain(scaleType, [min, max], opts = {}) {
   } else {
     throw new Error('undefined scaleType')
   }
-  scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
+  scale.domain([min, max])
   scale.nice()
-  const ret = scale.domain()
-  return ret
+  return scale.domain()
 }

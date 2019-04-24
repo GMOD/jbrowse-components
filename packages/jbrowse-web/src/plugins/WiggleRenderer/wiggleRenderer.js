@@ -17,16 +17,10 @@ class WiggleRenderer extends ServerSideRenderer {
     features,
     region,
     bpPerPx,
-    minScore,
-    maxScore,
+    scaleOpts,
     height,
-    min,
-    max,
     config,
-    trackModel,
     highResolutionScaling = 1,
-    scaleType = 'linear',
-    inverted = false,
     horizontallyFlipped = false,
   }) {
     const width = (region.end - region.start) / bpPerPx
@@ -47,12 +41,8 @@ class WiggleRenderer extends ServerSideRenderer {
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-    const scale = getScale(scaleType, [min, max], [0, height], {
-      inverted,
-      minScore,
-      maxScore,
-    })
-    const originY = getOrigin(scaleType)
+    const scale = getScale(scaleOpts)
+    const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
     const toHeight = rawscore => toY(originY) - toY(rawscore)
@@ -60,9 +50,6 @@ class WiggleRenderer extends ServerSideRenderer {
       ctx.scale(highResolutionScaling, highResolutionScaling)
     }
 
-    // if (!inverted) {
-    //   ctx.transform(1, 0, 0, -1, 0, height)
-    // }
     for (const feature of features.values()) {
       const s = feature.get('start')
       const e = feature.get('end')
@@ -83,10 +70,8 @@ class WiggleRenderer extends ServerSideRenderer {
       if (renderType === 'density') {
         if (c === '#f0f') {
           c = (pivot !== 'none'
-            ? getScale(scaleType, [min, max], [negColor, 'white', posColor], {
-                pivotValue,
-              })
-            : getScale(scaleType, [min, max], ['white', posColor]))(score)
+            ? getScale({ ...scaleOpts, range: [negColor, 'white', posColor] })
+            : getScale({ ...scaleOpts, range: ['white', posColor] }))(score)
         }
         ctx.fillStyle = c
         ctx.fillRect(leftPx, 0, w, height)

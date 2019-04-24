@@ -22,12 +22,12 @@ test('several features', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      min: 0,
-      max: 100,
+    scaleOpts: {
+      domain: [0, 100],
+      scaleType: 'linear',
     },
+    config: {},
     bpPerPx: 3,
-    scaleType: 'linear',
     highResolutionScaling: 1,
     horizontallyFlipped: false,
     height: 100,
@@ -48,14 +48,14 @@ test('inverted mode and horizontally flipped', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      min: 0,
-      max: 100,
+    scaleOpts: {
+      domain: [0, 100],
+      inverted: true,
+      scaleType: 'linear',
     },
     bpPerPx: 3,
     highResolutionScaling: 1,
-    inverted: true,
-    scaleType: 'linear',
+    config: {},
     horizontallyFlipped: true,
     height: 100,
   })

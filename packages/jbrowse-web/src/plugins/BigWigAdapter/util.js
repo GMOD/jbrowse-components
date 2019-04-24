@@ -73,10 +73,9 @@ export function calcRealStats(region, features) {
  * transform a list of scores to summary statistics
  * @param region - object with start, end
  * @param feats - array of features which are possibly summary features
- * @param summaryBlock - boolean indicating that features are summary features
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
-export function scoresToStats(region, feats, summaryBlock) {
+export function scoresToStats(region, feats) {
   const { start, end } = region
   let scoreMax = -Infinity
   let scoreMin = Infinity

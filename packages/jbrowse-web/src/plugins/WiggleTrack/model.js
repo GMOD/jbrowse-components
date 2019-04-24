@@ -51,9 +51,9 @@ export default (pluginManager, configSchema) =>
               }
 
               self.statsPromise
-                .then(s => {
+                .then(stats => {
                   checkAbortSignal(aborter.signal)
-                  self.setStats(s)
+                  self.updateScale(stats)
                 })
                 .catch(e => {
                   if (!isAbortException(e)) {
@@ -66,12 +66,13 @@ export default (pluginManager, configSchema) =>
 
           addDisposer(self, getYAxisScale)
         },
-        setStats(s) {
-          const { scoreMin: min, scoreMax: max } = s
-          const scaleType = getConf(self, 'scaleType')
-          const minScore = getConf(self, 'minScore')
-          const maxScore = getConf(self, 'maxScore')
-          self.domain.setStats({ min, max }, scaleType, minScore, maxScore)
+        updateScale(stats) {
+          self.stats.setStats(stats)
+          self.domain.setDomain({
+            domain: [stats.scoreMin, stats.scoreMax],
+            scaleType: getConf(self, 'scaleType'),
+            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+          })
           self.ready = true
         },
         setLoading(abortSignal) {
@@ -88,18 +89,19 @@ export default (pluginManager, configSchema) =>
           return self.configuration.renderer.type
         },
         get renderProps() {
-          // console.log(getSnapshot(self.configuration.renderer))
           const config = WiggleRendererConfigSchema.create(
             getConf(self, 'renderer'),
           )
-          // console.log(getSnapshot(config))
+          const highResolutionScaling = getConf(
+            getRoot(self),
+            'highResolutionScaling',
+          )
+          const { height, ready, domain, stats } = self
           return {
             ...getParentRenderProps(self),
             trackModel: self,
-            notReady: !self.ready,
-            config, // : self.configuration.renderer,
-            min: self.domain.min,
-            max: self.domain.max,
+            notReady: !ready,
+            config,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
               const feature = self.features.get(featureId)
@@ -108,15 +110,16 @@ export default (pluginManager, configSchema) =>
             onClick() {
               self.clearFeatureSelection()
             },
-            minScore: getConf(self, 'minScore'),
-            maxScore: getConf(self, 'maxScore'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-            height: self.height,
-            highResolutionScaling: getConf(
-              getRoot(self),
-              'highResolutionScaling',
-            ),
+            scaleOpts: {
+              domain: [domain.min, domain.max],
+              stats,
+              range: [0, height],
+              bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+              scaleType: getConf(self, 'scaleType'),
+              inverted: getConf(self, 'inverted'),
+            },
+            height,
+            highResolutionScaling,
           }
         },
       }))
@@ -124,16 +127,22 @@ export default (pluginManager, configSchema) =>
         reactComponent: WiggleTrackComponent,
         ready: false,
         domain: types
-          .model('domain', { min: 0, max: 0, mean: 0 })
+          .model('domain', { min: 0, max: 0 })
           .actions(self => ({
-            setStats(s, scaleType, minScore, maxScore) {
-              const [min, max] = getNiceDomain(scaleType, [s.min, s.max], {
-                minScore,
-                maxScore,
-              })
+            setDomain({ domain, scaleType, bounds }) {
+              const [min, max] = getNiceDomain({ domain, scaleType, bounds })
               self.min = min
               self.max = max
-              self.mean = s.mean
+            },
+          }))
+          .create(),
+        stats: types
+          .model('domain', { min: 0, max: 0, mean: 0 })
+          .actions(self => ({
+            setStats(stats) {
+              self.min = stats.scoreMin
+              self.max = stats.scoreMax
+              self.mean = stats.scoreMean
             },
           }))
           .create(),

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import Track from '../../LinearGenomeView/components/Track'
 import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
-import { readConfObject, getConf, getConfs } from '../../../configuration'
+import { readConfObject, getConf } from '../../../configuration'
 import { getScale } from '../../WiggleRenderer/util'
 
 const powersOfTen = []
@@ -19,13 +19,18 @@ function WiggleTrackComponent(props) {
   const getRendererConf = (subtrack, slot) =>
     readConfObject(model.configuration.renderer, slot)
 
-  const scaleType = getConf(model, 'scaleType')
-  const inverted = getConf(model, 'inverted')
   const getYScaleBar = () => {
-    const { min, max } = domain
-    const [maxScore, minScore] = getConfs(model, ['maxScore', 'minScore'])
-    const opts = { minScore, maxScore, inverted }
-    const scale = getScale(scaleType, [min, max], [height, 0], opts)
+    const scaleType = getConf(model, 'scaleType')
+    const scale = getScale({
+      scaleType,
+      inverted: getConf(model, 'inverted'),
+      domain: [domain.min, domain.max],
+      range: [height, 0],
+      bounds: {
+        min: getConf(model, 'minScore'),
+        max: getConf(model, 'maxScore'),
+      },
+    })
     const axisProps = axisPropsFromTickScale(scale, 4)
     const values =
       scaleType === 'log'
