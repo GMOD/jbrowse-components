@@ -97,6 +97,7 @@ export default (pluginManager, configSchema) =>
             'highResolutionScaling',
           )
           const { height, ready, domain, stats } = self
+          const { min, max } = domain
           return {
             ...getParentRenderProps(self),
             trackModel: self,
@@ -111,9 +112,7 @@ export default (pluginManager, configSchema) =>
               self.clearFeatureSelection()
             },
             scaleOpts: {
-              domain: [domain.min, domain.max],
-              stats,
-              range: [0, height],
+              domain: [min, max],
               bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
               scaleType: getConf(self, 'scaleType'),
               inverted: getConf(self, 'inverted'),

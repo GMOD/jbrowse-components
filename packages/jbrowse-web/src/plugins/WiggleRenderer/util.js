@@ -11,7 +11,13 @@ import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
  *   - pivotValue (number)
  *   - inverted (boolean)
  */
-export function getScale({ domain, range, scaleType, pivotValue, inverted }) {
+export function getScale({
+  domain = [],
+  range = [],
+  scaleType,
+  pivotValue,
+  inverted,
+}) {
   let scale
   const [min, max] = domain
   if (min === undefined || max === undefined) throw new Error('invalid domain')

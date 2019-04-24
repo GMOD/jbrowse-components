@@ -41,7 +41,7 @@ class WiggleRenderer extends ServerSideRenderer {
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-    const scale = getScale(scaleOpts)
+    const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)

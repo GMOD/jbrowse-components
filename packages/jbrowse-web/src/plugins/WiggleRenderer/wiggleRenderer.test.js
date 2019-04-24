@@ -8,6 +8,7 @@ test('empty', async () => {
       end: 100,
       start: 1,
     },
+    scaleOpts: {},
     config: {},
   })
   expect(result).toEqual({ width: 0, height: 0 })
