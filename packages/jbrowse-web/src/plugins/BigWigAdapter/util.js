@@ -78,15 +78,15 @@ export function calcRealStats(region, features) {
  */
 export function scoresToStats(region, feats, summaryBlock) {
   const { start, end } = region
-  let scoreMax
-  let scoreMin
-  let scoreSum
-  let scoreSumSquares
+  let scoreMax = -Infinity
+  let scoreMin = Infinity
+  let scoreSum = 0
+  let scoreSumSquares = 0
 
   for (let i = 0; i < feats.length; i += 1) {
     const f = feats[i]
     scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : f.score)
-    scoreMin = Math.min(scoreMax, f.summary ? f.minScore : f.score)
+    scoreMin = Math.min(scoreMin, f.summary ? f.minScore : f.score)
     scoreSum += f.score
     scoreSumSquares += f.score * f.score
   }

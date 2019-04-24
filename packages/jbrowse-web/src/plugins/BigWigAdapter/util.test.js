@@ -34,7 +34,11 @@ test('test rectify', () => {
 })
 
 test('scores to stats', () => {
-  const ret = scoresToStats({ start: 0, end: 2 }, [1, 2, 3])
+  const ret = scoresToStats({ start: 0, end: 2 }, [
+    { score: 1 },
+    { score: 2 },
+    { score: 3 },
+  ])
   expect(ret.scoreMean).toEqual(2)
   expect(ret.featureDensity).toEqual(1)
   expect(ret.scoreMax).toEqual(3)
