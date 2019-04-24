@@ -1,4 +1,5 @@
 import React from 'react'
+import Color from 'color'
 import {
   createCanvas,
   createImageBitmap,
@@ -46,6 +47,7 @@ class WiggleRenderer extends ServerSideRenderer {
       type,
       clipColor,
       highlightColor,
+      summaryScoreMode,
     ] = readConfObjects(config, [
       'bicolorPivot',
       'bicolorPivotValue',
@@ -55,6 +57,7 @@ class WiggleRenderer extends ServerSideRenderer {
       'renderType',
       'clipColor',
       'highlightColor',
+      'summaryScoreMode',
     ])
     const scale = getScale(scaleType, [min, max], [0, height], {
       minScore,
@@ -63,6 +66,7 @@ class WiggleRenderer extends ServerSideRenderer {
     const originY = getOrigin(scaleType)
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
+    const toHeight = rawscore => toY(originY) - toY(rawscore)
     if (highResolutionScaling) {
       ctx.scale(highResolutionScaling, highResolutionScaling)
     }
@@ -79,6 +83,8 @@ class WiggleRenderer extends ServerSideRenderer {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
       const score = feature.get('score')
+      const maxr = feature.get('maxScore')
+      const minr = feature.get('minScore')
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
@@ -99,13 +105,23 @@ class WiggleRenderer extends ServerSideRenderer {
           if (score < pivotValue) c = negColor
           else c = posColor
         }
-        ctx.fillStyle = c
-        ctx.fillRect(
-          leftPx,
-          toY(score),
-          w,
-          filled ? toY(originY) - toY(score) : 1,
-        )
+
+        if (summaryScoreMode === 'max' || summaryScoreMode === 'whiskers') {
+          ctx.fillStyle = Color(c)
+            .lighten(0.6)
+            .toString()
+          ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
+        }
+        if (summaryScoreMode === 'avg' || summaryScoreMode === 'whiskers') {
+          ctx.fillStyle = c
+          ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        }
+        if (summaryScoreMode === 'min' || summaryScoreMode === 'whiskers') {
+          ctx.fillStyle = Color(c)
+            .darken(0.6)
+            .toString()
+          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(score) : 1)
+        }
 
         if (highClipping) {
           ctx.fillStyle = clipColor

@@ -25,8 +25,7 @@ export default class BigWigAdapter extends BaseAdapter {
           signal: abortSignal,
           basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
         })
-        const scores = feats.map(s => s.score)
-        return scoresToStats(region, scores)
+        return scoresToStats(region, feats)
       },
     })
   }

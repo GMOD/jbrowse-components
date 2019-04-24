@@ -58,7 +58,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF826FLP/@@download/ENCFF826FLP.bigWig"
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         },
         "assemblyName": "hg38"
       }
@@ -79,7 +79,27 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF826FLP/@@download/ENCFF826FLP.bigWig"
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+        },
+        "assemblyName": "hg38"
+      }
+    },
+    {
+      "configId": "bigbed_peaks",
+      "type": "BasicTrack",
+      "name": "Encode peaks",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "assemblyName": "hg38",
+      "renderer": {
+        "type": "PileupRenderer"
+      },
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
         },
         "assemblyName": "hg38"
       }
@@ -162,11 +182,20 @@
         "offsetPx": 835,
         "bpPerPx": 50,
         "tracks": [
-
           {
             "type": "WiggleTrack",
             "height": 100,
             "configuration": "wiggle_global_autoscale"
+          },
+          {
+            "type": "WiggleTrack",
+            "height": 100,
+            "configuration": "wiggle_local_autoscale"
+          },
+          {
+            "type": "BasicTrack",
+            "height": 100,
+            "configuration": "bigbed_peaks"
           }
         ],
         "configuration": {}
