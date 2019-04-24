@@ -85,8 +85,6 @@ function ConfigurationLayer(parentSchemaType) {
       if (isOptionalType(parentSchemaType))
         parentActualType = parentSchemaType.type
 
-      if (!parentActualType.properties) debugger
-
       let memberType = parentActualType.properties[memberName]
 
       if (isUnionType(memberType)) {

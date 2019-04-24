@@ -107,9 +107,6 @@
       "autoscale": "global",
       "assemblyName": "volvox",
       "scaleType": "log",
-      "renderer": {
-        "type": "WiggleRenderer"
-      },
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

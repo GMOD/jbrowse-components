@@ -41,7 +41,7 @@ export function getScale({
   return scale
 }
 /**
- * gets the origin for drawing the graph. for linear this is 0, for log this is arbitrarily set to a low value
+ * gets the origin for drawing the graph. for linear this is 0, for log this is arbitrarily set to log(1)==0
  *
  * @param {object} scaleType
  */
@@ -65,7 +65,7 @@ export function getOrigin(scaleType /* , pivot, stats */) {
 }
 
 /**
- * produces a "nice" domain that actually roungs down to 0 for the min
+ * produces a "nice" domain that actually rounds down to 0 for the min
  * or 0 to the max depending on if all values are positive or negative
  *
  * @param {opts} object containing attributes

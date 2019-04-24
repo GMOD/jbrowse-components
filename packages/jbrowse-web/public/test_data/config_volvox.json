@@ -114,9 +114,6 @@
         "bigWigLocation": {
           "uri": "/test_data/volvox.bw"
         }
-      },
-      "renderer": {
-        "type": "WiggleRenderer"
       }
     },
     {
@@ -131,24 +128,6 @@
       "assemblyName": "volvox",
       "subtracks": [
         {
-          "renderer": {
-            "type": "WiggleRenderer"
-          },
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        },
-        {
-          "renderer": {
-            "type": "WiggleRenderer",
-            "color": "orange",
-            "renderType": "density"
-          },
           "type": "BasicTrack",
           "adapter": {
             "type": "BigWigAdapter",

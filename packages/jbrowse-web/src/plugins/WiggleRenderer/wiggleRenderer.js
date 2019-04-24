@@ -4,15 +4,25 @@ import {
   createCanvas,
   createImageBitmap,
 } from '../../util/offscreenCanvasPonyfill'
-import WiggleRendering from './components/WiggleRendering'
 
 import { readConfObject } from '../../configuration'
 import { bpToPx } from '../../util'
 import { getScale, getOrigin } from './util'
-import ConfigSchema from './configSchema'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class WiggleRenderer extends ServerSideRenderer {
+class WiggleBaseRenderer extends ServerSideRenderer {
+  async render(renderProps) {
+    const { height, width, imageData } = await this.makeImageData(renderProps)
+    const element = React.createElement(
+      this.ReactComponent,
+      { ...renderProps, height, width, imageData },
+      null,
+    )
+    return { element, imageData, height, width }
+  }
+}
+
+export class DensityRenderer extends WiggleBaseRenderer {
   async makeImageData({
     features,
     region,
@@ -47,27 +57,21 @@ class WiggleRenderer extends ServerSideRenderer {
     const toY = rawscore => height - scale(rawscore)
     const toHeight = rawscore => toY(originY) - toY(rawscore)
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    let callback
+    let colorCallback
+    let colorScale
     if (readConfObject(config, 'color') === '#f0f') {
-      if (renderType === 'xyplot') {
-        callback = feature =>
-          feature.get('score') < pivotValue ? negColor : posColor
-      } else {
-        // default color, use posColor/negColor instead
-        callback = feature => {
-          return (pivot !== 'none'
-            ? getScale({
-                ...scaleOpts,
-                pivotValue,
-                range: [negColor, 'white', posColor],
-              })
-            : getScale({ ...scaleOpts, range: ['white', posColor] }))(
-            feature.get('score'),
-          )
-        }
-      }
+      // default color, use posColor/negColor instead
+      colorScale =
+        pivot !== 'none'
+          ? getScale({
+              ...scaleOpts,
+              pivotValue,
+              range: [negColor, 'white', posColor],
+            })
+          : getScale({ ...scaleOpts, range: ['white', posColor] })
+      colorCallback = feature => colorScale(feature.get('score'))
     } else {
-      callback = feature => readConfObject(config, 'color', [feature])
+      colorCallback = feature => readConfObject(config, 'color', [feature])
     }
 
     for (const feature of features.values()) {
@@ -86,60 +90,122 @@ class WiggleRenderer extends ServerSideRenderer {
       const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
-      if (renderType === 'density') {
-        ctx.fillStyle = callback(feature)
-        ctx.fillRect(leftPx, 0, w, height)
-      } else if (renderType === 'xyplot') {
-        const c = callback(feature)
-        if (summaryScoreMode === 'max' || summaryScoreMode === 'whiskers') {
+      ctx.fillStyle = colorCallback(feature)
+      ctx.fillRect(leftPx, 0, w, height)
+    }
+
+    const imageData = await createImageBitmap(canvas)
+    return { imageData, height, width }
+  }
+}
+
+export class XYPlotRenderer extends WiggleBaseRenderer {
+  async makeImageData({
+    features,
+    region,
+    bpPerPx,
+    scaleOpts,
+    height,
+    config,
+    highResolutionScaling = 1,
+    horizontallyFlipped = false,
+  }) {
+    const width = (region.end - region.start) / bpPerPx
+    if (!(width > 0) || !(height > 0)) {
+      return { height: 0, width: 0 }
+    }
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
+    const ctx = canvas.getContext('2d')
+    const pivot = readConfObject(config, 'bicolorPivot')
+    const pivotValue = readConfObject(config, 'bicolorPivotValue')
+    const negColor = readConfObject(config, 'negColor')
+    const posColor = readConfObject(config, 'posColor')
+    const filled = readConfObject(config, 'filled')
+    const renderType = readConfObject(config, 'renderType')
+    const clipColor = readConfObject(config, 'clipColor')
+    const highlightColor = readConfObject(config, 'highlightColor')
+    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+    const scale = getScale({ ...scaleOpts, range: [0, height] })
+    const originY = getOrigin(scaleOpts.scaleType)
+    const [niceMin, niceMax] = scale.domain()
+    const toY = rawscore => height - scale(rawscore)
+    const toHeight = rawscore => toY(originY) - toY(rawscore)
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    let colorCallback
+    let colorScale
+    if (readConfObject(config, 'color') === '#f0f') {
+      colorCallback = feature =>
+        feature.get('score') < pivotValue ? negColor : posColor
+    } else {
+      colorCallback = feature => readConfObject(config, 'color', [feature])
+    }
+
+    for (const feature of features.values()) {
+      const s = feature.get('start')
+      const e = feature.get('end')
+      let leftPx = bpToPx(s, region, bpPerPx, horizontallyFlipped)
+      let rightPx = bpToPx(e, region, bpPerPx, horizontallyFlipped)
+      if (horizontallyFlipped) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+      let score = feature.get('score')
+      const maxr = feature.get('maxScore')
+      const minr = feature.get('minScore')
+
+      const lowClipping = score < niceMin
+      const highClipping = score > niceMax
+      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+
+      const c = colorCallback(feature)
+      if (summaryScoreMode === 'max') {
+        score = maxr === undefined ? score : maxr
+        ctx.fillStyle = c
+        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+      } else if (summaryScoreMode === 'min') {
+        score = minr === undefined ? score : minr
+        ctx.fillStyle = c
+        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+      } else if (summaryScoreMode === 'whiskers') {
+        // max
+        if (maxr !== undefined) {
           ctx.fillStyle = Color(c)
             .lighten(0.6)
             .toString()
           ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
         }
-        if (summaryScoreMode === 'avg' || summaryScoreMode === 'whiskers') {
-          ctx.fillStyle = c
-          ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-        }
-        if (summaryScoreMode === 'min' || summaryScoreMode === 'whiskers') {
+
+        // normal
+        ctx.fillStyle = c
+        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        // min
+        if (minr !== undefined) {
           ctx.fillStyle = Color(c)
             .darken(0.6)
             .toString()
-          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(score) : 1)
+          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
         }
+      } else {
+        ctx.fillStyle = c
+        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+      }
 
-        if (highClipping) {
-          ctx.fillStyle = clipColor
-          ctx.fillRect(leftPx, 0, w, 4)
-        } else if (lowClipping) {
-          ctx.fillStyle = clipColor
-          ctx.fillRect(leftPx, height - 4, w, height)
-        }
-        if (feature.get('highlighted')) {
-          ctx.fillStyle = highlightColor
-          ctx.fillRect(leftPx, 0, w, height)
-        }
+      if (highClipping) {
+        ctx.fillStyle = clipColor
+        ctx.fillRect(leftPx, 0, w, 4)
+      } else if (lowClipping) {
+        ctx.fillStyle = clipColor
+        ctx.fillRect(leftPx, height - 4, w, height)
+      }
+      if (feature.get('highlighted')) {
+        ctx.fillStyle = highlightColor
+        ctx.fillRect(leftPx, 0, w, height)
       }
     }
 
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width }
   }
-
-  async render(renderProps) {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
-    return { element, imageData, height, width }
-  }
 }
-
-export default (/* pluginManager */) =>
-  new WiggleRenderer({
-    name: 'WiggleRenderer',
-    ReactComponent: WiggleRendering,
-    configSchema: ConfigSchema,
-  })

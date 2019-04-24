@@ -10,6 +10,11 @@ import { getNiceDomain } from '../WiggleRenderer/util'
 import { checkAbortSignal, isAbortException } from '../../util'
 import WiggleRendererConfigSchema from '../WiggleRenderer/configSchema'
 
+// using a map because it preserves order
+const rendererTypes = new Map([
+  ['xyplot', 'XYPlotRenderer'],
+  ['density', 'DensityRenderer'],
+])
 export default (pluginManager, configSchema) =>
   types.compose(
     'WiggleTrack',
@@ -18,6 +23,7 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('WiggleTrack'),
         configuration: ConfigurationReference(configSchema),
+        selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
       })
       .actions(self => ({
@@ -83,20 +89,31 @@ export default (pluginManager, configSchema) =>
             self.statsFetchInProgress.abort()
           self.statsFetchInProgress = abortSignal
         },
+        setRenderer(newRenderer) {
+          self.selectedRendering = newRenderer
+        },
       }))
       .views(self => ({
         get rendererTypeName() {
-          return self.configuration.renderer.type
+          const defaultRendering = getConf(self, 'defaultRendering')
+          const viewName = self.selectedRendering || defaultRendering
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType)
+            throw new Error(`unknown alignments view name ${viewName}`)
+          return rendererType
         },
         get renderProps() {
-          const config = WiggleRendererConfigSchema.create(
-            getConf(self, 'renderer'),
+          // const config = WiggleRendererConfigSchema.create(
+          //   getConf(self, 'renderer'),
+          // )
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
           const highResolutionScaling = getConf(
             getRoot(self),
             'highResolutionScaling',
           )
-          const { height, ready, domain, stats } = self
+          const { height, ready, domain } = self
           const { min, max } = domain
           return {
             ...getParentRenderProps(self),

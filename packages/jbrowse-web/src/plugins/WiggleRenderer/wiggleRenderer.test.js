@@ -14,6 +14,7 @@ test('empty', async () => {
   expect(result).toEqual({ width: 0, height: 0 })
 })
 test('several features', async () => {
+  const canvas = document.create
   const result = await WiggleRenderer().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),

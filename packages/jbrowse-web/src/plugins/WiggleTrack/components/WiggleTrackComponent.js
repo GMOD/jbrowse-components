@@ -60,7 +60,7 @@ function WiggleTrackComponent(props) {
     )
   }
 
-  const needsScalebar = getRendererConf(model, 'renderType') === 'xyplot'
+  const needsScalebar = model.rendererTypeName === 'XYPlotRenderer'
 
   return (
     <Track {...props}>

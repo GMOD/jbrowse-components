@@ -4,7 +4,6 @@ exports[`one 1`] = `
 <div
   className="WiggleRendering"
   onFocus={[Function]}
-  onMouseDown={[Function]}
   onMouseLeave={[Function]}
   onMouseMove={[Function]}
   role="presentation"

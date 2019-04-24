@@ -30,23 +30,6 @@ class WiggleRendering extends Component {
     this.state = {}
   }
 
-  onMouseDown(evt) {
-    this.callMouseHandler('MouseDown', evt)
-    const { featureUnderMouse } = this.state
-    if (featureUnderMouse) {
-      evt.persist()
-      this.setState({
-        lastFeatureMouseDown: {
-          featureId: featureUnderMouse,
-          x: evt.clientX,
-          y: evt.clientY,
-        },
-      })
-    } else {
-      this.setState({ lastFeatureMouseDown: undefined })
-    }
-  }
-
   onMouseMove(evt) {
     const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
     const { offsetX } = evt.nativeEvent
@@ -85,11 +68,43 @@ class WiggleRendering extends Component {
   render() {
     const { width } = this.props
     const { featureUnderMouse, offsetX } = this.state
+    const displayedScore = ''
+    let score = feature.get('score')
+    if (summaryScoreMode === 'max') {
+      score = maxr === undefined ? score : maxr
+      ctx.fillStyle = c
+      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+    } else if (summaryScoreMode === 'min') {
+      score = minr === undefined ? score : minr
+      ctx.fillStyle = c
+      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+    } else if (summaryScoreMode === 'whiskers') {
+      // max
+      if (maxr !== undefined) {
+        ctx.fillStyle = Color(c)
+          .lighten(0.6)
+          .toString()
+        ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
+      }
+
+      // normal
+      ctx.fillStyle = c
+      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+      // min
+      if (minr !== undefined) {
+        ctx.fillStyle = Color(c)
+          .darken(0.6)
+          .toString()
+        ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
+      }
+    } else {
+      ctx.fillStyle = c
+      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+    }
     return (
       <div
         onMouseMove={this.onMouseMove.bind(this)}
         onMouseLeave={this.onMouseLeave.bind(this)}
-        onMouseDown={this.onMouseDown.bind(this)}
         role="presentation"
         onFocus={() => {}}
         className="WiggleRendering"

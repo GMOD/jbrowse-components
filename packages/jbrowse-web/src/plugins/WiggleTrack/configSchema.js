@@ -1,10 +1,16 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import { BaseTrackConfig } from '../LinearGenomeView/models/baseTrack'
-import WiggleRendererConfigSchema from '../WiggleRenderer/configSchema'
 
-export default pluginManager =>
-  ConfigurationSchema(
+export default pluginManager => {
+  const XYPlotRendererConfigSchema = pluginManager.getRendererType(
+    'XYPlotRenderer',
+  ).configSchema
+  const DensityRendererConfigSchema = pluginManager.getRendererType(
+    'DensityRenderer',
+  ).configSchema
+
+  return ConfigurationSchema(
     'WiggleTrack',
     {
       autoscale: {
@@ -35,10 +41,21 @@ export default pluginManager =>
         defaultValue: false,
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: WiggleRendererConfigSchema,
+
+      defaultRendering: {
+        type: 'stringEnum',
+        model: types.enumeration('Rendering', ['density', 'xyplot']),
+        defaultValue: 'xyplot',
+      },
+
+      renderers: ConfigurationSchema('RenderersConfiguration', {
+        DensityRenderer: DensityRendererConfigSchema,
+        XYPlotRenderer: XYPlotRendererConfigSchema,
+      }),
     },
     {
       baseConfiguration: BaseTrackConfig,
       explicitlyTyped: true,
     },
   )
+}
