@@ -15,11 +15,3 @@ Object {
   "width": 33,
 }
 `;
-
-exports[`test render 1`] = `
-Object {
-  "height": 100,
-  "imageData": Any<Object>,
-  "width": 33,
-}
-`;

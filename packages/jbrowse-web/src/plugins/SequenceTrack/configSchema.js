@@ -13,6 +13,8 @@ export default (pluginManager, trackType) => {
       { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
     )
 
+  // reduced configuration does not inherit from BaseTrack
+  // used for when the sequence is in the assembly
   if (trackType === 'ReferenceSequence')
     return ConfigurationSchema(
       'ReferenceSequence',

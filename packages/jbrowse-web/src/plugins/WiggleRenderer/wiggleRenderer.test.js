@@ -1,19 +1,20 @@
-import WiggleRenderer from './wiggleRenderer'
+import { XYPlotRenderer, DensityRenderer } from './wiggleRenderer'
 
 import SimpleFeature from '../../util/simpleFeature'
 
 test('empty', async () => {
-  const result = await WiggleRenderer().makeImageData({
+  const result = await DensityRenderer().makeImageData({
     region: {
       end: 100,
       start: 1,
     },
+    scaleOpts: {},
     config: {},
   })
   expect(result).toEqual({ width: 0, height: 0 })
 })
 test('several features', async () => {
-  const result = await WiggleRenderer().makeImageData({
+  const result = await XYPlotRenderer().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
@@ -22,14 +23,15 @@ test('several features', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      scoreMax: 100,
+    scaleOpts: {
+      domain: [0, 100],
+      scaleType: 'linear',
     },
+    config: {},
     bpPerPx: 3,
+    highResolutionScaling: 1,
     horizontallyFlipped: false,
-    config: {
-      height: 100,
-    },
+    height: 100,
   })
 
   expect(result).toMatchSnapshot({
@@ -38,7 +40,7 @@ test('several features', async () => {
 })
 
 test('inverted mode and horizontally flipped', async () => {
-  const result = await WiggleRenderer().makeImageData({
+  const result = await DensityRenderer().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
@@ -47,44 +49,16 @@ test('inverted mode and horizontally flipped', async () => {
       end: 100,
       start: 1,
     },
-    stats: {
-      scoreMax: 100,
+    scaleOpts: {
+      domain: [0, 100],
+      inverted: true,
+      scaleType: 'linear',
     },
     bpPerPx: 3,
+    highResolutionScaling: 1,
+    config: {},
     horizontallyFlipped: true,
-    config: {
-      height: 100,
-      inverted: true,
-    },
-  })
-
-  expect(result).toMatchSnapshot({
-    imageData: expect.any(Object),
-  })
-})
-
-test('test render', async () => {
-  const result = await WiggleRenderer().makeImageData({
-    features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
-    ],
-    dataAdapter: {
-      bigWigLocation: '../BigWigAdapter/test_data/volvox.bw',
-    },
-    region: {
-      end: 100,
-      start: 1,
-    },
-    stats: {
-      scoreMax: 100,
-    },
-    bpPerPx: 3,
-    horizontallyFlipped: true,
-    config: {
-      height: 100,
-      inverted: true,
-    },
+    height: 100,
   })
 
   expect(result).toMatchSnapshot({

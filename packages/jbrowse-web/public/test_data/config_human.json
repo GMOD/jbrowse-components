@@ -41,6 +41,62 @@
           }
         }
       }
+    },
+    {
+      "configId": "wiggle_global_autoscale",
+      "type": "WiggleTrack",
+      "name": "Encode global autoscale",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "hg38",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+        },
+        "assemblyName": "hg38"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale",
+      "type": "WiggleTrack",
+      "name": "Encode local autoscale",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "hg38",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+        },
+        "assemblyName": "hg38"
+      }
+    },
+    {
+      "configId": "bigbed_peaks",
+      "type": "BasicTrack",
+      "name": "Encode peaks",
+      "category": [
+        "Bar Category"
+      ],
+      "height": 300,
+      "assemblyName": "hg38",
+      "renderer": {
+        "type": "PileupRenderer"
+      },
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+        },
+        "assemblyName": "hg38"
+      }
     }
   ],
   "assemblies": {
@@ -117,18 +173,23 @@
       {
         "id": "Cma34s8JJ",
         "type": "LinearGenomeView",
-        "offsetPx": 8355300,
-        "bpPerPx": 0.1,
+        "offsetPx": 835,
+        "bpPerPx": 50,
         "tracks": [
           {
-            "type": "ReferenceSequence",
+            "type": "WiggleTrack",
             "height": 100,
-            "configuration": "VKYdNPZZ0"
+            "configuration": "wiggle_global_autoscale"
           },
           {
-            "type": "AlignmentsTrack",
+            "type": "WiggleTrack",
             "height": 100,
-            "configuration": "q68ElFH9Y"
+            "configuration": "wiggle_local_autoscale"
+          },
+          {
+            "type": "BasicTrack",
+            "height": 100,
+            "configuration": "bigbed_peaks"
           }
         ],
         "configuration": {}

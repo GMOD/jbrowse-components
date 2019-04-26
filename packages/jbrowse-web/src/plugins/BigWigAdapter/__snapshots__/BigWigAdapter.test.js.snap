@@ -1,6 +1,44 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`adapter can fetch features from volvox.bw 1`] = `
+exports[`adapter can fetch features from volvox.bw adapter can fetch stats from volvox.bw 1`] = `
+Object {
+  "basesCovered": 49984,
+  "scoreMax": 38,
+  "scoreMin": 1,
+  "scoreSum": 959592,
+  "scoreSumSquares": 19461382,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get local stats 1`] = `
+Object {
+  "basesCovered": 30100,
+  "featureCount": 30000,
+  "featureDensity": 0.9966777408637874,
+  "scoreMax": 38,
+  "scoreMean": 19.297233333333335,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380942680236127,
+  "scoreSum": 578917,
+  "scoreSumSquares": 11747257,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get region stats 1`] = `
+Object {
+  "basesCovered": 30001,
+  "featureCount": 30001,
+  "featureDensity": 1,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw test basic aspects of getfeatures 1`] = `
 Array [
   Object {
     "end": 1003,

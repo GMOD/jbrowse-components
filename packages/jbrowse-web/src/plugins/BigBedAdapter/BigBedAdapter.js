@@ -1,8 +1,8 @@
-import { Observable } from 'rxjs'
-
+import { mergeAll, map } from 'rxjs/operators'
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 
+import { ObservableCreate } from '../../util/rxjs'
 import BaseAdapter from '../../BaseAdapter'
 import { openLocation } from '../../util/io'
 import SimpleFeature from '../../util/simpleFeature'
@@ -30,6 +30,9 @@ export default class BigBedAdapter extends BaseAdapter {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
+  /**
+   * @return promise for the totalSummary element from the bigbed's header
+   */
   async getGlobalStats() {
     const header = await this.bigbed.getHeader()
     return header.totalSummary
@@ -38,35 +41,33 @@ export default class BigBedAdapter extends BaseAdapter {
   /**
    * Fetch features for a certain region
    * @param {Region} param
+   * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }, signal) {
-    return Observable.create(async observer => {
+  getFeatures({ /* assembly, */ refName, start, end }, abortSignal) {
+    return ObservableCreate(async observer => {
       const parser = await this.parser
-      const ob2 = await this.bigbed.getFeatureStream(refName, start, end, {
-        signal,
-      })
-      ob2.subscribe(
-        chunk => {
-          chunk.forEach(r => {
+      const observable2 = await this.bigbed.getFeatureStream(
+        refName,
+        start,
+        end,
+        {
+          signal: abortSignal,
+        },
+      )
+      return observable2
+        .pipe(
+          mergeAll(),
+          map(r => {
             const data = regularizeFeat(
               parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
                 uniqueId: r.uniqueId,
               }),
             )
-
-            observer.next(
-              new SimpleFeature({
-                data,
-              }),
-            )
-          })
-        },
-        error => {
-          throw new Error(error)
-        },
-        () => observer.complete(),
-      )
+            return new SimpleFeature({ data })
+          }),
+        )
+        .subscribe(observer)
     })
   }
 }
