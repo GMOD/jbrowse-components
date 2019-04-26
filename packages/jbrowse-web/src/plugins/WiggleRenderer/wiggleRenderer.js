@@ -5,12 +5,36 @@ import {
   createImageBitmap,
 } from '../../util/offscreenCanvasPonyfill'
 
-import { readConfObject } from '../../configuration'
+import ConfigSchema from './configSchema'
+import WiggleRendering from './components/WiggleRendering'
+import { readConfObject, ConfigurationSchema } from '../../configuration'
 import { bpToPx } from '../../util'
 import { getScale, getOrigin } from './util'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
 class WiggleBaseRenderer extends ServerSideRenderer {
+  async makeImageData(props) {
+    const { height, region, bpPerPx, highResolutionScaling = 1 } = props
+    const width = (region.end - region.start) / bpPerPx
+    if (!(width > 0) || !(height > 0)) {
+      return { height: 0, width: 0 }
+    }
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
+    const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    this.draw(ctx, props)
+
+    const imageData = await createImageBitmap(canvas)
+    return { imageData, height, width }
+  }
+
+  draw(/* ctx, props */) {
+    /* draw features to context given props */
+  }
+
   async render(renderProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
@@ -22,41 +46,21 @@ class WiggleBaseRenderer extends ServerSideRenderer {
   }
 }
 
-export class DensityRenderer extends WiggleBaseRenderer {
-  async makeImageData({
-    features,
-    region,
-    bpPerPx,
-    scaleOpts,
-    height,
-    config,
-    highResolutionScaling = 1,
-    horizontallyFlipped = false,
-  }) {
-    const width = (region.end - region.start) / bpPerPx
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0 }
-    }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
+export class DensityRendererClass extends WiggleBaseRenderer {
+  draw(ctx, props) {
+    const {
+      features,
+      region,
+      bpPerPx,
+      scaleOpts,
+      height,
+      config,
+      horizontallyFlipped,
+    } = props
     const pivot = readConfObject(config, 'bicolorPivot')
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
-    const renderType = readConfObject(config, 'renderType')
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
-    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-    const scale = getScale({ ...scaleOpts, range: [0, height] })
-    const originY = getOrigin(scaleOpts.scaleType)
-    const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => height - scale(rawscore)
-    const toHeight = rawscore => toY(originY) - toY(rawscore)
-    ctx.scale(highResolutionScaling, highResolutionScaling)
     let colorCallback
     let colorScale
     if (readConfObject(config, 'color') === '#f0f') {
@@ -82,49 +86,28 @@ export class DensityRenderer extends WiggleBaseRenderer {
       if (horizontallyFlipped) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      const score = feature.get('score')
-      const maxr = feature.get('maxScore')
-      const minr = feature.get('minScore')
-
-      const lowClipping = score < niceMin
-      const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-
       ctx.fillStyle = colorCallback(feature)
       ctx.fillRect(leftPx, 0, w, height)
     }
-
-    const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width }
   }
 }
 
-export class XYPlotRenderer extends WiggleBaseRenderer {
-  async makeImageData({
-    features,
-    region,
-    bpPerPx,
-    scaleOpts,
-    height,
-    config,
-    highResolutionScaling = 1,
-    horizontallyFlipped = false,
-  }) {
-    const width = (region.end - region.start) / bpPerPx
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0 }
-    }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
-    const pivot = readConfObject(config, 'bicolorPivot')
+export class XYPlotRendererClass extends WiggleBaseRenderer {
+  draw(ctx, props) {
+    const {
+      features,
+      region,
+      bpPerPx,
+      scaleOpts,
+      height,
+      config,
+      horizontallyFlipped,
+    } = props
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
     const filled = readConfObject(config, 'filled')
-    const renderType = readConfObject(config, 'renderType')
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
@@ -133,9 +116,7 @@ export class XYPlotRenderer extends WiggleBaseRenderer {
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
     const toHeight = rawscore => toY(originY) - toY(rawscore)
-    ctx.scale(highResolutionScaling, highResolutionScaling)
     let colorCallback
-    let colorScale
     if (readConfObject(config, 'color') === '#f0f') {
       colorCallback = feature =>
         feature.get('score') < pivotValue ? negColor : posColor
@@ -204,8 +185,29 @@ export class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillRect(leftPx, 0, w, height)
       }
     }
-
-    const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width }
   }
+}
+
+export function DensityRenderer() {
+  return new DensityRendererClass({
+    name: 'DensityRenderer',
+    ReactComponent: WiggleRendering,
+    configSchema: ConfigurationSchema(
+      'DensityRenderer',
+      {},
+      { baseConfiguration: ConfigSchema, explicitlyTyped: true },
+    ),
+  })
+}
+
+export function XYPlotRenderer() {
+  return new XYPlotRendererClass({
+    name: 'XYPlotRenderer',
+    ReactComponent: WiggleRendering,
+    configSchema: ConfigurationSchema(
+      'XYPlotRenderer',
+      {},
+      { baseConfiguration: ConfigSchema, explicitlyTyped: true },
+    ),
+  })
 }

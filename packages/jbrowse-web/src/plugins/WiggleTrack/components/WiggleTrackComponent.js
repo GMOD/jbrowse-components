@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import Track from '../../LinearGenomeView/components/Track'
 import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
-import { readConfObject, getConf } from '../../../configuration'
+import { getConf } from '../../../configuration'
 import { getScale } from '../../WiggleRenderer/util'
 
 const powersOfTen = []
@@ -15,9 +15,6 @@ for (let i = -20; i < 20; i += 1) {
 function WiggleTrackComponent(props) {
   const { model } = props
   const { domain, ready, height } = model
-
-  const getRendererConf = (subtrack, slot) =>
-    readConfObject(model.configuration.renderer, slot)
 
   const getYScaleBar = () => {
     const scaleType = getConf(model, 'scaleType')

@@ -8,7 +8,6 @@ import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getParentRenderProps, getContainingView } from '../../util/tracks'
 import { getNiceDomain } from '../WiggleRenderer/util'
 import { checkAbortSignal, isAbortException } from '../../util'
-import WiggleRendererConfigSchema from '../WiggleRenderer/configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -103,9 +102,6 @@ export default (pluginManager, configSchema) =>
           return rendererType
         },
         get renderProps() {
-          // const config = WiggleRendererConfigSchema.create(
-          //   getConf(self, 'renderer'),
-          // )
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )

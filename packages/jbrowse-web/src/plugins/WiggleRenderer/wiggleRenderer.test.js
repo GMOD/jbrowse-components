@@ -1,9 +1,9 @@
-import WiggleRenderer from './wiggleRenderer'
+import { XYPlotRenderer, DensityRenderer } from './wiggleRenderer'
 
 import SimpleFeature from '../../util/simpleFeature'
 
 test('empty', async () => {
-  const result = await WiggleRenderer().makeImageData({
+  const result = await DensityRenderer().makeImageData({
     region: {
       end: 100,
       start: 1,
@@ -14,8 +14,7 @@ test('empty', async () => {
   expect(result).toEqual({ width: 0, height: 0 })
 })
 test('several features', async () => {
-  const canvas = document.create
-  const result = await WiggleRenderer().makeImageData({
+  const result = await XYPlotRenderer().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
@@ -41,7 +40,7 @@ test('several features', async () => {
 })
 
 test('inverted mode and horizontally flipped', async () => {
-  const result = await WiggleRenderer().makeImageData({
+  const result = await DensityRenderer().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),

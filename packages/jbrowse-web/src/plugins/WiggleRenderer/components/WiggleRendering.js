@@ -68,39 +68,7 @@ class WiggleRendering extends Component {
   render() {
     const { width } = this.props
     const { featureUnderMouse, offsetX } = this.state
-    const displayedScore = ''
-    let score = feature.get('score')
-    if (summaryScoreMode === 'max') {
-      score = maxr === undefined ? score : maxr
-      ctx.fillStyle = c
-      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    } else if (summaryScoreMode === 'min') {
-      score = minr === undefined ? score : minr
-      ctx.fillStyle = c
-      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    } else if (summaryScoreMode === 'whiskers') {
-      // max
-      if (maxr !== undefined) {
-        ctx.fillStyle = Color(c)
-          .lighten(0.6)
-          .toString()
-        ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
-      }
 
-      // normal
-      ctx.fillStyle = c
-      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-      // min
-      if (minr !== undefined) {
-        ctx.fillStyle = Color(c)
-          .darken(0.6)
-          .toString()
-        ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
-      }
-    } else {
-      ctx.fillStyle = c
-      ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-    }
     return (
       <div
         onMouseMove={this.onMouseMove.bind(this)}
