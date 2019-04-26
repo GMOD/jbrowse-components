@@ -73,11 +73,7 @@ export default (pluginManager, configSchema) =>
         },
         updateScale(stats) {
           self.stats.setStats(stats)
-          self.domain.setDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
-            scaleType: getConf(self, 'scaleType'),
-            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
-          })
+
           self.ready = true
         },
         setLoading(abortSignal) {
@@ -101,6 +97,13 @@ export default (pluginManager, configSchema) =>
             throw new Error(`unknown alignments view name ${viewName}`)
           return rendererType
         },
+        get domain() {
+          return getNiceDomain({
+            domain: [self.stats.min, self.stats.max],
+            scaleType: getConf(self, 'scaleType'),
+            bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+          })
+        },
         get renderProps() {
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
@@ -110,7 +113,6 @@ export default (pluginManager, configSchema) =>
             'highResolutionScaling',
           )
           const { height, ready, domain } = self
-          const { min, max } = domain
           return {
             ...getParentRenderProps(self),
             trackModel: self,
@@ -125,8 +127,7 @@ export default (pluginManager, configSchema) =>
               self.clearFeatureSelection()
             },
             scaleOpts: {
-              domain: [min, max],
-              bounds: [getConf(self, 'minScore'), getConf(self, 'maxScore')],
+              domain,
               scaleType: getConf(self, 'scaleType'),
               inverted: getConf(self, 'inverted'),
             },
@@ -138,18 +139,8 @@ export default (pluginManager, configSchema) =>
       .volatile(() => ({
         reactComponent: WiggleTrackComponent,
         ready: false,
-        domain: types
-          .model('domain', { min: 0, max: 0 })
-          .actions(self => ({
-            setDomain({ domain, scaleType, bounds }) {
-              const [min, max] = getNiceDomain({ domain, scaleType, bounds })
-              self.min = min
-              self.max = max
-            },
-          }))
-          .create(),
         stats: types
-          .model('domain', { min: 0, max: 0, mean: 0 })
+          .model('stats', { min: 0, max: 0, mean: 0 })
           .actions(self => ({
             setStats(stats) {
               self.min = stats.scoreMin

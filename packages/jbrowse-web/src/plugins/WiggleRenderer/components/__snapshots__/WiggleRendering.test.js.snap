@@ -24,7 +24,6 @@ exports[`one 1`] = `
         "start": 1,
       }
     }
-    scale={2}
     trackModel={Object {}}
     width={500}
   />

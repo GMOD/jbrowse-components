@@ -66,9 +66,32 @@ class WiggleRendering extends Component {
   }
 
   render() {
-    const { width } = this.props
     const { featureUnderMouse, offsetX } = this.state
 
+    const toP = s => parseFloat(s.toPrecision(6))
+    const getFeatRepr = feature => {
+      return feature.get('maxScore') !== undefined ? (
+        <div>
+          Summary
+          <br />
+          Max: {toP(feature.get('maxScore'))}
+          <br />
+          Avg: {toP(feature.get('score'))}
+          <br />
+          Min: {toP(feature.get('minScore'))}
+        </div>
+      ) : (
+        toP(feature.get('score'))
+      )
+    }
+    const getMouseoverFlag = feature => (
+      <div style={{ pointerEvents: 'none' }}>
+        <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
+          {getFeatRepr(feature)}
+        </div>
+        <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
+      </div>
+    )
     return (
       <div
         onMouseMove={this.onMouseMove.bind(this)}
@@ -78,15 +101,8 @@ class WiggleRendering extends Component {
         className="WiggleRendering"
         style={{ position: 'relative' }}
       >
-        <PrerenderedCanvas {...this.props} width={width} />
-        {featureUnderMouse ? (
-          <div style={{ pointerEvents: 'none' }}>
-            <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
-              {parseFloat(featureUnderMouse.get('score').toPrecision(6))}
-            </div>
-            <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
-          </div>
-        ) : null}
+        <PrerenderedCanvas {...this.props} />
+        {featureUnderMouse ? getMouseoverFlag(featureUnderMouse) : null}
       </div>
     )
   }

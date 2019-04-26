@@ -7,11 +7,11 @@ export default class PrerenderedCanvas extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
-    scale: ReactPropTypes.number,
+    highResolutionScaling: ReactPropTypes.number.isRequired,
     imageData: ReactPropTypes.instanceOf(ImageBitmapType),
   }
 
-  static defaultProps = { imageData: undefined, scale: 2 }
+  static defaultProps = { imageData: undefined }
 
   constructor(props) {
     super(props)
@@ -43,12 +43,12 @@ export default class PrerenderedCanvas extends Component {
   }
 
   render() {
-    const { width, height, scale } = this.props
+    const { width, height, highResolutionScaling } = this.props
     return (
       <canvas
         ref={this.featureCanvas}
-        width={width * scale}
-        height={height * scale}
+        width={width * highResolutionScaling}
+        height={height * highResolutionScaling}
         style={{ width, height }}
       />
     )

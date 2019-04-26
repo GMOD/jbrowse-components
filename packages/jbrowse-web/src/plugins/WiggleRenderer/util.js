@@ -74,7 +74,7 @@ export function getOrigin(scaleType /* , pivot, stats */) {
  *   - scaleType (linear or log)
  */
 export function getNiceDomain({ scaleType, domain = [], bounds = {} }) {
-  const { min: minScore, max: maxScore } = bounds
+  const [minScore, maxScore] = bounds
   let [min, max] = domain
 
   if (scaleType === 'linear') {

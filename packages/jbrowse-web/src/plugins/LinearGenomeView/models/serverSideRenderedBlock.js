@@ -82,7 +82,7 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
       console.warn(`cached abort detected, failed to recover ${track.name}`)
     }
     if (isAlive(self) && !isAbortException(error)) {
-      // setting the aborted exception as an error will draw the "aborted" error, and we don't
+      // setting the aborted exception as an error will draw the "aborted" error, and we
       // have not found how to create a re-render if this occurs
       self.setError(error)
     }

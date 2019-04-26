@@ -188,33 +188,14 @@
       ]
     },
     {
-      "configId": "wiggle_global_autoscale",
+      "configId": "volvox_microarray_density",
       "type": "WiggleTrack",
-      "name": "Global xyplot",
+      "name": "Volvox microarray",
       "category": [
-        "BigWig"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "wiggle_local_autoscale_density",
-      "type": "WiggleTrack",
-      "name": "Local density",
-      "category": [
-        "BigWig"
+        "BigWig",
+        "Density"
       ],
       "defaultRendering": "density",
-      "height": 300,
-      "autoscale": "local",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -225,14 +206,13 @@
       }
     },
     {
-      "configId": "wiggle_local_autoscale_negative",
+      "configId": "volvox_microarray_xyplot",
       "type": "WiggleTrack",
-      "name": "Local xyplot negative",
+      "name": "Volvox microarray",
       "category": [
-        "BigWig"
+        "BigWig",
+        "XYPlot"
       ],
-      "height": 300,
-      "autoscale": "local",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -243,15 +223,15 @@
       }
     },
     {
-      "configId": "wiggle_local_autoscale_density_negative",
+      "configId": "volvox_microarray_negative_density",
       "type": "WiggleTrack",
-      "name": "Local density negative",
+      "name": "Volvox microarray - negative",
       "category": [
-        "BigWig"
+        "BigWig",
+        "Density"
       ],
       "defaultRendering": "density",
       "height": 300,
-      "autoscale": "local",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -262,14 +242,14 @@
       }
     },
     {
-      "configId": "wiggle_local_autoscale",
+      "configId": "volvox_microarray_negative_xyplot",
       "type": "WiggleTrack",
-      "name": "Local xyplot",
+      "name": "Volvox microarray - negative",
       "category": [
-        "BigWig"
+        "BigWig",
+        "XYPlot"
       ],
       "height": 300,
-      "autoscale": "local",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -280,33 +260,13 @@
       }
     },
     {
-      "configId": "wiggle_log",
+      "configId": "volvox_microarray_posneg",
       "type": "WiggleTrack",
-      "name": "Log scale xyplot",
+      "name": "Volvox microarray with +/- values",
       "category": [
         "BigWig"
       ],
       "height": 300,
-      "autoscale": "global",
-      "assemblyName": "volvox",
-      "scaleType": "log",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "wiggle_posneg",
-      "type": "WiggleTrack",
-      "name": "Global scale with positive+negative values",
-      "category": [
-        "BigWig"
-      ],
-      "height": 300,
-      "autoscale": "global",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -317,14 +277,13 @@
       }
     },
     {
-      "configId": "wiggle_coverage",
+      "configId": "volvox_coverage",
       "type": "WiggleTrack",
-      "name": "Global scale with BAM coverage",
+      "name": "Volvox - BAM coverage",
       "category": [
         "BigWig"
       ],
       "height": 300,
-      "autoscale": "global",
       "assemblyName": "volvox",
       "adapter": {
         "type": "BigWigAdapter",
@@ -445,11 +404,6 @@
             "type": "FilteringTrack",
             "height": 100,
             "configuration": "i3jUPmrgMOS"
-          },
-          {
-            "type": "WiggleTrack",
-            "height": 100,
-            "configuration": "wiggle_local_autoscale"
           }
         ],
         "configuration": {}

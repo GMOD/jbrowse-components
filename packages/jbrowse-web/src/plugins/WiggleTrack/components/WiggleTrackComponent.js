@@ -20,9 +20,9 @@ function WiggleTrackComponent(props) {
     const scaleType = getConf(model, 'scaleType')
     const scale = getScale({
       scaleType,
-      inverted: getConf(model, 'inverted'),
-      domain: [domain.min, domain.max],
+      domain,
       range: [height, 0],
+      inverted: getConf(model, 'inverted'),
       bounds: {
         min: getConf(model, 'minScore'),
         max: getConf(model, 'maxScore'),
