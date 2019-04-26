@@ -25,9 +25,7 @@
       "category": [
         "Bar Category"
       ],
-      "renderer": {
-        "renderType": "density"
-      },
+      "defaultRendering": "density",
       "height": 300,
       "autoscale": "local",
       "assemblyName": "volvox",
@@ -64,9 +62,7 @@
       "category": [
         "Bar Category"
       ],
-      "renderer": {
-        "renderType": "density"
-      },
+      "defaultRendering": "density",
       "height": 300,
       "autoscale": "local",
       "assemblyName": "volvox",
