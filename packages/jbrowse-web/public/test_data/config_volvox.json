@@ -102,44 +102,6 @@
       }
     },
     {
-      "type": "BasicTrack",
-      "name": "volvox bw",
-      "category": [
-        "Bee Category",
-        "Boo Category"
-      ],
-      "assemblyName": "vvx",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox.bw"
-        }
-      }
-    },
-    {
-      "configId": "wiggle_local_autoscale",
-      "type": "WiggleTrack",
-      "name": "Wiggle local autoscale track",
-      "category": [
-        "Bar Category"
-      ],
-      "height": 300,
-      "autoscale": "local",
-      "assemblyName": "volvox",
-      "subtracks": [
-        {
-          "type": "BasicTrack",
-          "adapter": {
-            "type": "BigWigAdapter",
-            "bigWigLocation": {
-              "uri": "/test_data/volvox.bw"
-            },
-            "assemblyName": "volvox"
-          }
-        }
-      ]
-    },
-    {
       "type": "AlignmentsTrack",
       "name": "volvox-sorted all green",
       "category": [
@@ -224,6 +186,153 @@
         "start",
         "end"
       ]
+    },
+    {
+      "configId": "wiggle_global_autoscale",
+      "type": "WiggleTrack",
+      "name": "Global xyplot",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale_density",
+      "type": "WiggleTrack",
+      "name": "Local density",
+      "category": [
+        "BigWig"
+      ],
+      "defaultRendering": "density",
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale_negative",
+      "type": "WiggleTrack",
+      "name": "Local xyplot negative",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray_negative.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale_density_negative",
+      "type": "WiggleTrack",
+      "name": "Local density negative",
+      "category": [
+        "BigWig"
+      ],
+      "defaultRendering": "density",
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray_negative.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_local_autoscale",
+      "type": "WiggleTrack",
+      "name": "Local xyplot",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "local",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_log",
+      "type": "WiggleTrack",
+      "name": "Log scale xyplot",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "scaleType": "log",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_posneg",
+      "type": "WiggleTrack",
+      "name": "Global scale with positive+negative values",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox_microarray_posneg.bw"
+        },
+        "assemblyName": "volvox"
+      }
+    },
+    {
+      "configId": "wiggle_coverage",
+      "type": "WiggleTrack",
+      "name": "Global scale with BAM coverage",
+      "category": [
+        "BigWig"
+      ],
+      "height": 300,
+      "autoscale": "global",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+        },
+        "assemblyName": "volvox"
+      }
     }
   ],
   "assemblies": {
@@ -339,7 +448,7 @@
           },
           {
             "type": "WiggleTrack",
-            "height": 250,
+            "height": 100,
             "configuration": "wiggle_local_autoscale"
           }
         ],
