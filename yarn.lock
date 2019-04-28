@@ -1156,10 +1156,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.7.1.tgz#9833722341379fb7d67f06a4b00ab3c37913da53"
   integrity sha512-OYpa/Sg+2GDX+jibUfpZVn1YqSVRpYmTLF2eyAfrFTIJSbwyIrc+YscayoykvaOME/wV4BV0Sa0yqdMrgse6mA==
 
-"@gmod/bam@^1.0.16":
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.16.tgz#cb85f33aa0c96b2d927127939dd77e1447cbac6a"
-  integrity sha512-npB+Sqoyx08vWUqAiGu7c579FjujdcWtYnJKDFo9X1DH0RiWY5i+W8NbLRLSIQBf43q2MkD6KyItPiPc7tOkbg==
+"@gmod/bam@^1.0.17":
+  version "1.0.17"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.17.tgz#37677469009e5c89f8976643735d589b6da43ea6"
+  integrity sha512-IMSTKfot61V44dpAjwd7AbRG+Ko+YThy2QtFaf4ze0oVlWDxq9HTH61tyewCUkbJp8dTim1+9AfKsYtDt/xDRg==
   dependencies:
     "@babel/runtime" "^7.4.3"
     "@gmod/bgzf-filehandle" "^1.2.3"
