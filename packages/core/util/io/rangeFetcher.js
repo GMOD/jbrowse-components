@@ -1,5 +1,5 @@
 import 'whatwg-fetch'
-import tenaciousFetch from 'tenacious-fetch'
+// import tenaciousFetch from 'tenacious-fetch'
 
 // import { HttpRangeFetcher } from 'http-range-fetcher'
 // import { Buffer } from 'buffer'
@@ -23,7 +23,7 @@ function getfetch(url, opts = {}) {
       mfetch = fetch
     }
   } else {
-    mfetch = tenaciousFetch
+    mfetch = window.fetch
   }
   return mfetch(
     url,
