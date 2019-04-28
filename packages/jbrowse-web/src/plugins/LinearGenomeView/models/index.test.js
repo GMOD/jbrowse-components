@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { getConf } from '../../../configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { TestStub as LinearGenomeModel } from '.'
 import { createTestEnv } from '../../../JBrowse'
 

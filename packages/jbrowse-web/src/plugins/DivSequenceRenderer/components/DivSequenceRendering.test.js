@@ -2,8 +2,8 @@ import React from 'react'
 import ReactPropTypes from 'prop-types'
 import TestRenderer from 'react-test-renderer'
 import Rendering, { featuresToSequence } from './DivSequenceRendering'
-import PrecomputedLayout from '../../../util/layouts/PrecomputedLayout'
-import SimpleFeature from '../../../util/simpleFeature'
+import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import DivRenderingConfigSchema from '../configSchema'
 
 test('features to sequence function', () => {

@@ -4,8 +4,8 @@ import ReactPropTypes from 'prop-types'
 
 import './DivSequenceRendering.scss'
 
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { readConfObject } from '../../../configuration'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.

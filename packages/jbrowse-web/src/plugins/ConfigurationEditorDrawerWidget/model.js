@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ElementId } from '../../mst-types'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 export default pluginManager =>
   types
@@ -10,7 +10,6 @@ export default pluginManager =>
         types.union(
           pluginManager.pluggableConfigSchemaType('track'),
           pluginManager.pluggableConfigSchemaType('view'),
-          pluginManager.rootConfig.type.properties.assemblies.type.subType.type,
         ),
       ),
     })

@@ -12,8 +12,8 @@ import {
   isConfigurationSchemaType,
   isConfigurationSlotType,
   getTypeNamesFromExplicitlyTypedUnion,
-} from '../../../configuration/configurationSchema'
-import { iterMap } from '../../../util'
+} from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { iterMap } from '@gmod/jbrowse-core/util'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 

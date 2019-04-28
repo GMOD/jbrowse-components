@@ -24,7 +24,7 @@ import { observer } from 'mobx-react-lite'
 import { getRoot, getSnapshot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
-import { readConfObject } from '../../../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 const styles = theme => ({
   root: {

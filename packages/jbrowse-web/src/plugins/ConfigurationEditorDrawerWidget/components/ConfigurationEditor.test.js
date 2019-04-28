@@ -2,7 +2,7 @@ import React from 'react'
 import renderer from 'react-test-renderer'
 
 import ConfigurationEditor from './ConfigurationEditor'
-import { ConfigurationSchema } from '../../../configuration'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
 import AlignmentsTrackSchemaFactory from '../../AlignmentsTrack/configSchema'
 import { createTestEnv } from '../../../JBrowse'

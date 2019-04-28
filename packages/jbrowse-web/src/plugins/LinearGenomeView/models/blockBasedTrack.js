@@ -5,8 +5,8 @@ import { autorun } from 'mobx'
 import baseTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
-import CompositeMap from '../../../util/compositeMap'
-import { getContainingView } from '../../../util/tracks'
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export default types.compose(
   'BlockBasedTrackState',

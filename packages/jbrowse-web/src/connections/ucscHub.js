@@ -1,7 +1,7 @@
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 // Polyfill for TextDecoder
 import 'fast-text-encoding'
-import { openLocation } from '../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import ucscAssemblies from './ucscAssemblies'
 
 export { ucscAssemblies }

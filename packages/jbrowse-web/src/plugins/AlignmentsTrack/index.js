@@ -1,7 +1,7 @@
-import { ConfigurationSchema } from '../../configuration'
-import Plugin from '../../Plugin'
-import TrackType from '../../pluggableElementTypes/TrackType'
-import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import Plugin from '@gmod/jbrowse-core/Plugin'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import AlignmentsFeatureDrawerWidgetComponent from './components/AlignmentsFeatureDrawerWidget'
 
 import configSchemaFactory from './configSchema'

@@ -2,10 +2,12 @@ import { BigWig } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
 import { mergeAll, map } from 'rxjs/operators'
-import BaseAdapter from '../../BaseAdapter'
-import { openLocation } from '../../util/io'
-import SimpleFeature from '../../util/simpleFeature'
-import { ObservableCreate } from '../../util/rxjs'
+
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+
 import { rectifyStats, scoresToStats } from './util'
 
 export default class BigWigAdapter extends BaseAdapter {

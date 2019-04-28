@@ -1,6 +1,6 @@
 import { detach, getRoot, getType, types, flow } from 'mobx-state-tree'
-import { ConfigurationSchema, readConfObject } from './configuration'
-import RpcManager from './rpc/RpcManager'
+import { ConfigurationSchema, readConfObject } from '@gmod/jbrowse-core/configuration'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import {
   fetchGenomesFile,
   fetchHubFile,

@@ -4,7 +4,7 @@ import BasicTrack from './BasicTrack'
 import {
   ConfigurationSchema,
   ConfigurationReference,
-} from '../../configuration'
+} from '@gmod/jbrowse-core/configuration'
 
 export default pluginManager => {
   const {

@@ -23,7 +23,7 @@ Configurations are all descendents of a single root configuration, which is `roo
 Configuration types should always be created by the `ConfigurationSchema` factory, e.g.
 
 ```js
-  import { ConfigurationSchema } from '../utils/configuration'
+  import { ConfigurationSchema } from '@gmod/jbrowse-core/utils/configuration'
   const ThingStateModel = types.model('MyThingsState',{
     foo: 42,
     configuration: ConfigurationSchema('MyThing', {
@@ -49,4 +49,3 @@ It uses one or more [Renderers] to actually draw the data inside its piece of th
 
 A renderer is a pluggable element that cannot be configured on its own, but is registered with the plugin
 manager for use by tracks to draw data. It is a react component that takes some data in its props, and produces some kind of web-compatible rendering of it.
-

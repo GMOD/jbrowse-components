@@ -11,7 +11,6 @@ test('can load configuration with the configure() action and resolve references 
 
 test('can load configuration from a config object', async () => {
   const { rootModel } = await createTestEnv({
-    rpc: { defaultDriver: 'MainThreadRpcDriver' },
     assemblies: {
       volvox: {
         configId: 'volvox',

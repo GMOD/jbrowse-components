@@ -6,7 +6,7 @@ import ReactPropTypes from 'prop-types'
 import { withStyles, IconButton, Icon } from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 
-import { getConf } from '../../../configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 
 const styles = (/* theme */) => ({

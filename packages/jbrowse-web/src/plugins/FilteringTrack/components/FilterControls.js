@@ -13,7 +13,7 @@ import {
 import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import { reaction } from 'mobx'
 
-import { getConf } from '../../../configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 
 const styles = theme => ({
   root: {

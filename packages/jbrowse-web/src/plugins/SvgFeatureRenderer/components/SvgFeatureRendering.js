@@ -4,7 +4,7 @@ import ReactPropTypes from 'prop-types'
 
 import './SvgFeatureRendering.scss'
 
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 
 import Box from './Box'
 

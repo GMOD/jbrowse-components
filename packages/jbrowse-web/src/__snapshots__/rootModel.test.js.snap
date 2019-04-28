@@ -406,6 +406,7 @@ Object {
   "configId": "fogbat",
   "rpc": Object {
     "configId": "testid",
+    "defaultDriver": "MainThreadRpcDriver",
   },
 }
 `;

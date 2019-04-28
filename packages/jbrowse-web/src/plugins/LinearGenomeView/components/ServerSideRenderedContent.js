@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 import { requestIdleCallback } from 'request-idle-callback'
 
@@ -44,11 +44,12 @@ class ServerSideRenderedContent extends Component {
       // we have some free time. helps keep the framerate up.
       requestIdleCallback(() => {
         if (!isAlive(model) || !isAlive(region)) return
+        const serializedRegion = isStateTreeNode(region) ? getSnapshot(region) : region;
         const mainThreadRendering = React.createElement(
           renderingComponent,
           {
             ...data,
-            region,
+            region: serializedRegion,
             ...renderProps,
           },
           null,

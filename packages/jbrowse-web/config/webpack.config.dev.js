@@ -104,8 +104,7 @@ module.exports = {
     // This is the URL that app is served from. We use "/" in development.
     publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
-    devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+    devtoolModuleFilenameTemplate: info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     globalObject: 'typeof self === "undefined" ? this : self',
   },
   optimization: {
@@ -135,7 +134,7 @@ module.exports = {
     // https://github.com/facebook/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
-    extensions: ['.mjs', '.web.js', '.js', '.json', '.web.jsx', '.jsx'],
+    extensions: ['.mjs', '.web.js', '.js', '.ts', '.tsx', '.json', '.web.jsx', '.jsx'],
     alias: {
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
@@ -201,13 +200,14 @@ module.exports = {
           // Process WebWorker JS with Babel.
           // The preset includes JSX, Flow, and some ESnext features.
           {
-            test: /\.worker\.(js|mjs|ts)$/,
+            test: /\.worker\.(js|mjs|ts|tsx)$/,
             include: paths.appSrc,
             use: [
               require.resolve('worker-loader'),
               {
                 loader: require.resolve('babel-loader'),
                 options: {
+                  rootMode: 'upward',
                   customize: require.resolve(
                     'babel-preset-react-app/webpack-overrides'
                   ),
@@ -237,11 +237,12 @@ module.exports = {
           // Process application JS with Babel.
           // The preset includes JSX, Flow, and some ESnext features.
           {
-            test: /\.(js|mjs|jsx)$/,
+            test: /\.(js|ts|tsx|mjs|jsx)$/,
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
-              customize: require.resolve(
+                  rootMode: 'upward',
+                  customize: require.resolve(
                 'babel-preset-react-app/webpack-overrides',
               ),
 
@@ -268,12 +269,11 @@ module.exports = {
           // Process any JS outside of the app with Babel.
           // Unlike the application JS, we only compile the standard ES features.
           {
-            test: /\.(js|mjs)$/,
+            test: /\.(js|ts|tsx|jsx|mjs)$/,
             exclude: /@babel(?:\/|\\{1,2})runtime/,
             loader: require.resolve('babel-loader'),
             options: {
-              babelrc: false,
-              configFile: false,
+              rootMode: 'upward',
               compact: false,
               presets: [
                 [

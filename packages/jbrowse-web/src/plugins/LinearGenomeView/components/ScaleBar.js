@@ -2,7 +2,7 @@ import { withStyles } from '@material-ui/core'
 import React from 'react'
 import PropTypes from 'prop-types'
 import Block from './Block'
-import { assembleLocString } from '../../../util'
+import { assembleLocString } from '@gmod/jbrowse-core/util'
 
 import Ruler from './Ruler'
 

@@ -3,11 +3,11 @@ import { types } from 'mobx-state-tree'
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '../../configuration'
+} from '@gmod/jbrowse-core/configuration'
 
 import FilteringTrackComponent from './components/FilteringTrack'
 import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
-import { getParentRenderProps } from '../../util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 function makeFilters(trackModel) {
   const filters = []
