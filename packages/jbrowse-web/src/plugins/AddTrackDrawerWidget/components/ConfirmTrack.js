@@ -180,6 +180,7 @@ function guessTrackType(adapterType) {
     IndexedFastaAdapter: 'SequenceTrack',
     BgzipFastaAdapter: 'SequenceTrack',
     TwoBitAdapter: 'SequenceTrack',
+    NCListAdapter: 'BasicTrack',
   }[adapterType]
 }
 
