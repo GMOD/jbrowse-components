@@ -40,7 +40,6 @@ export default class BamAdapter extends BaseAdapter {
   }
 
   wrapFeature(ncFeature) {
-    // eslint-disable-next-line no-underscore-dangle
     return new NCListFeature(ncFeature)
   }
 

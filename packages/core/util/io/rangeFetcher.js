@@ -5,8 +5,6 @@ import 'whatwg-fetch'
 // import { Buffer } from 'buffer'
 import { RemoteFile } from 'generic-filehandle'
 
-import LocalFile from './localFile'
-
 function isElectron() {
   return false // TODO
 }
