@@ -138,7 +138,18 @@ function makeTrackConfig(
     case 'bigBarChart':
       return generateUnsupportedTrackConf(track, categories, baseTrackType)
     case 'bigBed':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return {
+        type: 'BasicTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        assemblyName,
+        renderer: { type: 'SvgFeatureRenderer' },
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+      }
     case 'bigChain':
       return generateUnsupportedTrackConf(track, categories, baseTrackType)
     case 'bigInteract':
@@ -149,11 +160,10 @@ function makeTrackConfig(
       return generateUnsupportedTrackConf(track, categories, baseTrackType)
     case 'bigWig':
       return {
-        type: 'BasicTrack',
+        type: 'WiggleTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
-        renderer: { type: 'WiggleRenderer' },
         assemblyName,
         adapter: {
           type: 'BigWigAdapter',

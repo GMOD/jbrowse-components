@@ -7,8 +7,9 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
+import { getContainingView, getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+
 import TrackControls from '../components/TrackControls'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -38,8 +39,6 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // a reference to a track configuration (stored under root.configuration.tracks).
 
 // note that multiple displayed tracks could use the same configuration.
-
-// note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 const defaultTrackHeight = 100
 const BaseTrack = types
@@ -50,7 +49,6 @@ const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       defaultTrackHeight,
     ),
-    subtracks: types.literal(undefined),
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
@@ -74,11 +72,8 @@ const BaseTrack = types
      * is rendered in this track
      */
     get renderProps() {
-      // view -> [tracks] -> [blocks]
-      const view = getContainingView(self)
       return {
-        bpPerPx: view.bpPerPx,
-        horizontallyFlipped: view.horizontallyFlipped,
+        ...getParentRenderProps(self),
         trackModel: self,
       }
     },

@@ -8,7 +8,7 @@ import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import TrackControls from '../components/TrackControls'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -105,13 +105,11 @@ export default (pluginManager, configSchema) =>
          */
         get renderProps() {
           // view -> [tracks] -> [blocks]
-          const view = getContainingView(self)
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
           return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
+            ...getParentRenderProps(self),
             config,
             trackModel: self,
             onFeatureClick(event, featureId) {

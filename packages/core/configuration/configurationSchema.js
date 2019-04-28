@@ -4,9 +4,9 @@ import {
   isArrayType,
   isUnionType,
   isMapType,
+  isOptionalType,
   isStateTreeNode,
   getType,
-  isOptionalType,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../mst-types'

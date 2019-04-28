@@ -12,6 +12,7 @@ import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 import LinearGenomeViewConfigSchema from './configSchema'
 
@@ -105,6 +106,13 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           (a, b) => a + (b.end - b.start) / self.bpPerPx,
           0,
         )
+      },
+      get renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          bpPerPx: self.bpPerPx,
+          horizontallyFlipped: self.horizontallyFlipped,
+        }
       },
     }))
     .volatile(() => ({
@@ -272,7 +280,11 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       horizontalScroll(distance) {
         const leftPadding = 10
         const rightPadding = 10
-        const maxOffset = self.displayedRegionsTotalPx - leftPadding
+        const displayRegionsTotalPx = self.displayedRegions.reduce(
+          (a, b) => a + (b.end - b.start) / self.bpPerPx,
+          0,
+        )
+        const maxOffset = displayRegionsTotalPx - leftPadding
         const displayWidth = self.viewingRegionWidth
         const minOffset = -displayWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)

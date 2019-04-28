@@ -1,9 +1,10 @@
 import Plugin from '@gmod/jbrowse-core/Plugin'
 
-import renderer from './wiggleRenderer'
+import { DensityRenderer, XYPlotRenderer } from './wiggleRenderer'
 
 export default class WiggleRendererPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(renderer)
+    pluginManager.addRendererType(DensityRenderer)
+    pluginManager.addRendererType(XYPlotRenderer)
   }
 }

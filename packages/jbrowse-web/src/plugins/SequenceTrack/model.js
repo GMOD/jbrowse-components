@@ -1,10 +1,10 @@
 import { types } from 'mobx-state-tree'
 
 import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export default (pluginManager, configSchema, trackType) =>
   types.compose(
@@ -18,10 +18,8 @@ export default (pluginManager, configSchema, trackType) =>
       })
       .views(self => ({
         get renderProps() {
-          const view = getContainingView(self)
           return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
+            ...getParentRenderProps(self),
             trackModel: self,
             config: self.configuration.rendering,
           }

@@ -34,6 +34,7 @@ export default function(pluginManager) {
 
       // A map of assembly name -> assembly details
       assemblies: types.map(Assemblies),
+      highResolutionScaling: 2, // possibly consider this for global config editor
 
       connections: types.array(
         ConfigurationSchema(

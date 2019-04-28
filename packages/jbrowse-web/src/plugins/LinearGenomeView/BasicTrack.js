@@ -4,9 +4,11 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+
 
 export default pluginManager => {
   const configSchema = ConfigurationSchema(
@@ -29,10 +31,8 @@ export default pluginManager => {
       })
       .views(self => ({
         get renderProps() {
-          const view = getContainingView(self)
           return {
-            bpPerPx: view.bpPerPx,
-            horizontallyFlipped: view.horizontallyFlipped,
+            ...getParentRenderProps(self),
             trackModel: self,
             config: self.configuration.renderer,
           }

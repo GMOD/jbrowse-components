@@ -1,9 +1,9 @@
 import 'whatwg-fetch'
-import tenaciousFetch from 'tenacious-fetch'
-import uri2path from 'file-uri-to-path'
+// import tenaciousFetch from 'tenacious-fetch'
 
-import { HttpRangeFetcher } from 'http-range-fetcher'
-import { Buffer } from 'buffer'
+// import { HttpRangeFetcher } from 'http-range-fetcher'
+// import { Buffer } from 'buffer'
+import { RemoteFile } from 'generic-filehandle'
 
 import LocalFile from './localFile'
 
@@ -11,9 +11,9 @@ function isElectron() {
   return false // TODO
 }
 
-function unReplacePath() {
-  throw new Error('unimplemented') // TODO
-}
+// function unReplacePath() {
+//   throw new Error('unimplemented') // TODO
+// }
 
 function getfetch(url, opts = {}) {
   let mfetch
@@ -25,7 +25,7 @@ function getfetch(url, opts = {}) {
       mfetch = fetch
     }
   } else {
-    mfetch = tenaciousFetch
+    mfetch = window.fetch
   }
   return mfetch(
     url,
@@ -47,118 +47,111 @@ function getfetch(url, opts = {}) {
   )
 }
 
-function fetchBinaryRange(url, start, end) {
-  const requestDate = new Date()
-  const requestHeaders = {
-    headers: { range: `bytes=${start}-${end}` },
-    onRetry: ({ retriesLeft /* , retryDelay */ }) => {
-      console.warn(
-        `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
-      )
-    },
-  }
-  return getfetch(url, requestHeaders).then(
-    (res) => {
-      const responseDate = new Date()
-      if (res.status !== 206 && res.status !== 200) {
-        throw new Error(
-          `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
-        )
-      }
+// function fetchBinaryRange(url, start, end) {
+//   const requestDate = new Date()
+//   const requestHeaders = {
+//     headers: { range: `bytes=${start}-${end}` },
+//     onRetry: ({ retriesLeft /* , retryDelay */ }) => {
+//       console.warn(
+//         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
+//       )
+//     },
+//   }
+//   return getfetch(url, requestHeaders).then(
+//     (res) => {
+//       const responseDate = new Date()
+//       if (res.status !== 206 && res.status !== 200) {
+//         throw new Error(
+//           `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
+//         )
+//       }
 
-      // translate the Headers object into a regular key -> value object.
-      // will miss duplicate headers of course
-      const headers = {}
-      for (const [k, v] of res.headers.entries()) {
-        headers[k] = v
-      }
+//       // translate the Headers object into a regular key -> value object.
+//       // will miss duplicate headers of course
+//       const headers = {}
+//       for (const [k, v] of res.headers.entries()) {
+//         headers[k] = v
+//       }
 
-      if (isElectron()) {
-        // electron charmingly returns HTTP 200 for byte range requests,
-        // and does not fill in content-range. so we will fill it in
-        try {
-          if (!headers['content-range']) {
-            const fs = window.electronRequire('fs') // Load the filesystem module
-            const stats = fs.statSync(unReplacePath(url))
-            headers['content-range'] = `${start}-${end}/${stats.size}`
-          }
-        } catch (e) {
-          console.warn('Could not get size of file', url, e)
-        }
-      } else if (res.status === 200) {
-        throw new Error(
-          `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
-        )
-      }
+//       if (isElectron()) {
+//         // electron charmingly returns HTTP 200 for byte range requests,
+//         // and does not fill in content-range. so we will fill it in
+//         try {
+//           if (!headers['content-range']) {
+//             const fs = window.electronRequire('fs') // Load the filesystem module
+//             const stats = fs.statSync(unReplacePath(url))
+//             headers['content-range'] = `${start}-${end}/${stats.size}`
+//           }
+//         } catch (e) {
+//           console.warn('Could not get size of file', url, e)
+//         }
+//       } else if (res.status === 200) {
+//         throw new Error(
+//           `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
+//         )
+//       }
 
-      // return the response headers, and the data buffer
-      return res.arrayBuffer().then(arrayBuffer => ({
-        headers,
-        requestDate,
-        responseDate,
-        buffer: Buffer.from(arrayBuffer),
-      }))
-    },
-    (res) => {
-      throw new Error(
-        `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
-      )
-    },
-  )
-}
+//       // return the response headers, and the data buffer
+//       return res.arrayBuffer().then(arrayBuffer => ({
+//         headers,
+//         requestDate,
+//         responseDate,
+//         buffer: Buffer.from(arrayBuffer),
+//       }))
+//     },
+//     (res) => {
+//       throw new Error(
+//         `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
+//       )
+//     },
+//   )
+// }
 
-const globalCache = new HttpRangeFetcher({
-  fetch: fetchBinaryRange,
-  size: 100 * 1024 * 1024, // 100MB
-  chunkSize: 2 ** 18, // 256KB
-  aggregationTime: 50,
-})
+// const globalCache = new HttpRangeFetcher({
+//   fetch: fetchBinaryRange,
+//   size: 100 * 1024 * 1024, // 100MB
+//   chunkSize: 2 ** 18, // 256KB
+//   aggregationTime: 50,
+// })
 
-export default globalCache
+// export default globalCache
 
-class GloballyCachedFilehandle {
-  constructor(url) {
-    this.url = url
+// function globalCacheFetch(url, opts) {
+//   // if (/2bit/.test(url)) debugger
+//   if (opts && opts.headers && opts.headers.range) {
+//     const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
+//     if (rangeParse) {
+//       const [, start, end] = rangeParse
+//       return globalCache.getRange(url, start, end - start + 1, {
+//         signal: opts.signal,
+//       }).then((response) => {
+//         let { headers } = response
+//         if (!(headers instanceof Map)) {
+//           headers = new Map(Object.entries(headers))
+//         }
+//         return {
+//           status: 206,
+//           ok: true,
+//           async arrayBuffer() {
+//             const b = response.buffer
+//             debugger
+//             const ab = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)
+//             // if (ab.length !== b.length) debugger
+//             return ab
+//           },
+//           ...response,
+//           headers,
+//         }
+//       })
+//     }
+//   }
 
-    // if it is a file URL, monkey-patch ourselves to act like a LocalFile
-    if (String(url).startsWith('file://')) {
-      const path = uri2path(url)
-      if (!path) throw new TypeError('invalid file url')
-      const localFile = new LocalFile(path)
-      this.read = localFile.read.bind(localFile)
-      this.readFile = localFile.readFile.bind(localFile)
-      this.stat = localFile.stat.bind(localFile)
-      this.fetch = () => {}
-    }
-  }
+//   return getfetch(url, opts)
+// }
 
-  async read(buffer, offset = 0, length, position, abortSignal) {
-    let data
-    if (length === undefined && offset === 0) {
-      data = await this.readFile()
-    } else {
-      data = (await globalCache.getRange(this.url, position, length, {
-        signal: abortSignal,
-      })).buffer
-    }
-    data.copy(buffer, offset)
-    return data.length
-  }
-
-  async readFile(abortSignal) {
-    const res = await getfetch(this.url, { signal: abortSignal })
-    return Buffer.from(await res.arrayBuffer())
-  }
-
-  stat(abortSignal) {
-    return globalCache.stat(this.url, { signal: abortSignal })
-  }
-
-  toString() {
-    return this.url
-  }
-}
-
+// eslint-disable-next-line import/prefer-default-export
 export function openUrl(url) {
-  return new GloballyCachedFilehandle(url)
+  return new RemoteFile(String(url), {
+    fetch: getfetch,
+  })
 }

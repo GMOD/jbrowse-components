@@ -7,6 +7,7 @@ export default class PrerenderedCanvas extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
+    highResolutionScaling: ReactPropTypes.number.isRequired,
     imageData: ReactPropTypes.instanceOf(ImageBitmapType),
   }
 
@@ -42,7 +43,14 @@ export default class PrerenderedCanvas extends Component {
   }
 
   render() {
-    const { width, height } = this.props
-    return <canvas ref={this.featureCanvas} width={width} height={height} />
+    const { width, height, highResolutionScaling } = this.props
+    return (
+      <canvas
+        ref={this.featureCanvas}
+        width={width * highResolutionScaling}
+        height={height * highResolutionScaling}
+        style={{ width, height }}
+      />
+    )
   }
 }

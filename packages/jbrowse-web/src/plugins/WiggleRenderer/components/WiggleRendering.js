@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
@@ -7,29 +7,105 @@ import PrerenderedCanvas from './PrerenderedCanvas'
 
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 
-function WiggleRendering(props) {
-  const { width } = props
-  const canvasWidth = Math.ceil(width)
-  // need to call this in render so we get the right observer behavior
-  return (
-    <div className="WiggleRendering" style={{ position: 'relative' }}>
-      <PrerenderedCanvas {...props} width={canvasWidth} />
-    </div>
-  )
-}
-WiggleRendering.propTypes = {
-  height: ReactPropTypes.number.isRequired,
-  width: ReactPropTypes.number.isRequired,
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  horizontallyFlipped: ReactPropTypes.bool,
-  trackModel: ReactPropTypes.shape({}),
-}
+class WiggleRendering extends Component {
+  static propTypes = {
+    height: ReactPropTypes.number.isRequired,
+    width: ReactPropTypes.number.isRequired,
+    region: CommonPropTypes.Region.isRequired,
+    bpPerPx: ReactPropTypes.number.isRequired,
+    horizontallyFlipped: ReactPropTypes.bool,
+    trackModel: ReactPropTypes.shape({
+      /** id of the currently selected feature, if any */
+      selectedFeatureId: ReactPropTypes.string,
+    }),
+  }
 
-WiggleRendering.defaultProps = {
-  horizontallyFlipped: false,
+  static defaultProps = {
+    horizontallyFlipped: false,
+    trackModel: {},
+  }
 
-  trackModel: {},
+  constructor(props) {
+    super(props)
+    this.state = {}
+  }
+
+  onMouseMove(evt) {
+    const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
+    const { offsetX } = evt.nativeEvent
+    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const clientBp = region.start + bpPerPx * px
+    for (const feature of features.values()) {
+      if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
+        this.setState({ offsetX, featureUnderMouse: feature })
+        return
+      }
+    }
+  }
+
+  onMouseLeave() {
+    this.setState({ featureUnderMouse: undefined })
+  }
+
+  /**
+   * @param {string} handlerName
+   * @param {*} event - the actual mouse event
+   * @param {bool} always - call this handler even if there is no feature
+   */
+  callMouseHandler(handlerName, event, always = false) {
+    // eslint-disable-next-line react/destructuring-assignment
+    const featureHandler = this.props[`onFeature${handlerName}`]
+    // eslint-disable-next-line react/destructuring-assignment
+    const canvasHandler = this.props[`on${handlerName}`]
+    const { featureUnderMouse } = this.state
+    if (featureHandler && (always || featureUnderMouse)) {
+      featureHandler(event, featureUnderMouse)
+    } else if (canvasHandler) {
+      canvasHandler(event, featureUnderMouse)
+    }
+  }
+
+  render() {
+    const { featureUnderMouse, offsetX } = this.state
+
+    const toP = s => parseFloat(s.toPrecision(6))
+    const getFeatRepr = feature => {
+      return feature.get('maxScore') !== undefined ? (
+        <div>
+          Summary
+          <br />
+          Max: {toP(feature.get('maxScore'))}
+          <br />
+          Avg: {toP(feature.get('score'))}
+          <br />
+          Min: {toP(feature.get('minScore'))}
+        </div>
+      ) : (
+        toP(feature.get('score'))
+      )
+    }
+    const getMouseoverFlag = feature => (
+      <div style={{ pointerEvents: 'none' }}>
+        <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
+          {getFeatRepr(feature)}
+        </div>
+        <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
+      </div>
+    )
+    return (
+      <div
+        onMouseMove={this.onMouseMove.bind(this)}
+        onMouseLeave={this.onMouseLeave.bind(this)}
+        role="presentation"
+        onFocus={() => {}}
+        className="WiggleRendering"
+        style={{ position: 'relative' }}
+      >
+        <PrerenderedCanvas {...this.props} />
+        {featureUnderMouse ? getMouseoverFlag(featureUnderMouse) : null}
+      </div>
+    )
+  }
 }
 
 export default observer(WiggleRendering)

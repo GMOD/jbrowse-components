@@ -1443,6 +1443,11 @@ Array [
                         >
                           FilteringTrack
                         </WithStyles(MenuItem)>,
+                        <WithStyles(MenuItem)
+                          value="WiggleTrack"
+                        >
+                          WiggleTrack
+                        </WithStyles(MenuItem)>,
                       ],
                       "classes": Object {
                         "disabled": "MuiSelect-disabled-103",
@@ -1558,6 +1563,11 @@ Array [
                           >
                             FilteringTrack
                           </WithStyles(MenuItem)>,
+                          <WithStyles(MenuItem)
+                            value="WiggleTrack"
+                          >
+                            WiggleTrack
+                          </WithStyles(MenuItem)>,
                         ],
                         "classes": Object {
                           "disabled": "MuiSelect-disabled-103",
@@ -1672,6 +1682,11 @@ Array [
                               value="FilteringTrack"
                             >
                               FilteringTrack
+                            </WithStyles(MenuItem)>,
+                            <WithStyles(MenuItem)
+                              value="WiggleTrack"
+                            >
+                              WiggleTrack
                             </WithStyles(MenuItem)>,
                           ],
                           "classes": Object {
@@ -1794,6 +1809,11 @@ Array [
                               >
                                 FilteringTrack
                               </WithStyles(MenuItem)>,
+                              <WithStyles(MenuItem)
+                                value="WiggleTrack"
+                              >
+                                WiggleTrack
+                              </WithStyles(MenuItem)>,
                             ],
                             "classes": Object {
                               "disabled": "MuiSelect-disabled-103",
@@ -1914,6 +1934,11 @@ Array [
                                   value="FilteringTrack"
                                 >
                                   FilteringTrack
+                                </WithStyles(MenuItem)>,
+                                <WithStyles(MenuItem)
+                                  value="WiggleTrack"
+                                >
+                                  WiggleTrack
                                 </WithStyles(MenuItem)>,
                               ],
                               "classes": Object {
