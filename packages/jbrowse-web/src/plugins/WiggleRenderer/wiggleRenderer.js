@@ -3,12 +3,12 @@ import Color from 'color'
 import {
   createCanvas,
   createImageBitmap,
-} from '../../util/offscreenCanvasPonyfill'
+} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+import { readConfObject, ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 
 import ConfigSchema from './configSchema'
 import WiggleRendering from './components/WiggleRendering'
-import { readConfObject, ConfigurationSchema } from '../../configuration'
-import { bpToPx } from '../../util'
 import { getScale, getOrigin } from './util'
 import ServerSideRenderer from '../../renderers/serverSideRenderer'
 

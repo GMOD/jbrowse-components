@@ -1,13 +1,13 @@
 import { types, addDisposer, getRoot, getSnapshot } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { ConfigurationReference, getConf } from '../../configuration'
+import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
+import { getParentRenderProps, getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { ConfigurationReference, getConf } from '@gmod/jbrowse-core/configuration'
 
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
-import { getParentRenderProps, getContainingView } from '../../util/tracks'
 import { getNiceDomain } from '../WiggleRenderer/util'
-import { checkAbortSignal, isAbortException } from '../../util'
 
 // using a map because it preserves order
 const rendererTypes = new Map([

@@ -10,7 +10,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
-import { readConfObject } from '../../../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 const styles = theme => ({
   formControlLabel: {

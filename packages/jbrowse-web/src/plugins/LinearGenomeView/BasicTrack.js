@@ -3,10 +3,12 @@ import blockBasedTrack from './models/blockBasedTrack'
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '../../configuration'
+} from '@gmod/jbrowse-core/configuration'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
-import { getParentRenderProps } from '../../util/tracks'
+
 
 export default pluginManager => {
   const configSchema = ConfigurationSchema(

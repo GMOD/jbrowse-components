@@ -1,4 +1,4 @@
-import PluginManager from '../../PluginManager'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 
 import configSchemaFactory from './configSchema'
 

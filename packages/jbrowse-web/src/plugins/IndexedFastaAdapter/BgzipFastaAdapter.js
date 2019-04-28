@@ -1,11 +1,11 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 
-import { openLocation } from '../../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import IndexedFasta from './IndexedFastaAdapter'
 
 export default class BgzipFastaAdapter extends IndexedFasta {
-  constructor(config, rootConfig) {
-    super(config, rootConfig)
+  constructor(config) {
+    super(config)
     const { fastaLocation, faiLocation, gziLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')

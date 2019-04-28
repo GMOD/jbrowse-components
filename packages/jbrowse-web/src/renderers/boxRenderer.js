@@ -1,8 +1,8 @@
-import GranularRectLayout from '../util/layouts/GranularRectLayout'
+import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
 
-import PrecomputedLayout from '../util/layouts/PrecomputedLayout'
+import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 
-import MultiLayout from '../util/layouts/MultiLayout'
+import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
 import ServerSideRenderer from './serverSideRenderer'
 
 export class LayoutSession {

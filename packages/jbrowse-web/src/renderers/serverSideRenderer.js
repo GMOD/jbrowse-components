@@ -1,10 +1,9 @@
 import { renderToString } from 'react-dom/server'
 import { tap, filter, ignoreElements } from 'rxjs/operators'
 
-import RendererType from '../pluggableElementTypes/RendererType'
-
-import SimpleFeature from '../util/simpleFeature'
-import { iterMap, checkAbortSignal } from '../util'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { iterMap, checkAbortSignal } from '@gmod/jbrowse-core/util'
+import RendererType from '@gmod/jbrowse-core/pluggableElementTypes/RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
 export default class ServerSideRenderer extends RendererType {
@@ -36,7 +35,7 @@ export default class ServerSideRenderer extends RendererType {
   deserializeResultsInClient(result /* , args */) {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
-    result.features.forEach(j => {
+    result.features.forEach((j) => {
       const f = SimpleFeature.fromJSON(j)
       featuresMap.set(String(f.id()), f)
     })
@@ -62,9 +61,7 @@ export default class ServerSideRenderer extends RendererType {
    * @param {Map} features Map of feature.id() -> feature
    */
   serializeResultsInWorker(result, features) {
-    result.features = iterMap(features.values(), f =>
-      f.toJSON ? f.toJSON() : f,
-    )
+    result.features = iterMap(features.values(), f => (f.toJSON ? f.toJSON() : f))
   }
 
   /**
@@ -108,7 +105,7 @@ export default class ServerSideRenderer extends RendererType {
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap(feature => {
+        tap((feature) => {
           const id = feature.id()
           if (!id) throw new Error(`invalid feature id "${id}"`)
           features.set(id, feature)

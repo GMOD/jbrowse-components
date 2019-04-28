@@ -4,11 +4,12 @@ import {
   ConfigurationSchema,
   ConfigurationReference,
   getConf,
-} from '../../../configuration'
-import { ElementId } from '../../../mst-types'
+} from '@gmod/jbrowse-core/configuration'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
+
+import { getContainingView, getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 import TrackControls from '../components/TrackControls'
-import { getContainingView, getParentRenderProps } from '../../../util/tracks'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',

@@ -1,5 +1,5 @@
 import { decorate, observable, values } from 'mobx'
-import { readConfObject } from '../configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 /**
  * @property {Map} refNameMaps mobx observable map with entries like

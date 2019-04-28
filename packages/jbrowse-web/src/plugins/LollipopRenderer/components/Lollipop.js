@@ -2,9 +2,9 @@ import React, { Component } from 'react'
 import ReactPropTypes from 'prop-types'
 
 import { observer } from 'mobx-react'
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { readConfObject } from '../../../configuration'
-import { contrastingTextColor } from '../../../util/color'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { contrastingTextColor } from '@gmod/jbrowse-core/util/color'
 
 function ScoreText({
   feature,

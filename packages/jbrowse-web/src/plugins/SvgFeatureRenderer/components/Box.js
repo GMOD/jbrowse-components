@@ -4,10 +4,10 @@ import ReactPropTypes from 'prop-types'
 import './SvgFeatureRendering.scss'
 
 import { observer } from 'mobx-react'
-import { PropTypes as CommonPropTypes } from '../../../mst-types'
-import { readConfObject } from '../../../configuration'
-import { featureSpanPx } from '../../../util'
-import SceneGraph from '../../../util/layouts/SceneGraph'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 
 function Label({ layoutRecord, fontHeight, color, children }) {
   return (

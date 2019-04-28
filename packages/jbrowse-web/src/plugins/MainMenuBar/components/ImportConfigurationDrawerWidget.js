@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { openLocation } from '../../../util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 function styledBy(property, mapping) {
   return props => mapping[props[property]]

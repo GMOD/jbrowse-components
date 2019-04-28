@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ElementId } from '../../../mst-types'
+import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import AlignmentsTrack from './alignmentsTrack'
 
 export default AlignmentsTrack

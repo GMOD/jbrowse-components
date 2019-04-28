@@ -23,7 +23,6 @@ describe('<AssemblyEditorDrawerWidget />', () => {
   beforeAll(async () => {
     const { rootModel } = await createTestEnv({
       configId: 'testing',
-      rpc: { defaultDriver: 'MainThreadRpcDriver' },
       assemblies: {
         volvox: {
           configId: 'volvox',

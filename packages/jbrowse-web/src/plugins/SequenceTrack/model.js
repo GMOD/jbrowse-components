@@ -1,10 +1,10 @@
 import { types } from 'mobx-state-tree'
 
-import { ConfigurationReference } from '../../configuration'
+import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
-import { getParentRenderProps } from '../../util/tracks'
 
 export default (pluginManager, configSchema, trackType) =>
   types.compose(

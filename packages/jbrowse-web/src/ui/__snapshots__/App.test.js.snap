@@ -14,6 +14,7 @@ Object {
     },
     "rpc": Object {
       "configId": Any<String>,
+      "defaultDriver": "MainThreadRpcDriver",
     },
   },
   "drawerWidgets": Object {},

@@ -1,0 +1,57 @@
+{
+  "name": "@gmod/jbrowse-core",
+  "version": "2.0.0",
+  "description": "JBrowse 2 core libraries used by plugins",
+  "license": "MIT",
+  "repository": "GMOD/jbrowse-components",
+  "main": "dist/index.js",
+  "author": {
+    "name": "Robert Buels",
+    "email": "rbuels@gmail.com",
+    "url": "https://github.com/rbuels"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "jest",
+    "coverage": "npm test -- --coverage",
+    "lint": "tsc --noEmit && eslint --ext .ts --ext .js .",
+    "clean": "rimraf dist",
+    "docs": "typedoc --theme markdown --out docs --readme none .",
+    "prebuild": "npm run clean",
+    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js'",
+    "preversion": "npm run lint && npm test && npm run docs && npm run build",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postpublish": "git push origin master --follow-tags"
+  },
+  "keywords": [
+    "bionode",
+    "biojs",
+    "genomics"
+  ],
+  "dependencies": {
+    "@librpc/web": "^1.1.0",
+    "canvas": "^2.3.1",
+    "generic-filehandle": "^1.0.8",
+    "http-range-fetcher": "^1.1.0",
+    "json-stable-stringify": "^1.0.1",
+    "mobx": "^5.9.4",
+    "mobx-react": "^5.3.6",
+    "mobx-state-tree": "3.10.2",
+    "object.fromentries": "^2.0.0",
+    "prop-types": "^15.6.2",
+    "react": "^16.8.6",
+    "rxjs": "^6.4.0",
+    "shortid": "^2.2.13",
+    "tenacious-fetch": "^2.1.0",
+    "util.promisify": "^1.0.0",
+    "whatwg-fetch": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

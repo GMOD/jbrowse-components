@@ -4,9 +4,11 @@ import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
 import 'typeface-roboto'
+import '@gmod/jbrowse-core/fonts/material-icons.css'
 
-import PluginManager from '../../jbrowse-web/src/PluginManager'
-import RpcManager from '../../jbrowse-web/src/rpc/RpcManager'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
 import LinearGenomeViewPlugin from '../../jbrowse-web/src/plugins/LinearGenomeView'
 import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
@@ -14,10 +16,6 @@ import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferen
 import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'
 import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
 import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
-import { ConfigurationSchema } from '../../jbrowse-web/src/configuration'
-import '../../jbrowse-web/src/fonts/material-icons.css'
-
-// import { domains } from './TestVariants'
 
 const plugins = [
   FromConfigAdapterPlugin,

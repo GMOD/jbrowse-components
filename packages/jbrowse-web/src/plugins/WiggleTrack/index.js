@@ -1,5 +1,5 @@
-import Plugin from '../../Plugin'
-import TrackType from '../../pluggableElementTypes/TrackType'
+import Plugin from '@gmod/jbrowse-core/Plugin'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'

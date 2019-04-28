@@ -7,21 +7,25 @@ import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
 import shortid from 'shortid'
 import 'typeface-roboto'
-import './fonts/material-icons.css'
+import '@gmod/jbrowse-core/fonts/material-icons.css'
 
 import corePlugins from './corePlugins'
-import PluginManager from './PluginManager'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RootModelFactory from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
-import { openLocation } from './util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 import WorkerManager from './WorkerManager'
 
 export async function createTestEnv(configSnapshot = {}) {
   const { modelType, pluginManager } = createModelType([])
+  const config = {
+    ...configSnapshot,
+    rpc: { defaultDriver: 'MainThreadRpcDriver' },
+  }
   return {
-    ...(await createRootModel(modelType, configSnapshot)),
+    ...(await createRootModel(modelType,config)),
     pluginManager,
   }
 }

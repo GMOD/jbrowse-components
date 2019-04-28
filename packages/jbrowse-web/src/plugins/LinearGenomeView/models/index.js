@@ -7,18 +7,18 @@ import {
   isStateTreeNode,
   types,
 } from 'mobx-state-tree'
-import { getConf, readConfObject } from '../../../configuration'
-import { ElementId, Region } from '../../../mst-types'
-import { clamp } from '../../../util'
-import PluginManager from '../../../PluginManager'
-import TrackType from '../../../pluggableElementTypes/TrackType'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
+import { clamp } from '@gmod/jbrowse-core/util'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 import LinearGenomeViewConfigSchema from './configSchema'
 
 import BaseTrack from './baseTrack'
 import calculateStaticBlocks from '../util/calculateStaticBlocks'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
-import { getParentRenderProps } from '../../../util/tracks'
 
 const validBpPerPx = [
   1 / 50,

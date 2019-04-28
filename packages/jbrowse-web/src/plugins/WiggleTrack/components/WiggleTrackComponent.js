@@ -2,9 +2,10 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
+import { getConf } from '@gmod/jbrowse-core/configuration'
+
 import Track from '../../LinearGenomeView/components/Track'
 import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
-import { getConf } from '../../../configuration'
 import { getScale } from '../../WiggleRenderer/util'
 
 const powersOfTen = []

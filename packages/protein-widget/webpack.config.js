@@ -51,18 +51,30 @@ module.exports = {
     library: 'JBrowseProteinViewer',
     libraryTarget: 'umd',
   },
+  resolve: {
+    extensions: [
+      '.mjs',
+      '.web.js',
+      '.js',
+      '.ts',
+      '.tsx',
+      '.json',
+      '.web.jsx',
+      '.jsx',
+    ],
+  },
   module: {
     rules: [
       {
         oneOf: [
           {
-            test: /\.m?js$/,
+            test: /\.m?[tj]s$/,
             exclude: /(node_modules|bower_components)/,
             use: {
               loader: 'babel-loader',
               options: {
-                presets: ['@babel/preset-env', '@babel/preset-react'],
-                plugins: ['@babel/plugin-proposal-class-properties'],
+                rootMode: 'upward',
+                presets: ['@babel/preset-react'],
               },
             },
           },
@@ -78,7 +90,7 @@ module.exports = {
           },
           {
             loader: require.resolve('file-loader'),
-            exclude: [/\.(js|mjs|jsx)$/, /\.html$/, /\.json$/],
+            exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
           },
           // ** STOP ** Are you adding a new loader?
           // Make sure to add the new loader(s) before the "file" loader.

@@ -2,10 +2,10 @@ import { mergeAll, map } from 'rxjs/operators'
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 
-import { ObservableCreate } from '../../util/rxjs'
-import BaseAdapter from '../../BaseAdapter'
-import { openLocation } from '../../util/io'
-import SimpleFeature from '../../util/simpleFeature'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default class BigBedAdapter extends BaseAdapter {
   static capabilities = ['getFeatures', 'getRefNames']

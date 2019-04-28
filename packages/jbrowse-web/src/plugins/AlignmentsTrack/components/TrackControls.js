@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import BaseTrackControls from '../../LinearGenomeView/components/TrackControls'
-import { getConf } from '../../../configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 
 export default observer(({ track, view, onConfigureClick }) => (
   <>

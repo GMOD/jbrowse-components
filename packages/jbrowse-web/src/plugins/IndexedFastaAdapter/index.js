@@ -1,6 +1,6 @@
-import Plugin from '../../Plugin'
-import AdapterType from '../../pluggableElementTypes/AdapterType'
-import { ConfigurationSchema } from '../../configuration'
+import Plugin from '@gmod/jbrowse-core/Plugin'
+import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import IndexedAdapterClass from './IndexedFastaAdapter'
 import BgzipAdapterClass from './BgzipFastaAdapter'
 

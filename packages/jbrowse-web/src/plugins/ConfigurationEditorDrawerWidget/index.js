@@ -1,9 +1,9 @@
 import { lazy } from 'react'
 import { observer } from 'mobx-react'
 import { isStateTreeNode, getType } from 'mobx-state-tree'
-import { ConfigurationSchema } from '../../configuration'
-import Plugin from '../../Plugin'
-import DrawerWidgetType from '../../pluggableElementTypes/DrawerWidgetType'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import Plugin from '@gmod/jbrowse-core/Plugin'
+import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import modelFactory from './model'
 
 const Editor = lazy(() => import('./components/ConfigurationEditor'))
