@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `
+Object {
+  "bamLocation": Object {
+    "uri": "/path/to/my.bam",
+  },
+  "configId": Any<String>,
+  "index": Object {
+    "configId": Any<String>,
+    "location": Object {
+      "uri": "/path/to/my.bam.bai",
+    },
+  },
+  "type": "BamAdapter",
+}
+`;

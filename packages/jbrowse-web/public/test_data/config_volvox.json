@@ -188,6 +188,17 @@
       ]
     },
     {
+      "type": "BasicTrack",
+      "name": "Volvox genes",
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
       "configId": "volvox_microarray_density",
       "type": "WiggleTrack",
       "name": "Volvox microarray",
@@ -340,10 +351,8 @@
     "volvox2": {
       "configId": "volvox2",
       "sequence": {
-        "configId": "iTo6LoXUeJ",
         "type": "ReferenceSequence",
         "adapter": {
-          "configId": "Zd0NLmtxPZ3",
           "type": "FromConfigAdapter",
           "features": [
             {
@@ -354,6 +363,9 @@
               "seq": "cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg"
             }
           ]
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {

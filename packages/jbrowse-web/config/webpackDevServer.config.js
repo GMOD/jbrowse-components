@@ -83,6 +83,7 @@ module.exports = function(proxy, allowedHost) {
     },
     public: allowedHost,
     proxy,
+    staticOptions: { fallthrough: false },
     before(app, server) {
       if (fs.existsSync(paths.proxySetup)) {
         // This registers user provided middleware for proxy reasons
