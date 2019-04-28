@@ -3,6 +3,7 @@ import tenaciousFetch from 'tenacious-fetch'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
+import { RemoteFile } from 'generic-filehandle'
 
 function isElectron() {
   return false // TODO
@@ -113,38 +114,38 @@ const globalCache = new HttpRangeFetcher({
 
 export default globalCache
 
-class GloballyCachedFilehandle {
-  constructor(url) {
-    this.url = url
-  }
-
-  async read(buffer, offset = 0, length, position, abortSignal) {
-    let data
-    if (length === undefined && offset === 0) {
-      data = await this.readFile()
-    } else {
-      data = (await globalCache.getRange(this.url, position, length, {
-        signal: abortSignal,
-      })).buffer
+function globalCacheFetch(url, opts) {
+  // if (/2bit/.test(url)) debugger
+  if (opts && opts.headers && opts.headers.range) {
+    const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
+    if (rangeParse) {
+      const [, start, end] = rangeParse
+      return globalCache.getRange(url, start, end - start + 1, {
+        signal: opts.signal,
+      }).then((response) => {
+        let { headers } = response
+        if (!(headers instanceof Map)) {
+          headers = new Map(Object.entries(headers))
+        }
+        return {
+          status: 206,
+          ok: true,
+          async arrayBuffer() {
+            const b = response.buffer
+            return b.slice(b.byteOffset, b.byteOffset + b.byteLength)
+          },
+          ...response,
+          headers,
+        }
+      })
     }
-    data.copy(buffer, offset)
-    return data.length
   }
 
-  async readFile(abortSignal) {
-    const res = await getfetch(this.url, { signal: abortSignal })
-    return Buffer.from(await res.arrayBuffer())
-  }
-
-  stat(abortSignal) {
-    return globalCache.stat(this.url, { signal: abortSignal })
-  }
-
-  toString() {
-    return this.url
-  }
+  return getfetch(url, opts)
 }
 
 export function openUrl(url) {
-  return new GloballyCachedFilehandle(url)
+  return new RemoteFile(String(url), {
+    fetch: getfetch,
+  })
 }
