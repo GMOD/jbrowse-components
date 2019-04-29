@@ -383,7 +383,8 @@ const SlotEditor = withStyles(slotEditorStyles)(
       console.warn(`no slot editor defined for ${type}, editing as string`)
       ValueComponent = StringEditor
     }
-    if (!(type in valueComponents)) console.log(`need to implement ${type}`)
+    if (!(type in valueComponents))
+      console.warn(`SlotEditor needs to implement ${type}`)
     return (
       <Paper className={classes.paper}>
         <div className={classes.paperContent}>
