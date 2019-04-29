@@ -138,7 +138,7 @@ function TrackHubRegistrySelect(props) {
   }
 
   async function handleSelectHub(event) {
-    console.log(event.target.value)
+    // console.log(event.target.value)
     setSelectedHub(event.target.value)
     const selectedHubObj = hubs.get(event.target.value)
     setHubName(selectedHubObj.hub.shortLabel)

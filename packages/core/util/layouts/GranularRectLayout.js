@@ -28,6 +28,7 @@ class LayoutRow {
 
   log(msg) {
     // if (this.rowNumber === 0)
+    // eslint-disable-next-line no-console
     console.log(`r${this.rowNumber}: ${msg}`)
   }
 
