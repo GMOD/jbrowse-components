@@ -40,31 +40,32 @@ function Contents(props) {
     hierarchy = hierarchy.get(pathEntry) || new Map()
   })
 
-  function loadMoreTracks() {
-    const numLoaded = categories.length + trackConfigurations.length
-    const loadedTrackConfigurations = []
-    const loadedCategories = []
-    Array.from(hierarchy)
-      .slice(numLoaded, numLoaded + 10)
-      .forEach(([name, contents]) => {
-        if (contents.configId) {
-          loadedTrackConfigurations.push(contents)
-        } else {
-          loadedCategories.push([name, contents])
-        }
-      })
-    setCategories(categories.concat(loadedCategories))
-    setTrackConfigurations(
-      trackConfigurations.concat(loadedTrackConfigurations),
-    )
-  }
-
   useEffect(() => {
+    function loadMoreTracks() {
+      const numLoaded = categories.length + trackConfigurations.length
+      const loadedTrackConfigurations = []
+      const loadedCategories = []
+      Array.from(hierarchy)
+        .slice(numLoaded, numLoaded + 10)
+        .forEach(([name, contents]) => {
+          if (contents.configId) {
+            loadedTrackConfigurations.push(contents)
+          } else {
+            loadedCategories.push([name, contents])
+          }
+        })
+      setCategories(categories.concat(loadedCategories))
+      setTrackConfigurations(
+        trackConfigurations.concat(loadedTrackConfigurations),
+      )
+    }
+
     const handle = requestIdleCallback(loadMoreTracks)
 
     return function cleanup() {
       cancelIdleCallback(handle)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchy.size, categories.length, trackConfigurations.length])
 
   const rootModel = getRoot(model)
