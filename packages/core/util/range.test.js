@@ -19,7 +19,7 @@ describe('insersection2', () => {
     { in: [1, 3, 2, 2], out: undefined },
     { in: [2, 2, 1, 3], out: undefined },
   ]
-  testCases.forEach((testcase) => {
+  testCases.forEach(testcase => {
     test(`intersection2(${testcase.in}) -> ${testcase.out}`, () => {
       expect(intersection2(...testcase.in)).toEqual(testcase.out)
     })

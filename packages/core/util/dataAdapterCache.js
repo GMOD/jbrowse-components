@@ -42,7 +42,9 @@ export function getAdapter(
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfig)
   if (!adapterCache[cacheKey]) {
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
-    if (!dataAdapterType) { throw new Error(`unknown data adapter type ${adapterType}`) }
+    if (!dataAdapterType) {
+      throw new Error(`unknown data adapter type ${adapterType}`)
+    }
     // console.log('new adapter', cacheKey)
     const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
 
@@ -75,7 +77,7 @@ export function freeAdapterResources(specification) {
     })
   } else {
     // otherwise call freeResources on all the cached data adapters
-    Object.values(adapterCache).forEach((cacheEntry) => {
+    Object.values(adapterCache).forEach(cacheEntry => {
       cacheEntry.adapter.freeResources(specification)
     })
   }

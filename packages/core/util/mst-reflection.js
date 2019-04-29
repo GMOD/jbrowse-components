@@ -1,8 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import {
-  isOptionalType, isUnionType, isArrayType, isMapType,
+  isOptionalType,
+  isUnionType,
+  isArrayType,
+  isMapType,
 } from 'mobx-state-tree'
-
 
 /**
  * get the inner type of an MST optional or array type object
@@ -54,9 +56,9 @@ export function getPropertyType(type, propertyName) {
   return propertyType
 }
 
-
 export function getDefaultValue(type) {
-  if (!isOptionalType(type)) throw new TypeError('type must be an optional type')
+  if (!isOptionalType(type))
+    throw new TypeError('type must be an optional type')
   // eslint-disable-next-line no-underscore-dangle
   return type._defaultValue || type.defaultValue
 }

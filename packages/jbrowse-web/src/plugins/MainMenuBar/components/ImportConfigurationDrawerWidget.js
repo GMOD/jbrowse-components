@@ -79,12 +79,9 @@ function ImportConfiguration(props) {
   } = useDropzone({
     onDrop: () => setErrorMessage(''),
   })
-  useEffect(
-    () => {
-      getConfigs()
-    },
-    [acceptedFiles],
-  )
+  useEffect(() => {
+    getConfigs()
+  }, [acceptedFiles])
   const classes = useStyles({ isDragActive })
 
   const { addSessions, setActiveSession, model } = props

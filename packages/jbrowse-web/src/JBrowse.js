@@ -9,12 +9,12 @@ import shortid from 'shortid'
 import 'typeface-roboto'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
 
-import corePlugins from './corePlugins'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import corePlugins from './corePlugins'
 import RootModelFactory from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 import WorkerManager from './WorkerManager'
 
@@ -25,7 +25,7 @@ export async function createTestEnv(configSnapshot = {}) {
     rpc: { defaultDriver: 'MainThreadRpcDriver' },
   }
   return {
-    ...(await createRootModel(modelType,config)),
+    ...(await createRootModel(modelType, config)),
     pluginManager,
   }
 }

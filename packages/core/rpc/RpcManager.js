@@ -23,7 +23,9 @@ class RpcManager {
   static configSchema = rpcConfigSchema
 
   constructor(pluginManager, mainConfiguration, backendConfigurations = {}) {
-    if (!mainConfiguration) { throw new Error('RpcManager requires at least a main configuration') }
+    if (!mainConfiguration) {
+      throw new Error('RpcManager requires at least a main configuration')
+    }
 
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration

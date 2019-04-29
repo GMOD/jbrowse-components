@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable camelcase,no-underscore-dangle */
 export default class BamSlightlyLazyFeature {
   constructor(record, adapter) {

@@ -2,11 +2,11 @@ import { getRoot, types, addDisposer } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import baseTrack from './baseTrack'
 
 import BlockState from './serverSideRenderedBlock'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 export default types.compose(
   'BlockBasedTrackState',

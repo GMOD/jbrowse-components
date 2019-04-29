@@ -1,6 +1,5 @@
-import { XYPlotRenderer, DensityRenderer } from './wiggleRenderer'
-
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import { XYPlotRenderer, DensityRenderer } from './wiggleRenderer'
 
 test('empty', async () => {
   const result = await DensityRenderer().makeImageData({

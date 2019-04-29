@@ -21,8 +21,8 @@ describe('generator-jbrowse:app', () => {
   it('creates a "Hello World" menu bar', async () => {
     await helpers
       .run(__dirname)
-      .withPrompts({ correctDir: true, type: 'helloWorldMenuBar' });
-    [
+      .withPrompts({ correctDir: true, type: 'helloWorldMenuBar' })
+    ;[
       'HelloWorldMenuBar/components/HelloWorld.js',
       'HelloWorldMenuBar/index.js',
       'HelloWorldMenuBar/model.js',
@@ -33,8 +33,8 @@ describe('generator-jbrowse:app', () => {
     await helpers.run(__dirname).withPrompts({
       correctDir: true,
       type: 'helloWorldMenuBarAndDrawerWidget',
-    });
-    [
+    })
+    ;[
       'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldDrawerWidget.js',
       'HelloWorldMenuBarAndDrawerWidget/components/HelloWorldMenuBar.js',
       'HelloWorldMenuBarAndDrawerWidget/index.js',

@@ -65,12 +65,9 @@ function App(props) {
     size,
   } = props
 
-  useEffect(
-    () => {
-      rootModel.updateWidth(size.width)
-    },
-    [size],
-  )
+  useEffect(() => {
+    rootModel.updateWidth(size.width)
+  }, [size])
 
   const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
   let drawerComponent

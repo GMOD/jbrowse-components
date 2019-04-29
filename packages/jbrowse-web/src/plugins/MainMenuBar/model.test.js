@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
-import { MenuItemModel, MainMenuBarModel } from './model'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { MenuItemModel, MainMenuBarModel } from './model'
 
 jest.mock('file-saver')
 

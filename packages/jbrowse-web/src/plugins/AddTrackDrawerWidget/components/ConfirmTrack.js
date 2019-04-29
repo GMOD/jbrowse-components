@@ -167,10 +167,10 @@ export function guessAdapter(fileName, protocol) {
   if (/\/trackData.json$/i.test(fileName))
     return {
       type: 'NCListAdapter',
-      rootUrlTemplate: fileName
+      rootUrlTemplate: fileName,
     }
 
-    return {}
+  return {}
 }
 
 function guessTrackType(adapterType) {

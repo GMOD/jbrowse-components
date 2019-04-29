@@ -1,7 +1,7 @@
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
-import Rendering from './LollipopRendering'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import Rendering from './LollipopRendering'
 import ConfigSchema from '../configSchema'
 import { PrecomputedFloatingLayout, FloatingLayout } from '../Layout'
 

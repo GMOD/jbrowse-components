@@ -19,7 +19,7 @@ export default class CompositeMap {
     return undefined
   }
 
-  * values() {
+  *values() {
     const submaps = Array.from(this.submaps.values())
     for (let i = 0; i < submaps.length; i += 1) {
       const submap = submaps[i]

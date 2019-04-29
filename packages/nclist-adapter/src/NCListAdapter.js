@@ -30,8 +30,11 @@ export default class BamAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   getFeatures({ refName, start, end }, signal) {
-    return ObservableCreate(async (observer) => {
-      for await (const feature of this.nclist.getFeatures({ refName, start, end }, { signal })) {
+    return ObservableCreate(async observer => {
+      for await (const feature of this.nclist.getFeatures(
+        { refName, start, end },
+        { signal },
+      )) {
         checkAbortSignal(signal)
         observer.next(this.wrapFeature(feature))
       }

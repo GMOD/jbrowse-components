@@ -1,8 +1,8 @@
 import { withStyles } from '@material-ui/core'
 import React from 'react'
 import PropTypes from 'prop-types'
-import Block from './Block'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
+import Block from './Block'
 
 import Ruler from './Ruler'
 

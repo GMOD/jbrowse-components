@@ -80,7 +80,7 @@ export default class BaseAdapter {
    * @returns {Observable[Feature]} see getFeatures()
    */
   getFeaturesInRegion(region, signal) {
-    return ObservableCreate(async (observer) => {
+    return ObservableCreate(async observer => {
       const hasData = await this.hasDataForRefName(region.refName)
       checkAbortSignal(signal)
       if (!hasData) {

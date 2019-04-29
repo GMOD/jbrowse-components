@@ -3,9 +3,8 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
 import './WiggleRendering.scss'
-import PrerenderedCanvas from './PrerenderedCanvas'
-
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import PrerenderedCanvas from './PrerenderedCanvas'
 
 class WiggleRendering extends Component {
   static propTypes = {

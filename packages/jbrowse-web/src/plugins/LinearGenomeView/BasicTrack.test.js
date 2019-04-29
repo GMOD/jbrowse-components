@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
-import BasicTrackFactory from './BasicTrack'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import BasicTrackFactory from './BasicTrack'
 
 test('config schema renderer type', () => {
   const stubPluginManager = {

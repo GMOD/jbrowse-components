@@ -59,11 +59,13 @@ export default class NCListFeature {
 
   toJSON() {
     const data = { uniqueId: this.id() }
-    this.ncFeature.tags().forEach((tag) => {
+    this.ncFeature.tags().forEach(tag => {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)
       if (mappedTag === 'subfeatures') {
-        data.subfeatures = (value || []).map((f, i) => new NCListFeature(f, `${this.id()}-${i}`, this).toJSON())
+        data.subfeatures = (value || []).map((f, i) =>
+          new NCListFeature(f, `${this.id()}-${i}`, this).toJSON(),
+        )
       } else {
         data[mappedTag] = value
       }

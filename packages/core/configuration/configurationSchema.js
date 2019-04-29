@@ -12,13 +12,17 @@ import {
 import { ElementId } from '../mst-types'
 
 import ConfigSlot from './configurationSlot'
-import { getUnionSubTypes, getSubType, getDefaultValue } from '../util/mst-reflection'
+import {
+  getUnionSubTypes,
+  getSubType,
+  getDefaultValue,
+} from '../util/mst-reflection'
 
 function isEmptyObject(thing) {
   return (
-    typeof thing === 'object'
-    && !Array.isArray(thing)
-    && Object.keys(thing).length === 0
+    typeof thing === 'object' &&
+    !Array.isArray(thing) &&
+    Object.keys(thing).length === 0
   )
 }
 
@@ -36,22 +40,31 @@ export function isConfigurationSchemaType(thing) {
   // for example some union types are also optional types
 
   if (
-    isModelType(thing)
-    && (!!thing.isJBrowseConfigurationSchema
-      || (thing.identifierAttribute === 'configId'
-        && thing.name.includes('ConfigurationSchema')))
-  ) { return true }
-
-  if (
-    isUnionType(thing)) {
-    return getUnionSubTypes(thing).every(t => isConfigurationSchemaType(t) || t.name === 'undefined')
+    isModelType(thing) &&
+    (!!thing.isJBrowseConfigurationSchema ||
+      (thing.identifierAttribute === 'configId' &&
+        thing.name.includes('ConfigurationSchema')))
+  ) {
+    return true
   }
 
-  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) { return true }
+  if (isUnionType(thing)) {
+    return getUnionSubTypes(thing).every(
+      t => isConfigurationSchemaType(t) || t.name === 'undefined',
+    )
+  }
 
-  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) { return true }
+  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
 
-  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) { return true }
+  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
+
+  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+    return true
+  }
 
   return false
 }
@@ -70,7 +83,7 @@ export function isConfigurationModel(thing) {
 export function getTypeNamesFromExplicitlyTypedUnion(unionType) {
   if (isUnionType(unionType)) {
     const typeNames = []
-    getUnionSubTypes(unionType).forEach((type) => {
+    getUnionSubTypes(unionType).forEach(type => {
       let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
       if (!typeName.length) typeName = [getDefaultValue(type).type]
       if (!typeName[0]) {
@@ -103,8 +116,8 @@ export function ConfigurationSchema(
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
   if (
-    options.baseConfiguration
-    && options.baseConfiguration.jbrowseSchemaDefinition
+    options.baseConfiguration &&
+    options.baseConfiguration.jbrowseSchemaDefinition
   ) {
     schemaDefinition = Object.assign(
       {},
@@ -117,9 +130,9 @@ export function ConfigurationSchema(
   const modelDefinition = {
     configId: options.singleton
       ? types.optional(
-        types.refinement(types.identifier, t => t === modelName),
-        modelName,
-      )
+          types.refinement(types.identifier, t => t === modelName),
+          modelName,
+        )
       : ElementId,
   }
 
@@ -141,7 +154,9 @@ export function ConfigurationSchema(
       modelDefinition[slotName] = slotDefinition
     } else if (typeof slotDefinition === 'object') {
       // this is a slot definition
-      if (!slotDefinition.type) { throw new Error(`no type set for config slot ${modelName}.${slotName}`) }
+      if (!slotDefinition.type) {
+        throw new Error(`no type set for config slot ${modelName}.${slotName}`)
+      }
       try {
         modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
       } catch (e) {
@@ -152,8 +167,8 @@ export function ConfigurationSchema(
         )
       }
     } else if (
-      typeof slotDefinition === 'string'
-      || typeof slotDefinition === 'number'
+      typeof slotDefinition === 'string' ||
+      typeof slotDefinition === 'number'
     ) {
       volatileConstants[slotName] = slotDefinition
     } else {
@@ -167,7 +182,9 @@ export function ConfigurationSchema(
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
       setSubschema(slotName, data) {
-        if (!isConfigurationSchemaType(modelDefinition[slotName])) { throw new Error(`${slotName} is not a subschema, cannot replace`) }
+        if (!isConfigurationSchemaType(modelDefinition[slotName])) {
+          throw new Error(`${slotName} is not a subschema, cannot replace`)
+        }
         const newSchema = isStateTreeNode(data)
           ? data
           : modelDefinition[slotName].create(data)
@@ -187,15 +204,15 @@ export function ConfigurationSchema(
   if (options.extend) {
     completeModel = completeModel.extend(options.extend)
   }
-  completeModel = completeModel.postProcessSnapshot((snap) => {
+  completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap = {}
     // let keyCount = 0
     Object.entries(snap).forEach(([key, value]) => {
       if (
-        value !== undefined
-        && volatileConstants[key] === undefined
-        && !isEmptyObject(value)
-        && !isEmptyArray(value)
+        value !== undefined &&
+        volatileConstants[key] === undefined &&
+        !isEmptyObject(value) &&
+        !isEmptyArray(value)
       ) {
         // keyCount += 1
         newSnap[key] = value

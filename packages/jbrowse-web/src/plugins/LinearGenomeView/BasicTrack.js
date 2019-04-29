@@ -1,14 +1,13 @@
 import { types } from 'mobx-state-tree'
-import blockBasedTrack from './models/blockBasedTrack'
 import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import blockBasedTrack from './models/blockBasedTrack'
 
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import { BaseTrackConfig } from './models/baseTrack'
-
 
 export default pluginManager => {
   const configSchema = ConfigurationSchema(

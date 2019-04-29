@@ -5,7 +5,9 @@ import { getDefaultValue } from '../util/mst-reflection'
 export default class RendererType extends PluggableElementType {
   constructor(stuff) {
     super(stuff)
-    if (!this.ReactComponent) { throw new Error(`no ReactComponent defined for renderer ${this.name}`) }
+    if (!this.ReactComponent) {
+      throw new Error(`no ReactComponent defined for renderer ${this.name}`)
+    }
     if (!getDefaultValue(this.configSchema).type) {
       throw new Error(
         `${this.name} config schema ${

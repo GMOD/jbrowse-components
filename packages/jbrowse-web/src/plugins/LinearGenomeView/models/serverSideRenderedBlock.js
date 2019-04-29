@@ -11,13 +11,13 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
-import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
 } from '@gmod/jbrowse-core/util'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't

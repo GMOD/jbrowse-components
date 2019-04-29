@@ -17,11 +17,12 @@ const configSchema = ConfigurationSchema(
 export default class NCListAdapterPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addAdapterType(
-      () => new AdapterType({
-        name: 'NCListAdapter',
-        configSchema,
-        AdapterClass,
-      }),
+      () =>
+        new AdapterType({
+          name: 'NCListAdapter',
+          configSchema,
+          AdapterClass,
+        }),
     )
   }
 }
