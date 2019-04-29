@@ -107,42 +107,43 @@ function AssemblyEditorDrawerWidget(props) {
     setNewAssemblyName('')
   }
 
-  async function fetchAssemblies(rootAssemblies) {
-    const results = []
-    for (const [assemblyName, assembly] of rootAssemblies) {
-      const { rpcManager } = rootModel
-      results.push(
-        rpcManager.call(
-          assembly.configId,
-          'getRefNameAliases',
-          {
-            sessionId: assemblyName,
-            adapterType: readConfObject(assembly, [
-              'refNameAliases',
-              'adapter',
-              'type',
-            ]),
-            adapterConfig: readConfObject(assembly, [
-              'refNameAliases',
-              'adapter',
-            ]),
-          },
-          { timeout: 1000000 },
-        ),
-      )
-    }
-    const assemblyRefNameAliases = await Promise.all(results)
-    const newAssemblies = new Map()
-    let idx = 0
-    for (const [assemblyName, assembly] of rootAssemblies) {
-      newAssemblies.set(assemblyName, [assembly, assemblyRefNameAliases[idx]])
-      idx += 1
-    }
-    setAssemblies(newAssemblies)
-  }
-
   useEffect(() => {
+    async function fetchAssemblies(rootAssemblies) {
+      const results = []
+      for (const [assemblyName, assembly] of rootAssemblies) {
+        const { rpcManager } = rootModel
+        results.push(
+          rpcManager.call(
+            assembly.configId,
+            'getRefNameAliases',
+            {
+              sessionId: assemblyName,
+              adapterType: readConfObject(assembly, [
+                'refNameAliases',
+                'adapter',
+                'type',
+              ]),
+              adapterConfig: readConfObject(assembly, [
+                'refNameAliases',
+                'adapter',
+              ]),
+            },
+            { timeout: 1000000 },
+          ),
+        )
+      }
+      const assemblyRefNameAliases = await Promise.all(results)
+      const newAssemblies = new Map()
+      let idx = 0
+      for (const [assemblyName, assembly] of rootAssemblies) {
+        newAssemblies.set(assemblyName, [assembly, assemblyRefNameAliases[idx]])
+        idx += 1
+      }
+      setAssemblies(newAssemblies)
+    }
+
     fetchAssemblies(rootModel.configuration.assemblies)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getSnapshot(rootModel.configuration.assemblies)])
 
   return (

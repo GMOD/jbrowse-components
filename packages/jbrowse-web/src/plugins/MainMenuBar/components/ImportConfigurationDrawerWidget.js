@@ -80,60 +80,60 @@ function ImportConfiguration(props) {
     onDrop: () => setErrorMessage(''),
   })
   useEffect(() => {
+    async function getConfigs() {
+      const newConfigs = []
+      for (const file of acceptedFiles) {
+        let config
+        if (
+          !['application/json' /* , 'application/x-yaml' */].includes(file.type)
+        )
+          config = { error: `File is not in JSON format: ${file.path}` }
+        else if (file.size > 512 * 1024 ** 2)
+          config = {
+            error: `File is too large (${file.size} bytes, max of 512 MiB): ${
+              file.path
+            }`,
+          }
+        else {
+          const fileHandle = openLocation({ blob: file })
+          let configContents
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            configContents = await fileHandle.readFile('utf8')
+          } catch (error) {
+            console.error(error)
+            config = { error: `Problem opening file ${file.path}: ${error}` }
+          }
+          if (configContents)
+            try {
+              config = JSON.parse(configContents)
+            } catch (error) {
+              console.error(error)
+              config = { error: `Error parsing ${file.path}: ${error}` }
+            }
+          if (!config.error) {
+            if (!config.defaultSession) config.defaultSession = {}
+            if (!config.defaultSession.sessionName)
+              config.defaultSession.sessionName = `Imported Config ${file.path}`
+          }
+        }
+        newConfigs.push(config)
+      }
+
+      setAcceptedFilesParsed(
+        acceptedFiles.map((file, idx) => {
+          file.config = newConfigs[idx]
+          return file
+        }),
+      )
+    }
+
     getConfigs()
   }, [acceptedFiles])
   const classes = useStyles({ isDragActive })
 
   const { addSessions, setActiveSession, model } = props
   const rootModel = getRoot(model)
-
-  async function getConfigs() {
-    const newConfigs = []
-    for (const file of acceptedFiles) {
-      let config
-      if (
-        !['application/json' /* , 'application/x-yaml' */].includes(file.type)
-      )
-        config = { error: `File is not in JSON format: ${file.path}` }
-      else if (file.size > 512 * 1024 ** 2)
-        config = {
-          error: `File is too large (${file.size} bytes, max of 512 MiB): ${
-            file.path
-          }`,
-        }
-      else {
-        const fileHandle = openLocation({ blob: file })
-        let configContents
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          configContents = await fileHandle.readFile('utf8')
-        } catch (error) {
-          console.error(error)
-          config = { error: `Problem opening file ${file.path}: ${error}` }
-        }
-        if (configContents)
-          try {
-            config = JSON.parse(configContents)
-          } catch (error) {
-            console.error(error)
-            config = { error: `Error parsing ${file.path}: ${error}` }
-          }
-        if (!config.error) {
-          if (!config.defaultSession) config.defaultSession = {}
-          if (!config.defaultSession.sessionName)
-            config.defaultSession.sessionName = `Imported Config ${file.path}`
-        }
-      }
-      newConfigs.push(config)
-    }
-
-    setAcceptedFilesParsed(
-      acceptedFiles.map((file, idx) => {
-        file.config = newConfigs[idx]
-        return file
-      }),
-    )
-  }
 
   async function importConfigs() {
     try {

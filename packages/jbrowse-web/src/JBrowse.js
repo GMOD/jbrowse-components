@@ -78,36 +78,36 @@ function JBrowse(props) {
   const { configs, workerGroups } = props
 
   useEffect(() => {
-    setup()
-  }, [])
+    async function setup() {
+      const {
+        modelType: newModelType,
+        pluginManager: newPluginManager,
+      } = createModelType(workerGroups)
 
-  async function setup() {
-    const {
-      modelType: newModelType,
-      pluginManager: newPluginManager,
-    } = createModelType(workerGroups)
+      const newSessions = new Map()
+      let newActiveSession
+      for (const config of configs) {
+        // eslint-disable-next-line no-await-in-loop
+        const { sessionName, rootModel } = await createRootModel(
+          newModelType,
+          config,
+        )
+        if (!newActiveSession) newActiveSession = sessionName
+        newSessions.set(sessionName, rootModel)
+      }
 
-    const newSessions = new Map()
-    let newActiveSession
-    for (const config of configs) {
-      // eslint-disable-next-line no-await-in-loop
-      const { sessionName, rootModel } = await createRootModel(
-        newModelType,
-        config,
-      )
-      if (!newActiveSession) newActiveSession = sessionName
-      newSessions.set(sessionName, rootModel)
+      setModelType(newModelType)
+      setPluginManager(newPluginManager)
+      setSessions(newSessions)
+      setActiveSession(newActiveSession)
+
+      // poke some things for testing (this stuff will eventually be removed)
+      window.getSnapshot = getSnapshot
+      window.resolveIdentifier = resolveIdentifier
     }
 
-    setModelType(newModelType)
-    setPluginManager(newPluginManager)
-    setSessions(newSessions)
-    setActiveSession(newActiveSession)
-
-    // poke some things for testing (this stuff will eventually be removed)
-    window.getSnapshot = getSnapshot
-    window.resolveIdentifier = resolveIdentifier
-  }
+    setup()
+  }, [configs, workerGroups])
 
   /**
    *

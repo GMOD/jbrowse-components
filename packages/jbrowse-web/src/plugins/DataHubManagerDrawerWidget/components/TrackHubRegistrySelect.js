@@ -64,6 +64,21 @@ function TrackHubRegistrySelect(props) {
   } = props
 
   useEffect(() => {
+    async function getAssemblies() {
+      const pingResponse = await doGet(
+        'https://www.trackhubregistry.org/api/info/ping',
+      )
+      if (!pingResponse) return
+      if (pingResponse.ping !== 1) {
+        setErrorMessage('Registry is not available')
+        return
+      }
+      const assembliesResponse = await doGet(
+        'https://www.trackhubregistry.org/api/info/assemblies',
+      )
+      if (assembliesResponse) setAssemblies(assembliesResponse)
+    }
+
     getAssemblies()
   }, [])
 
@@ -72,21 +87,6 @@ function TrackHubRegistrySelect(props) {
     if (selectedAssembly && !hubs.size) getHubs(true)
     else if (hubs.size && !allHubsRetrieved) getHubs()
   })
-
-  async function getAssemblies() {
-    const pingResponse = await doGet(
-      'https://www.trackhubregistry.org/api/info/ping',
-    )
-    if (!pingResponse) return
-    if (pingResponse.ping !== 1) {
-      setErrorMessage('Registry is not available')
-      return
-    }
-    const assembliesResponse = await doGet(
-      'https://www.trackhubregistry.org/api/info/assemblies',
-    )
-    if (assembliesResponse) setAssemblies(assembliesResponse)
-  }
 
   async function getHubs(reset) {
     const entriesPerPage = 10

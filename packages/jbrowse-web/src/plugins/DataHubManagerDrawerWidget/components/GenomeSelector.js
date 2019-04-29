@@ -22,49 +22,49 @@ function GenomeSelector(props) {
   const { hubTxt, hubUrl, assemblyNames, setAssemblyNames } = props
 
   useEffect(() => {
-    getGenomesFile()
-  }, [])
+    async function getGenomesFile() {
+      const genomesFileUrl = new URL(hubTxt.get('genomesFile'), new URL(hubUrl))
+      let response
+      try {
+        response = await fetch(genomesFileUrl)
+      } catch (error) {
+        setErrorMessage(
+          <span>
+            <strong>Network error.</strong> {error.message} <br />
+            {genomesFileUrl.href}
+          </span>,
+        )
+        return
+      }
+      if (!response.ok) {
+        setErrorMessage(
+          <span>
+            <strong>Could not access genomes file:</strong> <br />
+            {genomesFileUrl.href} <br />
+            {response.status}: {response.statusText}
+          </span>,
+        )
+        return
+      }
+      const responseText = await response.text()
+      let newGenomesFile = genomesFile
+      try {
+        newGenomesFile = new GenomesFile(responseText)
+      } catch (error) {
+        setErrorMessage(
+          <span>
+            <strong>Could not parse genomes file:</strong> <br />
+            {error.message} <br />
+            {genomesFileUrl.href}
+          </span>,
+        )
+        return
+      }
+      setGenomesFile(newGenomesFile)
+    }
 
-  async function getGenomesFile() {
-    const genomesFileUrl = new URL(hubTxt.get('genomesFile'), new URL(hubUrl))
-    let response
-    try {
-      response = await fetch(genomesFileUrl)
-    } catch (error) {
-      setErrorMessage(
-        <span>
-          <strong>Network error.</strong> {error.message} <br />
-          {genomesFileUrl.href}
-        </span>,
-      )
-      return
-    }
-    if (!response.ok) {
-      setErrorMessage(
-        <span>
-          <strong>Could not access genomes file:</strong> <br />
-          {genomesFileUrl.href} <br />
-          {response.status}: {response.statusText}
-        </span>,
-      )
-      return
-    }
-    const responseText = await response.text()
-    let newGenomesFile = genomesFile
-    try {
-      newGenomesFile = new GenomesFile(responseText)
-    } catch (error) {
-      setErrorMessage(
-        <span>
-          <strong>Could not parse genomes file:</strong> <br />
-          {error.message} <br />
-          {genomesFileUrl.href}
-        </span>,
-      )
-      return
-    }
-    setGenomesFile(newGenomesFile)
-  }
+    getGenomesFile()
+  }, [genomesFile, hubTxt, hubUrl])
 
   function handleChange(event) {
     const assemblyName = event.target.value
