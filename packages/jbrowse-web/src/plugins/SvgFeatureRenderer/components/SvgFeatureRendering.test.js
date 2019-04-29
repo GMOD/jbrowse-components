@@ -1,9 +1,9 @@
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
-import Rendering from './SvgFeatureRendering'
 import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
+import Rendering from './SvgFeatureRendering'
 import SvgRendererConfigSchema from '../configSchema'
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {

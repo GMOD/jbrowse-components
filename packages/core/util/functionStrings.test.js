@@ -24,15 +24,15 @@ describe('function string parsing', () => {
     const [, paramList, remainder] = result
     expect(paramList).toEqual('')
     expect(remainder).toContain('volvox-sorted red/blue')
-  });
-  [
+  })
+  ;[
     'function(a,b,c) { return a+b+c+5}',
     'function(a, b,c){return a+b+c+5 }',
     'function( a, b,c){\nreturn a+b+c+5 }',
     '  function( a, b,c){\nreturn a+b+c+5 } ',
     '  function( a, b,c){\nreturn a+b+c+5; ;}',
     '  function( a, b,c){\nreturn a+b+c+5; \n ;\n}',
-  ].forEach((funcStr) => {
+  ].forEach(funcStr => {
     it(`can parse '${funcStr}'`, () => {
       const func = stringToFunction(funcStr, {
         verifyFunctionSignature: ['a', 'b', 'c'],

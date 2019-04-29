@@ -1,3 +1,4 @@
+/* eslint-disable */
 import gff from '@gmod/gff'
 
 const scoreTestPattern = [

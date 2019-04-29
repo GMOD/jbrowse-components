@@ -35,7 +35,7 @@ export default class ServerSideRenderer extends RendererType {
   deserializeResultsInClient(result /* , args */) {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
-    result.features.forEach((j) => {
+    result.features.forEach(j => {
       const f = SimpleFeature.fromJSON(j)
       featuresMap.set(String(f.id()), f)
     })
@@ -61,7 +61,9 @@ export default class ServerSideRenderer extends RendererType {
    * @param {Map} features Map of feature.id() -> feature
    */
   serializeResultsInWorker(result, features) {
-    result.features = iterMap(features.values(), f => (f.toJSON ? f.toJSON() : f))
+    result.features = iterMap(features.values(), f =>
+      f.toJSON ? f.toJSON() : f,
+    )
   }
 
   /**
@@ -105,7 +107,7 @@ export default class ServerSideRenderer extends RendererType {
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap((feature) => {
+        tap(feature => {
           const id = feature.id()
           if (!id) throw new Error(`invalid feature id "${id}"`)
           features.set(id, feature)

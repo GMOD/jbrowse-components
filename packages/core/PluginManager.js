@@ -20,13 +20,15 @@ class PhasedScheduler {
   }
 
   add(phase, callback) {
-    if (!this.phaseOrder.includes(phase)) { throw new Error(`unknown phase ${phase}`) }
+    if (!this.phaseOrder.includes(phase)) {
+      throw new Error(`unknown phase ${phase}`)
+    }
     if (!this.phaseCallbacks[phase]) this.phaseCallbacks[phase] = []
     this.phaseCallbacks[phase].push(callback)
   }
 
   run() {
-    this.phaseOrder.forEach((phaseName) => {
+    this.phaseOrder.forEach(phaseName => {
       if (this.phaseCallbacks[phaseName]) {
         this.phaseCallbacks[phaseName].forEach(callback => callback())
       }
@@ -76,14 +78,18 @@ export default class PluginManager {
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
 
     // add all the initial plugins
-    initialPlugins.forEach((plugin) => {
+    initialPlugins.forEach(plugin => {
       this.addPlugin(plugin)
     })
   }
 
   addPlugin(plugin) {
-    if (this.configured) { throw new Error('JBrowse already configured, cannot add plugins') }
-    if (this.plugins.includes(plugin)) { throw new Error('plugin already installed') }
+    if (this.configured) {
+      throw new Error('JBrowse already configured, cannot add plugins')
+    }
+    if (this.plugins.includes(plugin)) {
+      throw new Error('plugin already installed')
+    }
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -111,14 +117,21 @@ export default class PluginManager {
   }
 
   addElementType(groupName, creationCallback) {
-    if (typeof creationCallback !== 'function') { throw new Error('must provide a callback function') }
+    if (typeof creationCallback !== 'function') {
+      throw new Error('must provide a callback function')
+    }
     const typeBaseClass = this.typeBaseClasses[groupName]
-    if (!typeBaseClass) { throw new Error(`unknown pluggable element type ${groupName}, cannot add`) }
+    if (!typeBaseClass) {
+      throw new Error(`unknown pluggable element type ${groupName}, cannot add`)
+    }
     if (!this.elementTypes[groupName]) this.elementTypes[groupName] = {}
 
     this.elementCreationSchedule.add(groupName, () => {
       const element = creationCallback(this)
-      if (groupName === 'adapter' && !element.AdapterClass.capabilities.length) {
+      if (
+        groupName === 'adapter' &&
+        !element.AdapterClass.capabilities.length
+      ) {
         throw new Error(
           `Adapter ${
             element.AdapterClass.name

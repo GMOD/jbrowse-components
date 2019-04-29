@@ -1,4 +1,7 @@
-import { freeAdapterResources, getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
+import {
+  freeAdapterResources,
+  getAdapter,
+} from '@gmod/jbrowse-core/util/dataAdapterCache'
 import {
   isRemoteAbortSignal,
   deserializeAbortSignal,

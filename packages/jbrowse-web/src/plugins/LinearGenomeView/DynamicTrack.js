@@ -1,10 +1,10 @@
 import { types } from 'mobx-state-tree'
 
-import BasicTrack from './BasicTrack'
 import {
   ConfigurationSchema,
   ConfigurationReference,
 } from '@gmod/jbrowse-core/configuration'
+import BasicTrack from './BasicTrack'
 
 export default pluginManager => {
   const {

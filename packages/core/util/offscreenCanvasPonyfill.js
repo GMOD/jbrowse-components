@@ -13,8 +13,8 @@ export let ImageBitmapType
 // sniff environments
 const weHave = {
   realOffscreenCanvas:
-    typeof __webpack_require__ === 'function'
-    && typeof OffscreenCanvas === 'function',
+    typeof __webpack_require__ === 'function' &&
+    typeof OffscreenCanvas === 'function',
   node: typeof process === 'object',
 }
 

@@ -141,12 +141,9 @@ function AssemblyEditorDrawerWidget(props) {
     setAssemblies(newAssemblies)
   }
 
-  useEffect(
-    () => {
-      fetchAssemblies(rootModel.configuration.assemblies)
-    },
-    [getSnapshot(rootModel.configuration.assemblies)],
-  )
+  useEffect(() => {
+    fetchAssemblies(rootModel.configuration.assemblies)
+  }, [getSnapshot(rootModel.configuration.assemblies)])
 
   return (
     <div className={classes.root}>

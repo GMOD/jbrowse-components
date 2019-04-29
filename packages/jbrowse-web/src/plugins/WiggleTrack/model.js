@@ -2,8 +2,14 @@ import { types, addDisposer, getRoot, getSnapshot } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
-import { getParentRenderProps, getContainingView } from '@gmod/jbrowse-core/util/tracks'
-import { ConfigurationReference, getConf } from '@gmod/jbrowse-core/configuration'
+import {
+  getParentRenderProps,
+  getContainingView,
+} from '@gmod/jbrowse-core/util/tracks'
+import {
+  ConfigurationReference,
+  getConf,
+} from '@gmod/jbrowse-core/configuration'
 
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
 import WiggleTrackComponent from './components/WiggleTrackComponent'

@@ -13,11 +13,13 @@ const compilationCache = {}
 export function stringToFunction(str, options = {}) {
   const { verifyFunctionSignature } = options
 
-  const cacheKey = `${verifyFunctionSignature
-    && verifyFunctionSignature.join(',')}|${str}`
+  const cacheKey = `${verifyFunctionSignature &&
+    verifyFunctionSignature.join(',')}|${str}`
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
-    if (!match) { throw new Error('string does not appear to be a function declaration') }
+    if (!match) {
+      throw new Error('string does not appear to be a function declaration')
+    }
     const paramList = match[1].split(',').map(s => s.trim())
     let code = match[2].replace(/}\s*$/, '')
     if (verifyFunctionSignature) {

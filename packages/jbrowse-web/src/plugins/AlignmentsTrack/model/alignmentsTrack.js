@@ -1,14 +1,17 @@
 import { types, getRoot } from 'mobx-state-tree'
 
-import { ConfigurationReference, getConf } from '@gmod/jbrowse-core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+} from '@gmod/jbrowse-core/configuration'
 
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import BlockBasedTrackComponent from '../../LinearGenomeView/components/BlockBasedTrack'
 
 import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
 
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import TrackControls from '../components/TrackControls'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 // using a map because it preserves order
 const rendererTypes = new Map([

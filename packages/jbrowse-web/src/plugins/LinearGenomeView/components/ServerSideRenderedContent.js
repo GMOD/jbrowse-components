@@ -44,7 +44,9 @@ class ServerSideRenderedContent extends Component {
       // we have some free time. helps keep the framerate up.
       requestIdleCallback(() => {
         if (!isAlive(model) || !isAlive(region)) return
-        const serializedRegion = isStateTreeNode(region) ? getSnapshot(region) : region;
+        const serializedRegion = isStateTreeNode(region)
+          ? getSnapshot(region)
+          : region
         const mainThreadRendering = React.createElement(
           renderingComponent,
           {

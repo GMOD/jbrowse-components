@@ -5,10 +5,9 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 
-import PileupRendering from './components/PileupRendering'
-
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { bpToPx, iterMap } from '@gmod/jbrowse-core/util'
+import PileupRendering from './components/PileupRendering'
 
 import ConfigSchema from './configSchema'
 import BoxRenderer from '../../renderers/boxRenderer'

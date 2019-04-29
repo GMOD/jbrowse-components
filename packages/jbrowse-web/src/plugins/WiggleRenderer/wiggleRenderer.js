@@ -4,7 +4,10 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import { readConfObject, ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import {
+  readConfObject,
+  ConfigurationSchema,
+} from '@gmod/jbrowse-core/configuration'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 
 import ConfigSchema from './configSchema'

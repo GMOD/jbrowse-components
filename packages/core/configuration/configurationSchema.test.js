@@ -11,7 +11,7 @@ describe('configuration schemas', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Track', {
         backgroundColor: {
-          description: 'the track\'s background color',
+          description: "the track's background color",
           type: 'color',
           defaultValue: '#eee',
         },

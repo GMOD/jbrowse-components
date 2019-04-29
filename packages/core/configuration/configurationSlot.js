@@ -137,9 +137,7 @@ const FunctionStringType = types.refinement(
  */
 export default function ConfigSlot(
   slotName,
-  {
-    description = '', model, type, defaultValue, functionSignature = [],
-  },
+  { description = '', model, type, defaultValue, functionSignature = [] },
 ) {
   if (!type) throw new Error('type name required')
   if (!model) model = typeModels[type]
@@ -149,7 +147,7 @@ export default function ConfigSlot(
     )
   }
 
-  if (defaultValue === undefined) throw new Error('no \'defaultValue\' provided')
+  if (defaultValue === undefined) throw new Error("no 'defaultValue' provided")
 
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
@@ -197,14 +195,15 @@ export default function ConfigSlot(
       },
     }))
     .preProcessSnapshot(
-      val => (typeof val === 'object' && val.name === slotName
-        ? val
-        : {
-          name: slotName,
-          description,
-          type,
-          value: val,
-        }),
+      val =>
+        typeof val === 'object' && val.name === slotName
+          ? val
+          : {
+              name: slotName,
+              description,
+              type,
+              value: val,
+            },
       // ({
       //   name: slotName,
       //   description,
@@ -212,7 +211,9 @@ export default function ConfigSlot(
       //   value: val,
       // }),
     )
-    .postProcessSnapshot(snap => (snap.value !== defaultValue ? snap.value : undefined))
+    .postProcessSnapshot(snap =>
+      snap.value !== defaultValue ? snap.value : undefined,
+    )
     .actions(self => ({
       set(newVal) {
         self.value = newVal
@@ -240,7 +241,9 @@ export default function ConfigSlot(
         // if it is still a callback (happens if the defaultValue is a callback),
         // then use the last-resort fallback default
         if (self.isCallback) {
-          if (!(type in fallbackDefaults)) { throw new Error(`no fallbackDefault defined for type ${type}`) }
+          if (!(type in fallbackDefaults)) {
+            throw new Error(`no fallbackDefault defined for type ${type}`)
+          }
           self.value = fallbackDefaults[type]
         }
       },

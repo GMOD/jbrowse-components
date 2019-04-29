@@ -5,9 +5,9 @@ import {
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 
+import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import FilteringTrackComponent from './components/FilteringTrack'
 import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 
 function makeFilters(trackModel) {
   const filters = []

@@ -4,9 +4,10 @@ if (!Object.fromEntries) {
   fromEntries.shim()
 }
 
-export const inDevelopment = typeof process === 'object'
-  && process.env
-  && process.env.NODE_ENV === 'development'
+export const inDevelopment =
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
 
 /**
@@ -91,7 +92,9 @@ export function checkAbortSignal(signal) {
   }
 
   if (signal.aborted) {
-    if (typeof DOMException !== 'undefined') { throw new DOMException('aborted', 'AbortError') } else {
+    if (typeof DOMException !== 'undefined') {
+      throw new DOMException('aborted', 'AbortError')
+    } else {
       const e = new Error('aborted')
       e.code = 'ERR_ABORTED'
       throw e
@@ -107,12 +110,12 @@ export function checkAbortSignal(signal) {
 export function isAbortException(exception) {
   return (
     // DOMException
-    exception.name === 'AbortError'
+    exception.name === 'AbortError' ||
     // standard-ish non-DOM abort exception
-    || exception.code === 'ERR_ABORTED'
+    exception.code === 'ERR_ABORTED' ||
     // stringified DOMException
-    || exception.message === 'AbortError: aborted'
+    exception.message === 'AbortError: aborted' ||
     // stringified standard-ish exception
-    || exception.message === 'Error: aborted'
+    exception.message === 'Error: aborted'
   )
 }

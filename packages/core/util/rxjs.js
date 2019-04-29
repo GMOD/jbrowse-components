@@ -5,7 +5,7 @@ import { Observable } from 'rxjs'
  * @param {function} func observer function, could be async
  */
 export function ObservableCreate(func) {
-  return Observable.create((observer) => {
+  return Observable.create(observer => {
     try {
       const ret = func(observer)
       // catch async errors

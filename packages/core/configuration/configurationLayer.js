@@ -14,7 +14,11 @@ import { inDevelopment } from '../util'
 import { stringToFunction } from '../util/functionStrings'
 import ConfigurationSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './configurationSchema'
-import { getSubType, getUnionSubTypes, getPropertyType } from '../util/mst-reflection'
+import {
+  getSubType,
+  getUnionSubTypes,
+  getPropertyType,
+} from '../util/mst-reflection'
 
 function ConfigurationLayerSlot(
   slotName,
@@ -26,7 +30,9 @@ function ConfigurationLayerSlot(
     .compose(
       getSubType(layerSlot),
       types.model({
-        value: types.maybe(getSubType(getPropertyType(parentSlotType, 'value'))),
+        value: types.maybe(
+          getSubType(getPropertyType(parentSlotType, 'value')),
+        ),
       }),
     )
     .views(self => ({
@@ -62,7 +68,9 @@ function ConfigurationLayerSlot(
  * @param {ConfigurationSchema} parentSchemaType
  */
 function ConfigurationLayer(parentSchemaType) {
-  if (!isConfigurationSchemaType(parentSchemaType)) { throw new TypeError('must pass a ConfigurationSchema type') }
+  if (!isConfigurationSchemaType(parentSchemaType)) {
+    throw new TypeError('must pass a ConfigurationSchema type')
+  }
   // iterate over the slots in the parent type and make layerSlots in this object for each of them
 
   const layerModelDefinition = {
@@ -74,15 +82,17 @@ function ConfigurationLayer(parentSchemaType) {
   const { /* modelName, options, */ definition } = schemaMetaData
   Object.entries(definition).forEach(([memberName, slotDefinition]) => {
     if (
-      typeof slotDefinition === 'string'
-      || typeof slotDefinition === 'number'
+      typeof slotDefinition === 'string' ||
+      typeof slotDefinition === 'number'
     ) {
       // this is a constant
       layerModelDefinition[memberName] = types.literal(slotDefinition)
       // throw new Error('fu')
     } else {
       let parentActualType = parentSchemaType
-      if (isOptionalType(parentSchemaType)) { parentActualType = getSubType(parentSchemaType) }
+      if (isOptionalType(parentSchemaType)) {
+        parentActualType = getSubType(parentSchemaType)
+      }
 
       // if (!parentActualType.properties) debugger
 
@@ -142,7 +152,7 @@ function ConfigurationLayer(parentSchemaType) {
         )
       },
     }))
-    .postProcessSnapshot((snap) => {
+    .postProcessSnapshot(snap => {
       if (!snap.parentConfigId) delete snap.parentConfigId
       if (!snap.parentConfigPath) delete snap.parentConfigPath
       return snap

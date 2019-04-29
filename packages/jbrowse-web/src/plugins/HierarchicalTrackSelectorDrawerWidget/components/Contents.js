@@ -59,16 +59,13 @@ function Contents(props) {
     )
   }
 
-  useEffect(
-    () => {
-      const handle = requestIdleCallback(loadMoreTracks)
+  useEffect(() => {
+    const handle = requestIdleCallback(loadMoreTracks)
 
-      return function cleanup() {
-        cancelIdleCallback(handle)
-      }
-    },
-    [hierarchy.size, categories.length, trackConfigurations.length],
-  )
+    return function cleanup() {
+      cancelIdleCallback(handle)
+    }
+  }, [hierarchy.size, categories.length, trackConfigurations.length])
 
   const rootModel = getRoot(model)
   const doneLoading =
