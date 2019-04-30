@@ -18,5 +18,3 @@ export function ObservableCreate(func) {
     return undefined
   })
 }
-
-export function removeme() {}

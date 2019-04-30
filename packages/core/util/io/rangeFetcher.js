@@ -147,7 +147,6 @@ function getfetch(url, opts = {}) {
 //   return getfetch(url, opts)
 // }
 
-// eslint-disable-next-line import/prefer-default-export
 export function openUrl(url) {
   return new RemoteFile(String(url), {
     fetch: getfetch,

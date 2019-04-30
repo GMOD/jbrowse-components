@@ -26,9 +26,8 @@ export function contrastingTextColor(rgb: string): string {
     b = parseInt(triplet.substr(4, 2), 16)
   }
 
-  const luminance = (Math.round(r * 299) + Math.round(g * 587) + Math.round(b * 114)) / 1000
+  const luminance =
+    (Math.round(r * 299) + Math.round(g * 587) + Math.round(b * 114)) / 1000
 
   return luminance >= 128 ? 'black' : 'white'
 }
-
-export function mollifyEslint(): void {}
