@@ -1,10 +1,15 @@
 interface ProtoTrack {
   backendVersion?: number
   baseUrl?: string
+  category?: stirng
   config?: Track
+  dataRoot?: string
+  features?: Feature[]
   histograms?: Track
   index?: number
+  key?: string
   label?: string
+  metadata?: Metadata
   store?: Store | string
   storeClass?: string
   type?: string
@@ -14,6 +19,19 @@ interface ProtoTrack {
 
 interface Track extends ProtoTrack {
   label: string
+}
+
+interface Metadata {
+  category?: string
+  description?: string
+  Description?: string
+}
+
+interface Feature {
+  seq_id: string
+  start: number
+  end: number
+  name?: string
 }
 
 interface Source {

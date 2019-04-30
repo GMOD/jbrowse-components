@@ -4,7 +4,7 @@ import {
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { fetchJb1 } from './connections/jb1Hub'
+import { convertTrackConfig, fetchJb1 } from './connections/jb1Hub'
 import {
   fetchGenomesFile,
   fetchHubFile,
@@ -255,8 +255,16 @@ export default function(pluginManager) {
           // const configs = yield fetchConfigFile({
           //   uri: '/test_data/tracks.conf',
           // })
-          const configs = yield fetchJb1(hubLocation)
-          console.log(configs)
+          const config = yield fetchJb1(hubLocation)
+          console.log(config)
+          config.tracks.forEach(track => {
+            const jb2Track = convertTrackConfig(track, config.dataRoot)
+            self.addTrackConf(
+              jb2Track.type,
+              jb2Track,
+              readConfObject(connectionConf, 'connectionName'),
+            )
+          })
 
           // self.updateAssemblyManager()
         }),

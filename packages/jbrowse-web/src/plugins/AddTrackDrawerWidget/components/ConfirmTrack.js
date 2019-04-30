@@ -6,183 +6,11 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-
-const unsupported = 'unsupported'
-
-export function guessAdapter(fileName, protocol) {
-  if (/\.bam$/i.test(fileName))
-    return {
-      type: 'BamAdapter',
-      bamLocation: { [protocol]: fileName },
-      index: { location: { [protocol]: `${fileName}.bai` } },
-    }
-  if (/\.bai$/i.test(fileName))
-    return {
-      type: 'BamAdapter',
-      bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
-      index: { location: { [protocol]: fileName } },
-    }
-  if (/\.bam.csi$/i.test(fileName))
-    return {
-      type: 'BamAdapter',
-      bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
-      index: { location: { [protocol]: fileName }, indexType: 'CSI' },
-    }
-
-  if (/\.cram$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.crai$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.gff3?$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.gff3?\.gz$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.gff3?\.gz.tbi$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.gff3?\.gz.csi$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.gtf?$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.vcf$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.vcf\.gz$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.vcf\.gz\.tbi$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.vcf\.gz\.csi$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.vcf\.idx$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.bed$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.bed\.gz$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.bed.gz.tbi$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-  if (/\.bed.gz.csi/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.bed\.idx$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.(bb|bigbed)$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\.(bw|bigwig)$/i.test(fileName))
-    return {
-      type: 'BigWigAdapter',
-      bigWigLocation: { [protocol]: fileName },
-    }
-
-  if (/\.(fa|fasta|fna|mfa)$/i.test(fileName))
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: { [protocol]: fileName },
-      faiLocation: { [protocol]: `${fileName}.fai` },
-    }
-  if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName))
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: { [protocol]: fileName.replace(/\.fai$/i, '') },
-      faiLocation: { [protocol]: fileName },
-    }
-
-  if (/\.(fa|fasta|fna|mfa)\.gz$/i.test(fileName))
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: { [protocol]: fileName },
-      faiLocation: { [protocol]: `${fileName}.fai` },
-      gziLocation: { [protocol]: `${fileName}.gzi` },
-    }
-  if (/\.(fa|fasta|fna|mfa)\.gz\.fai$/i.test(fileName))
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: { [protocol]: fileName.replace(/\.fai$/i, '') },
-      faiLocation: { [protocol]: fileName },
-      gziLocation: { [protocol]: `${fileName.replace(/\.fai$/i, '')}.gzi` },
-    }
-  if (/\.(fa|fasta|fna|mfa)\.gz\.gzi$/i.test(fileName))
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: { [protocol]: fileName.replace(/\.gzi$/i, '') },
-      faiLocation: { [protocol]: `${fileName.replace(/\.gzi$/i, '')}.fai` },
-      gziLocation: { [protocol]: fileName },
-    }
-
-  if (/\.2bit$/i.test(fileName))
-    return {
-      type: 'TwoBitAdapter',
-      twoBitLocation: { [protocol]: fileName },
-    }
-
-  if (/\.sizes$/i.test(fileName))
-    return {
-      type: unsupported,
-    }
-
-  if (/\/trackData.json$/i.test(fileName))
-    return {
-      type: 'NCListAdapter',
-      rootUrlTemplate: fileName,
-    }
-
-  return {}
-}
-
-function guessTrackType(adapterType) {
-  return {
-    BamAdapter: 'AlignmentsTrack',
-    BigWigAdapter: 'BasicTrack',
-    IndexedFastaAdapter: 'SequenceTrack',
-    BgzipFastaAdapter: 'SequenceTrack',
-    TwoBitAdapter: 'SequenceTrack',
-    NCListAdapter: 'BasicTrack',
-  }[adapterType]
-}
+import {
+  guessAdapter,
+  guessTrackType,
+  UNSUPPORTED,
+} from '@gmod/jbrowse-core/util/tracks'
 
 const styles = theme => ({
   spacing: {
@@ -221,7 +49,7 @@ class ConfirmTrack extends React.Component {
       updateTrackType({ target: { value: guessTrackType(adapter.type) } })
     }
     if (trackData.localPath) {
-      const adapter = guessAdapter(trackData.uri, 'localPath')
+      const adapter = guessAdapter(trackData.localPath, 'localPath')
       updateTrackAdapter(adapter)
       updateTrackType({ target: { value: guessTrackType(adapter.type) } })
     }
@@ -239,7 +67,7 @@ class ConfirmTrack extends React.Component {
       trackAdapter,
       rootModel,
     } = this.props
-    if (trackAdapter.type === unsupported)
+    if (trackAdapter.type === UNSUPPORTED)
       return (
         <Typography className={classes.spacing}>
           This version of JBrowse cannot display files of this type. It is

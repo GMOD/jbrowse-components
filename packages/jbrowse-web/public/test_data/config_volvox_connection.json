@@ -173,7 +173,7 @@
     "connections": [
       {
         "type": "connection",
-        "connectionName": "Volvox Hub",
+        "connectionName": "Volvox UCSC TrackHub",
         "connectionLocation": {
           "uri": "https://jbrowse.org/volvoxhub/hub.txt"
         },
@@ -181,6 +181,13 @@
           "assemblyNames": [
             "volvox"
           ]
+        }
+      },
+      {
+        "connectionType": "jbrowse1",
+        "connectionName": "Volvox JBrowse Hub",
+        "connectionLocation": {
+          "uri": "https://jbrowse.org/code/JBrowse-1.16.4/sample_data/json/volvox/"
         }
       }
     ],
