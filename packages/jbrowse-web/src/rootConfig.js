@@ -4,6 +4,7 @@ import {
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import { fetchJb1 } from './connections/jb1Hub'
 import {
   fetchGenomesFile,
   fetchHubFile,
@@ -40,28 +41,24 @@ export default function(pluginManager) {
       highResolutionScaling: 2, // possibly consider this for global config editor
 
       connections: types.array(
-        ConfigurationSchema(
-          'connection',
-          {
-            connectionName: {
-              type: 'string',
-              defaultValue: '',
-            },
-            connectionType: {
-              type: 'string',
-              defaultValue: 'trackHub',
-            },
-            connectionLocation: {
-              type: 'fileLocation',
-              defaultValue: { uri: '/path/to/hub.txt' },
-            },
-            connectionOptions: {
-              type: 'frozen',
-              defaultValue: {},
-            },
+        ConfigurationSchema('connection', {
+          connectionName: {
+            type: 'string',
+            defaultValue: '',
           },
-          { explicitlyTyped: true },
-        ),
+          connectionType: {
+            type: 'string',
+            defaultValue: 'trackHub',
+          },
+          connectionLocation: {
+            type: 'fileLocation',
+            defaultValue: { uri: '/path/to/hub.txt' },
+          },
+          connectionOptions: {
+            type: 'frozen',
+            defaultValue: {},
+          },
+        }),
       ),
 
       rpc: RpcManager.configSchema,
@@ -87,7 +84,7 @@ export default function(pluginManager) {
               connectionConf,
               'connectionType',
             )
-            if (!['trackHub'].includes(connectionType))
+            if (!['trackHub', 'jbrowse1'].includes(connectionType))
               throw new Error(
                 `Cannot add connection, unsupported connection type: ${connectionType}`,
               )
@@ -120,7 +117,7 @@ export default function(pluginManager) {
             connectionConf,
             'connectionType',
           )
-          if (!['trackHub'].includes(connectionType))
+          if (!['trackHub', 'jbrowse1'].includes(connectionType))
             throw new Error(
               `Cannot add connection, unsupported connection type: ${connectionType}`,
             )
@@ -152,6 +149,7 @@ export default function(pluginManager) {
             configId: connectionName,
           })
           if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
+          if (connectionType === 'jbrowse1') self.fetchJBrowse1(connectionConf)
         },
 
         removeConnection(connectionConf) {
@@ -169,7 +167,8 @@ export default function(pluginManager) {
           let genomesFileLocation
           if (hubFileLocation.uri)
             genomesFileLocation = {
-              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
+                .href,
             }
           else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
           const genomesFile = yield fetchGenomesFile(genomesFileLocation)
@@ -245,6 +244,21 @@ export default function(pluginManager) {
             )
           }
           self.updateAssemblyManager()
+        }),
+
+        fetchJBrowse1: flow(function* fetchJBrowse1(connectionConf) {
+          // const opts = readConfObject(connectionConf, 'connectionOptions') || {}
+          const hubLocation = readConfObject(
+            connectionConf,
+            'connectionLocation',
+          )
+          // const configs = yield fetchConfigFile({
+          //   uri: '/test_data/tracks.conf',
+          // })
+          const configs = yield fetchJb1(hubLocation)
+          console.log(configs)
+
+          // self.updateAssemblyManager()
         }),
 
         updateAssemblyManager() {
