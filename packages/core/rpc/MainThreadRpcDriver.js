@@ -9,6 +9,11 @@ export default class MainThreadRpcDriver {
     if (!rpcFuncs) throw new TypeError('rpcFuncs argument required')
   }
 
+  cloneArgs(args) {
+    // TODO: this method is losing AbortSignal objects
+    return JSON.parse(JSON.stringify(args))
+  }
+
   call(pluginManager, stateGroupName, functionName, args) {
     const func = this.rpcFuncs[functionName]
     if (!func) {
@@ -18,7 +23,7 @@ export default class MainThreadRpcDriver {
       )
     }
 
-    const clonedArgs = JSON.parse(JSON.stringify(args))
+    const clonedArgs = this.cloneArgs(args)
     return func.call(this, pluginManager, ...clonedArgs)
   }
 }
