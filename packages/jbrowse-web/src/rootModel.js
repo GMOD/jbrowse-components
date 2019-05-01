@@ -1,5 +1,3 @@
-// Polyfill for TextDecoder
-import 'fast-text-encoding'
 import { autorun } from 'mobx'
 import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 
@@ -105,9 +103,7 @@ export default (pluginManager, workerManager) => {
         let configSnapshot
         try {
           configSnapshot = JSON.parse(
-            new TextDecoder('utf-8').decode(
-              yield openLocation(configLocation).readFile(),
-            ),
+            yield openLocation(configLocation).readFile('utf8'),
           )
           self.configure(configSnapshot)
         } catch (error) {

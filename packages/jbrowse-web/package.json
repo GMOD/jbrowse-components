@@ -34,7 +34,6 @@
     "crc-32": "^1.2.0",
     "d3-scale": "^3.0.0",
     "debounce": "^1.2.0",
-    "fast-text-encoding": "^1.0.0",
     "file-saver": "^2.0.0",
     "generic-filehandle": "^1.0.6",
     "get-value": "^3.0.1",

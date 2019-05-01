@@ -1,7 +1,5 @@
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider } from '@material-ui/core/styles'
-// Polyfill for TextDecoder
-import 'fast-text-encoding'
 import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
@@ -43,9 +41,7 @@ async function createRootModel(modelType, config) {
   let configSnapshot = config
   if (config.uri || config.localPath) {
     try {
-      configSnapshot = JSON.parse(
-        new TextDecoder('utf-8').decode(await openLocation(config).readFile()),
-      )
+      configSnapshot = JSON.parse(await openLocation(config).readFile('utf8'))
     } catch (error) {
       console.error('Failed to load config ', error)
       throw error
