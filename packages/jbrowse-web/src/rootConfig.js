@@ -4,7 +4,11 @@ import {
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { convertTrackConfig, fetchJb1 } from './connections/jb1Hub'
+import {
+  convertTrackConfig,
+  createRefSeqsAdapter,
+  fetchJb1,
+} from './connections/jb1Hub'
 import {
   fetchGenomesFile,
   fetchHubFile,
@@ -247,7 +251,7 @@ export default function(pluginManager) {
         }),
 
         fetchJBrowse1: flow(function* fetchJBrowse1(connectionConf) {
-          // const opts = readConfObject(connectionConf, 'connectionOptions') || {}
+          const opts = readConfObject(connectionConf, 'connectionOptions') || {}
           const hubLocation = readConfObject(
             connectionConf,
             'connectionLocation',
@@ -256,7 +260,21 @@ export default function(pluginManager) {
           //   uri: '/test_data/tracks.conf',
           // })
           const config = yield fetchJb1(hubLocation)
-          console.log(config)
+          const adapter = yield createRefSeqsAdapter(config.refSeqs)
+          const connectionName = readConfObject(
+            connectionConf,
+            'connectionName',
+          )
+          self.addAssembly(
+            opts.assemblyName || `assembly from ${connectionName}`,
+            undefined,
+            undefined,
+            {
+              type: 'ReferenceSequence',
+              adapter,
+            },
+            connectionName,
+          )
           config.tracks.forEach(track => {
             const jb2Track = convertTrackConfig(track, config.dataRoot)
             self.addTrackConf(

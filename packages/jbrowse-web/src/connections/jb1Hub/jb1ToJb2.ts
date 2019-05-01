@@ -1,3 +1,4 @@
+import { openLocation, Location } from '@gmod/jbrowse-core/util/io'
 import {
   generateUnsupportedTrackConf,
   guessAdapter,
@@ -86,4 +87,72 @@ function generateFromConfigTrackConfig(
   jb2TrackConfig.type = 'BasicTrack'
   jb2TrackConfig.renderer = { type: 'SvgFeatureRenderer' }
   return jb2TrackConfig
+}
+
+export async function createRefSeqsAdapter(
+  refSeqs: string | RefSeqs,
+): Promise<Record<string, any>> {
+  if (typeof refSeqs == 'string') {
+    // assume refSeqs is a url if it is string
+    refSeqs = {
+      url: refSeqs,
+    }
+  }
+
+  // check refseq urls
+  if (refSeqs.url) {
+    if (refSeqs.url.match(/.fai$/)) {
+      return {
+        type: 'IndexedFastaAdapter',
+        fastaLocation: {
+          uri: refSeqs.url.slice(0, -4),
+        },
+        faiLocation: {
+          uri: refSeqs.url,
+        },
+      }
+    }
+    if (refSeqs.url.match(/.2bit$/)) {
+      return {
+        type: 'ReferenceSequence',
+        adapter: {
+          type: 'TwoBitAdapter',
+          twoBitLocation: refSeqs.url,
+        },
+      }
+    }
+    if (refSeqs.url.match(/.fa$/)) {
+      throw new Error('Unindexed FASTA adapter not available')
+    }
+    if (refSeqs.url.match(/.sizes/)) {
+      throw new Error('chromosome SIZES adapter not available')
+    }
+    const refSeqsJson = await openLocation({ uri: refSeqs.url }).readFile(
+      'utf8',
+    )
+    const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson)
+    return refSeqAdapterFromConfig(refSeqsData)
+  }
+  if ('data' in refSeqs) {
+    return refSeqAdapterFromConfig(refSeqs.data || [])
+  }
+  throw new Error(
+    `Could not determine adapter for JBrowse1 refSeqs: ${refSeqs.url ||
+      JSON.stringify(refSeqs)}`,
+  )
+}
+
+function refSeqAdapterFromConfig(refSeqsData: RefSeq[]): Record<string, any> {
+  const features = refSeqsData.map(
+    (refSeq): Record<string, any> => ({
+      refName: refSeq.name,
+      uniqueId: refSeq.name,
+      start: refSeq.start,
+      end: refSeq.end,
+    }),
+  )
+  return {
+    type: 'FromConfigAdapter',
+    features,
+  }
 }

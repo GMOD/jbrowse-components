@@ -52,6 +52,18 @@ interface Names {
   baseUrl?: string
 }
 
+interface RefSeq {
+  name: string
+  length: number
+  end: number
+  start: number
+}
+
+interface RefSeqs {
+  url?: string
+  data?: RefSeq[]
+}
+
 interface Include {
   url: string
   cacheBuster?: boolean
@@ -66,7 +78,7 @@ interface Config {
   include?: string[]
   names?: Record<string, string>
   nameUrl?: string
-  refSeqs?: string
+  refSeqs?: string | RefSeqs
   sourceUrl?: string
   stores?: Record<string, Store>
   trackMetadata?: TrackMetadata
