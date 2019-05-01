@@ -9,8 +9,6 @@ export function convertTrackConfig(
   jb1TrackConfig: Track,
   dataRoot: string,
 ): Record<string, any> {
-  if (jb1TrackConfig.urlTemplate && jb1TrackConfig.urlTemplate.endsWith('bw'))
-    console.log(jb1TrackConfig)
   const jb2TrackConfig = {}
 
   jb2TrackConfig.configId = jb1TrackConfig.label
@@ -41,14 +39,11 @@ export function convertTrackConfig(
   }
 
   const urlTemplate = new URL(jb1TrackConfig.urlTemplate, `${dataRoot}/`).href
-    .replace('%7B', '{')
-    .replace('%7D', '}')
+    .replace(/%7B/gi, '{')
+    .replace(/%7D/gi, '}')
   jb2TrackConfig.adapter = guessAdapter(urlTemplate, 'uri')
 
-  if (
-    !jb2TrackConfig.adapter.type ||
-    jb2TrackConfig.adapter.type === UNSUPPORTED
-  )
+  if (jb2TrackConfig.adapter.type === UNSUPPORTED)
     return generateUnsupportedTrackConf(
       jb2TrackConfig.name,
       urlTemplate,

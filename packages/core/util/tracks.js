@@ -132,7 +132,8 @@ export function guessAdapter(fileName, protocol) {
 
   if (/\.(bb|bigbed)$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'BigBedAdapter',
+      bigBedLocation: { [protocol]: fileName },
     }
 
   if (/\.(bw|bigwig)$/i.test(fileName))
@@ -193,25 +194,28 @@ export function guessAdapter(fileName, protocol) {
       rootUrlTemplate: fileName,
     }
 
-  return {}
+  return {
+    type: UNSUPPORTED,
+  }
 }
 
 export function guessTrackType(adapterType) {
   return {
     BamAdapter: 'AlignmentsTrack',
+    BgzipFastaAdapter: 'SequenceTrack',
+    BigBedAdapter: 'BasicTrack',
     BigWigAdapter: 'WiggleTrack',
     IndexedFastaAdapter: 'SequenceTrack',
-    BgzipFastaAdapter: 'SequenceTrack',
-    TwoBitAdapter: 'SequenceTrack',
     NCListAdapter: 'BasicTrack',
+    TwoBitAdapter: 'SequenceTrack',
   }[adapterType]
 }
 
-export function generateUnsupportedTrackConf(trackName, trackType, categories) {
+export function generateUnsupportedTrackConf(trackName, trackUrl, categories) {
   return {
     type: 'BasicTrack',
     name: `${trackName} (Unsupported)`,
-    description: `Support for track type "${trackType}" has not been implemented yet`,
+    description: `Could not determine track type for "${trackUrl}"`,
     category: categories,
   }
 }
