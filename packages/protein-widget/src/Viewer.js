@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable monorepo/no-relative-import */
 import React from 'react'
 import ReactDOM from 'react-dom'

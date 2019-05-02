@@ -20,6 +20,7 @@ const logBuffer = []
 function flushLog() {
   if (logBuffer.length) {
     for (const l of logBuffer) {
+      // eslint-disable-next-line no-console
       console.log(...l)
     }
     logBuffer.length = 0
