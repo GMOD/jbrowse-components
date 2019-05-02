@@ -48,19 +48,25 @@ function renderBlockData(self) {
 }
 
 async function renderBlockEffect(self, props, allowRefetch = true) {
-  const { trackError, rendererType, renderProps, rpcManager, cannotBeRenderedReason, renderArgs } = props
+  const {
+    trackError,
+    rendererType,
+    renderProps,
+    rpcManager,
+    cannotBeRenderedReason,
+    renderArgs,
+  } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
 
-  if(trackError) {
+  if (trackError) {
     self.setError(trackError)
     return
   }
   if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
-    return;
+    return
   }
-
 
   const aborter = new AbortController()
   self.setLoading(aborter)
@@ -146,7 +152,7 @@ export default types
       self.renderingComponent = undefined
       self.renderProps = undefined
       self.renderInProgress = abortController
-  },
+    },
     setMessage(messageText) {
       if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()

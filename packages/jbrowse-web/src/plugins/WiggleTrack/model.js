@@ -81,7 +81,7 @@ export default (pluginManager, configSchema) =>
                       self.error = e
                     }
                   })
-              } catch(e) {
+              } catch (e) {
                 self.error = e
               }
             },

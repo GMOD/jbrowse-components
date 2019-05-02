@@ -105,22 +105,24 @@ function globalCacheFetch(url, opts) {
       let [, start, end] = rangeParse
       start = parseInt(start, 10)
       end = parseInt(end, 10)
-      return globalRangeCache.getRange(url, start, end - start + 1, {
-        signal: opts.signal,
-      }).then((response) => {
-        let { headers } = response
-        if (!(headers instanceof Map)) {
-          headers = new Map(Object.entries(headers))
-        }
-        return {
-          status: 206,
-          ok: true,
-          async arrayBuffer() {
-            return response.buffer
-          },
-          headers,
-        }
-      })
+      return globalRangeCache
+        .getRange(url, start, end - start + 1, {
+          signal: opts.signal,
+        })
+        .then(response => {
+          let { headers } = response
+          if (!(headers instanceof Map)) {
+            headers = new Map(Object.entries(headers))
+          }
+          return {
+            status: 206,
+            ok: true,
+            async arrayBuffer() {
+              return response.buffer
+            },
+            headers,
+          }
+        })
     }
   }
 

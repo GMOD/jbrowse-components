@@ -7,11 +7,11 @@ function BlockBasedTrack(props) {
   const { model } = props
   return (
     <Track {...props}>
-      {
-        model.trackMessageComponent ?
-          <model.trackMessageComponent model={model} /> :
-          <TrackBlocks {...props} blockState={model.blockState} />
-      }
+      {model.trackMessageComponent ? (
+        <model.trackMessageComponent model={model} />
+      ) : (
+        <TrackBlocks {...props} blockState={model.blockState} />
+      )}
     </Track>
   )
 }

@@ -7,8 +7,9 @@ const styles = {
   loading: {
     paddingLeft: '0.6em',
     position: 'absolute',
-    backgroundColor: "#f1f1f1",
-    backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)",
+    backgroundColor: '#f1f1f1',
+    backgroundImage:
+      'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
     height: '100%',
     width: '100%',
     textAlign: 'center',
@@ -22,16 +23,16 @@ const styles = {
   },
   blockMessage: {
     background: '#f1f1f1',
-    padding: '10px'
-  }
+    padding: '10px',
+  },
 }
 
-const LoadingMessage = withStyles(styles)(({classes}) => {
+const LoadingMessage = withStyles(styles)(({ classes }) => {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   useEffect(() => {
-   const timeout = setTimeout(() => setShown(true), 300)
-   return () => clearTimeout(timeout)
+    const timeout = setTimeout(() => setShown(true), 300)
+    return () => clearTimeout(timeout)
   })
 
   return shown ? <div className={classes.loading}>Loading &hellip;</div> : null

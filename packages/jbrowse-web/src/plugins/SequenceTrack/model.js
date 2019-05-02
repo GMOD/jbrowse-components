@@ -1,7 +1,10 @@
 import { types } from 'mobx-state-tree'
 
 import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps, getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getParentRenderProps,
+  getContainingView,
+} from '@gmod/jbrowse-core/util/tracks'
 
 import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
 import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
@@ -36,7 +39,7 @@ export default (pluginManager, configSchema, trackType) =>
             return 'Zoom in to see sequence'
           }
           return undefined
-        }
+        },
       }))
       .volatile(() => ({
         reactComponent: BlockBasedTrackComponent,

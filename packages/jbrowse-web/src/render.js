@@ -12,7 +12,6 @@ export async function getGlobalStats(
   pluginManager,
   { adapterType, adapterConfig, signal, sessionId },
 ) {
-
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
@@ -30,7 +29,6 @@ export async function getRegionStats(
   pluginManager,
   { region, adapterType, adapterConfig, signal, sessionId },
 ) {
-
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
@@ -48,7 +46,6 @@ export async function getMultiRegionStats(
   pluginManager,
   { regions, adapterType, adapterConfig, signal, sessionId },
 ) {
-
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
@@ -83,7 +80,6 @@ export async function getRefNames(
   pluginManager,
   { sessionId, adapterType, signal, adapterConfig },
 ) {
-
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
   }
