@@ -20,10 +20,13 @@ const styles = {
     wordWrap: 'normal',
     whiteSpace: 'normal',
   },
+  blockMessage: {
+    background: '#f1f1f1',
+    padding: '10px'
+  }
 }
 
 const LoadingMessage = withStyles(styles)(({classes}) => {
-
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   useEffect(() => {
@@ -31,7 +34,7 @@ const LoadingMessage = withStyles(styles)(({classes}) => {
    return () => clearTimeout(timeout)
   })
 
-  return shown ? <div className={classes.loading}>Loading ...</div> : null
+  return shown ? <div className={classes.loading}>Loading &hellip;</div> : null
 })
 
 const ErrorMessage = withStyles(styles)(({ error, classes }) => (
@@ -41,8 +44,13 @@ ErrorMessage.propTypes = {
   error: PropTypes.objectOrObservableObject.isRequired,
 }
 
+const BlockMessage = withStyles(styles)(({ messageText, classes }) => (
+  <div className={classes.blockMessage}>{messageText}</div>
+))
+
 const ServerSideRenderedBlockContent = observer(({ model }) => {
   if (model.error) return <ErrorMessage error={model.error} />
+  if (model.message) return <BlockMessage messageText={model.message} />
   if (!model.filled) return <LoadingMessage />
   return <ServerSideRenderedContent model={model} />
 })

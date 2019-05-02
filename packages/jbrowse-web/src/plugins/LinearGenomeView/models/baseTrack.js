@@ -31,7 +31,7 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   assemblyName: {
     type: 'string',
     defaultValue: '',
-  },
+  }
 })
 
 // these MST models only exist for tracks that are *shown*.
@@ -126,6 +126,15 @@ const BaseTrack = types
     get trackMessageComponent() {
       return undefined;
     },
+
+    /**
+     * @param {Region} region
+     * @returns falsy if the region is fine to try rendering. Otherwise,
+     *  return a string of text saying why the region can't be rendered.
+     */
+    regionCannotBeRendered(region) {
+      return undefined
+    }
   }))
   .actions(self => ({
     setHeight(trackHeight) {
