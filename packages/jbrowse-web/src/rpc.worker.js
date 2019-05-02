@@ -35,7 +35,7 @@ function wrapForRpc(func) {
     // logBuffer.push(['rpc-call', myId, func.name, ...args])
     const retP = func(jbPluginManager, ...args).catch(error => {
       if (isAbortException(error)) {
-        logBuffer.push(['rpc-abort', myId, func.name, ...args])
+        // logBuffer.push(['rpc-abort', myId, func.name, ...args])
       } else {
         console.error(error)
         logBuffer.push(['rpc-error', myId, func.name, error])
