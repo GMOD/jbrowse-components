@@ -115,16 +115,6 @@ const BaseTrack = types
       return adapterType
     },
 
-    /**
-     * the Adapter that this track uses to fetch data
-     */
-    get adapter() {
-      const adapter = new self.adapterType.AdapterClass(
-        getSnapshot(self.configuration.adapter),
-      )
-      return adapter
-    },
-
     get showConfigurationButton() {
       return !!getRoot(self).editConfiguration
     },
