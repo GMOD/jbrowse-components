@@ -29,12 +29,12 @@ function renderBlockData(self) {
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
   const cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-
   return {
     rendererType,
     rpcManager,
     renderProps,
     cannotBeRenderedReason,
+    trackError: track.error,
     renderArgs: {
       region: self.region,
       adapterType: track.adapterType.name,
@@ -48,14 +48,19 @@ function renderBlockData(self) {
 }
 
 async function renderBlockEffect(self, props, allowRefetch = true) {
-  const { rendererType, renderProps, rpcManager, cannotBeRenderedReason, renderArgs } = props
+  const { trackError, rendererType, renderProps, rpcManager, cannotBeRenderedReason, renderArgs } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
 
+  if(trackError) {
+    self.setError(trackError)
+    return
+  }
   if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
     return;
   }
+
 
   const aborter = new AbortController()
   self.setLoading(aborter)

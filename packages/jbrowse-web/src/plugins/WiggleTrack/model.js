@@ -29,50 +29,55 @@ export default (pluginManager, configSchema) =>
         afterAttach() {
           const getYAxisScale = autorun(
             function getYAxisScaleAutorun() {
-              const { rpcManager } = getRoot(self)
+              try {
+                const { rpcManager } = getRoot(self)
 
-              const autoscaleType = getConf(self, 'autoscale')
-              const aborter = new AbortController()
-              self.setLoading(aborter)
+                const autoscaleType = getConf(self, 'autoscale')
+                const aborter = new AbortController()
+                let statsPromise
+                self.setLoading(aborter)
 
-              if (autoscaleType === 'global') {
-                self.statsPromise = rpcManager.call(
-                  'statsGathering',
-                  'getGlobalStats',
-                  {
-                    adapterConfig: getSnapshot(self.configuration.adapter),
-                    adapterType: self.configuration.adapter.type,
-                    signal: aborter.signal,
-                  },
-                )
-              } else if (autoscaleType === 'local') {
-                const { dynamicBlocks, bpPerPx } = getContainingView(self)
-                if (!dynamicBlocks.length) return
+                if (autoscaleType === 'global') {
+                  statsPromise = rpcManager.call(
+                    'statsGathering',
+                    'getGlobalStats',
+                    {
+                      adapterConfig: getSnapshot(self.configuration.adapter),
+                      adapterType: self.configuration.adapter.type,
+                      signal: aborter.signal,
+                    },
+                  )
+                } else if (autoscaleType === 'local') {
+                  const { dynamicBlocks, bpPerPx } = getContainingView(self)
+                  if (!dynamicBlocks.length) return
 
-                // possibly useful for the rpc group name to be the same group as getFeatures
-                // reason: local stats fetches feature data that might get cached which getFeatures can use
-                self.statsPromise = rpcManager.call(
-                  'statsGathering',
-                  'getMultiRegionStats',
-                  {
-                    adapterConfig: getSnapshot(self.configuration.adapter),
-                    adapterType: self.configuration.adapter.type,
-                    regions: dynamicBlocks.map(r => ({ ...r, bpPerPx })),
-                    signal: aborter.signal,
-                  },
-                )
+                  // possibly useful for the rpc group name to be the same group as getFeatures
+                  // reason: local stats fetches feature data that might get cached which getFeatures can use
+                  statsPromise = rpcManager.call(
+                    'statsGathering',
+                    'getMultiRegionStats',
+                    {
+                      adapterConfig: getSnapshot(self.configuration.adapter),
+                      adapterType: self.configuration.adapter.type,
+                      regions: dynamicBlocks.map(r => ({ ...r, bpPerPx })),
+                      signal: aborter.signal,
+                    },
+                  )
+                }
+
+                statsPromise
+                  .then(stats => {
+                    checkAbortSignal(aborter.signal)
+                    self.updateScale(stats)
+                  })
+                  .catch(e => {
+                    if (!isAbortException(e)) {
+                      self.error = e
+                    }
+                  })
+              } catch(e) {
+                self.error = e
               }
-
-              self.statsPromise
-                .then(stats => {
-                  checkAbortSignal(aborter.signal)
-                  self.updateScale(stats)
-                })
-                .catch(e => {
-                  if (!isAbortException(e)) {
-                    throw e
-                  }
-                })
             },
             { delay: 1000 },
           )
