@@ -36,7 +36,15 @@ export default (pluginManager, configSchema) =>
               self.setLoading(aborter)
 
               if (autoscaleType === 'global') {
-                self.statsPromise = self.adapter.getGlobalStats(aborter.signal)
+                self.statsPromise = rpcManager.call(
+                  'statsGathering',
+                  'getGlobalStats',
+                  {
+                    adapterConfig: getSnapshot(self.configuration.adapter),
+                    adapterType: self.configuration.adapter.type,
+                    signal: aborter.signal,
+                  },
+                )
               } else if (autoscaleType === 'local') {
                 const { dynamicBlocks, bpPerPx } = getContainingView(self)
                 if (!dynamicBlocks.length) return

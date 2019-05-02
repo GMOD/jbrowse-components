@@ -5,6 +5,19 @@ import {
 } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
+export async function getGlobalStats(
+  pluginManager,
+  { adapterType, adapterConfig, signal, sessionId },
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterType,
+    adapterConfig,
+  )
+  return dataAdapter.getGlobalStats(signal)
+}
+
 export async function getRegionStats(
   pluginManager,
   { region, adapterType, adapterConfig, signal, sessionId },
@@ -15,7 +28,7 @@ export async function getRegionStats(
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getGlobalStats(region, signal)
+  return dataAdapter.getRegionStats(region, signal)
 }
 
 export async function getMultiRegionStats(
