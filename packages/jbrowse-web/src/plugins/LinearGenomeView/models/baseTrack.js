@@ -118,6 +118,14 @@ const BaseTrack = types
     get showConfigurationButton() {
       return !!getRoot(self).editConfiguration
     },
+
+    /**
+     * if a track-level message should be displayed instead of the blocks,
+     * make this return a react component
+     */
+    get trackMessageComponent() {
+      return undefined;
+    },
   }))
   .actions(self => ({
     setHeight(trackHeight) {
