@@ -1,5 +1,5 @@
 import React from 'react'
-import { types, getRoot, getSnapshot } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
