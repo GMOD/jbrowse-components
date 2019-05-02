@@ -1,15 +1,15 @@
-import { Observable } from 'rxjs'
+import { Observable, Observer } from 'rxjs'
 
 /**
  * Wrapper for rxjs Observable.create with improved error handling
  * @param {function} func observer function, could be async
  */
-export function ObservableCreate(func) {
-  return Observable.create(observer => {
+export function ObservableCreate<T>(func:Function):Observable<T> {
+  return Observable.create((observer:Observer<T>) => {
     try {
       const ret = func(observer)
       // catch async errors
-      if (ret && ret.catch) ret.catch(error => observer.error(error))
+      if (ret && ret.catch) ret.catch((error:any) => observer.error(error))
       return ret
     } catch (error) {
       // catch sync errors
