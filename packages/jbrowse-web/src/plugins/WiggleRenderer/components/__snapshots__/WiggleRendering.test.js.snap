@@ -16,6 +16,7 @@ exports[`one 1`] = `
   <PrerenderedCanvas
     bpPerPx={3}
     height={500}
+    highResolutionScaling={1}
     horizontallyFlipped={false}
     region={
       Object {
