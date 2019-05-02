@@ -1,9 +1,10 @@
 import { BigWig } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { mergeAll, map } from 'rxjs/operators'
+import { Observable,from } from 'rxjs'
+import { mergeMap,concatAll, map } from 'rxjs/operators'
 
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, {Region} from '@gmod/jbrowse-core/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -11,6 +12,9 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { rectifyStats, scoresToStats } from './util'
 
 export default class BigWigAdapter extends BaseAdapter {
+  private bigwig: BigWig
+  private statsCache: AbortablePromiseCache
+
   static capabilities = ['getFeatures', 'getRefNames']
 
   constructor(config) {
@@ -96,20 +100,20 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures({ /* assembly, */ refName, start, end, bpPerPx }, abortSignal) {
+  getFeatures({ /* assembly, */ refName, start, end }:Region, {signal, bpPerPx}) {
     return ObservableCreate(async observer => {
       const observable2 = await this.bigwig.getFeatureStream(
         refName,
         start,
         end,
         {
-          signal: abortSignal,
+          signal,
           basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
         },
       )
       return observable2
         .pipe(
-          mergeAll(),
+          mergeMap(x => from(x)),
           map(record => {
             return new SimpleFeature({
               id: record.start + 1,

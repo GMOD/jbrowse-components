@@ -3,7 +3,7 @@ import { ObservableCreate } from './util/rxjs'
 // @ts-ignore
 import { checkAbortSignal } from './util'
 
-interface Region {
+export interface Region {
   refName: string
   start: number
   end: number
@@ -24,7 +24,7 @@ export default class BaseAdapter {
     // 'getRefNameAliases',
   ]
 
-  constructor() {
+  constructor(config: any) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
@@ -84,14 +84,14 @@ export default class BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} see getFeatures()
    */
-  getFeaturesInRegion(region: Region, { signal }: BaseOptions):Observable<any> {
+  getFeaturesInRegion(region: Region, opts: BaseOptions):Observable<any> {
     return ObservableCreate(async (observer:Observer<any>) => {
       const hasData = await this.hasDataForRefName(region.refName)
-      checkAbortSignal(signal)
+      checkAbortSignal(opts.signal)
       if (!hasData) {
         observer.complete()
       } else {
-        this.getFeatures(region, { signal }).subscribe(observer)
+        this.getFeatures(region, opts).subscribe(observer)
       }
     })
   }
