@@ -4,7 +4,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import IndexedFasta from './IndexedFastaAdapter'
 
 export default class BgzipFastaAdapter extends IndexedFasta {
-  constructor(config: {
+  public constructor(config: {
     fastaLocation: string
     faiLocation: string
     gziLocation: string

@@ -9,9 +9,9 @@ import { Observer } from 'rxjs'
 export default class TwoBitAdapter extends BaseAdapter {
   private twobit: any
 
-  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  constructor(config: Record<string, any>) {
+  public constructor(config: Record<string, any>) {
     super(config)
     const { twoBitLocation } = config
     const twoBitOpts = {
@@ -21,11 +21,11 @@ export default class TwoBitAdapter extends BaseAdapter {
     this.twobit = new TwoBitFile(twoBitOpts)
   }
 
-  async getRefNames() {
+  public async getRefNames() {
     return this.twobit.getSequenceNames()
   }
 
-  async getRegions() {
+  public async getRegions() {
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(refName => ({
       refName,
@@ -39,7 +39,7 @@ export default class TwoBitAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }: Region) {
+  public getFeatures({ refName, start, end }: Region) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(
@@ -57,5 +57,5 @@ export default class TwoBitAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */) {}
+  public freeResources(/* { region } */) {}
 }

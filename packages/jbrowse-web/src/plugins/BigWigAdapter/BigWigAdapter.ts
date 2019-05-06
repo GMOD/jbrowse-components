@@ -35,7 +35,7 @@ export default class BigWigAdapter extends BaseAdapter {
     const bigwigRef = this.bigwig
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
-      async fill(region: Region, abortSignal: AbortSignal) {
+      public async fill(region: Region, abortSignal: AbortSignal) {
         const { refName, start, end, bpPerPx } = region
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,

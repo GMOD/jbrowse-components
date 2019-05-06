@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
+/* @typescript-eslint/explicit-function-return-type */
 /* eslint-disable camelcase,no-underscore-dangle */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 

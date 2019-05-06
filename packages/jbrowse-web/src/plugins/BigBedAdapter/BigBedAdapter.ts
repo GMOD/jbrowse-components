@@ -16,9 +16,9 @@ export default class BigBedAdapter extends BaseAdapter {
 
   private parser: any
 
-  static capabilities = ['getFeatures', 'getRefNames']
+  public static capabilities = ['getFeatures', 'getRefNames']
 
-  constructor(config: { bigBedLocation: string }) {
+  public constructor(config: { bigBedLocation: string }) {
     super(config)
     this.bigbed = new BigBed({
       filehandle: openLocation(config.bigBedLocation),
@@ -31,19 +31,19 @@ export default class BigBedAdapter extends BaseAdapter {
       )
   }
 
-  async getRefNames() {
+  public async getRefNames() {
     const header = await this.bigbed.getHeader()
     return Object.keys(header.refsByName)
   }
 
-  async refIdToName(refId: number) {
+  public async refIdToName(refId: number) {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
   /**
    * @return promise for the totalSummary element from the bigbed's header
    */
-  async getGlobalStats() {
+  public async getGlobalStats() {
     const header = await this.bigbed.getHeader()
     return header.totalSummary
   }
@@ -96,7 +96,7 @@ export default class BigBedAdapter extends BaseAdapter {
  * @params featureData a feature to regularize
  * @return a regularized feature
  */
-export function regularizeFeat(featureData: {
+function regularizeFeat(featureData: {
   chrom: string
   chromStart: number
   chromEnd: number

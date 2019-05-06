@@ -9,9 +9,9 @@ import { Observer } from 'rxjs'
 export default class IndexedFastaAdapter extends BaseAdapter {
   protected fasta: any
 
-  static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  constructor(config: { fastaLocation: string; faiLocation: string }) {
+  public constructor(config: { fastaLocation: string; faiLocation: string }) {
     super(config)
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
@@ -28,11 +28,11 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  async getRefNames() {
+  public async getRefNames() {
     return this.fasta.getSequenceList()
   }
 
-  async getRegions() {
+  public async getRegions() {
     const seqSizes = await this.fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(refName => ({
       refName,
@@ -46,7 +46,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }: Region) {
+  public getFeatures({ refName, start, end }: Region) {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const seq = await this.fasta.getSequence(refName, start, end)
       if (seq)
@@ -65,5 +65,5 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */) {}
+  public freeResources(/* { region } */) {}
 }
