@@ -66,7 +66,7 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "checktypes": "tsc --noEmit",
-    "jtest": "jest",
+    "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
     "test": "node scripts/test.js",
     "lint": "eslint src"
   }
