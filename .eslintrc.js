@@ -43,17 +43,17 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 'off',
   },
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       node: {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
   overrides: [
     {
       files: ['packages/generator-jbrowse/**/*'],
       env: { node: true },
-      rules: { '@typescript-eslint/no-var-requires': 'off' }
+      rules: { '@typescript-eslint/no-var-requires': 'off' },
     },
     {
       files: ['**/*.worker.js'],
