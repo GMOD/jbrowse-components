@@ -12,19 +12,13 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
-import { rectifyStats, scoresToStats, blankStats } from './util'
-
-interface FeatureStats {
-  scoreMin: number
-  scoreMax: number
-  scoreMean: number
-  scoreSum: number
-  scoreStdDev: number
-  featureDensity: number
-  scoreSumSquares: number
-  featureCount: number
-  basesCovered: number
-}
+import {
+  rectifyStats,
+  scoresToStats,
+  blankStats,
+  UnrectifiedFeatureStats,
+  FeatureStats,
+} from './util'
 
 export default class BigWigAdapter extends BaseAdapter {
   private bigwig: BigWig
@@ -64,7 +58,7 @@ export default class BigWigAdapter extends BaseAdapter {
 
   public async getGlobalStats(opts: BaseOptions = {}): Promise<FeatureStats> {
     const header = await this.bigwig.getHeader(opts.signal)
-    return rectifyStats(header.totalSummary)
+    return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
