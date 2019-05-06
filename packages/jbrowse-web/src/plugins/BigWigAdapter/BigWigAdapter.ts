@@ -1,8 +1,8 @@
-import { BigWig, Statistics } from '@gmod/bbi'
+import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { Observable, Observer, of } from 'rxjs'
-import { mergeMap, mergeAll, map, tap } from 'rxjs/operators'
+import { Observable, Observer } from 'rxjs'
+import { mergeAll, map } from 'rxjs/operators'
 
 import BaseAdapter, {
   BaseOptions,
@@ -124,31 +124,28 @@ export default class BigWigAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-
-  public getFeatures(region: Region, opts: BaseOptions = {}) {
+  // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
+  public getFeatures(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
     const { refName, start, end } = region
     const { signal } = opts
-    return ObservableCreate(async (observer: Observer<Feature>) => {
-      const observable2 = await this.bigwig.getFeatureStream(
-        refName,
-        start,
-        end,
-        {
-          signal,
-          basesPerSpan: end - start,
-        },
-      )
-      return observable2
-        .pipe(
-          mergeAll(),
-          map(record => {
-            return new SimpleFeature({
-              id: record.start + 1,
-              data: record,
-            })
-          }),
-        )
-        .subscribe(observer)
+    // @ts-ignore same as above
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+      const ob = await this.bigwig.getFeatureStream(refName, start, end, {
+        signal,
+        basesPerSpan: end - start,
+      })
+      ob.pipe(
+        mergeAll(),
+        map((record: BBIFeature) => {
+          return new SimpleFeature({
+            id: record.start + 1,
+            data: record,
+          })
+        }),
+      ).subscribe(observer)
     })
   }
 }

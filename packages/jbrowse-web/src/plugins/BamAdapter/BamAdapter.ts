@@ -1,21 +1,41 @@
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, {
+  BaseOptions,
+  Region,
+} from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import { GenericFilehandle } from 'generic-filehandle'
+import { Observer } from 'rxjs'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
+export interface BamOptions extends BaseOptions {
+  viewAsPairs?: boolean
+}
+
 export default class BamAdapter extends BaseAdapter {
+  private bam: any
+
+  private samHeader: any
+
   static capabilities = ['getFeatures', 'getRefNames']
 
-  constructor(config) {
-    super()
+  constructor(config: {
+    bamLocation: string
+    index: { location: string; index: string }
+  }) {
+    super(config)
     const { bamLocation } = config
 
-    const indexLocation = config.index.location
-    const { indexType } = config.index
-    const bamOpts = {
+    const { location: indexLocation, index: indexType } = config.index
+    const bamOpts: {
+      bamFilehandle: GenericFilehandle
+      baiFilehandle?: GenericFilehandle
+      csiFilehandle?: GenericFilehandle
+    } = {
       bamFilehandle: openLocation(bamLocation),
     }
 
@@ -36,11 +56,11 @@ export default class BamAdapter extends BaseAdapter {
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
-      const idToName = []
-      const nameToId = {}
-      const sqLines = samHeader.filter(l => l.tag === 'SQ')
-      sqLines.forEach((sqLine, refId) => {
-        sqLine.data.forEach(item => {
+      const idToName: any[] = []
+      const nameToId: any = {}
+      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
+      sqLines.forEach((sqLine: { data: any }, refId: number) => {
+        sqLine.data.forEach((item: any) => {
           if (item.tag === 'SN') {
             // this is the ref name
             const refName = item.value
@@ -69,14 +89,17 @@ export default class BamAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }, signal) {
-    return ObservableCreate(async observer => {
+  getFeatures({ refName, start, end }: Region, opts: BamOptions = {}) {
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       await this.setup()
-      const records = await this.bam.getRecordsForRange(refName, start, end, {
-        signal,
-      })
-      checkAbortSignal(signal)
-      records.forEach(record => {
+      const records = await this.bam.getRecordsForRange(
+        refName,
+        start,
+        end,
+        opts,
+      )
+      checkAbortSignal(opts.signal)
+      records.forEach((record: any) => {
         observer.next(this.bamRecordToFeature(record))
       })
       observer.complete()
@@ -90,11 +113,11 @@ export default class BamAdapter extends BaseAdapter {
    */
   freeResources(/* { region } */) {}
 
-  bamRecordToFeature(record) {
+  bamRecordToFeature(record: any) {
     return new BamSlightlyLazyFeature(record, this)
   }
 
-  refIdToName(refId) {
+  refIdToName(refId: number) {
     // use info from the SAM header if possible, but fall back to using
     // the ref name order from when the browser's ref names were loaded
     if (this.samHeader.idToName) {

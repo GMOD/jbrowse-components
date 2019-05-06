@@ -4,13 +4,21 @@ import BED from '@gmod/bed'
 
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import BaseAdapter, {
+  Region,
+  BaseOptions,
+} from '@gmod/jbrowse-core/BaseAdapter'
+import { Observable } from 'rxjs'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default class BigBedAdapter extends BaseAdapter {
+  private bigbed: any
+
+  private parser: any
+
   static capabilities = ['getFeatures', 'getRefNames']
 
-  constructor(config) {
+  constructor(config: { bigBedLocation: string }) {
     super(config)
     this.bigbed = new BigBed({
       filehandle: openLocation(config.bigBedLocation),
@@ -18,7 +26,9 @@ export default class BigBedAdapter extends BaseAdapter {
 
     this.parser = this.bigbed
       .getHeader()
-      .then(({ autoSql }) => new BED({ autoSql }))
+      .then(
+        (header: { autoSql: string }) => new BED({ autoSql: header.autoSql }),
+      )
   }
 
   async getRefNames() {
@@ -26,7 +36,7 @@ export default class BigBedAdapter extends BaseAdapter {
     return Object.keys(header.refsByName)
   }
 
-  async refIdToName(refId) {
+  async refIdToName(refId: number) {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
@@ -44,30 +54,39 @@ export default class BigBedAdapter extends BaseAdapter {
    * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ /* assembly, */ refName, start, end }, abortSignal) {
-    return ObservableCreate(async observer => {
+  // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
+  public getFeatures(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
+    const { refName, start, end } = region
+    const { signal } = opts
+    // @ts-ignore
+    return ObservableCreate(async (observer: Observer<Feature>) => {
       const parser = await this.parser
-      const observable2 = await this.bigbed.getFeatureStream(
-        refName,
-        start,
-        end,
-        {
-          signal: abortSignal,
-        },
-      )
-      return observable2
-        .pipe(
-          mergeAll(),
-          map(r => {
+      const ob = await this.bigbed.getFeatureStream(refName, start, end, {
+        signal,
+        basesPerSpan: end - start,
+      })
+      ob.pipe(
+        mergeAll(),
+        map(
+          (r: {
+            start: number
+            end: number
+            rest: string
+            refName: string
+            uniqueId: number
+          }) => {
             const data = regularizeFeat(
               parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
                 uniqueId: r.uniqueId,
               }),
             )
             return new SimpleFeature({ data })
-          }),
-        )
-        .subscribe(observer)
+          },
+        ),
+      ).subscribe(observer)
     })
   }
 }
@@ -77,7 +96,11 @@ export default class BigBedAdapter extends BaseAdapter {
  * @params featureData a feature to regularize
  * @return a regularized feature
  */
-export function regularizeFeat(featureData) {
+export function regularizeFeat(featureData: {
+  chrom: string
+  chromStart: number
+  chromEnd: number
+}) {
   const {
     chrom: refName,
     chromStart: start,

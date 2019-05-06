@@ -1,15 +1,21 @@
 import { TwoBitFile } from '@gmod/twobit'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import BaseAdapter, {
+  Region,
+  BaseOptions,
+} from '@gmod/jbrowse-core/BaseAdapter'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { Observer } from 'rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
+  private twobit: any
+
   static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  constructor(config) {
-    super()
+  constructor(config: Record<string, any>) {
+    super(config)
     const { twoBitLocation } = config
     const twoBitOpts = {
       filehandle: openLocation(twoBitLocation),
@@ -24,15 +30,11 @@ export default class TwoBitAdapter extends BaseAdapter {
 
   async getRegions() {
     const refSizes = await this.twobit.getSequenceSizes()
-    const regions = []
-    Object.keys(refSizes).forEach(refName => {
-      regions.push({
-        refName,
-        start: 0,
-        end: refSizes[refName],
-      })
-    })
-    return regions
+    return Object.keys(refSizes).map(refName => ({
+      refName,
+      start: 0,
+      end: refSizes[refName],
+    }))
   }
 
   /**
@@ -40,8 +42,8 @@ export default class TwoBitAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }) {
-    return ObservableCreate(async observer => {
+  getFeatures({ refName, start, end }: Region) {
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const seq = await this.twobit.getSequence(refName, start, end)
       observer.next(
         new SimpleFeature({
