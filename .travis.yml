@@ -8,9 +8,9 @@ cache:
 script:
     - set -e
     - yarn lint
+    - tsc
     - yarn build
     - yarn test-ci
-    - tsc
     # - if .travis/build-condition.sh $TRAVIS_COMMIT_RANGE $PROJECT; then cd $PROJECT && . .travis.sh; else echo "$PROJECT is NOT being built"; fi
 after_success:
     - bash <(curl -s https://codecov.io/bash)

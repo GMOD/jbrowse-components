@@ -38,6 +38,8 @@ module.exports = {
     'react/jsx-filename-extension': 'off',
     'react/no-unused-state': 'warn',
     'react/prefer-stateless-function': 'warn',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/camelcase': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
