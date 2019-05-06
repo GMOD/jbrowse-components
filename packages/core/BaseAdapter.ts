@@ -7,9 +7,11 @@ export interface Region {
   refName: string
   start: number
   end: number
+  bpPerPx?: number
+  assembly?: string
 }
-interface BaseOptions {
-  signal: AbortSignal
+export interface BaseOptions {
+  signal?: AbortSignal
 }
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
@@ -17,14 +19,16 @@ interface BaseOptions {
  */
 export default class BaseAdapter {
   // List of all possible capabilities. Don't un-comment them here.
-  static capabilities = [
-    // 'getFeatures',
-    // 'getRefNames',
-    // 'getRegions',
-    // 'getRefNameAliases',
-  ]
+  public static capabilities: string[] = []
+  // e.g.
+  // [
+  // 'getFeatures',
+  // 'getRefNames',
+  // 'getRegions',
+  // 'getRefNameAliases',
+  // ]
 
-  constructor(config: any) {
+  public constructor(config: Record<string, any>) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
@@ -37,7 +41,7 @@ export default class BaseAdapter {
    * @returns {Promise<string[]>} Array of reference sequence names used by the
    * source being adapted.
    */
-  async getRefNames():Promise<string[]> {
+  public async getRefNames(): Promise<string[]> {
     throw new Error('getRefNames should be overridden by the subclass')
     // Subclass method should look something like this:
     // await this.setup()
@@ -52,7 +56,10 @@ export default class BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // eslint-disable-next-line no-unused-vars
-  getFeatures({ refName, start, end }: Region, opts: BaseOptions):Observable<any> {
+  public getFeatures(
+    { refName, start, end }: Region,
+    opts: BaseOptions = {},
+  ): Observable<any> {
     throw new Error('getFeatures should be overridden by the subclass')
     // Subclass method should look something like this:
     // return ObservableCreate(observer => {
@@ -73,7 +80,7 @@ export default class BaseAdapter {
    * @param {Region} region
    */
   // eslint-disable-next-line no-unused-vars
-  freeResources(region: Region) {
+  public freeResources(region: Region) {
     throw new Error('freeResources should be overridden by the subclass')
   }
 
@@ -84,8 +91,11 @@ export default class BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} see getFeatures()
    */
-  getFeaturesInRegion(region: Region, opts: BaseOptions):Observable<any> {
-    return ObservableCreate(async (observer:Observer<any>) => {
+  public getFeaturesInRegion(
+    region: Region,
+    opts: BaseOptions,
+  ): Observable<any> {
+    return ObservableCreate(async (observer: Observer<any>) => {
       const hasData = await this.hasDataForRefName(region.refName)
       checkAbortSignal(opts.signal)
       if (!hasData) {
@@ -103,7 +113,7 @@ export default class BaseAdapter {
    * @returns {Promise<boolean>} Whether data source has data for the given
    * reference name
    */
-  async hasDataForRefName(refName:string):Promise<boolean> {
+  public async hasDataForRefName(refName: string): Promise<boolean> {
     const refNames = await this.getRefNames()
     if (refNames.includes(refName)) return true
     return false

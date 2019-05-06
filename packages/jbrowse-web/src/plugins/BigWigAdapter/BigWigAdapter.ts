@@ -1,23 +1,39 @@
-import { BigWig } from '@gmod/bbi'
+import { BigWig, Statistics } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { Observable,from } from 'rxjs'
-import { mergeMap,concatAll, map } from 'rxjs/operators'
+import { Observable, Observer, of } from 'rxjs'
+import { mergeMap, mergeAll, map, tap } from 'rxjs/operators'
 
-import BaseAdapter, {Region} from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, {
+  BaseOptions,
+  Region,
+} from '@gmod/jbrowse-core/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
-import { rectifyStats, scoresToStats } from './util'
+import { rectifyStats, scoresToStats, blankStats } from './util'
+
+interface FeatureStats {
+  scoreMin: number
+  scoreMax: number
+  scoreMean: number
+  scoreSum: number
+  scoreStdDev: number
+  featureDensity: number
+  scoreSumSquares: number
+  featureCount: number
+  basesCovered: number
+}
 
 export default class BigWigAdapter extends BaseAdapter {
   private bigwig: BigWig
-  private statsCache: AbortablePromiseCache
 
-  static capabilities = ['getFeatures', 'getRefNames']
+  private statsCache: any
 
-  constructor(config) {
+  public static capabilities = ['getFeatures', 'getRefNames']
+
+  public constructor(config: Record<string, any>) {
     super(config)
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
@@ -25,46 +41,55 @@ export default class BigWigAdapter extends BaseAdapter {
     const bigwigRef = this.bigwig
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
-      async fill(region, abortSignal) {
-        const { refName, start, end, bpPerPx } = region
+      async fill(region: Region, abortSignal: AbortSignal) {
+        const { refName, start, end } = region
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
-          basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
+          basesPerSpan: end - start,
         })
         return scoresToStats(region, feats)
       },
     })
   }
 
-  async getRefNames() {
+  public async getRefNames(): Promise<string[]> {
     const header = await this.bigwig.getHeader()
     return Object.keys(header.refsByName)
   }
 
-  async refIdToName(refId) {
-    return ((await this.bigwig.getHeader()).refsByNumber[refId] || {}).name
+  public async refIdToName(refId: number): Promise<string | undefined> {
+    const h = await this.bigwig.getHeader()
+    return (h.refsByNumber.get(refId) || { name: undefined }).name
   }
 
-  async getGlobalStats(abortSignal) {
-    const header = await this.bigwig.getHeader(abortSignal)
-    return header.totalSummary
+  public async getGlobalStats(opts: BaseOptions = {}): Promise<FeatureStats> {
+    const header = await this.bigwig.getHeader(opts.signal)
+    return rectifyStats(header.totalSummary)
   }
 
   // todo: incorporate summary blocks
-  getRegionStats(region, abortSignal) {
+  public getRegionStats(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Promise<FeatureStats> {
     const { refName, start, end, bpPerPx } = region
     return this.statsCache.get(
       `${refName}_${start}_${end}_${bpPerPx}`,
       region,
-      abortSignal,
+      opts.signal,
     )
   }
 
   // todo: add caching
-  async getMultiRegionStats(regions = [], abortSignal) {
-    if (!regions.length) return undefined
+  public async getMultiRegionStats(
+    regions: Region[] = [],
+    opts: BaseOptions = {},
+  ): Promise<FeatureStats> {
+    if (!regions.length) {
+      return blankStats()
+    }
     const feats = await Promise.all(
-      regions.map(r => this.getRegionStats(r, abortSignal)),
+      regions.map(r => this.getRegionStats(r, opts)),
     )
 
     const scoreMax = feats
@@ -100,20 +125,26 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  getFeatures({ /* assembly, */ refName, start, end }:Region, {signal, bpPerPx}) {
-    return ObservableCreate(async observer => {
+  public getFeatures(
+    { /* assembly, */ refName, start, end }: Region,
+    opts: BaseOptions = {},
+  ) {
+    const { signal } = opts
+    return ObservableCreate(async (observer: Observer<Feature>) => {
       const observable2 = await this.bigwig.getFeatureStream(
         refName,
         start,
         end,
         {
           signal,
-          basesPerSpan: (bpPerPx * 20) / Math.log(end - start),
+          basesPerSpan: end - start,
         },
       )
       return observable2
         .pipe(
-          mergeMap(x => from(x)),
+          tap(items => console.log('before', items)),
+          mergeAll(),
+          tap(items => console.log('after', items)),
           map(record => {
             return new SimpleFeature({
               id: record.start + 1,

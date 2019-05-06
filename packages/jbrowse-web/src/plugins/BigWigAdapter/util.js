@@ -99,3 +99,17 @@ export function scoresToStats(region, feats) {
     basesCovered: end - start + 1,
   })
 }
+
+export function blankStats() {
+  return {
+    scoreMin: 0,
+    scoreMax: 0,
+    scoreMean: 0,
+    scoreStdDev: 0,
+    scoreSum: 0,
+    scoreSumSquares: 0,
+    featureCount: 0,
+    featureDensity: 0,
+    basesCovered: 0,
+  }
+}
