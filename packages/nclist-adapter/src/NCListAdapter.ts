@@ -1,23 +1,30 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
+import { Observer } from 'rxjs'
 
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, {
+  Region,
+  BaseOptions,
+} from '@gmod/jbrowse-core/BaseAdapter'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 import NCListFeature from './NCListFeature'
 
 export default class BamAdapter extends BaseAdapter {
+  private nclist: any
+
   static capabilities = ['getFeatures']
 
-  constructor(config) {
-    super()
+  constructor(config: { rootUrlTemplate: string }) {
+    super(config)
     const { rootUrlTemplate } = config
 
     this.nclist = new NCListStore({
       baseUrl: '',
       urlTemplate: rootUrlTemplate,
-      readFile: url => openUrl(url).readFile(),
+      readFile: (url: string) => openUrl(url).readFile(),
     })
   }
 
@@ -29,12 +36,10 @@ export default class BamAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }, signal) {
-    return ObservableCreate(async observer => {
-      for await (const feature of this.nclist.getFeatures(
-        { refName, start, end },
-        { signal },
-      )) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+      const { signal } = opts
+      for await (const feature of this.nclist.getFeatures(region, opts)) {
         checkAbortSignal(signal)
         observer.next(this.wrapFeature(feature))
       }
@@ -42,11 +47,11 @@ export default class BamAdapter extends BaseAdapter {
     })
   }
 
-  wrapFeature(ncFeature) {
+  wrapFeature(ncFeature: any) {
     return new NCListFeature(ncFeature)
   }
 
-  async hasDataForRefName(refName) {
+  async hasDataForRefName(refName: string) {
     const root = await this.nclist.getDataRoot(refName)
     return !!(root && root.stats && root.stats.featureCount)
   }
