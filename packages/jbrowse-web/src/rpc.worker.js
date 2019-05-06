@@ -20,6 +20,7 @@ const logBuffer = []
 function flushLog() {
   if (logBuffer.length) {
     for (const l of logBuffer) {
+      // eslint-disable-next-line no-console
       console.log(...l)
     }
     logBuffer.length = 0
@@ -35,7 +36,7 @@ function wrapForRpc(func) {
     // logBuffer.push(['rpc-call', myId, func.name, ...args])
     const retP = func(jbPluginManager, ...args).catch(error => {
       if (isAbortException(error)) {
-        logBuffer.push(['rpc-abort', myId, func.name, ...args])
+        // logBuffer.push(['rpc-abort', myId, func.name, ...args])
       } else {
         console.error(error)
         logBuffer.push(['rpc-error', myId, func.name, error])

@@ -1105,6 +1105,13 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime@^7.4.4":
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.4.4.tgz#dc2e34982eb236803aa27a07fea6857af1b9171d"
+  integrity sha512-w0+uT71b6Yi7i5SE0co4NioIpSYS6lLiXvCzWzGSKvpK5vdQtCbICHMj+gbAKAOtxiV6HsVh/MBdaF9EQ6faSg==
+  dependencies:
+    regenerator-runtime "^0.13.2"
+
 "@babel/template@^7.0.0", "@babel/template@^7.1.0", "@babel/template@^7.2.2", "@babel/template@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.4.0.tgz#12474e9c077bae585c5d835a95c0b0b790c25c8b"
@@ -1172,19 +1179,19 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.16":
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.16.tgz#7631e0715f45014b7a11a3ba37fbb61db26b24d4"
-  integrity sha512-53tDKMgEx9RA4z53cRFSZEmbMd6QbgO3gZkgG2CDjAPWBBhCkZDGP/abN/yw30mUkjq6MDqW4EUlXs8pt0YicQ==
+"@gmod/bbi@^1.0.18":
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.18.tgz#1077c39524d9e2816d44e9ee29843bc1e82d2ee3"
+  integrity sha512-IARqnk/JhX/Rb8P4FcM5Sk+JMh4DtpJew7gfhS1WxFKE6W+QL24l4fo5dzJt8lyG1yPyDqdk6IL9FZSDO5XCHA==
   dependencies:
-    "@babel/runtime" "^7.4.2"
+    "@babel/runtime" "^7.4.4"
     "@gmod/binary-parser" "^1.3.5"
     abortable-promise-cache "^1.0.1"
     buffer-crc32 "^0.2.13"
     es6-promisify "^6.0.1"
-    generic-filehandle "^1.0.8"
-    quick-lru "^3.0.0"
-    rxjs "^6.4.0"
+    generic-filehandle "^1.0.9"
+    quick-lru "^4.0.0"
+    rxjs "^6.5.1"
 
 "@gmod/bed@^1.0.3":
   version "1.0.4"
@@ -6724,6 +6731,15 @@ generic-filehandle@^1.0.6, generic-filehandle@^1.0.7, generic-filehandle@^1.0.8:
     es6-promisify "^6.0.1"
     file-uri-to-path "^1.0.0"
 
+generic-filehandle@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-1.0.9.tgz#2a67e5cdb6ffa7727d76f135e56b0d4913a06ddd"
+  integrity sha512-1uZb20DQkyO6baZTwCHVOKb5eypuzQyvgAQkfVU42AM6lYLaNpg90EVdFh0j3RoIEE3dM7HsvROc12KAiTX1PQ==
+  dependencies:
+    "@babel/runtime" "^7.4.3"
+    es6-promisify "^6.0.1"
+    file-uri-to-path "^1.0.0"
+
 genfun@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/genfun/-/genfun-5.0.0.tgz#9dd9710a06900a5c4a5bf57aca5da4e52fe76537"
@@ -12106,11 +12122,6 @@ quick-lru@^2.0.0:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-2.0.0.tgz#32b017b28d1784631c8ab0a1ed2978e094dbe181"
   integrity sha512-DqOtZziv7lDjEyuqyVQacRciAwMCEjTNrLYCHYEIIgjcE/tLEpBF82hiDIwCjRnEL9/hY2GJxA0T8ZvYvVVSSA==
 
-quick-lru@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-3.0.0.tgz#2f96145481567e5bc442c6c4a66e86158405c696"
-  integrity sha512-WLzHLB/msD8Q/5jNh4LviurG896aIEJRS1M3gHz91nSmaXn8q+/q4yOQvNMIETl9f5pAu3igqexB62ARWOUoOg==
-
 quick-lru@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.0.tgz#a44d44010a776d787af65b1226566dd1ae7b9649"
@@ -13035,6 +13046,13 @@ rxjs@^6.1.0, rxjs@^6.3.3, rxjs@^6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.4.0.tgz#f3bb0fe7bda7fb69deac0c16f17b50b0b8790504"
   integrity sha512-Z9Yfa11F6B9Sg/BK9MnqnQ+aQYicPLtilXBp2yUtDt2JRCE0h26d33EnfO3ZxoNxG0T92OUucP3Ct7cpfkdFfw==
+  dependencies:
+    tslib "^1.9.0"
+
+rxjs@^6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.1.tgz#f7a005a9386361921b8524f38f54cbf80e5d08f4"
+  integrity sha512-y0j31WJc83wPu31vS1VlAFW5JGrnGC+j+TtGAa1fRQphy48+fDYiDmX8tjGloToEsMkxnouOg/1IzXGKkJnZMg==
   dependencies:
     tslib "^1.9.0"
 

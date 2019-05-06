@@ -225,7 +225,7 @@ export default (pluginManager, workerManager) => {
        */
       setSelection(thing) {
         self.selection = thing
-        console.log('selected', thing)
+        // console.log('selected', thing)
       },
 
       /**
@@ -233,7 +233,7 @@ export default (pluginManager, workerManager) => {
        */
       clearSelection() {
         self.selection = undefined
-        console.log('selection cleared')
+        // console.log('selection cleared')
       },
 
       /**

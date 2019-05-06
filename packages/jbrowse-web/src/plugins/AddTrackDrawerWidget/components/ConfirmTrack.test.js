@@ -1,7 +1,8 @@
 import { createShallow, createMount } from '@material-ui/core/test-utils'
+import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
 import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
-import ConfirmTrack, { guessAdapter } from './ConfirmTrack'
+import ConfirmTrack from './ConfirmTrack'
 
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
 

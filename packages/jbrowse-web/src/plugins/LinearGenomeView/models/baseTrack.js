@@ -1,5 +1,5 @@
 import React from 'react'
-import { types, getRoot, getSnapshot } from 'mobx-state-tree'
+import { types, getRoot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   ConfigurationReference,
@@ -118,18 +118,25 @@ const BaseTrack = types
       return adapterType
     },
 
-    /**
-     * the Adapter that this track uses to fetch data
-     */
-    get adapter() {
-      const adapter = new self.adapterType.AdapterClass(
-        getSnapshot(self.configuration.adapter),
-      )
-      return adapter
-    },
-
     get showConfigurationButton() {
       return !!getRoot(self).editConfiguration
+    },
+
+    /**
+     * if a track-level message should be displayed instead of the blocks,
+     * make this return a react component
+     */
+    get trackMessageComponent() {
+      return undefined
+    },
+
+    /**
+     * @param {Region} region
+     * @returns falsy if the region is fine to try rendering. Otherwise,
+     *  return a string of text saying why the region can't be rendered.
+     */
+    regionCannotBeRendered(region) {
+      return undefined
     },
   }))
   .actions(self => ({

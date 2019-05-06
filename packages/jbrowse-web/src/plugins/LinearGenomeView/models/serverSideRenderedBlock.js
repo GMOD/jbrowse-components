@@ -28,11 +28,13 @@ function renderBlockData(self) {
   const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
-
+  const cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   return {
     rendererType,
     rpcManager,
     renderProps,
+    cannotBeRenderedReason,
+    trackError: track.error,
     renderArgs: {
       region: self.region,
       adapterType: track.adapterType.name,
@@ -46,9 +48,25 @@ function renderBlockData(self) {
 }
 
 async function renderBlockEffect(self, props, allowRefetch = true) {
-  const { rendererType, renderProps, rpcManager, renderArgs } = props
+  const {
+    trackError,
+    rendererType,
+    renderProps,
+    rpcManager,
+    cannotBeRenderedReason,
+    renderArgs,
+  } = props
   // console.log(getContainingView(self).rendererType)
   if (!isAlive(self)) return
+
+  if (trackError) {
+    self.setError(trackError)
+    return
+  }
+  if (cannotBeRenderedReason) {
+    self.setMessage(cannotBeRenderedReason)
+    return
+  }
 
   const aborter = new AbortController()
   self.setLoading(aborter)
@@ -127,29 +145,50 @@ export default types
         self.renderInProgress.abort()
       }
       self.filled = false
+      self.message = undefined
       self.html = ''
       self.data = undefined
       self.error = undefined
+      self.renderingComponent = undefined
+      self.renderProps = undefined
       self.renderInProgress = abortController
     },
-    setRendered(data, html, renderingComponent, renderProps) {
+    setMessage(messageText) {
+      if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
+        self.renderInProgress.abort()
+      }
+      self.filled = false
+      self.message = messageText
+      self.html = ''
+      self.data = undefined
       self.error = undefined
+      self.renderingComponent = undefined
+      self.renderProps = undefined
+      self.renderInProgress = undefined
+    },
+    setRendered(data, html, renderingComponent, renderProps) {
       self.filled = true
-      self.data = data
+      self.message = undefined
       self.html = html
+      self.data = data
+      self.error = undefined
       self.renderingComponent = renderingComponent
       self.renderProps = renderProps
+      self.renderInProgress = undefined
     },
     setError(error) {
       if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
       }
       // the rendering failed for some reason
-      self.error = error
-      self.renderInProgress = undefined
-      self.data = undefined
       self.filled = false
-      self.html = ''
+      self.message = undefined
+      self.html = undefined
+      self.data = undefined
+      self.error = error
+      self.renderingComponent = undefined
+      self.renderProps = undefined
+      self.renderInProgress = undefined
     },
     beforeDestroy() {
       if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
