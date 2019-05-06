@@ -2,6 +2,7 @@ import { Observer, Observable } from 'rxjs'
 import { ObservableCreate } from './util/rxjs'
 // @ts-ignore
 import { checkAbortSignal } from './util'
+import { Feature } from './util/simpleFeature'
 
 export interface Region {
   refName: string
@@ -57,9 +58,9 @@ export default class BaseAdapter {
    */
   // eslint-disable-next-line no-unused-vars
   public getFeatures(
-    { refName, start, end }: Region,
+    region: Region,
     opts: BaseOptions = {},
-  ): Observable<any> {
+  ): Observable<Feature> {
     throw new Error('getFeatures should be overridden by the subclass')
     // Subclass method should look something like this:
     // return ObservableCreate(observer => {
@@ -94,7 +95,7 @@ export default class BaseAdapter {
   public getFeaturesInRegion(
     region: Region,
     opts: BaseOptions,
-  ): Observable<any> {
+  ): Observable<Feature> {
     return ObservableCreate(async (observer: Observer<any>) => {
       const hasData = await this.hasDataForRefName(region.refName)
       checkAbortSignal(opts.signal)

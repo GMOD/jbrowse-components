@@ -125,10 +125,8 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
 
-  public getFeatures(
-    { /* assembly, */ refName, start, end }: Region,
-    opts: BaseOptions = {},
-  ) {
+  public getFeatures(region: Region, opts: BaseOptions = {}) {
+    const { refName, start, end } = region
     const { signal } = opts
     return ObservableCreate(async (observer: Observer<Feature>) => {
       const observable2 = await this.bigwig.getFeatureStream(
@@ -142,9 +140,7 @@ export default class BigWigAdapter extends BaseAdapter {
       )
       return observable2
         .pipe(
-          tap(items => console.log('before', items)),
           mergeAll(),
-          tap(items => console.log('after', items)),
           map(record => {
             return new SimpleFeature({
               id: record.start + 1,
