@@ -15,8 +15,11 @@ export function isSource(arg: any): arg is Source {
  * updates a with values from b, recursively
  */
 export function deepUpdate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   a: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   b: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   for (const prop of Object.keys(b)) {
     if (
@@ -64,6 +67,7 @@ export function objectFingerprint(obj: Record<string, any> | string): number {
  */
 export function fillTemplate(
   template: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fillWith: Record<string, any>,
 ): string {
   return template.replace(
@@ -90,6 +94,7 @@ export function fillTemplate(
  * (Lifted from dojo https://github.com/dojo/dojo/blob/master/_base/lang.js)
  * @param src The object to clone
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function clone(src: any): any {
   if (
     !src ||
@@ -152,9 +157,12 @@ export function clone(src: any): any {
  * @returns dest, as modified
  */
 function mixin(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dest: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   source: Record<string, any>,
   copyFunc: Function,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   let name
   let s
@@ -193,11 +201,12 @@ export function evalHooks(conf: Config): Config {
   return conf
 }
 
-function evalHook(...args: any[]): Function {
+function evalHook(...args: string[]): Function {
   // can't bind arguments because the closure compiler
   // renames variables, and we need to assign in the eval
   if (typeof args[0] !== 'string') return args[0]
   try {
+    // eslint-disable-next-line no-eval
     eval(`arguments[0]=${args[0]};`)
   } catch (e) {
     console.error(`${e} parsing config callback '${args[0]}'`)

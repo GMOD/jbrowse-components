@@ -213,6 +213,7 @@ function regularizeIncludes(
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fillTemplates<T extends any>(subconfig: T, config: Config): T {
   if (Array.isArray(subconfig))
     for (let i = 0; i < subconfig.length; i += 1)

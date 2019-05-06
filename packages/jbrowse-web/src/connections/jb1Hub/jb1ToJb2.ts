@@ -1,4 +1,4 @@
-import { openLocation, Location } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import {
   generateUnsupportedTrackConf,
   guessAdapter,
@@ -6,14 +6,50 @@ import {
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
 
+interface Jb2Track {
+  configId: string
+  name?: string
+  description?: string
+  category?: string[]
+  adapter?: Jb2Adapter
+  type?: string
+  renderer?: Jb2Renderer
+  defaultRendering?: string
+}
+
+interface Jb2Adapter {
+  type: string
+  features?: Jb2Feature[]
+  fastaLocation?: Jb2Location
+  faiLocation?: Jb2Location
+  twoBitLocation?: Jb2Location
+}
+
+interface Jb2Renderer {
+  type: string
+}
+
+interface Jb2Feature {
+  refName: string
+  uniqueId: string
+  start: number
+  end: number
+}
+
+interface Jb2Location {
+  uri?: string
+  localPath?: string
+  blob?: Blob
+}
+
 export function convertTrackConfig(
   jb1TrackConfig: Track,
   dataRoot: string,
-): Record<string, any> {
-  const jb2TrackConfig = {}
-
-  jb2TrackConfig.configId = jb1TrackConfig.label
-  jb2TrackConfig.name = jb1TrackConfig.key || jb1TrackConfig.label
+): Jb2Track {
+  const jb2TrackConfig: Jb2Track = {
+    configId: jb1TrackConfig.label,
+    name: jb1TrackConfig.key || jb1TrackConfig.label,
+  }
 
   const description =
     jb1TrackConfig.metadata &&
@@ -43,6 +79,7 @@ export function convertTrackConfig(
     .replace(/%7B/gi, '{')
     .replace(/%7D/gi, '}')
   jb2TrackConfig.adapter = guessAdapter(urlTemplate, 'uri')
+  if (!jb2TrackConfig.adapter) throw new Error('Could not determine adapter')
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED)
     return generateUnsupportedTrackConf(
@@ -65,14 +102,12 @@ export function convertTrackConfig(
 
 function generateFromConfigTrackConfig(
   jb1TrackConfig: Track,
-  jb2TrackConfig: Record<string, any>,
-): Record<string, any> {
+  jb2TrackConfig: Jb2Track,
+): Jb2Track {
   const jb1Features = jb1TrackConfig.features || []
   const jb2Features = jb1Features.map(
-    (feature): Record<string, any> => {
-      const jb2Feature: Record<string, any> = JSON.parse(
-        JSON.stringify(feature),
-      )
+    (feature): Jb2Feature => {
+      const jb2Feature: Jb2Feature = JSON.parse(JSON.stringify(feature))
       jb2Feature.refName = feature.seq_id
       jb2Feature.uniqueId = `${feature.seq_id}:${feature.start}-${
         feature.end
@@ -91,7 +126,7 @@ function generateFromConfigTrackConfig(
 
 export async function createRefSeqsAdapter(
   refSeqs: string | RefSeqs,
-): Promise<Record<string, any>> {
+): Promise<Jb2Adapter> {
   if (typeof refSeqs == 'string') {
     // assume refSeqs is a url if it is string
     refSeqs = {
@@ -114,11 +149,8 @@ export async function createRefSeqsAdapter(
     }
     if (refSeqs.url.match(/.2bit$/)) {
       return {
-        type: 'ReferenceSequence',
-        adapter: {
-          type: 'TwoBitAdapter',
-          twoBitLocation: refSeqs.url,
-        },
+        type: 'TwoBitAdapter',
+        twoBitLocation: { uri: refSeqs.url },
       }
     }
     if (refSeqs.url.match(/.fa$/)) {
@@ -142,9 +174,9 @@ export async function createRefSeqsAdapter(
   )
 }
 
-function refSeqAdapterFromConfig(refSeqsData: RefSeq[]): Record<string, any> {
+function refSeqAdapterFromConfig(refSeqsData: RefSeq[]): Jb2Adapter {
   const features = refSeqsData.map(
-    (refSeq): Record<string, any> => ({
+    (refSeq): Jb2Feature => ({
       refName: refSeq.name,
       uniqueId: refSeq.name,
       start: refSeq.start,
