@@ -51,5 +51,7 @@ if (
 
 argv.push('--config')
 argv.push('../../jest.config.js')
+argv.push('--roots')
+argv.push('packages/jbrowse-web/')
 
 jest.run(argv);
