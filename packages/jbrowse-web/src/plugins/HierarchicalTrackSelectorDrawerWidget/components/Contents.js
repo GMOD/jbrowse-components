@@ -8,6 +8,7 @@ import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { cancelIdleCallback, requestIdleCallback } from 'request-idle-callback'
+// eslint-disable-next-line import/no-cycle
 import Category from './Category'
 import TrackEntry from './TrackEntry'
 

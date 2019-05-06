@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
+// eslint-disable-next-line import/no-cycle
 import Contents from './Contents'
 
 const styles = theme => ({
