@@ -3,7 +3,7 @@
 // think that it is actually inserting styles into the DOM
 
 /* eslint-disable no-restricted-globals */
-//@ts-ignore
+// @ts-ignore
 self.window = {
   addEventListener() {},
   fetch: self.fetch.bind(self),
