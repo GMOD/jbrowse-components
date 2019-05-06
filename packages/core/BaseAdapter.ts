@@ -94,7 +94,7 @@ export default class BaseAdapter {
    */
   public getFeaturesInRegion(
     region: Region,
-    opts: BaseOptions,
+    opts: BaseOptions = {},
   ): Observable<Feature> {
     return ObservableCreate(async (observer: Observer<any>) => {
       const hasData = await this.hasDataForRefName(region.refName)

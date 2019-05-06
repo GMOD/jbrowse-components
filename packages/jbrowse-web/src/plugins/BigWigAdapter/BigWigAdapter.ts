@@ -39,7 +39,7 @@ export default class BigWigAdapter extends BaseAdapter {
         const { refName, start, end } = region
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
-          basesPerSpan: end - start,
+          scale: end - start,
         })
         return scoresToStats(region, feats)
       },
@@ -53,7 +53,8 @@ export default class BigWigAdapter extends BaseAdapter {
 
   public async refIdToName(refId: number): Promise<string | undefined> {
     const h = await this.bigwig.getHeader()
-    return (h.refsByNumber.get(refId) || { name: undefined }).name
+    // @ts-ignore wants indexer or true map object
+    return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
   public async getGlobalStats(opts: BaseOptions = {}): Promise<FeatureStats> {
@@ -129,7 +130,7 @@ export default class BigWigAdapter extends BaseAdapter {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
-        basesPerSpan: end - start,
+        scale: end - start,
       })
       ob.pipe(
         mergeAll(),

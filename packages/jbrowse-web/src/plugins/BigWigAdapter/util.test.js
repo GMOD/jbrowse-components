@@ -16,16 +16,16 @@ test('calc std', () => {
 })
 
 test('test rectify', () => {
-  expect(rectifyStats({ featureCount: 100, scoreSum: 1000 }).scoreMean).toEqual(
+  expect(rectifyStats({ basesCovered: 100, scoreSum: 1000 }).scoreMean).toEqual(
     10,
   ) // simple mean calculation
   expect(rectifyStats({ featureCount: 0 }).scoreMean).toEqual(0) // mean of 0=0
   expect(
-    rectifyStats({ otherThing: 'hi', featureCount: 100, scoreSum: 1000 })
+    rectifyStats({ otherThing: 'hi', basesCovered: 100, scoreSum: 1000 })
       .otherThing,
   ).toEqual('hi') // test that the function returns other attached data
   expect(
-    rectifyStats({ featureCount: 3, scoreSum: 6, scoreSumSquares: 14 })
+    rectifyStats({ basesCovered: 3, scoreSum: 6, scoreSumSquares: 14 })
       .scoreStdDev,
   ).toEqual(1) // calculated from a webapp
   expect(
