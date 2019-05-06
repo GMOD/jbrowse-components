@@ -36,10 +36,10 @@ export default class BigWigAdapter extends BaseAdapter {
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
       async fill(region: Region, abortSignal: AbortSignal) {
-        const { refName, start, end } = region
+        const { refName, start, end, bpPerPx } = region
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
-          scale: end - start,
+          basesPerSpan: bpPerPx,
         })
         return scoresToStats(region, feats)
       },
@@ -124,13 +124,13 @@ export default class BigWigAdapter extends BaseAdapter {
     region: Region,
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    const { refName, start, end } = region
+    const { refName, start, end, bpPerPx = 1 } = region
     const { signal } = opts
     // @ts-ignore same as above
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
-        scale: end - start,
+        basesPerSpan: bpPerPx,
       })
       ob.pipe(
         mergeAll(),

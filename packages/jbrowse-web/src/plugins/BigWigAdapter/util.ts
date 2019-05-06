@@ -46,14 +46,19 @@ export function calcStdFromSums(
 }
 
 /*
- * @param s - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
+ * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
+ * @param useFeatureCount - use featureCount to estimate N for mean and stddev instead of basesCovered
  * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
+export function rectifyStats(
+  s: UnrectifiedFeatureStats,
+  useFeatureCount: boolean = false,
+) {
+  const N = useFeatureCount ? s.featureCount : s.basesCovered
   return {
     ...s,
-    scoreMean: s.basesCovered ? s.scoreSum / s.basesCovered : 0,
-    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, s.basesCovered),
+    scoreMean: N ? s.scoreSum / s.basesCovered : 0,
+    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, N),
     featureDensity: (s.featureCount || 0) / s.basesCovered,
   }
 }
