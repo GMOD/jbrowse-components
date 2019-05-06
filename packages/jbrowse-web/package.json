@@ -65,6 +65,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
+    "checktypes": "tsc --noEmit",
     "jtest": "jest",
     "test": "node scripts/test.js",
     "lint": "eslint src"

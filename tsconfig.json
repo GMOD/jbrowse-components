@@ -10,6 +10,7 @@
     "declaration": true,
     "noEmit": true,
     "strict": true,
+    "esModuleInterop": true,
     "removeComments": false
   }
 }
