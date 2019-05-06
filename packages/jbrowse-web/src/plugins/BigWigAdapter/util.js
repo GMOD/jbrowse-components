@@ -46,7 +46,7 @@ export function rectifyStats(s) {
 export function calcRealStats(region, features) {
   const { start, end } = region
   const scores = []
-  const feats = features.sort((a, b) => a.start < b.start)
+  const feats = features.sort((a, b) => a.start - b.start)
   let pos = start
   let currentFeat = 0
   let i = 0
