@@ -114,22 +114,33 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },
+      get displayedRegions() {
+        if (!self.regions.length) return self.assemblyRegions
+        return self.regions
+      },
     }))
     .volatile(() => ({
-      displayedRegions: [],
+      assemblyRegions: [],
+      regions: [],
     }))
     .actions(self => ({
       afterAttach() {
-        const displayedRegionsDisposer = autorun(() => {
+        const assemblyRegionsDisposer = autorun(() => {
           const { assemblyManager } = getRoot(self)
           if (assemblyManager)
-            self.setDisplayedRegions(assemblyManager.allRegions)
+            self.setAssemblyRegions(assemblyManager.allRegions)
         })
 
-        addDisposer(self, displayedRegionsDisposer)
+        addDisposer(self, assemblyRegionsDisposer)
       },
-      setDisplayedRegions(displayedRegions) {
-        self.displayedRegions = displayedRegions
+      setAssemblyRegions(assemblyRegions) {
+        self.assemblyRegions = assemblyRegions
+      },
+      setRegions(regions) {
+        self.regions = regions
+      },
+      clearRegions() {
+        self.regions = []
       },
       setWidth(newWidth) {
         self.width = newWidth
