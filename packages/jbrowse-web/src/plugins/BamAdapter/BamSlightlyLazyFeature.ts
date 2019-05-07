@@ -2,13 +2,16 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable camelcase,no-underscore-dangle */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private record: any
 
-  private adapter: any
+  private adapter: BamAdapter
 
-  constructor(record: any, adapter: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(record: any, adapter: BamAdapter) {
     this.record = record
     this.adapter = adapter
   }
@@ -143,6 +146,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.get('id')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     const methodName = `_get_${field.toLowerCase()}`
     // @ts-ignore
@@ -166,6 +170,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   toJSON() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plain: any = {}
     this.tags().forEach((t: string) => {
       plain[t] = this.get(t)

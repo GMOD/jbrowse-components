@@ -24,6 +24,7 @@ interface Parser {
 }
 
 export default class BigBedAdapter extends BaseAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private bigbed: any
 
   private parser: Promise<Parser>
@@ -51,14 +52,6 @@ export default class BigBedAdapter extends BaseAdapter {
 
   public async refIdToName(refId: number): Promise<string> {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
-  }
-
-  /**
-   * @return promise for the totalSummary element from the bigbed's header
-   */
-  public async getGlobalStats(): Promise<any> {
-    const header = await this.bigbed.getHeader()
-    return header.totalSummary
   }
 
   /**

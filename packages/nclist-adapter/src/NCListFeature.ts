@@ -9,12 +9,14 @@ const jb1ToJb2 = { seq_id: 'refName' }
  * wrapper to adapt nclist features to act like jbrowse 2 features
  */
 export default class NCListFeature implements Feature {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private ncFeature: any
 
   private parentHandle?: Feature
 
   private uniqueId: string
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(ncFeature: any, parent?: Feature) {
     this.ncFeature = ncFeature
     this.uniqueId = ncFeature.id()
@@ -38,6 +40,7 @@ export default class NCListFeature implements Feature {
     return mapped
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(attrName: string): any {
     return this.ncFeature.get(this.jb2TagToJb1Tag(attrName))
   }
@@ -70,7 +73,9 @@ export default class NCListFeature implements Feature {
     return this.get('subfeatures')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): Record<string, any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: Record<string, any> = { uniqueId: this.id() }
     this.ncFeature.tags().forEach((tag: string) => {
       const mappedTag = this.jb1TagToJb2Tag(tag)

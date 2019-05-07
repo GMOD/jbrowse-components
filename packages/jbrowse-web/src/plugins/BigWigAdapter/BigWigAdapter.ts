@@ -21,11 +21,13 @@ import {
 export default class BigWigAdapter extends BaseAdapter {
   private bigwig: BigWig
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private statsCache: any
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Record<string, any>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public constructor(config: { bigWigLocation: string }) {
     super()
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),

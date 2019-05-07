@@ -6,13 +6,13 @@ export interface Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
-  // @ts-ignore unspecified types can be returned from Feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(name: string): any
 
   /**
    * Set an item of data.
    */
-  // @ts-ignore unspecified types can be set on Feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set(name: string, val: any): void
 
   /**
@@ -38,20 +38,22 @@ export interface Feature {
   /*
    * Convert to JSON
    */
-  // @ts-ignore unspecified JSON record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): Record<string, any>
 }
 
+// difficult to formalize type but see comments in constructor
 interface SimpleFeatureArgs {
-  // @ts-ignore unspecified JSON record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
   parent?: Feature
-  id?: any
+  id?: string | number // thing that can be stringified easily
 }
 /**
  * Simple implementation of a feature object.
  */
 export default class SimpleFeature implements Feature {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private data: Record<string, any>
 
   private parentHandle?: Feature
@@ -98,6 +100,7 @@ export default class SimpleFeature implements Feature {
       for (let i = 0; i < subfeatures.length; i += 1) {
         if (typeof subfeatures[i].get !== 'function') {
           subfeatures[i] = new SimpleFeature({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: subfeatures[i] as Record<string, any>,
             parent: this,
           })
@@ -110,6 +113,7 @@ export default class SimpleFeature implements Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public get(name: string): any {
     return this.data[name]
   }
@@ -117,6 +121,7 @@ export default class SimpleFeature implements Feature {
   /**
    * Set an item of data.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public set(name: string, val: any): void {
     this.data[name] = val
   }
@@ -149,7 +154,7 @@ export default class SimpleFeature implements Feature {
     return this.get('subfeatures')
   }
 
-  // @ts-ignore unspecified types can be returned from Feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public toJSON(): Record<string, any> {
     const d = { ...this.data, uniqueId: this.id() }
     const p = this.parent()

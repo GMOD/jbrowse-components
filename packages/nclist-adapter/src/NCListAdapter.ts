@@ -10,6 +10,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import NCListFeature from './NCListFeature'
 
 export default class BamAdapter extends BaseAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   static capabilities = ['getFeatures']
@@ -46,6 +47,7 @@ export default class BamAdapter extends BaseAdapter {
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wrapFeature(ncFeature: any): NCListFeature {
     return new NCListFeature(ncFeature)
   }

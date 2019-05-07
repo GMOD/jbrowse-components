@@ -10,9 +10,15 @@ import { Observer, Observable } from 'rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
+interface HeaderLine {
+  tag: string
+  value: string
+}
 export default class BamAdapter extends BaseAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private bam: any
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private samHeader: any
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -50,11 +56,11 @@ export default class BamAdapter extends BaseAdapter {
 
       // use the @SQ lines in the header to figure out the
       // mapping between ref ref ID numbers and names
-      const idToName: any[] = []
-      const nameToId: any = {}
+      const idToName: string[] = []
+      const nameToId: Record<string, number> = {}
       const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-      sqLines.forEach((sqLine: { data: any }, refId: number) => {
-        sqLine.data.forEach((item: any) => {
+      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
+        sqLine.data.forEach((item: HeaderLine) => {
           if (item.tag === 'SN') {
             // this is the ref name
             const refName = item.value
@@ -97,6 +103,7 @@ export default class BamAdapter extends BaseAdapter {
           opts,
         )
         checkAbortSignal(opts.signal)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         records.forEach((record: any) => {
           observer.next(this.bamRecordToFeature(record))
         })
@@ -112,6 +119,7 @@ export default class BamAdapter extends BaseAdapter {
    */
   freeResources(/* { region } */): void {}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bamRecordToFeature(record: any): Feature {
     return new BamSlightlyLazyFeature(record, this)
   }

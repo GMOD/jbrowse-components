@@ -8,6 +8,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observable, Observer } from 'rxjs'
 
 export default class TwoBitAdapter extends BaseAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']

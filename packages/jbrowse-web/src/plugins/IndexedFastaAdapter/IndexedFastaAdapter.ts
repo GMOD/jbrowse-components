@@ -8,6 +8,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected fasta: any
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']

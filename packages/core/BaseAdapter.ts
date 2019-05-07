@@ -78,7 +78,7 @@ export default abstract class BaseAdapter {
     region: Region,
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    return ObservableCreate(async (observer: Observer<any>) => {
+    return ObservableCreate(async (observer: Observer<Feature>) => {
       const hasData = await this.hasDataForRefName(region.refName)
       checkAbortSignal(opts.signal)
       if (!hasData) {
