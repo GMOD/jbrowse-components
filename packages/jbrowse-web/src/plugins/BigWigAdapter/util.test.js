@@ -21,16 +21,14 @@ test('test rectify', () => {
   const s = {
     otherThing: 'hi',
     featureCount: 10,
-    basesCovered: 100,
     scoreSum: 1000,
   }
 
-  expect(rectifyStats(s).scoreMean).toEqual(10)
+  expect(rectifyStats(s).scoreMean).toEqual(100)
   expect(rectifyStats(s).otherThing).toEqual('hi')
   expect(rectifyStats(s).featureCount).toEqual(10)
 
   const s2 = {
-    basesCovered: 3,
     featureCount: 3,
     scoreSum: 6,
     scoreSumSquares: 14,

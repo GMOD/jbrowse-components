@@ -5,9 +5,9 @@ Object {
   "basesCovered": 49984,
   "featureDensity": 0,
   "scoreMax": 38,
-  "scoreMean": 19.197983354673497,
+  "scoreMean": 0,
   "scoreMin": 1,
-  "scoreStdDev": 4.55961443138808,
+  "scoreStdDev": 0,
   "scoreSum": 959592,
   "scoreSumSquares": 19461382,
 }
@@ -19,9 +19,9 @@ Object {
   "featureCount": 30000,
   "featureDensity": 0.9966777408637874,
   "scoreMax": 38,
-  "scoreMean": 19.23312292358804,
+  "scoreMean": 19.297233333333335,
   "scoreMin": 5,
-  "scoreStdDev": 4.512424849313772,
+  "scoreStdDev": 4.380942680236127,
   "scoreSum": 578917,
   "scoreSumSquares": 11747257,
 }
