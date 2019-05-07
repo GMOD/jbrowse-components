@@ -1,5 +1,8 @@
 import fromEntries from 'object.fromentries'
+import { Feature } from './simpleFeature'
+import { Region } from '../BaseAdapter'
 
+// @ts-ignore
 if (!Object.fromEntries) {
   fromEntries.shim()
 }
@@ -19,7 +22,7 @@ export const inProduction = !inDevelopment
  * @param {number} args.end end coordinate
  * @returns {string} the locstring
  */
-export function assembleLocString({ refName, start, end }) {
+export function assembleLocString({ refName, start, end }: Region): string {
   return `${refName}:${start + 1}-${end}`
 }
 
@@ -30,13 +33,13 @@ export function assembleLocString({ refName, start, end }) {
  * @param {number} min
  * @param {number} max
  */
-export function clamp(num, min, max) {
+export function clamp(num: number, min: number, max: number): number {
   if (num < min) return min
   if (num > max) return max
   return num
 }
 
-function roundToNearestPointOne(num) {
+function roundToNearestPointOne(num: number): number {
   return Math.round(num * 10) / 10
 }
 
@@ -47,23 +50,38 @@ function roundToNearestPointOne(num) {
  * @param {boolean} [flipped] whether the current region
  *  is displayed flipped horizontally.  default false.
  */
-export function bpToPx(bp, region, bpPerPx, flipped = false) {
+export function bpToPx(
+  bp: number,
+  region: Region,
+  bpPerPx: number,
+  flipped: boolean = false,
+): number {
   if (flipped) {
     return roundToNearestPointOne((region.end - bp) / bpPerPx)
   }
   return roundToNearestPointOne((bp - region.start) / bpPerPx)
 }
 
-export function featureSpanPx(feature, region, bpPerPx, flipped = false) {
+export function featureSpanPx(
+  feature: Feature,
+  region: Region,
+  bpPerPx: number,
+  flipped: boolean = false,
+): [number, number] {
   const start = bpToPx(feature.get('start'), region, bpPerPx, flipped)
   const end = bpToPx(feature.get('end'), region, bpPerPx, flipped)
   return flipped ? [end, start] : [start, end]
 }
 
+// @ts-ignore
 export const objectFromEntries = Object.fromEntries.bind(Object)
 
 // do an array map of an iterable
-export function iterMap(iterable, func, sizeHint) {
+export function iterMap(
+  iterable: any,
+  func: Function,
+  sizeHint: number,
+): any[] {
   const results = sizeHint ? new Array(sizeHint) : []
   let counter = 0
   for (const item of iterable) {
@@ -84,7 +102,7 @@ export function iterMap(iterable, func, sizeHint) {
  * @param {AbortSignal} [signal]
  * @returns nothing
  */
-export function checkAbortSignal(signal) {
+export function checkAbortSignal(signal: AbortSignal): void {
   if (!signal) return
 
   if (inDevelopment && !(signal instanceof AbortSignal)) {
@@ -96,6 +114,7 @@ export function checkAbortSignal(signal) {
       throw new DOMException('aborted', 'AbortError')
     } else {
       const e = new Error('aborted')
+      // @ts-ignore
       e.code = 'ERR_ABORTED'
       throw e
     }
@@ -107,7 +126,7 @@ export function checkAbortSignal(signal) {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception) {
+export function isAbortException(exception: any) {
   return (
     // DOMException
     exception.name === 'AbortError' ||

@@ -1,6 +1,5 @@
 import { Observer, Observable } from 'rxjs'
 import { ObservableCreate } from './util/rxjs'
-// @ts-ignore
 import { checkAbortSignal } from './util'
 import { Feature } from './util/simpleFeature'
 
@@ -20,16 +19,14 @@ export interface BaseOptions {
  */
 export default class BaseAdapter {
   // List of all possible capabilities. Don't un-comment them here.
-  public static capabilities: string[] = []
-  // e.g.
-  // [
-  // 'getFeatures',
-  // 'getRefNames',
-  // 'getRegions',
-  // 'getRefNameAliases',
-  // ]
+  public static capabilities: string[] = [
+    // 'getFeatures',
+    // 'getRefNames',
+    // 'getRegions',
+    // 'getRefNameAliases',
+  ]
 
-  public constructor(config: Record<string, any>) {
+  public constructor(/* config */) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',
