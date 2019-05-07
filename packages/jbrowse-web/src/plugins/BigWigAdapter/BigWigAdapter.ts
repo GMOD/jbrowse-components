@@ -1,13 +1,11 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { Observable, Observer } from 'rxjs'
 import { mergeAll, map } from 'rxjs/operators'
 
-import BaseAdapter, {
-  BaseOptions,
-  Region,
-} from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -28,20 +26,23 @@ export default class BigWigAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: Record<string, any>) {
-    super(config)
+    super()
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
     })
     const bigwigRef = this.bigwig
     this.statsCache = new AbortablePromiseCache({
       cache: new QuickLRU({ maxSize: 1000 }),
-      async fill(region: Region, abortSignal: AbortSignal) {
-        const { refName, start, end, bpPerPx } = region
+      async fill(
+        args: { refName: string; start: number; end: number; bpPerPx: number },
+        abortSignal: AbortSignal,
+      ) {
+        const { refName, start, end, bpPerPx } = args
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
           basesPerSpan: bpPerPx,
         })
-        return scoresToStats(region, feats)
+        return scoresToStats({ refName, start, end }, feats)
       },
     })
   }
@@ -64,20 +65,21 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: incorporate summary blocks
   public getRegionStats(
-    region: Region,
+    region: IRegion,
     opts: BaseOptions = {},
   ): Promise<FeatureStats> {
-    const { refName, start, end, bpPerPx } = region
+    const { refName, start, end } = region
+    const { bpPerPx } = opts
     return this.statsCache.get(
       `${refName}_${start}_${end}_${bpPerPx}`,
-      region,
+      { refName, start, end, bpPerPx },
       opts.signal,
     )
   }
 
   // todo: add caching
   public async getMultiRegionStats(
-    regions: Region[] = [],
+    regions: IRegion[] = [],
     opts: BaseOptions = {},
   ): Promise<FeatureStats> {
     if (!regions.length) {
@@ -116,16 +118,16 @@ export default class BigWigAdapter extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {Region} param
+   * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
   public getFeatures(
-    region: Region,
+    region: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    const { refName, start, end, bpPerPx = 1 } = region
-    const { signal } = opts
+    const { refName, start, end } = region
+    const { signal, bpPerPx } = opts
     // @ts-ignore same as above
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
@@ -143,4 +145,6 @@ export default class BigWigAdapter extends BaseAdapter {
       ).subscribe(observer)
     })
   }
+
+  public freeResources(): void {}
 }

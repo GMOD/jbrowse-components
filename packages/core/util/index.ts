@@ -1,6 +1,6 @@
 import fromEntries from 'object.fromentries'
 import { Feature } from './simpleFeature'
-import { Region } from '../BaseAdapter'
+import { IRegion } from '../mst-types'
 
 // @ts-ignore
 if (!Object.fromEntries) {
@@ -22,7 +22,7 @@ export const inProduction = !inDevelopment
  * @param {number} args.end end coordinate
  * @returns {string} the locstring
  */
-export function assembleLocString({ refName, start, end }: Region): string {
+export function assembleLocString({ refName, start, end }: IRegion): string {
   return `${refName}:${start + 1}-${end}`
 }
 
@@ -45,14 +45,14 @@ function roundToNearestPointOne(num: number): number {
 
 /**
  * @param {number} bp
- * @param {Region} region
+ * @param {IRegion} region
  * @param {number} bpPerPx
  * @param {boolean} [flipped] whether the current region
  *  is displayed flipped horizontally.  default false.
  */
 export function bpToPx(
   bp: number,
-  region: Region,
+  region: IRegion,
   bpPerPx: number,
   flipped: boolean = false,
 ): number {
@@ -64,7 +64,7 @@ export function bpToPx(
 
 export function featureSpanPx(
   feature: Feature,
-  region: Region,
+  region: IRegion,
   bpPerPx: number,
   flipped: boolean = false,
 ): [number, number] {
@@ -77,11 +77,11 @@ export function featureSpanPx(
 export const objectFromEntries = Object.fromEntries.bind(Object)
 
 // do an array map of an iterable
-export function iterMap(
-  iterable: any,
-  func: Function,
+export function iterMap<T, U>(
+  iterable: Iterable<T>,
+  func: (item: T) => U,
   sizeHint: number,
-): any[] {
+): U[] {
   const results = sizeHint ? new Array(sizeHint) : []
   let counter = 0
   for (const item of iterable) {
@@ -126,7 +126,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: any): boolean {
+export function isAbortException(exception: Error | AbortError): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||

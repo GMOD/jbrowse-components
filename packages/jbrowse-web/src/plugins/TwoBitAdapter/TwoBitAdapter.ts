@@ -1,8 +1,9 @@
 import { TwoBitFile } from '@gmod/twobit'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter, { Region } from '@gmod/jbrowse-core/BaseAdapter'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observable, Observer } from 'rxjs'
 
@@ -12,7 +13,7 @@ export default class TwoBitAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
   public constructor(config: { twoBitLocation: string }) {
-    super(config)
+    super()
     const twoBitOpts = {
       filehandle: openLocation(config.twoBitLocation),
     }
@@ -24,10 +25,10 @@ export default class TwoBitAdapter extends BaseAdapter {
     return this.twobit.getSequenceNames()
   }
 
-  public async getRegions(): Promise<Region[]> {
+  public async getRegions(): Promise<IRegion[]> {
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(
-      (refName: string): Region => ({
+      (refName: string): IRegion => ({
         refName,
         start: 0,
         end: refSizes[refName],
@@ -37,11 +38,11 @@ export default class TwoBitAdapter extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {Region} param
+   * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // @ts-ignore confusion between base proj and jbrowse-web rxjs creates type error
-  public getFeatures({ refName, start, end }: Region): Observable<Feature> {
+  public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
     // @ts-ignore same as above
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {

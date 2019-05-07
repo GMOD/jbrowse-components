@@ -2,7 +2,8 @@ import { IndexedFasta } from '@gmod/indexedfasta'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import BaseAdapter, { Region } from '@gmod/jbrowse-core/BaseAdapter'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 
@@ -12,7 +13,7 @@ export default class IndexedFastaAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
   public constructor(config: { fastaLocation: string; faiLocation: string }) {
-    super(config)
+    super()
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {
       throw new Error('must provide fastaLocation')
@@ -32,10 +33,10 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     return this.fasta.getSequenceList()
   }
 
-  public async getRegions(): Promise<Region[]> {
+  public async getRegions(): Promise<IRegion[]> {
     const seqSizes = await this.fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(
-      (refName: string): Region => ({
+      (refName: string): IRegion => ({
         refName,
         start: 0,
         end: seqSizes[refName],
@@ -45,11 +46,11 @@ export default class IndexedFastaAdapter extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {Region} param
+   * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // @ts-ignore
-  public getFeatures({ refName, start, end }: Region): Observable<Feature> {
+  public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
     // @ts-ignore
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {

@@ -1,20 +1,14 @@
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter, {
-  BaseOptions,
-  Region,
-} from '@gmod/jbrowse-core/BaseAdapter'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { GenericFilehandle } from 'generic-filehandle'
 import { Observer, Observable } from 'rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-
-export interface BamOptions extends BaseOptions {
-  viewAsPairs?: boolean
-}
 
 export default class BamAdapter extends BaseAdapter {
   private bam: any
@@ -27,7 +21,7 @@ export default class BamAdapter extends BaseAdapter {
     bamLocation: string
     index: { location: string; index: string }
   }) {
-    super(config)
+    super()
     const { bamLocation } = config
 
     const { location: indexLocation, index: indexType } = config.index
@@ -78,23 +72,21 @@ export default class BamAdapter extends BaseAdapter {
 
   async getRefNames(): Promise<string[]> {
     await this.setup()
-    return Object.keys(this.samHeader.nameToId)
+    return this.samHeader.idToName
   }
 
   /**
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
    * before fetching.
-   * @param {Region} param
+   * @param {IRegion} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  // @ts-ignore type conflict between this rxjs and base
   getFeatures(
-    { refName, start, end }: Region,
+    { refName, start, end }: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    // @ts-ignore  same as above
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
         await this.setup()

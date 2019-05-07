@@ -6,6 +6,7 @@ import { Feature } from './util/simpleFeature'
 
 export interface BaseOptions {
   signal?: AbortSignal
+  bpPerPx?: number
 }
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must

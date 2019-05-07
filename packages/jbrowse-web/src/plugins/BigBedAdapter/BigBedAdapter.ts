@@ -4,10 +4,8 @@ import BED from '@gmod/bed'
 
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import BaseAdapter, {
-  Region,
-  BaseOptions,
-} from '@gmod/jbrowse-core/BaseAdapter'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Observable } from 'rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
@@ -33,7 +31,7 @@ export default class BigBedAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: { bigBedLocation: string }) {
-    super(config)
+    super()
     this.bigbed = new BigBed({
       filehandle: openLocation(config.bigBedLocation),
     })
@@ -65,13 +63,13 @@ export default class BigBedAdapter extends BaseAdapter {
 
   /**
    * Fetch features for a certain region
-   * @param {Region} param
+   * @param {IRegion} param
    * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
   public getFeatures(
-    region: Region,
+    region: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
     const { refName, start, end } = region
@@ -104,6 +102,8 @@ export default class BigBedAdapter extends BaseAdapter {
       ).subscribe(observer)
     })
   }
+
+  public freeResources(): void {}
 }
 
 /*

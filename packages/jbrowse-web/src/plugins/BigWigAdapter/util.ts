@@ -1,5 +1,5 @@
 import { Feature as BBIFeature } from '@gmod/bbi'
-import { Region } from '@gmod/jbrowse-core/BaseAdapter'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -51,15 +51,15 @@ export function calcStdFromSums(
  * @param useFeatureCount - use featureCount to estimate N for mean and stddev instead of basesCovered
  * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(
-  s: UnrectifiedFeatureStats,
-  useFeatureCount: boolean = false,
-): FeatureStats {
-  const N = useFeatureCount ? s.featureCount : s.basesCovered
+export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   return {
     ...s,
-    scoreMean: N ? s.scoreSum / s.basesCovered : 0,
-    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, N),
+    scoreMean: s.featureCount ? s.featureCount / s.basesCovered : 0,
+    scoreStdDev: calcStdFromSums(
+      s.scoreSum,
+      s.scoreSumSquares,
+      s.featureCount || 0,
+    ),
     featureDensity: (s.featureCount || 0) / s.basesCovered,
   }
 }
@@ -106,7 +106,7 @@ export function calcRealStats(
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export function scoresToStats(
-  region: Region,
+  region: IRegion,
   feats: BBIFeature[],
 ): FeatureStats {
   const { start, end } = region
