@@ -1,11 +1,8 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
 import { Observer, Observable } from 'rxjs'
-
-import BaseAdapter, {
-  Region,
-  BaseOptions,
-} from '@gmod/jbrowse-core/BaseAdapter'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
@@ -18,7 +15,7 @@ export default class BamAdapter extends BaseAdapter {
   static capabilities = ['getFeatures']
 
   constructor(config: { rootUrlTemplate: string }) {
-    super(config)
+    super()
     const { rootUrlTemplate } = config
 
     this.nclist = new NCListStore({
@@ -32,11 +29,11 @@ export default class BamAdapter extends BaseAdapter {
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
    * before fetching.
-   * @param {Region} param
+   * @param {IRegion} param
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: Region, opts: BaseOptions = {}): Observable<Feature> {
+  getFeatures(region: IRegion, opts: BaseOptions = {}): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const { signal } = opts
@@ -56,6 +53,14 @@ export default class BamAdapter extends BaseAdapter {
   async hasDataForRefName(refName: string): Promise<boolean> {
     const root = await this.nclist.getDataRoot(refName)
     return !!(root && root.stats && root.stats.featureCount)
+  }
+
+  /*
+   * NCList is unable to get list of ref names so returns empty
+   * @return Promise<string[]> of empty list
+   */
+  async getRefNames(): Promise<string[]> {
+    return []
   }
 
   /**

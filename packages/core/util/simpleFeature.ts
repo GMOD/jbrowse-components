@@ -6,11 +6,13 @@ export interface Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
+  // @ts-ignore unspecified types can be returned from Feature
   get(name: string): any
 
   /**
    * Set an item of data.
    */
+  // @ts-ignore unspecified types can be set on Feature
   set(name: string, val: any): void
 
   /**
@@ -36,10 +38,12 @@ export interface Feature {
   /*
    * Convert to JSON
    */
+  // @ts-ignore unspecified JSON record
   toJSON(): Record<string, any>
 }
 
 interface SimpleFeatureArgs {
+  // @ts-ignore unspecified JSON record
   data: Record<string, any>
   parent?: Feature
   id?: any
@@ -48,7 +52,7 @@ interface SimpleFeatureArgs {
  * Simple implementation of a feature object.
  */
 export default class SimpleFeature implements Feature {
-  private data: any
+  private data: Record<string, any>
 
   private parentHandle?: Feature
 
@@ -64,14 +68,24 @@ export default class SimpleFeature implements Feature {
    * which will be inflated to more instances of this class.
    */
   public constructor(args: SimpleFeatureArgs) {
+    // this.data becomes args.data or from args itself
     this.data = args.data || args
+
+    // load handle from args.parent (not args.data.parent)
+    // this reason is because if args is an object, it likely isn't properly loaded with
+    // parent as a Feature reference (probably a raw parent ID or something instead)
     this.parentHandle = args.parent
+
+    // the feature id comes from
+    // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
     const id = args.id || this.data.uniqueId
+
     if (id === undefined || id === null) {
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
       )
     }
+    // stringified
     this.uniqueId = String(id)
 
     if (!(this.data.aliases || this.data.end - this.data.start >= 0)) {
@@ -135,10 +149,14 @@ export default class SimpleFeature implements Feature {
     return this.get('subfeatures')
   }
 
+  // @ts-ignore unspecified types can be returned from Feature
   public toJSON(): Record<string, any> {
     const d = { ...this.data, uniqueId: this.id() }
-    if (d.parent) d.parentId = d.parent.id()
-    delete d.parent
+    const p = this.parent()
+    if (p) {
+      // @ts-ignore doesn't need to have parentId in it if there is none
+      d.parentId = p.id()
+    }
     return d
   }
 

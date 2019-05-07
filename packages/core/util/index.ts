@@ -126,11 +126,12 @@ export function checkAbortSignal(signal?: AbortSignal): void {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: Error | AbortError): boolean {
+export function isAbortException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||
     // standard-ish non-DOM abort exception
+    // @ts-ignore
     exception.code === 'ERR_ABORTED' ||
     // stringified DOMException
     exception.message === 'AbortError: aborted' ||

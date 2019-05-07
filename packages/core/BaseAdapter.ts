@@ -31,6 +31,9 @@ export default abstract class BaseAdapter {
    * Subclass method should look something like this:
    * await this.setup()
    * const { refNames } = this.metadata
+   *
+   * NOTE: if an adapter is unable to get it's own list of ref names, return empty
+   *
    */
   public abstract async getRefNames(): Promise<string[]>
 
