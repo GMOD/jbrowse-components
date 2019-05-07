@@ -6,7 +6,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { Observable } from 'rxjs'
+import { Observable, Observer } from 'rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 interface BEDFeature {
@@ -60,14 +60,12 @@ export default class BigBedAdapter extends BaseAdapter {
    * @param abortSignal an abortSignal
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
   public getFeatures(
     region: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
     const { refName, start, end } = region
     const { signal } = opts
-    // @ts-ignore
     return ObservableCreate(async (observer: Observer<Feature>) => {
       const parser = await this.parser
       const ob = await this.bigbed.getFeatureStream(refName, start, end, {

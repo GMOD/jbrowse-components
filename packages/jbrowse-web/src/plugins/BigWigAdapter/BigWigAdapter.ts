@@ -123,14 +123,12 @@ export default class BigWigAdapter extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  // @ts-ignore the observable from bbi-js is somehow confusing typescript with jbrowse-components version
   public getFeatures(
     region: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
-    // @ts-ignore same as above
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,

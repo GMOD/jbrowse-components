@@ -42,9 +42,7 @@ export default class TwoBitAdapter extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  // @ts-ignore confusion between base proj and jbrowse-web rxjs creates type error
   public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
-    // @ts-ignore same as above
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const seq = await this.twobit.getSequence(refName, start, end)
