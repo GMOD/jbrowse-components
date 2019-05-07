@@ -7464,6 +7464,17 @@ http-range-fetcher@^1.1.0:
     cross-fetch "^2.2.2"
     quick-lru "^2.0.0"
 
+http-range-fetcher@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.2.1.tgz#98bd6e8e2e1c434b82041494a6f047d04d0f32b4"
+  integrity sha512-Htyrjh3vG4ZLks27bhP8bYpz8msnJvNlf4oCmTmaSzRGIrlseYuFDTBc9ACLfDGzuZ8SqDxSHAJeJEQQ/GwN/A==
+  dependencies:
+    "@babel/runtime" "^7.4.4"
+    abortcontroller-polyfill "^1.2.9"
+    cross-fetch "^2.2.2"
+    object.entries-ponyfill "^1.0.1"
+    quick-lru "^2.0.0"
+
 http-signature@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.2.0.tgz#9aecd925114772f3d95b65a60abb8f7c18fbace1"

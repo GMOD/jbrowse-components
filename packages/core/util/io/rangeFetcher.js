@@ -47,16 +47,16 @@ function getfetch(url, opts = {}) {
 
 async function fetchBinaryRange(url, start, end, options = {}) {
   const requestDate = new Date()
-  const requestHeaders = {
-    ...options, // possibly need to mix in headers below with headers on opts?
-    headers: { range: `bytes=${start}-${end}` },
+  const requestHeaders = { ...options.headers, range: `bytes=${start}-${end}` }
+  const res = await getfetch(url, {
+    ...options,
+    headers: requestHeaders,
     onRetry: ({ retriesLeft /* , retryDelay */ }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )
     },
-  }
-  const res = await getfetch(url, requestHeaders)
+  })
   const responseDate = new Date()
   if (res.status !== 206 && res.status !== 200) {
     throw new Error(
