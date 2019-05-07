@@ -102,7 +102,7 @@ export default class ServerSideRenderer extends RendererType {
           end: Math.ceil(region.end),
           bpPerPx,
         },
-        signal,
+        { signal },
       )
       .pipe(
         tap(() => checkAbortSignal(signal)),
