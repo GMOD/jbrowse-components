@@ -4,7 +4,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BaseAdapter, { Region } from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Observer } from 'rxjs'
+import { Observer, Observable } from 'rxjs'
 
 export default class IndexedFastaAdapter extends BaseAdapter {
   protected fasta: any
@@ -28,17 +28,19 @@ export default class IndexedFastaAdapter extends BaseAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public async getRefNames() {
+  public async getRefNames(): Promise<string[]> {
     return this.fasta.getSequenceList()
   }
 
-  public async getRegions() {
+  public async getRegions(): Promise<Region[]> {
     const seqSizes = await this.fasta.getSequenceSizes()
-    return Object.keys(seqSizes).map(refName => ({
-      refName,
-      start: 0,
-      end: seqSizes[refName],
-    }))
+    return Object.keys(seqSizes).map(
+      (refName: string): Region => ({
+        refName,
+        start: 0,
+        end: seqSizes[refName],
+      }),
+    )
   }
 
   /**
@@ -46,18 +48,22 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * @param {Region} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: Region) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      const seq = await this.fasta.getSequence(refName, start, end)
-      if (seq)
-        observer.next(
-          new SimpleFeature({
-            id: `${refName} ${start}-${end}`,
-            data: { refName, start, end, seq },
-          }),
-        )
-      observer.complete()
-    })
+  // @ts-ignore
+  public getFeatures({ refName, start, end }: Region): Observable<Feature> {
+    // @ts-ignore
+    return ObservableCreate<Feature>(
+      async (observer: Observer<Feature>): Promise<void> => {
+        const seq = await this.fasta.getSequence(refName, start, end)
+        if (seq)
+          observer.next(
+            new SimpleFeature({
+              id: `${refName} ${start}-${end}`,
+              data: { refName, start, end, seq },
+            }),
+          )
+        observer.complete()
+      },
+    )
   }
 
   /**
@@ -65,5 +71,5 @@ export default class IndexedFastaAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */) {}
+  public freeResources(/* { region } */): void {}
 }

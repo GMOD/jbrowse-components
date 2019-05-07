@@ -25,27 +25,27 @@ export default class NCListFeature implements Feature {
     throw new Error('not implemented')
   }
 
-  jb2TagToJb1Tag(tag: string) {
+  jb2TagToJb1Tag(tag: string): string {
     // @ts-ignore
     const mapped = jb2ToJb1[tag] || tag
     return mapped.toLowerCase()
   }
 
-  jb1TagToJb2Tag(tag: string) {
+  jb1TagToJb2Tag(tag: string): string {
     const t = tag.toLowerCase()
     // @ts-ignore
     const mapped = jb1ToJb2[t] || t
     return mapped
   }
 
-  get(attrName: string) {
+  get(attrName: string): any {
     return this.ncFeature.get(this.jb2TagToJb1Tag(attrName))
   }
 
   /**
    * Get an array listing which data keys are present in this feature.
    */
-  tags() {
+  tags(): string[] {
     return this.ncFeature.tags().map((t: string) => this.jb1TagToJb2Tag(t))
   }
 
@@ -66,11 +66,11 @@ export default class NCListFeature implements Feature {
   /**
    * Get an array of child features, or undefined if none.
    */
-  children() {
+  children(): Feature[] | undefined {
     return this.get('subfeatures')
   }
 
-  toJSON() {
+  toJSON(): Record<string, any> {
     const data: Record<string, any> = { uniqueId: this.id() }
     this.ncFeature.tags().forEach((tag: string) => {
       const mappedTag = this.jb1TagToJb2Tag(tag)

@@ -81,7 +81,7 @@ export default class BaseAdapter {
    * @param {Region} region
    */
   // eslint-disable-next-line no-unused-vars
-  public freeResources(region: Region) {
+  public freeResources(region: Region): void {
     throw new Error('freeResources should be overridden by the subclass')
   }
 

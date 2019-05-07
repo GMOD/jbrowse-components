@@ -11,10 +11,24 @@ import BaseAdapter, {
 import { Observable } from 'rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
+interface BEDFeature {
+  chromStart: number
+  chromEnd: number
+  chrom: string
+}
+interface RegularizedFeature {
+  refName: string
+  start: number
+  end: number
+}
+interface Parser {
+  parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
+}
+
 export default class BigBedAdapter extends BaseAdapter {
   private bigbed: any
 
-  private parser: any
+  private parser: Promise<Parser>
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -27,23 +41,24 @@ export default class BigBedAdapter extends BaseAdapter {
     this.parser = this.bigbed
       .getHeader()
       .then(
-        (header: { autoSql: string }) => new BED({ autoSql: header.autoSql }),
+        (header: { autoSql: string }): Promise<Parser> =>
+          new BED({ autoSql: header.autoSql }),
       )
   }
 
-  public async getRefNames() {
+  public async getRefNames(): Promise<string[]> {
     const header = await this.bigbed.getHeader()
     return Object.keys(header.refsByName)
   }
 
-  public async refIdToName(refId: number) {
+  public async refIdToName(refId: number): Promise<string> {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
   /**
    * @return promise for the totalSummary element from the bigbed's header
    */
-  public async getGlobalStats() {
+  public async getGlobalStats(): Promise<any> {
     const header = await this.bigbed.getHeader()
     return header.totalSummary
   }
@@ -96,11 +111,7 @@ export default class BigBedAdapter extends BaseAdapter {
  * @params featureData a feature to regularize
  * @return a regularized feature
  */
-function regularizeFeat(featureData: {
-  chrom: string
-  chromStart: number
-  chromEnd: number
-}) {
+function regularizeFeat(featureData: BEDFeature): RegularizedFeature {
   const {
     chrom: refName,
     chromStart: start,

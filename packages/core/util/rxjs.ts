@@ -5,7 +5,9 @@ import { Observable, Observer } from 'rxjs'
  * @param {function} func observer function, could be async
  */
 export function ObservableCreate<T>(func: Function): Observable<T> {
-  return Observable.create((observer: Observer<T>) => {
+  return Observable.create(function observableCreator(
+    observer: Observer<T>,
+  ): undefined {
     try {
       const ret = func(observer)
       // catch async errors
@@ -18,5 +20,3 @@ export function ObservableCreate<T>(func: Function): Observable<T> {
     return undefined
   })
 }
-
-export function removeme() {}

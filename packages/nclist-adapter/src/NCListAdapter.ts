@@ -1,6 +1,6 @@
 import NCListStore from '@gmod/nclist'
 import { openUrl } from '@gmod/jbrowse-core/util/io'
-import { Observer } from 'rxjs'
+import { Observer, Observable } from 'rxjs'
 
 import BaseAdapter, {
   Region,
@@ -36,22 +36,24 @@ export default class BamAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures(region: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      const { signal } = opts
-      for await (const feature of this.nclist.getFeatures(region, opts)) {
-        checkAbortSignal(signal)
-        observer.next(this.wrapFeature(feature))
-      }
-      observer.complete()
-    })
+  getFeatures(region: Region, opts: BaseOptions = {}): Observable<Feature> {
+    return ObservableCreate<Feature>(
+      async (observer: Observer<Feature>): Promise<void> => {
+        const { signal } = opts
+        for await (const feature of this.nclist.getFeatures(region, opts)) {
+          checkAbortSignal(signal)
+          observer.next(this.wrapFeature(feature))
+        }
+        observer.complete()
+      },
+    )
   }
 
-  wrapFeature(ncFeature: any) {
+  wrapFeature(ncFeature: any): NCListFeature {
     return new NCListFeature(ncFeature)
   }
 
-  async hasDataForRefName(refName: string) {
+  async hasDataForRefName(refName: string): Promise<boolean> {
     const root = await this.nclist.getDataRoot(refName)
     return !!(root && root.stats && root.stats.featureCount)
   }
@@ -61,5 +63,5 @@ export default class BamAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */) {}
+  freeResources(/* { region } */): void {}
 }

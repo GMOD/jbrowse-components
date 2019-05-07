@@ -1,4 +1,5 @@
 import { Feature as BBIFeature } from '@gmod/bbi'
+import { Region } from '@gmod/jbrowse-core/BaseAdapter'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -53,7 +54,7 @@ export function calcStdFromSums(
 export function rectifyStats(
   s: UnrectifiedFeatureStats,
   useFeatureCount: boolean = false,
-) {
+): FeatureStats {
   const N = useFeatureCount ? s.featureCount : s.basesCovered
   return {
     ...s,
@@ -72,7 +73,7 @@ export function rectifyStats(
 export function calcRealStats(
   region: { start: number; end: number },
   features: BBIFeature[],
-) {
+): number[] {
   const { start, end } = region
   const scores = []
   const feats = features.sort((a, b) => a.start - b.start)
@@ -105,9 +106,9 @@ export function calcRealStats(
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export function scoresToStats(
-  region: { start: number; end: number },
+  region: Region,
   feats: BBIFeature[],
-) {
+): FeatureStats {
   const { start, end } = region
   let scoreMax = -Infinity
   let scoreMin = Infinity
@@ -116,9 +117,9 @@ export function scoresToStats(
 
   for (let i = 0; i < feats.length; i += 1) {
     const f = feats[i]
-    // @ts-ignore make summary feature type a summary type in bbi-js
+    // @ts-ignore todo make "summary feature type" in bbi-js
     scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : f.score)
-    // @ts-ignore make summary feature type a summary type in bbi-js
+    // @ts-ignore todo make "summary feature type" in bbi-js
     scoreMin = Math.min(scoreMin, f.summary ? f.minScore : f.score)
     scoreSum += f.score
     scoreSumSquares += f.score * f.score
@@ -134,7 +135,7 @@ export function scoresToStats(
   })
 }
 
-export function blankStats() {
+export function blankStats(): FeatureStats {
   return {
     scoreMin: 0,
     scoreMax: 0,

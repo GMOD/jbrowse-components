@@ -8,7 +8,7 @@ import BaseAdapter, {
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import { GenericFilehandle } from 'generic-filehandle'
-import { Observer } from 'rxjs'
+import { Observer, Observable } from 'rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
@@ -21,9 +21,9 @@ export default class BamAdapter extends BaseAdapter {
 
   private samHeader: any
 
-  static capabilities = ['getFeatures', 'getRefNames']
+  public static capabilities = ['getFeatures', 'getRefNames']
 
-  constructor(config: {
+  public constructor(config: {
     bamLocation: string
     index: { location: string; index: string }
   }) {
@@ -49,7 +49,7 @@ export default class BamAdapter extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async setup() {
+  async setup(): Promise<void> {
     if (!this.samHeader) {
       const samHeader = await this.bam.getHeader()
       this.samHeader = {}
@@ -76,9 +76,9 @@ export default class BamAdapter extends BaseAdapter {
     }
   }
 
-  async getRefNames() {
+  async getRefNames(): Promise<string[]> {
     await this.setup()
-    return this.samHeader.idToName
+    return Object.keys(this.samHeader.nameToId)
   }
 
   /**
@@ -89,21 +89,28 @@ export default class BamAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional signalling object for aborting the fetch
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }: Region, opts: BamOptions = {}) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      await this.setup()
-      const records = await this.bam.getRecordsForRange(
-        refName,
-        start,
-        end,
-        opts,
-      )
-      checkAbortSignal(opts.signal)
-      records.forEach((record: any) => {
-        observer.next(this.bamRecordToFeature(record))
-      })
-      observer.complete()
-    })
+  // @ts-ignore type conflict between this rxjs and base
+  getFeatures(
+    { refName, start, end }: Region,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
+    // @ts-ignore  same as above
+    return ObservableCreate(
+      async (observer: Observer<Feature>): Promise<void> => {
+        await this.setup()
+        const records = await this.bam.getRecordsForRange(
+          refName,
+          start,
+          end,
+          opts,
+        )
+        checkAbortSignal(opts.signal)
+        records.forEach((record: any) => {
+          observer.next(this.bamRecordToFeature(record))
+        })
+        observer.complete()
+      },
+    )
   }
 
   /**
@@ -111,13 +118,13 @@ export default class BamAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */) {}
+  freeResources(/* { region } */): void {}
 
-  bamRecordToFeature(record: any) {
+  bamRecordToFeature(record: any): Feature {
     return new BamSlightlyLazyFeature(record, this)
   }
 
-  refIdToName(refId: number) {
+  refIdToName(refId: number): string | undefined {
     // use info from the SAM header if possible, but fall back to using
     // the ref name order from when the browser's ref names were loaded
     if (this.samHeader.idToName) {
