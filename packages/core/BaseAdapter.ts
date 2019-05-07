@@ -26,7 +26,7 @@ export default class BaseAdapter {
     // 'getRefNameAliases',
   ]
 
-  public constructor(/* config */) {
+  public constructor(config: Record<string, any>) {
     if (new.target === BaseAdapter) {
       throw new TypeError(
         'Cannot create BaseAdapter instances directly, use a subclass',

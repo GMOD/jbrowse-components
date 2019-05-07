@@ -102,7 +102,7 @@ export function iterMap(
  * @param {AbortSignal} [signal]
  * @returns nothing
  */
-export function checkAbortSignal(signal: AbortSignal): void {
+export function checkAbortSignal(signal?: AbortSignal): void {
   if (!signal) return
 
   if (inDevelopment && !(signal instanceof AbortSignal)) {
@@ -126,7 +126,7 @@ export function checkAbortSignal(signal: AbortSignal): void {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: any) {
+export function isAbortException(exception: any): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||

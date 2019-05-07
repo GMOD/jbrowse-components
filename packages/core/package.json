@@ -19,7 +19,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "npm test -- --coverage",
-    "lint": "tsc --noEmit && eslint --ext .ts --ext .js .",
+    "lint": "tsc --noEmit && eslint --ext .js,.ts .",
     "clean": "rimraf dist",
     "docs": "typedoc --theme markdown --out docs --readme none .",
     "prebuild": "npm run clean",
@@ -43,6 +43,7 @@
     "mobx": "^5.9.4",
     "mobx-react": "^5.3.6",
     "mobx-state-tree": "3.10.2",
+    "object.fromentries": "^2.0.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
     "rxjs": "^6.4.0",

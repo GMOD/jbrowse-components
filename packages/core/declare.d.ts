@@ -1,1 +1,1 @@
-declare module './util'
+declare module 'object.fromentries'
