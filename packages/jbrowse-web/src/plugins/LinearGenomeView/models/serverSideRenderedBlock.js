@@ -93,11 +93,11 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent(self, 2)
       if (allowRefetch) {
-        console.warn(`cached abort detected, refetching ${track.name}`)
+        console.warn(`cached abort detected, refetching "${track.name}"`)
         renderBlockEffect(self, props, false)
         return
       }
-      console.warn(`cached abort detected, failed to recover ${track.name}`)
+      console.warn(`cached abort detected, failed to recover "${track.name}"`)
     }
     if (isAlive(self) && !isAbortException(error)) {
       // setting the aborted exception as an error will draw the "aborted" error, and we
