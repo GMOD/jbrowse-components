@@ -1,5 +1,6 @@
-import { iterMap, objectFromEntries } from '@gmod/jbrowse-core/util'
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree';
+import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+
+import { iterMap, objectFromEntries } from '../util'
 
 export default class MainThreadRpcDriver {
   /**
