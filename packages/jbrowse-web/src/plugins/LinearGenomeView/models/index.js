@@ -136,10 +136,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       setAssemblyRegions(assemblyRegions) {
         self.assemblyRegions = assemblyRegions
       },
-      setRegions(regions) {
+      setDisplayedRegions(regions) {
         self.regions = regions
       },
-      clearRegions() {
+      clearDisplayedRegions() {
         self.regions = []
       },
       setWidth(newWidth) {
