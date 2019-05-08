@@ -16,21 +16,25 @@ test('calc std', () => {
 })
 
 test('test rectify', () => {
-  expect(rectifyStats({ featureCount: 100, scoreSum: 1000 }).scoreMean).toEqual(
-    10,
-  ) // simple mean calculation
-  expect(rectifyStats({ featureCount: 0 }).scoreMean).toEqual(0) // mean of 0=0
-  expect(
-    rectifyStats({ otherThing: 'hi', featureCount: 100, scoreSum: 1000 })
-      .otherThing,
-  ).toEqual('hi') // test that the function returns other attached data
-  expect(
-    rectifyStats({ featureCount: 3, scoreSum: 6, scoreSumSquares: 14 })
-      .scoreStdDev,
-  ).toEqual(1) // calculated from a webapp
-  expect(
-    rectifyStats({ featureCount: 3, basesCovered: 100 }).featureDensity,
-  ).toEqual(3 / 100) // test feature denstity
+  // mean of 0 bases covered = 0
+  expect(rectifyStats({ basesCovered: 0 }).scoreMean).toEqual(0)
+  const s = {
+    otherThing: 'hi',
+    featureCount: 10,
+    scoreSum: 1000,
+  }
+
+  expect(rectifyStats(s).scoreMean).toEqual(100)
+  expect(rectifyStats(s).otherThing).toEqual('hi')
+  expect(rectifyStats(s).featureCount).toEqual(10)
+
+  const s2 = {
+    featureCount: 3,
+    scoreSum: 6,
+    scoreSumSquares: 14,
+  }
+  expect(rectifyStats(s2).scoreStdDev).toEqual(1) // calculated from a webapp
+  expect(rectifyStats(s2, true).scoreStdDev).toEqual(1) // use featureCount as the sample size N
 })
 
 test('scores to stats', () => {

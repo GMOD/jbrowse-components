@@ -1,5 +1,5 @@
 import shortid from 'shortid'
-import { types } from 'mobx-state-tree'
+import { types, SnapshotOut } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
@@ -32,6 +32,8 @@ export const Region = types
       return assembleLocString(self)
     },
   }))
+
+export type IRegion = SnapshotOut<typeof Region>
 
 export const FileLocalPath = types.model('FileLocalPath', {
   localPath: types.string, // TODO: refine

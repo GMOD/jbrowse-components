@@ -1,60 +1,61 @@
+import { Observer, Observable } from 'rxjs'
+import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
 import { checkAbortSignal } from './util'
+import { Feature } from './util/simpleFeature'
 
+export interface BaseOptions {
+  signal?: AbortSignal
+  bpPerPx?: number
+}
 /**
  * Base class for adapters to extend. Defines some methods that subclasses must
  * implement.
  */
-export default class BaseAdapter {
+export default abstract class BaseAdapter {
   // List of all possible capabilities. Don't un-comment them here.
-  static capabilities = [
-    // 'getFeatures',
-    // 'getRefNames',
-    // 'getRegions',
-    // 'getRefNameAliases',
-  ]
-
-  constructor() {
-    if (new.target === BaseAdapter) {
-      throw new TypeError(
-        'Cannot create BaseAdapter instances directly, use a subclass',
-      )
-    }
-  }
+  // Example:
+  // const capabilities = [
+  // 'getFeatures',
+  // 'getRefNames',
+  // 'getRegions',
+  // 'getRefNameAliases',
+  // ]
+  public static capabilities: string[]
 
   /**
    * Subclasses should override this method. Method signature here for reference.
    * @returns {Promise<string[]>} Array of reference sequence names used by the
    * source being adapted.
+   *
+   * Subclass method should look something like this:
+   * await this.setup()
+   * const { refNames } = this.metadata
+   *
+   * NOTE: if an adapter is unable to get it's own list of ref names, return empty
+   *
    */
-  async getRefNames() {
-    throw new Error('getRefNames should be overridden by the subclass')
-    // Subclass method should look something like this:
-    // await this.setup()
-    // const { refNames } = this.metadata
-    // return refNames
-  }
+  public abstract async getRefNames(): Promise<string[]>
 
   /**
    * Subclasses should override this method. Method signature here for reference.
+   *
+   * Subclass method should look something like this:
+   *    return ObservableCreate(observer => {
+   *      const records = getRecords(assembly, refName, start, end)
+   *      records.forEach(record => {
+   *        observer.next(this.recordToFeature(record))
+   *      })
+   *      observer.complete()
+   *    })
    * @param {Region} region
-   * @param {string} region.refName Name of the reference sequence (e.g. chr1)
-   * @param {int} region.start Start of the region
-   * @param {int} region.end End of the region
+   * @param {BaseOptions} options
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  // eslint-disable-next-line no-unused-vars
-  getFeatures({ refName, start, end }) {
-    throw new Error('getFeatures should be overridden by the subclass')
-    // Subclass method should look something like this:
-    // return ObservableCreate(observer => {
-    //   const records = getRecords(assembly, refName, start, end)
-    //   records.forEach(record => {
-    //     observer.next(this.recordToFeature(record))
-    //   })
-    //   observer.complete()
-    // })
-  }
+  public abstract getFeatures(
+    region: Region,
+    opts: BaseOptions,
+  ): Observable<Feature>
 
   /**
    * Subclasses should override this method. Method signature here for reference.
@@ -63,14 +64,8 @@ export default class BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    * @param {Region} region
-   * @param {string} region.refName Name of the reference sequence (e.g. chr1)
-   * @param {int} region.start Start of the region
-   * @param {int} region.end End of the region
    */
-  // eslint-disable-next-line no-unused-vars
-  freeResources(region) {
-    throw new Error('freeResources should be overridden by the subclass')
-  }
+  public abstract freeResources(region: Region): void
 
   /**
    * Checks if the store has data for the given assembly and reference
@@ -79,14 +74,17 @@ export default class BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} see getFeatures()
    */
-  getFeaturesInRegion(region, signal) {
-    return ObservableCreate(async observer => {
+  public getFeaturesInRegion(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
+    return ObservableCreate(async (observer: Observer<Feature>) => {
       const hasData = await this.hasDataForRefName(region.refName)
-      checkAbortSignal(signal)
+      checkAbortSignal(opts.signal)
       if (!hasData) {
         observer.complete()
       } else {
-        this.getFeatures(region, signal).subscribe(observer)
+        this.getFeatures(region, opts).subscribe(observer)
       }
     })
   }
@@ -98,7 +96,7 @@ export default class BaseAdapter {
    * @returns {Promise<boolean>} Whether data source has data for the given
    * reference name
    */
-  async hasDataForRefName(refName) {
+  public async hasDataForRefName(refName: string): Promise<boolean> {
     const refNames = await this.getRefNames()
     if (refNames.includes(refName)) return true
     return false

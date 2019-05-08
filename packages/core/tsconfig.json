@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext",
     "lib": [
       "es2017",
       "esnext.array",
@@ -11,6 +11,7 @@
     "noEmit": true,
     "outDir": "./dist",
     "strict": true,
+    "esModuleInterop": true,
     "removeComments": false
   }
 }

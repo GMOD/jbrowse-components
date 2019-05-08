@@ -1,3 +1,19 @@
+import { Feature as BBIFeature } from '@gmod/bbi'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+
+export interface UnrectifiedFeatureStats {
+  scoreMin: number
+  scoreMax: number
+  scoreSum: number
+  scoreSumSquares: number
+  featureCount: number
+  basesCovered: number
+}
+export interface FeatureStats extends UnrectifiedFeatureStats {
+  scoreMean: number
+  scoreStdDev: number
+  featureDensity: number
+}
 /*
  * calculate standard deviation using the 'shortcut method' that accepts
  * the sum and the sum squares of the elements
@@ -8,7 +24,13 @@
  * @param population - boolean: use population instead of sample correction
  * @return the estimated std deviation
  */
-export function calcStdFromSums(sum, sumSquares, n, population = false) {
+
+export function calcStdFromSums(
+  sum: number,
+  sumSquares: number,
+  n: number,
+  population: boolean = false,
+): number {
   if (n === 0) return 0
   let variance
   if (population) {
@@ -25,15 +47,19 @@ export function calcStdFromSums(sum, sumSquares, n, population = false) {
 }
 
 /*
- * @param s - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
+ * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
  * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s) {
+export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   return {
     ...s,
     scoreMean: s.featureCount ? s.scoreSum / s.featureCount : 0,
-    scoreStdDev: calcStdFromSums(s.scoreSum, s.scoreSumSquares, s.featureCount),
-    featureDensity: s.featureCount / s.basesCovered,
+    scoreStdDev: calcStdFromSums(
+      s.scoreSum,
+      s.scoreSumSquares,
+      s.featureCount || 0,
+    ),
+    featureDensity: (s.featureCount || 0) / s.basesCovered,
   }
 }
 
@@ -43,7 +69,10 @@ export function rectifyStats(s) {
  * @param features - list of features with start, end, score
  * @return array of numeric scores
  */
-export function calcRealStats(region, features) {
+export function calcRealStats(
+  region: { start: number; end: number },
+  features: BBIFeature[],
+): number[] {
   const { start, end } = region
   const scores = []
   const feats = features.sort((a, b) => a.start - b.start)
@@ -75,7 +104,10 @@ export function calcRealStats(region, features) {
  * @param feats - array of features which are possibly summary features
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
-export function scoresToStats(region, feats) {
+export function scoresToStats(
+  region: IRegion,
+  feats: BBIFeature[],
+): FeatureStats {
   const { start, end } = region
   let scoreMax = -Infinity
   let scoreMin = Infinity
@@ -84,7 +116,9 @@ export function scoresToStats(region, feats) {
 
   for (let i = 0; i < feats.length; i += 1) {
     const f = feats[i]
+    // @ts-ignore todo make "summary feature type" in bbi-js
     scoreMax = Math.max(scoreMax, f.summary ? f.maxScore : f.score)
+    // @ts-ignore todo make "summary feature type" in bbi-js
     scoreMin = Math.min(scoreMin, f.summary ? f.minScore : f.score)
     scoreSum += f.score
     scoreSumSquares += f.score * f.score
@@ -98,4 +132,18 @@ export function scoresToStats(region, feats) {
     featureCount: feats.length,
     basesCovered: end - start + 1,
   })
+}
+
+export function blankStats(): FeatureStats {
+  return {
+    scoreMin: 0,
+    scoreMax: 0,
+    scoreMean: 0,
+    scoreStdDev: 0,
+    scoreSum: 0,
+    scoreSumSquares: 0,
+    featureCount: 0,
+    featureDensity: 0,
+    basesCovered: 0,
+  }
 }

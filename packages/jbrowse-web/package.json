@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@gmod/bam": "^1.0.17",
-    "@gmod/bbi": "^1.0.18",
+    "@gmod/bbi": "^1.0.20",
     "@gmod/bed": "^2.0.0",
     "@gmod/indexedfasta": "^1.0.11",
     "@gmod/jbrowse-core": "^2.0.0",
@@ -56,7 +56,7 @@
     "react-simple-code-editor": "0.9.3",
     "react-sizeme": "^2.5.2",
     "request-idle-callback": "^1.0.2",
-    "rxjs": "^6.3.3",
+    "rxjs": "^6.5.1",
     "sanitize-html": "^1.20.0",
     "shortid": "^2.2.13",
     "typeface-roboto": "^0.0.54"
@@ -65,8 +65,9 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "jtest": "jest",
+    "checktypes": "tsc --noEmit",
+    "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
     "test": "node scripts/test.js",
-    "lint": "eslint src"
+    "lint": "eslint --ext .js,.ts src"
   }
 }
