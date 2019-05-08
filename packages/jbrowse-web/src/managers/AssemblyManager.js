@@ -10,21 +10,32 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 export default class AssemblyManager {
   constructor(rpcManager, rootConfig) {
     this.rpcManager = rpcManager
-    this.assemblyConfigs = [rootConfig.assemblies]
-    rootConfig.volatile.forEach(conf => {
-      this.assemblyConfigs.push(conf.assemblies)
-    })
     this.refNameMaps = new Map()
     this.allRegions = []
-    this.loadRegions()
+    this.updateAssemblyConfigs(rootConfig)
   }
 
   updateAssemblyConfigs(rootConfig) {
-    this.assemblyConfigs = [rootConfig.assemblies]
-    rootConfig.volatile.forEach(conf => {
-      this.assemblyConfigs.push(conf.assemblies)
+    this.assemblyConfigs = new Map()
+    this.assemblyConfigs.set('root', rootConfig.assemblies)
+    if (!this.currentlyActiveAssembly) this.currentlyActiveAssembly = 'root'
+    rootConfig.volatile.forEach((conf, confName) => {
+      if (!this.assemblyConfigs.get(this.currentlyActiveAssembly).size)
+        this.currentlyActiveAssembly = confName
+      this.assemblyConfigs.set(confName, conf.assemblies)
     })
     this.loadRegions()
+  }
+
+  get activeAssembly() {
+    return this.currentlyActiveAssembly
+  }
+
+  set activeAssembly(assembly) {
+    if (!this.assemblyConfigs.has(assembly))
+      throw new Error(`Could not activate non-existent assembly: ${assembly}`)
+    this.clear()
+    this.currentlyActiveAssembly = assembly
   }
 
   /**
@@ -37,39 +48,40 @@ export default class AssemblyManager {
    */
   async getRefNameAliases(assemblyName) {
     const refNameAliases = {}
-    for (const assemblyConfig of this.assemblyConfigs) {
-      let assembly = assemblyConfig.get(assemblyName)
-      if (!assembly) {
-        values(assemblyConfig).forEach(otherAssembly => {
-          if (
-            (readConfObject(otherAssembly, 'aliases') || []).includes(
-              assemblyName,
-            )
+    const assemblyConfig = this.assemblyConfigs.get(
+      this.currentlyActiveAssembly,
+    )
+    let assembly = assemblyConfig.get(assemblyName)
+    if (!assembly) {
+      values(assemblyConfig).forEach(otherAssembly => {
+        if (
+          (readConfObject(otherAssembly, 'aliases') || []).includes(
+            assemblyName,
           )
-            assembly = otherAssembly
-        })
-      }
-
-      if (assembly) {
-        // eslint-disable-next-line no-await-in-loop
-        const adapterRefNameAliases = await this.rpcManager.call(
-          assembly.configId,
-          'getRefNameAliases',
-          {
-            sessionId: assemblyName,
-            adapterType: readConfObject(assembly, [
-              'refNameAliases',
-              'adapter',
-              'type',
-            ]),
-            adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
-          },
-          { timeout: 1000000 },
         )
-        adapterRefNameAliases.forEach(alias => {
-          refNameAliases[alias.refName] = alias.aliases
-        })
-      }
+          assembly = otherAssembly
+      })
+    }
+
+    if (assembly) {
+      // eslint-disable-next-line no-await-in-loop
+      const adapterRefNameAliases = await this.rpcManager.call(
+        assembly.configId,
+        'getRefNameAliases',
+        {
+          sessionId: assemblyName,
+          adapterType: readConfObject(assembly, [
+            'refNameAliases',
+            'adapter',
+            'type',
+          ]),
+          adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
+        },
+        { timeout: 1000000 },
+      )
+      adapterRefNameAliases.forEach(alias => {
+        refNameAliases[alias.refName] = alias.aliases
+      })
     }
     return refNameAliases
   }
@@ -126,25 +138,26 @@ export default class AssemblyManager {
   async loadRegions() {
     const regions = []
     const { rpcManager } = this
-    for (const assemblyConfig of this.assemblyConfigs) {
-      for (const [assemblyName, assembly] of assemblyConfig) {
-        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          const adapterRegions = await rpcManager.call(
-            assembly.configId,
-            'getRegions',
-            {
-              sessionId: assemblyName,
-              adapterType: adapterConfig.type,
-              adapterConfig,
-            },
-            { timeout: 1000000 },
-          )
-          regions.push(...adapterRegions)
-        } catch (error) {
-          console.error('Failed to fetch sequence', error)
-        }
+    const assemblyConfig = this.assemblyConfigs.get(
+      this.currentlyActiveAssembly,
+    )
+    for (const [assemblyName, assembly] of assemblyConfig) {
+      const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const adapterRegions = await rpcManager.call(
+          assembly.configId,
+          'getRegions',
+          {
+            sessionId: assemblyName,
+            adapterType: adapterConfig.type,
+            adapterConfig,
+          },
+          { timeout: 1000000 },
+        )
+        regions.push(...adapterRegions)
+      } catch (error) {
+        console.error('Failed to fetch sequence', error)
       }
     }
     this.allRegions = regions
