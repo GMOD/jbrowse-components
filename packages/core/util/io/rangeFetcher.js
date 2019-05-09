@@ -45,17 +45,18 @@ function getfetch(url, opts = {}) {
   )
 }
 
-async function fetchBinaryRange(url, start, end) {
+async function fetchBinaryRange(url, start, end, options = {}) {
   const requestDate = new Date()
-  const requestHeaders = {
-    headers: { range: `bytes=${start}-${end}` },
+  const requestHeaders = { ...options.headers, range: `bytes=${start}-${end}` }
+  const res = await getfetch(url, {
+    ...options,
+    headers: requestHeaders,
     onRetry: ({ retriesLeft /* , retryDelay */ }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )
     },
-  }
-  const res = await getfetch(url, requestHeaders)
+  })
   const responseDate = new Date()
   if (res.status !== 206 && res.status !== 200) {
     throw new Error(
@@ -89,7 +90,7 @@ async function fetchBinaryRange(url, start, end) {
 const globalRangeCache = new HttpRangeFetcher({
   fetch: fetchBinaryRange,
   size: 100 * 1024 * 1024, // 100MB
-  chunkSize: 2 ** 18, // 256KB
+  chunkSize: 2 ** 16, // 64KB
   aggregationTime: 50,
 })
 

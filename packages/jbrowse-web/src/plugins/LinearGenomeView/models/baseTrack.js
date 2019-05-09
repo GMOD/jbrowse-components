@@ -55,6 +55,9 @@ const BaseTrack = types
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .views(self => ({
+    get name() {
+      return getConf(self, 'name')
+    },
     get ControlsComponent() {
       return TrackControls
     },
