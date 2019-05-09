@@ -7464,10 +7464,10 @@ http-range-fetcher@^1.1.0:
     cross-fetch "^2.2.2"
     quick-lru "^2.0.0"
 
-http-range-fetcher@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.2.1.tgz#98bd6e8e2e1c434b82041494a6f047d04d0f32b4"
-  integrity sha512-Htyrjh3vG4ZLks27bhP8bYpz8msnJvNlf4oCmTmaSzRGIrlseYuFDTBc9ACLfDGzuZ8SqDxSHAJeJEQQ/GwN/A==
+http-range-fetcher@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.2.2.tgz#ffa0ba520ca019b218e1b2f1e4bfdffe3d8b2361"
+  integrity sha512-QcVMzxt/3oS/HYQQ57BFYtHUMDP+saKCrUNkI0Ee58774SVtF+OLUvFd2jjGeM5PagVmONiSZkjQfqukYL0vsA==
   dependencies:
     "@babel/runtime" "^7.4.4"
     abortcontroller-polyfill "^1.2.9"

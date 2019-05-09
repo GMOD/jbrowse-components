@@ -38,7 +38,7 @@
     "canvas": "^2.3.1",
     "file-uri-to-path": "^1.0.0",
     "generic-filehandle": "^1.0.8",
-    "http-range-fetcher": "^1.2.1",
+    "http-range-fetcher": "^1.2.2",
     "json-stable-stringify": "^1.0.1",
     "mobx": "^5.9.4",
     "mobx-react": "^5.3.6",

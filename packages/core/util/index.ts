@@ -133,9 +133,11 @@ export function isAbortException(exception: Error): boolean {
     // standard-ish non-DOM abort exception
     // @ts-ignore
     exception.code === 'ERR_ABORTED' ||
-    // stringified DOMException
-    exception.message === 'AbortError: aborted' ||
-    // stringified standard-ish exception
-    exception.message === 'Error: aborted'
+    // message contains aborted for bubbling through RPC
+    // things we have seen that we want to catch here
+    // Error: aborted
+    // AbortError: aborted
+    // AbortError: The user aborted a request.
+    !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
