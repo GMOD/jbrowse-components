@@ -36,7 +36,6 @@
     "fast-text-encoding": "^1.0.0",
     "file-saver": "^2.0.0",
     "generic-filehandle": "^1.0.6",
-    "http-range-fetcher": "^1.1.0",
     "json-stable-stringify": "^1.0.1",
     "material-ui-color-picker": "^3.1.0",
     "mobx": "^5.5.2",
