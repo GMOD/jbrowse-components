@@ -128,9 +128,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
 
         addDisposer(self, displayedRegionsDisposer)
       },
-      setDisplayedRegions(displayedRegions) {
-        self.displayedRegions = displayedRegions
-      },
       setWidth(newWidth) {
         self.width = newWidth
       },
@@ -169,7 +166,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
-      displayRegions(regions) {
+      setDisplayedRegions(regions) {
         self.displayedRegions = regions.map(r =>
           isStateTreeNode(r) ? r : Region.create(r),
         )

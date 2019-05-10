@@ -173,7 +173,7 @@ function(feature) {
       end: aaSequence.length,
     }
 
-    this.model.view.displayRegions([region])
+    this.model.view.setDisplayedRegions([region])
     this.model.configuration.sequenceTrack.adapter.features.set(features)
   }
 
