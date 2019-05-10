@@ -1179,10 +1179,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.20":
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.20.tgz#1e8e73e6fe470c240655eeea11a9cb1b72032068"
-  integrity sha512-gvj4M/rgo+zXzbelliSwAvl1rPMdK/RBta03BwKuqdr1eMf0je3X/DNlRe0b/qvAfrvnQ7p+Cbv44JPxFYwRkg==
+"@gmod/bbi@^1.0.21":
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.21.tgz#3f48a06d8f4d613d10ae8f9b129d821c1653f676"
+  integrity sha512-a3O14lg6L9pXpKz5mpPXcmeMgMKOHRvH/FNnAhMr/eq6voq4h7iarvMAqD4QK9eJi6TJtIqwPl4GLNE2+x9afw==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@gmod/binary-parser" "^1.3.5"
