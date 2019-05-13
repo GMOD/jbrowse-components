@@ -5,7 +5,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import GenomeSelector from './GenomeSelector'
 
 const styles = theme => ({
@@ -23,6 +23,8 @@ const styles = theme => ({
 })
 
 function UrlInput(props) {
+  const cancelledRef = useRef(false)
+  const [validating, setValidating] = useState(false)
   const [hubTxt, setHubTxt] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [errorHelperMessage, setErrorHelperMessage] = useState(null)
@@ -43,35 +45,49 @@ function UrlInput(props) {
     setErrorHelperMessage(null)
   }
 
-  async function validateUrl() {
-    let response
-    try {
-      response = await fetch(hubUrl.endsWith('/') ? `${hubUrl}hub.txt` : hubUrl)
-    } catch (error) {
-      setErrorMessage('Network error')
-      setErrorHelperMessage(error.message)
-      return
+  useEffect(() => {
+    async function validateUrl() {
+      if (validating) {
+        let response
+        try {
+          response = await fetch(
+            hubUrl.endsWith('/') ? `${hubUrl}hub.txt` : hubUrl,
+          )
+        } catch (error) {
+          !cancelledRef.current && setErrorMessage('Network error')
+          !cancelledRef.current && setErrorHelperMessage(error.message)
+          return
+        } finally {
+          !cancelledRef.current && setValidating(false)
+        }
+        if (!response.ok) {
+          !cancelledRef.current && setErrorMessage('Could not access the URL')
+          !cancelledRef.current &&
+            setErrorHelperMessage(`${response.status}: ${response.statusText}`)
+          return
+        }
+        const resolvedUrl = response.url
+        const responseText = await response.text()
+        let newHubTxt
+        try {
+          newHubTxt = new HubFile(responseText)
+        } catch (error) {
+          !cancelledRef.current && setHubUrl(resolvedUrl)
+          !cancelledRef.current &&
+            setErrorMessage('Could not parse hub.txt file')
+          !cancelledRef.current && setErrorHelperMessage(error.message)
+          return
+        }
+        !cancelledRef.current && setHubName(newHubTxt.get('shortLabel'))
+        !cancelledRef.current && setHubUrl(resolvedUrl)
+        !cancelledRef.current && setHubTxt(newHubTxt)
+      }
     }
-    if (!response.ok) {
-      setErrorMessage('Could not access the URL')
-      setErrorHelperMessage(`${response.status}: ${response.statusText}`)
-      return
+    validateUrl()
+    return () => {
+      cancelledRef.current = true
     }
-    const resolvedUrl = response.url
-    const responseText = await response.text()
-    let newHubTxt
-    try {
-      newHubTxt = new HubFile(responseText)
-    } catch (error) {
-      setHubUrl(resolvedUrl)
-      setErrorMessage('Could not parse hub.txt file')
-      setErrorHelperMessage(error.message)
-      return
-    }
-    setHubName(newHubTxt.get('shortLabel'))
-    setHubUrl(resolvedUrl)
-    setHubTxt(newHubTxt)
-  }
+  })
 
   return (
     <div>
@@ -89,7 +105,7 @@ function UrlInput(props) {
         error={Boolean(errorMessage)}
         type="url"
         onKeyUp={event => {
-          if (event.keyCode === 13) validateUrl()
+          if (event.keyCode === 13) setValidating(true)
         }}
         inputProps={{ 'data-testid': 'trackHubUrlInput' }}
         // eslint-disable-next-line react/jsx-no-duplicate-props
@@ -107,7 +123,7 @@ function UrlInput(props) {
       />
       <Button
         variant="contained"
-        onClick={validateUrl}
+        onClick={evt => setValidating(true)}
         disabled={Boolean(errorMessage)}
         className={classes.validateButton}
         data-testid="trackHubUrlInputValidate"

@@ -8,7 +8,7 @@ import propTypes from 'prop-types'
 import React from 'react'
 
 const hubSourceDescriptions = {
-  trackHubRegistryDescription: (
+  trackHubRegistry: (
     <FormHelperText>
       Search{' '}
       <Link
@@ -20,11 +20,11 @@ const hubSourceDescriptions = {
       </Link>
     </FormHelperText>
   ),
-  ucscDescription: <FormHelperText>User-provided track hub URL</FormHelperText>,
-  jbrowseRegistryDescription: (
+  ucscCustom: <FormHelperText>User-provided track hub URL</FormHelperText>,
+  jbrowseRegistry: (
     <FormHelperText>As-yet-unimplemented JBrowse data registry</FormHelperText>
   ),
-  jbrowseDataDirDescription: (
+  jbrowseCustom: (
     <FormHelperText>User-provided JBrowse 1 data directory URL</FormHelperText>
   ),
 }
