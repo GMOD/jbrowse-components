@@ -49,6 +49,10 @@ const styles = theme => ({
   drawerLoading: {
     margin: theme.spacing.unit * 2,
   },
+  developer: {
+    background: 'white',
+    padding: '0 10px 10px 10px',
+  },
 })
 
 function App(props) {
@@ -151,22 +155,25 @@ function App(props) {
             const { ReactComponent } = getViewType(view.type)
             return <ReactComponent key={`view-${view.id}`} model={view} />
           })}
-          <button
-            type="button"
-            onClick={() => rootModel.addView('LinearGenomeView', {})}
-          >
-            Add linear view
-          </button>
-          <select
-            onChange={event => setActiveSession(event.target.value)}
-            value={activeSession}
-          >
-            {sessionNames.map(sessionName => (
-              <option key={sessionName} value={sessionName}>
-                {sessionName}
-              </option>
-            ))}
-          </select>
+          <div className={classes.developer}>
+            <h3>Developer tools</h3>
+            <button
+              type="button"
+              onClick={() => rootModel.addView('LinearGenomeView', {})}
+            >
+              Add linear view
+            </button>
+            <select
+              onChange={event => setActiveSession(event.target.value)}
+              value={activeSession}
+            >
+              {sessionNames.map(sessionName => (
+                <option key={sessionName} value={sessionName}>
+                  {sessionName}
+                </option>
+              ))}
+            </select>
+          </div>
         </Scrollbars>
       </div>
       <Drawer
