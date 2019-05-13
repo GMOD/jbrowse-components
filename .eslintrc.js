@@ -9,7 +9,7 @@ module.exports = {
     'prettier/react',
     'prettier/@typescript-eslint',
   ],
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'react-hooks'],
   parserOptions: { ecmaFeatures: { jsx: true } },
   env: {
     browser: true,
@@ -20,6 +20,8 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'monorepo/no-internal-import': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     'no-debugger': 'warn',
     'no-param-reassign': 'off',
     'no-restricted-syntax': 'off',
@@ -38,24 +40,27 @@ module.exports = {
     'react/jsx-filename-extension': 'off',
     'react/no-unused-state': 'warn',
     'react/prefer-stateless-function': 'warn',
-    '@typescript-eslint/explicit-function-return-type': ['error', { 'allowExpressions': true }],
+    '@typescript-eslint/explicit-function-return-type': [
+      'error',
+      { allowExpressions: true },
+    ],
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/camelcase': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
   },
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       node: {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
   overrides: [
     {
       files: ['packages/generator-jbrowse/**/*'],
       env: { node: true },
-      rules: { '@typescript-eslint/no-var-requires': 'off' }
+      rules: { '@typescript-eslint/no-var-requires': 'off' },
     },
     {
       files: ['**/*.worker.js'],
