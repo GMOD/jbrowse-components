@@ -161,7 +161,7 @@ exports[`<DataHubDrawerWidget /> renders 1`] = `
                 </button>
                 <button
                   class="MuiButtonBase-root-136 MuiButtonBase-disabled-137 MuiButton-root-139 MuiButton-contained-150 MuiButton-containedPrimary-151 MuiButton-raised-153 MuiButton-raisedPrimary-154 MuiButton-disabled-159 DataHubDrawerWidget-button-3"
-                  data-testid="dataHubNext"
+                  data-testid="dataHubNext-current"
                   disabled=""
                   tabindex="-1"
                   type="button"

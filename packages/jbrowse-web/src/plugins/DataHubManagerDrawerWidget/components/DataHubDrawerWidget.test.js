@@ -55,9 +55,9 @@ trackDb hg19/trackDb.txt
       <DataHubDrawerWidget model={model} />,
     )
     fireEvent.click(getByTestId('ucsc'))
-    fireEvent.click(getByTestId('dataHubNext'))
+    fireEvent.click(getByTestId('dataHubNext-current'))
     fireEvent.click(getByTestId('ucscCustom'))
-    fireEvent.click(getByTestId('dataHubNext'))
+    fireEvent.click(getByTestId('dataHubNext-current'))
     fireEvent.change(getByTestId('trackHubUrlInput'), {
       target: { value: 'http://test.com/hub.txt' },
     })

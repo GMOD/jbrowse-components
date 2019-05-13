@@ -52,9 +52,9 @@ function DataHubDrawerWidget(props) {
   const { classes, model } = props
   const rootModel = getRoot(model)
 
-  function stepContent() {
+  function stepContent(currStep) {
     let StepComponent
-    switch (activeStep) {
+    switch (currStep) {
       case 0:
         return (
           <HubTypeSelect
@@ -71,11 +71,13 @@ function DataHubDrawerWidget(props) {
           />
         )
       case 2:
-        if (hubSource === 'ucscCustom') StepComponent = UrlInput
-        else if (hubSource === 'trackHubRegistry')
+        if (hubSource === 'ucscCustom') {
+          StepComponent = UrlInput
+        } else if (hubSource === 'trackHubRegistry') {
           StepComponent = TrackHubRegistrySelect
-        else
+        } else {
           return <Typography color="error">Unknown Data Hub Source</Typography>
+        }
         return (
           <StepComponent
             setHubName={setHubName}
@@ -133,11 +135,11 @@ function DataHubDrawerWidget(props) {
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map(label => (
+        {steps.map((label, i) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
             <StepContent>
-              {stepContent()}
+              {stepContent(i)}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
@@ -152,7 +154,9 @@ function DataHubDrawerWidget(props) {
                   color="primary"
                   onClick={handleNext}
                   className={classes.button}
-                  data-testid="dataHubNext"
+                  data-testid={`dataHubNext${
+                    activeStep === i ? '-current' : ''
+                  }`}
                 >
                   {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                 </Button>
