@@ -1,10 +1,9 @@
-import { autorun, transaction } from 'mobx'
+import { autorun, transaction, isObservable } from 'mobx'
 import {
   addDisposer,
   getParent,
   getRoot,
   getType,
-  isStateTreeNode,
   types,
 } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -167,9 +166,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       setDisplayedRegions(regions) {
-        self.displayedRegions = regions.map(r =>
-          isStateTreeNode(r) ? r : Region.create(r),
-        )
+        self.displayedRegions = regions.map(r => {
+          return isObservable(r) ? r : Region.create(r)
+        })
       },
 
       activateTrackSelector() {
