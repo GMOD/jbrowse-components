@@ -53,7 +53,7 @@
     "react-dom": "^16.9.0-alpha.0",
     "react-dropzone": "^10.1.0",
     "react-simple-code-editor": "0.9.3",
-    "react-sizeme": "^2.5.2",
+    "react-sizeme": "^2.6.7",
     "request-idle-callback": "^1.0.2",
     "rxjs": "^6.5.1",
     "sanitize-html": "^1.20.0",
