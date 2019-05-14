@@ -47,7 +47,7 @@ function GenomeSelector(props) {
         return
       }
       const responseText = await response.text()
-      let newGenomesFile = genomesFile
+      let newGenomesFile
       try {
         newGenomesFile = new GenomesFile(responseText)
       } catch (error) {
@@ -64,7 +64,7 @@ function GenomeSelector(props) {
     }
 
     getGenomesFile()
-  }, [genomesFile, hubTxt, hubUrl])
+  }, [hubTxt, hubUrl])
 
   function handleChange(event) {
     const assemblyName = event.target.value
