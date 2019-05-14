@@ -71,9 +71,11 @@ export default types.compose(
           if (!refNameMap) return
           self.setBlockDefinitions(
             blockDefinitions.map(blockDefinition => {
-              let { refName } = blockDefinition
-              refName = refNameMap.get(refName) || refName
-              return Object.assign({}, blockDefinition, { refName })
+              const { refName } = blockDefinition
+              if (refName && refNameMap.get(refName)) {
+                return blockDefinition.renameReference(refNameMap.get(refName))
+              }
+              return blockDefinition
             }),
           )
         })
@@ -89,7 +91,7 @@ export default types.compose(
           key,
           BlockState.create({
             key,
-            region: block,
+            region: block.toRegion(),
           }),
         )
       },

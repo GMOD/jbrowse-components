@@ -1,4 +1,5 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
+import { BlockSet, ContentBlock, ElidedBlock } from './blockTypes'
 
 export function calculateBlocksReversed(self) {
   return calculateBlocksForward(self).map(fwdBlock => {
@@ -14,7 +15,7 @@ export function calculateBlocksReversed(self) {
 }
 
 export function calculateBlocksForward(self) {
-  const { offsetPx, bpPerPx, width, displayedRegions } = self
+  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
@@ -23,7 +24,7 @@ export function calculateBlocksForward(self) {
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
   // for each displayed region
   let regionBpOffset = 0
-  const blocks = []
+  const blocks = new BlockSet()
   displayedRegions.forEach(region => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
@@ -36,32 +37,40 @@ export function calculateBlocksForward(self) {
     )
     if (windowRightBlockNum >= regionBlockCount)
       windowRightBlockNum = regionBlockCount - 1
-    // if (windowRightBlockNum < 0) return // this region is not visible
 
     let windowLeftBlockNum = Math.floor(
       (windowLeftBp - regionBpOffset) / blockSizeBp,
     )
     if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
-    // if (windowLeftBlockNum >= regionBlockCount) return // this region is not visible
 
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
       blockNum += 1
     ) {
-      const newBlock = {
+      const start = region.start + blockNum * blockSizeBp
+      const end = Math.min(
+        region.end,
+        region.start + (blockNum + 1) * blockSizeBp,
+      )
+      const widthPx = Math.abs(end - start) / bpPerPx
+      const blockData = {
         refName: region.refName,
-        start: region.start + blockNum * blockSizeBp,
-        end: Math.min(region.end, region.start + (blockNum + 1) * blockSizeBp),
+        start,
+        end,
         offsetPx:
           (regionBpOffset + region.start + blockNum * blockSizeBp) / bpPerPx,
         parentRegion: region,
+        widthPx,
+        isLeftEndOfDisplayedRegion: start === region.start,
+        isRightEndOfDisplayedRegion: end === region.end,
       }
-      newBlock.key = assembleLocString(newBlock)
-      newBlock.widthPx = Math.abs(newBlock.end - newBlock.start) / bpPerPx
-      newBlock.isLeftEndOfDisplayedRegion = newBlock.start === region.start
-      newBlock.isRightEndOfDisplayedRegion = newBlock.end === region.end
-      blocks.push(newBlock)
+      blockData.key = assembleLocString(blockData)
+      if (widthPx < minimumBlockWidth) {
+        blocks.push(new ElidedBlock(blockData))
+      } else {
+        blocks.push(new ContentBlock(blockData))
+      }
     }
 
     regionBpOffset += region.end - region.start

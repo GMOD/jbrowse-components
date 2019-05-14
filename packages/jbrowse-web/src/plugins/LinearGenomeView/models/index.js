@@ -71,6 +71,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
+      minimumBlockWidth: 12,
     })
     .views(self => ({
       get viewingRegionWidth() {

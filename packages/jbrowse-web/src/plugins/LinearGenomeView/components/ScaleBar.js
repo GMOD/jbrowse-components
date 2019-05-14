@@ -1,7 +1,6 @@
 import { withStyles } from '@material-ui/core'
 import React from 'react'
 import PropTypes from 'prop-types'
-import { assembleLocString } from '@gmod/jbrowse-core/util'
 import Block from './Block'
 
 import Ruler from './Ruler'
@@ -28,7 +27,8 @@ const styles = (/* theme */) => ({
   },
 })
 
-function findBlockContainingLeftSideOfView(offsetPx, blocks) {
+function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
+  const blocks = blockSet.getBlocks()
   for (let i = 0; i < blocks.length; i += 1) {
     const block = blocks[i]
     if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
@@ -60,7 +60,6 @@ function ScaleBar({
   return (
     <div style={finalStyle} className={classes.scaleBar}>
       {blocks.map(block => {
-        const locString = assembleLocString(block)
         return (
           <Block
             leftBorder={block.isLeftEndOfDisplayedRegion}
@@ -69,7 +68,7 @@ function ScaleBar({
             start={block.start}
             end={block.end}
             width={block.widthPx}
-            key={locString}
+            key={block.key}
             offset={block.offsetPx - offsetPx}
             bpPerPx={bpPerPx}
           >
@@ -102,7 +101,10 @@ ScaleBar.propTypes = {
   style: PropTypes.objectOf(PropTypes.any),
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
-  blocks: PropTypes.arrayOf(PropTypes.object),
+  blocks: PropTypes.shape({
+    map: PropTypes.func.isRequired,
+    getBlocks: PropTypes.func.isRequired,
+  }),
   bpPerPx: PropTypes.number.isRequired,
   offsetPx: PropTypes.number.isRequired,
   horizontallyFlipped: PropTypes.bool,

@@ -1,5 +1,6 @@
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
+import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
 
 /**
  * returns an array of 'dynamic blocks', which are blocks representing only the regions that
@@ -21,10 +22,16 @@ import { assembleLocString } from '@gmod/jbrowse-core/util'
  * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
 export default function calculateDynamicBlocks(
-  { offsetPx, viewingRegionWidth: width, displayedRegions, bpPerPx },
+  {
+    offsetPx,
+    viewingRegionWidth: width,
+    displayedRegions,
+    bpPerPx,
+    minimumBlockWidth,
+  },
   horizontallyFlipped,
 ) {
-  const blocks = []
+  const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
@@ -63,7 +70,8 @@ export default function calculateDynamicBlocks(
         blockOffsetPx = displayedRegionLeftPx + (startBp - start) / bpPerPx
       }
 
-      const newBlock = {
+      const widthPx = Math.abs(endBp - startBp) / bpPerPx
+      const blockData = {
         refName,
         start: startBp,
         end: endBp,
@@ -71,10 +79,14 @@ export default function calculateDynamicBlocks(
         offsetPx: blockOffsetPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        widthPx: Math.abs(endBp - startBp) / bpPerPx,
+        widthPx,
       }
-      newBlock.key = assembleLocString(newBlock)
-      blocks.push(newBlock)
+      blockData.key = assembleLocString(blockData)
+      if (widthPx < minimumBlockWidth) {
+        blocks.push(new ElidedBlock(blockData))
+      } else {
+        blocks.push(new ContentBlock(blockData))
+      }
     }
     displayedRegionLeftPx += (end - start) / bpPerPx
   }
