@@ -2,7 +2,7 @@ import {
   render,
   cleanup,
   fireEvent,
-  // waitForElement,
+  waitForElement,
 } from 'react-testing-library'
 import React from 'react'
 import { createTestEnv } from '../../../JBrowse'
@@ -10,13 +10,14 @@ import DataHubDrawerWidget from './DataHubDrawerWidget'
 
 describe('<DataHubDrawerWidget />', () => {
   let model
+  let rootModel
 
   beforeAll(async () => {
-    const { rootModel } = await createTestEnv({
+    ;({ rootModel } = await createTestEnv({
       configId: 'testing',
       defaultSession: {},
       rpc: { configId: 'testingRpc' },
-    })
+    }))
     rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
     model = rootModel.drawerWidgets.get('dataHubDrawerWidget')
   })
@@ -51,9 +52,11 @@ trackDb hg19/trackDb.txt
       )
     }
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
-    const { getByTestId /* , getByText */ } = render(
+    const { getByTestId, getByText } = render(
       <DataHubDrawerWidget model={model} />,
     )
+
+    expect(rootModel.configuration.connections.length).toBe(0)
     fireEvent.click(getByTestId('ucsc'))
     fireEvent.click(getByTestId('dataHubNext-current'))
     fireEvent.click(getByTestId('ucscCustom'))
@@ -62,10 +65,10 @@ trackDb hg19/trackDb.txt
       target: { value: 'http://test.com/hub.txt' },
     })
     fireEvent.click(getByTestId('trackHubUrlInputValidate'))
-    // Next line doesn't work yet
-    // await waitForElement(() => getByText('Assemblies'))
-
-    // Do the rest of the UI actions to add the connection
+    await waitForElement(() => getByText('Assemblies'))
+    fireEvent.click(getByTestId('assemblyCheckbox_testAssembly'))
+    fireEvent.click(getByTestId('dataHubNext-current'))
+    expect(rootModel.configuration.connections.length).toBe(1)
   })
 
   xit('can handle Track Hub Registry hub', () => {})

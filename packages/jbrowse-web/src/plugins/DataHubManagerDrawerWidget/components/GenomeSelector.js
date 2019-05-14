@@ -103,6 +103,9 @@ function GenomeSelector(props) {
                       checked={assemblyNames.includes(genomeName)}
                       onChange={handleChange}
                       value={genomeName}
+                      inputProps={{
+                        'data-testid': `assemblyCheckbox_${genomeName}`,
+                      }}
                     />
                   }
                   label={genomeName}
