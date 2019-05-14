@@ -5,7 +5,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import PropTypes from 'prop-types'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import GenomeSelector from './GenomeSelector'
 
 const styles = theme => ({
@@ -23,8 +23,8 @@ const styles = theme => ({
 })
 
 function UrlInput(props) {
-  const cancelledRef = useRef(false)
-  const [validating, setValidating] = useState(false)
+  const [input, setInput] = useState('')
+  const [query, setQuery] = useState('')
   const [hubTxt, setHubTxt] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [errorHelperMessage, setErrorHelperMessage] = useState(null)
@@ -39,7 +39,8 @@ function UrlInput(props) {
   } = props
 
   function handleChange(event) {
-    setHubUrl(event.target.value)
+    setInput(event.target.value)
+    setHubUrl('')
     setHubTxt(null)
     setErrorMessage(null)
     setErrorHelperMessage(null)
@@ -47,47 +48,39 @@ function UrlInput(props) {
 
   useEffect(() => {
     async function validateUrl() {
-      if (validating) {
-        let response
-        try {
-          response = await fetch(
-            hubUrl.endsWith('/') ? `${hubUrl}hub.txt` : hubUrl,
-          )
-        } catch (error) {
-          !cancelledRef.current && setErrorMessage('Network error')
-          !cancelledRef.current && setErrorHelperMessage(error.message)
-          return
-        } finally {
-          !cancelledRef.current && setValidating(false)
-        }
-        if (!response.ok) {
-          !cancelledRef.current && setErrorMessage('Could not access the URL')
-          !cancelledRef.current &&
-            setErrorHelperMessage(`${response.status}: ${response.statusText}`)
-          return
-        }
-        const resolvedUrl = response.url
-        const responseText = await response.text()
-        let newHubTxt
-        try {
-          newHubTxt = new HubFile(responseText)
-        } catch (error) {
-          !cancelledRef.current && setHubUrl(resolvedUrl)
-          !cancelledRef.current &&
-            setErrorMessage('Could not parse hub.txt file')
-          !cancelledRef.current && setErrorHelperMessage(error.message)
-          return
-        }
-        !cancelledRef.current && setHubName(newHubTxt.get('shortLabel'))
-        !cancelledRef.current && setHubUrl(resolvedUrl)
-        !cancelledRef.current && setHubTxt(newHubTxt)
+      if (!query) return
+      let response
+      const regularizedQuery = query.endsWith('/') ? `${query}hub.txt` : query
+      setInput(regularizedQuery)
+      try {
+        response = await fetch(regularizedQuery)
+      } catch (error) {
+        setErrorMessage('Network error')
+        setErrorHelperMessage(error.message)
+        return
       }
+      if (!response.ok) {
+        setErrorMessage('Could not access the URL')
+        setErrorHelperMessage(`${response.status}: ${response.statusText}`)
+        return
+      }
+      const resolvedUrl = response.url
+      const responseText = await response.text()
+      let newHubTxt
+      try {
+        newHubTxt = new HubFile(responseText)
+      } catch (error) {
+        setHubUrl(resolvedUrl)
+        setErrorMessage('Could not parse hub.txt file')
+        setErrorHelperMessage(error.message)
+        return
+      }
+      setHubName(newHubTxt.get('shortLabel'))
+      setHubUrl(resolvedUrl)
+      setHubTxt(newHubTxt)
     }
     validateUrl()
-    return () => {
-      cancelledRef.current = true
-    }
-  })
+  }, [query, setHubName, setHubUrl])
 
   return (
     <div>
@@ -95,7 +88,7 @@ function UrlInput(props) {
         autoFocus
         label={<strong>{errorMessage}</strong> || 'Track Hub URL'}
         className={classes.textField}
-        value={hubUrl}
+        value={input}
         onChange={handleChange}
         helperText={
           errorMessage
@@ -105,7 +98,7 @@ function UrlInput(props) {
         error={Boolean(errorMessage)}
         type="url"
         onKeyUp={event => {
-          if (event.keyCode === 13) setValidating(true)
+          if (event.keyCode === 13) setQuery(input)
         }}
         inputProps={{ 'data-testid': 'trackHubUrlInput' }}
         // eslint-disable-next-line react/jsx-no-duplicate-props
@@ -123,7 +116,7 @@ function UrlInput(props) {
       />
       <Button
         variant="contained"
-        onClick={evt => setValidating(true)}
+        onClick={() => setQuery(input)}
         disabled={Boolean(errorMessage)}
         className={classes.validateButton}
         data-testid="trackHubUrlInputValidate"
