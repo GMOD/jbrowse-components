@@ -21,9 +21,8 @@ export const PropTypes = {
   }),
 }
 
-export const Region = types
+export const NoAssemblyRegion = types
   .model('Region', {
-    assemblyName: types.string,
     refName: types.string,
     start: types.number,
     end: types.number,
@@ -33,6 +32,15 @@ export const Region = types
       return assembleLocString(self)
     },
   }))
+
+export type INoAssemblyRegion = SnapshotOut<typeof NoAssemblyRegion>
+
+export const Region = types.compose(
+  NoAssemblyRegion,
+  types.model({
+    assemblyName: types.string,
+  }),
+)
 
 export type IRegion = SnapshotOut<typeof Region>
 
