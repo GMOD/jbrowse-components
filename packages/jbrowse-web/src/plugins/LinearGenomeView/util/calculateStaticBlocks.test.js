@@ -28,7 +28,7 @@ describe('block calculation', () => {
   })
 
   it('can calculate some blocks 3', () => {
-    const blocks = calculateBlocksForward({
+    const blockSet = calculateBlocksForward({
       bpPerPx: 1,
       width: 800,
       offsetPx: 1000,
@@ -37,11 +37,11 @@ describe('block calculation', () => {
         { refName: 'ctgB', start: 100, end: 200 },
       ],
     })
-    expect(blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 4', () => {
-    const blocks = calculateBlocksForward(
+    const blockSet = calculateBlocksForward(
       {
         bpPerPx: 1,
         width: 800,
@@ -55,7 +55,7 @@ describe('block calculation', () => {
         testEnv: true,
       },
     )
-    expect(blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 5', () => {

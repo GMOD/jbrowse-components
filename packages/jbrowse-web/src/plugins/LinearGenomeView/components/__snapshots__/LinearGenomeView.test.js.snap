@@ -410,7 +410,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-98"
+      className="TrackResizeHandle-dragHandle-99"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -837,7 +837,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-98"
+      className="TrackResizeHandle-dragHandle-99"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
@@ -969,7 +969,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      className="TrackResizeHandle-dragHandle-98"
+      className="TrackResizeHandle-dragHandle-99"
       onMouseDown={[Function]}
       onMouseLeave={[Function]}
       onMouseMove={[Function]}
