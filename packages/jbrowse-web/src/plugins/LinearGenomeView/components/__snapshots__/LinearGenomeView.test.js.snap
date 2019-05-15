@@ -101,6 +101,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </button>
       <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
+        data_testid="track_select"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -398,6 +399,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     >
       <div
         className="Track-track-96"
+        data-testid="track-testConfig"
         onMouseDown={[Function]}
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
@@ -406,6 +408,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       >
         <div
           className="TrackBlocks-trackBlocks-97"
+          data-testid="Block"
         />
       </div>
     </div>
@@ -528,6 +531,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
+        data_testid="track_select"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}
@@ -825,6 +829,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       <div
         className="Track-track-96"
+        data-testid="track-testConfig"
         onMouseDown={[Function]}
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
@@ -833,6 +838,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-97"
+          data-testid="Block"
         />
       </div>
     </div>
@@ -957,6 +963,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       <div
         className="Track-track-96"
+        data-testid="track-testConfig2"
         onMouseDown={[Function]}
         onMouseLeave={[Function]}
         onMouseMove={[Function]}
@@ -965,6 +972,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-97"
+          data-testid="Block"
         />
       </div>
     </div>
@@ -1087,6 +1095,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       </button>
       <button
         className="MuiButtonBase-root-14 MuiToggleButton-root-26"
+        data_testid="track_select"
         disabled={false}
         onBlur={[Function]}
         onClick={[Function]}

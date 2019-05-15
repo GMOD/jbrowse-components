@@ -4,8 +4,7 @@ import { observer } from 'mobx-react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 
-import Track from '../../LinearGenomeView/components/Track'
-import TrackBlocks from '../../LinearGenomeView/components/TrackBlocks'
+import BlockBasedTrack from '../../LinearGenomeView/components/BlockBasedTrack'
 import { getScale } from '../../WiggleRenderer/util'
 
 const powersOfTen = []
@@ -61,10 +60,9 @@ function WiggleTrackComponent(props) {
   const needsScalebar = model.rendererTypeName === 'XYPlotRenderer'
 
   return (
-    <Track {...props}>
-      <TrackBlocks {...props} blockState={model.blockState} />
+    <BlockBasedTrack {...props}>
       {ready && needsScalebar ? getYScaleBar(model) : null}
-    </Track>
+    </BlockBasedTrack>
   )
 }
 export default observer(WiggleTrackComponent)
