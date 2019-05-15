@@ -23,6 +23,7 @@ export const PropTypes = {
 
 export const Region = types
   .model('Region', {
+    assemblyName: types.string,
     refName: types.string,
     start: types.number,
     end: types.number,

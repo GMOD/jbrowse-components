@@ -11,7 +11,6 @@ describe('Assembly Manager', () => {
           configId: 'testingId',
           type: 'FilteringTrack',
           name: 'Filter Test',
-          assemblyName: 'volvox',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -112,19 +111,19 @@ describe('Assembly Manager', () => {
     rootModel.views[0].showTrack(rootModel.configuration.tracks[0])
 
     assemblyManager.clear()
-    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`Object {}`)
+    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
+      Object {
+        "testingId": Object {},
+      }
+    `)
     await assemblyManager.addRefNameMapForTrack(
       rootModel.views[0].tracks[0].configuration,
     )
 
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
-Object {
-  "testingId": Object {
-    "A": "contigA",
-    "contigA": "contigA",
-    "ctgA": "contigA",
-  },
-}
-`)
+      Object {
+        "testingId": Object {},
+      }
+    `)
   })
 })

@@ -141,7 +141,13 @@ export default class AssemblyManager {
             },
             { timeout: 1000000 },
           )
-          regions.push(...adapterRegions)
+          const adapterRegionsWithAssembly = adapterRegions.map(
+            adapterRegion => ({
+              ...adapterRegion,
+              assemblyName,
+            }),
+          )
+          regions.push(...adapterRegionsWithAssembly)
         } catch (error) {
           console.error('Failed to fetch sequence', error)
         }

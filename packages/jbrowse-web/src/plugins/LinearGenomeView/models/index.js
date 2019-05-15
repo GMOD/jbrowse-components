@@ -167,8 +167,13 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       setDisplayedRegions(regions) {
-        self.displayedRegions = regions.map(r =>
-          isStateTreeNode(r) ? r : Region.create(r),
+        self.displayedRegions = regions.map(region =>
+          Region.create({
+            assemblyName: region.assemblyName,
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+          }),
         )
       },
 

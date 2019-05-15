@@ -22,7 +22,13 @@ export const inProduction = !inDevelopment
  * @param {number} args.end end coordinate
  * @returns {string} the locstring
  */
-export function assembleLocString({ refName, start, end }: IRegion): string {
+export function assembleLocString({
+  assemblyName,
+  refName,
+  start,
+  end,
+}: IRegion): string {
+  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}-${end}`
   return `${refName}:${start + 1}-${end}`
 }
 

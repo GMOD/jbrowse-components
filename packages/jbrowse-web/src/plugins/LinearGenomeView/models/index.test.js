@@ -55,7 +55,9 @@ test('can instantiate a model that lets you navigate', () => {
       configuration: {},
     }),
   )
-  model.setDisplayedRegions([{ start: 0, end: 10000, refName: 'ctgA' }])
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+  ])
   expect(model.maxBpPerPx).toEqual(10)
   model.setNewView(0.02, 0)
 
@@ -111,8 +113,8 @@ test('can instantiate a model that has multiple displayed regions', () => {
     }),
   )
   model.setDisplayedRegions([
-    { start: 0, end: 10000, refName: 'ctgA' },
-    { start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
   expect(model.maxBpPerPx).toEqual(20)
   model.setNewView(0.02, 0)
@@ -150,9 +152,9 @@ test('can instantiate a model that >2 regions', () => {
     }),
   )
   model.setDisplayedRegions([
-    { start: 0, end: 10000, refName: 'ctgA' },
-    { start: 0, end: 10000, refName: 'ctgB' },
-    { start: 0, end: 10000, refName: 'ctgC' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgC' },
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   expect(model.bpPerPx).toEqual(12.5)

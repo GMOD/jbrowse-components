@@ -73,7 +73,7 @@ export default types.compose(
             blockDefinitions.map(blockDefinition => {
               let { refName } = blockDefinition
               refName = refNameMap.get(refName) || refName
-              return Object.assign({}, blockDefinition, { refName })
+              return { ...blockDefinition, refName }
             }),
           )
         })

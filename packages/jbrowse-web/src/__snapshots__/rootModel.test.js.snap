@@ -250,7 +250,6 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
-      "assemblyName": "volvox",
       "category": Array [
         "Bar Category",
       ],
@@ -276,7 +275,6 @@ Object {
         },
         "type": "BamAdapter",
       },
-      "assemblyName": "volvox",
       "category": Array [
         "Bar Category",
         "Baz Category",
@@ -313,7 +311,6 @@ Object {
         },
         "type": "BamAdapter",
       },
-      "assemblyName": "vvx",
       "category": Array [
         "Bee Category",
         "Boo Category",
@@ -380,7 +377,6 @@ Object {
         ],
         "type": "FromConfigAdapter",
       },
-      "assemblyName": "volvox2",
       "configId": "z3MB1J7HG",
       "filterAttributes": Array [
         "type",

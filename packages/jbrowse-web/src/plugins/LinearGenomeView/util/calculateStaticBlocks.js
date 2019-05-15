@@ -50,6 +50,7 @@ export function calculateBlocksForward(self) {
       blockNum += 1
     ) {
       const newBlock = {
+        assemblyName: region.assemblyName,
         refName: region.refName,
         start: region.start + blockNum * blockSizeBp,
         end: Math.min(region.end, region.start + (blockNum + 1) * blockSizeBp),

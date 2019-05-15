@@ -31,10 +31,6 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
     type: 'stringArray',
     defaultValue: [],
   },
-  assemblyName: {
-    type: 'string',
-    defaultValue: '',
-  },
 })
 
 // these MST models only exist for tracks that are *shown*.

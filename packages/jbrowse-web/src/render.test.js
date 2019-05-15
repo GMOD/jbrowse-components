@@ -10,7 +10,6 @@ const baseprops = {
   region: { refName: 'ctgA', start: 0, end: 800 },
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
-  assemblyName: 'volvox',
   adapterConfig: {
     configId: '7Hc9NkuD4x',
     type: 'BamAdapter',
