@@ -157,9 +157,9 @@ Object {
     "views": Array [
       Object {
         "bpPerPx": 0.05,
-        "configuration": Object {},
         "id": "xdTd_biFQ",
         "offsetPx": 2000,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "Ntr0BAB7d",
@@ -176,8 +176,8 @@ Object {
       },
       Object {
         "bpPerPx": 2,
-        "configuration": Object {},
         "offsetPx": 200,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "gTdYq_j8M",
@@ -189,8 +189,8 @@ Object {
       },
       Object {
         "bpPerPx": 0.1,
-        "configuration": Object {},
         "offsetPx": 1800,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "7f9MEYvnw",

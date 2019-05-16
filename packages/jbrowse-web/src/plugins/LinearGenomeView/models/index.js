@@ -1,20 +1,11 @@
 import { autorun, transaction } from 'mobx'
-import {
-  addDisposer,
-  getParent,
-  getRoot,
-  getType,
-  isStateTreeNode,
-  types,
-} from 'mobx-state-tree'
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { addDisposer, getParent, getRoot, types } from 'mobx-state-tree'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-
-import LinearGenomeViewConfigSchema from './configSchema'
 
 import BaseTrack from './baseTrack'
 import calculateStaticBlocks from '../util/calculateStaticBlocks'
@@ -61,7 +52,8 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
-      flipped: false,
+      displayedRegions: types.array(Region),
+      reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -69,9 +61,12 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       ),
       controlsWidth: 120,
       width: 800,
-      configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
+      trackSelectorType: types.optional(
+        types.enumeration(['hierarchical']),
+        'hierarchical',
+      ),
     })
     .views(self => ({
       get viewingRegionWidth() {
@@ -98,7 +93,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       get horizontallyFlipped() {
-        return getConf(self, 'reversed')
+        return self.reversed
       },
 
       get displayedRegionsTotalPx() {
@@ -115,9 +110,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         }
       },
     }))
-    .volatile(() => ({
-      displayedRegions: [],
-    }))
     .actions(self => ({
       afterAttach() {
         const displayedRegionsDisposer = autorun(() => {
@@ -128,9 +120,15 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
 
         addDisposer(self, displayedRegionsDisposer)
       },
+
       setWidth(newWidth) {
         self.width = newWidth
       },
+
+      horizontallyFlip() {
+        self.reversed = !self.reversed
+      },
+
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
@@ -178,10 +176,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       activateTrackSelector() {
-        if (getType(self.configuration).name === 'AnonymousModel')
-          throw new Error('this view should have a real configuration')
-        const trackSelectorType = getConf(self, 'trackSelectorType')
-        if (trackSelectorType === 'hierarchical') {
+        if (self.trackSelectorType === 'hierarchical') {
           const rootModel = getRoot(self)
           if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
             rootModel.addDrawerWidget(
@@ -195,7 +190,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           selector.setView(self)
           rootModel.showDrawerWidget(selector)
         } else {
-          throw new Error(`invalid track selector type ${trackSelectorType}`)
+          throw new Error(
+            `invalid track selector type ${self.trackSelectorType}`,
+          )
         }
       },
 

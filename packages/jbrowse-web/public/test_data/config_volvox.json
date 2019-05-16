@@ -418,7 +418,7 @@
             "configuration": "i3jUPmrgMOS"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       },
       {
         "type": "LinearGenomeView",
@@ -431,7 +431,7 @@
             "configuration": "i3jUzmrgMOq"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       },
       {
         "type": "LinearGenomeView",
@@ -444,7 +444,7 @@
             "configuration": "PDWVXl3526"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       }
     ],
     "drawerWidgets": {

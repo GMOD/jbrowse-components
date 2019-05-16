@@ -222,7 +222,7 @@
               "configuration": "sjbYnxXg1"
             }
           ],
-          "configuration": {}
+          "trackSelectorType": "hierarchical"
         },
         {
           "type": "LinearGenomeView",
@@ -235,7 +235,7 @@
               "configuration": "NBN06jHCC"
             }
           ],
-          "configuration": {}
+          "trackSelectorType": "hierarchical"
         },
         {
           "type": "LinearGenomeView",
@@ -248,7 +248,7 @@
               "configuration": "So_jqsV8r"
             }
           ],
-          "configuration": {}
+          "trackSelectorType": "hierarchical"
         }
       ],
       "drawerWidgets": {

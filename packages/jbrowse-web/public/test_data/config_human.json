@@ -192,7 +192,7 @@
             "configuration": "bigbed_peaks"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       }
     ],
     "drawerWidgets": {
