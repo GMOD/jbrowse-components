@@ -34,7 +34,7 @@ export default (pluginManager, configSchema) =>
       .actions(self => ({
         afterAttach() {
           const getYAxisScale = autorun(
-            function getYAxisScaleAutorun() {
+            async function getYAxisScaleAutorun() {
               try {
                 const { rpcManager } = getRoot(self)
 
@@ -71,18 +71,13 @@ export default (pluginManager, configSchema) =>
                   )
                 }
 
-                statsPromise
-                  .then(stats => {
-                    checkAbortSignal(aborter.signal)
-                    self.updateScale(stats)
-                  })
-                  .catch(e => {
-                    if (!isAbortException(e)) {
-                      self.error = e
-                    }
-                  })
+                const stats = await statsPromise
+                checkAbortSignal(aborter.signal)
+                self.updateScale(stats)
               } catch (e) {
-                self.error = e
+                if (!isAbortException(e)) {
+                  self.setError(e)
+                }
               }
             },
             { delay: 1000 },
@@ -92,8 +87,11 @@ export default (pluginManager, configSchema) =>
         },
         updateScale(stats) {
           self.stats.setStats(stats)
-
           self.ready = true
+        },
+        setError(e) {
+          self.ready = true
+          self.error = e
         },
         setLoading(abortSignal) {
           if (

@@ -18,11 +18,24 @@ import {
   FeatureStats,
 } from './util'
 
+interface StatsRegion {
+  refName: string
+  start: number
+  end: number
+  bpPerPx?: number
+}
+
 export default class BigWigAdapter extends BaseAdapter {
   private bigwig: BigWig
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private statsCache: any
+  private statsCache: {
+    get: (
+      key: string,
+      region: StatsRegion,
+      signal?: AbortSignal,
+    ) => Promise<FeatureStats>
+  }
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
