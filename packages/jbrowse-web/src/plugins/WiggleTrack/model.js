@@ -40,6 +40,7 @@ export default (pluginManager, configSchema) =>
 
                 const autoscaleType = getConf(self, 'autoscale')
                 const aborter = new AbortController()
+                const { signal } = aborter
                 let statsPromise
                 self.setLoading(aborter)
 
@@ -50,7 +51,7 @@ export default (pluginManager, configSchema) =>
                     {
                       adapterConfig: getSnapshot(self.configuration.adapter),
                       adapterType: self.configuration.adapter.type,
-                      signal: aborter.signal,
+                      signal,
                     },
                   )
                 } else if (autoscaleType === 'local') {
@@ -65,8 +66,9 @@ export default (pluginManager, configSchema) =>
                     {
                       adapterConfig: getSnapshot(self.configuration.adapter),
                       adapterType: self.configuration.adapter.type,
-                      regions: dynamicBlocks.map(r => ({ ...r, bpPerPx })),
-                      signal: aborter.signal,
+                      regions: dynamicBlocks.blocks,
+                      signal,
+                      bpPerPx,
                     },
                   )
                 }

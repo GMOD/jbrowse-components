@@ -28,7 +28,6 @@ interface StatsRegion {
 export default class BigWigAdapter extends BaseAdapter {
   private bigwig: BigWig
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private statsCache: {
     get: (
       key: string,
@@ -39,7 +38,6 @@ export default class BigWigAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public constructor(config: { bigWigLocation: string }) {
     super()
     this.bigwig = new BigWig({
@@ -84,11 +82,11 @@ export default class BigWigAdapter extends BaseAdapter {
     opts: BaseOptions = {},
   ): Promise<FeatureStats> {
     const { refName, start, end } = region
-    const { bpPerPx } = opts
+    const { bpPerPx, signal } = opts
     return this.statsCache.get(
       `${refName}_${start}_${end}_${bpPerPx}`,
       { refName, start, end, bpPerPx },
-      opts.signal,
+      signal,
     )
   }
 
