@@ -19,7 +19,6 @@
         "@babel/preset-env": "^7.3.4",
         "@babel/preset-react": "^7.0.0",
         "@babel/preset-typescript": "^7.3.3",
-        "@gmod/bed": "^1.0.3",
         "@svgr/webpack": "^4.1.0",
         "@types/jest": "^24.0.9",
         "@types/long": "^4.0.0",
