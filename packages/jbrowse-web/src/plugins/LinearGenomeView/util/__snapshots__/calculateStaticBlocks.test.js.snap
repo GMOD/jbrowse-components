@@ -60,7 +60,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
       "key": "ctgB:101-200",
-      "offsetPx": 200,
+      "offsetPx": 100,
       "parentRegion": Object {
         "end": 200,
         "refName": "ctgB",
@@ -257,6 +257,41 @@ BlockSet {
     },
   ],
 }
+`;
+
+exports[`block calculation can calculate some blocks 10 1`] = `
+Array [
+  ContentBlock {
+    "end": 140,
+    "isLeftEndOfDisplayedRegion": true,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:101-140",
+    "offsetPx": 0,
+    "parentRegion": Object {
+      "end": 200,
+      "refName": "ctgA",
+      "start": 100,
+    },
+    "refName": "ctgA",
+    "start": 100,
+    "widthPx": 800,
+  },
+  ContentBlock {
+    "end": 180,
+    "isLeftEndOfDisplayedRegion": false,
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:141-180",
+    "offsetPx": 800,
+    "parentRegion": Object {
+      "end": 200,
+      "refName": "ctgA",
+      "start": 100,
+    },
+    "refName": "ctgA",
+    "start": 140,
+    "widthPx": 800,
+  },
+]
 `;
 
 exports[`reverse block calculation 1 1`] = `

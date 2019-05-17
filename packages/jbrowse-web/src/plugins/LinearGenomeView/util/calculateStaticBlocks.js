@@ -58,8 +58,7 @@ export function calculateBlocksForward(self) {
         refName: region.refName,
         start,
         end,
-        offsetPx:
-          (regionBpOffset + region.start + blockNum * blockSizeBp) / bpPerPx,
+        offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
         parentRegion: region,
         widthPx,
         isLeftEndOfDisplayedRegion: start === region.start,
