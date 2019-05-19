@@ -67,4 +67,5 @@ Object.keys(renderFuncs).forEach(key => {
 self.rpcServer = new RpcServer.Server({
   ...rpcConfig,
   ...remoteAbortRpcHandler(),
+  ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
 })
