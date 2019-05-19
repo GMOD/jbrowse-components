@@ -2036,10 +2036,9 @@
   resolved "https://registry.yarnpkg.com/@librpc/ee/-/ee-1.0.4.tgz#ce73a36279dc4cf93efa43f7e3564ec165947522"
   integrity sha512-vhPlbRwAKQC80h0k74tsOkMKIidZtqlFSOHRzCvC8n7Va9rzMDwpG26Pm84dAt0ZuGK0g1UEfPzxDiYo9ZQBrg==
 
-"@librpc/web@^1.1.0":
+"@librpc/web@git+https://github.com/rbuels/librpc-web.git":
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@librpc/web/-/web-1.1.0.tgz#d4aec09f9b6f064aa72a118ceda6ec8586612f9f"
-  integrity sha512-uolvU6z3UsB/FoDS7Zh8GmYWC7TK1o3mw+cQa1hVBfrftNaGBucaHMayeNyQNpM07kEYztQubc7iq4kGrYwHjw==
+  resolved "git+https://github.com/rbuels/librpc-web.git#737bb9706762a52a87169a12c9b59fb241febab0"
   dependencies:
     "@librpc/ee" "1.0.4"
 
