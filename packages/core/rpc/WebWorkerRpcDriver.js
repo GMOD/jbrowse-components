@@ -86,7 +86,7 @@ function getWorkerPool(WorkerClass, configuredWorkerCount) {
 export default class WebWorkerRpcDriver {
   lastWorkerAssignment = -1
 
-  workerAssignments = {} // stateGroupName -> worker number
+  workerAssignments = new Map() // stateGroupName -> worker number
 
   constructor(pluginManager, { WorkerClass }) {
     this.WorkerClass = WorkerClass
@@ -118,16 +118,18 @@ export default class WebWorkerRpcDriver {
 
   getWorker(stateGroupName) {
     const workers = getWorkerPool(this.WorkerClass)
-    if (!this.workerAssignments[stateGroupName]) {
+    if (!this.workerAssignments.has(stateGroupName)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
-      this.workerAssignments[stateGroupName] = workerAssignment
+      this.workerAssignments.set(stateGroupName, workerAssignment)
       this.lastWorkerAssignment = workerAssignment
     }
 
-    const workerNumber = this.workerAssignments[stateGroupName]
+    const workerNumber = this.workerAssignments.get(stateGroupName)
     // console.log(stateGroupName, workerNumber)
     const worker = workers[workerNumber]
-    if (!worker) throw new Error('no web workers registered for RPC')
+    if (!worker) {
+      throw new Error('no web workers registered for RPC')
+    }
     return worker
   }
 
