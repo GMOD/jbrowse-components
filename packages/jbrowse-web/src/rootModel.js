@@ -6,12 +6,14 @@ import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+
+import RenderWorker from './rpc.worker'
 import AssemblyManager from './managers/AssemblyManager'
 import rootConfig from './rootConfig'
 
 import * as rpcFuncs from './render'
 
-export default (pluginManager, workerManager) => {
+export default pluginManager => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
@@ -42,7 +44,7 @@ export default (pluginManager, workerManager) => {
     .volatile(self => {
       const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
         WebWorkerRpcDriver: {
-          workers: workerManager.getWorkerGroup('rpc'),
+          WorkerClass: RenderWorker,
         },
         MainThreadRpcDriver: {
           rpcFuncs,
@@ -66,7 +68,6 @@ export default (pluginManager, workerManager) => {
       const task = undefined
       return {
         pluginManager,
-        workerManager,
         rpcManager,
         assemblyManager,
         selection,

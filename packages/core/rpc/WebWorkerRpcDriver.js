@@ -9,18 +9,38 @@ function isClonable(thing) {
   return true
 }
 
+const MAX_WORKERS = 6
+
+// keep global pools of each worker class
+const workerPools = new Map()
+function getWorkers(WorkerClass) {
+  if (!workerPools.has(WorkerClass)) {
+    const hardwareConcurrency =
+      typeof window !== 'undefined' ? window.navigator.hardwareConcurrency : 2
+    const workerCount = Math.min(MAX_WORKERS, hardwareConcurrency)
+    const workers = new Array(workerCount)
+    for (let i = 0; i < workerCount; i += 1) {
+      workers[i] = new WorkerClass()
+    }
+
+    // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
+    // because we want to do our own state-group-aware load balancing rather than using librpc's
+    // builtin round-robin
+    workerPools.set(
+      WorkerClass,
+      workers.map(worker => new Rpc.Client({ workers: [worker] })),
+    )
+  }
+  return workerPools.get(WorkerClass)
+}
+
 export default class WebWorkerRpcDriver {
   lastWorkerAssignment = -1
 
   workerAssignments = {} // stateGroupName -> worker number
 
-  constructor(pluginManager, { workers = [] }) {
-    // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
-    // because we want to do our own load balancing rather than using librpc's builtin round-robin
-    this.workers = workers.map(worker => new Rpc.Client({ workers: [worker] }))
-    if (!this.workers.length) {
-      throw new Error('no workers defined')
-    }
+  constructor(pluginManager, { WorkerClass }) {
+    this.WorkerClass = WorkerClass
   }
 
   // filter the given object and just remove any non-clonable things from it
@@ -48,14 +68,16 @@ export default class WebWorkerRpcDriver {
   }
 
   getWorker(stateGroupName) {
+    const workers = getWorkers(this.WorkerClass)
     if (!this.workerAssignments[stateGroupName]) {
-      const workerAssignment =
-        (this.lastWorkerAssignment + 1) % this.workers.length
+      const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
       this.workerAssignments[stateGroupName] = workerAssignment
       this.lastWorkerAssignment = workerAssignment
     }
 
-    const worker = this.workers[this.workerAssignments[stateGroupName]]
+    const workerNumber = this.workerAssignments[stateGroupName]
+    // console.log(stateGroupName, workerNumber)
+    const worker = workers[workerNumber]
     if (!worker) throw new Error('no web workers registered for RPC')
     return worker
   }
