@@ -9,18 +9,87 @@ function isClonable(thing) {
   return true
 }
 
+const WORKER_MAX_PING_TIME = 30 * 1000 // 30 secs
+
+// watches the given worker object, returns a promise that will be rejected if
+// the worker times out
+function watchWorker(rpcWorkerHandle, pingTime) {
+  return new Promise((resolve, reject) => {
+    let pingIsOK = true
+    const watcherInterval = setInterval(() => {
+      if (!pingIsOK) {
+        clearInterval(watcherInterval)
+        reject(
+          new Error(
+            `worker look longer than ${pingTime} ms to respond. terminated.`,
+          ),
+        )
+      } else {
+        pingIsOK = false
+        rpcWorkerHandle.call('ping').then(() => {
+          pingIsOK = true
+        })
+      }
+    }, pingTime)
+  })
+}
+
+function createWorkerPool(WorkerClass, configuredWorkerCount = 0) {
+  const hardwareConcurrency =
+    typeof window !== 'undefined' ? window.navigator.hardwareConcurrency : 2
+  const workerCount =
+    configuredWorkerCount || Math.max(1, hardwareConcurrency - 2)
+
+  // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
+  // because we want to do our own state-group-aware load balancing rather than using librpc's
+  // builtin round-robin
+  function makeWorker() {
+    return new Rpc.Client({ workers: [new WorkerClass()] })
+  }
+
+  const workerHandles = new Array(workerCount)
+  for (let i = 0; i < workerCount; i += 1) {
+    workerHandles[i] = makeWorker()
+  }
+
+  function watchAndReplaceWorker(rpcWorkerHandle, workerIndex) {
+    watchWorker(rpcWorkerHandle, WORKER_MAX_PING_TIME).catch(error => {
+      console.warn(
+        `worker ${workerIndex +
+          1} did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,
+      )
+      rpcWorkerHandle.workers[0].terminate()
+      workerHandles[workerIndex] = makeWorker()
+      watchAndReplaceWorker(workerHandles[workerIndex], workerIndex)
+    })
+  }
+
+  // for each worker, make a ping timer that will kill it and start a new one if it does not
+  // respond to a ping within a certain time
+  workerHandles.forEach(watchAndReplaceWorker)
+
+  return workerHandles
+}
+
+// keep global pools of each worker class
+const workerPools = new Map()
+function getWorkerPool(WorkerClass, configuredWorkerCount) {
+  if (!workerPools.has(WorkerClass)) {
+    workerPools.set(
+      WorkerClass,
+      createWorkerPool(WorkerClass, configuredWorkerCount),
+    )
+  }
+  return workerPools.get(WorkerClass)
+}
+
 export default class WebWorkerRpcDriver {
   lastWorkerAssignment = -1
 
-  workerAssignments = {} // stateGroupName -> worker number
+  workerAssignments = new Map() // stateGroupName -> worker number
 
-  constructor(pluginManager, { workers = [] }) {
-    // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
-    // because we want to do our own load balancing rather than using librpc's builtin round-robin
-    this.workers = workers.map(worker => new Rpc.Client({ workers: [worker] }))
-    if (!this.workers.length) {
-      throw new Error('no workers defined')
-    }
+  constructor(pluginManager, { WorkerClass }) {
+    this.WorkerClass = WorkerClass
   }
 
   // filter the given object and just remove any non-clonable things from it
@@ -48,15 +117,19 @@ export default class WebWorkerRpcDriver {
   }
 
   getWorker(stateGroupName) {
-    if (!this.workerAssignments[stateGroupName]) {
-      const workerAssignment =
-        (this.lastWorkerAssignment + 1) % this.workers.length
-      this.workerAssignments[stateGroupName] = workerAssignment
+    const workers = getWorkerPool(this.WorkerClass)
+    if (!this.workerAssignments.has(stateGroupName)) {
+      const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
+      this.workerAssignments.set(stateGroupName, workerAssignment)
       this.lastWorkerAssignment = workerAssignment
     }
 
-    const worker = this.workers[this.workerAssignments[stateGroupName]]
-    if (!worker) throw new Error('no web workers registered for RPC')
+    const workerNumber = this.workerAssignments.get(stateGroupName)
+    // console.log(stateGroupName, workerNumber)
+    const worker = workers[workerNumber]
+    if (!worker) {
+      throw new Error('no web workers registered for RPC')
+    }
     return worker
   }
 

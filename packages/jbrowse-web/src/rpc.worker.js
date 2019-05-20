@@ -10,8 +10,10 @@ import corePlugins from './corePlugins'
 
 import * as renderFuncs from './render'
 
-// prevent mobx-react from doing funny things when we render in the worker
-useStaticRendering(true)
+// prevent mobx-react from doing funny things when we render in the worker.
+// but only if we are running in the browser.  in node tests, leave it alone.
+// eslint-disable-next-line @typescript-eslint/camelcase
+if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
 const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))
 jbPluginManager.configure()
@@ -65,4 +67,5 @@ Object.keys(renderFuncs).forEach(key => {
 self.rpcServer = new RpcServer.Server({
   ...rpcConfig,
   ...remoteAbortRpcHandler(),
+  ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
 })

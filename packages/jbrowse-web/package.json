@@ -23,7 +23,7 @@
     "@gmod/jbrowse-plugin-nclist-adapter": "^2.0.0",
     "@gmod/twobit": "^1.1.3",
     "@gmod/ucsc-hub": "^0.1.2",
-    "@librpc/web": "^1.1.0",
+    "@librpc/web": "git+https://github.com/rbuels/librpc-web.git",
     "@material-ui/core": "3.9.3",
     "@material-ui/lab": "3.0.0-alpha.30",
     "@material-ui/styles": "^3.0.0-alpha.10",
