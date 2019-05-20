@@ -157,6 +157,7 @@ Object {
     "views": Array [
       Object {
         "bpPerPx": 0.05,
+        "displayedRegionsSource": "volvox",
         "id": "xdTd_biFQ",
         "offsetPx": 2000,
         "trackSelectorType": "hierarchical",
@@ -176,6 +177,7 @@ Object {
       },
       Object {
         "bpPerPx": 2,
+        "displayedRegionsSource": "volvox",
         "offsetPx": 200,
         "trackSelectorType": "hierarchical",
         "tracks": Array [
@@ -189,6 +191,7 @@ Object {
       },
       Object {
         "bpPerPx": 0.1,
+        "displayedRegionsSource": "volvox",
         "offsetPx": 1800,
         "trackSelectorType": "hierarchical",
         "tracks": Array [

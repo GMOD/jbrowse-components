@@ -1,5 +1,5 @@
-import { autorun, transaction } from 'mobx'
-import { addDisposer, getParent, getRoot, types } from 'mobx-state-tree'
+import { transaction } from 'mobx'
+import { flow, getParent, getRoot, getSnapshot, types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
@@ -53,6 +53,10 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
+      displayedRegionsSource: types.optional(
+        types.union(types.string, types.array(Region)),
+        [],
+      ),
       reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
@@ -112,13 +116,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        const displayedRegionsDisposer = autorun(() => {
-          const { assemblyManager } = getRoot(self)
-          if (assemblyManager)
-            self.setDisplayedRegions(assemblyManager.allRegions)
-        })
-
-        addDisposer(self, displayedRegionsDisposer)
+        self.updateDisplayedRegions()
       },
 
       setWidth(newWidth) {
@@ -164,15 +162,30 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
+      updateDisplayedRegions() {
+        if (typeof self.displayedRegionsSource === 'string')
+          self.setRegionsFromAssembly(self.displayedRegionsSource)
+        else self.displayedRegions = getSnapshot(self.displayedRegionsSource)
+      },
+
+      setRegionsFromAssembly: flow(function* setRegionsFromAssembly(
+        assemblyName,
+      ) {
+        self.githubProjects = []
+        self.state = 'pending'
+        try {
+          const { assemblyManager } = getRoot(self)
+          const regions = yield assemblyManager.getRegionsForAssembly(
+            assemblyName,
+          )
+          self.setDisplayedRegions(regions)
+        } catch (error) {
+          console.error('Failed to assembly regions', error)
+        }
+      }),
+
       setDisplayedRegions(regions) {
-        self.displayedRegions = regions.map(region =>
-          Region.create({
-            assemblyName: region.assemblyName,
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-          }),
-        )
+        self.displayedRegions = regions
       },
 
       activateTrackSelector() {

@@ -215,6 +215,7 @@
           "type": "LinearGenomeView",
           "offsetPx": 2000,
           "bpPerPx": 0.05,
+        "displayedRegionsSource": "volvox",
           "tracks": [
             {
               "type": "FilteringTrack",
@@ -228,6 +229,7 @@
           "type": "LinearGenomeView",
           "offsetPx": 200,
           "bpPerPx": 2,
+          "displayedRegionsSource": "volvox",
           "tracks": [
             {
               "type": "AlignmentsTrack",
@@ -241,6 +243,7 @@
           "type": "LinearGenomeView",
           "offsetPx": 1800,
           "bpPerPx": 0.1,
+          "displayedRegionsSource": "volvox",
           "tracks": [
             {
               "type": "DynamicTrack",

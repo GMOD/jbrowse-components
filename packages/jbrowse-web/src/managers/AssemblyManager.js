@@ -1,30 +1,33 @@
-import { decorate, observable, values } from 'mobx'
+import { decorate, observable } from 'mobx'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 /**
  * @property {Map} refNameMaps mobx observable map with entries like
  * (track configId => refNameMap) (see `addRefNameMapForTrack` method)
- * @property {Region[]} allRegions mobx observable array of all regions defined
- * in all the assemblies of the root configuration
  */
 export default class AssemblyManager {
   constructor(rpcManager, rootConfig) {
     this.rpcManager = rpcManager
-    this.assemblyConfigs = [rootConfig.assemblies]
-    rootConfig.volatile.forEach(conf => {
-      this.assemblyConfigs.push(conf.assemblies)
-    })
     this.refNameMaps = new Map()
-    this.allRegions = []
-    this.loadRegions()
+    this.updateAssemblyConfigs(rootConfig)
   }
 
   updateAssemblyConfigs(rootConfig) {
-    this.assemblyConfigs = [rootConfig.assemblies]
+    this.assemblyConfigs = new Map()
+    for (const [assemblyName, assembly] of rootConfig.assemblies) {
+      this.assemblyConfigs.set(assemblyName, assembly)
+      readConfObject(assembly, 'aliases').forEach(assemblyAlias => {
+        this.assemblyConfigs.set(assemblyAlias, assembly)
+      })
+    }
     rootConfig.volatile.forEach(conf => {
-      this.assemblyConfigs.push(conf.assemblies)
+      for (const [assemblyName, assembly] of conf.assemblies) {
+        this.assemblyConfigs.set(assemblyName, assembly)
+        readConfObject(assembly, 'aliases').forEach(assemblyAlias => {
+          this.assemblyConfigs.set(assemblyAlias, assembly)
+        })
+      }
     })
-    this.loadRegions()
   }
 
   /**
@@ -37,39 +40,29 @@ export default class AssemblyManager {
    */
   async getRefNameAliases(assemblyName) {
     const refNameAliases = {}
-    for (const assemblyConfig of this.assemblyConfigs) {
-      let assembly = assemblyConfig.get(assemblyName)
-      if (!assembly) {
-        values(assemblyConfig).forEach(otherAssembly => {
-          if (
-            (readConfObject(otherAssembly, 'aliases') || []).includes(
-              assemblyName,
-            )
-          )
-            assembly = otherAssembly
-        })
-      }
-
-      if (assembly) {
-        // eslint-disable-next-line no-await-in-loop
-        const adapterRefNameAliases = await this.rpcManager.call(
-          assembly.configId,
-          'getRefNameAliases',
-          {
-            sessionId: assemblyName,
-            adapterType: readConfObject(assembly, [
-              'refNameAliases',
-              'adapter',
-              'type',
-            ]),
-            adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
-          },
-          { timeout: 1000000 },
-        )
-        adapterRefNameAliases.forEach(alias => {
-          refNameAliases[alias.refName] = alias.aliases
-        })
-      }
+    const assemblyConfig = this.assemblyConfigs.get(assemblyName)
+    if (assemblyConfig) {
+      // eslint-disable-next-line no-await-in-loop
+      const adapterRefNameAliases = await this.rpcManager.call(
+        assemblyConfig.configId,
+        'getRefNameAliases',
+        {
+          sessionId: assemblyName,
+          adapterType: readConfObject(assemblyConfig, [
+            'refNameAliases',
+            'adapter',
+            'type',
+          ]),
+          adapterConfig: readConfObject(
+            assemblyConfig.refNameAliases,
+            'adapter',
+          ),
+        },
+        { timeout: 1000000 },
+      )
+      adapterRefNameAliases.forEach(alias => {
+        refNameAliases[alias.refName] = alias.aliases
+      })
     }
     return refNameAliases
   }
@@ -120,43 +113,6 @@ export default class AssemblyManager {
   }
 
   /**
-   * Looks at all the assembly configurations and gets and regions they define,
-   * then stores them in the mobx observable `allRegions` attribute
-   */
-  async loadRegions() {
-    const regions = []
-    const { rpcManager } = this
-    for (const assemblyConfig of this.assemblyConfigs) {
-      for (const [assemblyName, assembly] of assemblyConfig) {
-        const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          const adapterRegions = await rpcManager.call(
-            assembly.configId,
-            'getRegions',
-            {
-              sessionId: assemblyName,
-              adapterType: adapterConfig.type,
-              adapterConfig,
-            },
-            { timeout: 1000000 },
-          )
-          const adapterRegionsWithAssembly = adapterRegions.map(
-            adapterRegion => ({
-              ...adapterRegion,
-              assemblyName,
-            }),
-          )
-          regions.push(...adapterRegionsWithAssembly)
-        } catch (error) {
-          console.error('Failed to fetch sequence', error)
-        }
-      }
-    }
-    this.allRegions = regions
-  }
-
-  /**
    * Retrieve the stored refNameMap for a track, or if none is found, start the
    * asynchronous method for adding a refNameMap for that track and return an
    * empty map.
@@ -171,6 +127,36 @@ export default class AssemblyManager {
     return null
   }
 
+  async getRegionsForAssembly(assemblyName) {
+    const assembly = this.assemblyConfigs.get(assemblyName)
+    if (assembly) {
+      const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const adapterRegions = await this.rpcManager.call(
+          assembly.configId,
+          'getRegions',
+          {
+            sessionId: assemblyName,
+            adapterType: adapterConfig.type,
+            adapterConfig,
+          },
+          { timeout: 1000000 },
+        )
+        const adapterRegionsWithAssembly = adapterRegions.map(
+          adapterRegion => ({
+            ...adapterRegion,
+            assemblyName,
+          }),
+        )
+        return adapterRegionsWithAssembly
+      } catch (error) {
+        console.error('Failed to fetch sequence', error)
+      }
+    }
+    return undefined
+  }
+
   /**
    * Clear all stored refNameMaps
    */
@@ -180,6 +166,5 @@ export default class AssemblyManager {
 }
 
 decorate(AssemblyManager, {
-  allRegions: observable,
   refNameMaps: observable,
 })

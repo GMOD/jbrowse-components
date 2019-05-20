@@ -175,6 +175,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 835,
         "bpPerPx": 50,
+        "displayedRegionsSource": "hg38",
         "tracks": [
           {
             "type": "WiggleTrack",
