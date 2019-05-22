@@ -49,7 +49,7 @@ const styles = theme => ({
   },
 })
 
-function getInputComponent(trackSource, trackData, updateTrackData) {
+function getInputComponent(trackSource, trackData, setTrackData) {
   // mock the slots so we can use the slotEditor components here
   switch (trackSource) {
     case 'fromFile':
@@ -59,7 +59,7 @@ function getInputComponent(trackSource, trackData, updateTrackData) {
             name: 'fileLocation',
             description: '',
             value: trackData,
-            set: value => updateTrackData(value),
+            set: value => setTrackData(value),
           }}
         />
       )
@@ -70,7 +70,7 @@ function getInputComponent(trackSource, trackData, updateTrackData) {
             name: 'configuration',
             description: 'A JSON representation of the features in the track',
             value: trackData.config,
-            set: value => updateTrackData({ config: value }),
+            set: value => setTrackData({ config: value }),
           }}
         />
       )
@@ -79,14 +79,14 @@ function getInputComponent(trackSource, trackData, updateTrackData) {
   }
 }
 
-function handleChange(event, updateTrackSource, updateTrackData) {
-  updateTrackSource(event.target.value)
+function handleChange(event, setTrackSource, setTrackData) {
+  setTrackSource(event.target.value)
   switch (event.target.value) {
     case 'fromFile':
-      updateTrackData(fromFileDefault)
+      setTrackData(fromFileDefault)
       break
     case 'fromConfig':
-      updateTrackData({ config: fromConfigDefault })
+      setTrackData({ config: fromConfigDefault })
       break
     default:
       break
@@ -96,9 +96,9 @@ function handleChange(event, updateTrackSource, updateTrackData) {
 function TrackSourceSelect(props) {
   const {
     trackSource,
-    updateTrackSource,
+    setTrackSource,
     trackData,
-    updateTrackData,
+    setTrackData,
     classes,
   } = props
   return (
@@ -107,24 +107,28 @@ function TrackSourceSelect(props) {
         <RadioGroup
           aria-label="Data location"
           value={trackSource}
-          onChange={event =>
-            handleChange(event, updateTrackSource, updateTrackData)
-          }
+          onChange={event => handleChange(event, setTrackSource, setTrackData)}
         >
           <FormControlLabel
             value="fromFile"
-            control={<Radio />}
+            control={
+              <Radio inputProps={{ 'data-testid': 'addTrackFromFileRadio' }} />
+            }
             label="From file"
           />
           <FormControlLabel
             value="fromConfig"
-            control={<Radio />}
+            control={
+              <Radio
+                inputProps={{ 'data-testid': 'addTrackFromConfigRadio' }}
+              />
+            }
             label="From configuration"
           />
         </RadioGroup>
       </FormControl>
       <Paper className={classes.paper}>
-        {getInputComponent(trackSource, trackData, updateTrackData)}
+        {getInputComponent(trackSource, trackData, setTrackData)}
       </Paper>
     </div>
   )
@@ -132,9 +136,9 @@ function TrackSourceSelect(props) {
 
 TrackSourceSelect.propTypes = {
   trackSource: PropTypes.string.isRequired,
-  updateTrackSource: PropTypes.func.isRequired,
+  setTrackSource: PropTypes.func.isRequired,
   trackData: PropTypes.objectOf(PropTypes.any).isRequired,
-  updateTrackData: PropTypes.func.isRequired,
+  setTrackData: PropTypes.func.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 

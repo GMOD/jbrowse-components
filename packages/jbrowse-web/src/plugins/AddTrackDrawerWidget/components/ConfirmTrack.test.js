@@ -1,106 +1,107 @@
-import { createShallow, createMount } from '@material-ui/core/test-utils'
 import React from 'react'
+import { render, cleanup } from 'react-testing-library'
 import { createTestEnv } from '../../../JBrowse'
 import ConfirmTrack, { guessAdapter } from './ConfirmTrack'
 
-jest.mock('shortid', () => ({ generate: () => 'testid' }))
-
 describe('<ConfirmTrack />', () => {
-  let shallow
-  let mount
   let rootModel
 
   beforeAll(async () => {
-    shallow = createShallow()
-    mount = createMount()
     ;({ rootModel } = await createTestEnv({ configId: 'testing' }))
   })
 
-  it('shallowly renders', () => {
+  afterEach(cleanup)
+
+  it('renders', () => {
     const mockFunction = () => {}
-    const wrapper = shallow(
+    const { container } = render(
       <ConfirmTrack
         rootModel={rootModel}
         trackData={{ uri: 'test.bam' }}
         trackName=""
-        updateTrackName={mockFunction}
+        setTrackName={mockFunction}
         trackType="AlignmentsTrack"
-        updateTrackType={mockFunction}
+        setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
           bamLocation: { uri: 'test.bam' },
           index: { location: { uri: 'test.bam.bai' } },
         }}
-        updateTrackAdapter={mockFunction}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
-    expect(wrapper).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 
   it('mounts with uri', () => {
     const mockFunction = jest.fn(() => {})
-    const preWrap = shallow(
+    const { container } = render(
       <ConfirmTrack
         rootModel={rootModel}
         trackData={{ uri: 'test.bam' }}
         trackName=""
-        updateTrackName={mockFunction}
+        setTrackName={mockFunction}
         trackType="AlignmentsTrack"
-        updateTrackType={mockFunction}
+        setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
           bamLocation: { uri: 'test.bam' },
           index: { location: { uri: 'test.bam.bai' } },
         }}
-        updateTrackAdapter={mockFunction}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
-    const wrapper = mount(preWrap.shallow().get(0))
-    expect(wrapper).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
     expect(mockFunction.mock.calls.length).toBe(2)
   })
 
   it('mounts with localPath', () => {
     const mockFunction = jest.fn(() => {})
-    const preWrap = shallow(
+    const { container } = render(
       <ConfirmTrack
         rootModel={rootModel}
         trackData={{ localPath: 'test.bam' }}
         trackName=""
-        updateTrackName={mockFunction}
+        setTrackName={mockFunction}
         trackType="AlignmentsTrack"
-        updateTrackType={mockFunction}
+        setTrackType={mockFunction}
         trackAdapter={{
           type: 'BamAdapter',
           bamLocation: { localPath: 'test.bam' },
           index: { location: { localPath: 'test.bam.bai' } },
         }}
-        updateTrackAdapter={mockFunction}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
-    const wrapper = mount(preWrap.shallow().get(0))
-    expect(wrapper).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
     expect(mockFunction.mock.calls.length).toBe(2)
   })
 
   it('mounts with config', () => {
     const mockFunction = jest.fn(() => {})
-    const preWrap = shallow(
+    const { container } = render(
       <ConfirmTrack
         rootModel={rootModel}
         trackData={{ uri: 'test.bam', config: [] }}
         trackName=""
-        updateTrackName={mockFunction}
+        setTrackName={mockFunction}
         trackType="AlignmentsTrack"
-        updateTrackType={mockFunction}
+        setTrackType={mockFunction}
         trackAdapter={{
           type: 'FromConfigAdapter',
         }}
-        updateTrackAdapter={mockFunction}
+        setTrackAdapter={mockFunction}
+        assemblyName=""
+        setAssemblyName={mockFunction}
       />,
     )
-    const wrapper = mount(preWrap.shallow().get(0))
-    expect(wrapper).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
     expect(mockFunction.mock.calls.length).toBe(3)
   })
 

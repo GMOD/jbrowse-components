@@ -26,13 +26,17 @@ describe('LinearGenomeView genome view component', () => {
   })
   it('renders one track, no blocks', async () => {
     const { rootModel } = await createTestEnv({
-      tracks: [
-        {
-          configId: 'testConfig',
-          name: 'Foo Track',
-          type: 'BasicTrack',
+      assemblies: {
+        volvox: {
+          tracks: [
+            {
+              configId: 'testConfig',
+              name: 'Foo Track',
+              type: 'BasicTrack',
+            },
+          ],
         },
-      ],
+      },
       defaultSession: {
         views: [
           {
@@ -60,18 +64,22 @@ describe('LinearGenomeView genome view component', () => {
   })
   it('renders two tracks, two regions', async () => {
     const { rootModel } = await createTestEnv({
-      tracks: [
-        {
-          configId: 'testConfig',
-          name: 'Foo Track',
-          type: 'BasicTrack',
+      assemblies: {
+        volvox: {
+          tracks: [
+            {
+              configId: 'testConfig',
+              name: 'Foo Track',
+              type: 'BasicTrack',
+            },
+            {
+              configId: 'testConfig2',
+              name: 'Bar Track',
+              type: 'BasicTrack',
+            },
+          ],
         },
-        {
-          configId: 'testConfig2',
-          name: 'Bar Track',
-          type: 'BasicTrack',
-        },
-      ],
+      },
       defaultSession: {
         views: [
           {

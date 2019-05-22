@@ -51,19 +51,41 @@ export default pluginManager =>
     .views(self => ({
       get trackConfigurations() {
         if (!self.view) return []
+        const assemblyNames = []
+        self.view.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
         const root = getRoot(self)
-        const trackConfigurations = root.configuration.tracks
+        const trackConfigurations = []
+        assemblyNames.forEach(assemblyName => {
+          const assembly = root.configuration.assemblies.get(assemblyName)
+          if (assembly) trackConfigurations.push(...assembly.tracks)
+        })
+
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf => conf.viewType === self.view.type,
         )
         return relevantTrackConfigurations
       },
 
-      volatileTrackConfigurations(connection) {
+      volatileTrackConfigurations(connectionName) {
         if (!self.view) return []
+        const assemblyNames = []
+        self.view.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
         const root = getRoot(self)
-        const trackConfigurations = root.configuration.volatile.get(connection)
-          .tracks
+        const trackConfigurations = []
+        assemblyNames.forEach(assemblyName => {
+          const connection = root.configuration.volatile.get(connectionName)
+          if (connection) {
+            const assembly = connection.assemblies.get(assemblyName)
+            if (assembly) trackConfigurations.push(...assembly.tracks)
+          }
+        })
+
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf => conf.viewType === self.view.type,
         )

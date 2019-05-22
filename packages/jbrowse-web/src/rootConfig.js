@@ -12,89 +12,25 @@ import {
   ucscAssemblies,
 } from './connections/ucscHub'
 
-export function assemblyFactory(pluginManager) {
-  return ConfigurationSchema('Assembly', {
-    sequence: pluginManager.pluggableConfigSchemaType('track'),
-    aliases: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'Other possible names for this assembly',
-    },
-    refNameAliases: ConfigurationSchema('RefNameAliases', {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-    }),
-  })
-}
-
 export default function(pluginManager) {
-  const Assemblies = assemblyFactory(pluginManager)
-  return ConfigurationSchema(
-    'JBrowseWebRoot',
+  const AssemblyConfigSchema = ConfigurationSchema(
+    'Assembly',
     {
-      // track configuration is an array of track config schemas. multiple instances of
-      // a track can exist that use the same configuration
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-
-      // A map of assembly name -> assembly details
-      assemblies: types.map(Assemblies),
-      highResolutionScaling: 2, // possibly consider this for global config editor
-
-      connections: types.array(
-        ConfigurationSchema(
-          'connection',
-          {
-            connectionName: {
-              type: 'string',
-              defaultValue: '',
-            },
-            connectionType: {
-              type: 'string',
-              defaultValue: 'trackHub',
-            },
-            connectionLocation: {
-              type: 'fileLocation',
-              defaultValue: { uri: '/path/to/hub.txt' },
-            },
-            connectionOptions: {
-              type: 'frozen',
-              defaultValue: {},
-            },
-          },
-          { explicitlyTyped: true },
-        ),
-      ),
-
-      rpc: RpcManager.configSchema,
-
-      defaultSession: {
-        type: 'frozen',
-        defaultValue: null,
-        description: 'Snapshot representing a default session',
+      sequence: pluginManager.elementTypes.track.ReferenceSequence.configSchema,
+      aliases: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'Other possible names for this assembly',
       },
-
-      volatile: types.map(
-        ConfigurationSchema('volatile', {
-          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-          assemblies: types.map(Assemblies),
-        }),
-      ),
+      refNameAliases: ConfigurationSchema('RefNameAliases', {
+        adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      }),
+      // track configuration is an array of track config schemas. multiple
+      // instances of a track can exist that use the same configuration
+      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     },
     {
       actions: self => ({
-        afterAttach() {
-          self.connections.forEach(connectionConf => {
-            const connectionType = readConfObject(
-              connectionConf,
-              'connectionType',
-            )
-            if (!['trackHub'].includes(connectionType))
-              throw new Error(
-                `Cannot add connection, unsupported connection type: ${connectionType}`,
-              )
-            self.configureConnection(connectionConf)
-          })
-        },
-
         addTrackConf(typeName, data, connectionName) {
           const type = getRoot(self).pluginManager.getTrackType(typeName)
           if (!type) throw new Error(`unknown track type ${typeName}`)
@@ -113,6 +49,73 @@ export default function(pluginManager) {
             self.volatile.get(connectionName).tracks.push(conf)
           } else self.tracks.push(conf)
           return conf
+        },
+      }),
+    },
+  )
+
+  const ConnectionConfigSchema = ConfigurationSchema(
+    'connection',
+    {
+      connectionName: {
+        type: 'string',
+        defaultValue: '',
+      },
+      connectionType: {
+        type: 'string',
+        defaultValue: 'trackHub',
+      },
+      connectionLocation: {
+        type: 'fileLocation',
+        defaultValue: { uri: '/path/to/hub.txt' },
+      },
+      connectionOptions: {
+        type: 'frozen',
+        defaultValue: {},
+      },
+    },
+    { explicitlyTyped: true },
+  )
+
+  return ConfigurationSchema(
+    'JBrowseWebRoot',
+    {
+      // A map of assembly name -> assembly details
+      assemblies: types.map(AssemblyConfigSchema),
+
+      highResolutionScaling: 2, // possibly consider this for global config editor
+
+      connections: types.array(ConnectionConfigSchema),
+
+      rpc: RpcManager.configSchema,
+
+      defaultSession: {
+        type: 'frozen',
+        defaultValue: null,
+        description: 'Snapshot representing a default session',
+      },
+
+      volatile: types.map(
+        ConfigurationSchema('volatile', {
+          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+          assemblies: types.map(AssemblyConfigSchema),
+        }),
+      ),
+    },
+    {
+      actions: self => ({
+        afterAttach() {
+          self.connections.forEach(connectionConf => {
+            const connectionType = readConfObject(
+              connectionConf,
+              'connectionType',
+            )
+            if (!['trackHub'].includes(connectionType))
+              throw new Error(
+                `Cannot add connection, unsupported connection type: ${connectionType}`,
+              )
+            self.configureConnection(connectionConf)
+          })
         },
 
         addConnection(connectionConf) {

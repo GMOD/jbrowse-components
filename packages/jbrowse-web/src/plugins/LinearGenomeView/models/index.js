@@ -116,7 +116,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        self.updateDisplayedRegions()
+        self.resetDisplayedRegions()
       },
 
       setWidth(newWidth) {
@@ -162,7 +162,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
-      updateDisplayedRegions() {
+      resetDisplayedRegions() {
         if (typeof self.displayedRegionsSource === 'string')
           self.setRegionsFromAssembly(self.displayedRegionsSource)
         else self.displayedRegions = getSnapshot(self.displayedRegionsSource)

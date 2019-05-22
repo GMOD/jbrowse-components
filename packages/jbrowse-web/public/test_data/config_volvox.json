@@ -1,310 +1,4 @@
 {
-  "tracks": [
-    {
-      "configId": "PDWVXl3526",
-      "type": "DynamicTrack",
-      "name": "Lollipop track",
-      "category": [
-        "Bar Category"
-      ],
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 190,
-            "end": 191,
-            "type": "foo",
-            "score": 200,
-            "name": "Boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 191,
-            "end": 192,
-            "type": "bar",
-            "score": 20,
-            "name": "Theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 210,
-            "end": 211,
-            "type": "baz",
-            "score": 300,
-            "name": "Nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 220,
-            "end": 221,
-            "score": 2,
-            "type": "quux",
-            "name": "Geoffray"
-          }
-        ]
-      },
-      "renderer": {
-        "type": "LollipopRenderer"
-      }
-    },
-    {
-      "configId": "i3jUzmrgMOq",
-      "type": "AlignmentsTrack",
-      "name": "volvox-sorted red/blue",
-      "category": [
-        "Bar Category",
-        "Baz Category"
-      ],
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "/test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "/test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "labels": {}
-        }
-      }
-    },
-    {
-      "type": "BasicTrack",
-      "name": "volvox bigbed",
-      "category": [
-        "Bee Category",
-        "Boo Category"
-      ],
-      "assemblyName": "vvx",
-      "adapter": {
-        "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "/test_data/volvox.bb"
-        }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "name": "volvox-sorted all green",
-      "category": [
-        "Bee Category",
-        "Boo Category"
-      ],
-      "assemblyName": "vvx",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "/test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "/test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer",
-          "alignmentColor": "green"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "labels": {}
-        }
-      }
-    },
-    {
-      "configId": "i3jUPmrgMOS",
-      "type": "FilteringTrack",
-      "name": "Filter Test",
-      "assemblyName": "volvox2",
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 100,
-            "end": 101,
-            "type": "foo",
-            "name": "Boris",
-            "note": "note for boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 110,
-            "end": 111,
-            "type": "bar",
-            "name": "Theresa",
-            "note": "note for theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 120,
-            "end": 121,
-            "type": "baz",
-            "name": "Nigel",
-            "note": "note for nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 130,
-            "end": 131,
-            "type": "quux",
-            "name": "Geoffray",
-            "note": "note for geoffray"
-          }
-        ]
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {}
-      },
-      "filterAttributes": [
-        "type",
-        "start",
-        "end"
-      ]
-    },
-    {
-      "type": "BasicTrack",
-      "name": "Volvox genes",
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    },
-    {
-      "configId": "volvox_microarray_density",
-      "type": "WiggleTrack",
-      "name": "Volvox microarray",
-      "category": [
-        "BigWig",
-        "Density"
-      ],
-      "defaultRendering": "density",
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "volvox_microarray_xyplot",
-      "type": "WiggleTrack",
-      "name": "Volvox microarray",
-      "category": [
-        "BigWig",
-        "XYPlot"
-      ],
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray_negative.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "volvox_microarray_negative_density",
-      "type": "WiggleTrack",
-      "name": "Volvox microarray - negative",
-      "category": [
-        "BigWig",
-        "Density"
-      ],
-      "defaultRendering": "density",
-      "height": 300,
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray_negative.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "volvox_microarray_negative_xyplot",
-      "type": "WiggleTrack",
-      "name": "Volvox microarray - negative",
-      "category": [
-        "BigWig",
-        "XYPlot"
-      ],
-      "height": 300,
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "volvox_microarray_posneg",
-      "type": "WiggleTrack",
-      "name": "Volvox microarray with +/- values",
-      "category": [
-        "BigWig"
-      ],
-      "height": 300,
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox_microarray_posneg.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    },
-    {
-      "configId": "volvox_coverage",
-      "type": "WiggleTrack",
-      "name": "Volvox - BAM coverage",
-      "category": [
-        "BigWig"
-      ],
-      "height": 300,
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "/test_data/volvox-sorted.bam.coverage.bw"
-        },
-        "assemblyName": "volvox"
-      }
-    }
-  ],
   "assemblies": {
     "volvox": {
       "configId": "volvox",
@@ -346,7 +40,296 @@
             }
           ]
         }
-      }
+      },
+      "tracks": [
+        {
+          "configId": "PDWVXl3526",
+          "type": "DynamicTrack",
+          "name": "Lollipop track",
+          "category": [
+            "Bar Category"
+          ],
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 190,
+                "end": 191,
+                "type": "foo",
+                "score": 200,
+                "name": "Boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 191,
+                "end": 192,
+                "type": "bar",
+                "score": 20,
+                "name": "Theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 210,
+                "end": 211,
+                "type": "baz",
+                "score": 300,
+                "name": "Nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 220,
+                "end": 221,
+                "score": 2,
+                "type": "quux",
+                "name": "Geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "LollipopRenderer"
+          }
+        },
+        {
+          "configId": "i3jUzmrgMOq",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue",
+          "category": [
+            "Bar Category",
+            "Baz Category"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "BasicTrack",
+          "name": "volvox bigbed",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "/test_data/volvox.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted all green",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer",
+              "alignmentColor": "green"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "i3jUPmrgMOS",
+          "type": "FilteringTrack",
+          "name": "Filter Test",
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 100,
+                "end": 101,
+                "type": "foo",
+                "name": "Boris",
+                "note": "note for boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 110,
+                "end": 111,
+                "type": "bar",
+                "name": "Theresa",
+                "note": "note for theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 120,
+                "end": 121,
+                "type": "baz",
+                "name": "Nigel",
+                "note": "note for nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 130,
+                "end": 131,
+                "type": "quux",
+                "name": "Geoffray",
+                "note": "note for geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          },
+          "filterAttributes": [
+            "type",
+            "start",
+            "end"
+          ]
+        },
+        {
+          "type": "BasicTrack",
+          "name": "Volvox genes",
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "volvox_microarray_density",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "Density"
+          ],
+          "defaultRendering": "density",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_xyplot",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "XYPlot"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_negative_density",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray - negative",
+          "category": [
+            "BigWig",
+            "Density"
+          ],
+          "defaultRendering": "density",
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_negative_xyplot",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray - negative",
+          "category": [
+            "BigWig",
+            "XYPlot"
+          ],
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_posneg",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray with +/- values",
+          "category": [
+            "BigWig"
+          ],
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_posneg.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_coverage",
+          "type": "WiggleTrack",
+          "name": "Volvox - BAM coverage",
+          "category": [
+            "BigWig"
+          ],
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+            }
+          }
+        }
+      ]
     },
     "volvox2": {
       "configId": "volvox2",
