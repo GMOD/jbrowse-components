@@ -91,7 +91,7 @@ describe('<AddTrackDrawerWidget />', () => {
         },
       },
     }))
-    const view = rootModel.addView('LinearGenomeView')
+    const view = rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: view.id,
     })

@@ -107,7 +107,7 @@ describe('Assembly Manager', () => {
   })
 
   it('aliases ref names for a track', async () => {
-    rootModel.addView('LinearGenomeView', {})
+    rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     rootModel.views[0].showTrack(
       rootModel.configuration.assemblies.get('volvox').tracks[0],
     )

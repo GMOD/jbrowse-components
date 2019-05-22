@@ -172,6 +172,15 @@ export default (pluginManager, workerManager) => {
         self.views.remove(view)
       },
 
+      addLinearGenomeViewOfAssembly(
+        assemblyName,
+        configuration,
+        initialState = {},
+      ) {
+        configuration.displayedRegionsSource = assemblyName
+        return self.addView('LinearGenomeView', configuration, initialState)
+      },
+
       addDrawerWidget(
         typeName,
         id,

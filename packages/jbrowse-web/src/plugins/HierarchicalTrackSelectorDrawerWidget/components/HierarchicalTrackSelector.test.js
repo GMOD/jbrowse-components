@@ -25,7 +25,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         },
       },
     })
-    const firstView = rootModel.addView('LinearGenomeView')
+    const firstView = rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     firstView.showTrack(
       rootModel.configuration.assemblies.get('volvox').tracks[0],
     )
@@ -50,7 +50,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         },
       },
     })
-    const firstView = rootModel.addView('LinearGenomeView')
+    const firstView = rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     firstView.showTrack(
       rootModel.configuration.assemblies.get('volvox').tracks[0],
     )
