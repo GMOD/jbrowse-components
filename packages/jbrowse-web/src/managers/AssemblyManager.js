@@ -30,6 +30,17 @@ export default class AssemblyManager {
     })
   }
 
+  get activeAssembly() {
+    return this.currentlyActiveAssembly
+  }
+
+  set activeAssembly(assembly) {
+    if (!this.assemblyConfigs.has(assembly))
+      throw new Error(`Could not activate non-existent assembly: ${assembly}`)
+    this.clear()
+    this.currentlyActiveAssembly = assembly
+  }
+
   /**
    * Return an object like { refName1: ['alias1', 'alias2'], refName2:
    * ['alias3', 'alias4'] } that describes the reference names and aliases of

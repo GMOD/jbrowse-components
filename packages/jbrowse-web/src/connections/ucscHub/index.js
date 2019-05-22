@@ -1,28 +1,25 @@
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
-// Polyfill for TextDecoder
-import 'fast-text-encoding'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
 import ucscAssemblies from './ucscAssemblies'
 
 export { ucscAssemblies }
 
 export async function fetchHubFile(hubFileLocation) {
-  const hubFileText = new TextDecoder('utf-8').decode(
-    await openLocation(hubFileLocation).readFile(),
-  )
+  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
   return new HubFile(hubFileText)
 }
 
 export async function fetchGenomesFile(genomesFileLocation) {
-  const genomesFileText = new TextDecoder('utf-8').decode(
-    await openLocation(genomesFileLocation).readFile(),
+  const genomesFileText = await openLocation(genomesFileLocation).readFile(
+    'utf8',
   )
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbFileLocation) {
-  const trackDbFileText = new TextDecoder('utf-8').decode(
-    await openLocation(trackDbFileLocation).readFile(),
+  const trackDbFileText = await openLocation(trackDbFileLocation).readFile(
+    'utf8',
   )
   return new TrackDbFile(trackDbFileText)
 }
@@ -128,15 +125,35 @@ function makeTrackConfig(
         },
       }
     case 'bed':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bed5FloatScore':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bedGraph':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bedRnaElements':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigBarChart':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigBed':
       return {
         type: 'BasicTrack',
@@ -151,13 +168,29 @@ function makeTrackConfig(
         },
       }
     case 'bigChain':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigInteract':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigMaf':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigPsl':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'bigWig':
       return {
         type: 'WiggleTrack',
@@ -171,35 +204,66 @@ function makeTrackConfig(
         },
       }
     case 'broadPeak':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'coloredExon':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'cram':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'gvf':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'ld2':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'narrowPeak':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'peptideMapping':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'vcfTabix':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'wig':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'wigMaf':
-      return generateUnsupportedTrackConf(track, categories, baseTrackType)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     default:
       throw new Error(`Unsupported track type: ${baseTrackType}`)
-  }
-}
-
-function generateUnsupportedTrackConf(track, categories, baseTrackType) {
-  return {
-    type: 'BasicTrack',
-    name: `${track.get('shortLabel')} (Unsupported)`,
-    description: `Support for track type "${baseTrackType}" has not been implemented yet`,
-    category: categories,
   }
 }

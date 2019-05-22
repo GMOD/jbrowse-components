@@ -31,5 +31,3 @@ export function contrastingTextColor(rgb: string): string {
 
   return luminance >= 128 ? 'black' : 'white'
 }
-
-export function mollifyEslint(): void {}

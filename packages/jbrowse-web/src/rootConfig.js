@@ -5,6 +5,11 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import {
+  convertTrackConfig,
+  createRefSeqsAdapter,
+  fetchJb1,
+} from './connections/jb1Hub'
+import {
   fetchGenomesFile,
   fetchHubFile,
   fetchTrackDbFile,
@@ -110,7 +115,7 @@ export default function(pluginManager) {
               connectionConf,
               'connectionType',
             )
-            if (!['trackHub'].includes(connectionType))
+            if (!['trackHub', 'jbrowse1'].includes(connectionType))
               throw new Error(
                 `Cannot add connection, unsupported connection type: ${connectionType}`,
               )
@@ -123,7 +128,7 @@ export default function(pluginManager) {
             connectionConf,
             'connectionType',
           )
-          if (!['trackHub'].includes(connectionType))
+          if (!['trackHub', 'jbrowse1'].includes(connectionType))
             throw new Error(
               `Cannot add connection, unsupported connection type: ${connectionType}`,
             )
@@ -155,6 +160,7 @@ export default function(pluginManager) {
             configId: connectionName,
           })
           if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
+          if (connectionType === 'jbrowse1') self.fetchJBrowse1(connectionConf)
         },
 
         removeConnection(connectionConf) {
@@ -172,7 +178,8 @@ export default function(pluginManager) {
           let genomesFileLocation
           if (hubFileLocation.uri)
             genomesFileLocation = {
-              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
+                .href,
             }
           else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
           const genomesFile = yield fetchGenomesFile(genomesFileLocation)
@@ -248,6 +255,43 @@ export default function(pluginManager) {
             )
           }
           self.updateAssemblyManager()
+        }),
+
+        fetchJBrowse1: flow(function* fetchJBrowse1(connectionConf) {
+          const opts = readConfObject(connectionConf, 'connectionOptions') || {}
+          const hubLocation = readConfObject(
+            connectionConf,
+            'connectionLocation',
+          )
+          // const configs = yield fetchConfigFile({
+          //   uri: '/test_data/tracks.conf',
+          // })
+          const config = yield fetchJb1(hubLocation)
+          const adapter = yield createRefSeqsAdapter(config.refSeqs)
+          const connectionName = readConfObject(
+            connectionConf,
+            'connectionName',
+          )
+          self.addAssembly(
+            opts.assemblyName || `assembly from ${connectionName}`,
+            undefined,
+            undefined,
+            {
+              type: 'ReferenceSequence',
+              adapter,
+            },
+            connectionName,
+          )
+          config.tracks.forEach(track => {
+            const jb2Track = convertTrackConfig(track, config.dataRoot)
+            self.addTrackConf(
+              jb2Track.type,
+              jb2Track,
+              readConfObject(connectionConf, 'connectionName'),
+            )
+          })
+
+          // self.updateAssemblyManager()
         }),
 
         updateAssemblyManager() {

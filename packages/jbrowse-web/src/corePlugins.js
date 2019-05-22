@@ -19,8 +19,8 @@ import WiggleTrackPlugin from './plugins/WiggleTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
 // renderers
-import PileupRendererPlugin from './plugins/PileupRenderer'
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
+import PileupRendererPlugin from './plugins/PileupRenderer'
 import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import WiggleRendererPlugin from './plugins/WiggleRenderer'
 
@@ -45,8 +45,8 @@ export default [
   AddTrackDrawerWidgetPlugin,
   ConfigurationEditorPlugin,
   SequenceTrackPlugin,
-  PileupRendererPlugin,
   SvgFeaturePlugin,
+  PileupRendererPlugin,
   DivSequenceRendererPlugin,
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,

@@ -2385,6 +2385,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/get-value@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@types/get-value/-/get-value-3.0.1.tgz#67da2663d2a632fb2ed33693479176b2841749ca"
+  integrity sha512-Pla+0sjwKHH9d5aejg9hSXd+NxlKnaLutTpckENtCNTnrC+EmAsQsqhp+WJX8LgOBDDiRtiBj5kX8PwAfL+KdQ==
+
 "@types/glob@*":
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.1.tgz#aa59a1c6e3fbc421e07ccd31a944c30eba521575"
@@ -2480,6 +2485,11 @@
   dependencies:
     "@types/prop-types" "*"
     csstype "^2.2.0"
+
+"@types/set-value@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/set-value/-/set-value-2.0.0.tgz#63d386b103926dcf49b50e16e0f6dd49983046be"
+  integrity sha512-k8dCJEC80F/mbsIOZ5Hj3YSzTVVVBwMdtP/M9Rtc2TM4F5etVd+2UG8QUiAUfbXm4fABedL2tBZnrBheY7UwpA==
 
 "@types/shelljs@^0.8.0":
   version "0.8.5"
@@ -4608,6 +4618,14 @@ cosmiconfig@^5.0.0, cosmiconfig@^5.0.5, cosmiconfig@^5.1.0, cosmiconfig@^5.2.0:
     js-yaml "^3.13.0"
     parse-json "^4.0.0"
 
+crc-32@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/crc-32/-/crc-32-1.2.0.tgz#cb2db6e29b88508e32d9dd0ec1693e7b41a18208"
+  integrity sha512-1uBwHxF+Y/4yF5G48fwnKq6QsIXheor3ZLPT80yGBV1oEUwpPojlEhQbWKVw1VwcTQyMGHK1/XMmTjmlsmTTGA==
+  dependencies:
+    exit-on-epipe "~1.0.1"
+    printj "~1.1.0"
+
 create-ecdh@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.3.tgz#c9111b6f33045c4697f144787f9254cdc77c45ff"
@@ -6146,6 +6164,11 @@ execa@^1.0.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
+exit-on-epipe@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/exit-on-epipe/-/exit-on-epipe-1.0.1.tgz#0bdd92e87d5285d267daa8171d0eb06159689692"
+  integrity sha512-h2z5mrROTxce56S+pnvAV890uu7ls7f1kEvVGJbw1OlFH3/mlJ5bkXu0KRyW94v37zzHPiUd55iLn3DA7TjWpw==
+
 exit@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/exit/-/exit-0.1.2.tgz#0632638f8d877cc82107d30a0fff1a17cba1cd0c"
@@ -6312,11 +6335,6 @@ fast-levenshtein@~2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
-
-fast-text-encoding@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/fast-text-encoding/-/fast-text-encoding-1.0.0.tgz#3e5ce8293409cfaa7177a71b9ca84e1b1e6f25ef"
-  integrity sha512-R9bHCvweUxxwkDwhjav5vxpFvdPGlVngtqmx4pIZfSUhM/Q4NiIUHB456BAf+Q1Nwu3HEZYONtu+Rya+af4jiQ==
 
 faye-websocket@^0.10.0, faye-websocket@~0.10.0:
   version "0.10.0"
@@ -6792,6 +6810,13 @@ get-value@^2.0.3, get-value@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/get-value/-/get-value-2.0.6.tgz#dc15ca1c672387ca76bd37ac0a395ba2042a2c28"
   integrity sha1-3BXKHGcjh8p2vTesCjlbogQqLCg=
+
+get-value@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/get-value/-/get-value-3.0.1.tgz#5efd2a157f1d6a516d7524e124ac52d0a39ef5a8"
+  integrity sha512-mKZj9JLQrwMBtj5wxi6MH8Z5eSKaERpAwjg43dPtlGI1ZVEgH/qC7T8/6R2OBSUA+zzHBZgICsVJaEIV2tKTDA==
+  dependencies:
+    isobject "^3.0.1"
 
 getpass@^0.1.1:
   version "0.1.7"
@@ -7455,7 +7480,7 @@ http-proxy@^1.17.0:
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
 
-http-range-fetcher@^1.2.2:
+http-range-fetcher@^1.1.0, http-range-fetcher@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.2.2.tgz#ffa0ba520ca019b218e1b2f1e4bfdffe3d8b2361"
   integrity sha512-QcVMzxt/3oS/HYQQ57BFYtHUMDP+saKCrUNkI0Ee58774SVtF+OLUvFd2jjGeM5PagVmONiSZkjQfqukYL0vsA==
@@ -11848,6 +11873,11 @@ pretty-format@^24.5.0, pretty-format@^24.7.0:
     ansi-styles "^3.2.0"
     react-is "^16.8.4"
 
+printj@~1.1.0:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/printj/-/printj-1.1.2.tgz#d90deb2975a8b9f600fb3a1c94e3f4c53c78a222"
+  integrity sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==
+
 prismjs@^1.15.0:
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.16.0.tgz#406eb2c8aacb0f5f0f1167930cb83835d10a4308"
@@ -13259,6 +13289,13 @@ set-value@^2.0.0:
     is-extendable "^0.1.1"
     is-plain-object "^2.0.3"
     split-string "^3.0.1"
+
+set-value@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/set-value/-/set-value-3.0.0.tgz#bc021514f46effed8176fd5f0f67e9988531141f"
+  integrity sha512-tqkg9wJ2TOsxbzIMG5NMAmzjdbDTAD0in7XuUzmFpJE4Ipi2QFBfgC2Z1/gfxcAmWCPsuutiEJyDIMRsrjrMOQ==
+  dependencies:
+    is-plain-object "^2.0.4"
 
 setimmediate@^1.0.4, setimmediate@^1.0.5:
   version "1.0.5"

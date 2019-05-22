@@ -33,6 +33,7 @@ const styles = theme => ({
   },
   connectionsPaper: {
     padding: theme.spacing.unit,
+    marginTop: theme.spacing.unit,
   },
 })
 
