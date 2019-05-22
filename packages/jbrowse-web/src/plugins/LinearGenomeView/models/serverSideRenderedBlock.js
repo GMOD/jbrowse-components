@@ -24,11 +24,17 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 // work with autorun
 function renderBlockData(self) {
   const track = getParent(self, 2)
+  const trackConf = track.configuration
+  let trackConfParent = getParent(trackConf)
+  if (!trackConfParent.configId) trackConfParent = getParent(trackConfParent)
+  let cannotBeRenderedReason
+  if (trackConfParent.configId !== self.region.assemblyName)
+    cannotBeRenderedReason = 'region assembly does not match track'
+  else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const view = getContainingView(track)
   const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
-  const cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   return {
     rendererType,
     rpcManager,
