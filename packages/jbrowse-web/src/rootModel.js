@@ -1,6 +1,7 @@
 import { autorun } from 'mobx'
 import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -36,6 +37,9 @@ export default (pluginManager, workerManager) => {
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
       configuration: rootConfig(pluginManager),
+      connections: types.map(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
+      ),
     })
     .volatile(self => {
       const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
@@ -94,7 +98,21 @@ export default (pluginManager, workerManager) => {
           })
         })
         addDisposer(self, disposer)
+
+        self.clearConnections()
+        self.configuration.connections.forEach(connectionConf => {
+          const connectionType = pluginManager.getConnectionType(
+            connectionConf.type,
+          )
+          const connectionName = readConfObject(connectionConf, 'name')
+          self.connections.set(
+            connectionName,
+            connectionType.stateModel.create(),
+          )
+          self.connections.get(connectionName).connect(connectionConf)
+        })
       },
+
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
@@ -265,6 +283,10 @@ export default (pluginManager, workerManager) => {
         const editor = self.drawerWidgets.get('configEditor')
         editor.setTarget(configuration)
         self.showDrawerWidget(editor)
+      },
+
+      clearConnections() {
+        self.connections.clear()
       },
     }))
 }

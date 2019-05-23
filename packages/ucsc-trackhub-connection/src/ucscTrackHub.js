@@ -24,11 +24,7 @@ export async function fetchTrackDbFile(trackDbFileLocation) {
   return new TrackDbFile(trackDbFileText)
 }
 
-export function generateTracks(
-  trackDb,
-  trackDbFileLocation,
-  assemblyName = undefined,
-) {
+export function generateTracks(trackDb, trackDbFileLocation) {
   const tracks = []
 
   trackDb.forEach((track, trackName) => {
@@ -54,26 +50,14 @@ export function generateTracks(
       parentTrack.get('shortLabel'),
     )
     tracks.push(
-      makeTrackConfig(
-        track,
-        categories,
-        trackDbFileLocation,
-        assemblyName,
-        trackDb,
-      ),
+      makeTrackConfig(track, categories, trackDbFileLocation, trackDb),
     )
   })
 
   return tracks
 }
 
-function makeTrackConfig(
-  track,
-  categories,
-  trackDbFileLocation,
-  assemblyName = undefined,
-  trackDb,
-) {
+function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
   let trackType = track.get('type')
   if (!trackType) trackType = trackDb.get(track.get('parent')).get('type')
   let baseTrackType = trackType.split(' ')[0]
@@ -115,7 +99,6 @@ function makeTrackConfig(
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
-        assemblyName,
         adapter: {
           type: 'BamAdapter',
           bamLocation: bigDataLocation,
@@ -160,7 +143,6 @@ function makeTrackConfig(
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
-        assemblyName,
         renderer: { type: 'SvgFeatureRenderer' },
         adapter: {
           type: 'BigBedAdapter',
@@ -197,7 +179,6 @@ function makeTrackConfig(
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
-        assemblyName,
         adapter: {
           type: 'BigWigAdapter',
           bigWigLocation: bigDataLocation,

@@ -9,13 +9,6 @@ import {
   createRefSeqsAdapter,
   fetchJb1,
 } from './connections/jb1Hub'
-import {
-  fetchGenomesFile,
-  fetchHubFile,
-  fetchTrackDbFile,
-  generateTracks,
-  ucscAssemblies,
-} from './connections/ucscHub'
 
 export default function(pluginManager) {
   const AssemblyConfigSchema = ConfigurationSchema(
@@ -59,29 +52,6 @@ export default function(pluginManager) {
     },
   )
 
-  const ConnectionConfigSchema = ConfigurationSchema(
-    'connection',
-    {
-      connectionName: {
-        type: 'string',
-        defaultValue: '',
-      },
-      connectionType: {
-        type: 'string',
-        defaultValue: 'trackHub',
-      },
-      connectionLocation: {
-        type: 'fileLocation',
-        defaultValue: { uri: '/path/to/hub.txt' },
-      },
-      connectionOptions: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-    },
-    { explicitlyTyped: true },
-  )
-
   return ConfigurationSchema(
     'JBrowseWebRoot',
     {
@@ -90,7 +60,9 @@ export default function(pluginManager) {
 
       highResolutionScaling: 2, // possibly consider this for global config editor
 
-      connections: types.array(ConnectionConfigSchema),
+      connections: types.array(
+        pluginManager.pluggableConfigSchemaType('connection'),
+      ),
 
       rpc: RpcManager.configSchema,
 
@@ -99,30 +71,9 @@ export default function(pluginManager) {
         defaultValue: null,
         description: 'Snapshot representing a default session',
       },
-
-      volatile: types.map(
-        ConfigurationSchema('volatile', {
-          tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-          assemblies: types.map(AssemblyConfigSchema),
-        }),
-      ),
     },
     {
       actions: self => ({
-        afterAttach() {
-          self.connections.forEach(connectionConf => {
-            const connectionType = readConfObject(
-              connectionConf,
-              'connectionType',
-            )
-            if (!['trackHub', 'jbrowse1'].includes(connectionType))
-              throw new Error(
-                `Cannot add connection, unsupported connection type: ${connectionType}`,
-              )
-            self.configureConnection(connectionConf)
-          })
-        },
-
         addConnection(connectionConf) {
           const connectionType = readConfObject(
             connectionConf,
@@ -159,7 +110,6 @@ export default function(pluginManager) {
           self.volatile.set(connectionName, {
             configId: connectionName,
           })
-          if (connectionType === 'trackHub') self.fetchUcsc(connectionConf)
           if (connectionType === 'jbrowse1') self.fetchJBrowse1(connectionConf)
         },
 
@@ -167,95 +117,6 @@ export default function(pluginManager) {
           self.volatile.delete(connectionConf.connectionName)
           self.connections.remove(connectionConf)
         },
-
-        fetchUcsc: flow(function* fetchUcsc(connectionConf) {
-          const opts = readConfObject(connectionConf, 'connectionOptions') || {}
-          const hubFileLocation = readConfObject(
-            connectionConf,
-            'connectionLocation',
-          )
-          const hubFile = yield fetchHubFile(hubFileLocation)
-          let genomesFileLocation
-          if (hubFileLocation.uri)
-            genomesFileLocation = {
-              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
-                .href,
-            }
-          else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
-          const genomesFile = yield fetchGenomesFile(genomesFileLocation)
-          const assemblyNames = opts.assemblyNames || genomesFile.keys()
-          for (const assemblyName of assemblyNames) {
-            const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
-            if (twoBitPath) {
-              let twoBitLocation
-              if (hubFileLocation.uri)
-                twoBitLocation = {
-                  uri: new URL(
-                    twoBitPath,
-                    new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                  ).href,
-                }
-              else
-                twoBitLocation = {
-                  localPath: twoBitPath,
-                }
-              self.addAssembly(
-                assemblyName,
-                undefined,
-                undefined,
-                {
-                  type: 'ReferenceSequence',
-                  adapter: {
-                    type: 'TwoBitAdapter',
-                    twoBitLocation,
-                  },
-                },
-                readConfObject(connectionConf, 'connectionName'),
-              )
-            } else if (ucscAssemblies.includes(assemblyName))
-              self.addAssembly(
-                assemblyName,
-                undefined,
-                undefined,
-                {
-                  type: 'ReferenceSequence',
-                  adapter: {
-                    type: 'TwoBitAdapter',
-                    twoBitLocation: {
-                      uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
-                    },
-                  },
-                },
-                readConfObject(connectionConf, 'connectionName'),
-              )
-            let trackDbFileLocation
-            if (hubFileLocation.uri)
-              trackDbFileLocation = {
-                uri: new URL(
-                  genomesFile.get(assemblyName).get('trackDb'),
-                  new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                ).href,
-              }
-            else
-              trackDbFileLocation = {
-                localPath: genomesFile.get(assemblyName).get('trackDb'),
-              }
-            const trackDbFile = yield fetchTrackDbFile(trackDbFileLocation)
-            const tracks = generateTracks(
-              trackDbFile,
-              trackDbFileLocation,
-              assemblyName,
-            )
-            tracks.forEach(track =>
-              self.addTrackConf(
-                track.type,
-                track,
-                readConfObject(connectionConf, 'connectionName'),
-              ),
-            )
-          }
-          self.updateAssemblyManager()
-        }),
 
         fetchJBrowse1: flow(function* fetchJBrowse1(connectionConf) {
           const opts = readConfObject(connectionConf, 'connectionOptions') || {}

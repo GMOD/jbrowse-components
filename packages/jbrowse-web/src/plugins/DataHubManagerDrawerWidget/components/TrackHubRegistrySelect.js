@@ -7,12 +7,18 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import { withStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import { HubFile } from '@gmod/ucsc-hub'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import sanitizeHtml from 'sanitize-html'
-import { fetchHubFile } from '../../../connections/ucscHub'
 import GenomeSelector from './GenomeSelector'
 import SelectBox from './SelectBox'
+
+export async function fetchHubFile(hubFileLocation) {
+  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+  return new HubFile(hubFileText)
+}
 
 function QueryStatus(props) {
   const { status } = props

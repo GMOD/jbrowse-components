@@ -69,7 +69,7 @@ export default pluginManager =>
         return relevantTrackConfigurations
       },
 
-      volatileTrackConfigurations(connectionName) {
+      connectionTrackConfigurations(connectionName) {
         if (!self.view) return []
         const assemblyNames = []
         self.view.displayedRegions.forEach(displayedRegion => {
@@ -79,7 +79,7 @@ export default pluginManager =>
         const root = getRoot(self)
         const trackConfigurations = []
         assemblyNames.forEach(assemblyName => {
-          const connection = root.configuration.volatile.get(connectionName)
+          const connection = root.connections.get(connectionName)
           if (connection) {
             const assembly = connection.assemblies.get(assemblyName)
             if (assembly) trackConfigurations.push(...assembly.tracks)
@@ -96,14 +96,14 @@ export default pluginManager =>
         return generateHierarchy(self.trackConfigurations)
       },
 
-      volatileHierarchy(connection) {
-        return generateHierarchy(self.volatileTrackConfigurations(connection))
+      connectionHierarchy(connection) {
+        return generateHierarchy(self.connectionTrackConfigurations(connection))
       },
 
       // This recursively gets tracks from lower paths
       allTracksInCategoryPath(path, connection) {
         let currentHier = connection
-          ? self.volatileHierarchy(connection)
+          ? self.connectionHierarchy(connection)
           : self.hierarchy
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()

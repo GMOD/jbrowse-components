@@ -20,14 +20,14 @@ export default class AssemblyManager {
         this.assemblyConfigs.set(assemblyAlias, assembly)
       })
     }
-    rootConfig.volatile.forEach(conf => {
-      for (const [assemblyName, assembly] of conf.assemblies) {
-        this.assemblyConfigs.set(assemblyName, assembly)
-        readConfObject(assembly, 'aliases').forEach(assemblyAlias => {
-          this.assemblyConfigs.set(assemblyAlias, assembly)
-        })
-      }
-    })
+    // rootConfig.volatile.forEach(conf => {
+    //   for (const [assemblyName, assembly] of conf.assemblies) {
+    //     this.assemblyConfigs.set(assemblyName, assembly)
+    //     readConfObject(assembly, 'aliases').forEach(assemblyAlias => {
+    //       this.assemblyConfigs.set(assemblyAlias, assembly)
+    //     })
+    //   }
+    // })
   }
 
   get activeAssembly() {

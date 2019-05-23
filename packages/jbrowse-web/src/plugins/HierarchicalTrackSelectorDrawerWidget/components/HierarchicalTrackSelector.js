@@ -108,26 +108,24 @@ function HierarchicalTrackSelector(props) {
         }}
       />
       <Contents model={model} filterPredicate={filter} top />
-      {rootModel.configuration.volatile.size ? (
+      {rootModel.connections.size ? (
         <>
           <Typography variant="h5">Connections:</Typography>
-          {Array.from(rootModel.configuration.volatile.keys()).map(
-            connectionName => (
-              <Paper
-                key={connectionName}
-                className={classes.connectionsPaper}
-                elevation={8}
-              >
-                <Typography variant="h6">{connectionName}</Typography>
-                <Contents
-                  model={model}
-                  filterPredicate={filter}
-                  connection={connectionName}
-                  top
-                />
-              </Paper>
-            ),
-          )}
+          {Array.from(rootModel.connections.keys()).map(connectionName => (
+            <Paper
+              key={connectionName}
+              className={classes.connectionsPaper}
+              elevation={8}
+            >
+              <Typography variant="h6">{connectionName}</Typography>
+              <Contents
+                model={model}
+                filterPredicate={filter}
+                connection={connectionName}
+                top
+              />
+            </Paper>
+          ))}
         </>
       ) : null}
 

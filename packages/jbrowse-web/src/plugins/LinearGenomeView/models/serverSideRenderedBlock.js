@@ -28,7 +28,10 @@ function renderBlockData(self) {
   let trackConfParent = getParent(trackConf)
   if (!trackConfParent.configId) trackConfParent = getParent(trackConfParent)
   let cannotBeRenderedReason
-  if (trackConfParent.configId !== self.region.assemblyName)
+  if (
+    trackConfParent.configId !== self.region.assemblyName &&
+    trackConfParent.assemblyName !== self.region.assemblyName
+  )
     cannotBeRenderedReason = 'region assembly does not match track'
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const view = getContainingView(track)

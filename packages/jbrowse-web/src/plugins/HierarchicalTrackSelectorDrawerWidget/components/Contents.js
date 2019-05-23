@@ -34,7 +34,7 @@ function Contents(props) {
   } = props
 
   let hierarchy = connection
-    ? model.volatileHierarchy(connection)
+    ? model.connectionHierarchy(connection)
     : model.hierarchy
 
   path.forEach(pathEntry => {
@@ -73,11 +73,11 @@ function Contents(props) {
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
   const assemblies = connection
-    ? rootModel.configuration.volatile.get(connection).assemblies
+    ? rootModel.connections.get(connection).assemblies
     : rootModel.configuration.assemblies
   return (
     <>
-      {top && assemblies ? (
+      {/* {top && assemblies ? (
         <>
           <FormGroup>
             {Array.from(assemblies, ([assemblyName, assembly]) => (
@@ -91,7 +91,7 @@ function Contents(props) {
           </FormGroup>
           <Divider className={classes.divider} />
         </>
-      ) : null}
+      ) : null} */}
       <FormGroup>
         {trackConfigurations.filter(filterPredicate).map(trackConf => (
           <TrackEntry

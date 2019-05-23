@@ -1,0 +1,16 @@
+{
+  "name": "@gmod/jbrowse-plugin-ucsc-trackhub-connection",
+  "version": "2.0.0",
+  "description": "JBrowse 2 connection to UCSC TrackHubs",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/ucsc-trackhub-connection"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/ucsc-hub": "^0.1.2",
+    "mobx-state-tree": "^3.10.2"
+  }
+}
