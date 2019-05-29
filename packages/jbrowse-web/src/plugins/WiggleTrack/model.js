@@ -37,7 +37,6 @@ export default (pluginManager, configSchema) =>
             async function getYAxisScaleAutorun() {
               try {
                 const { rpcManager } = getRoot(self)
-
                 const autoscaleType = getConf(self, 'autoscale')
                 const aborter = new AbortController()
                 const { signal } = aborter
@@ -56,7 +55,6 @@ export default (pluginManager, configSchema) =>
                   )
                 } else if (autoscaleType === 'local') {
                   const { dynamicBlocks, bpPerPx } = getContainingView(self)
-                  if (!dynamicBlocks.length) return
 
                   // possibly useful for the rpc group name to be the same group as getFeatures
                   // reason: local stats fetches feature data that might get cached which getFeatures can use
