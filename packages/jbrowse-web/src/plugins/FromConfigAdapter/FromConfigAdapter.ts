@@ -1,31 +1,32 @@
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { Observable, Observer } from 'rxjs'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
  * key, like:
- *   "features": [ { "refName": "ctgA", "start":1, "end":20 },
- *                 ...
- *               ]
+ *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
  */
 
 export default class FromConfigAdapter extends BaseAdapter {
-  static capabilities = [
+  private features: Map<string, SimpleFeature[]>
+
+  public static capabilities = [
     'getFeatures',
     'getRefNames',
     'getRegions',
     'getRefNameAliases',
   ]
 
-  constructor(config) {
+  constructor(config: { features: Feature[]; refNameAliases?: [] }) {
     super()
-    const { features, refNameAliases } = config
+    const { features } = config
     this.features = this.makeFeatures(features || [])
-    this.refNameAliases = refNameAliases || []
   }
 
-  makeFeatures(fdata) {
+  makeFeatures(fdata: Feature[]): Map<string, SimpleFeature[]> {
     const features = new Map()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -37,7 +38,8 @@ export default class FromConfigAdapter extends BaseAdapter {
     }
 
     // sort the features on each reference sequence by start coordinate
-    const byStartCoordinate = (a, b) => a.get('start') - b.get('start')
+    const byStartCoordinate = (a: Feature, b: Feature): number =>
+      a.get('start') - b.get('start')
     for (const refFeatures of features.values()) {
       refFeatures.sort(byStartCoordinate) // Array.sort sorts in-place!
     }
@@ -45,11 +47,11 @@ export default class FromConfigAdapter extends BaseAdapter {
     return features
   }
 
-  makeFeature(data, parent) {
-    return new SimpleFeature({ data, parent })
+  makeFeature(data: Feature): SimpleFeature {
+    return new SimpleFeature({ data })
   }
 
-  async getRefNames() {
+  async getRefNames(): Promise<string[]> {
     const refNames = Array.from(this.features.keys())
     return refNames
   }
@@ -57,7 +59,7 @@ export default class FromConfigAdapter extends BaseAdapter {
   /**
    * Get refName, start, and end for all features after collapsing any overlaps
    */
-  async getRegions() {
+  async getRegions(): Promise<INoAssemblyRegion[]> {
     const regions = []
 
     // recall: features are stored in this object sorted by start coordinate
@@ -88,7 +90,7 @@ export default class FromConfigAdapter extends BaseAdapter {
     return regions
   }
 
-  async getRefNameAliases() {
+  async getRefNameAliases(): Promise<{ refName: string; aliases: string[] }[]> {
     return Array.from(this.features.values()).map(featureArray => ({
       refName: featureArray[0].get('refName'),
       aliases: featureArray[0].get('aliases'),
@@ -101,9 +103,11 @@ export default class FromConfigAdapter extends BaseAdapter {
    * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  getFeatures({ refName, start, end }, signal) {
-    return ObservableCreate(async observer => {
-      const features = this.features.get(refName, signal) || []
+  getFeatures(region: INoAssemblyRegion): Observable<Feature> {
+    const { refName, start, end } = region
+
+    return ObservableCreate(async (observer: Observer<Feature>) => {
+      const features = this.features.get(refName) || []
       for (let i = 0; i < features.length; i += 1) {
         const f = features[i]
         if (f.get('end') > start && f.get('start') < end) {
@@ -119,5 +123,5 @@ export default class FromConfigAdapter extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */) {}
+  freeResources(/* { region } */): void {}
 }

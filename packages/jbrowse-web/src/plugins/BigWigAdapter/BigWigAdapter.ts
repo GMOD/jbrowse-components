@@ -1,7 +1,7 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { Observable, Observer } from 'rxjs'
 import { mergeAll, map } from 'rxjs/operators'
 
@@ -27,7 +27,7 @@ export default class BigWigAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public constructor(config: { bigWigLocation: string }) {
+  public constructor(config: { bigWigLocation: IFileLocation }) {
     super()
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),

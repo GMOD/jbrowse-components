@@ -44,12 +44,14 @@ export const Region = types.compose(
 
 export type IRegion = SnapshotOut<typeof Region>
 
-export const FileLocalPath = types.model('FileLocalPath', {
+export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine
 })
 
-export const Uri = types.model('Uri', {
+export const UriLocation = types.model('UriLocation', {
   uri: types.string, // TODO: refine
 })
 
-export const FileLocation = types.union(FileLocalPath, Uri)
+export const FileLocation = types.union(LocalPathLocation, UriLocation)
+
+export type IFileLocation = SnapshotOut<typeof FileLocation> | { blob: Blob }
