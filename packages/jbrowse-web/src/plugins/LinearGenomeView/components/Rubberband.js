@@ -56,8 +56,6 @@ class Rubberband extends Component {
       if (rightPx - leftPx > 3) {
         const leftOffset = model.pxToBp(leftPx)
         const rightOffset = model.pxToBp(rightPx)
-        // console.log(leftOffset, rightOffset)
-        // debugger
         model.moveTo(leftOffset, rightOffset)
       }
     }

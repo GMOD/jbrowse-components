@@ -215,18 +215,27 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * @returns {Array} of the displayed region that it lands in
        */
       pxToBp(px) {
-        const regions = self.displayedRegions
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
-
-        for (let index = 0; index < regions.length; index += 1) {
-          const region = regions[index]
-          if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...region, offset: Math.round(bp - bpSoFar), index }
+        if (bp < 0) {
+          return {
+            ...self.displayedRegions[0],
+            offset: Math.round(bp),
+            index: 0,
           }
-          bpSoFar += region.end - region.start
         }
-        return undefined
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          const r = self.displayedRegions[index]
+          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...r, offset: Math.round(bp - bpSoFar), index }
+          }
+          bpSoFar += r.end - r.start
+        }
+        return {
+          ...self.displayedRegions[self.displayedRegions.length - 1],
+          offset: Math.round(bp - bpSoFar),
+          index: self.displayedRegions.length - 1,
+        }
       },
 
       /**
