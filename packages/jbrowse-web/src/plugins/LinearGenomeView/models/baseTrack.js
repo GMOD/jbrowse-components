@@ -146,6 +146,10 @@ const BaseTrack = types
     setHeight(trackHeight) {
       if (trackHeight >= minTrackHeight) self.height = trackHeight
     },
+    setError(e) {
+      self.ready = true
+      self.error = e
+    },
 
     activateConfigurationUI() {
       getRoot(self).editConfiguration(self.configuration)

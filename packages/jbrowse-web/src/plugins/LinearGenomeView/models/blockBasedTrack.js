@@ -61,24 +61,35 @@ export default types.compose(
             if (!blocksPresent[key]) self.deleteBlock(key)
           })
         })
-        const blockDefinitionDisposer = autorun(() => {
-          const blockDefinitions = getContainingView(self)[self.blockType]
-          const { assemblyManager } = getRoot(self)
-          if (!assemblyManager) return
-          const refNameMap = assemblyManager.getRefNameMapForTrack(
-            self.configuration,
-          )
-          if (!refNameMap) return
-          self.setBlockDefinitions(
-            blockDefinitions.map(blockDefinition => {
-              const { refName } = blockDefinition
-              if (refName && refNameMap.get(refName)) {
-                return blockDefinition.renameReference(refNameMap.get(refName))
-              }
-              return blockDefinition
-            }),
-          )
-        })
+        const blockDefinitionDisposer = autorun(
+          async function getRefNamesAutorrun() {
+            let blockDefinitions = getContainingView(self)[self.blockType]
+            try {
+              const { assemblyManager } = getRoot(self)
+
+              const refNameMap = await assemblyManager.getRefNameMapForTrack(
+                self.configuration,
+              )
+              if (!refNameMap) return
+
+              // push to refname mapping to the blocks
+              // todo: do elsewhere?
+              blockDefinitions = blockDefinitions.map(blockDefinition => {
+                const { refName } = blockDefinition
+                if (refName && refNameMap.get(refName)) {
+                  return blockDefinition.renameReference(
+                    refNameMap.get(refName),
+                  )
+                }
+                return blockDefinition
+              })
+            } catch (e) {
+              self.setError(e)
+            } finally {
+              self.setBlockDefinitions(blockDefinitions)
+            }
+          },
+        )
 
         addDisposer(self, blockWatchDisposer)
         addDisposer(self, blockDefinitionDisposer)
@@ -95,6 +106,7 @@ export default types.compose(
           }),
         )
       },
+
       deleteBlock(key) {
         self.blockState.delete(key)
       },

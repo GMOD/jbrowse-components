@@ -89,16 +89,13 @@ export default (pluginManager, configSchema) =>
           self.stats.setStats(stats)
           self.ready = true
         },
-        setError(e) {
-          self.ready = true
-          self.error = e
-        },
         setLoading(abortSignal) {
           if (
             self.statsFetchInProgress &&
             !self.statsFetchInProgress.signal.aborted
-          )
+          ) {
             self.statsFetchInProgress.abort()
+          }
           self.statsFetchInProgress = abortSignal
         },
         setRenderer(newRenderer) {

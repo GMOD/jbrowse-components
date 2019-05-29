@@ -11,7 +11,7 @@ import RenderWorker from './rpc.worker'
 import AssemblyManager from './managers/AssemblyManager'
 import rootConfig from './rootConfig'
 
-import * as rpcFuncs from './render'
+import * as rpcFuncs from './rpcMethods'
 
 export default pluginManager => {
   const minWidth = 384
