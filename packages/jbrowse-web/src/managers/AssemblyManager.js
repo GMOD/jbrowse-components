@@ -158,11 +158,12 @@ export default class AssemblyManager {
    * @returns {Map} See `addRefNameMapForTrack` for example Map, or an empty
    * map if the track is not found.
    */
-  getRefNameMapForTrack(trackConf) {
+  async getRefNameMapForTrack(trackConf) {
     const configId = readConfObject(trackConf, 'configId')
-    if (this.refNameMaps.has(configId)) return this.refNameMaps.get(configId)
-    this.addRefNameMapForTrack(trackConf)
-    return null
+    if (!this.refNameMaps.has(configId)) {
+      await this.addRefNameMapForTrack(trackConf)
+    }
+    return this.refNameMaps.get(configId)
   }
 
   /**
