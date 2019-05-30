@@ -88,7 +88,7 @@ export default class FromConfigAdapter extends BaseAdapter {
     return regions
   }
 
-  async getRefNameAliases() {
+  async getRefNameAliases(/* opts: { signal } unused */) {
     return Array.from(this.features.values()).map(featureArray => ({
       refName: featureArray[0].get('refName'),
       aliases: featureArray[0].get('aliases'),

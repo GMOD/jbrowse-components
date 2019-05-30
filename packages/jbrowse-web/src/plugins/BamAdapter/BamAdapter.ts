@@ -49,9 +49,9 @@ export default class BamAdapter extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async setup(): Promise<void> {
+  async setup(opts: BaseOptions): Promise<void> {
     if (!this.samHeader) {
-      const samHeader = await this.bam.getHeader()
+      const samHeader = await this.bam.getHeader(opts.signal)
       this.samHeader = {}
 
       // use the @SQ lines in the header to figure out the
@@ -76,8 +76,9 @@ export default class BamAdapter extends BaseAdapter {
     }
   }
 
-  async getRefNames(): Promise<string[]> {
-    await this.setup()
+  async getRefNames(opts: BaseOptions): Promise<string[]> {
+    console.log('getRefNames', opts)
+    await this.setup(opts)
     return this.samHeader.idToName
   }
 

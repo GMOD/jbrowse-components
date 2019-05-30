@@ -41,7 +41,7 @@ export default (pluginManager, configSchema) =>
                 const aborter = new AbortController()
                 const { signal } = aborter
                 let statsPromise
-                self.setLoading(aborter)
+                self.setStatsLoading(aborter)
 
                 if (autoscaleType === 'global') {
                   statsPromise = rpcManager.call(
@@ -89,7 +89,7 @@ export default (pluginManager, configSchema) =>
           self.stats.setStats(stats)
           self.ready = true
         },
-        setLoading(abortSignal) {
+        setStatsLoading(abortSignal) {
           if (
             self.statsFetchInProgress &&
             !self.statsFetchInProgress.signal.aborted

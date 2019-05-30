@@ -66,9 +66,13 @@ export default types.compose(
             let blockDefinitions = getContainingView(self)[self.blockType]
             try {
               const { assemblyManager } = getRoot(self)
+              const aborter = new AbortController()
+              const { signal } = aborter
+              self.setRefNamesLoading(aborter)
 
               const refNameMap = await assemblyManager.getRefNameMapForTrack(
                 self.configuration,
+                { signal },
               )
               if (!refNameMap) return
 
@@ -105,6 +109,15 @@ export default types.compose(
             region: block.toRegion(),
           }),
         )
+      },
+      setRefNamesLoading(abortSignal) {
+        if (
+          self.statsFetchInProgress &&
+          !self.statsFetchInProgress.signal.aborted
+        ) {
+          self.statsFetchInProgress.abort()
+        }
+        self.statsFetchInProgress = abortSignal
       },
 
       deleteBlock(key) {

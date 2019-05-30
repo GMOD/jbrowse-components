@@ -35,7 +35,7 @@ export default class AssemblyManager {
    * @returns {Promise<object>} Object like { refName1: ['alias1', 'alias2'],
    * refName2: ['alias3', 'alias4'] }
    */
-  async getRefNameAliases(assemblyName) {
+  async getRefNameAliases(assemblyName, opts) {
     const refNameAliases = {}
     for (const assemblyConfig of this.assemblyConfigs) {
       let assembly = assemblyConfig.get(assemblyName)
@@ -63,6 +63,7 @@ export default class AssemblyManager {
               'type',
             ]),
             adapterConfig: readConfObject(assembly.refNameAliases, 'adapter'),
+            signal: opts.signal,
           },
           { timeout: 1000000 },
         )
@@ -80,13 +81,13 @@ export default class AssemblyManager {
    * observable by mobx.
    * @param {trackConf} trackConf Configuration model of a track
    */
-  async addRefNameMapForTrack(trackConf) {
+  async addRefNameMapForTrack(trackConf, opts) {
     const refNameMap = new Map()
 
     const assemblyName = readConfObject(trackConf, 'assemblyName')
 
     if (assemblyName) {
-      const refNameAliases = await this.getRefNameAliases(assemblyName)
+      const refNameAliases = await this.getRefNameAliases(assemblyName, opts)
 
       const refNames = await this.rpcManager.call(
         readConfObject(trackConf, 'configId'),
@@ -95,6 +96,7 @@ export default class AssemblyManager {
           sessionId: assemblyName,
           adapterType: readConfObject(trackConf, ['adapter', 'type']),
           adapterConfig: readConfObject(trackConf, 'adapter'),
+          signal: opts.signal,
         },
         { timeout: 1000000 },
       )
@@ -158,10 +160,10 @@ export default class AssemblyManager {
    * @returns {Map} See `addRefNameMapForTrack` for example Map, or an empty
    * map if the track is not found.
    */
-  async getRefNameMapForTrack(trackConf) {
+  async getRefNameMapForTrack(trackConf, opts) {
     const configId = readConfObject(trackConf, 'configId')
     if (!this.refNameMaps.has(configId)) {
-      await this.addRefNameMapForTrack(trackConf)
+      await this.addRefNameMapForTrack(trackConf, opts)
     }
     return this.refNameMaps.get(configId)
   }
