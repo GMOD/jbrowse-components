@@ -1163,18 +1163,18 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.7.1.tgz#9833722341379fb7d67f06a4b00ab3c37913da53"
   integrity sha512-OYpa/Sg+2GDX+jibUfpZVn1YqSVRpYmTLF2eyAfrFTIJSbwyIrc+YscayoykvaOME/wV4BV0Sa0yqdMrgse6mA==
 
-"@gmod/bam@^1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.17.tgz#37677469009e5c89f8976643735d589b6da43ea6"
-  integrity sha512-IMSTKfot61V44dpAjwd7AbRG+Ko+YThy2QtFaf4ze0oVlWDxq9HTH61tyewCUkbJp8dTim1+9AfKsYtDt/xDRg==
+"@gmod/bam@^1.0.19":
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.19.tgz#f3f0f34c11804ea7cb25611d6e8f8f4f7e806300"
+  integrity sha512-uLlbkSnGEqnuf+IhO63fMq4hvtOt+58q/r3Tr0B3oF3AI3SDjAufyfJ/aNS6X4VkwL4JhStVJKB75BXSoHGxig==
   dependencies:
     "@babel/runtime" "^7.4.3"
     "@gmod/bgzf-filehandle" "^1.2.3"
-    abortable-promise-cache "^1.0.0"
+    abortable-promise-cache "^1.0.1"
     buffer-crc32 "^0.2.13"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
-    generic-filehandle "^1.0.7"
+    generic-filehandle "^1.0.9"
     long "^4.0.0"
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
@@ -2720,7 +2720,7 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abortable-promise-cache@^1.0.0, abortable-promise-cache@^1.0.1:
+abortable-promise-cache@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.0.1.tgz#68638de7806444e0fc3f3c2c5d53b81fad1c4466"
   integrity sha512-Iu27BBSRe6jPrNhf5SjCyxJ0yb8fJ63H3CRoEVD+sJ2AvJsXppY5PVMvpFlB4si8K2cTFgjSgYNTELjm9ofwTQ==
@@ -6695,7 +6695,7 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-generic-filehandle@^1.0.6, generic-filehandle@^1.0.7, generic-filehandle@^1.0.8:
+generic-filehandle@^1.0.6, generic-filehandle@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-1.0.8.tgz#7cdb026884a237cec28a44fdbd1bd6eb0b5b408c"
   integrity sha512-JlccwYLF2V+C7gbZB7/kXRP+t2KXVWI5GTjAB0NtMVx7AiOQ/5Sn/BfOjitQ/cM7QxjvBDdExlY0QrZHRTxg+g==

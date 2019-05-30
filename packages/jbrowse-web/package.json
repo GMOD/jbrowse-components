@@ -15,7 +15,7 @@
     ]
   },
   "dependencies": {
-    "@gmod/bam": "^1.0.17",
+    "@gmod/bam": "^1.0.19",
     "@gmod/bbi": "^1.0.21",
     "@gmod/bed": "^2.0.0",
     "@gmod/indexedfasta": "^1.0.11",
