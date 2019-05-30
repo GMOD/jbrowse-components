@@ -66,13 +66,11 @@ export default types.compose(
             let blockDefinitions = getContainingView(self)[self.blockType]
             try {
               const { assemblyManager } = getRoot(self)
-              const aborter = new AbortController()
-              const { signal } = aborter
-              self.setRefNamesLoading(aborter)
+              self.setCurrentAborter()
 
               const refNameMap = await assemblyManager.getRefNameMapForTrack(
                 self.configuration,
-                { signal },
+                { signal: self.abortController.signal },
               )
               if (!refNameMap) return
 
@@ -88,6 +86,7 @@ export default types.compose(
                 return blockDefinition
               })
             } catch (e) {
+              console.error(e)
               self.setError(e)
             } finally {
               self.setBlockDefinitions(blockDefinitions)
@@ -95,8 +94,12 @@ export default types.compose(
           },
         )
 
-        addDisposer(self, blockWatchDisposer)
-        addDisposer(self, blockDefinitionDisposer)
+        addDisposer(self, () => {
+          console.log('here')
+          self.abortController.abort()
+          blockDefinitionDisposer()
+          blockWatchDisposer()
+        })
       },
       setBlockDefinitions(blockDefinitions) {
         self.blockDefinitions = blockDefinitions
@@ -110,14 +113,8 @@ export default types.compose(
           }),
         )
       },
-      setRefNamesLoading(abortSignal) {
-        if (
-          self.statsFetchInProgress &&
-          !self.statsFetchInProgress.signal.aborted
-        ) {
-          self.statsFetchInProgress.abort()
-        }
-        self.statsFetchInProgress = abortSignal
+      setCurrentAborter() {
+        self.abortController = self.abortController || new AbortController()
       },
 
       deleteBlock(key) {
