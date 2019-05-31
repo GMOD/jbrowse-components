@@ -56,23 +56,23 @@ export default class VcfTabixAdapter extends BaseAdapter {
   public getFeatures(query: IRegion): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
-        const p = await this.parser
+        const parser = await this.parser
         await this.vcf.getLines(
           query.refName,
           query.start,
           query.end,
           (line: string, fileOffset: number) => {
-            const variant = p.parseLine(line)
+            const variant = parser.parseLine(line)
 
             const feature = new VCFFeature({
               variant,
-              p,
+              parser,
               id: variant.ID
                 ? variant.ID[0]
                 : `chr${variant.CHROM}_pos${variant.POS}_ref${variant.REF}_alt${
                     variant.ALT
                   }`,
-            })
+            }) as Feature
             observer.next(feature)
           },
         )

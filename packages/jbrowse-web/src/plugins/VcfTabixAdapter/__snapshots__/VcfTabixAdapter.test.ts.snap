@@ -3,130 +3,1786 @@
 exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
 Array [
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        3,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        3,
+        0,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -36,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0186,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "C",
+      ],
+    },
+    "description": "SNV T -> C",
     "end": 277,
     "reference_allele": "T",
+    "score": 10.4,
     "seq_id": "ctgA",
     "start": 276,
-    "uniqueId": "vcftabix-2560",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        23,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        1,
+        8,
+        14,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -73,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+        1,
+        0.42,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0308,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "C",
+      ],
+    },
+    "description": "SNV T -> C",
     "end": 1694,
     "reference_allele": "T",
+    "score": 107,
     "seq_id": "ctgA",
     "start": 1693,
-    "uniqueId": "vcftabix-2658",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        22,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        6,
+        5,
+        3,
+        8,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        45.3,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.39,
+        1,
+        1,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0253,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
+    "description": "SNV T -> G",
     "end": 2644,
     "reference_allele": "T",
+    "score": 44,
     "seq_id": "ctgA",
     "start": 2643,
-    "uniqueId": "vcftabix-2775",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        19,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        8,
+        11,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -84,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        36,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0384,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
+    "description": "SNV T -> A",
     "end": 3213,
     "reference_allele": "T",
+    "score": 124,
     "seq_id": "ctgA",
     "start": 3212,
-    "uniqueId": "vcftabix-2892",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        15,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        5,
+        6,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -67.5,
+      ],
+    },
+    "INDEL": Object {
+      "meta": Object {
+        "Description": "Indicates that the variant is an INDEL.",
+        "Number": 0,
+        "Type": "Flag",
+      },
+      "values": null,
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0384,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "ct",
+      ],
+    },
+    "description": "deletion ctt -> ct",
     "end": 3860,
     "reference_allele": "ctt",
+    "score": 160,
     "seq_id": "ctgA",
     "start": 3857,
-    "uniqueId": "vcftabix-2994",
+    "type": "deletion",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.4999,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        18,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        5,
+        7,
+        4,
+        2,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        9.53,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.62,
+        1,
+        1,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0011,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
+    "description": "SNV C -> G",
     "end": 5496,
     "reference_allele": "C",
+    "score": 6.98,
     "seq_id": "ctgA",
     "start": 5495,
-    "uniqueId": "vcftabix-3106",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        21,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        11,
+        10,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -90,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0355,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
+    "description": "SNV G -> T",
     "end": 8471,
     "reference_allele": "G",
+    "score": 124,
     "seq_id": "ctgA",
     "start": 8470,
-    "uniqueId": "vcftabix-3228",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        21,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        10,
+        11,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -90,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        36,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0356,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
+    "description": "SNV A -> T",
     "end": 9603,
     "reference_allele": "A",
+    "score": 126,
     "seq_id": "ctgA",
     "start": 9602,
-    "uniqueId": "vcftabix-3331",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        19,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        3,
+        7,
+        3,
+        6,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        28,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+        1,
+        1,
+        0.27,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0404,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
+    "description": "SNV T -> A",
     "end": 10423,
     "reference_allele": "T",
+    "score": 25,
     "seq_id": "ctgA",
     "start": 10422,
-    "uniqueId": "vcftabix-3434",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        22,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        4,
+        8,
+        5,
+        5,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        42.8,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.67,
+        1,
+        1,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0399,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
+    "description": "SNV G -> T",
     "end": 13202,
     "reference_allele": "G",
+    "score": 40,
     "seq_id": "ctgA",
     "start": 13201,
-    "uniqueId": "vcftabix-3550",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        22,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        3,
+        4,
+        6,
+        0,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        62.4,
+      ],
+    },
+    "INDEL": Object {
+      "meta": Object {
+        "Description": "Indicates that the variant is an INDEL.",
+        "Number": 0,
+        "Type": "Flag",
+      },
+      "values": null,
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.07,
+        1,
+        1,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0404,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "aCc",
+      ],
+    },
+    "description": "insertion ac -> aCc",
     "end": 14248,
     "reference_allele": "ac",
+    "score": 61.5,
     "seq_id": "ctgA",
     "start": 14246,
-    "uniqueId": "vcftabix-3668",
+    "type": "insertion",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        21,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        4,
+        6,
+        5,
+        6,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        42,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+        1,
+        1,
+        0.12,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0394,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
+    "description": "SNV G -> A",
     "end": 14481,
     "reference_allele": "G",
+    "score": 42,
     "seq_id": "ctgA",
     "start": 14480,
-    "uniqueId": "vcftabix-3798",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        12,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        4,
+        8,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -63,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0404,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
+    "description": "SNV T -> A",
     "end": 15078,
     "reference_allele": "T",
+    "score": 96,
     "seq_id": "ctgA",
     "start": 15077,
-    "uniqueId": "vcftabix-3914",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        20,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        10,
+        7,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -85.5,
+      ],
+    },
+    "INDEL": Object {
+      "meta": Object {
+        "Description": "Indicates that the variant is an INDEL.",
+        "Number": 0,
+        "Type": "Flag",
+      },
+      "values": null,
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0404,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "gCcc",
+      ],
+    },
+    "description": "insertion gcc -> gCcc",
     "end": 15165,
     "reference_allele": "gcc",
+    "score": 213,
     "seq_id": "ctgA",
     "start": 15162,
-    "uniqueId": "vcftabix-4015",
+    "type": "insertion",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5003,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        19,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        5,
+        1,
+        5,
+        8,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        4.13,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        35,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.14,
+        0.26,
+        0.11,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0253,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
+    "description": "SNV A -> G",
     "end": 15418,
     "reference_allele": "A",
+    "score": 64,
     "seq_id": "ctgA",
     "start": 15417,
-    "uniqueId": "vcftabix-4131",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        2,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        22,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        0,
+        0,
+        13,
+        9,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        -93,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0394,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
+    "description": "SNV C -> T",
     "end": 17042,
     "reference_allele": "C",
+    "score": 119,
     "seq_id": "ctgA",
     "start": 17041,
-    "uniqueId": "vcftabix-4258",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        23,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        6,
+        4,
+        4,
+        9,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        39,
+      ],
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.22,
+        1,
+        0.2,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0308,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
+    "description": "SNV A -> G",
     "end": 18948,
     "reference_allele": "A",
+    "score": 57,
     "seq_id": "ctgA",
     "start": 18947,
-    "uniqueId": "vcftabix-4361",
+    "type": "SNV",
   },
   Object {
+    "AC1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele count (no HWE assumption)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+      ],
+    },
+    "AF1": Object {
+      "meta": Object {
+        "Description": "Max-likelihood estimate of the first ALT allele frequency (assuming HWE)",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.5,
+      ],
+    },
+    "DP": Object {
+      "meta": Object {
+        "Description": "Raw read depth",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        22,
+      ],
+    },
+    "DP4": Object {
+      "meta": Object {
+        "Description": "# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases",
+        "Number": 4,
+        "Type": "Integer",
+      },
+      "values": Array [
+        4,
+        6,
+        3,
+        5,
+      ],
+    },
+    "FQ": Object {
+      "meta": Object {
+        "Description": "Phred probability of all samples being the same",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        101,
+      ],
+    },
+    "INDEL": Object {
+      "meta": Object {
+        "Description": "Indicates that the variant is an INDEL.",
+        "Number": 0,
+        "Type": "Flag",
+      },
+      "values": null,
+    },
+    "MQ": Object {
+      "meta": Object {
+        "Description": "Root-mean-square mapping quality of covering reads",
+        "Number": 1,
+        "Type": "Integer",
+      },
+      "values": Array [
+        37,
+      ],
+    },
+    "PV4": Object {
+      "meta": Object {
+        "Description": "P-values for strand bias, baseQ bias, mapQ bias and tail distance bias",
+        "Number": 4,
+        "Type": "Float",
+      },
+      "values": Array [
+        1,
+        0.049,
+        1,
+        1,
+      ],
+    },
+    "VDB": Object {
+      "meta": Object {
+        "Description": "Variant Distance Bias",
+        "Number": 1,
+        "Type": "Float",
+      },
+      "values": Array [
+        0.0374,
+      ],
+    },
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "a",
+      ],
+    },
+    "description": "deletion acg -> a",
     "end": 19884,
     "reference_allele": "acg",
+    "score": 98.5,
     "seq_id": "ctgA",
     "start": 19881,
-    "uniqueId": "vcftabix-4479",
+    "type": "deletion",
   },
 ]
 `;
