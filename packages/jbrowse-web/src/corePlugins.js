@@ -40,6 +40,7 @@ export default [
   IndexedFastaAdapterPlugin,
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
+  VcfTabixAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,

@@ -19,14 +19,14 @@ export default class VCFFeature {
   // same as get(), except requires lower-case arguments.    used
   // internally to save lots of calls to field.toLowerCase()
   _get(field) {
-    return field in this.data
-      ? this.data[field] // have we already parsed it out?
-      : function(field) {
-          const v = (this.data[field] = this[`_parse_${field}`]
-            ? this[`_parse_${field}`]() // maybe we have a special parser for it
-            : undefined)
-          return v
-        }.call(this, field)
+    if (field in this.data) {
+      return this.data[field] // have we already parsed it out?
+    }
+    if (this[`_parse_${field}`]) {
+      this.data[field] = this[`_parse_${field}`]()
+      return this.data[field] // have we already parsed it out?
+    }
+    return undefined
   }
 
   parent() {
@@ -38,12 +38,8 @@ export default class VCFFeature {
   }
 
   tags() {
-    const t = []
-    const d = this.data
-    for (const k in d) {
-      if (d.hasOwnProperty(k)) t.push(k)
-    }
-    if (!d.genotypes) t.push('genotypes')
+    const t = Object.keys(this.data)
+    if (!this.data.genotypes) t.push('genotypes')
     return t
   }
 
@@ -90,6 +86,7 @@ export default class VCFFeature {
     }
 
     if (variant.ID) {
+      // eslint-disable-next-line
       featureData.name = variant.ID[0]
       if (variant.ID > 1) {
         featureData.aliases = variant.ID.slice(1).join(',')
@@ -135,16 +132,14 @@ export default class VCFFeature {
    */
   _parseInfoField(featureData, info) {
     // decorate the info records with references to their descriptions
-    for (const field in info) {
-      if (info.hasOwnProperty(field)) {
-        const i = (info[field] = {
-          values: info[field],
-        })
-        const meta = this.parser.getMetadata('INFO', field)
-        if (meta) i.meta = meta
-        featureData[field] = i
+    Object.entries(info).forEach(([field, value]) => {
+      info[field] = {
+        values: value,
       }
-    }
+      const meta = this.parser.getMetadata('INFO', field)
+      if (meta) info[field].meta = meta
+      featureData[field] = info[field]
+    })
   }
 
   /**
