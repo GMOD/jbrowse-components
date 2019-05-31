@@ -3,7 +3,7 @@ import 'whatwg-fetch'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
-import { RemoteFile } from 'generic-filehandle'
+import { RemoteFile, GenericFilehandle } from 'generic-filehandle'
 
 function isElectron(): boolean {
   return false // TODO
@@ -13,6 +13,7 @@ function isElectron(): boolean {
 //   throw new Error('unimplemented') // TODO
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   let mfetch
   if (isElectron()) {
@@ -46,6 +47,7 @@ function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   )
 }
 export interface RangeResponse {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   headers: Record<string, any>
   requestDate: Date
   responseDate: Date
@@ -77,7 +79,7 @@ async function fetchBinaryRange(
 
   // translate the Headers object into a regular key -> value object.
   // will miss duplicate headers of course
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const headers: Record<string, any> = {}
   for (const [k, v] of res.headers.entries()) {
     headers[k] = v
@@ -106,14 +108,11 @@ const globalRangeCache = new HttpRangeFetcher({
   aggregationTime: 50,
 })
 
-// export default globalCache
-
-function globalCacheFetch(
+function globalCacheFetch<T>(
   url: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   opts: { headers?: Record<string, any>; signal?: AbortSignal },
-) {
-  // if (/2bit/.test(url)) debugger
-
+): Promise<T> {
   // if it is a range request, route it through the global range cache
   if (opts && opts.headers && opts.headers.range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
@@ -122,7 +121,7 @@ function globalCacheFetch(
       const s = parseInt(start, 10)
       const e = parseInt(end, 10)
       return globalRangeCache
-        .getRange(url, start, e - s + 1, {
+        .getRange(url, s, e - s + 1, {
           signal: opts.signal,
         })
         .then((response: RangeResponse) => {
@@ -145,7 +144,7 @@ function globalCacheFetch(
   return getfetch(url, opts)
 }
 
-export function openUrl(url: string) {
+export function openUrl(url: string): GenericFilehandle {
   return new RemoteFile(String(url), {
     fetch: globalCacheFetch,
   })

@@ -26,7 +26,7 @@ const configSchema = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
-export default class IndexedFastaAdapterPlugin extends Plugin {
+export default class VcfTabixAdapterPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addAdapterType(
       () =>

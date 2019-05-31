@@ -12,6 +12,7 @@ import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 import BigWigAdapterPlugin from './plugins/BigWigAdapter'
 import BigBedAdapterPlugin from './plugins/BigBedAdapter'
 import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
+import VcfTabixAdapterPlugin from './plugins/VcfTabixAdapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
@@ -38,6 +39,7 @@ export default [
   IndexedFastaAdapterPlugin,
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
+  VcfTabixAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   SequenceTrackPlugin,

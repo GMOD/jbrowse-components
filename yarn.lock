@@ -1120,6 +1120,13 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime@^7.4.5":
+  version "7.4.5"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.4.5.tgz#582bb531f5f9dc67d2fcb682979894f75e253f12"
+  integrity sha512-TuI4qpWZP6lGOGIuGWtp9sPluqYICmbk8T/1vpSysqJxRPkudh/ofFWyqdcMsDf2s7KvDL4/YHgKyvcS3g9CJQ==
+  dependencies:
+    regenerator-runtime "^0.13.2"
+
 "@babel/template@^7.0.0", "@babel/template@^7.1.0", "@babel/template@^7.2.2", "@babel/template@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.4.0.tgz#12474e9c077bae585c5d835a95c0b0b790c25c8b"
@@ -1255,13 +1262,14 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.1.5.tgz#1af802971b43140d0f57a520a1a5e0a8f2d884a2"
-  integrity sha512-2ZjPUy2I0b06aBuABIMq5u8sFtG6VRqgELZHdYuFlzgXzBkINtyOPZzs16FnWRr+KKDImXtGeAgLRSGN8VO5Wg==
+"@gmod/tabix@^1.1.8":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.1.8.tgz#a7390175461148178bfca2df1b47b80eee8536e4"
+  integrity sha512-OJYu4/8qO29ovET1yQQB/LSJdxANZAiy5z1lNODg0GRkiBCz/T1Q0nKWKVWum8GL2S0B8284sYhy/ms5xyApbw==
   dependencies:
     "@babel/runtime-corejs2" "^7.3.1"
     es6-promisify "^6.0.1"
+    generic-filehandle "^2.0.0"
     long "^4.0.0"
     pako "1.0.10"
     quick-lru "^2.0.0"
@@ -1280,10 +1288,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.2.tgz#a02fcbcbafe5bc471798d54d667c272148122c91"
   integrity sha512-le/LUeGujO5J4pYdDEsNXTP6M9z8Y3YbCyds53rRwB2/yBmh1q0AHRA2fNrhiM8QqaIvoF8QAHwj4lz/Y6mQWw==
 
-"@gmod/vcf@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-2.0.3.tgz#874431d5296d59da2493ce58adb4c6394c75ad4f"
-  integrity sha512-Autuy3BnB3doRGNuc75KD8iyIlex1WMC6xADR6GDf3axdj2qbMZkMlNdVYS6A1GhHfQY9ct9OeikLdu0hWbCKg==
+"@gmod/vcf@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-3.0.0.tgz#c7a373f677bfe5d3af0c694441ea260ce564b822"
+  integrity sha512-3HOEZlp81KXli7ZWH6NzCxmlfq9lyqWNPL7i6rAjtpa3JapXQT/ueoYlwr1TwA7SHrRRHjOrKKCZe+W+JUpTQQ==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -6784,6 +6792,15 @@ generic-filehandle@^1.0.9:
   integrity sha512-1uZb20DQkyO6baZTwCHVOKb5eypuzQyvgAQkfVU42AM6lYLaNpg90EVdFh0j3RoIEE3dM7HsvROc12KAiTX1PQ==
   dependencies:
     "@babel/runtime" "^7.4.3"
+    es6-promisify "^6.0.1"
+    file-uri-to-path "^1.0.0"
+
+generic-filehandle@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.0.tgz#f3bd727eb88dfb2aa5d527b9c492c7fc075b0645"
+  integrity sha512-QrrHlY40pGGPPr6BpdQq30mSQ6Gm8xbsc8KZaWzsY60mSRK+3CTDAOJ6+e4M6lccy+tzIXMPwOwD5dSa8EnYDg==
+  dependencies:
+    "@babel/runtime" "^7.4.5"
     es6-promisify "^6.0.1"
     file-uri-to-path "^1.0.0"
 

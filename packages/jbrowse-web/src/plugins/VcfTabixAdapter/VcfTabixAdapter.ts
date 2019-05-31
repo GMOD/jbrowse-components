@@ -1,54 +1,58 @@
-import { IndexedFasta } from '@gmod/indexedfasta'
-
 import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { GenericFilehandle } from 'generic-filehandle'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 import { TabixIndexedFile } from '@gmod/tabix'
+import VcfParser from '@gmod/vcf'
+import VcfFeature from './VcfFeature'
 
 export default class VcfTabixAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected vcf: any
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected parser: any
+
+  public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
     vcfGzLocation: FileLocation
-    tbiLocation: FileLocation
-    csiLocation: FileLocation
+    index: {
+      index: string
+      location: FileLocation
+    }
   }) {
     super()
-    const { vcfGzLocation, tbiLocation, csiLocation } = config
-    if (!vcfGzLocation) {
-      throw new Error('must provide vcfGzLocation')
-    }
-    if (!tbiLocation && !csiLocation) {
-      throw new Error('must provide tbiLocation or csiLocation')
-    }
-    const vcfGzOpts = {
+    const {
+      vcfGzLocation,
+      index: { location: indexLocation, index: indexType },
+    } = config
+    const vcfGzOpts: {
+      filehandle: GenericFilehandle
+      tbiFilehandle?: GenericFilehandle
+      csiFilehandle?: GenericFilehandle
+    } = {
       filehandle: openLocation(vcfGzLocation),
-      tbiFilehandle: openLocation(tbiLocation),
-      csiFilehandle: openLocation(csiLocation),
     }
 
+    const indexFile = openLocation(indexLocation)
+    if (indexType === 'CSI') {
+      vcfGzOpts.csiFilehandle = indexFile
+    } else {
+      vcfGzOpts.tbiFilehandle = indexFile
+    }
     this.vcf = new TabixIndexedFile(vcfGzOpts)
+    this.parser = this.vcf
+      .getHeader()
+      .then((header: string) => new VcfParser({ header }))
   }
 
   public async getRefNames(): Promise<string[]> {
-    return this.vcf.getSequenceList()
-  }
-
-  public async getRegions(): Promise<IRegion[]> {
-    const seqSizes = await this.vcf.getSequenceSizes()
-    return Object.keys(seqSizes).map(
-      (refName: string): IRegion => ({
-        refName,
-        start: 0,
-        end: seqSizes[refName],
-      }),
-    )
+    const ret = await this.vcf.getReferenceSequenceNames()
+    return ret
   }
 
   /**
@@ -56,17 +60,25 @@ export default class VcfTabixAdapter extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
+  public getFeatures(query: IRegion): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
-        const seq = await this.vcf.getSequence(refName, start, end)
-        if (seq)
-          observer.next(
-            new SimpleFeature({
-              id: `${refName} ${start}-${end}`,
-              data: { refName, start, end, seq },
-            }),
-          )
+        const parser = await this.parser
+        await this.vcf.getLines(
+          query.refName,
+          query.start,
+          query.end,
+          (line: string, fileOffset: number) => {
+            const variant = parser.parseLine(line)
+
+            const feature = new VcfFeature({
+              variant,
+              parser,
+              id: `vcf-${fileOffset}`,
+            }) as Feature
+            observer.next(feature)
+          },
+        )
         observer.complete()
       },
     )

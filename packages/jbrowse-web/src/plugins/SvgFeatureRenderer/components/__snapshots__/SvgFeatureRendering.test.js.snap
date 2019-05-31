@@ -63,7 +63,7 @@ exports[`one feature 1`] = `
         }
       }
       title="one"
-      width={0.7}
+      width={1}
       x={0}
       y={0}
     />
