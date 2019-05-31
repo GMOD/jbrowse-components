@@ -8,9 +8,7 @@ test('plugin in a stock JBrowse', async () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const VcfTabixAdapter = pluginManager.getAdapterType(
-    'VcfTabixAdapter',
-  )
+  const VcfTabixAdapter = pluginManager.getAdapterType('VcfTabixAdapter')
   const config = VcfTabixAdapter.configSchema.create({
     type: 'VcfTabixAdapter',
   })

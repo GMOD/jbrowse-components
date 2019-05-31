@@ -6,6 +6,7 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 import { TabixIndexedFile } from '@gmod/tabix'
 import VCF from '@gmod/vcf'
+import VCFFeature from './VCFFeature'
 
 export default class VcfTabixAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,20 +53,27 @@ export default class VcfTabixAdapter extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
+  public getFeatures(query: IRegion): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const p = await this.parser
         await this.vcf.getLines(
-          refName,
-          start,
-          end,
+          query.refName,
+          query.start,
+          query.end,
           (line: string, fileOffset: number) => {
-            const data = p.parseLine(line)
-            console.log(data)
-            observer.next(
-              new SimpleFeature({ id: `vcftabix-${fileOffset}`, data }),
-            )
+            const variant = p.parseLine(line)
+
+            const feature = new VCFFeature({
+              variant,
+              p,
+              id: variant.ID
+                ? variant.ID[0]
+                : `chr${variant.CHROM}_pos${variant.POS}_ref${variant.REF}_alt${
+                    variant.ALT
+                  }`,
+            })
+            observer.next(feature)
           },
         )
         observer.complete()

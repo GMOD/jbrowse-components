@@ -4,9 +4,14 @@ import Adapter from './VcfTabixAdapter'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const adapter = new Adapter({
-    vcfGzLocation: { localPath: require.resolve('./test_data/volvox.vcf.gz') },
+    vcfGzLocation: {
+      localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+    },
     index: {
-      location: { localPath: require.resolve('./test_data/volvox.vcf.gz.tbi') },
+      indexType: 'TBI',
+      location: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+      },
     },
   })
 

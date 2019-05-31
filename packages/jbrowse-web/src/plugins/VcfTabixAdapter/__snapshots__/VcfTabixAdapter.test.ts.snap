@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
+Array [
+  Object {
+    "end": 277,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 276,
+    "uniqueId": "vcftabix-2560",
+  },
+  Object {
+    "end": 1694,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 1693,
+    "uniqueId": "vcftabix-2658",
+  },
+  Object {
+    "end": 2644,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 2643,
+    "uniqueId": "vcftabix-2775",
+  },
+  Object {
+    "end": 3213,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 3212,
+    "uniqueId": "vcftabix-2892",
+  },
+  Object {
+    "end": 3860,
+    "reference_allele": "ctt",
+    "seq_id": "ctgA",
+    "start": 3857,
+    "uniqueId": "vcftabix-2994",
+  },
+  Object {
+    "end": 5496,
+    "reference_allele": "C",
+    "seq_id": "ctgA",
+    "start": 5495,
+    "uniqueId": "vcftabix-3106",
+  },
+  Object {
+    "end": 8471,
+    "reference_allele": "G",
+    "seq_id": "ctgA",
+    "start": 8470,
+    "uniqueId": "vcftabix-3228",
+  },
+  Object {
+    "end": 9603,
+    "reference_allele": "A",
+    "seq_id": "ctgA",
+    "start": 9602,
+    "uniqueId": "vcftabix-3331",
+  },
+  Object {
+    "end": 10423,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 10422,
+    "uniqueId": "vcftabix-3434",
+  },
+  Object {
+    "end": 13202,
+    "reference_allele": "G",
+    "seq_id": "ctgA",
+    "start": 13201,
+    "uniqueId": "vcftabix-3550",
+  },
+  Object {
+    "end": 14248,
+    "reference_allele": "ac",
+    "seq_id": "ctgA",
+    "start": 14246,
+    "uniqueId": "vcftabix-3668",
+  },
+  Object {
+    "end": 14481,
+    "reference_allele": "G",
+    "seq_id": "ctgA",
+    "start": 14480,
+    "uniqueId": "vcftabix-3798",
+  },
+  Object {
+    "end": 15078,
+    "reference_allele": "T",
+    "seq_id": "ctgA",
+    "start": 15077,
+    "uniqueId": "vcftabix-3914",
+  },
+  Object {
+    "end": 15165,
+    "reference_allele": "gcc",
+    "seq_id": "ctgA",
+    "start": 15162,
+    "uniqueId": "vcftabix-4015",
+  },
+  Object {
+    "end": 15418,
+    "reference_allele": "A",
+    "seq_id": "ctgA",
+    "start": 15417,
+    "uniqueId": "vcftabix-4131",
+  },
+  Object {
+    "end": 17042,
+    "reference_allele": "C",
+    "seq_id": "ctgA",
+    "start": 17041,
+    "uniqueId": "vcftabix-4258",
+  },
+  Object {
+    "end": 18948,
+    "reference_allele": "A",
+    "seq_id": "ctgA",
+    "start": 18947,
+    "uniqueId": "vcftabix-4361",
+  },
+  Object {
+    "end": 19884,
+    "reference_allele": "acg",
+    "seq_id": "ctgA",
+    "start": 19881,
+    "uniqueId": "vcftabix-4479",
+  },
+]
+`;
+
+exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `Array []`;
