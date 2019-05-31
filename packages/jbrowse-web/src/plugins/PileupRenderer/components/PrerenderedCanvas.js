@@ -41,7 +41,14 @@ export default class PrerenderedCanvas extends Component {
   }
 
   render() {
-    const { width, height } = this.props
-    return <canvas ref={this.featureCanvas} width={width} height={height} />
+    const { width, height, style } = this.props
+    return (
+      <canvas
+        ref={this.featureCanvas}
+        width={width}
+        height={height}
+        style={style}
+      />
+    )
   }
 }

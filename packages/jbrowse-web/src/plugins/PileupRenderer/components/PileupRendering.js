@@ -236,7 +236,11 @@ class PileupRendering extends Component {
     this.updateSelectionHighlight()
     return (
       <div className="PileupRendering" style={{ position: 'relative' }}>
-        <PrerenderedCanvas {...this.props} width={canvasWidth} />
+        <PrerenderedCanvas
+          {...this.props}
+          width={canvasWidth}
+          style={{ position: 'absolute', left: 0, top: 0 }}
+        />
         <canvas
           width={canvasWidth}
           height={height}
