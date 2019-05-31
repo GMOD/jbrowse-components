@@ -20,9 +20,6 @@ const styles = theme => ({
 })
 
 function Contents(props) {
-  const [categories, setCategories] = useState([])
-  const [trackConfigurations, setTrackConfigurations] = useState([])
-
   const {
     model,
     path,
@@ -31,15 +28,32 @@ function Contents(props) {
     connection,
     top,
     classes,
+    assemblyName,
   } = props
 
   let hierarchy = connection
-    ? model.connectionHierarchy(connection)
-    : model.hierarchy
+    ? model.connectionHierarchy(connection, assemblyName)
+    : model.hierarchy(assemblyName)
 
   path.forEach(pathEntry => {
     hierarchy = hierarchy.get(pathEntry) || new Map()
   })
+
+  const initialTrackConfigurations = []
+  const initialCategories = []
+  Array.from(hierarchy)
+    .slice(0, 50)
+    .forEach(([name, contents]) => {
+      if (contents.configId) {
+        initialTrackConfigurations.push(contents)
+      } else {
+        initialCategories.push([name, contents])
+      }
+    })
+  const [categories, setCategories] = useState(initialCategories)
+  const [trackConfigurations, setTrackConfigurations] = useState(
+    initialTrackConfigurations,
+  )
 
   useEffect(() => {
     function loadMoreTracks() {
@@ -70,28 +84,24 @@ function Contents(props) {
   }, [hierarchy.size, categories.length, trackConfigurations.length])
 
   const rootModel = getRoot(model)
+  const { assemblyManager } = rootModel
+  const assemblyData = assemblyManager.assemblyData.get(assemblyName)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
-  const assemblies = connection
-    ? rootModel.connections.get(connection).assemblies
-    : rootModel.configuration.assemblies
   return (
     <>
-      {/* {top && assemblies ? (
+      {top && assemblyData && !connection ? (
         <>
           <FormGroup>
-            {Array.from(assemblies, ([assemblyName, assembly]) => (
-              <TrackEntry
-                key={assembly.sequence.configId}
-                model={model}
-                trackConf={assembly.sequence}
-                assemblyName={assemblyName}
-              />
-            ))}
+            <TrackEntry
+              model={model}
+              trackConf={assemblyData.sequence}
+              assemblyName={assemblyName}
+            />
           </FormGroup>
           <Divider className={classes.divider} />
         </>
-      ) : null} */}
+      ) : null}
       <FormGroup>
         {trackConfigurations.filter(filterPredicate).map(trackConf => (
           <TrackEntry
@@ -111,6 +121,7 @@ function Contents(props) {
           filterPredicate={filterPredicate}
           disabled={disabled}
           connection={connection}
+          assemblyName={assemblyName}
         />
       ))}
     </>

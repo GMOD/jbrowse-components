@@ -1,7 +1,7 @@
 {
-  "assemblies": {
-    "volvox": {
-      "configId": "volvox",
+  "assemblies": [
+    {
+      "assemblyName": "volvox",
       "sequence": {
         "configId": "iTo6LoXUeI",
         "type": "ReferenceSequence",
@@ -331,8 +331,8 @@
         }
       ]
     },
-    "volvox2": {
-      "configId": "volvox2",
+    {
+      "assemblyName": "volvox2",
       "sequence": {
         "type": "ReferenceSequence",
         "adapter": {
@@ -357,7 +357,7 @@
         }
       }
     }
-  },
+  ],
   "rpc": {},
   "defaultSession": {
     "sessionName": "Volvox Example",
@@ -389,7 +389,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "ReferenceSequence",
@@ -408,7 +408,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 200,
         "bpPerPx": 2,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "AlignmentsTrack",
@@ -422,7 +422,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 1800,
         "bpPerPx": 0.1,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "DynamicTrack",

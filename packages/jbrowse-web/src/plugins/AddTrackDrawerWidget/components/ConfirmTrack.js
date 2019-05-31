@@ -12,6 +12,7 @@ import {
   guessTrackType,
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 const styles = theme => ({
   spacing: {
@@ -134,13 +135,14 @@ function ConfirmTrack(props) {
           onChange={event => setAssemblyName(event.target.value)}
           inputProps={{ 'data-testid': 'assemblyNameSelect' }}
         >
-          {Array.from(rootModel.configuration.assemblies.keys()).map(
-            newAssemblyName => (
+          {rootModel.configuration.assemblies.map(assembly => {
+            const newAssemblyName = readConfObject(assembly, 'assemblyName')
+            return (
               <MenuItem key={newAssemblyName} value={newAssemblyName}>
                 {newAssemblyName}
               </MenuItem>
-            ),
-          )}
+            )
+          })}
         </TextField>
       </>
     )

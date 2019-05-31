@@ -16,9 +16,9 @@ describe('<AddTrackDrawerWidget />', () => {
 
   beforeAll(async () => {
     ;({ rootModel } = await createTestEnv({
-      assemblies: {
-        volvox: {
-          configId: 'volvox',
+      assemblies: [
+        {
+          assemblyName: 'volvox',
           sequence: {
             type: 'ReferenceSequence',
             adapter: {
@@ -89,7 +89,7 @@ describe('<AddTrackDrawerWidget />', () => {
             },
           ],
         },
-      },
+      ],
     }))
     const view = rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
@@ -109,9 +109,7 @@ describe('<AddTrackDrawerWidget />', () => {
     const { container, getByTestId, getByText, getAllByRole } = render(
       <AddTrackDrawerWidget model={model} />,
     )
-    expect(rootModel.configuration.assemblies.get('volvox').tracks.length).toBe(
-      1,
-    )
+    expect(rootModel.configuration.assemblies[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
     fireEvent.change(getByTestId('trackNameInput'), {
@@ -124,8 +122,6 @@ describe('<AddTrackDrawerWidget />', () => {
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
     fireEvent.click(getByTestId('addTrackNextButton'))
-    expect(rootModel.configuration.assemblies.get('volvox').tracks.length).toBe(
-      2,
-    )
+    expect(rootModel.configuration.assemblies[0].tracks.length).toBe(2)
   })
 })

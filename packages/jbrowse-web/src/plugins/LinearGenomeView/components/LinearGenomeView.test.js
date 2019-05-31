@@ -26,17 +26,33 @@ describe('LinearGenomeView genome view component', () => {
   })
   it('renders one track, no blocks', async () => {
     const { rootModel } = await createTestEnv({
-      assemblies: {
-        volvox: {
+      assemblies: [
+        {
+          assemblyName: 'volvox',
+          sequence: {
+            adapter: {
+              type: 'FromConfigAdapter',
+              features: [
+                {
+                  refName: 'ctgA',
+                  uniqueId: 'firstId',
+                  start: 0,
+                  end: 10,
+                  seq: 'cattgttgcg',
+                },
+              ],
+            },
+          },
           tracks: [
             {
               configId: 'testConfig',
               name: 'Foo Track',
               type: 'BasicTrack',
+              adapter: { type: 'FromConfigAdapter', features: [] },
             },
           ],
         },
-      },
+      ],
       defaultSession: {
         views: [
           {
@@ -64,22 +80,39 @@ describe('LinearGenomeView genome view component', () => {
   })
   it('renders two tracks, two regions', async () => {
     const { rootModel } = await createTestEnv({
-      assemblies: {
-        volvox: {
+      assemblies: [
+        {
+          assemblyName: 'volvox',
+          sequence: {
+            adapter: {
+              type: 'FromConfigAdapter',
+              features: [
+                {
+                  refName: 'ctgA',
+                  uniqueId: 'firstId',
+                  start: 0,
+                  end: 10,
+                  seq: 'cattgttgcg',
+                },
+              ],
+            },
+          },
           tracks: [
             {
               configId: 'testConfig',
               name: 'Foo Track',
               type: 'BasicTrack',
+              adapter: { type: 'FromConfigAdapter', features: [] },
             },
             {
               configId: 'testConfig2',
               name: 'Bar Track',
               type: 'BasicTrack',
+              adapter: { type: 'FromConfigAdapter', features: [] },
             },
           ],
         },
-      },
+      ],
       defaultSession: {
         views: [
           {

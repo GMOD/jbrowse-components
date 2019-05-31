@@ -36,7 +36,15 @@ const styles = theme => ({
 })
 
 function Category(props) {
-  const { model, path, filterPredicate, disabled, connection, classes } = props
+  const {
+    model,
+    path,
+    filterPredicate,
+    disabled,
+    connection,
+    classes,
+    assemblyName,
+  } = props
   const pathName = path.join('|')
   const name = path[path.length - 1]
 
@@ -55,7 +63,9 @@ function Category(props) {
         expandIcon={<Icon>expand_more</Icon>}
       >
         <Typography variant="button">{`${name} (${
-          Object.keys(model.allTracksInCategoryPath(path, connection)).length
+          Object.keys(
+            model.allTracksInCategoryPath(path, connection, assemblyName),
+          ).length
         })`}</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.expansionPanelDetails}>
@@ -65,6 +75,7 @@ function Category(props) {
           filterPredicate={filterPredicate}
           disabled={disabled}
           connection={connection}
+          assemblyName={assemblyName}
         />
       </ExpansionPanelDetails>
     </ExpansionPanel>

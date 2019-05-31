@@ -7,7 +7,7 @@ import {
 } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
@@ -26,13 +26,12 @@ function renderBlockData(self) {
   const track = getParent(self, 2)
   const trackConf = track.configuration
   let trackConfParent = getParent(trackConf)
-  if (!trackConfParent.configId) trackConfParent = getParent(trackConfParent)
+  if (!trackConfParent.assemblyName)
+    trackConfParent = getParent(trackConfParent)
+  const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
   let cannotBeRenderedReason
-  if (
-    trackConfParent.configId !== self.region.assemblyName &&
-    trackConfParent.assemblyName !== self.region.assemblyName
-  )
-    cannotBeRenderedReason = 'region assembly does not match track'
+  if (trackAssemblyName !== self.region.assemblyName)
+    cannotBeRenderedReason = 'region assembly does not match track assembly'
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const view = getContainingView(track)
   const { rpcManager } = getRoot(view)

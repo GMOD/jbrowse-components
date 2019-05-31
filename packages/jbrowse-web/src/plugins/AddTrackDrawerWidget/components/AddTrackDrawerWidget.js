@@ -10,6 +10,7 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 
@@ -82,7 +83,9 @@ function AddTrackDrawerWidget(props) {
     if (activeStep === steps.length - 1) {
       trackAdapter.features = trackData.config
       const trackConf = rootModel.configuration.assemblies
-        .get(assemblyName)
+        .find(
+          assembly => readConfObject(assembly, 'assemblyName') === assemblyName,
+        )
         .addTrackConf(trackType, {
           name: trackName,
           adapter: trackAdapter,

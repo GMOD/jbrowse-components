@@ -1,7 +1,7 @@
 {
-  "assemblies": {
-    "hg38": {
-      "configId": "hg38",
+  "assemblies": [
+    {
+      "assemblyName": "hg38",
       "sequence": {
         "configId": "VKYdNPZZ0",
         "type": "ReferenceSequence",
@@ -135,7 +135,7 @@
         }
       ]
     }
-  },
+  ],
   "rpc": {},
   "defaultSession": {
     "sessionName": "Human Example",
@@ -167,7 +167,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 835,
         "bpPerPx": 50,
-        "displayedRegionsSource": "hg38",
+        "displayRegionsFromAssemblyName": "hg38",
         "tracks": [
           {
             "type": "WiggleTrack",

@@ -5,152 +5,73 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
   class="HierarchicalTrackSelector-root-1"
 >
   <div
-    class="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
-      data-shrink="true"
+      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
-      <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root-62"
-        >
-          search
-        </span>
-      </div>
       <input
         aria-invalid="true"
-        class="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
       />
       <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
       >
         <button
-          class="MuiButtonBase-root-77 MuiIconButton-root-71"
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
           tabindex="0"
           type="button"
         >
           <span
-            class="MuiIconButton-label-76"
+            class="MuiIconButton-label-68"
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root-62"
+              class="material-icons MuiIcon-root-72"
             >
               clear
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-110"
+            class="MuiTouchRipple-root-106"
           />
         </button>
       </div>
     </div>
     <p
-      class="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
+      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
     >
       No matches
     </p>
   </div>
   <div
-    class="MuiFormGroup-root-89"
-  >
-    <div
-      class="TrackEntry-track-119"
-      style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
-    >
-      <label
-        class="MuiFormControlLabel-root-129 TrackEntry-formControlLabel-117"
-        title="The reference sequence for volvox"
-      >
-        <span
-          class="MuiButtonBase-root-77 MuiIconButton-root-71 MuiPrivateSwitchBase-root-141 MuiCheckbox-root-135 MuiCheckbox-colorSecondary-140 TrackEntry-checkbox-118"
-        >
-          <span
-            class="MuiIconButton-label-76"
-          >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root-145"
-              focusable="false"
-              role="presentation"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-              />
-            </svg>
-            <input
-              class="MuiPrivateSwitchBase-input-144"
-              data-indeterminate="false"
-              type="checkbox"
-              value=""
-            />
-          </span>
-          <span
-            class="MuiTouchRipple-root-110"
-          />
-        </span>
-        <span
-          class="MuiTypography-root-154 MuiTypography-body1-163 MuiFormControlLabel-label-134"
-        >
-          Reference Sequence (volvox)
-        </span>
-      </label>
-      <button
-        class="MuiButtonBase-root-77 MuiIconButton-root-71 TrackEntry-configureButton-120"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label-76"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root-62 MuiIcon-fontSizeSmall-69"
-          >
-            settings
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root-110"
-        />
-      </button>
-    </div>
-  </div>
-  <hr
-    class="MuiDivider-root-91 Contents-divider-88"
-  />
-  <div
-    class="MuiFormGroup-root-89"
+    class="MuiFormGroup-root-90"
   />
   <button
-    class="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-97"
+      class="MuiFab-label-93"
     >
       <span
         aria-hidden="true"
-        class="material-icons MuiIcon-root-62"
+        class="material-icons MuiIcon-root-72"
       >
         add
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-110"
+      class="MuiTouchRipple-root-106"
     />
   </button>
 </div>
@@ -161,152 +82,73 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
   class="HierarchicalTrackSelector-root-1"
 >
   <div
-    class="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
-      data-shrink="true"
+      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
-      <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root-62"
-        >
-          search
-        </span>
-      </div>
       <input
         aria-invalid="true"
-        class="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
       />
       <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
       >
         <button
-          class="MuiButtonBase-root-77 MuiIconButton-root-71"
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
           tabindex="0"
           type="button"
         >
           <span
-            class="MuiIconButton-label-76"
+            class="MuiIconButton-label-68"
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root-62"
+              class="material-icons MuiIcon-root-72"
             >
               clear
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-110"
+            class="MuiTouchRipple-root-106"
           />
         </button>
       </div>
     </div>
     <p
-      class="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
+      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
     >
       No matches
     </p>
   </div>
   <div
-    class="MuiFormGroup-root-89"
-  >
-    <div
-      class="TrackEntry-track-119"
-      style="opacity: 1; webkit-transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
-    >
-      <label
-        class="MuiFormControlLabel-root-129 TrackEntry-formControlLabel-117"
-        title="The reference sequence for volvox"
-      >
-        <span
-          class="MuiButtonBase-root-77 MuiIconButton-root-71 MuiPrivateSwitchBase-root-141 MuiCheckbox-root-135 MuiCheckbox-colorSecondary-140 TrackEntry-checkbox-118"
-        >
-          <span
-            class="MuiIconButton-label-76"
-          >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root-145"
-              focusable="false"
-              role="presentation"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-              />
-            </svg>
-            <input
-              class="MuiPrivateSwitchBase-input-144"
-              data-indeterminate="false"
-              type="checkbox"
-              value=""
-            />
-          </span>
-          <span
-            class="MuiTouchRipple-root-110"
-          />
-        </span>
-        <span
-          class="MuiTypography-root-154 MuiTypography-body1-163 MuiFormControlLabel-label-134"
-        >
-          Reference Sequence (volvox)
-        </span>
-      </label>
-      <button
-        class="MuiButtonBase-root-77 MuiIconButton-root-71 TrackEntry-configureButton-120"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label-76"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root-62 MuiIcon-fontSizeSmall-69"
-          >
-            settings
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root-110"
-        />
-      </button>
-    </div>
-  </div>
-  <hr
-    class="MuiDivider-root-91 Contents-divider-88"
-  />
-  <div
-    class="MuiFormGroup-root-89"
+    class="MuiFormGroup-root-90"
   />
   <button
-    class="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-97"
+      class="MuiFab-label-93"
     >
       <span
         aria-hidden="true"
-        class="material-icons MuiIcon-root-62"
+        class="material-icons MuiIcon-root-72"
       >
         add
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-110"
+      class="MuiTouchRipple-root-106"
     />
   </button>
 </div>
@@ -317,89 +159,73 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
   class="HierarchicalTrackSelector-root-1"
 >
   <div
-    class="MuiFormControl-root-5 MuiFormControl-fullWidth-8 HierarchicalTrackSelector-searchBox-2"
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-20 MuiFormLabel-error-23 MuiInputLabel-error-12 MuiInputLabel-root-9 MuiInputLabel-formControl-14 MuiInputLabel-animated-17 MuiInputLabel-shrink-16"
-      data-shrink="true"
+      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-40 MuiInput-root-27 MuiInput-underline-31 MuiInputBase-error-46 MuiInput-error-32 MuiInputBase-fullWidth-49 MuiInput-fullWidth-34 MuiInputBase-formControl-41 MuiInput-formControl-28 MuiInputBase-adornedStart-44 MuiInputBase-adornedEnd-45"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
-      <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionStart-59"
-      >
-        <span
-          aria-hidden="true"
-          class="material-icons MuiIcon-root-62"
-        >
-          search
-        </span>
-      </div>
       <input
         aria-invalid="true"
-        class="MuiInputBase-input-50 MuiInput-input-35 MuiInputBase-inputAdornedStart-55 MuiInputBase-inputAdornedEnd-56"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
       />
       <div
-        class="MuiInputAdornment-root-57 MuiInputAdornment-positionEnd-60"
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
       >
         <button
-          class="MuiButtonBase-root-77 MuiIconButton-root-71"
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
           tabindex="0"
           type="button"
         >
           <span
-            class="MuiIconButton-label-76"
+            class="MuiIconButton-label-68"
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root-62"
+              class="material-icons MuiIcon-root-72"
             >
               clear
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-110"
+            class="MuiTouchRipple-root-106"
           />
         </button>
       </div>
     </div>
     <p
-      class="MuiFormHelperText-root-80 MuiFormHelperText-error-81"
+      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
     >
       No matches
     </p>
   </div>
   <div
-    class="MuiFormGroup-root-89"
-  />
-  <hr
-    class="MuiDivider-root-91 Contents-divider-88"
-  />
-  <div
-    class="MuiFormGroup-root-89"
+    class="MuiFormGroup-root-90"
   />
   <button
-    class="MuiButtonBase-root-77 MuiFab-root-96 MuiFab-secondary-99 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-97"
+      class="MuiFab-label-93"
     >
       <span
         aria-hidden="true"
-        class="material-icons MuiIcon-root-62"
+        class="material-icons MuiIcon-root-72"
       >
         add
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-110"
+      class="MuiTouchRipple-root-106"
     />
   </button>
 </div>

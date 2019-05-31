@@ -6,7 +6,7 @@ import ReactPropTypes from 'prop-types'
 import { withStyles, IconButton, Icon } from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 
 const styles = (/* theme */) => ({
@@ -28,9 +28,12 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
   if (getConf(track, 'type') === 'ReferenceSequence') {
     trackName = 'Refence Sequence'
     const rootModel = getRoot(view)
-    rootModel.configuration.assemblies.forEach((assembly, assemblyName) => {
+    rootModel.configuration.assemblies.forEach(assembly => {
       if (assembly.sequence === track.configuration)
-        trackName = `Reference Sequence (${assemblyName})`
+        trackName = `Reference Sequence (${readConfObject(
+          assembly,
+          'assemblyName',
+        )})`
     })
   }
   return (

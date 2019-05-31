@@ -13,6 +13,17 @@ export function getContainingView(node) {
 }
 
 /**
+ * get the assembly configuration that contains a track configuration
+ * @param {MSTNode} node
+ */
+export function getContainingAssembly(trackConf) {
+  let trackConfParent = getParent(trackConf)
+  if (!trackConfParent.assemblyName)
+    trackConfParent = getParent(trackConfParent)
+  return trackConfParent
+}
+
+/**
  * given an MST node, get the renderprops of the first parent container that has
  * renderProps
  * @param {TreeNode} node

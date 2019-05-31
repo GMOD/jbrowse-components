@@ -49,7 +49,31 @@ export default pluginManager =>
       },
     }))
     .views(self => ({
-      get trackConfigurations() {
+      trackConfigurations(assemblyName) {
+        if (!self.view) return []
+        const root = getRoot(self)
+        const trackConfigurations = []
+        root.configuration.assemblies.forEach(assemblyConf => {
+          if (readConfObject(assemblyConf, 'assemblyName') === assemblyName)
+            trackConfigurations.push(...assemblyConf.tracks)
+        })
+
+        const relevantTrackConfigurations = trackConfigurations.filter(
+          conf => conf.viewType === self.view.type,
+        )
+        return relevantTrackConfigurations
+      },
+
+      get assemblyNames() {
+        const assemblyNames = []
+        self.view.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
+        return assemblyNames
+      },
+
+      connectionTrackConfigurations(connectionName, assemblyName) {
         if (!self.view) return []
         const assemblyNames = []
         self.view.displayedRegions.forEach(displayedRegion => {
@@ -58,10 +82,11 @@ export default pluginManager =>
         })
         const root = getRoot(self)
         const trackConfigurations = []
-        assemblyNames.forEach(assemblyName => {
-          const assembly = root.configuration.assemblies.get(assemblyName)
+        const connection = root.connections.get(connectionName)
+        if (connection) {
+          const assembly = connection.assemblies.get(assemblyName)
           if (assembly) trackConfigurations.push(...assembly.tracks)
-        })
+        }
 
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf => conf.viewType === self.view.type,
@@ -69,42 +94,21 @@ export default pluginManager =>
         return relevantTrackConfigurations
       },
 
-      connectionTrackConfigurations(connectionName) {
-        if (!self.view) return []
-        const assemblyNames = []
-        self.view.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        const root = getRoot(self)
-        const trackConfigurations = []
-        assemblyNames.forEach(assemblyName => {
-          const connection = root.connections.get(connectionName)
-          if (connection) {
-            const assembly = connection.assemblies.get(assemblyName)
-            if (assembly) trackConfigurations.push(...assembly.tracks)
-          }
-        })
+      hierarchy(assemblyName) {
+        return generateHierarchy(self.trackConfigurations(assemblyName))
+      },
 
-        const relevantTrackConfigurations = trackConfigurations.filter(
-          conf => conf.viewType === self.view.type,
+      connectionHierarchy(connection, assemblyName) {
+        return generateHierarchy(
+          self.connectionTrackConfigurations(connection, assemblyName),
         )
-        return relevantTrackConfigurations
-      },
-
-      get hierarchy() {
-        return generateHierarchy(self.trackConfigurations)
-      },
-
-      connectionHierarchy(connection) {
-        return generateHierarchy(self.connectionTrackConfigurations(connection))
       },
 
       // This recursively gets tracks from lower paths
-      allTracksInCategoryPath(path, connection) {
+      allTracksInCategoryPath(path, connection, assemblyName) {
         let currentHier = connection
-          ? self.connectionHierarchy(connection)
-          : self.hierarchy
+          ? self.connectionHierarchy(connection, assemblyName)
+          : self.hierarchy(assemblyName)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
         })

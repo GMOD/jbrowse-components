@@ -6,9 +6,9 @@ describe('Assembly Manager', () => {
 
   beforeAll(async () => {
     ;({ rootModel } = await createTestEnv({
-      assemblies: {
-        volvox: {
-          configId: 'volvox',
+      assemblies: [
+        {
+          assemblyName: 'volvox',
           sequence: {
             type: 'ReferenceSequence',
             adapter: {
@@ -88,7 +88,7 @@ describe('Assembly Manager', () => {
             },
           ],
         },
-      },
+      ],
     }))
     ;({ assemblyManager } = rootModel)
   })
@@ -109,22 +109,22 @@ describe('Assembly Manager', () => {
   it('aliases ref names for a track', async () => {
     rootModel.addLinearGenomeViewOfAssembly('volvox', {})
     rootModel.views[0].showTrack(
-      rootModel.configuration.assemblies.get('volvox').tracks[0],
+      rootModel.configuration.assemblies[0].tracks[0],
     )
 
     assemblyManager.clear()
-    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
-      Object {
-        "testingId": Object {},
-      }
-    `)
+    expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`Map {}`)
     await assemblyManager.addRefNameMapForTrack(
       rootModel.views[0].tracks[0].configuration,
     )
 
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
-      Object {
-        "testingId": Object {},
+      Map {
+        "testingId" => Map {
+          "contigA" => "contigA",
+          "ctgA" => "contigA",
+          "A" => "contigA",
+        },
       }
     `)
   })

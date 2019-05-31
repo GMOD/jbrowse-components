@@ -50,10 +50,7 @@ export default (pluginManager, workerManager) => {
           rpcFuncs,
         },
       })
-      const assemblyManager = new AssemblyManager(
-        rpcManager,
-        self.configuration,
-      )
+      const assemblyManager = new AssemblyManager(rpcManager, self)
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -109,7 +106,10 @@ export default (pluginManager, workerManager) => {
             connectionName,
             connectionType.stateModel.create(),
           )
-          self.connections.get(connectionName).connect(connectionConf)
+          self.connections
+            .get(connectionName)
+            .connect(connectionConf)
+            .then(() => self.assemblyManager.updateAssemblyData(self))
         })
       },
 
@@ -191,7 +191,7 @@ export default (pluginManager, workerManager) => {
         configuration,
         initialState = {},
       ) {
-        configuration.displayedRegionsSource = assemblyName
+        configuration.displayRegionsFromAssemblyName = assemblyName
         return self.addView('LinearGenomeView', configuration, initialState)
       },
 

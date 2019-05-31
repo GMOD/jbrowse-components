@@ -5,6 +5,8 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
+import Tab from '@material-ui/core/Tab'
+import Tabs from '@material-ui/core/Tabs'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
@@ -35,13 +37,21 @@ const styles = theme => ({
     padding: theme.spacing.unit,
     marginTop: theme.spacing.unit,
   },
+  tabs: {
+    marginBottom: theme.spacing.unit,
+  },
 })
 
 function HierarchicalTrackSelector(props) {
   const [anchorEl, setAnchorEl] = useState(null)
+  const [assemblyIdx, setAssemblyIdx] = useState(0)
 
   const { model, classes } = props
   const rootModel = getRoot(model)
+
+  function handleTabChange(event, newIdx) {
+    setAssemblyIdx(newIdx)
+  }
 
   function handleFabClick(event) {
     setAnchorEl(event.currentTarget)
@@ -80,10 +90,24 @@ function HierarchicalTrackSelector(props) {
     return name.toLowerCase().includes(model.filterText.toLowerCase())
   }
 
-  const filterError = model.trackConfigurations.filter(filter).length === 0
+  const { assemblyNames } = model
+  const assemblyName = assemblyNames[assemblyIdx]
+  const filterError =
+    model.trackConfigurations(assemblyName).filter(filter).length === 0
 
   return (
     <div key={model.view.id} className={classes.root}>
+      {assemblyNames.length > 1 ? (
+        <Tabs
+          className={classes.tabs}
+          value={assemblyIdx}
+          onChange={handleTabChange}
+        >
+          {assemblyNames.map(name => (
+            <Tab key={name} label={name} />
+          ))}
+        </Tabs>
+      ) : null}
       <TextField
         className={classes.searchBox}
         label="Filter Tracks"
@@ -93,11 +117,6 @@ function HierarchicalTrackSelector(props) {
         onChange={handleInputChange}
         fullWidth
         InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Icon>search</Icon>
-            </InputAdornment>
-          ),
           endAdornment: (
             <InputAdornment position="end">
               <IconButton onClick={model.clearFilterText}>
@@ -107,7 +126,12 @@ function HierarchicalTrackSelector(props) {
           ),
         }}
       />
-      <Contents model={model} filterPredicate={filter} top />
+      <Contents
+        model={model}
+        filterPredicate={filter}
+        assemblyName={assemblyName}
+        top
+      />
       {rootModel.connections.size ? (
         <>
           <Typography variant="h5">Connections:</Typography>
@@ -122,6 +146,7 @@ function HierarchicalTrackSelector(props) {
                 model={model}
                 filterPredicate={filter}
                 connection={connectionName}
+                assemblyName={assemblyName}
                 top
               />
             </Paper>

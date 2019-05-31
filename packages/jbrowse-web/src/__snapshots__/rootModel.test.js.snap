@@ -2,19 +2,13 @@
 
 exports[`can load configuration from a config object 1`] = `
 Object {
-  "assemblies": Object {
-    "volvox": Object {
+  "assemblies": Array [
+    Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "volvox",
-      "refNameAliases": Object {
-        "adapter": Object {
-          "configId": "Zd0NLmtxPZ2",
-          "type": "FromConfigAdapter",
-        },
-        "configId": "testid",
-      },
+      "assemblyName": "volvox",
+      "configId": "testid",
       "sequence": Object {
         "adapter": Object {
           "configId": "Zd0NLmtxPZ3",
@@ -28,7 +22,7 @@ Object {
         "type": "ReferenceSequence",
       },
     },
-  },
+  ],
   "configId": "testid",
   "rpc": Object {
     "configId": "testid",
@@ -345,7 +339,7 @@ Object {
     "views": Array [
       Object {
         "bpPerPx": 0.05,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "id": "xdTd_biFQ",
         "offsetPx": 2000,
         "trackSelectorType": "hierarchical",
@@ -365,7 +359,7 @@ Object {
       },
       Object {
         "bpPerPx": 2,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "offsetPx": 200,
         "trackSelectorType": "hierarchical",
         "tracks": Array [
@@ -379,7 +373,7 @@ Object {
       },
       Object {
         "bpPerPx": 0.1,
-        "displayedRegionsSource": "volvox",
+        "displayRegionsFromAssemblyName": "volvox",
         "offsetPx": 1800,
         "trackSelectorType": "hierarchical",
         "tracks": Array [

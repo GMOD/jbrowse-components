@@ -57,6 +57,7 @@ exports[`<MainMenuBar /> renders 1`] = `
               "defaultDriver": "MainThreadRpcDriver",
             },
           },
+          "connections": Object {},
           "drawerWidgets": Object {},
           "drawerWidth": 384,
           "menuBars": Array [

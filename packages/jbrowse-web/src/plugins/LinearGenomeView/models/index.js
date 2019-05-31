@@ -53,10 +53,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(Region),
-      displayedRegionsSource: types.optional(
-        types.union(types.string, types.array(Region)),
-        [],
-      ),
+      displayRegionsFromAssemblyName: types.maybe(types.string),
       reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
@@ -115,10 +112,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        self.resetDisplayedRegions()
-      },
-
       setWidth(newWidth) {
         self.width = newWidth
       },
@@ -161,28 +154,6 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         // if none had that configuration, turn one on
         if (!hiddenCount) self.showTrack(configuration)
       },
-
-      resetDisplayedRegions() {
-        if (typeof self.displayedRegionsSource === 'string')
-          self.setRegionsFromAssembly(self.displayedRegionsSource)
-        else self.displayedRegions = getSnapshot(self.displayedRegionsSource)
-      },
-
-      setRegionsFromAssembly: flow(function* setRegionsFromAssembly(
-        assemblyName,
-      ) {
-        self.githubProjects = []
-        self.state = 'pending'
-        try {
-          const { assemblyManager } = getRoot(self)
-          const regions = yield assemblyManager.getRegionsForAssembly(
-            assemblyName,
-          )
-          self.setDisplayedRegions(regions)
-        } catch (error) {
-          console.error('Failed to assembly regions', error)
-        }
-      }),
 
       setDisplayedRegions(regions) {
         self.displayedRegions = regions

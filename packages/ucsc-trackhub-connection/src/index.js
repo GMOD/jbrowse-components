@@ -18,6 +18,10 @@ const configSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
     },
+    useAssemblySequences: {
+      type: 'stringArray',
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )

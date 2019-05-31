@@ -65,21 +65,24 @@ export default types.compose(
           const blockDefinitions = getContainingView(self)[self.blockType]
           const { assemblyManager } = getRoot(self)
           if (!assemblyManager) return
-          const refNameMap = assemblyManager.getRefNameMapForTrack(
-            self.configuration,
-          )
-          if (!refNameMap) return
-          self.setBlockDefinitions(
-            blockDefinitions.map(blockDefinition => {
-              let { refName } = blockDefinition
-              refName = refNameMap.get(refName) || refName
-              return { ...blockDefinition, refName }
-            }),
-          )
+          assemblyManager
+            .getRefNameMapForTrack(self.configuration)
+            .then(refNameMap =>
+              self.setRegularizedBlockDefinitions(refNameMap, blockDefinitions),
+            )
         })
 
         addDisposer(self, blockWatchDisposer)
         addDisposer(self, blockDefinitionDisposer)
+      },
+      setRegularizedBlockDefinitions(refNameMap, blockDefinitions) {
+        self.setBlockDefinitions(
+          blockDefinitions.map(blockDefinition => {
+            let { refName } = blockDefinition
+            refName = refNameMap.get(refName) || refName
+            return { ...blockDefinition, refName }
+          }),
+        )
       },
       setBlockDefinitions(blockDefinitions) {
         self.blockDefinitions = blockDefinitions

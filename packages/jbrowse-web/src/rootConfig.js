@@ -9,54 +9,19 @@ import {
   createRefSeqsAdapter,
   fetchJb1,
 } from './connections/jb1Hub'
+import AssemblyConfigsSchemasFactory from './assemblyConfigSchemas'
 
 export default function(pluginManager) {
-  const AssemblyConfigSchema = ConfigurationSchema(
-    'Assembly',
-    {
-      sequence: pluginManager.elementTypes.track.ReferenceSequence.configSchema,
-      aliases: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'Other possible names for this assembly',
-      },
-      refNameAliases: ConfigurationSchema('RefNameAliases', {
-        adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      }),
-      // track configuration is an array of track config schemas. multiple
-      // instances of a track can exist that use the same configuration
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-    },
-    {
-      actions: self => ({
-        addTrackConf(typeName, data, connectionName) {
-          const type = getRoot(self).pluginManager.getTrackType(typeName)
-          if (!type) throw new Error(`unknown track type ${typeName}`)
-          const schemaType = type.configSchema
-          const conf = schemaType.create(
-            Object.assign({ type: typeName }, data),
-          )
-          if (connectionName) {
-            const connectionNames = self.connections.map(connection =>
-              readConfObject(connection, 'connectionName'),
-            )
-            if (!connectionNames.includes(connectionName))
-              throw new Error(
-                `Cannot add track to non-existent connection: ${connectionName}`,
-              )
-            self.volatile.get(connectionName).tracks.push(conf)
-          } else self.tracks.push(conf)
-          return conf
-        },
-      }),
-    },
+  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigsSchemasFactory(
+    pluginManager,
   )
-
   return ConfigurationSchema(
     'JBrowseWebRoot',
     {
       // A map of assembly name -> assembly details
-      assemblies: types.map(AssemblyConfigSchema),
+      assemblies: types.array(
+        types.union({ dispatcher }, ...assemblyConfigSchemas),
+      ),
 
       highResolutionScaling: 2, // possibly consider this for global config editor
 
@@ -151,16 +116,7 @@ export default function(pluginManager) {
               readConfObject(connectionConf, 'connectionName'),
             )
           })
-
-          // self.updateAssemblyManager()
         }),
-
-        updateAssemblyManager() {
-          const rootModel = getRoot(self)
-          rootModel.assemblyManager.updateAssemblyConfigs(
-            rootModel.configuration,
-          )
-        },
 
         addAssembly(
           assemblyName,

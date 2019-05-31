@@ -1,10 +1,11 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { flow, types } from 'mobx-state-tree'
+import { flow, getRoot, types } from 'mobx-state-tree'
 import {
   fetchGenomesFile,
   fetchHubFile,
   fetchTrackDbFile,
   generateTracks,
+  ucscAssemblies,
 } from './ucscTrackHub'
 
 export default function modelFactory(pluginManager) {
@@ -17,6 +18,9 @@ export default function modelFactory(pluginManager) {
             tracks: types.array(
               pluginManager.pluggableConfigSchemaType('track'),
             ),
+            sequence:
+              pluginManager.elementTypes.track.ReferenceSequence.configSchema,
+            defaultSequence: false,
           })
           .actions(self => ({
             addTrackConf(typeName, data) {
@@ -28,6 +32,12 @@ export default function modelFactory(pluginManager) {
               )
               self.tracks.push(conf)
               return conf
+            },
+            setSequence(sequenceConf) {
+              self.sequence = sequenceConf
+            },
+            setDefaultSequence(isDefault) {
+              self.defaultSequence = isDefault
             },
           })),
       ),
@@ -56,49 +66,43 @@ export default function modelFactory(pluginManager) {
         if (!assemblyNames.length) assemblyNames = genomesFile.keys()
         for (const assemblyName of assemblyNames) {
           self.addEmptyAssembly(assemblyName)
-          // const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
-          // if (twoBitPath) {
-          //   let twoBitLocation
-          //   if (hubFileLocation.uri)
-          //     twoBitLocation = {
-          //       uri: new URL(
-          //         twoBitPath,
-          //         new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-          //       ).href,
-          //     }
-          //   else
-          //     twoBitLocation = {
-          //       localPath: twoBitPath,
-          //     }
-          //   self.addAssembly(
-          //     assemblyName,
-          //     undefined,
-          //     undefined,
-          //     {
-          //       type: 'ReferenceSequence',
-          //       adapter: {
-          //         type: 'TwoBitAdapter',
-          //         twoBitLocation,
-          //       },
-          //     },
-          //     readConfObject(connectionConf, 'connectionName'),
-          //   )
-          // } else if (ucscAssemblies.includes(assemblyName))
-          //   self.addAssembly(
-          //     assemblyName,
-          //     undefined,
-          //     undefined,
-          //     {
-          //       type: 'ReferenceSequence',
-          //       adapter: {
-          //         type: 'TwoBitAdapter',
-          //         twoBitLocation: {
-          //           uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
-          //         },
-          //       },
-          //     },
-          //     readConfObject(connectionConf, 'connectionName'),
-          //   )
+          if (
+            readConfObject(connectionConf, 'useAssemblySequences').includes(
+              assemblyName,
+            )
+          )
+            self.assemblies.get(assemblyName).setDefaultSequence(true)
+          const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
+          if (twoBitPath) {
+            let twoBitLocation
+            if (hubFileLocation.uri)
+              twoBitLocation = {
+                uri: new URL(
+                  twoBitPath,
+                  new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+                ).href,
+              }
+            else
+              twoBitLocation = {
+                localPath: twoBitPath,
+              }
+            self.assemblies.get(assemblyName).setSequence({
+              type: 'ReferenceSequence',
+              adapter: {
+                type: 'TwoBitAdapter',
+                twoBitLocation,
+              },
+            })
+          } else if (ucscAssemblies.includes(assemblyName))
+            self.assemblies.get(assemblyName).setSequence({
+              type: 'ReferenceSequence',
+              adapter: {
+                type: 'TwoBitAdapter',
+                twoBitLocation: {
+                  uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
+                },
+              },
+            })
           let trackDbFileLocation
           if (hubFileLocation.uri)
             trackDbFileLocation = {
