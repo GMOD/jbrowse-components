@@ -38,7 +38,7 @@ describe('<AddConnectionDrawerWidget />', () => {
       container,
       getAllByRole,
       getByText,
-      getByValue,
+      getByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
     expect(
       rootModel.connections.has('Test UCSC connection name'),
@@ -47,10 +47,10 @@ describe('<AddConnectionDrawerWidget />', () => {
     await waitForElement(() => getByText('UCSC Track Hub'), { container })
     fireEvent.click(getByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getByValue('nameOfUCSCTrackHubConnection'), {
+    fireEvent.change(getByDisplayValue('nameOfUCSCTrackHubConnection'), {
       target: { value: 'Test UCSC connection name' },
     })
-    fireEvent.change(getByValue('http://mysite.com/path/to/hub.txt'), {
+    fireEvent.change(getByDisplayValue('http://mysite.com/path/to/hub.txt'), {
       target: { value: 'http://test.com/hub.txt' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
@@ -63,7 +63,7 @@ describe('<AddConnectionDrawerWidget />', () => {
       container,
       getAllByRole,
       getByText,
-      getByValue,
+      getByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
     expect(
       rootModel.connections.has('Test JBrowse 1 connection name'),
@@ -72,10 +72,11 @@ describe('<AddConnectionDrawerWidget />', () => {
     await waitForElement(() => getByText('JBrowse 1 Data'), { container })
     fireEvent.click(getByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getByValue('nameOfJBrowse1Connection'), {
+    expect(container).toMatchSnapshot()
+    fireEvent.change(getByDisplayValue('nameOfJBrowse1Connection'), {
       target: { value: 'Test JBrowse 1 connection name' },
     })
-    fireEvent.change(getByValue('http://mysite.com/jbrowse/data/'), {
+    fireEvent.change(getByDisplayValue('http://mysite.com/jbrowse/data/'), {
       target: { value: 'http://test.com/jbrowse/data/' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))

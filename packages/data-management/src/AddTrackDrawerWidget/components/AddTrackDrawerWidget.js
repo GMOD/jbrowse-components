@@ -48,8 +48,8 @@ function AddTrackDrawerWidget(props) {
 
   const rootModel = getRoot(model)
 
-  function getStepContent() {
-    switch (activeStep) {
+  function getStepContent(currStep) {
+    switch (currStep) {
       case 0:
         return (
           <TrackSourceSelect
@@ -122,11 +122,11 @@ function AddTrackDrawerWidget(props) {
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map(label => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+        {steps.map((step, index) => (
+          <Step key={steps[activeStep]}>
+            <StepLabel>{steps[activeStep]}</StepLabel>
             <StepContent>
-              {getStepContent()}
+              {getStepContent(activeStep)}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
@@ -141,7 +141,11 @@ function AddTrackDrawerWidget(props) {
                   color="primary"
                   onClick={handleNext}
                   className={classes.button}
-                  data-testid="addTrackNextButton"
+                  data-testid={
+                    activeStep === index
+                      ? 'addTrackNextButton'
+                      : 'addTrackNextButton-notcurrent'
+                  }
                 >
                   {activeStep === steps.length - 1 ? 'Add' : 'Next'}
                 </Button>

@@ -9,7 +9,7 @@ import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 
@@ -47,8 +47,8 @@ function AddConnectionDrawerWidget(props) {
     setConfigModel(newConnectionType.configSchema.create())
   }
 
-  function stepContent() {
-    switch (activeStep) {
+  function stepContent(currStep) {
+    switch (currStep) {
       case 0:
         return (
           <ConnectionTypeSelect
@@ -72,30 +72,14 @@ function AddConnectionDrawerWidget(props) {
     }
   }
 
-  function handleNext() {
-    if (activeStep === steps.length - 1) handleFinish()
-    else setActiveStep(activeStep + 1)
-  }
-
-  function handleBack() {
-    setActiveStep(activeStep - 1)
-  }
-
-  function handleFinish() {
-    rootModel.configuration.addConnection(configModel)
-    rootModel.hideDrawerWidget(
-      rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
-    )
-  }
-
-  function checkNextEnabled() {
-    if (
-      (activeStep === 0 && connectionType.name) ||
-      (activeStep === 1 && configModel)
-    )
-      return true
-    return false
-  }
+  useEffect(() => {
+    if (activeStep === steps.length) {
+      rootModel.configuration.addConnection(configModel)
+      rootModel.hideDrawerWidget(
+        rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
+      )
+    }
+  }, [rootModel, configModel, activeStep])
 
   return (
     <div className={classes.root}>
@@ -104,26 +88,35 @@ function AddConnectionDrawerWidget(props) {
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map(label => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+        {steps.map((step, index) => (
+          <Step key={step}>
+            <StepLabel>{step}</StepLabel>
             <StepContent>
-              {stepContent()}
+              {stepContent(index)}
               <div className={classes.actionsContainer}>
                 <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
+                  disabled={index === 0}
+                  onClick={() => setActiveStep(activeStep - 1)}
                   className={classes.button}
                 >
                   Back
                 </Button>
                 <Button
-                  disabled={!checkNextEnabled()}
+                  disabled={
+                    !(
+                      (activeStep === 0 && connectionType.name) ||
+                      (activeStep === 1 && configModel)
+                    )
+                  }
                   variant="contained"
                   color="primary"
-                  onClick={handleNext}
+                  onClick={() => setActiveStep(activeStep + 1)}
                   className={classes.button}
-                  data-testid="addConnectionNext"
+                  data-testid={
+                    index === activeStep
+                      ? 'addConnectionNext'
+                      : 'addConnectionNext-notcurrent'
+                  }
                 >
                   {activeStep === steps.length - 1 ? 'Connect' : 'Next'}
                 </Button>

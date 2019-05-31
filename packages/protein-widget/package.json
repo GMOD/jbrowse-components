@@ -30,8 +30,8 @@
     "mobx-react-lite": "^1.4.0",
     "mobx-state-tree": "3.10.2",
     "prop-types": "^15.7.2",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0",
+    "react": "^16.9.0-alpha.0",
+    "react-dom": "^16.9.0-alpha.0",
     "rxjs": "6.5.2",
     "typeface-roboto": "^0.0.54"
   }

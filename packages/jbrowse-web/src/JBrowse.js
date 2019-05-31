@@ -62,10 +62,10 @@ async function createRootModel(modelType, config) {
 
 // the main JBrowse component
 function JBrowse(props) {
-  const [modelType, setModelType] = useState(undefined)
-  const [pluginManager, setPluginManager] = useState(undefined)
-  const [sessions, setSessions] = useState(undefined)
-  const [activeSession, setActiveSession] = useState(undefined)
+  const [modelType, setModelType] = useState()
+  const [pluginManager, setPluginManager] = useState()
+  const [sessions, setSessions] = useState()
+  const [activeSession, setActiveSession] = useState()
 
   const { configs } = props
 

@@ -112,6 +112,7 @@ describe('<AddTrackDrawerWidget />', () => {
     expect(rootModel.configuration.assemblies[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
+    expect(container).toMatchSnapshot()
     fireEvent.change(getByTestId('trackNameInput'), {
       target: { value: 'Test track name' },
     })
