@@ -5,48 +5,46 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 import { TabixIndexedFile } from '@gmod/tabix'
+import VCF from '@gmod/vcf'
 
 export default class VcfTabixAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected vcf: any
 
-  public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected parser: any
+
+  public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
     vcfGzLocation: FileLocation
-    tbiLocation: FileLocation
-    csiLocation: FileLocation
+    index: {
+      indexType: string
+      location: FileLocation
+    }
   }) {
     super()
-    const { vcfGzLocation, tbiLocation, csiLocation } = config
+    const { vcfGzLocation, index } = config
     if (!vcfGzLocation) {
       throw new Error('must provide vcfGzLocation')
     }
-    if (!tbiLocation && !csiLocation) {
-      throw new Error('must provide tbiLocation or csiLocation')
+    if (!index || !index.location) {
+      throw new Error('must provide index.location')
     }
-    const vcfGzOpts = {
+    const loc = openLocation(index.location)
+    this.vcf = new TabixIndexedFile({
       filehandle: openLocation(vcfGzLocation),
-      tbiFilehandle: openLocation(tbiLocation),
-      csiFilehandle: openLocation(csiLocation),
-    }
+      tbiFilehandle: index.indexType == 'TBI' ? loc : undefined,
+      csiFilehandle: index.indexType == 'CSI' ? loc : undefined,
+    })
 
-    this.vcf = new TabixIndexedFile(vcfGzOpts)
+    this.parser = this.vcf
+      .getHeader()
+      .then((header: string) => new VCF({ header }))
   }
 
   public async getRefNames(): Promise<string[]> {
     return this.vcf.getSequenceList()
-  }
-
-  public async getRegions(): Promise<IRegion[]> {
-    const seqSizes = await this.vcf.getSequenceSizes()
-    return Object.keys(seqSizes).map(
-      (refName: string): IRegion => ({
-        refName,
-        start: 0,
-        end: seqSizes[refName],
-      }),
-    )
   }
 
   /**
@@ -57,14 +55,19 @@ export default class VcfTabixAdapter extends BaseAdapter {
   public getFeatures({ refName, start, end }: IRegion): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
-        const seq = await this.vcf.getSequence(refName, start, end)
-        if (seq)
-          observer.next(
-            new SimpleFeature({
-              id: `${refName} ${start}-${end}`,
-              data: { refName, start, end, seq },
-            }),
-          )
+        const p = await this.parser
+        await this.vcf.getLines(
+          refName,
+          start,
+          end,
+          (line: string, fileOffset: number) => {
+            const data = p.parseLine(line)
+            console.log(data)
+            observer.next(
+              new SimpleFeature({ id: `vcftabix-${fileOffset}`, data }),
+            )
+          },
+        )
         observer.complete()
       },
     )
