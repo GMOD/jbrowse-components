@@ -1,5 +1,3 @@
-import { IndexedFasta } from '@gmod/indexedfasta'
-
 import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'

@@ -3,7 +3,7 @@ import 'whatwg-fetch'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
-import { RemoteFile } from 'generic-filehandle'
+import { RemoteFile, GenericFilehandle } from 'generic-filehandle'
 
 function isElectron(): boolean {
   return false // TODO
@@ -122,7 +122,7 @@ function globalCacheFetch(
       const s = parseInt(start, 10)
       const e = parseInt(end, 10)
       return globalRangeCache
-        .getRange(url, start, e - s + 1, {
+        .getRange(url, s, e - s + 1, {
           signal: opts.signal,
         })
         .then((response: RangeResponse) => {
@@ -146,7 +146,7 @@ function globalCacheFetch(
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function openUrl(url: string) {
+export function openUrl(url: string): GenericFilehandle {
   return new RemoteFile(String(url), {
     fetch: globalCacheFetch,
   })
