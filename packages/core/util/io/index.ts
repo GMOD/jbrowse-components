@@ -1,10 +1,15 @@
-import { LocalFile, BlobFile } from 'generic-filehandle'
+import { LocalFile, BlobFile, GenericFilehandle } from 'generic-filehandle'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 
 export const openUrl = rangeFetcherOpenUrl
 
-// eslint-disable-next-line import/prefer-default-export
-export function openLocation(location) {
+export interface FileLocation {
+  uri?: string
+  localPath?: string
+  blob?: Blob
+}
+
+export function openLocation(location: FileLocation): GenericFilehandle {
   if (!location) throw new Error('must provide a location to openLocation')
   if (location.uri) return openUrl(location.uri)
   if (location.localPath) {

@@ -5,7 +5,7 @@ import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
 import { RemoteFile } from 'generic-filehandle'
 
-function isElectron() {
+function isElectron(): boolean {
   return false // TODO
 }
 
@@ -13,10 +13,11 @@ function isElectron() {
 //   throw new Error('unimplemented') // TODO
 // }
 
-function getfetch(url, opts = {}) {
+function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   let mfetch
   if (isElectron()) {
     if (url.slice(0, 4) === 'http') {
+      // @ts-ignore
       mfetch = window.electronRequire('node-fetch')
     } else {
       url = url.replace('%20', ' ')
@@ -34,7 +35,7 @@ function getfetch(url, opts = {}) {
         retries: 5,
         retryDelay: 1000, // 1 sec, 2 sec, 3 sec
         retryStatus: [500, 404, 503],
-        onRetry: ({ retriesLeft /* , retryDelay  */ }) => {
+        onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
           console.warn(
             `${url} request failed, retrying (${retriesLeft} retries left)`,
           )
@@ -44,14 +45,24 @@ function getfetch(url, opts = {}) {
     ),
   )
 }
-
-async function fetchBinaryRange(url, start, end, options = {}) {
+export interface RangeResponse {
+  headers: Record<string, any>
+  requestDate: Date
+  responseDate: Date
+  buffer: Buffer
+}
+async function fetchBinaryRange(
+  url: string,
+  start: number,
+  end: number,
+  options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+): Promise<RangeResponse> {
   const requestDate = new Date()
   const requestHeaders = { ...options.headers, range: `bytes=${start}-${end}` }
   const res = await getfetch(url, {
     ...options,
     headers: requestHeaders,
-    onRetry: ({ retriesLeft /* , retryDelay */ }) => {
+    onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
       console.warn(
         `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
       )
@@ -66,7 +77,8 @@ async function fetchBinaryRange(url, start, end, options = {}) {
 
   // translate the Headers object into a regular key -> value object.
   // will miss duplicate headers of course
-  const headers = {}
+  // @ts-ignore
+  const headers: Record<string, any> = {}
   for (const [k, v] of res.headers.entries()) {
     headers[k] = v
   }
@@ -96,21 +108,24 @@ const globalRangeCache = new HttpRangeFetcher({
 
 // export default globalCache
 
-function globalCacheFetch(url, opts) {
+function globalCacheFetch(
+  url: string,
+  opts: { headers?: Record<string, any>; signal?: AbortSignal },
+) {
   // if (/2bit/.test(url)) debugger
 
   // if it is a range request, route it through the global range cache
   if (opts && opts.headers && opts.headers.range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
     if (rangeParse) {
-      let [, start, end] = rangeParse
-      start = parseInt(start, 10)
-      end = parseInt(end, 10)
+      const [, start, end] = rangeParse
+      const s = parseInt(start, 10)
+      const e = parseInt(end, 10)
       return globalRangeCache
-        .getRange(url, start, end - start + 1, {
+        .getRange(url, start, e - s + 1, {
           signal: opts.signal,
         })
-        .then(response => {
+        .then((response: RangeResponse) => {
           let { headers } = response
           if (!(headers instanceof Map)) {
             headers = new Map(Object.entries(headers))
@@ -131,7 +146,7 @@ function globalCacheFetch(url, opts) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function openUrl(url) {
+export function openUrl(url: string) {
   return new RemoteFile(String(url), {
     fetch: globalCacheFetch,
   })
