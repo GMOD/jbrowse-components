@@ -1,5 +1,5 @@
 import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
@@ -33,10 +33,11 @@ export default class VcfTabixAdapter extends BaseAdapter {
       throw new Error('must provide index.location')
     }
     const loc = openLocation(index.location)
+    console.log(loc, index, config, index.indexType === 'TBI' ? loc : undefined)
     this.vcf = new TabixIndexedFile({
       filehandle: openLocation(vcfGzLocation),
-      tbiFilehandle: index.indexType == 'TBI' ? loc : undefined,
-      csiFilehandle: index.indexType == 'CSI' ? loc : undefined,
+      tbiFilehandle: index.indexType === 'TBI' ? loc : loc,
+      csiFilehandle: index.indexType === 'CSI' ? loc : undefined,
     })
 
     this.parser = this.vcf
@@ -45,7 +46,7 @@ export default class VcfTabixAdapter extends BaseAdapter {
   }
 
   public async getRefNames(): Promise<string[]> {
-    return this.vcf.getSequenceList()
+    return [] // TODO fill in
   }
 
   /**

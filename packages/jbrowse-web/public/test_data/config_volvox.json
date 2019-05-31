@@ -96,6 +96,7 @@
           "uri": "/test_data/volvox.filtered.vcf.gz"
         },
         "index": {
+          "indexType": "TBI",
           "location": {
             "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
           }
