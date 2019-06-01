@@ -1,3 +1,4 @@
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import { createTestEnv } from '../JBrowse'
 
 describe('Assembly Manager', () => {
@@ -36,10 +37,10 @@ describe('Assembly Manager', () => {
           },
           tracks: [
             {
-              configId: 'testingId',
               type: 'FilteringTrack',
               name: 'Filter Test',
               adapter: {
+                configId: 'testingId',
                 type: 'FromConfigAdapter',
                 features: [
                   {
@@ -114,14 +115,12 @@ describe('Assembly Manager', () => {
 
     assemblyManager.clear()
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`Map {}`)
-    await assemblyManager.addRefNameMapForTrack(
-      rootModel.views[0].tracks[0].configuration,
-    )
+    const adapter = getConf(rootModel.views[0].tracks[0], 'adapter')
+    await assemblyManager.addRefNameMapForAdapter(adapter, 'volvox')
 
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`
       Map {
         "testingId" => Map {
-          "contigA" => "contigA",
           "ctgA" => "contigA",
           "A" => "contigA",
         },

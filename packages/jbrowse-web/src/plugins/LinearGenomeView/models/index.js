@@ -1,5 +1,5 @@
 import { transaction } from 'mobx'
-import { flow, getParent, getRoot, getSnapshot, types } from 'mobx-state-tree'
+import { getParent, getRoot, types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'

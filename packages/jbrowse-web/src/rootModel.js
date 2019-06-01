@@ -167,6 +167,7 @@ export default (pluginManager, workerManager) => {
           configuration,
         })
         self.views.push(newView)
+        self.assemblyManager.updateAssemblyData(self)
         return newView
       },
 

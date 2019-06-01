@@ -15,11 +15,9 @@ const styles = {
 }
 
 function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
-  const { blockDefinitions } = model
-
   return (
     <div className={classes.trackBlocks}>
-      {blockDefinitions.map(block => {
+      {model.blockDefinitions.map(block => {
         const state = blockState.get(block.key)
         return (
           <Block

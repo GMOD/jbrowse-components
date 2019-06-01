@@ -32,6 +32,11 @@ export const NoAssemblyRegion = types
       return assembleLocString(self)
     },
   }))
+  .actions(self => ({
+    setRefName(newRefName: string) {
+      self.refName = newRefName
+    },
+  }))
 
 export type INoAssemblyRegion = SnapshotOut<typeof NoAssemblyRegion>
 

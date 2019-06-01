@@ -1,8 +1,8 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getContainingAssembly } from '@gmod/jbrowse-core/util/tracks'
 
 export default class AssemblyManager {
   constructor(rpcManager, rootModel) {
+    rpcManager.assemblyManager = this
     this.rpcManager = rpcManager
     this.refNameMaps = new Map()
     this.updateAssemblyData(rootModel)
@@ -74,13 +74,6 @@ export default class AssemblyManager {
     })
 
     this.setDisplayedRegions(rootModel)
-
-    // this.assemblyData.forEach((assembly, assemblyName) => {
-    //   if (!('sequence' in assembly))
-    //     throw new Error(
-    //       `assembly ${assemblyName} does not have sequence information`,
-    //     )
-    // })
   }
 
   async setDisplayedRegions(rootModel) {
@@ -125,64 +118,58 @@ export default class AssemblyManager {
   }
 
   /**
-   * Add a map with entries like (refName alias => refName used by this track).
-   * This is added to the `refNameMaps` attribute of the object, which is made
-   * observable by mobx.
-   * @param {trackConf} trackConf Configuration model of a track
+   * Add a map with entries like (refName alias -> refName used by this adapter)
+   * to the `refNameMaps` attribute
+   * @param {adapterConf} adapterConf Configuration model of an adapter
+   * @param {string} assemblyName Assembly to use for aliasing
    */
-  async addRefNameMapForTrack(trackConf) {
+  async addRefNameMapForAdapter(adapterConf, assemblyName) {
     const refNameMap = new Map()
 
-    const assemblyConfig = getContainingAssembly(trackConf)
-    const assemblyName =
-      readConfObject(assemblyConfig, 'assemblyName') || trackConf.assemblyName
+    const refNameAliases = await this.getRefNameAliases(assemblyName)
 
-    if (assemblyName) {
-      const refNameAliases = await this.getRefNameAliases(assemblyName)
-
-      const refNames = await this.rpcManager.call(
-        readConfObject(trackConf, 'configId'),
-        'getRefNames',
-        {
-          sessionId: assemblyName,
-          adapterType: readConfObject(trackConf, ['adapter', 'type']),
-          adapterConfig: readConfObject(trackConf, 'adapter'),
-        },
-        { timeout: 1000000 },
-      )
-      refNames.forEach(refName => {
-        refNameMap.set(refName, refName)
-        if (refNameAliases[refName])
-          refNameAliases[refName].forEach(refNameAlias => {
-            refNameMap.set(refNameAlias, refName)
-          })
-        else
-          Object.keys(refNameAliases).forEach(configRefName => {
-            if (refNameAliases[configRefName].includes(refName)) {
-              refNameMap.set(configRefName, refName)
-              refNameAliases[configRefName].forEach(refNameAlias => {
+    const refNames = await this.rpcManager.call(
+      readConfObject(adapterConf, 'configId'),
+      'getRefNames',
+      {
+        sessionId: assemblyName,
+        adapterType: readConfObject(adapterConf, 'type'),
+        adapterConfig: adapterConf,
+      },
+      { timeout: 1000000 },
+    )
+    refNames.forEach(refName => {
+      if (refNameAliases[refName])
+        refNameAliases[refName].forEach(refNameAlias => {
+          refNameMap.set(refNameAlias, refName)
+        })
+      else
+        Object.keys(refNameAliases).forEach(configRefName => {
+          if (refNameAliases[configRefName].includes(refName)) {
+            refNameMap.set(configRefName, refName)
+            refNameAliases[configRefName].forEach(refNameAlias => {
+              if (refNameAlias !== refName)
                 refNameMap.set(refNameAlias, refName)
-              })
-            }
-          })
-      })
-    }
+            })
+          }
+        })
+    })
 
-    this.refNameMaps.set(readConfObject(trackConf, 'configId'), refNameMap)
+    this.refNameMaps.set(readConfObject(adapterConf, 'configId'), refNameMap)
   }
 
   /**
-   * Retrieve the stored refNameMap for a track, or if none is found, start the
-   * asynchronous method for adding a refNameMap for that track and return an
-   * empty map.
-   * @param {trackConf} trackConf Configuration model of a track
-   * @returns {Map} See `addRefNameMapForTrack` for example Map, or an empty
-   * map if the track is not found.
+   * Return cached refNameMap for the adapter, creating and storing it first if
+   * needed
+   * @param {adapterConf} adapterConf Configuration model of an adapter
+   * @param {string} assemblyName Assembly to use for aliasing
+   * @returns {Map} See `addRefNameMapForAdapter` for example Map, or an empty
+   * map if the adapter is not found.
    */
-  async getRefNameMapForTrack(trackConf) {
-    const configId = readConfObject(trackConf, 'configId')
+  async getRefNameMapForAdapter(adapterConf, assemblyName) {
+    const configId = readConfObject(adapterConf, 'configId')
     if (!this.refNameMaps.has(configId))
-      await this.addRefNameMapForTrack(trackConf)
+      await this.addRefNameMapForAdapter(adapterConf, assemblyName)
     return this.refNameMaps.get(configId)
   }
 

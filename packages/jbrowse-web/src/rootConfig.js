@@ -1,4 +1,4 @@
-import { detach, getRoot, getType, types, flow } from 'mobx-state-tree'
+import { detach, getType, types, flow } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   readConfObject,

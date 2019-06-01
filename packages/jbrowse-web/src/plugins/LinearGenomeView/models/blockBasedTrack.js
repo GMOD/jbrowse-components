@@ -1,4 +1,4 @@
-import { getRoot, types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
@@ -40,9 +40,10 @@ export default types.compose(
         }
         return new CompositeMap(featureMaps)
       },
-    }))
-    .volatile(() => ({
-      blockDefinitions: [],
+
+      get blockDefinitions() {
+        return getContainingView(self)[self.blockType]
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -61,32 +62,10 @@ export default types.compose(
             if (!blocksPresent[key]) self.deleteBlock(key)
           })
         })
-        const blockDefinitionDisposer = autorun(() => {
-          const blockDefinitions = getContainingView(self)[self.blockType]
-          const { assemblyManager } = getRoot(self)
-          if (!assemblyManager) return
-          assemblyManager
-            .getRefNameMapForTrack(self.configuration)
-            .then(refNameMap =>
-              self.setRegularizedBlockDefinitions(refNameMap, blockDefinitions),
-            )
-        })
 
         addDisposer(self, blockWatchDisposer)
-        addDisposer(self, blockDefinitionDisposer)
       },
-      setRegularizedBlockDefinitions(refNameMap, blockDefinitions) {
-        self.setBlockDefinitions(
-          blockDefinitions.map(blockDefinition => {
-            let { refName } = blockDefinition
-            refName = refNameMap.get(refName) || refName
-            return { ...blockDefinition, refName }
-          }),
-        )
-      },
-      setBlockDefinitions(blockDefinitions) {
-        self.blockDefinitions = blockDefinitions
-      },
+
       addBlock(key, block) {
         self.blockState.set(
           key,
@@ -96,6 +75,7 @@ export default types.compose(
           }),
         )
       },
+
       deleteBlock(key) {
         self.blockState.delete(key)
       },

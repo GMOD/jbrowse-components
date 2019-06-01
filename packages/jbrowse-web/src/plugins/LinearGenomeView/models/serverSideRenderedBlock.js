@@ -16,7 +16,11 @@ import {
   checkAbortSignal,
   isAbortException,
 } from '@gmod/jbrowse-core/util'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getContainingAssembly,
+  getContainingView,
+} from '@gmod/jbrowse-core/util/tracks'
+
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // calls the render worker to render the block content
@@ -37,6 +41,10 @@ function renderBlockData(self) {
   const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
+  const assemblyName = readConfObject(
+    getContainingAssembly(track.configuration),
+    'assemblyName',
+  )
   return {
     rendererType,
     rpcManager,
@@ -44,6 +52,7 @@ function renderBlockData(self) {
     cannotBeRenderedReason,
     trackError: track.error,
     renderArgs: {
+      assemblyName,
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),

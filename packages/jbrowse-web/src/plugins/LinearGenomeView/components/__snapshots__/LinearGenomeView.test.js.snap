@@ -868,7 +868,17 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-97"
-        />
+        >
+          <div
+            className="Block-block-99 Block-leftBorder-100 Block-rightBorder-101"
+            style={
+              Object {
+                "left": "0px",
+                "width": "100px",
+              }
+            }
+          />
+        </div>
       </div>
     </div>
     <div
@@ -1000,7 +1010,17 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           className="TrackBlocks-trackBlocks-97"
-        />
+        >
+          <div
+            className="Block-block-99 Block-leftBorder-100 Block-rightBorder-101"
+            style={
+              Object {
+                "left": "0px",
+                "width": "100px",
+              }
+            }
+          />
+        </div>
       </div>
     </div>
     <div

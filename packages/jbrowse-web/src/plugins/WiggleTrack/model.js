@@ -29,7 +29,6 @@ export default (pluginManager, configSchema) =>
         type: types.literal('WiggleTrack'),
         configuration: ConfigurationReference(configSchema),
         selectedRendering: types.optional(types.string, ''),
-        height: types.optional(types.integer, 100),
       })
       .actions(self => ({
         afterAttach() {
