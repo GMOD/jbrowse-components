@@ -1,5 +1,5 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
-import UCSCTrackHubConnection from '@gmod/jbrowse-plugin-ucsc-trackhub-connection'
+import CoreConnections from '@gmod/jbrowse-plugin-core-connections'
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
@@ -55,5 +55,5 @@ export default [
   WiggleRendererPlugin,
   LollipopRendererPlugin,
   NCListAdapterPlugin,
-  UCSCTrackHubConnection,
+  CoreConnections,
 ]

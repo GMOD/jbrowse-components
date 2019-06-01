@@ -1,14 +1,9 @@
-import { detach, getType, types, flow } from 'mobx-state-tree'
+import { detach, getType, types } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import {
-  convertTrackConfig,
-  createRefSeqsAdapter,
-  fetchJb1,
-} from './connections/jb1Hub'
 import AssemblyConfigsSchemasFactory from './assemblyConfigSchemas'
 
 export default function(pluginManager) {
@@ -82,41 +77,6 @@ export default function(pluginManager) {
           self.volatile.delete(connectionConf.connectionName)
           self.connections.remove(connectionConf)
         },
-
-        fetchJBrowse1: flow(function* fetchJBrowse1(connectionConf) {
-          const opts = readConfObject(connectionConf, 'connectionOptions') || {}
-          const hubLocation = readConfObject(
-            connectionConf,
-            'connectionLocation',
-          )
-          // const configs = yield fetchConfigFile({
-          //   uri: '/test_data/tracks.conf',
-          // })
-          const config = yield fetchJb1(hubLocation)
-          const adapter = yield createRefSeqsAdapter(config.refSeqs)
-          const connectionName = readConfObject(
-            connectionConf,
-            'connectionName',
-          )
-          self.addAssembly(
-            opts.assemblyName || `assembly from ${connectionName}`,
-            undefined,
-            undefined,
-            {
-              type: 'ReferenceSequence',
-              adapter,
-            },
-            connectionName,
-          )
-          config.tracks.forEach(track => {
-            const jb2Track = convertTrackConfig(track, config.dataRoot)
-            self.addTrackConf(
-              jb2Track.type,
-              jb2Track,
-              readConfObject(connectionConf, 'connectionName'),
-            )
-          })
-        }),
 
         addAssembly(
           assemblyName,
