@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from 'react-testing-library'
-import { createTestEnv } from '../../../JBrowse'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 describe('HierarchicalTrackSelector drawer widget', () => {

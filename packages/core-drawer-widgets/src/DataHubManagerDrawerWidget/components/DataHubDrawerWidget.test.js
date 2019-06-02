@@ -5,7 +5,7 @@ import {
   // waitForElement,
 } from 'react-testing-library'
 import React from 'react'
-import { createTestEnv } from '../../../JBrowse'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import DataHubDrawerWidget from './DataHubDrawerWidget'
 
 describe('<DataHubDrawerWidget />', () => {

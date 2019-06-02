@@ -1,5 +1,7 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
 import CoreConnections from '@gmod/jbrowse-plugin-core-connections'
+import CoreDrawerWidgets from '@gmod/jbrowse-plugin-core-drawer-widgets'
+
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
@@ -24,17 +26,11 @@ import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
 import PileupRendererPlugin from './plugins/PileupRenderer'
 import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import WiggleRendererPlugin from './plugins/WiggleRenderer'
-
-// drawer widgets
-import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
-import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
-import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
-import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 export default [
+  CoreDrawerWidgets,
   MainMenuBarPlugin,
-  HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
   TwoBitAdapterPlugin,
   IndexedFastaAdapterPlugin,
@@ -42,9 +38,6 @@ export default [
   BigBedAdapterPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
-  DataHubManagerDrawerWidgetPlugin,
-  AddTrackDrawerWidgetPlugin,
-  ConfigurationEditorPlugin,
   SequenceTrackPlugin,
   SvgFeaturePlugin,
   PileupRendererPlugin,

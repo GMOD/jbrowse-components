@@ -5,7 +5,7 @@ import {
   fireEvent,
   waitForElement,
 } from 'react-testing-library'
-import { createTestEnv } from '../../../JBrowse'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
