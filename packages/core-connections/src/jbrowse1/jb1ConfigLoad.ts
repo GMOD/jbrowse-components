@@ -1,41 +1,60 @@
-import { openLocation, Location } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
 import { clone, deepUpdate, evalHooks, fillTemplate } from './util'
 
+function isUriLocation(location: JBLocation): location is UriLocation {
+  return (location as UriLocation).uri !== undefined
+}
+
+function isLocalPathLocation(
+  location: JBLocation,
+): location is LocalPathLocation {
+  return (location as LocalPathLocation).localPath !== undefined
+}
+
 export async function fetchJb1(
-  dataRoot: Location = { uri: '' },
+  dataRoot: JBLocation = { uri: '' },
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
-  baseConfigLocation: Location = { uri: '' },
+  baseConfigRoot: JBLocation = { uri: '' },
 ): Promise<Config> {
-  const protocol = dataRoot.uri ? 'uri' : 'localPath'
+  const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
   const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
-  if (dataRoot[protocol].endsWith('/'))
-    dataRootReg[protocol] = dataRoot[protocol].slice(
+  let dataRootLocation = ''
+  if (isUriLocation(dataRoot)) dataRootLocation = dataRoot.uri
+  if (isLocalPathLocation(dataRoot)) dataRootLocation = dataRoot.localPath
+  if (dataRootLocation.endsWith('/'))
+    dataRootReg[protocol] = dataRootLocation.slice(
       0,
-      dataRoot[protocol].length - 1,
+      dataRootLocation.length - 1,
     )
-  if (baseConfigLocation.uri || baseConfigLocation.localPath) {
-    const baseProtocol = baseConfigLocation.uri ? 'uri' : 'localPath'
-    if (baseConfigLocation[baseProtocol].endsWith('/'))
-      baseConfigLocation[baseProtocol] = baseConfigLocation[baseProtocol].slice(
+  if (
+    (isUriLocation(baseConfigRoot) && baseConfigRoot.uri) ||
+    (isLocalPathLocation(baseConfigRoot) && baseConfigRoot.localPath)
+  ) {
+    const baseProtocol = 'uri' in baseConfigRoot ? 'uri' : 'localPath'
+    let baseConfigLocation = ''
+    if (isUriLocation(baseConfigRoot)) baseConfigLocation = baseConfigRoot.uri
+    if (isLocalPathLocation(baseConfigRoot))
+      baseConfigLocation = baseConfigRoot.localPath
+    if (baseConfigLocation.endsWith('/'))
+      baseConfigLocation = baseConfigLocation.slice(
         0,
-        baseConfigLocation[baseProtocol].length - 1,
+        baseConfigLocation.length - 1,
       )
     let newConfig: Config = {}
     for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
       let fetchedConfig = null
       try {
+        // @ts-ignore
         // eslint-disable-next-line no-await-in-loop
         fetchedConfig = await fetchConfigFile({
-          [baseProtocol]: `${baseConfigLocation[baseProtocol]}/${conf}`,
+          [baseProtocol]: `${baseConfigLocation}/${conf}`,
         })
       } catch (error) {
         console.error(
-          `tried to access ${
-            baseConfigLocation[baseProtocol]
-          }/${conf}, but failed`,
+          `tried to access ${baseConfigLocation}/${conf}, but failed`,
         )
       }
       newConfig = mergeConfigs(newConfig, fetchedConfig) || {}
@@ -61,11 +80,13 @@ export async function createFinalConfig(
   return finalConfig
 }
 
-export async function fetchConfigFile(location: Location): Promise<Config> {
+export async function fetchConfigFile(location: JBLocation): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
   if (typeof result !== 'string')
     throw new Error(`Error opening location: ${location}`)
-  return parseJb1(result, location.uri || location.localPath)
+  if (isUriLocation(location)) return parseJb1(result, location.uri)
+  if (isLocalPathLocation(location)) return parseJb1(result, location.localPath)
+  return parseJb1(result)
 }
 
 export function parseJb1(config: string, url: string = ''): Config {
@@ -95,9 +116,12 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     } else if (
       !noRecursiveMerge(prop) &&
       prop in a &&
+      // @ts-ignore
       typeof b[prop] === 'object' &&
+      // @ts-ignore
       typeof a[prop] === 'object'
     ) {
+      // @ts-ignore
       a[prop] = deepUpdate(a[prop], b[prop])
     } else if (prop === 'dataRoot') {
       if (
@@ -106,7 +130,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
       ) {
         a[prop] = b[prop]
       }
+      // @ts-ignore
     } else if (a[prop] === undefined || b[prop] !== undefined) {
+      // @ts-ignore
       a[prop] = b[prop]
     }
   }
@@ -221,6 +247,7 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
   else if (typeof subconfig === 'object')
     for (const name of Object.keys(subconfig))
       subconfig[name] = fillTemplates(subconfig[name], config)
+  // @ts-ignore
   else if (typeof subconfig === 'string') return fillTemplate(subconfig, config)
 
   return subconfig

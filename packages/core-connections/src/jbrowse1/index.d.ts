@@ -1,7 +1,9 @@
+declare module '@gmod/jbrowse-core/util/tracks'
+
 interface ProtoTrack {
   backendVersion?: number
   baseUrl?: string
-  category?: stirng
+  category?: string
   config?: Track
   dataRoot?: string
   features?: Feature[]
@@ -84,3 +86,13 @@ interface Config {
   trackMetadata?: TrackMetadata
   tracks?: Track | Track[] | Record<string, Track | ProtoTrack>
 }
+
+interface UriLocation {
+  uri: string
+}
+
+interface LocalPathLocation {
+  localPath: string
+}
+
+type JBLocation = UriLocation | LocalPathLocation

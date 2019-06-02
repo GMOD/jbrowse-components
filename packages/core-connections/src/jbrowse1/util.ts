@@ -80,6 +80,7 @@ export function fillTemplate(
         return fill
       }
       if (fillWith.callback) {
+        // @ts-ignore
         const v = fillWith.callback.call(this, varName)
         if (v !== undefined) return v
       }
@@ -176,6 +177,7 @@ function mixin(
     s = source[name]
     if (
       !(name in dest) ||
+      // @ts-ignore
       (dest[name] !== s && (!(name in empty) || empty[name] !== s))
     ) {
       dest[name] = copyFunc ? copyFunc(s) : s
@@ -187,13 +189,18 @@ function mixin(
 
 export function evalHooks(conf: Config): Config {
   for (const x of Object.keys(conf)) {
+    // @ts-ignore
     if (typeof conf[x] === 'object')
       // recur
+      // @ts-ignore
       conf[x] = evalHooks(conf[x])
+    // @ts-ignore
     else if (typeof conf[x] === 'string') {
       // compile
+      // @ts-ignore
       const spec = conf[x]
       if (/^\s*function\s*\(/.test(spec)) {
+        // @ts-ignore
         conf[x] = evalHook(spec)
       }
     }
@@ -204,6 +211,7 @@ export function evalHooks(conf: Config): Config {
 function evalHook(...args: string[]): Function {
   // can't bind arguments because the closure compiler
   // renames variables, and we need to assign in the eval
+  // @ts-ignore
   if (typeof args[0] !== 'string') return args[0]
   try {
     // eslint-disable-next-line no-eval
@@ -211,5 +219,6 @@ function evalHook(...args: string[]): Function {
   } catch (e) {
     console.error(`${e} parsing config callback '${args[0]}'`)
   }
+  // @ts-ignore
   return args[0]
 }
