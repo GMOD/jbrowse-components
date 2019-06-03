@@ -82,7 +82,11 @@ function HierarchicalTrackSelector(props) {
   const filterError = model.trackConfigurations.filter(filter).length === 0
 
   return (
-    <div key={model.view.id} className={classes.root}>
+    <div
+      key={model.view.id}
+      className={classes.root}
+      data-testid="hierarchical_track_selector"
+    >
       <TextField
         className={classes.searchBox}
         label="Filter Tracks"

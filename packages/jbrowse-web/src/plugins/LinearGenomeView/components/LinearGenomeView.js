@@ -121,6 +121,7 @@ function LinearGenomeView(props) {
                   rootModel.visibleDrawerWidget.view.id === model.id
                 }
                 value="track_select"
+                data_testid="track_select"
               >
                 <Icon fontSize="small">line_style</Icon>
               </ToggleButton>

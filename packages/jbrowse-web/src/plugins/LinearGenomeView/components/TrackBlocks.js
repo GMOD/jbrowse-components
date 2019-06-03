@@ -39,7 +39,7 @@ const ElidedBlockMarker = withStyles(styles)(function ElidedBlockMarker({
 function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
   const { blockDefinitions } = model
   return (
-    <div className={classes.trackBlocks}>
+    <div data-testid="Block" className={classes.trackBlocks}>
       {blockDefinitions.map(block => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)

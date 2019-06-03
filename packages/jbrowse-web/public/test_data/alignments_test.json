@@ -1,0 +1,149 @@
+{
+  "tracks": [
+    {
+      "configId": "volvox_alignments",
+      "type": "AlignmentsTrack",
+      "name": "volvox-sorted red/blue",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "/test_data/volvox-sorted.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "/test_data/volvox-sorted.bam.bai"
+          }
+        }
+      },
+      "defaultRendering": "svg",
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer",
+          "labels": {}
+        }
+      }
+    },
+    {
+      "configId": "volvox_alignments_nonexist",
+      "type": "AlignmentsTrack",
+      "name": "volvox-sorted red/blue (nonexist 404)",
+      "assemblyName": "volvox",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "/test_data/volvox-sorted.bam.nonexist"
+        },
+        "index": {
+          "location": {
+            "uri": "/test_data/volvox-sorted.bam.bai.nonexist"
+          }
+        }
+      },
+      "defaultRendering": "svg",
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer",
+          "labels": {}
+        }
+      }
+    }
+  ],
+  "assemblies": {
+    "volvox": {
+      "configId": "volvox",
+      "sequence": {
+        "configId": "volvox_refseq",
+        "type": "ReferenceSequence",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "/test_data/volvox.2bit"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      },
+      "aliases": [
+        "vvx"
+      ],
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": [
+                "A",
+                "contigA"
+              ]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": [
+                "B",
+                "contigB"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "rpc": {
+    "defaultDriver": "MainThreadRpcDriver"
+  },
+  "defaultSession": {
+    "sessionName": "Bigwig test",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Export configuration",
+                "icon": "cloud_download",
+                "callback": "exportConfiguration"
+              },
+              {
+                "name": "Import configuration",
+                "icon": "cloud_upload",
+                "callback": "importConfiguration"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "id": "BhLw7v7Not",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05
+      }
+    ],
+    "drawerWidgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "filterText": "",
+        "view": "BhLw7v7Not"
+      }
+    },
+    "activeDrawerWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  }
+}

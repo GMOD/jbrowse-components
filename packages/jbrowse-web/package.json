@@ -28,7 +28,7 @@
     "@material-ui/lab": "3.0.0-alpha.30",
     "@material-ui/styles": "^3.0.0-alpha.10",
     "abortable-promise-cache": "^1.0.1",
-    "canvas": "^2.3.1",
+    "canvas": "^2.5.0",
     "classnames": "^2.2.6",
     "color": "^3.1.1",
     "d3-scale": "^3.0.0",

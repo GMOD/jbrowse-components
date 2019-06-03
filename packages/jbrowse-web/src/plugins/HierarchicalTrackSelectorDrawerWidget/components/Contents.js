@@ -93,14 +93,16 @@ function Contents(props) {
         </>
       ) : null}
       <FormGroup>
-        {trackConfigurations.filter(filterPredicate).map(trackConf => (
-          <TrackEntry
-            key={trackConf.configId}
-            model={model}
-            trackConf={trackConf}
-            disabled={disabled}
-          />
-        ))}
+        {trackConfigurations.filter(filterPredicate).map(trackConf => {
+          return (
+            <TrackEntry
+              key={trackConf.configId}
+              model={model}
+              trackConf={trackConf}
+              disabled={disabled}
+            />
+          )
+        })}
       </FormGroup>
       {doneLoading ? null : <CircularProgress />}
       {categories.map(([name]) => (
