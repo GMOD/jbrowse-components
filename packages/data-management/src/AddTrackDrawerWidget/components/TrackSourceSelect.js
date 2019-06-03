@@ -7,8 +7,10 @@ import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React from 'react'
-import JsonEditor from '../../ConfigurationEditorDrawerWidget/components/JsonEditor'
-import { FileLocationEditor } from '../../ConfigurationEditorDrawerWidget/components/SlotEditor'
+import {
+  JsonEditor,
+  FileLocationEditor,
+} from '@gmod/jbrowse-plugin-config-editing'
 
 const fromConfigDefault = [
   {

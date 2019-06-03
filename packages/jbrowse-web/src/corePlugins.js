@@ -1,6 +1,6 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
-import CoreConnections from '@gmod/jbrowse-plugin-core-connections'
-import CoreDrawerWidgets from '@gmod/jbrowse-plugin-core-drawer-widgets'
+import DataManagement from '@gmod/jbrowse-plugin-data-management'
+import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
@@ -29,7 +29,8 @@ import WiggleRendererPlugin from './plugins/WiggleRenderer'
 import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 export default [
-  CoreDrawerWidgets,
+  DataManagement,
+  ConfigEditing,
   MainMenuBarPlugin,
   BamAdapterPlugin,
   TwoBitAdapterPlugin,
@@ -48,5 +49,4 @@ export default [
   WiggleRendererPlugin,
   LollipopRendererPlugin,
   NCListAdapterPlugin,
-  CoreConnections,
 ]

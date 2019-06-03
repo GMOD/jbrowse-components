@@ -1,16 +1,15 @@
 {
-  "name": "@gmod/jbrowse-plugin-core-drawer-widgets",
+  "name": "@gmod/jbrowse-plugin-config-editing",
   "version": "2.0.0",
   "description": "JBrowse 2 core drawer widgets",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/core-drawer-widgets"
+    "test": "cd ../..; jest packages/config-editing"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/ucsc-hub": "^0.1.2",
     "@material-ui/core": "3.9.3",
     "debounce": "^1.2.0",
     "material-ui-color-picker": "^3.1.0",
@@ -21,8 +20,6 @@
     "prismjs": "^1.15.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
-    "react-simple-code-editor": "0.9.3",
-    "request-idle-callback": "^1.0.2",
-    "sanitize-html": "^1.20.0"
+    "react-simple-code-editor": "0.9.3"
   }
 }
