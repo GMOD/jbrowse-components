@@ -1,4 +1,5 @@
 import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
+import { GenericFilehandle } from 'generic-filehandle'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
@@ -20,7 +21,7 @@ export default class VcfTabixAdapter extends BaseAdapter {
   public constructor(config: {
     vcfGzLocation: FileLocation
     index: {
-      indexType: string
+      index: string
       location: FileLocation
     }
   }) {
@@ -32,21 +33,30 @@ export default class VcfTabixAdapter extends BaseAdapter {
     if (!index || !index.location) {
       throw new Error('must provide index.location')
     }
-    const loc = openLocation(index.location)
-    console.log(loc, index, config, index.indexType === 'TBI' ? loc : undefined)
-    this.vcf = new TabixIndexedFile({
-      filehandle: openLocation(vcfGzLocation),
-      tbiFilehandle: index.indexType === 'TBI' ? loc : loc,
-      csiFilehandle: index.indexType === 'CSI' ? loc : undefined,
-    })
 
+    const { location: indexLocation, index: indexType } = config.index
+    const vcfGzOpts: {
+      filehandle: GenericFilehandle
+      tbiFilehandle?: GenericFilehandle
+      csiFilehandle?: GenericFilehandle
+    } = {
+      filehandle: openLocation(vcfGzLocation),
+    }
+
+    const indexFile = openLocation(indexLocation)
+    if (indexType === 'CSI') {
+      vcfGzOpts.csiFilehandle = indexFile
+    } else {
+      vcfGzOpts.tbiFilehandle = indexFile
+    }
+    this.vcf = new TabixIndexedFile(vcfGzOpts)
     this.parser = this.vcf
       .getHeader()
       .then((header: string) => new VCF({ header }))
   }
 
-  public async getRefNames(): Promise<string[]> {
-    return [] // TODO fill in
+  public getRefNames(): Promise<string[]> {
+    return this.vcf.getReferenceSequenceNames()
   }
 
   /**
@@ -68,11 +78,7 @@ export default class VcfTabixAdapter extends BaseAdapter {
             const feature = new VCFFeature({
               variant,
               parser,
-              id: variant.ID
-                ? variant.ID[0]
-                : `chr${variant.CHROM}_pos${variant.POS}_ref${variant.REF}_alt${
-                    variant.ALT
-                  }`,
+              id: `vcf-${fileOffset}`,
             }) as Feature
             observer.next(feature)
           },

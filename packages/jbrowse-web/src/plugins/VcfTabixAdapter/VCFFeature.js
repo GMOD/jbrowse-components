@@ -6,8 +6,8 @@ export default class VCFFeature {
   constructor(args) {
     this.variant = args.variant
     this.parser = args.parser
-    this._id = args.id
     this.data = this.dataFromVariant(this.variant)
+    this._id = args.id
   }
 
   get(field) {
@@ -267,6 +267,6 @@ export default class VCFFeature {
   }
 
   toJSON() {
-    return { ...this.data }
+    return { uniqueId: this._id, ...this.data }
   }
 }
