@@ -1255,13 +1255,14 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.1.5.tgz#1af802971b43140d0f57a520a1a5e0a8f2d884a2"
-  integrity sha512-2ZjPUy2I0b06aBuABIMq5u8sFtG6VRqgELZHdYuFlzgXzBkINtyOPZzs16FnWRr+KKDImXtGeAgLRSGN8VO5Wg==
+"@gmod/tabix@^1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.1.7.tgz#c62531285a2d21ba3a017a1ea44ac48705302619"
+  integrity sha512-Xm1wYWHK6PBAXqTUi+nZf1e1d0Bax6HgAXSYb+kkNdBzmsbfKB/nncuSMqLTlKku8Gecg6bEXWwUAWkS9QlYZA==
   dependencies:
     "@babel/runtime-corejs2" "^7.3.1"
     es6-promisify "^6.0.1"
+    generic-filehandle "^1.0.9"
     long "^4.0.0"
     pako "1.0.10"
     quick-lru "^2.0.0"

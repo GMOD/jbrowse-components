@@ -21,7 +21,7 @@
     "@gmod/indexedfasta": "^1.0.11",
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-nclist-adapter": "^2.0.0",
-    "@gmod/tabix": "^1.1.5",
+    "@gmod/tabix": "^1.1.7",
     "@gmod/twobit": "^1.1.3",
     "@gmod/ucsc-hub": "^0.1.2",
     "@gmod/vcf": "^2.0.3",
