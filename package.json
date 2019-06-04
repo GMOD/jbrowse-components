@@ -90,7 +90,7 @@
         "ts-jest": "^24.0.2",
         "typedoc": "^0.14.2",
         "typedoc-plugin-markdown": "^1.1.27",
-        "typescript": "^3.3.4000",
+        "typescript": "^3.5.1",
         "url-loader": "^1.1.1",
         "webpack": "^4.19.1",
         "webpack-cli": "^3.2.3",

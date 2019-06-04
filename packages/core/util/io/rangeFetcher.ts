@@ -106,14 +106,10 @@ const globalRangeCache = new HttpRangeFetcher({
   aggregationTime: 50,
 })
 
-// export default globalCache
-
-function globalCacheFetch(
+function globalCacheFetch<T>(
   url: string,
   opts: { headers?: Record<string, any>; signal?: AbortSignal },
-) {
-  // if (/2bit/.test(url)) debugger
-
+): Promise<T> {
   // if it is a range request, route it through the global range cache
   if (opts && opts.headers && opts.headers.range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
