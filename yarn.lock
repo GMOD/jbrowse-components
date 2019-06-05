@@ -1120,6 +1120,13 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime@^7.4.5":
+  version "7.4.5"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.4.5.tgz#582bb531f5f9dc67d2fcb682979894f75e253f12"
+  integrity sha512-TuI4qpWZP6lGOGIuGWtp9sPluqYICmbk8T/1vpSysqJxRPkudh/ofFWyqdcMsDf2s7KvDL4/YHgKyvcS3g9CJQ==
+  dependencies:
+    regenerator-runtime "^0.13.2"
+
 "@babel/template@^7.0.0", "@babel/template@^7.1.0", "@babel/template@^7.2.2", "@babel/template@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.4.0.tgz#12474e9c077bae585c5d835a95c0b0b790c25c8b"
@@ -6761,7 +6768,7 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-generic-filehandle@^1.0.6, generic-filehandle@^1.0.7, generic-filehandle@^1.0.8:
+generic-filehandle@^1.0.7, generic-filehandle@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-1.0.8.tgz#7cdb026884a237cec28a44fdbd1bd6eb0b5b408c"
   integrity sha512-JlccwYLF2V+C7gbZB7/kXRP+t2KXVWI5GTjAB0NtMVx7AiOQ/5Sn/BfOjitQ/cM7QxjvBDdExlY0QrZHRTxg+g==
@@ -6776,6 +6783,15 @@ generic-filehandle@^1.0.9:
   integrity sha512-1uZb20DQkyO6baZTwCHVOKb5eypuzQyvgAQkfVU42AM6lYLaNpg90EVdFh0j3RoIEE3dM7HsvROc12KAiTX1PQ==
   dependencies:
     "@babel/runtime" "^7.4.3"
+    es6-promisify "^6.0.1"
+    file-uri-to-path "^1.0.0"
+
+generic-filehandle@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.0.tgz#f3bd727eb88dfb2aa5d527b9c492c7fc075b0645"
+  integrity sha512-QrrHlY40pGGPPr6BpdQq30mSQ6Gm8xbsc8KZaWzsY60mSRK+3CTDAOJ6+e4M6lccy+tzIXMPwOwD5dSa8EnYDg==
+  dependencies:
+    "@babel/runtime" "^7.4.5"
     es6-promisify "^6.0.1"
     file-uri-to-path "^1.0.0"
 

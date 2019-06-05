@@ -12,16 +12,8 @@ function isElectron(): boolean {
 // function unReplacePath() {
 //   throw new Error('unimplemented') // TODO
 // }
-interface FetchResponse {
-  status: number
-  headers: Headers
-  arrayBuffer: Function
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getfetch(
-  url: string,
-  opts: Record<string, any> = {},
-): Promise<FetchResponse> {
+
+function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   let mfetch
   if (isElectron()) {
     if (url.slice(0, 4) === 'http') {
@@ -54,12 +46,11 @@ function getfetch(
   )
 }
 export interface RangeResponse {
-  headers: Headers
+  headers: Record<string, any>
   requestDate: Date
   responseDate: Date
   buffer: Buffer
 }
-
 async function fetchBinaryRange(
   url: string,
   start: number,
@@ -84,6 +75,14 @@ async function fetchBinaryRange(
     )
   }
 
+  // translate the Headers object into a regular key -> value object.
+  // will miss duplicate headers of course
+  // @ts-ignore
+  const headers: Record<string, any> = {}
+  for (const [k, v] of res.headers.entries()) {
+    headers[k] = v
+  }
+
   if (res.status === 200) {
     throw new Error(
       `HTTP ${res.status} when fetching ${url} bytes ${start}-${end}`,
@@ -93,7 +92,7 @@ async function fetchBinaryRange(
   // return the response headers, and the data buffer
   const arrayBuffer = await res.arrayBuffer()
   return {
-    headers: res.headers,
+    headers,
     requestDate,
     responseDate,
     buffer: Buffer.from(arrayBuffer),
@@ -107,11 +106,10 @@ const globalRangeCache = new HttpRangeFetcher({
   aggregationTime: 50,
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function globalCacheFetch(
+function globalCacheFetch<T>(
   url: string,
   opts: { headers?: Record<string, any>; signal?: AbortSignal },
-): Promise<FetchResponse> {
+): Promise<T> {
   // if it is a range request, route it through the global range cache
   if (opts && opts.headers && opts.headers.range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
@@ -124,13 +122,17 @@ function globalCacheFetch(
           signal: opts.signal,
         })
         .then((response: RangeResponse) => {
+          let { headers } = response
+          if (!(headers instanceof Map)) {
+            headers = new Map(Object.entries(headers))
+          }
           return {
             status: 206,
             ok: true,
             async arrayBuffer() {
               return response.buffer
             },
-            headers: response.headers,
+            headers,
           }
         })
     }
