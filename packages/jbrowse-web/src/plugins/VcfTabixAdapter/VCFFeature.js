@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
+
 /**
  * VCF Feature creation with lazy genotpye evaluation.
  */
@@ -202,7 +204,7 @@ export default class VCFFeature {
 
   _getSOAndDescFromAltDefs(ref, alt) {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
-    if (alt[0] != '<') {
+    if (alt[0] !== '<') {
       return [null, null]
     }
 
@@ -233,18 +235,18 @@ export default class VCFFeature {
   }
 
   _getSOAndDescByExamination(ref, alt) {
-    if (ref.length == 1 && alt.length == 1) {
+    if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
 
-    if (ref.length == alt.length)
+    if (ref.length === alt.length)
       if (
         ref
           .split('')
           .reverse()
-          .join('') == alt
+          .join('') === alt
       )
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]
       else
