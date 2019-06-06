@@ -1,7 +1,7 @@
 import {
   render,
   cleanup,
-  fireEvent,
+  // fireEvent,
   // waitForElement,
 } from 'react-testing-library'
 import React from 'react'

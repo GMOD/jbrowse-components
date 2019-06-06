@@ -10,11 +10,11 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
-import HubSourceSelect from './HubSourceSelect'
+// import HubSourceSelect from './HubSourceSelect'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
-import TrackHubRegistrySelect from './TrackHubRegistrySelect'
-import UrlInput from './UrlInput'
+// import TrackHubRegistrySelect from './TrackHubRegistrySelect'
+// import UrlInput from './UrlInput'
 
 const styles = theme => ({
   root: {
@@ -59,7 +59,7 @@ function AddConnectionDrawerWidget(props) {
   }
 
   function stepContent() {
-    let StepComponent
+    // let StepComponent
     switch (activeStep) {
       case 0:
         return (
