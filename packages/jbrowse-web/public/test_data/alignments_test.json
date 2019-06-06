@@ -103,7 +103,7 @@
     "defaultDriver": "MainThreadRpcDriver"
   },
   "defaultSession": {
-    "sessionName": "Bigwig test",
+    "sessionName": "Integration test example",
     "menuBars": [
       {
         "type": "MainMenuBar",
