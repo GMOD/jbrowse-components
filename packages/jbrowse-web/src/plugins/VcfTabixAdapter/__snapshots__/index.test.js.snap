@@ -4,7 +4,7 @@ exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "configId": Any<String>,
   "index": Object {
-    "configId": "U4PT2C-hLb",
+    "configId": Any<String>,
     "location": Object {
       "uri": "/path/to/my.vcf.gz.tbi",
     },

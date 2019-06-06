@@ -104,52 +104,6 @@
         },
         "assemblyName": "hg38"
       }
-    },
-    {
-      "type": "BasicTrack",
-      "configId": "pacbio_vcf2",
-      "name": "PacBio SV vcf",
-      "category": [
-        "PacBio SVs"
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "./test_data/.vcf.gz"
-        },
-        "index": {
-          "indexType": "TBI",
-          "location": {
-            "uri": "./test_data/out.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    },
-    {
-      "type": "BasicTrack",
-      "configId": "pacbio_vcf",
-      "name": "PacBio SV vcf",
-      "category": [
-        "PacBio SVs"
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "./test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
-        },
-        "index": {
-          "indexType": "TBI",
-          "location": {
-            "uri": "./test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
     }
   ],
   "assemblies": {
@@ -230,9 +184,19 @@
         "bpPerPx": 50,
         "tracks": [
           {
+            "type": "WiggleTrack",
+            "height": 100,
+            "configuration": "wiggle_global_autoscale"
+          },
+          {
+            "type": "WiggleTrack",
+            "height": 100,
+            "configuration": "wiggle_local_autoscale"
+          },
+          {
             "type": "BasicTrack",
             "height": 100,
-            "configuration": "pacbio_vcf2"
+            "configuration": "bigbed_peaks"
           }
         ],
         "configuration": {}
