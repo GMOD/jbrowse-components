@@ -1,3 +1,5 @@
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+
 /* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
 
 /**
@@ -21,7 +23,7 @@ interface FeatureData {
   genotypes?: Genotypes
 }
 
-export default class VCFFeature {
+export default class VCFFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private variant: any
 
