@@ -1,0 +1,21 @@
+{
+  "name": "@gmod/jbrowse-plugin-trackhub-registry",
+  "version": "2.0.0",
+  "description": "Add a connection to The Track Hub Registry",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/trackhub-registry"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@material-ui/core": "3.9.3",
+    "mobx-react": "^5.3.6",
+    "mobx-react-lite": "^1.1.0",
+    "mobx-state-tree": "3.10.2",
+    "prop-types": "^15.6.2",
+    "react": "^16.8.6",
+    "sanitize-html": "^1.20.0"
+  }
+}

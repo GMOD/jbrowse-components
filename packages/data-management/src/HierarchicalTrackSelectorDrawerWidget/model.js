@@ -54,7 +54,10 @@ export default pluginManager =>
         const root = getRoot(self)
         const trackConfigurations = []
         root.configuration.assemblies.forEach(assemblyConf => {
-          if (readConfObject(assemblyConf, 'assemblyName') === assemblyName)
+          if (
+            readConfObject(assemblyConf, 'assemblyName') === assemblyName ||
+            readConfObject(assemblyConf, 'aliases').includes(assemblyName)
+          )
             trackConfigurations.push(...assemblyConf.tracks)
         })
 
@@ -75,17 +78,17 @@ export default pluginManager =>
 
       connectionTrackConfigurations(connectionName, assemblyName) {
         if (!self.view) return []
-        const assemblyNames = []
-        self.view.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
         const root = getRoot(self)
+        const assemblyData =
+          root.assemblyManager.assemblyData.get(assemblyName) || {}
+        const aliases = assemblyData.aliases || []
         const trackConfigurations = []
         const connection = root.connections.get(connectionName)
         if (connection) {
-          const assembly = connection.assemblies.get(assemblyName)
-          if (assembly) trackConfigurations.push(...assembly.tracks)
+          ;[assemblyName, ...aliases].forEach(an => {
+            const assembly = connection.assemblies.get(an)
+            if (assembly) trackConfigurations.push(...assembly.tracks)
+          })
         }
 
         const relevantTrackConfigurations = trackConfigurations.filter(

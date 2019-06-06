@@ -28,17 +28,25 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 // work with autorun
 function renderBlockData(self) {
   const track = getParent(self, 2)
+  const view = getContainingView(track)
+  const { rpcManager, assemblyManager } = getRoot(view)
   const trackConf = track.configuration
   let trackConfParent = getParent(trackConf)
   if (!trackConfParent.assemblyName)
     trackConfParent = getParent(trackConfParent)
   const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
+  const trackAssemblyData =
+    assemblyManager.assemblyData.get(trackAssemblyName) || {}
+  const trackAssemblyAliases = trackAssemblyData.aliases || []
   let cannotBeRenderedReason
-  if (trackAssemblyName !== self.region.assemblyName)
+  if (
+    !(
+      trackAssemblyName === self.region.assemblyName ||
+      trackAssemblyAliases.includes(self.region.assemblyName)
+    )
+  )
     cannotBeRenderedReason = 'region assembly does not match track assembly'
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-  const view = getContainingView(track)
-  const { rpcManager } = getRoot(view)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
   const assemblyName = readConfObject(

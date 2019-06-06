@@ -1,6 +1,7 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
+import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
@@ -49,4 +50,5 @@ export default [
   WiggleRendererPlugin,
   LollipopRendererPlugin,
   NCListAdapterPlugin,
+  TrackHubRegistry,
 ]

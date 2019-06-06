@@ -21,7 +21,6 @@
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
     "request-idle-callback": "^1.0.2",
-    "sanitize-html": "^1.20.0",
     "set-value": "^3.0.0"
   }
 }
