@@ -2,7 +2,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import MyPlugin from './index'
 
-describe('Core Drawer Widgets', async () => {
+describe('Config editing', () => {
   let pluginManager
 
   beforeAll(async () => {

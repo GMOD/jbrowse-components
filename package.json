@@ -6,7 +6,7 @@
     ],
     "scripts": {
         "build": "NODE_ENV=production lerna run build",
-        "lint": "eslint --ext .js,.ts .",
+        "lint": "eslint --ext .js,.ts,.jsx,.tsx .",
         "test-ci": "jest --ci --coverage",
         "test": "jest"
     },

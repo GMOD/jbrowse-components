@@ -98,19 +98,20 @@ export default (pluginManager, workerManager) => {
 
         self.clearConnections()
         self.configuration.connections.forEach(connectionConf => {
-          const connectionType = pluginManager.getConnectionType(
-            connectionConf.type,
-          )
-          const connectionName = readConfObject(connectionConf, 'name')
-          self.connections.set(
-            connectionName,
-            connectionType.stateModel.create(),
-          )
-          self.connections
-            .get(connectionName)
-            .connect(connectionConf)
-            .then(() => self.assemblyManager.updateAssemblyData(self))
+          self.addConnection(connectionConf)
         })
+      },
+
+      addConnection(connectionConf) {
+        const connectionType = pluginManager.getConnectionType(
+          connectionConf.type,
+        )
+        const connectionName = readConfObject(connectionConf, 'name')
+        self.connections.set(connectionName, connectionType.stateModel.create())
+        self.connections
+          .get(connectionName)
+          .connect(connectionConf)
+          .then(() => self.assemblyManager.updateAssemblyData(self))
       },
 
       configure(configSnapshot) {

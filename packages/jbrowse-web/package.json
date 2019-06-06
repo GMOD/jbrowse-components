@@ -63,6 +63,6 @@
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
     "test": "node scripts/test.js",
-    "lint": "eslint --ext .js,.ts src"
+    "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
   }
 }

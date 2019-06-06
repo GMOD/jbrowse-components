@@ -28,3 +28,6 @@ export {
 export {
   FileLocationEditor,
 } from './ConfigurationEditorDrawerWidget/components/SlotEditor'
+export {
+  default as ConfigurationEditor,
+} from './ConfigurationEditorDrawerWidget/components/ConfigurationEditor'

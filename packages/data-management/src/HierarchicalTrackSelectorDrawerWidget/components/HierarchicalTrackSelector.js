@@ -65,12 +65,15 @@ function HierarchicalTrackSelector(props) {
     model.setFilterText(event.target.value)
   }
 
-  function addDataHub() {
+  function addConnection() {
     handleFabClose()
-    if (!rootModel.drawerWidgets.get('dataHubDrawerWidget'))
-      rootModel.addDrawerWidget('DataHubDrawerWidget', 'dataHubDrawerWidget')
+    if (!rootModel.drawerWidgets.get('addConnectionDrawerWidget'))
+      rootModel.addDrawerWidget(
+        'AddConnectionDrawerWidget',
+        'addConnectionDrawerWidget',
+      )
     rootModel.showDrawerWidget(
-      rootModel.drawerWidgets.get('dataHubDrawerWidget'),
+      rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
     )
   }
 
@@ -163,7 +166,7 @@ function HierarchicalTrackSelector(props) {
         open={Boolean(anchorEl)}
         onClose={handleFabClose}
       >
-        <MenuItem onClick={addDataHub}>Add Data Hub</MenuItem>
+        <MenuItem onClick={addConnection}>Add connection</MenuItem>
         <MenuItem onClick={addTrack}>Add track</MenuItem>
       </Menu>
     </div>

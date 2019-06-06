@@ -2,7 +2,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import MyPlugin from './index'
 
-describe('Core Drawer Widgets', async () => {
+describe('Data management', () => {
   let pluginManager
 
   beforeAll(async () => {
@@ -39,12 +39,12 @@ describe('Core Drawer Widgets', async () => {
     })
   })
 
-  it('adds data hub manager', () => {
-    const DataHubDrawerWidget = pluginManager.getDrawerWidgetType(
-      'DataHubDrawerWidget',
+  it('adds connection add widget', () => {
+    const AddConnectionDrawerWidget = pluginManager.getDrawerWidgetType(
+      'AddConnectionDrawerWidget',
     )
-    const config = DataHubDrawerWidget.configSchema.create({
-      type: 'DataHubDrawerWidget',
+    const config = AddConnectionDrawerWidget.configSchema.create({
+      type: 'AddConnectionDrawerWidget',
     })
     expect(getSnapshot(config)).toMatchSnapshot({
       configId: expect.any(String),

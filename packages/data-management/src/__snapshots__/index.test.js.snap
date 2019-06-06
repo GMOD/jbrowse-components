@@ -1,24 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Core Drawer Widgets adds config editor drawer widget 1`] = `
+exports[`Data management adds config editor drawer widget 1`] = `
 Object {
   "configId": Any<String>,
 }
 `;
 
-exports[`Core Drawer Widgets adds data hub manager 1`] = `
+exports[`Data management adds connection add widget 1`] = `
 Object {
   "configId": Any<String>,
 }
 `;
 
-exports[`Core Drawer Widgets adds hierarchical track selector 1`] = `
+exports[`Data management adds hierarchical track selector 1`] = `
 Object {
   "configId": Any<String>,
 }
 `;
 
-exports[`Core Drawer Widgets adds track add widget 1`] = `
+exports[`Data management adds track add widget 1`] = `
 Object {
   "configId": Any<String>,
 }

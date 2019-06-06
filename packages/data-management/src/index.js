@@ -16,10 +16,10 @@ import {
   configSchema as AddTrackConfigSchema,
 } from './AddTrackDrawerWidget'
 import {
-  reactComponent as DataHubManagerReactComponent,
-  stateModel as DataHubManagerStateModel,
-  configSchema as DataHubManagerConfigSchema,
-} from './DataHubManagerDrawerWidget'
+  reactComponent as AddConnectionReactComponent,
+  stateModel as AddConnectionStateModel,
+  configSchema as AddConnectionConfigSchema,
+} from './AddConnectionDrawerWidget'
 import {
   reactComponent as HierarchicalTrackSelectorReactComponent,
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
@@ -34,6 +34,9 @@ export default class UCSCTrackHubConnection extends Plugin {
           name: 'UCSCTrackHubConnection',
           configSchema: ucscConfigSchema,
           stateModel: ucscModelFactory(pluginManager),
+          displayName: 'UCSC Track Hub',
+          description: 'A track or assembly hub in the Track Hub format',
+          url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
         }),
     )
 
@@ -43,6 +46,9 @@ export default class UCSCTrackHubConnection extends Plugin {
           name: 'JBrowse1Connection',
           configSchema: jbrowse1ConfigSchema,
           stateModel: jbrowse1ModelFactory(pluginManager),
+          displayName: 'JBrowse 1 Data',
+          description: 'A JBrowse 1 data directory',
+          url: '//jbrowse.org/',
         }),
     )
 
@@ -68,11 +74,11 @@ export default class UCSCTrackHubConnection extends Plugin {
 
     pluginManager.addDrawerWidgetType(() => {
       return new DrawerWidgetType({
-        name: 'DataHubDrawerWidget',
-        heading: 'Data Hubs',
-        configSchema: DataHubManagerConfigSchema,
-        stateModel: DataHubManagerStateModel,
-        LazyReactComponent: lazy(() => DataHubManagerReactComponent),
+        name: 'AddConnectionDrawerWidget',
+        heading: 'Add a connection',
+        configSchema: AddConnectionConfigSchema,
+        stateModel: AddConnectionStateModel,
+        LazyReactComponent: lazy(() => AddConnectionReactComponent),
       })
     })
   }

@@ -11,7 +11,8 @@ import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
 import HubSourceSelect from './HubSourceSelect'
-import HubTypeSelect from './HubTypeSelect'
+import ConfigureConnection from './ConfigureConnection'
+import ConnectionTypeSelect from './ConnectionTypeSelect'
 import TrackHubRegistrySelect from './TrackHubRegistrySelect'
 import UrlInput from './UrlInput'
 
@@ -31,60 +32,71 @@ const styles = theme => ({
   },
 })
 
-const steps = [
-  'Select a Data Hub Type',
-  'Select a Data Hub Source',
-  'Select a Data Hub',
-]
+const steps = ['Select a Connection Type', 'Configure Connection']
 
-function DataHubDrawerWidget(props) {
-  // Step 0
-  const [hubType, setHubType] = useState('') // ucsc, jbrowse1
-  // Step 1
-  const [hubSource, setHubSource] = useState('') // trackHubRegistry, ucscCustom, jbrowseRegistry, jbrowseCustom
-  // Step 2
-  const [hubName, setHubName] = useState('')
-  const [hubUrl, setHubUrl] = useState('')
-  const [assemblyNames, setAssemblyNames] = useState([])
+function AddConnectionDrawerWidget(props) {
+  const [connectionType, setConnectionType] = useState({})
+  const [configModel, setConfigModel] = useState({})
+  // // Step 0
+  // const [hubType, setHubType] = useState('') // ucsc, jbrowse1
+  // // Step 1
+  // const [hubSource, setHubSource] = useState('') // trackHubRegistry, ucscCustom, jbrowseRegistry, jbrowseCustom
+  // // Step 2
+  // const [hubName, setHubName] = useState('')
+  // const [hubUrl, setHubUrl] = useState('')
+  // const [assemblyNames, setAssemblyNames] = useState([])
 
   const [activeStep, setActiveStep] = useState(0)
 
   const { classes, model } = props
   const rootModel = getRoot(model)
 
+  const { pluginManager } = rootModel
+
+  function handleSetConnectionType(newConnectionType) {
+    setConnectionType(newConnectionType)
+    setConfigModel(newConnectionType.configSchema.create())
+  }
+
   function stepContent() {
     let StepComponent
     switch (activeStep) {
       case 0:
         return (
-          <HubTypeSelect
-            hubType={hubType}
-            setHubType={event => setHubType(event.target.value)}
+          <ConnectionTypeSelect
+            connectionTypeChoices={pluginManager.getElementTypesInGroup(
+              'connection',
+            )}
+            connectionType={connectionType}
+            setConnectionType={handleSetConnectionType}
           />
         )
       case 1:
         return (
-          <HubSourceSelect
-            hubType={hubType}
-            hubSource={hubSource}
-            setHubSource={event => setHubSource(event.target.value)}
-          />
+          <ConfigureConnection model={configModel} />
+          // <HubSourceSelect
+          //   hubType={hubType}
+          //   hubSource={hubSource}
+          //   setHubSource={event => setHubSource(event.target.value)}
+          // />
         )
-      case 2:
-        if (hubSource === 'ucscCustom') StepComponent = UrlInput
-        else if (hubSource === 'trackHubRegistry')
-          StepComponent = TrackHubRegistrySelect
-        else
-          return <Typography color="error">Unknown Data Hub Source</Typography>
-        return (
-          <StepComponent
-            setHubName={setHubName}
-            hubUrl={hubUrl}
-            setHubUrl={setHubUrl}
-            assemblyNames={assemblyNames}
-            setAssemblyNames={setAssemblyNames}
-          />
-        )
+      // case 2:
+      // if (hubSource === 'ucscCustom') StepComponent = UrlInput
+      // else if (hubSource === 'trackHubRegistry')
+      //   StepComponent = TrackHubRegistrySelect
+      // else
+      //   return (
+      //     <Typography color="error">Unknown Connection Source</Typography>
+      //   )
+      // return (
+      //   <StepComponent
+      //     setHubName={setHubName}
+      //     hubUrl={hubUrl}
+      //     setHubUrl={setHubUrl}
+      //     assemblyNames={assemblyNames}
+      //     setAssemblyNames={setAssemblyNames}
+      //   />
+      // )
       default:
         return <Typography>Unknown step</Typography>
     }
@@ -96,31 +108,20 @@ function DataHubDrawerWidget(props) {
   }
 
   function handleBack() {
-    const newStep = activeStep - 1
-    let newHubSource = hubSource
-    if (newStep < 1) newHubSource = null
-    setActiveStep(newStep)
-    setHubSource(newHubSource)
+    setActiveStep(activeStep - 1)
   }
 
   function handleFinish() {
-    const connectionType = hubType === 'ucsc' ? 'trackHub' : ''
-    rootModel.configuration.addConnection({
-      connectionName: hubName,
-      connectionType,
-      connectionLocation: { uri: hubUrl },
-      connectionOptions: { assemblyNames },
-    })
+    rootModel.configuration.addConnection(configModel)
     rootModel.hideDrawerWidget(
-      rootModel.drawerWidgets.get('dataHubDrawerWidget'),
+      rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
     )
   }
 
   function checkNextEnabled() {
     if (
-      (activeStep === 0 && hubType) ||
-      (activeStep === 1 && hubSource) ||
-      (activeStep === 2 && assemblyNames.length)
+      (activeStep === 0 && connectionType.name) ||
+      (activeStep === 1 && configModel)
     )
       return true
     return false
@@ -152,9 +153,9 @@ function DataHubDrawerWidget(props) {
                   color="primary"
                   onClick={handleNext}
                   className={classes.button}
-                  data-testid="dataHubNext"
+                  data-testid="addConnectionNext"
                 >
-                  {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                  {activeStep === steps.length - 1 ? 'Connect' : 'Next'}
                 </Button>
               </div>
             </StepContent>
@@ -165,9 +166,9 @@ function DataHubDrawerWidget(props) {
   )
 }
 
-DataHubDrawerWidget.propTypes = {
+AddConnectionDrawerWidget.propTypes = {
   classes: propTypes.objectOf(propTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(DataHubDrawerWidget))
+export default withStyles(styles)(observer(AddConnectionDrawerWidget))

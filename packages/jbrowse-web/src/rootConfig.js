@@ -1,4 +1,4 @@
-import { detach, getType, types } from 'mobx-state-tree'
+import { detach, getType, types, getRoot } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   readConfObject,
@@ -18,7 +18,11 @@ export default function(pluginManager) {
         types.union({ dispatcher }, ...assemblyConfigSchemas),
       ),
 
-      highResolutionScaling: 2, // possibly consider this for global config editor
+      // possibly consider this for global config editor
+      highResolutionScaling: {
+        type: 'number',
+        defaultValue: 2,
+      },
 
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
@@ -35,46 +39,11 @@ export default function(pluginManager) {
     {
       actions: self => ({
         addConnection(connectionConf) {
-          const connectionType = readConfObject(
-            connectionConf,
-            'connectionType',
-          )
-          if (!['trackHub', 'jbrowse1'].includes(connectionType))
-            throw new Error(
-              `Cannot add connection, unsupported connection type: ${connectionType}`,
-            )
-          const connectionNames = self.connections.map(connection =>
-            readConfObject(connection, 'connectionName'),
-          )
-          const connectionName = readConfObject(
-            connectionConf,
-            'connectionName',
-          )
-          if (connectionNames.includes(connectionName))
-            throw new Error(
-              `Cannot add connection, connection name already exists: ${connectionName}`,
-            )
           self.connections.push(connectionConf)
-          self.configureConnection(connectionConf)
-        },
-
-        configureConnection(connectionConf) {
-          const connectionName = readConfObject(
-            connectionConf,
-            'connectionName',
-          )
-          const connectionType = readConfObject(
-            connectionConf,
-            'connectionType',
-          )
-          self.volatile.set(connectionName, {
-            configId: connectionName,
-          })
-          if (connectionType === 'jbrowse1') self.fetchJBrowse1(connectionConf)
+          getRoot(self).addConnection(connectionConf)
         },
 
         removeConnection(connectionConf) {
-          self.volatile.delete(connectionConf.connectionName)
           self.connections.remove(connectionConf)
         },
 
