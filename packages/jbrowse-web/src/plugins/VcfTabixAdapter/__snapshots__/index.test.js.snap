@@ -3,12 +3,15 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "configId": Any<String>,
-  "faiLocation": Object {
-    "uri": "/path/to/seq.fa.fai",
+  "index": Object {
+    "configId": "U4PT2C-hLb",
+    "location": Object {
+      "uri": "/path/to/my.vcf.gz.tbi",
+    },
   },
-  "fastaLocation": Object {
-    "uri": "/path/to/seq.fa",
+  "type": "VcfTabixAdapter",
+  "vcfGzLocation": Object {
+    "uri": "/path/to/my.vcf.gz",
   },
-  "type": "IndexedFastaAdapter",
 }
 `;

@@ -8,7 +8,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
       localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
     },
     index: {
-      indexType: 'TBI',
+      index: 'TBI',
       location: {
         localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
       },

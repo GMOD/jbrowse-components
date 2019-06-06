@@ -55,8 +55,9 @@ export default class VcfTabixAdapter extends BaseAdapter {
       .then((header: string) => new VCF({ header }))
   }
 
-  public getRefNames(): Promise<string[]> {
-    return this.vcf.getReferenceSequenceNames()
+  public async getRefNames(): Promise<string[]> {
+    const ret = await this.vcf.getReferenceSequenceNames()
+    return ret
   }
 
   /**

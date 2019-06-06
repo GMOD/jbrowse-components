@@ -81,6 +81,7 @@ export default class VCFFeature {
     const featureData = {
       start,
       end,
+      refName: variant.CHROM,
       seq_id: variant.CHROM,
       description,
       type: SO_term,
@@ -191,7 +192,7 @@ export default class VCFFeature {
     return [null, null]
   }
 
-  _altTypeToSO: {
+  static _altTypeToSO = {
     DEL: 'deletion',
     INS: 'insertion',
     DUP: 'copy_number_gain',
@@ -209,9 +210,10 @@ export default class VCFFeature {
     }
 
     alt = alt.replace(/^<|>$/g, '') // trim off < and >
+    console.log(ref, alt)
 
     // look for a definition with an SO type for this
-    let soTerm = this._altTypeToSO[alt]
+    let soTerm = VCFFeature._altTypeToSO[alt]
     // if no SO term but ALT is in metadata, assume sequence_variant
     if (!soTerm && this.parser.getMetadata('ALT', alt))
       soTerm = 'sequence_variant'

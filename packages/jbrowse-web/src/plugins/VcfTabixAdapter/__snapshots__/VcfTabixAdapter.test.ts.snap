@@ -86,11 +86,13 @@ Array [
     },
     "description": "SNV T -> C",
     "end": 277,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 10.4,
     "seq_id": "ctgA",
     "start": 276,
     "type": "SNV",
+    "uniqueId": "vcf-2560",
   },
   Object {
     "AC1": Object {
@@ -189,11 +191,13 @@ Array [
     },
     "description": "SNV T -> C",
     "end": 1694,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 107,
     "seq_id": "ctgA",
     "start": 1693,
     "type": "SNV",
+    "uniqueId": "vcf-2658",
   },
   Object {
     "AC1": Object {
@@ -292,11 +296,13 @@ Array [
     },
     "description": "SNV T -> G",
     "end": 2644,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 44,
     "seq_id": "ctgA",
     "start": 2643,
     "type": "SNV",
+    "uniqueId": "vcf-2775",
   },
   Object {
     "AC1": Object {
@@ -382,11 +388,13 @@ Array [
     },
     "description": "SNV T -> A",
     "end": 3213,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 124,
     "seq_id": "ctgA",
     "start": 3212,
     "type": "SNV",
+    "uniqueId": "vcf-2892",
   },
   Object {
     "AC1": Object {
@@ -480,11 +488,13 @@ Array [
     },
     "description": "deletion ctt -> ct",
     "end": 3860,
+    "refName": "ctgA",
     "reference_allele": "ctt",
     "score": 160,
     "seq_id": "ctgA",
     "start": 3857,
     "type": "deletion",
+    "uniqueId": "vcf-2994",
   },
   Object {
     "AC1": Object {
@@ -583,11 +593,13 @@ Array [
     },
     "description": "SNV C -> G",
     "end": 5496,
+    "refName": "ctgA",
     "reference_allele": "C",
     "score": 6.98,
     "seq_id": "ctgA",
     "start": 5495,
     "type": "SNV",
+    "uniqueId": "vcf-3106",
   },
   Object {
     "AC1": Object {
@@ -673,11 +685,13 @@ Array [
     },
     "description": "SNV G -> T",
     "end": 8471,
+    "refName": "ctgA",
     "reference_allele": "G",
     "score": 124,
     "seq_id": "ctgA",
     "start": 8470,
     "type": "SNV",
+    "uniqueId": "vcf-3228",
   },
   Object {
     "AC1": Object {
@@ -763,11 +777,13 @@ Array [
     },
     "description": "SNV A -> T",
     "end": 9603,
+    "refName": "ctgA",
     "reference_allele": "A",
     "score": 126,
     "seq_id": "ctgA",
     "start": 9602,
     "type": "SNV",
+    "uniqueId": "vcf-3331",
   },
   Object {
     "AC1": Object {
@@ -866,11 +882,13 @@ Array [
     },
     "description": "SNV T -> A",
     "end": 10423,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 25,
     "seq_id": "ctgA",
     "start": 10422,
     "type": "SNV",
+    "uniqueId": "vcf-3434",
   },
   Object {
     "AC1": Object {
@@ -969,11 +987,13 @@ Array [
     },
     "description": "SNV G -> T",
     "end": 13202,
+    "refName": "ctgA",
     "reference_allele": "G",
     "score": 40,
     "seq_id": "ctgA",
     "start": 13201,
     "type": "SNV",
+    "uniqueId": "vcf-3550",
   },
   Object {
     "AC1": Object {
@@ -1080,11 +1100,13 @@ Array [
     },
     "description": "insertion ac -> aCc",
     "end": 14248,
+    "refName": "ctgA",
     "reference_allele": "ac",
     "score": 61.5,
     "seq_id": "ctgA",
     "start": 14246,
     "type": "insertion",
+    "uniqueId": "vcf-3668",
   },
   Object {
     "AC1": Object {
@@ -1183,11 +1205,13 @@ Array [
     },
     "description": "SNV G -> A",
     "end": 14481,
+    "refName": "ctgA",
     "reference_allele": "G",
     "score": 42,
     "seq_id": "ctgA",
     "start": 14480,
     "type": "SNV",
+    "uniqueId": "vcf-3798",
   },
   Object {
     "AC1": Object {
@@ -1273,11 +1297,13 @@ Array [
     },
     "description": "SNV T -> A",
     "end": 15078,
+    "refName": "ctgA",
     "reference_allele": "T",
     "score": 96,
     "seq_id": "ctgA",
     "start": 15077,
     "type": "SNV",
+    "uniqueId": "vcf-3914",
   },
   Object {
     "AC1": Object {
@@ -1371,11 +1397,13 @@ Array [
     },
     "description": "insertion gcc -> gCcc",
     "end": 15165,
+    "refName": "ctgA",
     "reference_allele": "gcc",
     "score": 213,
     "seq_id": "ctgA",
     "start": 15162,
     "type": "insertion",
+    "uniqueId": "vcf-4015",
   },
   Object {
     "AC1": Object {
@@ -1474,11 +1502,13 @@ Array [
     },
     "description": "SNV A -> G",
     "end": 15418,
+    "refName": "ctgA",
     "reference_allele": "A",
     "score": 64,
     "seq_id": "ctgA",
     "start": 15417,
     "type": "SNV",
+    "uniqueId": "vcf-4131",
   },
   Object {
     "AC1": Object {
@@ -1564,11 +1594,13 @@ Array [
     },
     "description": "SNV C -> T",
     "end": 17042,
+    "refName": "ctgA",
     "reference_allele": "C",
     "score": 119,
     "seq_id": "ctgA",
     "start": 17041,
     "type": "SNV",
+    "uniqueId": "vcf-4258",
   },
   Object {
     "AC1": Object {
@@ -1667,11 +1699,13 @@ Array [
     },
     "description": "SNV A -> G",
     "end": 18948,
+    "refName": "ctgA",
     "reference_allele": "A",
     "score": 57,
     "seq_id": "ctgA",
     "start": 18947,
     "type": "SNV",
+    "uniqueId": "vcf-4361",
   },
   Object {
     "AC1": Object {
@@ -1778,11 +1812,13 @@ Array [
     },
     "description": "deletion acg -> a",
     "end": 19884,
+    "refName": "ctgA",
     "reference_allele": "acg",
     "score": 98.5,
     "seq_id": "ctgA",
     "start": 19881,
     "type": "deletion",
+    "uniqueId": "vcf-4479",
   },
 ]
 `;
