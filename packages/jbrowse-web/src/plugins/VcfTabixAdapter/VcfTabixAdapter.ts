@@ -6,8 +6,8 @@ import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 import { TabixIndexedFile } from '@gmod/tabix'
-import VCF from '@gmod/vcf'
-import VCFFeature from './VCFFeature'
+import VcfParser from '@gmod/vcf'
+import VcfFeature from './VcfFeature'
 
 export default class VcfTabixAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +52,7 @@ export default class VcfTabixAdapter extends BaseAdapter {
     this.vcf = new TabixIndexedFile(vcfGzOpts)
     this.parser = this.vcf
       .getHeader()
-      .then((header: string) => new VCF({ header }))
+      .then((header: string) => new VcfParser({ header }))
   }
 
   public async getRefNames(): Promise<string[]> {
@@ -76,7 +76,7 @@ export default class VcfTabixAdapter extends BaseAdapter {
           (line: string, fileOffset: number) => {
             const variant = parser.parseLine(line)
 
-            const feature = new VCFFeature({
+            const feature = new VcfFeature({
               variant,
               parser,
               id: `vcf-${fileOffset}`,

@@ -77,12 +77,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "C",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "C",
+      ],
+    },
     "description": "SNV T -> C",
     "end": 277,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -179,12 +194,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "C",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "C",
+      ],
+    },
     "description": "SNV T -> C",
     "end": 1694,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -281,12 +311,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "G",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
     "description": "SNV T -> G",
     "end": 2644,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -370,12 +415,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "A",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
     "description": "SNV T -> A",
     "end": 3213,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -467,12 +527,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "ct",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "ct",
+      ],
+    },
     "description": "deletion ctt -> ct",
     "end": 3860,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "ctt",
@@ -569,12 +644,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "G",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
     "description": "SNV C -> G",
     "end": 5496,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "C",
@@ -658,12 +748,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "T",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
     "description": "SNV G -> T",
     "end": 8471,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "G",
@@ -747,12 +852,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "T",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
     "description": "SNV A -> T",
     "end": 9603,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "A",
@@ -849,12 +969,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "A",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
     "description": "SNV T -> A",
     "end": 10423,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -951,12 +1086,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "T",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
     "description": "SNV G -> T",
     "end": 13202,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "G",
@@ -1061,12 +1211,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "aCc",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "aCc",
+      ],
+    },
     "description": "insertion ac -> aCc",
     "end": 14248,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "ac",
@@ -1163,12 +1328,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "A",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
     "description": "SNV G -> A",
     "end": 14481,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "G",
@@ -1252,12 +1432,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "A",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "A",
+      ],
+    },
     "description": "SNV T -> A",
     "end": 15078,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "T",
@@ -1349,12 +1544,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "gCcc",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "gCcc",
+      ],
+    },
     "description": "insertion gcc -> gCcc",
     "end": 15165,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "gcc",
@@ -1451,12 +1661,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "G",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
     "description": "SNV A -> G",
     "end": 15418,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "A",
@@ -1540,12 +1765,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "T",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "T",
+      ],
+    },
     "description": "SNV C -> T",
     "end": 17042,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "C",
@@ -1642,12 +1882,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "G",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "G",
+      ],
+    },
     "description": "SNV A -> G",
     "end": 18948,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "A",
@@ -1752,12 +2007,27 @@ Array [
       ],
     },
     "aliases": undefined,
-    "alternative_alleles": Array [
-      "a",
-    ],
+    "alternative_alleles": Object {
+      "meta": Object {
+        "description": "VCF ALT field, list of alternate non-reference alleles called on at least one of the samples",
+      },
+      "values": Array [
+        "a",
+      ],
+    },
     "description": "deletion acg -> a",
     "end": 19884,
-    "filters": null,
+    "filters": Object {
+      "meta": Object {
+        "description": "List of filters that this site has not passed, or PASS if it has passed all filters",
+        "filters": Object {
+          "PASS": Object {
+            "Description": "Passed all filters",
+          },
+        },
+      },
+      "values": null,
+    },
     "name": undefined,
     "refName": "ctgA",
     "reference_allele": "acg",

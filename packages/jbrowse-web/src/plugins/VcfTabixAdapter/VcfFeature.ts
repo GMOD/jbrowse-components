@@ -17,9 +17,12 @@ interface FeatureData {
   reference_allele: string
   name?: string
   score: number
-  filters: string[]
   aliases: string[]
-  alternative_alleles: string[]
+  alternative_alleles: { values: string[]; meta: { description: string } }
+  filters: {
+    values: string[]
+    meta: { filters: string[]; description: string }
+  }
   genotypes?: Genotypes
 }
 
@@ -123,8 +126,21 @@ export default class VCFFeature implements Feature {
       aliases:
         variant.ID && variant.ID.length > 1 ? variant.ID.slice(1) : undefined,
       score: variant.QUAL,
-      filters: variant.FILTER === 'PASS' ? ['PASS'] : variant.FILTER,
-      alternative_alleles: variant.ALT,
+      filters: {
+        meta: {
+          description:
+            'List of filters that this site has not passed, or PASS if it has passed all filters',
+          filters: this.parser.getMetadata('FILTER'),
+        },
+        values: variant.FILTER === 'PASS' ? ['PASS'] : variant.FILTER,
+      },
+      alternative_alleles: {
+        meta: {
+          description:
+            'VCF ALT field, list of alternate non-reference alleles called on at least one of the samples',
+        },
+        values: variant.ALT,
+      },
     }
 
     // parse the info field and store its contents as attributes in featureData
