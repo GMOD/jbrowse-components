@@ -206,10 +206,10 @@ export default class VCFFeature implements Feature {
   static _altTypeToSO: { [key: string]: string | undefined } = {
     DEL: 'deletion',
     INS: 'insertion',
-    DUP: 'copy_number_gain',
+    DUP: 'duplication',
     INV: 'inversion',
     CNV: 'copy_number_variation',
-    'DUP:TANDEM': 'copy_number_gain',
+    'DUP:TANDEM': 'tandem_duplication',
     NON_REF: 'sequence_variant',
     '*': 'sequence_variant',
   }
