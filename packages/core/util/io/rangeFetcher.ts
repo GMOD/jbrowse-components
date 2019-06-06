@@ -13,6 +13,7 @@ function isElectron(): boolean {
 //   throw new Error('unimplemented') // TODO
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   let mfetch
   if (isElectron()) {
@@ -46,6 +47,7 @@ function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   )
 }
 export interface RangeResponse {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   headers: Record<string, any>
   requestDate: Date
   responseDate: Date
@@ -77,7 +79,7 @@ async function fetchBinaryRange(
 
   // translate the Headers object into a regular key -> value object.
   // will miss duplicate headers of course
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const headers: Record<string, any> = {}
   for (const [k, v] of res.headers.entries()) {
     headers[k] = v
@@ -108,6 +110,7 @@ const globalRangeCache = new HttpRangeFetcher({
 
 function globalCacheFetch<T>(
   url: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   opts: { headers?: Record<string, any>; signal?: AbortSignal },
 ): Promise<T> {
   // if it is a range request, route it through the global range cache
