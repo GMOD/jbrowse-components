@@ -1,6 +1,6 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
 
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
@@ -13,7 +13,10 @@ export default class IndexedFastaAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  public constructor(config: { fastaLocation: string; faiLocation: string }) {
+  public constructor(config: {
+    fastaLocation: FileLocation
+    faiLocation: FileLocation
+  }) {
     super()
     const { fastaLocation, faiLocation } = config
     if (!fastaLocation) {

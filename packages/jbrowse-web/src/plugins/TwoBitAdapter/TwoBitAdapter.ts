@@ -1,6 +1,6 @@
 import { TwoBitFile } from '@gmod/twobit'
 
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -13,7 +13,7 @@ export default class TwoBitAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  public constructor(config: { twoBitLocation: string }) {
+  public constructor(config: { twoBitLocation: FileLocation }) {
     super()
     const twoBitOpts = {
       filehandle: openLocation(config.twoBitLocation),

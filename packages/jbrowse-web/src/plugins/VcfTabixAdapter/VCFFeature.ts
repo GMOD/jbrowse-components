@@ -3,122 +3,126 @@
 /**
  * VCF Feature creation with lazy genotpye evaluation.
  */
+interface Genotypes {
+  [key: string]: { [key: string]: { values: string[] } }
+}
+interface FeatureData {
+  start: number
+  end: number
+  refName: string
+  description?: string
+  type?: string
+  reference_allele: string
+  name?: string
+  score: number
+  filters: string[]
+  aliases: string[]
+  alternative_alleles: string[]
+  genotypes?: Genotypes
+}
 
 export default class VCFFeature {
-  constructor(args) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private variant: any
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private parser: any
+
+  private data: FeatureData
+
+  private _id: string
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(args: { variant: any; parser: any; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
     this.data = this.dataFromVariant(this.variant)
     this._id = args.id
   }
 
-  get(field) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get(field: string): any {
     return this._get(field) || this._get(field.toLowerCase())
   }
 
-  set() {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set(name: string, val: any): void {}
 
   // same as get(), except requires lower-case arguments.    used
   // internally to save lots of calls to field.toLowerCase()
-  _get(field) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _get(field: string): any {
     if (field in this.data) {
+      // @ts-ignore
       return this.data[field] // have we already parsed it out?
     }
-    if (this[`_parse_${field}`]) {
-      this.data[field] = this[`_parse_${field}`]()
+    if (field === 'genotypes') {
+      this.data[field] = this._parse_genotypes()
       return this.data[field] // have we already parsed it out?
     }
     return undefined
   }
 
-  parent() {
+  parent(): undefined {
     return undefined
   }
 
-  children() {
+  children(): undefined {
     return undefined
   }
 
-  tags() {
+  tags(): string[] {
     const t = Object.keys(this.data)
     if (!this.data.genotypes) t.push('genotypes')
     return t
   }
 
-  id() {
+  id(): string {
     return this._id
   }
 
-  _parse_genotypes() {
+  _parse_genotypes(): Genotypes {
     const { variant } = this
     delete this.variant // TODO: remove this delete if we add other laziness
 
+    const genotypes: Genotypes = {}
     if (Object.keys(variant.SAMPLES).length) {
-      this.data.genotypes = {}
-      Object.keys(variant.SAMPLES).forEach(sample => {
-        this.data.genotypes[sample] = {}
-        Object.keys(variant.SAMPLES[sample]).forEach(field => {
-          this.data.genotypes[sample][field] = {
+      Object.keys(variant.SAMPLES).forEach((sample: string) => {
+        genotypes[sample] = {}
+        Object.keys(variant.SAMPLES[sample]).forEach((field: string) => {
+          genotypes[sample][field] = {
             values: variant.SAMPLES[sample][field],
           }
         })
       })
-      return this.data.genotypes
+      return genotypes
     }
-    this.data.genotypes = null
-    return null
+    return genotypes
   }
 
-  dataFromVariant(variant) {
-    const ref = variant.REF
-    const alt = variant.ALT
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dataFromVariant(variant: any): FeatureData {
     const start = variant.POS - 1
-    const end = variant.INFO.END
-      ? Number(variant.INFO.END[0])
-      : start + ref.length
-    const [SO_term, description] = this._getSOTermAndDescription(ref, alt)
+    const [SO_term, description] = this._getSOTermAndDescription(
+      variant.REF,
+      variant.ALT,
+    )
 
-    const featureData = {
+    const featureData: FeatureData = {
       start,
-      end,
+      end: variant.INFO.END
+        ? Number(variant.INFO.END[0])
+        : start + variant.REF.length,
       refName: variant.CHROM,
-      seq_id: variant.CHROM,
       description,
       type: SO_term,
-      reference_allele: ref,
-    }
-
-    if (variant.ID) {
-      // eslint-disable-next-line
-      featureData.name = variant.ID[0]
-      if (variant.ID > 1) {
-        featureData.aliases = variant.ID.slice(1).join(',')
-      }
-    }
-
-    if (variant.QUAL) {
-      featureData.score = variant.QUAL
-    }
-
-    if (variant.FILTER) {
-      featureData.filter = {
-        meta: {
-          description:
-            'List of filters that this site has not passed, or PASS if it has passed all filters',
-          filters: this.parser.getMetadata('FILTER'),
-        },
-        values: variant.FILTER === 'PASS' ? ['PASS'] : variant.FILTER,
-      }
-    }
-
-    if (alt) {
-      featureData.alternative_alleles = {
-        meta: {
-          description:
-            'VCF ALT field, list of alternate non-reference alleles called on at least one of the samples',
-        },
-        values: alt,
-      }
+      reference_allele: variant.REF,
+      name: variant.ID ? variant.ID[0] : undefined,
+      aliases:
+        variant.ID && variant.ID.length > 1 ? variant.ID.slice(1) : undefined,
+      score: variant.QUAL,
+      filters: variant.FILTER === 'PASS' ? ['PASS'] : variant.FILTER,
+      alternative_alleles: variant.ALT,
     }
 
     // parse the info field and store its contents as attributes in featureData
@@ -133,7 +137,8 @@ export default class VCFFeature {
    * parse a VCF line's INFO field, storing the contents as
    * attributes in featureData
    */
-  _parseInfoField(featureData, info) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _parseInfoField(featureData: FeatureData, info: Record<string, any>): void {
     // decorate the info records with references to their descriptions
     Object.entries(info).forEach(([field, value]) => {
       info[field] = {
@@ -141,6 +146,7 @@ export default class VCFFeature {
       }
       const meta = this.parser.getMetadata('INFO', field)
       if (meta) info[field].meta = meta
+      // @ts-ignore
       featureData[field] = info[field]
     })
   }
@@ -148,7 +154,10 @@ export default class VCFFeature {
   /**
    * Get a sequence ontology (SO) term that describes the variant type
    */
-  _getSOTermAndDescription(ref, alt) {
+  _getSOTermAndDescription(
+    ref: string,
+    alt: string[],
+  ): [string | undefined, string | undefined] {
     // it's just a remark if there are no alternate alleles
     if (!alt || alt === []) {
       return ['remark', 'no alternative alleles']
@@ -174,9 +183,9 @@ export default class VCFFeature {
         if (prefix && prefix[1]) prefixes.add(prefix[1])
         else prefixes.add(desc)
       })
-      const new_descs = []
+      const new_descs: string[] = []
       ;[...prefixes].forEach(prefix => {
-        const suffixes = []
+        const suffixes: string[] = []
         ;[...descriptions].forEach(desc => {
           if (desc.startsWith(prefix)) {
             suffixes.push(desc.slice(prefix.length))
@@ -184,15 +193,15 @@ export default class VCFFeature {
         })
         new_descs.push(prefix + suffixes.join(','))
       })
-      descriptions = new_descs
+      descriptions = new Set(new_descs)
     }
     if (soTerms.size) {
       return [[...soTerms].join(','), [...descriptions].join(',')]
     }
-    return [null, null]
+    return [undefined, undefined]
   }
 
-  static _altTypeToSO = {
+  static _altTypeToSO: { [key: string]: string | undefined } = {
     DEL: 'deletion',
     INS: 'insertion',
     DUP: 'copy_number_gain',
@@ -203,17 +212,19 @@ export default class VCFFeature {
     '*': 'sequence_variant',
   }
 
-  _getSOAndDescFromAltDefs(ref, alt) {
+  _getSOAndDescFromAltDefs(
+    ref: string,
+    alt: string,
+  ): [string | undefined, string | undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
     if (alt[0] !== '<') {
-      return [null, null]
+      return [undefined, undefined]
     }
 
     alt = alt.replace(/^<|>$/g, '') // trim off < and >
-    console.log(ref, alt)
 
     // look for a definition with an SO type for this
-    let soTerm = VCFFeature._altTypeToSO[alt]
+    let soTerm = VCFFeature._altTypeToSO[alt] as string | undefined
     // if no SO term but ALT is in metadata, assume sequence_variant
     if (!soTerm && this.parser.getMetadata('ALT', alt))
       soTerm = 'sequence_variant'
@@ -225,18 +236,18 @@ export default class VCFFeature {
     }
 
     // try to look for a definition for a parent term if we can
-    alt = alt.split(':')
-    if (alt.length > 1) {
+    const modAlt = alt.split(':')
+    if (modAlt.length > 1) {
       return this._getSOAndDescFromAltDefs(
         ref,
-        `<${alt.slice(0, alt.length - 1).join(':')}>`,
+        `<${modAlt.slice(0, modAlt.length - 1).join(':')}>`,
       )
     }
     // no parent
-    return [null, null]
+    return [undefined, undefined]
   }
 
-  _getSOAndDescByExamination(ref, alt) {
+  _getSOAndDescByExamination(ref: string, alt: string): [string, string] {
     if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
@@ -266,11 +277,12 @@ export default class VCFFeature {
     return ['indel', this._makeDescriptionString('indel', ref, alt)]
   }
 
-  _makeDescriptionString(soTerm, ref, alt) {
+  _makeDescriptionString(soTerm: string, ref: string, alt: string): string {
     return `${soTerm} ${ref} -> ${alt}`
   }
 
-  toJSON() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toJSON(): any {
     return { uniqueId: this._id, ...this.data }
   }
 }

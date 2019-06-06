@@ -6,7 +6,7 @@ import { Observable, Observer } from 'rxjs'
 import { mergeAll, map } from 'rxjs/operators'
 
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 
@@ -38,7 +38,7 @@ export default class BigWigAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: { bigWigLocation: string }) {
+  public constructor(config: { bigWigLocation: FileLocation }) {
     super()
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),

@@ -1,13 +1,13 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import IndexedFasta from './IndexedFastaAdapter'
 
 export default class BgzipFastaAdapter extends IndexedFasta {
   public constructor(config: {
-    fastaLocation: string
-    faiLocation: string
-    gziLocation: string
+    fastaLocation: FileLocation
+    faiLocation: FileLocation
+    gziLocation: FileLocation
   }) {
     super(config)
     const { fastaLocation, faiLocation, gziLocation } = config

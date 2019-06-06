@@ -3,7 +3,7 @@ import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Observable, Observer } from 'rxjs'
@@ -36,7 +36,7 @@ export default class BigBedAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: { bigBedLocation: string }) {
+  public constructor(config: { bigBedLocation: FileLocation }) {
     super()
     this.bigbed = new BigBed({
       filehandle: openLocation(config.bigBedLocation),
