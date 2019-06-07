@@ -26,15 +26,10 @@ export default class VcfTabixAdapter extends BaseAdapter {
     }
   }) {
     super()
-    const { vcfGzLocation, index } = config
-    if (!vcfGzLocation) {
-      throw new Error('must provide vcfGzLocation')
-    }
-    if (!index || !index.location) {
-      throw new Error('must provide index.location')
-    }
-
-    const { location: indexLocation, index: indexType } = config.index
+    const {
+      vcfGzLocation,
+      index: { location: indexLocation, index: indexType },
+    } = config
     const vcfGzOpts: {
       filehandle: GenericFilehandle
       tbiFilehandle?: GenericFilehandle
