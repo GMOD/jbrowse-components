@@ -31,11 +31,6 @@ exports[`<MainMenuBar /> renders 1`] = `
             "icon": "help",
             "name": "Help",
           },
-          Object {
-            "callback": "openAssemblyEditor",
-            "icon": "edit",
-            "name": "Assemblies",
-          },
         ]
       }
       menuTitle="Help"
@@ -75,11 +70,6 @@ exports[`<MainMenuBar /> renders 1`] = `
                       "callback": "openHelp",
                       "icon": "help",
                       "name": "Help",
-                    },
-                    Object {
-                      "callback": "openAssemblyEditor",
-                      "icon": "edit",
-                      "name": "Assemblies",
                     },
                   ],
                   "name": "Help",
