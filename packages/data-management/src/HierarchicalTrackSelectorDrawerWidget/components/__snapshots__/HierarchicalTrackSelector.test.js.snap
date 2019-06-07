@@ -3,6 +3,7 @@
 exports[`HierarchicalTrackSelector drawer widget renders with a couple of categorized tracks 1`] = `
 <div
   class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
 >
   <div
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
@@ -80,6 +81,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
 exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncategorized tracks 1`] = `
 <div
   class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
 >
   <div
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
@@ -157,6 +159,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
 exports[`HierarchicalTrackSelector drawer widget renders with just the required model elements 1`] = `
 <div
   class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
 >
   <div
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
