@@ -30,7 +30,7 @@ test('can load configuration from a config object', async () => {
   expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
 })
 
-xtest('can load configuration from a file', async () => {
+test('can load configuration from a file', async () => {
   const { rootModel } = await createTestEnv({
     localPath: require.resolve('../test_data/config_volvox_mainthread.json'),
   })

@@ -2,8 +2,8 @@ import React from 'react'
 import renderer from 'react-test-renderer'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-// import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
-// import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-core/plugins/'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-web/src/plugins/AlignmentsTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor drawer widget', () => {
@@ -81,15 +81,15 @@ describe('ConfigurationEditor drawer widget', () => {
     expect(tree).toMatchSnapshot()
   })
 
-  // it('renders with defaults of the AlignmentsTrack schema', async () => {
-  //   const { pluginManager } = await createTestEnv()
-  //   const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(pluginManager)
-  //   const component = renderer.create(
-  //     <ConfigurationEditor
-  //       model={{ target: AlignmentsTrackSchema.create() }}
-  //     />,
-  //   )
-  //   const tree = component.toJSON()
-  //   expect(tree).toMatchSnapshot()
-  // })
+  it('renders with defaults of the AlignmentsTrack schema', async () => {
+    const { pluginManager } = await createTestEnv()
+    const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(pluginManager)
+    const component = renderer.create(
+      <ConfigurationEditor
+        model={{ target: AlignmentsTrackSchema.create() }}
+      />,
+    )
+    const tree = component.toJSON()
+    expect(tree).toMatchSnapshot()
+  })
 })

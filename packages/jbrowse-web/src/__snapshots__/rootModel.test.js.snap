@@ -33,12 +33,13 @@ Object {
 
 exports[`can load configuration from a file 1`] = `
 Object {
-  "assemblies": Object {
-    "volvox": Object {
+  "assemblies": Array [
+    Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "volvox",
+      "assemblyName": "volvox",
+      "configId": "testid",
       "refNameAliases": Object {
         "adapter": Object {
           "configId": "testid",
@@ -268,8 +269,9 @@ Object {
         },
       ],
     },
-    "volvox2": Object {
-      "configId": "volvox2",
+    Object {
+      "assemblyName": "volvox2",
+      "configId": "testid",
       "refNameAliases": Object {
         "adapter": Object {
           "configId": "testid",
@@ -299,7 +301,7 @@ Object {
         "type": "ReferenceSequence",
       },
     },
-  },
+  ],
   "configId": "testid",
   "defaultSession": Object {
     "activeDrawerWidgets": Object {
