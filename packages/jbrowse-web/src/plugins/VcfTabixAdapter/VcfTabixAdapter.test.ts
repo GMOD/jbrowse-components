@@ -32,6 +32,12 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     start: 0,
     end: 20000,
   })
+
+  const names = await adapter.getRefNames()
+  const csiNames = await csiAdapter.getRefNames()
+  expect(names).toEqual(csiNames)
+  expect(names).toMatchSnapshot()
+
   const features = await adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -40,15 +46,17 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const csiFeaturesArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray).toMatchSnapshot()
-  expect(csiFeaturesArray).toEqual(featuresArray)
+  expect(featuresArray.slice(0, 5)).toMatchSnapshot()
+  expect(csiFeaturesArray.slice(0, 5)).toEqual(featuresArray.slice(0, 5))
 
-  const features2 = await adapter.getFeatures({
+  const featuresNonExist = await adapter.getFeatures({
     refName: 'ctgC',
     start: 0,
     end: 20000,
   })
 
-  const featuresArray2 = await features2.pipe(toArray()).toPromise()
-  expect(featuresArray2).toMatchSnapshot()
+  const featuresArrayNonExist = await featuresNonExist
+    .pipe(toArray())
+    .toPromise()
+  expect(featuresArrayNonExist).toEqual([])
 })
