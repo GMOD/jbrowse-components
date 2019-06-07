@@ -12,7 +12,7 @@ test('one', () => {
         bpPerPx: 1,
       },
       false,
-    ),
+    ).getBlocks(),
   ).toEqual([
     {
       end: 200,
@@ -37,7 +37,7 @@ test('two', () => {
         bpPerPx: 1,
       },
       true,
-    ),
+    ).getBlocks(),
   ).toEqual([
     {
       end: 50000,
@@ -62,7 +62,7 @@ test('three', () => {
         bpPerPx: 1,
       },
       true,
-    ),
+    ).getBlocks(),
   ).toEqual([
     {
       end: 50000,
@@ -87,7 +87,7 @@ test('four', () => {
         bpPerPx: 1,
       },
       false,
-    ),
+    ).getBlocks(),
   ).toEqual([
     {
       end: 250,
@@ -112,7 +112,7 @@ test('five', () => {
         bpPerPx: 0.05,
       },
       false,
-    ),
+    ).getBlocks(),
   ).toEqual([
     {
       end: 72.4,

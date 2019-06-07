@@ -1,15 +1,14 @@
-import { transaction } from 'mobx'
-import { getParent, getRoot, types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
-import { clamp } from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { clamp } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-
-import BaseTrack from './baseTrack'
-import calculateStaticBlocks from '../util/calculateStaticBlocks'
+import { transaction } from 'mobx'
+import { getParent, getRoot, types } from 'mobx-state-tree'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
+import calculateStaticBlocks from '../util/calculateStaticBlocks'
+import BaseTrack from './baseTrack'
 
 const validBpPerPx = [
   1 / 50,
@@ -68,6 +67,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
+      minimumBlockWidth: 20,
     })
     .views(self => ({
       get viewingRegionWidth() {
@@ -201,18 +201,27 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
        * @returns {Array} of the displayed region that it lands in
        */
       pxToBp(px) {
-        const regions = self.displayedRegions
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
-
-        for (let index = 0; index < regions.length; index += 1) {
-          const region = regions[index]
-          if (region.end - region.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...region, offset: Math.round(bp - bpSoFar), index }
+        if (bp < 0) {
+          return {
+            ...self.displayedRegions[0],
+            offset: Math.round(bp),
+            index: 0,
           }
-          bpSoFar += region.end - region.start
         }
-        return undefined
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          const r = self.displayedRegions[index]
+          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...r, offset: Math.round(bp - bpSoFar), index }
+          }
+          bpSoFar += r.end - r.start
+        }
+        return {
+          ...self.displayedRegions[self.displayedRegions.length - 1],
+          offset: Math.round(bp - bpSoFar),
+          index: self.displayedRegions.length - 1,
+        }
       },
 
       /**

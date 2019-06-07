@@ -99,6 +99,7 @@ function(feature) {
           },
         },
       })
+
     this.rpcManager = new RpcManager(
       this.pluginManager,
       this.model.configuration.rpc,

@@ -28,7 +28,7 @@ describe('block calculation', () => {
   })
 
   it('can calculate some blocks 3', () => {
-    const blocks = calculateBlocksForward({
+    const blockSet = calculateBlocksForward({
       bpPerPx: 1,
       width: 800,
       offsetPx: 1000,
@@ -37,11 +37,11 @@ describe('block calculation', () => {
         { refName: 'ctgB', start: 100, end: 200 },
       ],
     })
-    expect(blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 4', () => {
-    const blocks = calculateBlocksForward(
+    const blockSet = calculateBlocksForward(
       {
         bpPerPx: 1,
         width: 800,
@@ -55,7 +55,7 @@ describe('block calculation', () => {
         testEnv: true,
       },
     )
-    expect(blocks).toEqual([])
+    expect(blockSet.getBlocks()).toEqual([])
   })
 
   it('can calculate some blocks 5', () => {
@@ -72,7 +72,7 @@ describe('block calculation', () => {
   })
 
   it('can calculate some blocks 6', () => {
-    const blocks = calculateBlocksForward({
+    const blockSet = calculateBlocksForward({
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
@@ -81,7 +81,8 @@ describe('block calculation', () => {
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
     })
-    expect(blocks).toMatchSnapshot()
+    expect(blockSet).toMatchSnapshot()
+    expect(blockSet.blocks[0].offsetPx).toBe(0)
   })
 
   it('can calculate some blocks 7', () => {
@@ -112,7 +113,7 @@ describe('block calculation', () => {
   })
 
   it('can calculate some blocks 9', () => {
-    const blocks = calculateBlocksForward({
+    const blockSet = calculateBlocksForward({
       width: 800,
       offsetPx: 1069,
       bpPerPx: 2,
@@ -122,7 +123,23 @@ describe('block calculation', () => {
       ],
       configuration: 'fakeReference',
     })
-    expect(blocks).toMatchSnapshot()
+    expect(blockSet).toMatchSnapshot()
+  })
+
+  it('can calculate some blocks 10', () => {
+    const blockSet = calculateBlocksForward({
+      width: 800,
+      offsetPx: 0,
+      bpPerPx: 0.05,
+      displayedRegions: [
+        { refName: 'ctgA', start: 100, end: 200 },
+        { refName: 'ctgA', start: 300, end: 400 },
+      ],
+      configuration: 'fakeReference',
+    })
+    // console.log(JSON.stringify(blockSet.blocks, null, '  '))
+    expect(blockSet.blocks[0].offsetPx).toBe(0)
+    expect(blockSet.blocks).toMatchSnapshot()
   })
 })
 

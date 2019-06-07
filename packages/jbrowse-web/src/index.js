@@ -3,20 +3,16 @@ import ReactDOM from 'react-dom'
 import './bootstrap'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
-import * as webWorkers from './webWorkers'
 
 // this is the main process, so start and register our service worker and web workers
 serviceWorker.register()
-const workerGroups = webWorkers.register()
 
 const configs = [
+  { uri: 'test_data/config_human.json' },
   { uri: 'test_data/config_volvox.json' },
+  { uri: 'test_data/alignments_test.json' },
   { uri: 'test_data/config_volvox_connection.json' },
   { uri: 'test_data/config_volvox_mainthread.json' },
-  { uri: 'test_data/config_human.json' },
 ]
 
-ReactDOM.render(
-  <JBrowse configs={configs} workerGroups={workerGroups} />,
-  document.getElementById('root'),
-)
+ReactDOM.render(<JBrowse configs={configs} />, document.getElementById('root'))

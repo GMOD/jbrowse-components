@@ -1,259 +1,294 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`block calculation can calculate some blocks 1 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 800,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1-800",
-    "offsetPx": 0,
-    "parentRegion": Object {
-      "end": 10000,
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 800,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:1-800",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
       "start": 0,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 0,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 1600,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:801-1600",
-    "offsetPx": 800,
-    "parentRegion": Object {
-      "end": 10000,
+    ContentBlock {
+      "end": 1600,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:801-1600",
+      "offsetPx": 800,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
-      "start": 0,
+      "start": 800,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 800,
-    "widthPx": 800,
-  },
-]
+  ],
+}
 `;
 
 exports[`block calculation can calculate some blocks 2 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 100,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": true,
-    "key": "ctgA:1-100",
-    "offsetPx": 0,
-    "parentRegion": Object {
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
       "end": 100,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:1-100",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 100,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
       "start": 0,
+      "widthPx": 100,
     },
-    "refName": "ctgA",
-    "start": 0,
-    "widthPx": 100,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 200,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": true,
-    "key": "ctgB:101-200",
-    "offsetPx": 200,
-    "parentRegion": Object {
+    ContentBlock {
       "end": 200,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgB:101-200",
+      "offsetPx": 100,
+      "parentRegion": Object {
+        "end": 200,
+        "refName": "ctgB",
+        "start": 100,
+      },
       "refName": "ctgB",
       "start": 100,
+      "widthPx": 100,
     },
-    "refName": "ctgB",
-    "start": 100,
-    "widthPx": 100,
-  },
-]
+  ],
+}
 `;
 
 exports[`block calculation can calculate some blocks 5 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 5600,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:4801-5600",
-    "offsetPx": 4800,
-    "parentRegion": Object {
-      "end": 10000,
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 5600,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:4801-5600",
+      "offsetPx": 4800,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
-      "start": 0,
+      "start": 4800,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 4800,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 6400,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:5601-6400",
-    "offsetPx": 5600,
-    "parentRegion": Object {
-      "end": 10000,
+    ContentBlock {
+      "end": 6400,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:5601-6400",
+      "offsetPx": 5600,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
-      "start": 0,
+      "start": 5600,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 5600,
-    "widthPx": 800,
-  },
-]
+  ],
+}
 `;
 
 exports[`block calculation can calculate some blocks 6 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 200,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:1-200",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 200,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 0,
+      "widthPx": 200,
+    },
+    ContentBlock {
+      "end": 800,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgB:1-800",
+      "offsetPx": 200,
+      "parentRegion": Object {
+        "end": 1000,
+        "refName": "ctgB",
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "start": 0,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`block calculation can calculate some blocks 7 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 800,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgB:1-800",
+      "offsetPx": 200,
+      "parentRegion": Object {
+        "end": 1000,
+        "refName": "ctgB",
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "start": 0,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "end": 1000,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgB:801-1000",
+      "offsetPx": 1000,
+      "parentRegion": Object {
+        "end": 1000,
+        "refName": "ctgB",
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "start": 800,
+      "widthPx": 200,
+    },
+  ],
+}
+`;
+
+exports[`block calculation can calculate some blocks 8 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 1600,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgB:801-1600",
+      "offsetPx": 1000,
+      "parentRegion": Object {
+        "end": 10000000,
+        "refName": "ctgB",
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "start": 800,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "end": 2400,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgB:1601-2400",
+      "offsetPx": 1800,
+      "parentRegion": Object {
+        "end": 10000000,
+        "refName": "ctgB",
+        "start": 0,
+      },
+      "refName": "ctgB",
+      "start": 1600,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`block calculation can calculate some blocks 9 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "end": 3200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:1601-3200",
+      "offsetPx": 800,
+      "parentRegion": Object {
+        "end": 50000,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 1600,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "end": 4800,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:3201-4800",
+      "offsetPx": 1600,
+      "parentRegion": Object {
+        "end": 50000,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 3200,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`block calculation can calculate some blocks 10 1`] = `
 Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 200,
+  ContentBlock {
+    "end": 140,
     "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": true,
-    "key": "ctgA:1-200",
+    "isRightEndOfDisplayedRegion": false,
+    "key": "ctgA:101-140",
     "offsetPx": 0,
     "parentRegion": Object {
       "end": 200,
       "refName": "ctgA",
-      "start": 0,
+      "start": 100,
     },
     "refName": "ctgA",
-    "start": 0,
-    "widthPx": 200,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 800,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgB:1-800",
-    "offsetPx": 200,
-    "parentRegion": Object {
-      "end": 1000,
-      "refName": "ctgB",
-      "start": 0,
-    },
-    "refName": "ctgB",
-    "start": 0,
+    "start": 100,
     "widthPx": 800,
   },
-]
-`;
-
-exports[`block calculation can calculate some blocks 7 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 800,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgB:1-800",
-    "offsetPx": 200,
-    "parentRegion": Object {
-      "end": 1000,
-      "refName": "ctgB",
-      "start": 0,
-    },
-    "refName": "ctgB",
-    "start": 0,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 1000,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": true,
-    "key": "ctgB:801-1000",
-    "offsetPx": 1000,
-    "parentRegion": Object {
-      "end": 1000,
-      "refName": "ctgB",
-      "start": 0,
-    },
-    "refName": "ctgB",
-    "start": 800,
-    "widthPx": 200,
-  },
-]
-`;
-
-exports[`block calculation can calculate some blocks 8 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 1600,
+  ContentBlock {
+    "end": 180,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
-    "key": "ctgB:801-1600",
-    "offsetPx": 1000,
-    "parentRegion": Object {
-      "end": 10000000,
-      "refName": "ctgB",
-      "start": 0,
-    },
-    "refName": "ctgB",
-    "start": 800,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 2400,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgB:1601-2400",
-    "offsetPx": 1800,
-    "parentRegion": Object {
-      "end": 10000000,
-      "refName": "ctgB",
-      "start": 0,
-    },
-    "refName": "ctgB",
-    "start": 1600,
-    "widthPx": 800,
-  },
-]
-`;
-
-exports[`block calculation can calculate some blocks 9 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 3200,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:1601-3200",
+    "key": "ctgA:141-180",
     "offsetPx": 800,
     "parentRegion": Object {
-      "end": 50000,
+      "end": 200,
       "refName": "ctgA",
-      "start": 0,
+      "start": 100,
     },
     "refName": "ctgA",
-    "start": 1600,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 4800,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:3201-4800",
-    "offsetPx": 1600,
-    "parentRegion": Object {
-      "end": 50000,
-      "refName": "ctgA",
-      "start": 0,
-    },
-    "refName": "ctgA",
-    "start": 3200,
+    "start": 140,
     "widthPx": 800,
   },
 ]

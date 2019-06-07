@@ -22,11 +22,12 @@ import MainThreadRpcDriver from './MainThreadRpcDriver'
 class RpcManager {
   static configSchema = rpcConfigSchema
 
+  driverObjects = {}
+
   constructor(pluginManager, mainConfiguration, backendConfigurations = {}) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
     }
-
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
@@ -34,15 +35,24 @@ class RpcManager {
   }
 
   getDriver(backendName) {
-    const backendConfiguration = this.backendConfigurations[backendName]
-    const DriverClass = {
-      WebWorkerRpcDriver,
-      MainThreadRpcDriver,
-    }[backendName]
-    if (!DriverClass) {
-      throw new Error(`requested RPC driver "${backendName}" is not installed`)
+    if (!this.driverObjects[backendName]) {
+      const backendConfiguration = this.backendConfigurations[backendName]
+      const DriverClass = {
+        WebWorkerRpcDriver,
+        MainThreadRpcDriver,
+      }[backendName]
+      if (!DriverClass) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is not installed`,
+        )
+      }
+
+      this.driverObjects[backendName] = new DriverClass(
+        this.pluginManager,
+        backendConfiguration,
+      )
     }
-    return new DriverClass(this.pluginManager, backendConfiguration)
+    return this.driverObjects[backendName]
   }
 
   getDriverForCall(/* stateGroupName, functionName, args */) {

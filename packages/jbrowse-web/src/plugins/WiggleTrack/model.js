@@ -33,12 +33,12 @@ export default (pluginManager, configSchema) =>
       .actions(self => ({
         afterAttach() {
           const getYAxisScale = autorun(
-            function getYAxisScaleAutorun() {
+            async function getYAxisScaleAutorun() {
               try {
                 const { rpcManager } = getRoot(self)
-
                 const autoscaleType = getConf(self, 'autoscale')
                 const aborter = new AbortController()
+                const { signal } = aborter
                 let statsPromise
                 self.setLoading(aborter)
 
@@ -49,12 +49,11 @@ export default (pluginManager, configSchema) =>
                     {
                       adapterConfig: getSnapshot(self.configuration.adapter),
                       adapterType: self.configuration.adapter.type,
-                      signal: aborter.signal,
+                      signal,
                     },
                   )
                 } else if (autoscaleType === 'local') {
                   const { dynamicBlocks, bpPerPx } = getContainingView(self)
-                  if (!dynamicBlocks.length) return
 
                   // possibly useful for the rpc group name to be the same group as getFeatures
                   // reason: local stats fetches feature data that might get cached which getFeatures can use
@@ -64,24 +63,20 @@ export default (pluginManager, configSchema) =>
                     {
                       adapterConfig: getSnapshot(self.configuration.adapter),
                       adapterType: self.configuration.adapter.type,
-                      regions: dynamicBlocks.map(r => ({ ...r, bpPerPx })),
-                      signal: aborter.signal,
+                      regions: dynamicBlocks.blocks,
+                      signal,
+                      bpPerPx,
                     },
                   )
                 }
 
-                statsPromise
-                  .then(stats => {
-                    checkAbortSignal(aborter.signal)
-                    self.updateScale(stats)
-                  })
-                  .catch(e => {
-                    if (!isAbortException(e)) {
-                      self.error = e
-                    }
-                  })
+                const stats = await statsPromise
+                checkAbortSignal(aborter.signal)
+                self.updateScale(stats)
               } catch (e) {
-                self.error = e
+                if (!isAbortException(e)) {
+                  self.setError(e)
+                }
               }
             },
             { delay: 1000 },
@@ -91,15 +86,15 @@ export default (pluginManager, configSchema) =>
         },
         updateScale(stats) {
           self.stats.setStats(stats)
-
           self.ready = true
         },
         setLoading(abortSignal) {
           if (
             self.statsFetchInProgress &&
             !self.statsFetchInProgress.signal.aborted
-          )
+          ) {
             self.statsFetchInProgress.abort()
+          }
           self.statsFetchInProgress = abortSignal
         },
         setRenderer(newRenderer) {

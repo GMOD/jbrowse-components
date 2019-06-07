@@ -1,5 +1,5 @@
 import { createTestEnv } from './JBrowse'
-import { renderRegion, freeResources } from './render'
+import { renderRegion, freeResources } from './rpcMethods'
 
 let pluginManager
 beforeAll(async () => {

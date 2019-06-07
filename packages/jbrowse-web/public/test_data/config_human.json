@@ -44,9 +44,12 @@
       },
       "tracks": [
         {
-          "configId": "q68ElFH9Y",
+          "configId": "na12878_exome",
           "type": "AlignmentsTrack",
-          "name": "1000 Genomes NA12878 Coverage",
+          "name": "NA12878 Exome",
+          "category": [
+            "1000 genomes"
+          ],
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -70,7 +73,11 @@
         },
         {
           "type": "AlignmentsTrack",
-          "name": "1000 Genomes HG00096 High Coverage",
+          "configId": "hg00096_highcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina high coverage",
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -88,7 +95,7 @@
           "type": "WiggleTrack",
           "name": "Encode global autoscale",
           "category": [
-            "Bar Category"
+            "ENCODE bigWigs"
           ],
           "height": 300,
           "autoscale": "global",
@@ -104,7 +111,7 @@
           "type": "WiggleTrack",
           "name": "Encode local autoscale",
           "category": [
-            "Bar Category"
+            "ENCODE bigWigs"
           ],
           "height": 300,
           "autoscale": "local",
@@ -120,7 +127,7 @@
           "type": "BasicTrack",
           "name": "Encode peaks",
           "category": [
-            "Bar Category"
+            "ENCODE bigWigs"
           ],
           "height": 300,
           "renderer": {

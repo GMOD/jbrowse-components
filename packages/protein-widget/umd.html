@@ -1,7 +1,7 @@
 <html>
   <head>
     <script src="umd/jbrowse-protein-viewer.js" type="text/javascript"></script>
-
+    <script src="mydata.js" type="text/javascript"></script>
     <style>
       body {
         font-family: "Roboto";
@@ -22,96 +22,15 @@
   <body>
     <h1>Protein Widget Demo Page</h1>
     <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data.</tt></p>
-    <form id="myform">
-      <input id="geneid" type="text" list="mylist">
-        <datalist id="mylist">
-        </datalist>
-      </input>
-      <button>Submit</button>
-    </form>
-    <div id="spinner-container" style="display: inline"></div>
-    <div id="error-bar"></div>
+
     <div id="protein-viewer"></div>
     <script type="text/javascript">
-      const form = document.getElementById('myform')
-
-      let viewer
-      let controller
-      let signal
-      var searchParams = new URLSearchParams(window.location.search);
-      const geneid = searchParams.get("ensemblGeneId") || 'ENSG00000133703'
-      console.log('here',geneid)
-
-      async function updateProteinViewer(geneid) {
-        var spinner = document.getElementById('spinner-container');
-        const img = document.createElement('img')
-        img.src = 'http://www.bakerbotts.com/assets/src/images/loading_spinner.gif'
-        img.width=100
-        img.height=100
-        spinner.appendChild(img)
-
-        fetch(`http://18.218.239.245/protein_data_service/?ensemblGeneId=${geneid}`)
-          .then(res => res.json())
-          .then(res => {
-            if(viewer) {
-              viewer.update(res)
-            } else {
-              viewer = new JBrowseProteinViewer.Viewer(
-                document.getElementById('protein-viewer'),
-                res,
-              );
-            }
-          })
-          .catch(error => {
-            document.getElementById('error-bar').textContent = error.message
-          }).finally(() => {
-            spinner.innerHTML = ""
-          })
-
-      }
-      form.addEventListener('submit', event => {
-        event.preventDefault()
-        const geneid = document.getElementById('geneid').value
-        var searchParams = new URLSearchParams(window.location.search);
-        searchParams.set('ensemblGeneId', geneid)
-        window.location.search = searchParams.toString();
-        updateProteinViewer(geneid)
-      })
-
-      document.getElementById('geneid').addEventListener('keyup', async (evt) => {
-        if (controller) {
-          controller.abort();
-        }
-        if (AbortController) {
-          controller = new AbortController();
-          var signal = controller.signal;
-        }
-
-        try {
-          var mylist = document.getElementById('mylist');
-          mylist.innerHTML = ""
-
-          const input = evt.target
-          const val = input.value
-          if (val.length < 2 ) {
-            return
-          }
-          const ret = await fetch(`https://mygene.info/v3/query?q=${val}&fields=ensembl,name,symbol&species=human`, {signal}).then(res => res.json())
-          ret.hits.forEach(item => {
-            if(item.ensembl) {
-              var option = document.createElement('option');
-              option.value = item.ensembl.gene;
-              option.label = `${item.symbol} - ${item.name} (${item.ensembl.gene})`
-              mylist.append(option)
-            }
-          })
-        } catch(e) {
-          if (e.name !== "AbortError") {
-            console.error(e)
-          }
-        }
-      })
-      updateProteinViewer(geneid)
+      // data comes from mydata.js, uses script tag instead of ajax for file:/// compatibility
+      new JBrowseProteinViewer.Viewer(
+        document.getElementById('protein-viewer'),
+        data,
+      );
     </script>
   </body>
 </html>
+

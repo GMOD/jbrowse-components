@@ -15,7 +15,8 @@ const weHave = {
   realOffscreenCanvas:
     typeof __webpack_require__ === 'function' &&
     typeof OffscreenCanvas === 'function',
-  node: typeof process === 'object',
+  node:
+    typeof __webpack_require__ === 'undefined' && typeof process === 'object',
 }
 
 if (weHave.realOffscreenCanvas) {

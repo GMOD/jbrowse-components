@@ -10,9 +10,14 @@ import { Observable, Observer } from 'rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 interface BEDFeature {
+  chrom: string
   chromStart: number
   chromEnd: number
-  chrom: string
+}
+interface AlreadyRegularizedFeature {
+  refName: string
+  start: number
+  end: number
 }
 interface RegularizedFeature {
   refName: string
@@ -82,12 +87,21 @@ export default class BigBedAdapter extends BaseAdapter {
             refName: string
             uniqueId: number
           }) => {
-            const data = regularizeFeat(
-              parser.parseLine(`${refName}\t${r.start}\t${r.end}\t${r.rest}`, {
+            const data = parser.parseLine(
+              `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
+              {
                 uniqueId: r.uniqueId,
-              }),
+              },
             )
-            return new SimpleFeature({ data })
+            return new SimpleFeature({
+              id: r.uniqueId,
+              data: {
+                ...data,
+                start: r.start,
+                end: r.end,
+                refName,
+              },
+            })
           },
         ),
       ).subscribe(observer)
@@ -95,19 +109,4 @@ export default class BigBedAdapter extends BaseAdapter {
   }
 
   public freeResources(): void {}
-}
-
-/*
- * regularizes a feature by modifying the {chrom,chromStart,chromEnd} to {refName,start,end}
- * @params featureData a feature to regularize
- * @return a regularized feature
- */
-function regularizeFeat(featureData: BEDFeature): RegularizedFeature {
-  const {
-    chrom: refName,
-    chromStart: start,
-    chromEnd: end,
-    ...rest
-  } = featureData
-  return { ...rest, refName, start, end }
 }

@@ -99,7 +99,11 @@ function HierarchicalTrackSelector(props) {
     model.trackConfigurations(assemblyName).filter(filter).length === 0
 
   return (
-    <div key={model.view.id} className={classes.root}>
+    <div
+      key={model.view.id}
+      className={classes.root}
+      data-testid="hierarchical_track_selector"
+    >
       {assemblyNames.length > 1 ? (
         <Tabs
           className={classes.tabs}

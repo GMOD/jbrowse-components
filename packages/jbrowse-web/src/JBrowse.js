@@ -14,8 +14,6 @@ import RootModelFactory from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
 
-import WorkerManager from './WorkerManager'
-
 export async function createTestEnv(configSnapshot = {}) {
   const { modelType, pluginManager } = createModelType([])
   const config = {
@@ -28,12 +26,10 @@ export async function createTestEnv(configSnapshot = {}) {
   }
 }
 
-function createModelType(workerGroups) {
+function createModelType() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  const workerManager = new WorkerManager()
-  workerManager.addWorkers(workerGroups)
   pluginManager.configure()
-  const modelType = RootModelFactory(pluginManager, workerManager)
+  const modelType = RootModelFactory(pluginManager)
   return { modelType, pluginManager }
 }
 
@@ -71,14 +67,14 @@ function JBrowse(props) {
   const [sessions, setSessions] = useState(undefined)
   const [activeSession, setActiveSession] = useState(undefined)
 
-  const { configs, workerGroups } = props
+  const { configs } = props
 
   useEffect(() => {
     async function setup() {
       const {
         modelType: newModelType,
         pluginManager: newPluginManager,
-      } = createModelType(workerGroups)
+      } = createModelType()
 
       const newSessions = new Map()
       let newActiveSession
@@ -103,7 +99,7 @@ function JBrowse(props) {
     }
 
     setup()
-  }, [configs, workerGroups])
+  }, [configs])
 
   /**
    *
@@ -147,7 +143,6 @@ function JBrowse(props) {
 
 JBrowse.propTypes = {
   configs: PropTypes.arrayOf(PropTypes.shape()),
-  workerGroups: PropTypes.shape().isRequired,
 }
 
 JBrowse.defaultProps = {

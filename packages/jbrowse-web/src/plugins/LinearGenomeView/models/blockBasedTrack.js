@@ -71,7 +71,7 @@ export default types.compose(
           key,
           BlockState.create({
             key,
-            region: block,
+            region: block.toRegion(),
           }),
         )
       },

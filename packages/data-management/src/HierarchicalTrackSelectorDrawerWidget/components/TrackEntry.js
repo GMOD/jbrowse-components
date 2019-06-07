@@ -55,7 +55,12 @@ function TrackEntry(props) {
         <Tooltip title={titleText} placement="left" enterDelay={500}>
           <FormControlLabel
             className={classes.formControlLabel}
-            control={<Checkbox className={classes.checkbox} />}
+            control={
+              <Checkbox
+                inputProps={{ 'data-testid': trackConf.configId }}
+                className={classes.checkbox}
+              />
+            }
             label={
               assemblyName
                 ? `Reference Sequence (${assemblyName})`
