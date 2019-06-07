@@ -7,18 +7,12 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import { withStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import { HubFile } from '@gmod/ucsc-hub'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import sanitizeHtml from 'sanitize-html'
-import GenomeSelector from './GenomeSelector'
+import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
-
-export async function fetchHubFile(hubFileLocation) {
-  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-  return new HubFile(hubFileText)
-}
 
 function QueryStatus(props) {
   const { status } = props
@@ -58,16 +52,8 @@ function TrackHubRegistrySelect(props) {
   const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
-  const [hubTxt, setHubTxt] = useState(null)
 
-  const {
-    classes,
-    setHubName,
-    hubUrl,
-    setHubUrl,
-    assemblyNames,
-    setAssemblyNames,
-  } = props
+  const { classes, model } = props
 
   useEffect(() => {
     async function getAssemblies() {
@@ -132,7 +118,6 @@ function TrackHubRegistrySelect(props) {
     setHubs(new Map())
     setSelectedHub('')
     setAllHubsRetrieved(false)
-    setHubTxt(null)
   }
 
   function handleSelectAssembly(event) {
@@ -140,17 +125,13 @@ function TrackHubRegistrySelect(props) {
     setHubs(new Map())
     setSelectedHub('')
     setAllHubsRetrieved(false)
-    setHubTxt(null)
   }
 
   async function handleSelectHub(event) {
-    // console.log(event.target.value)
-    setSelectedHub(event.target.value)
-    const selectedHubObj = hubs.get(event.target.value)
-    setHubName(selectedHubObj.hub.shortLabel)
-    setHubUrl(selectedHubObj.hub.url)
-    const hubFile = await fetchHubFile({ uri: selectedHubObj.hub.url })
-    setHubTxt(hubFile)
+    const newHub = event.target.value
+    setSelectedHub(newHub)
+    model.target.name.set(hubs.get(newHub).hub.shortLabel)
+    model.target.trackDbId.set(newHub)
   }
 
   async function doGet(url, params = {}) {
@@ -270,53 +251,59 @@ function TrackHubRegistrySelect(props) {
           <FormLabel>Hubs:</FormLabel>
           <div className={classes.hubList}>
             <RadioGroup value={selectedHub} onChange={handleSelectHub}>
-              {Array.from(hubs.values()).map(hub => {
-                const disabled = Boolean(hub.error)
-                const allowedHtml = {
-                  allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
-                  allowedAttributes: {
-                    a: ['href'],
-                  },
-                }
-                const cleanShortLabel = (
-                  <div
-                    // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
-                    }}
-                  />
+              {Array.from(hubs.values())
+                .filter(
+                  hub =>
+                    hub.assembly.name === selectedAssembly ||
+                    hub.assembly.synonyms.includes(selectedAssembly),
                 )
-                const cleanLongLabel = (
-                  <div
-                    // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
-                    }}
-                  />
-                )
-                return (
-                  <Wire key={hub.id} value={hub.id}>
-                    {formControlProps => (
-                      <Tooltip
-                        title={disabled ? hub.error : cleanLongLabel}
-                        placement="left"
-                        interactive
-                      >
-                        <FormControlLabel
-                          key={hub.id}
-                          value={hub.id}
-                          label={cleanShortLabel}
-                          disabled={disabled}
-                          control={<Radio />}
-                          {...formControlProps}
-                        />
-                      </Tooltip>
-                    )}
-                  </Wire>
-                )
-              })}
+                .map(hub => {
+                  const disabled = Boolean(hub.error)
+                  const allowedHtml = {
+                    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
+                    allowedAttributes: {
+                      a: ['href'],
+                    },
+                  }
+                  const cleanShortLabel = (
+                    <div
+                      // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
+                      }}
+                    />
+                  )
+                  const cleanLongLabel = (
+                    <div
+                      // It's sanitized, so should be fine to use dangerouslySetInnerHTML
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
+                      }}
+                    />
+                  )
+                  return (
+                    <Wire key={hub.id} value={hub.id}>
+                      {formControlProps => (
+                        <Tooltip
+                          title={disabled ? hub.error : cleanLongLabel}
+                          placement="left"
+                          interactive
+                        >
+                          <FormControlLabel
+                            key={hub.id}
+                            value={hub.id}
+                            label={cleanShortLabel}
+                            disabled={disabled}
+                            control={<Radio />}
+                            {...formControlProps}
+                          />
+                        </Tooltip>
+                      )}
+                    </Wire>
+                  )
+                })}
             </RadioGroup>
           </div>
         </FormControl>
@@ -326,28 +313,16 @@ function TrackHubRegistrySelect(props) {
       renderItems.push(<QueryStatus key="hubStatus" status="Retrieving hubs" />)
   }
 
-  if (hubTxt)
+  if (selectedHub)
     renderItems.push(
-      <div className={classes.genomeSelector}>
-        <GenomeSelector
-          key="genomeSelect"
-          hubUrl={hubUrl}
-          hubTxt={hubTxt}
-          assemblyNames={assemblyNames}
-          setAssemblyNames={setAssemblyNames}
-        />
-      </div>,
+      <HubDetails key="hubDetails" hub={hubs.get(selectedHub).hub} />,
     )
 
   return <>{renderItems}</>
 }
 
 TrackHubRegistrySelect.propTypes = {
-  setHubName: PropTypes.func.isRequired,
-  hubUrl: PropTypes.string.isRequired,
-  setHubUrl: PropTypes.func.isRequired,
-  assemblyNames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setAssemblyNames: PropTypes.func.isRequired,
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default withStyles(styles)(TrackHubRegistrySelect)

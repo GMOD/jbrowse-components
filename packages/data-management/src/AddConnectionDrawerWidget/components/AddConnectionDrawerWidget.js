@@ -10,11 +10,8 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
-// import HubSourceSelect from './HubSourceSelect'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
-// import TrackHubRegistrySelect from './TrackHubRegistrySelect'
-// import UrlInput from './UrlInput'
 
 const styles = theme => ({
   root: {
@@ -37,14 +34,6 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 function AddConnectionDrawerWidget(props) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
-  // // Step 0
-  // const [hubType, setHubType] = useState('') // ucsc, jbrowse1
-  // // Step 1
-  // const [hubSource, setHubSource] = useState('') // trackHubRegistry, ucscCustom, jbrowseRegistry, jbrowseCustom
-  // // Step 2
-  // const [hubName, setHubName] = useState('')
-  // const [hubUrl, setHubUrl] = useState('')
-  // const [assemblyNames, setAssemblyNames] = useState([])
 
   const [activeStep, setActiveStep] = useState(0)
 
@@ -73,30 +62,12 @@ function AddConnectionDrawerWidget(props) {
         )
       case 1:
         return (
-          <ConfigureConnection model={configModel} />
-          // <HubSourceSelect
-          //   hubType={hubType}
-          //   hubSource={hubSource}
-          //   setHubSource={event => setHubSource(event.target.value)}
-          // />
+          <ConfigureConnection
+            connectionType={connectionType}
+            model={configModel}
+          />
         )
-      // case 2:
-      // if (hubSource === 'ucscCustom') StepComponent = UrlInput
-      // else if (hubSource === 'trackHubRegistry')
-      //   StepComponent = TrackHubRegistrySelect
-      // else
-      //   return (
-      //     <Typography color="error">Unknown Connection Source</Typography>
-      //   )
-      // return (
-      //   <StepComponent
-      //     setHubName={setHubName}
-      //     hubUrl={hubUrl}
-      //     setHubUrl={setHubUrl}
-      //     assemblyNames={assemblyNames}
-      //     setAssemblyNames={setAssemblyNames}
-      //   />
-      // )
+
       default:
         return <Typography>Unknown step</Typography>
     }
