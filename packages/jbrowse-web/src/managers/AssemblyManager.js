@@ -82,7 +82,7 @@ export default class AssemblyManager {
       if (assemblyName && this.assemblyData.get(assemblyName).sequence) {
         // eslint-disable-next-line no-await-in-loop
         const displayedRegions = await this.getRegionsForAssembly(assemblyName)
-        view.setDisplayedRegions(displayedRegions)
+        view.setDisplayedRegions(displayedRegions, true)
       }
     }
   }

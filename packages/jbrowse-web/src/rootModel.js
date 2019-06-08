@@ -112,7 +112,15 @@ export default pluginManager => {
         self.connections
           .get(connectionName)
           .connect(connectionConf)
-          .then(() => self.assemblyManager.updateAssemblyData(self))
+          .then(() => self.updateAssemblies())
+      },
+
+      removeConnection(connectionName) {
+        self.connections.delete(connectionName)
+      },
+
+      updateAssemblies() {
+        self.assemblyManager.updateAssemblyData(self)
       },
 
       configure(configSnapshot) {
@@ -169,7 +177,7 @@ export default pluginManager => {
           configuration,
         })
         self.views.push(newView)
-        self.assemblyManager.updateAssemblyData(self)
+        self.updateAssemblies()
         return newView
       },
 
@@ -290,6 +298,7 @@ export default pluginManager => {
 
       clearConnections() {
         self.connections.clear()
+        self.updateAssemblies()
       },
     }))
 }

@@ -45,6 +45,7 @@ export default function(pluginManager) {
 
         removeConnection(connectionConf) {
           self.connections.remove(connectionConf)
+          getRoot(self).deleteConnection(readConfObject(connectionConf, 'name'))
         },
 
         addAssembly(
@@ -63,7 +64,6 @@ export default function(pluginManager) {
               regions: [],
             },
           },
-          connectionName,
         ) {
           const assemblyModel = getType(self.assemblies).subType.type
           const assembly = assemblyModel.create({
@@ -72,23 +72,14 @@ export default function(pluginManager) {
             refNameAliases,
             sequence,
           })
-          if (connectionName) {
-            const connectionNames = self.connections.map(connection =>
-              readConfObject(connection, 'connectionName'),
-            )
-            if (!connectionNames.includes(connectionName))
-              throw new Error(
-                `Cannot add assembly to non-existent connection: ${connectionName}`,
-              )
-            self.volatile
-              .get(connectionName)
-              .assemblies.set(assemblyName, assembly)
-          } else self.assemblies.set(assemblyName, assembly)
+          self.assemblies.set(assemblyName, assembly)
+          getRoot(self).updateAssemblies()
         },
 
         removeAssembly(assemblyName) {
           detach(self.assemblies.get(assemblyName))
           self.assemblies.delete(assemblyName)
+          getRoot(self).updateAssemblies()
         },
       }),
     },

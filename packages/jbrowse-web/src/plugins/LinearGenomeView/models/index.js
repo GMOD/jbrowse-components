@@ -155,8 +155,16 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions) {
+      setDisplayedRegions(regions, isFromAssemblyName = false) {
         self.displayedRegions = regions
+        if (!isFromAssemblyName)
+          this.setDisplayedRegionsFromAssemblyName(undefined)
+      },
+
+      setDisplayedRegionsFromAssemblyName(assemblyName) {
+        self.displayRegionsFromAssemblyName = assemblyName
+        const root = getRoot(self)
+        if (root.updateAssemblies) root.updateAssemblies()
       },
 
       activateTrackSelector() {
