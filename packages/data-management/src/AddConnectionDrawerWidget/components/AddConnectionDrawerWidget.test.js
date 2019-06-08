@@ -1,8 +1,8 @@
 import {
   render,
   cleanup,
-  // fireEvent,
-  // waitForElement,
+  fireEvent,
+  waitForElement,
 } from 'react-testing-library'
 import React from 'react'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
@@ -10,13 +10,14 @@ import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
 describe('<AddConnectionDrawerWidget />', () => {
   let model
+  let rootModel
 
   beforeAll(async () => {
-    const { rootModel } = await createTestEnv({
+    ;({ rootModel } = await createTestEnv({
       configId: 'testing',
       defaultSession: {},
       rpc: { configId: 'testingRpc' },
-    })
+    }))
     rootModel.addDrawerWidget(
       'AddConnectionDrawerWidget',
       'addConnectionDrawerWidget',
@@ -31,44 +32,55 @@ describe('<AddConnectionDrawerWidget />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it.todo('Fix the tests below once react async testing stuff improves')
-
-  xit('can handle a custom UCSC trackHub URL', async () => {
-    //     const mockFetch = url => {
-    //       const urlText = url.href ? url.href : url
-    //       let responseText = ''
-    //       if (urlText.endsWith('hub.txt'))
-    //         responseText = `hub TestHub
-    // shortLabel Test Hub
-    // longLabel Test Genome Informatics Hub for human DNase and RNAseq data
-    // genomesFile genomes.txt
-    // email genome@test.com
-    // descriptionUrl test.html
-    // `
-    //       else if (urlText.endsWith('genomes.txt'))
-    //         responseText = `genome testAssembly
-    // trackDb hg19/trackDb.txt
-    // `
-    //       return Promise.resolve(
-    //         new Response(responseText, { url: 'http://test.com/hub.txt' }),
-    //       )
-    //     }
-    //     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
-    //     const { getByTestId /* , getByText */ } = render(
-    //       <AddConnectionDrawerWidget model={model} />,
-    //     )
-    //     fireEvent.click(getByTestId('ucsc'))
-    //     fireEvent.click(getByTestId('addConnectionNext'))
-    //     fireEvent.click(getByTestId('ucscCustom'))
-    //     fireEvent.click(getByTestId('addConnectionNext'))
-    //     fireEvent.change(getByTestId('trackHubUrlInput'), {
-    //       target: { value: 'http://test.com/hub.txt' },
-    //     })
-    //     fireEvent.click(getByTestId('trackHubUrlInputValidate'))
-    // Next line doesn't work yet
-    // await waitForElement(() => getByText('Assemblies'))
-    // Do the rest of the UI actions to add the connection
+  it('can handle a custom UCSC trackHub URL', async () => {
+    const {
+      getByTestId,
+      container,
+      getAllByRole,
+      getByText,
+      getByValue,
+    } = render(<AddConnectionDrawerWidget model={model} />)
+    expect(
+      rootModel.connections.has('Test UCSC connection name'),
+    ).not.toBeTruthy()
+    fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('UCSC Track Hub'), { container })
+    fireEvent.click(getByText('UCSC Track Hub'))
+    fireEvent.click(getByTestId('addConnectionNext'))
+    fireEvent.change(getByValue('nameOfUCSCTrackHubConnection'), {
+      target: { value: 'Test UCSC connection name' },
+    })
+    fireEvent.change(getByValue('http://mysite.com/path/to/hub.txt'), {
+      target: { value: 'http://test.com/hub.txt' },
+    })
+    fireEvent.click(getByTestId('addConnectionNext'))
+    expect(rootModel.connections.has('Test UCSC connection name')).toBeTruthy()
   })
 
-  xit('can handle Track Hub Registry hub', () => {})
+  it('can handle a custom JBrowse 1 data directory URL', async () => {
+    const {
+      getByTestId,
+      container,
+      getAllByRole,
+      getByText,
+      getByValue,
+    } = render(<AddConnectionDrawerWidget model={model} />)
+    expect(
+      rootModel.connections.has('Test JBrowse 1 connection name'),
+    ).not.toBeTruthy()
+    fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('JBrowse 1 Data'), { container })
+    fireEvent.click(getByText('JBrowse 1 Data'))
+    fireEvent.click(getByTestId('addConnectionNext'))
+    fireEvent.change(getByValue('nameOfJBrowse1Connection'), {
+      target: { value: 'Test JBrowse 1 connection name' },
+    })
+    fireEvent.change(getByValue('http://mysite.com/jbrowse/data/'), {
+      target: { value: 'http://test.com/jbrowse/data/' },
+    })
+    fireEvent.click(getByTestId('addConnectionNext'))
+    expect(
+      rootModel.connections.has('Test JBrowse 1 connection name'),
+    ).toBeTruthy()
+  })
 })
