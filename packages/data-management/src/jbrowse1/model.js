@@ -11,26 +11,28 @@ export default function modelFactory(pluginManager) {
     connectionModelFactory(pluginManager),
     types.model().actions(self => ({
       connect: flow(function* connect(connectionConf) {
-        self.clear()
-        const assemblyName = readConfObject(connectionConf, 'assemblyName')
-        self.addEmptyAssembly(assemblyName)
-        if (readConfObject(connectionConf, 'useAssemblySequence'))
-          self.assemblies.get(assemblyName).setDefaultSequence(true)
         const dataDirLocation = readConfObject(
           connectionConf,
           'dataDirLocation',
         )
         const config = yield fetchJb1(dataDirLocation)
         const adapter = yield createRefSeqsAdapter(config.refSeqs)
-        self.assemblies.get(assemblyName).setSequence({
-          type: 'ReferenceSequence',
-          adapter,
-        })
-        config.tracks.forEach(track => {
-          const jb2Track = convertTrackConfig(track, config.dataRoot)
-          self.assemblies
-            .get(assemblyName)
-            .addTrackConf(jb2Track.type, jb2Track)
+        const jb2Tracks = config.tracks.map(track =>
+          convertTrackConfig(track, config.dataRoot),
+        )
+        const assemblyName = readConfObject(connectionConf, 'assemblyName')
+        const defaultSequence = !!readConfObject(
+          connectionConf,
+          'useAssemblySequence',
+        )
+        self.addAssembly({
+          assemblyName,
+          tracks: jb2Tracks,
+          sequence: {
+            type: 'ReferenceSequence',
+            adapter,
+          },
+          defaultSequence,
         })
       }),
     })),

@@ -39,12 +39,15 @@ export default pluginManager => {
         self.assemblies.clear()
       },
 
+      addAssembly(assemblySnapshot) {
+        self.assemblies.set(assemblySnapshot.assemblyName, assemblySnapshot)
+      },
+
       addEmptyAssembly(assemblyName) {
         self.assemblies.set(assemblyName, { assemblyName })
       },
 
       // connect: flow(function* connect(connectionConf) {
-      //   self.clear()
       //   // Add assemblies and tracks here
       // }),
     }))

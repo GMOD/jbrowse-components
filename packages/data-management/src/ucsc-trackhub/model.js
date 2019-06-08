@@ -15,7 +15,6 @@ export default function modelFactory(pluginManager) {
     connectionModelFactory(pluginManager),
     types.model().actions(self => ({
       connect: flow(function* connect(connectionConf) {
-        self.clear()
         const hubFileLocation = readConfObject(connectionConf, 'hubTxtLocation')
         const hubFile = yield fetchHubFile(hubFileLocation)
         let genomesFileLocation
@@ -28,14 +27,12 @@ export default function modelFactory(pluginManager) {
         let assemblyNames = readConfObject(connectionConf, 'assemblyNames')
         if (!assemblyNames.length) assemblyNames = genomesFile.keys()
         for (const assemblyName of assemblyNames) {
-          self.addEmptyAssembly(assemblyName)
-          if (
-            readConfObject(connectionConf, 'useAssemblySequences').includes(
-              assemblyName,
-            )
-          )
-            self.assemblies.get(assemblyName).setDefaultSequence(true)
+          const defaultSequence = !!readConfObject(
+            connectionConf,
+            'useAssemblySequences',
+          ).includes(assemblyName)
           const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
+          let sequence
           if (twoBitPath) {
             let twoBitLocation
             if (hubFileLocation.uri)
@@ -49,15 +46,15 @@ export default function modelFactory(pluginManager) {
               twoBitLocation = {
                 localPath: twoBitPath,
               }
-            self.assemblies.get(assemblyName).setSequence({
+            sequence = {
               type: 'ReferenceSequence',
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation,
               },
-            })
+            }
           } else if (ucscAssemblies.includes(assemblyName))
-            self.assemblies.get(assemblyName).setSequence({
+            sequence = {
               type: 'ReferenceSequence',
               adapter: {
                 type: 'TwoBitAdapter',
@@ -65,7 +62,7 @@ export default function modelFactory(pluginManager) {
                   uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
                 },
               },
-            })
+            }
           let trackDbFileLocation
           if (hubFileLocation.uri)
             trackDbFileLocation = {
@@ -80,9 +77,7 @@ export default function modelFactory(pluginManager) {
             }
           const trackDbFile = yield fetchTrackDbFile(trackDbFileLocation)
           const tracks = generateTracks(trackDbFile, trackDbFileLocation)
-          tracks.forEach(track =>
-            self.assemblies.get(assemblyName).addTrackConf(track.type, track),
-          )
+          self.addAssembly({ assemblyName, tracks, sequence, defaultSequence })
         }
       }),
     })),

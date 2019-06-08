@@ -22,10 +22,7 @@ export default function modelFactory(pluginManager) {
         }
         const trackDb = yield rawResponse.json()
         const assemblyName = trackDb.assembly.name
-        self.addEmptyAssembly(assemblyName)
-        generateTracks(trackDb).forEach(track =>
-          self.assemblies.get(assemblyName).addTrackConf(track.type, track),
-        )
+        self.addAssembly({ assemblyName, tracks: generateTracks(trackDb) })
       }),
     })),
   )

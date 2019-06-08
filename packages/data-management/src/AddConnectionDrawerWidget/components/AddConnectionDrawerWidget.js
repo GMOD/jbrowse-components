@@ -48,7 +48,6 @@ function AddConnectionDrawerWidget(props) {
   }
 
   function stepContent() {
-    // let StepComponent
     switch (activeStep) {
       case 0:
         return (
