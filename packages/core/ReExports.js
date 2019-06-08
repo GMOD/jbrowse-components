@@ -5,6 +5,8 @@ import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
 
+import * as MUICore from '@material-ui/core'
+
 import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
@@ -19,6 +21,7 @@ export default {
   react: React,
   'mobx-react': mxreact,
   'prop-types': PropTypes,
+  '@material-ui/core': MUICore,
 
   '@gmod/jbrowse-core/Plugin': Plugin,
   '@gmod/jbrowse-core/pluggableElementTypes/ViewType': ViewType,

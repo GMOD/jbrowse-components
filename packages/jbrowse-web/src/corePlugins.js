@@ -1,4 +1,5 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
+import CircularViewPlugin from '@gmod/jbrowse-plugin-circular-view'
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
@@ -40,6 +41,7 @@ export default [
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
   LinearGenomeViewPlugin,
+  CircularViewPlugin,
   AlignmentsTrackPlugin,
   DataHubManagerDrawerWidgetPlugin,
   AddTrackDrawerWidgetPlugin,
