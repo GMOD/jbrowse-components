@@ -14,9 +14,8 @@ export default pluginManager => {
     .model('CircularView', {
       id: ElementId,
       type: types.literal('CircularView'),
-      offsetPx: 0,
-      bpPerPx: 1,
-      rotation: 0, // rotation is radians
+      offsetRadians: 0,
+      bpPerRadian: 1,
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -53,11 +52,11 @@ export default pluginManager => {
       },
 
       rotateClockwise(distance = 0.17) {
-        self.rotation += distance
+        self.offsetRadians += distance
       },
 
       rotateCounterClockwise(distance = 0.17) {
-        self.rotation -= distance
+        self.offsetRadians -= distance
       },
     }))
 

@@ -65,16 +65,20 @@ export default ({ jbrequire }) => {
       }
     })
     return (
-      <div className={classes.root}>
+      <div
+        className={classes.root}
+        style={{
+          width: `${model.width}px`,
+          height: `${model.height}px`,
+        }}
+      >
         <div
           style={{
-            transform: [`rotate(${(model.rotation * 180) / Math.PI}deg)`].join(
-              ' ',
-            ),
+            transform: [
+              `rotate(${(model.offsetRadians * 180) / Math.PI}deg)`,
+            ].join(' '),
             transition: 'transform 0.5s',
             transformOrigin: '500px 500px',
-            width: `${model.width}px`,
-            height: `${model.height - dragHandleHeight}px`,
           }}
         >
           <svg
@@ -113,7 +117,12 @@ export default ({ jbrequire }) => {
         <ResizeHandleHorizontal
           onVerticalDrag={model.resizeHeight}
           objectId={model.id}
-          style={{ height: dragHandleHeight }}
+          style={{
+            height: dragHandleHeight,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+          }}
         />
       </div>
     )
