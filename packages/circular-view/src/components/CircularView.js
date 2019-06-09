@@ -22,6 +22,9 @@ export default ({ jbrequire }) => {
       overflow: 'hidden',
       background: 'white',
     },
+    scroller: {
+      overflow: 'auto',
+    },
     svgRoot: {
       background: 'none',
       // background: theme.palette.background.paper,
@@ -65,51 +68,52 @@ export default ({ jbrequire }) => {
       }
     })
     return (
-      <div
-        className={classes.root}
-        style={{
-          width: `${model.width}px`,
-          height: `${model.height}px`,
-        }}
-      >
+      <div className={classes.root}>
         <div
+          className={classes.scroller}
           style={{
-            transform: [
-              `rotate(${(model.offsetRadians * 180) / Math.PI}deg)`,
-            ].join(' '),
-            transition: 'transform 0.5s',
-            transformOrigin: '500px 500px',
+            width: `${model.width}px`,
+            height: `${model.height}px`,
           }}
         >
-          <svg
-            className={classes.svgRoot}
-            width={`${model.figureWidth}px`}
-            height={`${model.figureHeight}px`}
-            version="1.1"
+          <div
+            className={classes.rotator}
+            style={{
+              transform: [
+                `rotate(${(model.offsetRadians * 180) / Math.PI}deg)`,
+              ].join(' '),
+              transition: 'transform 0.5s',
+              transformOrigin: '500px 500px',
+            }}
           >
-            <g
-              style={{
-                transform: [
-                  'scale(0.33)',
-                  `translate(-${model.figureWidth}px, -${
-                    model.figureHeight
-                  }px)`,
-                  // `rotate(${(model.rotation * 180) / Math.PI}deg)`,
-                ].join(' '),
-                transformOrigin: `${model.figureWidth /
-                  2}px ${model.figureHeight / 2}px`,
-              }}
-              dangerouslySetInnerHTML={{ __html: testingSvg }}
-            />
-          </svg>
+            <svg
+              className={classes.svgRoot}
+              width={`${model.figureWidth}px`}
+              height={`${model.figureHeight}px`}
+              version="1.1"
+            >
+              <g
+                style={{
+                  transform: [
+                    'scale(0.33)',
+                    `translate(-${model.figureWidth}px, -${
+                      model.figureHeight
+                    }px)`,
+                    // `rotate(${(model.rotation * 180) / Math.PI}deg)`,
+                  ].join(' '),
+                  transformOrigin: `${model.figureWidth /
+                    2}px ${model.figureHeight / 2}px`,
+                }}
+                dangerouslySetInnerHTML={{ __html: testingSvg }}
+              />
+            </svg>
+          </div>
         </div>
+
         <div className={classes.controls}>
+          <button onClick={model.closeView}>X</button>
           <button>-</button>
           <button>+</button>
-          <button>←</button>
-          <button>→</button>
-          <button>↑</button>
-          <button>↓</button>
           <button onClick={model.rotateClockwiseButton}>↻</button>
           <button onClick={model.rotateCounterClockwiseButton}>↺</button>
         </div>

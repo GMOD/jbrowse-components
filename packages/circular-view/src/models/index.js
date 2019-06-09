@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types } = jbrequire('mobx-state-tree')
+  const { types, getParent } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -57,6 +57,10 @@ export default pluginManager => {
 
       rotateCounterClockwise(distance = 0.17) {
         self.offsetRadians -= distance
+      },
+
+      closeView() {
+        getParent(self, 2).removeView(self)
       },
     }))
 
