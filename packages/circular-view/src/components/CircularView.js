@@ -20,9 +20,10 @@ export default ({ jbrequire }) => {
       position: 'relative',
       marginBottom: theme.spacing.unit,
       overflow: 'hidden',
+      background: 'white',
     },
     svgRoot: {
-      background: 'white',
+      background: 'none',
       // background: theme.palette.background.paper,
       boxSizing: 'content-box',
       display: 'block',
@@ -65,6 +66,39 @@ export default ({ jbrequire }) => {
     })
     return (
       <div className={classes.root}>
+        <div
+          style={{
+            transform: [`rotate(${(model.rotation * 180) / Math.PI}deg)`].join(
+              ' ',
+            ),
+            transition: 'transform 0.5s',
+            transformOrigin: '500px 500px',
+            width: `${model.width}px`,
+            height: `${model.height - dragHandleHeight}px`,
+          }}
+        >
+          <svg
+            className={classes.svgRoot}
+            width={`${model.figureWidth}px`}
+            height={`${model.figureHeight}px`}
+            version="1.1"
+          >
+            <g
+              style={{
+                transform: [
+                  'scale(0.33)',
+                  `translate(-${model.figureWidth}px, -${
+                    model.figureHeight
+                  }px)`,
+                  // `rotate(${(model.rotation * 180) / Math.PI}deg)`,
+                ].join(' '),
+                transformOrigin: `${model.figureWidth /
+                  2}px ${model.figureHeight / 2}px`,
+              }}
+              dangerouslySetInnerHTML={{ __html: testingSvg }}
+            />
+          </svg>
+        </div>
         <div className={classes.controls}>
           <button>-</button>
           <button>+</button>
@@ -75,26 +109,7 @@ export default ({ jbrequire }) => {
           <button onClick={model.rotateClockwiseButton}>↻</button>
           <button onClick={model.rotateCounterClockwiseButton}>↺</button>
         </div>
-        <svg
-          className={classes.svgRoot}
-          width={`${model.width}px`}
-          height={`${model.height - dragHandleHeight}px`}
-          version="1.1"
-        >
-          <g
-            style={{
-              animationDuration: '1s',
-              transform: [
-                'scale(0.33)',
-                `translate(-${model.figureWidth}px, -${model.figureHeight}px)`,
-                `rotate(${(model.rotation * 180) / Math.PI}deg)`,
-              ].join(' '),
-              transformOrigin: `${model.figureWidth /
-                2}px ${model.figureHeight / 2}px`,
-            }}
-            dangerouslySetInnerHTML={{ __html: testingSvg }}
-          />
-        </svg>
+
         <ResizeHandleHorizontal
           onVerticalDrag={model.resizeHeight}
           objectId={model.id}
