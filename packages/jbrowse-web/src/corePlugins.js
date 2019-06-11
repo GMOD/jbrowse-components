@@ -2,6 +2,7 @@ import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
 import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
+import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
@@ -19,9 +20,6 @@ import SequenceTrackPlugin from './plugins/SequenceTrack'
 import FilteringTrackPlugin from './plugins/FilteringTrack'
 import WiggleTrackPlugin from './plugins/WiggleTrack'
 
-// views
-import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
-
 // renderers
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
 import PileupRendererPlugin from './plugins/PileupRenderer'
@@ -38,7 +36,7 @@ export default [
   IndexedFastaAdapterPlugin,
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
-  LinearGenomeViewPlugin,
+  LinearGenomeView,
   AlignmentsTrackPlugin,
   SequenceTrackPlugin,
   SvgFeaturePlugin,

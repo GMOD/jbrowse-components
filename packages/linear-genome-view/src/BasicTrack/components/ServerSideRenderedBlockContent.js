@@ -1,7 +1,7 @@
 import { withStyles } from '@material-ui/core'
 import React, { useState, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
+import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 
 const styles = {
   loading: {

@@ -2,8 +2,8 @@ import { withStyles } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
-import Block from './Block'
 import { ContentBlock, ElidedBlock } from '../util/blockTypes'
+import Block from './Block'
 
 const styles = {
   trackBlocks: {

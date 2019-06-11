@@ -6,13 +6,15 @@ import {
   getContainingView,
 } from '@gmod/jbrowse-core/util/tracks'
 
-import BlockBasedTrackComponent from '../LinearGenomeView/components/BlockBasedTrack'
-import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
+import {
+  BlockBasedTrack,
+  blockBasedTrackModel,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 
 export default (pluginManager, configSchema, trackType) =>
   types.compose(
     trackType,
-    BlockBasedTrack,
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal(trackType),
@@ -42,7 +44,7 @@ export default (pluginManager, configSchema, trackType) =>
         },
       }))
       .volatile(() => ({
-        reactComponent: BlockBasedTrackComponent,
+        reactComponent: BlockBasedTrack,
         rendererTypeName: 'DivSequenceRenderer',
       })),
   )

@@ -1,18 +1,16 @@
-import React from 'react'
-import { types, getRoot } from 'mobx-state-tree'
 import {
-  ConfigurationSchema,
   ConfigurationReference,
+  ConfigurationSchema,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
-
 import {
   getContainingView,
   getParentRenderProps,
 } from '@gmod/jbrowse-core/util/tracks'
-
-import TrackControls from '../components/TrackControls'
+import { getRoot, types } from 'mobx-state-tree'
+import React from 'react'
+import TrackControls from './components/TrackControls'
 
 export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
   viewType: 'LinearGenomeView',
@@ -41,7 +39,7 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 const defaultTrackHeight = 100
-const BaseTrack = types
+export default types
   .model('BaseTrack', {
     id: ElementId,
     type: types.string,
@@ -152,5 +150,3 @@ const BaseTrack = types
       getRoot(self).editConfiguration(self.configuration)
     },
   }))
-
-export default BaseTrack

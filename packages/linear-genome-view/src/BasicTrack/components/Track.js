@@ -1,7 +1,7 @@
-import React, { Component } from 'react'
+import { withStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import { withStyles } from '@material-ui/core'
+import React, { Component } from 'react'
 
 const styles = {
   track: {

@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '../LinearGenomeView/models/baseTrack'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import DivSequenceRendererConfigurationSchema from '../DivSequenceRenderer/configSchema'
 
 export default (pluginManager, trackType) => {

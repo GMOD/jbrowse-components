@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 
-import BlockBasedTrack from '../../LinearGenomeView/components/BlockBasedTrack'
+import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { getScale } from '../../WiggleRenderer/util'
 
 const powersOfTen = []

@@ -3,7 +3,7 @@ import ReactPropTypes from 'prop-types'
 import { observer, PropTypes } from 'mobx-react'
 
 import { withStyles } from '@material-ui/core'
-import BlockBasedTrack from '../../LinearGenomeView/components/BlockBasedTrack'
+import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import FilterControls from './FilterControls'
 import FilterControlResizeHandle from './FilterControlsResizeHandle'
 

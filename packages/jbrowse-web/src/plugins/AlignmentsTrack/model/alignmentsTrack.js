@@ -7,9 +7,10 @@ import {
 
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import BlockBasedTrackComponent from '../../LinearGenomeView/components/BlockBasedTrack'
-
-import BlockBasedTrack from '../../LinearGenomeView/models/blockBasedTrack'
+import {
+  blockBasedTrackModel,
+  BlockBasedTrack,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 
 import TrackControls from '../components/TrackControls'
 
@@ -22,7 +23,7 @@ const rendererTypes = new Map([
 export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
-    BlockBasedTrack,
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal('AlignmentsTrack'),
@@ -32,7 +33,7 @@ export default (pluginManager, configSchema) =>
         selectedRendering: types.optional(types.string, ''),
       })
       .volatile(() => ({
-        reactComponent: BlockBasedTrackComponent,
+        reactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       // .actions(self => ({

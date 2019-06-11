@@ -6,8 +6,11 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import {
+  basicTrackConfigSchemaFactory,
+  basicTrackStateModelFactory,
+} from '@gmod/jbrowse-plugin-linear-genome-view'
 import FilteringTrackComponent from './components/FilteringTrack'
-import BasicTrackFactory from '../LinearGenomeView/BasicTrack'
 
 function makeFilters(trackModel) {
   const filters = []
@@ -25,10 +28,10 @@ function makeFilters(trackModel) {
 }
 
 export default pluginManager => {
-  const {
-    configSchema: btConfigSchema,
-    stateModel: btStateModel,
-  } = BasicTrackFactory(pluginManager)
+  const basicTrackConfigSchema = basicTrackConfigSchemaFactory(pluginManager)
+  const basicTrackStateModel = basicTrackStateModelFactory(
+    basicTrackConfigSchema,
+  )
 
   const configSchema = ConfigurationSchema(
     'FilteringTrack',
@@ -40,14 +43,14 @@ export default pluginManager => {
       },
     },
     {
-      baseConfiguration: btConfigSchema,
+      baseConfiguration: basicTrackConfigSchema,
       explicitlyTyped: true,
     },
   )
 
   const stateModel = types.compose(
     'FilteringTrack',
-    btStateModel,
+    basicTrackStateModel,
     types
       .model({
         type: types.literal('FilteringTrack'),

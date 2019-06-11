@@ -1,6 +1,6 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import BasicTrackFactory from './BasicTrack'
+import { configSchemaFactory } from './index'
 
 test('config schema renderer type', () => {
   const stubPluginManager = {
@@ -24,7 +24,7 @@ test('config schema renderer type', () => {
     },
   }
 
-  const { configSchema } = BasicTrackFactory(stubPluginManager)
+  const configSchema = configSchemaFactory(stubPluginManager)
   const instance = configSchema.create({
     type: 'BasicTrack',
     renderer: { type: 'renderer_TypeTwo' },

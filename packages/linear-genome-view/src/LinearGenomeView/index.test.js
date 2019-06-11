@@ -1,5 +1,22 @@
+import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { types } from 'mobx-state-tree'
-import { TestStub as LinearGenomeModel } from '.'
+import BaseTrack from '../BasicTrack/baseTrackModel'
+import { stateModelFactory } from '.'
+
+// a stub linear genome view state model that only accepts base track types.
+// used in unit tests.
+const stubManager = new PluginManager()
+stubManager.addTrackType(
+  () =>
+    new TrackType({
+      name: 'Base',
+      stateModel: BaseTrack,
+      RenderingComponent: true,
+    }),
+)
+stubManager.configure()
+const LinearGenomeModel = stateModelFactory(stubManager)
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types

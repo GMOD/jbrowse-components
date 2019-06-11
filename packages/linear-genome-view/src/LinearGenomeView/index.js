@@ -1,14 +1,13 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { clamp } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, getRoot, types } from 'mobx-state-tree'
-import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
-import calculateStaticBlocks from '../util/calculateStaticBlocks'
-import BaseTrack from './baseTrack'
+import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
+
+export { default as ReactComponent } from './components/LinearGenomeView'
 
 const validBpPerPx = [
   1 / 50,
@@ -44,7 +43,7 @@ function constrainBpPerPx(newBpPerPx) {
   )[0]
 }
 
-export default function LinearGenomeViewStateFactory(pluginManager) {
+export function stateModelFactory(pluginManager) {
   return types
     .model('LinearGenomeView', {
       id: ElementId,
@@ -310,17 +309,3 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
     }))
 }
-
-// a stub linear genome view state model that only accepts base track types.
-// used in unit tests.
-const stubManager = new PluginManager()
-stubManager.addTrackType(
-  () =>
-    new TrackType({
-      name: 'Base',
-      stateModel: BaseTrack,
-      RenderingComponent: true,
-    }),
-)
-stubManager.configure()
-export const TestStub = LinearGenomeViewStateFactory(stubManager)

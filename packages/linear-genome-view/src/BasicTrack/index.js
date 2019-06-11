@@ -1,16 +1,15 @@
-import { types } from 'mobx-state-tree'
 import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import blockBasedTrack from './models/blockBasedTrack'
-
+import { types } from 'mobx-state-tree'
+import { BaseTrackConfig } from './baseTrackModel'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
-import { BaseTrackConfig } from './models/baseTrack'
+import blockBasedTrack from './blockBasedTrackModel'
 
-export default pluginManager => {
-  const configSchema = ConfigurationSchema(
+export function configSchemaFactory(pluginManager) {
+  return ConfigurationSchema(
     'BasicTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
@@ -18,8 +17,10 @@ export default pluginManager => {
     },
     { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
   )
+}
 
-  const stateModel = types.compose(
+export function stateModelFactory(configSchema) {
+  return types.compose(
     'BasicTrack',
     blockBasedTrack,
     types
@@ -45,6 +46,4 @@ export default pluginManager => {
         reactComponent: BlockBasedTrackComponent,
       })),
   )
-
-  return { stateModel, configSchema }
 }

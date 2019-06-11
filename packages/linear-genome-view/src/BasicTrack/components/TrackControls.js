@@ -7,7 +7,7 @@ import { withStyles, IconButton, Icon } from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
+import ConfigureToggleButton from '@gmod/jbrowse-core/components/ConfigureToggleButton'
 
 const styles = (/* theme */) => ({
   trackName: {

@@ -1,6 +1,6 @@
-import React from 'react'
-import { observer, propTypes as mobxPropTypes } from 'mobx-react'
 import { getConf } from '@gmod/jbrowse-core/configuration'
+import { observer, propTypes as mobxPropTypes } from 'mobx-react'
+import React from 'react'
 import Track from './Track'
 import TrackBlocks from './TrackBlocks'
 

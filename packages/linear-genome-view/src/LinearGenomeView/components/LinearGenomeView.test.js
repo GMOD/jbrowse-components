@@ -1,7 +1,7 @@
 import React from 'react'
 import renderer from 'react-test-renderer'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import LinearGenomeView from './LinearGenomeView'
-import { createTestEnv } from '../../../JBrowse'
 
 describe('LinearGenomeView genome view component', () => {
   it('renders with an empty model', async () => {

@@ -1,12 +1,9 @@
-import { types, addDisposer } from 'mobx-state-tree'
-
-import { autorun } from 'mobx'
-
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
-import baseTrack from './baseTrack'
-
-import BlockState from './serverSideRenderedBlock'
+import { autorun } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
+import BlockState from './util/serverSideRenderedBlock'
+import baseTrack from './baseTrackModel'
 
 export default types.compose(
   'BlockBasedTrackState',
@@ -25,7 +22,7 @@ export default types.compose(
        * "settle" before re-rendering a block
        */
       get renderDelay() {
-        return self.blockType === 'dynamicBlocks' ? 500 : 50
+        return 50
       },
 
       /**

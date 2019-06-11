@@ -11,7 +11,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 
-import BlockBasedTrack from '../LinearGenomeView/models/blockBasedTrack'
+import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 import { getNiceDomain } from '../WiggleRenderer/util'
 
@@ -23,7 +23,7 @@ const rendererTypes = new Map([
 export default (pluginManager, configSchema) =>
   types.compose(
     'WiggleTrack',
-    BlockBasedTrack,
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal('WiggleTrack'),
