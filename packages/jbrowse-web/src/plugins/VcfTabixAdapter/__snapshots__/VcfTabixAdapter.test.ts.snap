@@ -49,6 +49,21 @@ Array [
     "end": 277,
     "name": undefined,
     "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          13,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          42,
+          9,
+          0,
+        ],
+      },
+    },
     "start": 276,
     "type": "SNV",
     "uniqueId": "vcf-2560",
@@ -100,6 +115,21 @@ Array [
     "end": 1694,
     "name": undefined,
     "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          89,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          140,
+          46,
+          0,
+        ],
+      },
+    },
     "start": 1693,
     "type": "SNV",
     "uniqueId": "vcf-2658",
@@ -151,6 +181,21 @@ Array [
     "end": 2644,
     "name": undefined,
     "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          75,
+        ],
+        "GT": Array [
+          "0/1",
+        ],
+        "PL": Array [
+          74,
+          0,
+          77,
+        ],
+      },
+    },
     "start": 2643,
     "type": "SNV",
     "uniqueId": "vcf-2775",
@@ -196,6 +241,21 @@ Array [
     "end": 3213,
     "name": undefined,
     "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          99,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          157,
+          57,
+          0,
+        ],
+      },
+    },
     "start": 3212,
     "type": "SNV",
     "uniqueId": "vcf-2892",
@@ -242,6 +302,21 @@ Array [
     "end": 3860,
     "name": undefined,
     "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          63,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          201,
+          33,
+          0,
+        ],
+      },
+    },
     "start": 3857,
     "type": "deletion",
     "uniqueId": "vcf-2994",

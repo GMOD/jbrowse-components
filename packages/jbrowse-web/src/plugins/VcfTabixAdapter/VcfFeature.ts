@@ -70,7 +70,6 @@ export default class VCFFeature implements Feature {
       ...Object.keys(this.variant),
       'samples',
     ]
-    if (!t.includes('SAMPLES')) t.push('SAMPLES')
     return t
   }
 
@@ -233,6 +232,11 @@ export default class VCFFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): any {
-    return { uniqueId: this._id, ...this.data, ...this.variant }
+    return {
+      uniqueId: this._id,
+      ...this.data,
+      ...this.variant,
+      samples: this.variant.SAMPLES,
+    }
   }
 }
