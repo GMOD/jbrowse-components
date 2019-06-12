@@ -5,25 +5,26 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 /**
  * VCF Feature creation with lazy genotpye evaluation.
  */
-interface Genotypes {
-  [key: string]: { [key: string]: { values: string[] } }
+interface Samples {
+  [key: string]: {
+    [key: string]: { values: string[] | number[] | null }
+  }
+}
+interface Breakend {
+  MateDirection: string
+  Replacement: string
+  MatePosition: string
+  Join: string
 }
 interface FeatureData {
+  refName: string
   start: number
   end: number
-  refName: string
   description?: string
   type?: string
-  reference_allele: string
   name?: string
-  score: number
-  aliases: string[]
-  alternative_alleles: { values: string[]; meta: { description: string } }
-  filters: {
-    values: string[]
-    meta: { filters: string[]; description: string }
-  }
-  genotypes?: Genotypes
+  aliases?: string[]
+  samples?: Samples
 }
 
 export default class VCFFeature implements Feature {
@@ -47,26 +48,13 @@ export default class VCFFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
-    return this._get(field) || this._get(field.toLowerCase())
+    if (field === 'samples') return this.variant.SAMPLES
+    // @ts-ignore
+    return this.variant[field] || this.data[field]
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set(name: string, val: any): void {}
-
-  // same as get(), except requires lower-case arguments.    used
-  // internally to save lots of calls to field.toLowerCase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get(field: string): any {
-    if (field in this.data) {
-      // @ts-ignore
-      return this.data[field] // have we already parsed it out?
-    }
-    if (field === 'genotypes') {
-      this.data[field] = this._parse_genotypes()
-      return this.data[field] // have we already parsed it out?
-    }
-    return undefined
-  }
 
   parent(): undefined {
     return undefined
@@ -77,32 +65,17 @@ export default class VCFFeature implements Feature {
   }
 
   tags(): string[] {
-    const t = Object.keys(this.data)
-    if (!this.data.genotypes) t.push('genotypes')
+    const t = [
+      ...Object.keys(this.data),
+      ...Object.keys(this.variant),
+      'samples',
+    ]
+    if (!t.includes('SAMPLES')) t.push('SAMPLES')
     return t
   }
 
   id(): string {
     return this._id
-  }
-
-  _parse_genotypes(): Genotypes {
-    const { variant } = this
-    delete this.variant // TODO: remove this delete if we add other laziness
-
-    const genotypes: Genotypes = {}
-    if (Object.keys(variant.SAMPLES).length) {
-      Object.keys(variant.SAMPLES).forEach((sample: string) => {
-        genotypes[sample] = {}
-        Object.keys(variant.SAMPLES[sample]).forEach((field: string) => {
-          genotypes[sample][field] = {
-            values: variant.SAMPLES[sample][field],
-          }
-        })
-      })
-      return genotypes
-    }
-    return genotypes
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,61 +85,20 @@ export default class VCFFeature implements Feature {
       variant.REF,
       variant.ALT,
     )
-
     const featureData: FeatureData = {
+      refName: variant.CHROM,
       start,
       end: variant.INFO.END
         ? Number(variant.INFO.END[0])
         : start + variant.REF.length,
-      refName: variant.CHROM,
       description,
       type: SO_term,
-      reference_allele: variant.REF,
       name: variant.ID ? variant.ID[0] : undefined,
       aliases:
         variant.ID && variant.ID.length > 1 ? variant.ID.slice(1) : undefined,
-      score: variant.QUAL,
-      filters: {
-        meta: {
-          description:
-            'List of filters that this site has not passed, or PASS if it has passed all filters',
-          filters: this.parser.getMetadata('FILTER'),
-        },
-        values: variant.FILTER === 'PASS' ? ['PASS'] : variant.FILTER,
-      },
-      alternative_alleles: {
-        meta: {
-          description:
-            'VCF ALT field, list of alternate non-reference alleles called on at least one of the samples',
-        },
-        values: variant.ALT,
-      },
-    }
-
-    // parse the info field and store its contents as attributes in featureData
-    if (variant.INFO) {
-      this._parseInfoField(featureData, variant.INFO)
     }
 
     return featureData
-  }
-
-  /**
-   * parse a VCF line's INFO field, storing the contents as
-   * attributes in featureData
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _parseInfoField(featureData: FeatureData, info: Record<string, any>): void {
-    // decorate the info records with references to their descriptions
-    Object.entries(info).forEach(([field, value]) => {
-      info[field] = {
-        values: value,
-      }
-      const meta = this.parser.getMetadata('INFO', field)
-      if (meta) info[field].meta = meta
-      // @ts-ignore
-      featureData[field] = info[field]
-    })
   }
 
   /**
@@ -301,6 +233,6 @@ export default class VCFFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): any {
-    return { uniqueId: this._id, ...this.data }
+    return { uniqueId: this._id, ...this.data, ...this.variant }
   }
 }
