@@ -35,7 +35,7 @@ export default abstract class BaseAdapter {
    * NOTE: if an adapter is unable to get it's own list of ref names, return empty
    *
    */
-  public abstract async getRefNames(): Promise<string[]>
+  public abstract async getRefNames(opts: BaseOptions): Promise<string[]>
 
   /**
    * Subclasses should override this method. Method signature here for reference.
@@ -79,7 +79,7 @@ export default abstract class BaseAdapter {
     opts: BaseOptions = {},
   ): Observable<Feature> {
     return ObservableCreate(async (observer: Observer<Feature>) => {
-      const hasData = await this.hasDataForRefName(region.refName)
+      const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
         observer.complete()
@@ -96,8 +96,11 @@ export default abstract class BaseAdapter {
    * @returns {Promise<boolean>} Whether data source has data for the given
    * reference name
    */
-  public async hasDataForRefName(refName: string): Promise<boolean> {
-    const refNames = await this.getRefNames()
+  public async hasDataForRefName(
+    refName: string,
+    opts: BaseOptions = {},
+  ): Promise<boolean> {
+    const refNames = await this.getRefNames(opts)
     if (refNames.includes(refName)) return true
     return false
   }

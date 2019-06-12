@@ -67,11 +67,12 @@ class RpcManager {
 
   async call(stateGroupName, functionName, ...args) {
     if (this.assemblyManager && functionName === 'renderRegion') {
-      const { assemblyName } = args[0]
+      const { assemblyName, signal } = args[0]
       if (assemblyName) {
         const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
           args[0].adapterConfig,
           assemblyName,
+          { signal },
         )
         if (refNameMap.has(args[0].region.refName))
           args[0].region.setRefName(refNameMap.get(args[0].region.refName))
