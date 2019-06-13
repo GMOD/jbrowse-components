@@ -2,15 +2,23 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": [
-      "es2017",
-      "esnext.array",
-      "dom"
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "module": "commonjs",
-    "declaration": true,
-    "noEmit": true,
-    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "removeComments": false
-  }
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "exclude": [
+    "**/node_modules",
+    "**/build/"
+  ]
 }

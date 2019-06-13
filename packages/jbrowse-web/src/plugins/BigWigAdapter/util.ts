@@ -1,5 +1,5 @@
 import { Feature as BBIFeature } from '@gmod/bbi'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number
@@ -105,7 +105,7 @@ export function calcRealStats(
  * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export function scoresToStats(
-  region: IRegion,
+  region: INoAssemblyRegion,
   feats: BBIFeature[],
 ): FeatureStats {
   const { start, end } = region

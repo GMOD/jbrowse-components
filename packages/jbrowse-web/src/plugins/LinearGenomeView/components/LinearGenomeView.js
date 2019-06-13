@@ -6,7 +6,6 @@ import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
-import ConfigureToggleButton from '../../../components/ConfigureToggleButton'
 import ScaleBar from './ScaleBar'
 import Rubberband from './Rubberband'
 import TrackRenderingContainer from './TrackRenderingContainer'
@@ -105,12 +104,6 @@ function LinearGenomeView(props) {
               >
                 <Icon fontSize="small">close</Icon>
               </IconButton>
-              <ConfigureToggleButton
-                model={model}
-                onClick={model.activateConfigurationUI}
-                title="configure view"
-                fontSize="small"
-              />
               <ToggleButton
                 onClick={model.activateTrackSelector}
                 title="select tracks"

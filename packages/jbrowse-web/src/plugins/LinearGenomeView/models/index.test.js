@@ -1,7 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { getConf } from '@gmod/jbrowse-core/configuration'
 import { TestStub as LinearGenomeModel } from '.'
-import { createTestEnv } from '../../../JBrowse'
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
   const root = types
@@ -23,12 +21,11 @@ test('can instantiate a mostly empty model and read a default configuration valu
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
-      configuration: {},
     }),
   )
 
-  expect(root.view.tracks[0]).toBeTruthy()
-  expect(getConf(model, 'trackSelectorType')).toBe('hierarchical')
+  expect(model.tracks[0]).toBeTruthy()
+  expect(model.trackSelectorType).toBe('hierarchical')
 })
 
 test('can instantiate a model that lets you navigate', () => {
@@ -55,7 +52,9 @@ test('can instantiate a model that lets you navigate', () => {
       configuration: {},
     }),
   )
-  model.setDisplayedRegions([{ start: 0, end: 10000, refName: 'ctgA' }])
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+  ])
   expect(model.maxBpPerPx).toEqual(10)
   model.setNewView(0.02, 0)
 
@@ -73,7 +72,7 @@ test('can instantiate a model that lets you navigate', () => {
   model.setNewView(10, 0)
   expect(model.pxToBp(100).offset).toEqual(1001)
 
-  model.configuration.reversed.set(true)
+  model.horizontallyFlip()
 
   // this is actually the same in reverse mode, the offset is a representation of linear bp offset not actual bp
   model.setNewView(0.02, 0)
@@ -111,8 +110,8 @@ test('can instantiate a model that has multiple displayed regions', () => {
     }),
   )
   model.setDisplayedRegions([
-    { start: 0, end: 10000, refName: 'ctgA' },
-    { start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
   expect(model.maxBpPerPx).toEqual(20)
   model.setNewView(0.02, 0)
@@ -150,19 +149,10 @@ test('can instantiate a model that >2 regions', () => {
     }),
   )
   model.setDisplayedRegions([
-    { start: 0, end: 10000, refName: 'ctgA' },
-    { start: 0, end: 10000, refName: 'ctgB' },
-    { start: 0, end: 10000, refName: 'ctgC' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgC' },
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   expect(model.bpPerPx).toEqual(12.5)
-})
-it('can run configuration', async () => {
-  const { rootModel } = await createTestEnv({
-    views: {
-      LinearGenomeView: {},
-    },
-  })
-  const view = rootModel.addView('LinearGenomeView')
-  view.activateConfigurationUI()
 })

@@ -37,7 +37,7 @@ export default function calculateDynamicBlocks(
   const windowRightPx = windowLeftPx + width
   for (let i = 0; i < displayedRegions.length; i += 1) {
     const parentRegion = displayedRegions[i]
-    const { start, end, refName } = parentRegion
+    const { assemblyName, start, end, refName } = parentRegion
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
     if (
@@ -72,6 +72,7 @@ export default function calculateDynamicBlocks(
 
       const widthPx = Math.abs(endBp - startBp) / bpPerPx
       const blockData = {
+        assemblyName,
         refName,
         start: startBp,
         end: endBp,

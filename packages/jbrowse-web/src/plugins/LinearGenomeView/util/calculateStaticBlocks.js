@@ -55,6 +55,7 @@ export function calculateBlocksForward(self) {
       )
       const widthPx = Math.abs(end - start) / bpPerPx
       const blockData = {
+        assemblyName: region.assemblyName,
         refName: region.refName,
         start,
         end,

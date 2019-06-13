@@ -31,6 +31,7 @@ class RpcManager {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
+    this.assemblyManager = null
   }
 
   getDriver(backendName) {
@@ -64,7 +65,17 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
-  call(stateGroupName, functionName, ...args) {
+  async call(stateGroupName, functionName, ...args) {
+    const { assemblyName, signal } = args[0]
+    if (assemblyName) {
+      const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
+        args[0].adapterConfig,
+        assemblyName,
+        { signal },
+      )
+      if (refNameMap.has(args[0].region.refName))
+        args[0].region.setRefName(refNameMap.get(args[0].region.refName))
+    }
     return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,
       stateGroupName,

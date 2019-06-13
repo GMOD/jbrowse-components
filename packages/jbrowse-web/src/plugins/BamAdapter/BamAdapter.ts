@@ -1,7 +1,7 @@
 import { BamFile } from '@gmod/bam'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
@@ -24,8 +24,8 @@ export default class BamAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
-    bamLocation: string
-    index: { location: string; index: string }
+    bamLocation: IFileLocation
+    index: { location: IFileLocation; index: string }
   }) {
     super()
     const { bamLocation } = config

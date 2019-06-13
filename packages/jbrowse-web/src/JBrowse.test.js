@@ -3,7 +3,6 @@ import {
   fireEvent,
   render,
   waitForElement,
-  wait,
 } from 'react-testing-library'
 import React from 'react'
 
@@ -14,10 +13,6 @@ import JBrowse from './JBrowse'
 import config from '../test_data/alignments_test.json'
 
 fetchMock.config.sendAsJson = false
-
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 
@@ -63,7 +58,7 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    const { getByTestId } = render(<JBrowse configs={[config]} />)
     fireEvent.click(
       await waitForElement(() => getByTestId('volvox_alignments')),
     )
@@ -79,14 +74,9 @@ describe('valid file tests', () => {
   })
 
   it('opens track selector', async () => {
-    const { getByTestId, getAllByText, getByTitle, getByText } = render(
-      <JBrowse configs={[config]} />,
-    )
-    // fireEvent.click(await waitForElement(() => getByTitle('select tracks')))
-    const container = await waitForElement(() =>
-      getByTestId('hierarchical_track_selector'),
-    )
+    const { getByTestId } = render(<JBrowse configs={[config]} />)
 
+    await waitForElement(() => getByTestId('volvox_alignments'))
     expect(window.MODEL.views[0].tracks.length).toBe(0)
     fireEvent.click(
       await waitForElement(() => getByTestId('volvox_alignments')),

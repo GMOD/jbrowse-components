@@ -1,114 +1,7 @@
 {
-  "tracks": [
+  "assemblies": [
     {
-      "configId": "na12878_exome",
-      "type": "AlignmentsTrack",
-      "name": "NA12878 Exome",
       "assemblyName": "hg38",
-      "category": [
-        "1000 genomes"
-      ],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "labels": {}
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "configId": "hg00096_highcov",
-      "category": [
-        "1000 genomes"
-      ],
-      "name": "HG00096 Illumina high coverage",
-      "assemblyName": "hg38",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
-          }
-        }
-      }
-    },
-    {
-      "configId": "wiggle_global_autoscale",
-      "type": "WiggleTrack",
-      "name": "Encode global autoscale",
-      "category": [
-        "ENCODE bigWigs"
-      ],
-      "height": 300,
-      "autoscale": "global",
-      "assemblyName": "hg38",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
-        },
-        "assemblyName": "hg38"
-      }
-    },
-    {
-      "configId": "wiggle_local_autoscale",
-      "type": "WiggleTrack",
-      "name": "Encode local autoscale",
-      "category": [
-        "ENCODE bigWigs"
-      ],
-      "height": 300,
-      "autoscale": "local",
-      "assemblyName": "hg38",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
-        },
-        "assemblyName": "hg38"
-      }
-    },
-    {
-      "configId": "bigbed_peaks",
-      "type": "BasicTrack",
-      "name": "Encode peaks",
-      "category": [
-        "ENCODE bigWigs"
-      ],
-      "height": 300,
-      "assemblyName": "hg38",
-      "renderer": {
-        "type": "PileupRenderer"
-      },
-      "adapter": {
-        "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
-        },
-        "assemblyName": "hg38"
-      }
-    }
-  ],
-  "assemblies": {
-    "hg38": {
-      "configId": "hg38",
       "sequence": {
         "configId": "VKYdNPZZ0",
         "type": "ReferenceSequence",
@@ -148,9 +41,108 @@
             }
           ]
         }
-      }
+      },
+      "tracks": [
+        {
+          "configId": "na12878_exome",
+          "type": "AlignmentsTrack",
+          "name": "NA12878 Exome",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "configId": "hg00096_highcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina high coverage",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "wiggle_global_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode global autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "autoscale": "global",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          }
+        },
+        {
+          "configId": "wiggle_local_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode local autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          }
+        },
+        {
+          "configId": "bigbed_peaks",
+          "type": "BasicTrack",
+          "name": "Encode peaks",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "renderer": {
+            "type": "PileupRenderer"
+          },
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          }
+        }
+      ]
     }
-  },
+  ],
   "rpc": {},
   "defaultSession": {
     "sessionName": "Human Example",
@@ -182,6 +174,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 835,
         "bpPerPx": 50,
+        "displayRegionsFromAssemblyName": "hg38",
         "tracks": [
           {
             "type": "WiggleTrack",
@@ -199,7 +192,7 @@
             "configuration": "bigbed_peaks"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       }
     ],
     "drawerWidgets": {

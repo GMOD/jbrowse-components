@@ -4,6 +4,7 @@ exports[`block calculation can calculate some blocks 1 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 800,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
@@ -19,6 +20,7 @@ BlockSet {
       "widthPx": 800,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 1600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -41,6 +43,7 @@ exports[`block calculation can calculate some blocks 2 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 100,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
@@ -56,6 +59,7 @@ BlockSet {
       "widthPx": 100,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 200,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
@@ -78,6 +82,7 @@ exports[`block calculation can calculate some blocks 5 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 5600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -93,6 +98,7 @@ BlockSet {
       "widthPx": 800,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 6400,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -115,6 +121,7 @@ exports[`block calculation can calculate some blocks 6 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 200,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
@@ -130,6 +137,7 @@ BlockSet {
       "widthPx": 200,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 800,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
@@ -152,6 +160,7 @@ exports[`block calculation can calculate some blocks 7 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 800,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
@@ -167,6 +176,7 @@ BlockSet {
       "widthPx": 800,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 1000,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": true,
@@ -189,6 +199,7 @@ exports[`block calculation can calculate some blocks 8 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 1600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -204,6 +215,7 @@ BlockSet {
       "widthPx": 800,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 2400,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -226,6 +238,7 @@ exports[`block calculation can calculate some blocks 9 1`] = `
 BlockSet {
   "blocks": Array [
     ContentBlock {
+      "assemblyName": undefined,
       "end": 3200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -241,6 +254,7 @@ BlockSet {
       "widthPx": 800,
     },
     ContentBlock {
+      "assemblyName": undefined,
       "end": 4800,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
@@ -262,6 +276,7 @@ BlockSet {
 exports[`block calculation can calculate some blocks 10 1`] = `
 Array [
   ContentBlock {
+    "assemblyName": undefined,
     "end": 140,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
@@ -277,6 +292,7 @@ Array [
     "widthPx": 800,
   },
   ContentBlock {
+    "assemblyName": undefined,
     "end": 180,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
@@ -297,6 +313,7 @@ Array [
 exports[`reverse block calculation 1 1`] = `
 Array [
   Object {
+    "assemblyName": undefined,
     "end": 10000,
     "isLeftEndOfDisplayedRegion": true,
     "isRightEndOfDisplayedRegion": false,
@@ -312,6 +329,7 @@ Array [
     "widthPx": 800,
   },
   Object {
+    "assemblyName": undefined,
     "end": 9200,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
