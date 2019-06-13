@@ -25,7 +25,7 @@ const styles = (/* theme */) => ({
 
 function TrackControls({ track, view, classes, onConfigureClick }) {
   let trackName = getConf(track, 'name') || track.id
-  if (getConf(track, 'type') === 'ReferenceSequence') {
+  if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Refence Sequence'
     const rootModel = getRoot(view)
     rootModel.configuration.assemblies.forEach(assembly => {

@@ -47,7 +47,7 @@ export default function modelFactory(pluginManager) {
                 localPath: twoBitPath,
               }
             sequence = {
-              type: 'ReferenceSequence',
+              type: 'ReferenceSequenceTrack',
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation,
@@ -55,7 +55,7 @@ export default function modelFactory(pluginManager) {
             }
           } else if (ucscAssemblies.includes(assemblyName))
             sequence = {
-              type: 'ReferenceSequence',
+              type: 'ReferenceSequenceTrack',
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation: {

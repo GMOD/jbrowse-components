@@ -29,7 +29,7 @@ export default function modelFactory(pluginManager) {
           assemblyName,
           tracks: jb2Tracks,
           sequence: {
-            type: 'ReferenceSequence',
+            type: 'ReferenceSequenceTrack',
             adapter,
           },
           defaultSequence,

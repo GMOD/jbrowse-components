@@ -4,7 +4,7 @@
       "assemblyName": "volvox",
       "sequence": {
         "configId": "Ntr0BAB7d",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
@@ -213,7 +213,7 @@
       "assemblyName": "volvox2",
       "sequence": {
         "configId": "fotPDlQyA",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "configId": "fo5knf1Wp",
           "type": "FromConfigAdapter",
@@ -271,7 +271,7 @@
         "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
-            "type": "ReferenceSequence",
+            "type": "ReferenceSequenceTrack",
             "height": 80,
             "configuration": "Ntr0BAB7d"
           },

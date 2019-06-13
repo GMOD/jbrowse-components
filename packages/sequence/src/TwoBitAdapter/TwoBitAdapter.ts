@@ -1,13 +1,12 @@
-import { TwoBitFile } from '@gmod/twobit'
-
-import { openLocation } from '@gmod/jbrowse-core/util/io'
 import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { TwoBitFile } from '@gmod/twobit'
 import { Observable, Observer } from 'rxjs'
 
-export default class TwoBitAdapter extends BaseAdapter {
+export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private twobit: any
 

@@ -2,11 +2,11 @@ import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/ren
 import Rendering from './components/Rendering'
 import ConfigSchema from './configSchema'
 
-class ProteinReferenceSequenceRenderer extends ServerSideRendererType {}
+class ProteinReferenceSequenceTrackRenderer extends ServerSideRendererType {}
 
 export default (/* pluginManager */) =>
-  new ProteinReferenceSequenceRenderer({
-    name: 'ProteinReferenceSequenceRenderer',
+  new ProteinReferenceSequenceTrackRenderer({
+    name: 'ProteinReferenceSequenceTrackRenderer',
     ReactComponent: Rendering,
     configSchema: ConfigSchema,
   })

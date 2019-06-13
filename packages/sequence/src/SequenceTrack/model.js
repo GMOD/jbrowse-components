@@ -1,17 +1,15 @@
-import { types } from 'mobx-state-tree'
-
 import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
 import {
-  getParentRenderProps,
   getContainingView,
+  getParentRenderProps,
 } from '@gmod/jbrowse-core/util/tracks'
-
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { types } from 'mobx-state-tree'
 
-export default (pluginManager, configSchema, trackType) =>
+export default (configSchema, trackType) =>
   types.compose(
     trackType,
     blockBasedTrackModel,

@@ -20,7 +20,7 @@ describe('<AddTrackDrawerWidget />', () => {
         {
           assemblyName: 'volvox',
           sequence: {
-            type: 'ReferenceSequence',
+            type: 'ReferenceSequenceTrack',
             adapter: {
               type: 'FromConfigAdapter',
               features: [

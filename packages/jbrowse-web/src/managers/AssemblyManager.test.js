@@ -11,7 +11,7 @@ describe('Assembly Manager', () => {
         {
           assemblyName: 'volvox',
           sequence: {
-            type: 'ReferenceSequence',
+            type: 'ReferenceSequenceTrack',
             adapter: {
               type: 'FromConfigAdapter',
               features: [],

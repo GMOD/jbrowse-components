@@ -15,9 +15,9 @@ export default (pluginManager, trackType) => {
 
   // reduced configuration does not inherit from BaseTrack
   // used for when the sequence is in the assembly
-  if (trackType === 'ReferenceSequence')
+  if (trackType === 'ReferenceSequenceTrack')
     return ConfigurationSchema(
-      'ReferenceSequence',
+      'ReferenceSequenceTrack',
       {
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         rendering: DivSequenceRendererConfigurationSchema,
