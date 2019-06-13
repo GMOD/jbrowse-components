@@ -23,10 +23,5 @@
     "react": "^16.8.6",
     "react-d3-axis": "^0.1.1",
     "rxjs": "^6.5.1"
-  },
-  "otherStuff": {
-    "@gmod/bam": "^1.0.17",
-    "@material-ui/core": "3.9.3",
-    "generic-filehandle": "^1.0.6"
   }
 }
