@@ -1,5 +1,4 @@
 import { toArray } from 'rxjs/operators'
-
 import BigWigAdapter from './BigWigAdapter'
 
 describe('adapter can fetch features from volvox.bw', () => {

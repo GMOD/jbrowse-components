@@ -1,10 +1,9 @@
-import React, { Component } from 'react'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-
-import './WiggleRendering.scss'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import React, { Component } from 'react'
 import PrerenderedCanvas from './PrerenderedCanvas'
+import './WiggleRendering.scss'
 
 class WiggleRendering extends Component {
   static propTypes = {

@@ -7,11 +7,3 @@ Object {
   "width": 33,
 }
 `;
-
-exports[`several features 1`] = `
-Object {
-  "height": 100,
-  "imageData": Any<Object>,
-  "width": 33,
-}
-`;

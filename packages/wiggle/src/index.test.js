@@ -1,6 +1,6 @@
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import { getSnapshot } from 'mobx-state-tree'
 import MyPlugin from './index'
-import { createTestEnv } from '../../JBrowse'
 
 test('plugin in a stock JBrowse', async () => {
   const { pluginManager } = await createTestEnv()

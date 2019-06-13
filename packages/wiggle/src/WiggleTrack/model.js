@@ -1,26 +1,24 @@
-import { types, addDisposer, getRoot, getSnapshot } from 'mobx-state-tree'
-import { autorun } from 'mobx'
-
-import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
-import {
-  getParentRenderProps,
-  getContainingView,
-} from '@gmod/jbrowse-core/util/tracks'
 import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-
+import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
+import {
+  getContainingView,
+  getParentRenderProps,
+} from '@gmod/jbrowse-core/util/tracks'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { autorun } from 'mobx'
+import { addDisposer, getRoot, getSnapshot, types } from 'mobx-state-tree'
+import { getNiceDomain } from '../DensityRenderer/util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
-import { getNiceDomain } from '../WiggleRenderer/util'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
   ['density', 'DensityRenderer'],
 ])
-export default (pluginManager, configSchema) =>
+export default configSchema =>
   types.compose(
     'WiggleTrack',
     blockBasedTrackModel,

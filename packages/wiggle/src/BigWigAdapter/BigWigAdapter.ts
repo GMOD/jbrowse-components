@@ -1,21 +1,19 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { Observable, Observer } from 'rxjs'
-import { mergeAll, map } from 'rxjs/operators'
-
-import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-
+import { map, mergeAll } from 'rxjs/operators'
 import {
+  blankStats,
+  FeatureStats,
   rectifyStats,
   scoresToStats,
-  blankStats,
   UnrectifiedFeatureStats,
-  FeatureStats,
 } from './util'
 
 interface StatsRegion {

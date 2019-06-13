@@ -1,21 +1,15 @@
-import React from 'react'
-import Color from 'color'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import {
-  readConfObject,
-  ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import Color from 'color'
+import React from 'react'
+import { getOrigin, getScale } from './util'
 
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import ConfigSchema from './configSchema'
-import WiggleRendering from './components/WiggleRendering'
-import { getScale, getOrigin } from './util'
-
-class WiggleBaseRenderer extends ServerSideRendererType {
+export class WiggleBaseRenderer extends ServerSideRendererType {
   async makeImageData(props) {
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props
     const width = (region.end - region.start) / bpPerPx
@@ -49,7 +43,7 @@ class WiggleBaseRenderer extends ServerSideRendererType {
   }
 }
 
-export class DensityRendererClass extends WiggleBaseRenderer {
+export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
     const {
       features,
@@ -189,28 +183,4 @@ export class XYPlotRendererClass extends WiggleBaseRenderer {
       }
     }
   }
-}
-
-export function DensityRenderer() {
-  return new DensityRendererClass({
-    name: 'DensityRenderer',
-    ReactComponent: WiggleRendering,
-    configSchema: ConfigurationSchema(
-      'DensityRenderer',
-      {},
-      { baseConfiguration: ConfigSchema, explicitlyTyped: true },
-    ),
-  })
-}
-
-export function XYPlotRenderer() {
-  return new XYPlotRendererClass({
-    name: 'XYPlotRenderer',
-    ReactComponent: WiggleRendering,
-    configSchema: ConfigurationSchema(
-      'XYPlotRenderer',
-      {},
-      { baseConfiguration: ConfigSchema, explicitlyTyped: true },
-    ),
-  })
 }
