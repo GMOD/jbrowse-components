@@ -13,14 +13,11 @@
     "@gmod/jbrowse-plugin-config-editing": "^2.0.0",
     "@gmod/ucsc-hub": "^0.1.2",
     "@material-ui/core": "3.9.3",
-    "crc-32": "^1.2.0",
-    "get-value": "^3.0.1",
     "mobx-react": "^5.3.6",
     "mobx-react-lite": "^1.1.0",
     "mobx-state-tree": "3.10.2",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
-    "request-idle-callback": "^1.0.2",
-    "set-value": "^3.0.0"
+    "request-idle-callback": "^1.0.2"
   }
 }

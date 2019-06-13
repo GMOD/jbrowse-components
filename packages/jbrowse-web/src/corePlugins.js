@@ -1,4 +1,4 @@
-import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
+import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
 import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
@@ -32,7 +32,7 @@ export default [
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,
   LollipopRendererPlugin,
-  NCListAdapterPlugin,
+  JBrowse1,
   TrackHubRegistry,
   Wiggle,
 ]

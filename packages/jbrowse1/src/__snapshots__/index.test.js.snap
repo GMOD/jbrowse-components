@@ -3,9 +3,6 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "configId": Any<String>,
-  "index": Object {
-    "configId": Any<String>,
-  },
-  "type": "BamAdapter",
+  "type": "NCListAdapter",
 }
 `;

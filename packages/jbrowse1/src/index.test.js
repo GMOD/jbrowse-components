@@ -8,10 +8,10 @@ test('plugin in a stock JBrowse', async () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const BamAdapter = pluginManager.getAdapterType('BamAdapter')
-  const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
+  const NCListAdapter = pluginManager.getAdapterType('NCListAdapter')
+  const config = NCListAdapter.configSchema.create({ type: 'NCListAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot({
     configId: expect.any(String),
-    index: { configId: expect.any(String) },
+    type: 'NCListAdapter',
   })
 })
