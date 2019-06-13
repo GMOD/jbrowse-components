@@ -1,8 +1,8 @@
+import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import Rendering from './components/Rendering'
 import ConfigSchema from './configSchema'
-import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class ProteinReferenceSequenceRenderer extends ServerSideRenderer {}
+class ProteinReferenceSequenceRenderer extends ServerSideRendererType {}
 
 export default (/* pluginManager */) =>
   new ProteinReferenceSequenceRenderer({

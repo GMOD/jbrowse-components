@@ -10,12 +10,12 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 
+import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import ConfigSchema from './configSchema'
 import WiggleRendering from './components/WiggleRendering'
 import { getScale, getOrigin } from './util'
-import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class WiggleBaseRenderer extends ServerSideRenderer {
+class WiggleBaseRenderer extends ServerSideRendererType {
   async makeImageData(props) {
     const { height, region, bpPerPx, highResolutionScaling = 1 } = props
     const width = (region.end - region.start) / bpPerPx

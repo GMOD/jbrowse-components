@@ -1,9 +1,9 @@
+import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import DivSequenceRendering from './components/DivSequenceRendering'
 
 import ConfigSchema from './configSchema'
-import ServerSideRenderer from '../../renderers/serverSideRenderer'
 
-class DivSequenceRenderer extends ServerSideRenderer {}
+class DivSequenceRenderer extends ServerSideRendererType {}
 
 export default (/* pluginManager */) =>
   new DivSequenceRenderer({

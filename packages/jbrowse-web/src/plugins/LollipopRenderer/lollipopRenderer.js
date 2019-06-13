@@ -1,8 +1,10 @@
 import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
+import BoxRendererType, {
+  LayoutSession,
+} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
 import LollipopRendering from './components/LollipopRendering'
 
 import ConfigSchema from './configSchema'
-import BoxRenderer, { LayoutSession } from '../../renderers/boxRenderer'
 
 import { FloatingLayout, PrecomputedFloatingLayout } from './Layout'
 
@@ -18,7 +20,7 @@ class FloatingLayoutSession extends LayoutSession {
   }
 }
 
-class LollipopRenderer extends BoxRenderer {
+class LollipopRenderer extends BoxRendererType {
   createSession() {
     return new FloatingLayoutSession()
   }

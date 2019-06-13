@@ -3,7 +3,7 @@ import renderer from 'react-test-renderer'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
-import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-web/src/plugins/AlignmentsTrack/configSchema'
+import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/AlignmentsTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor drawer widget', () => {

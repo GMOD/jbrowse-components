@@ -48,6 +48,7 @@
     "object.fromentries": "^2.0.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "rxjs": "^6.5.1",
     "shortid": "^2.2.13",
     "tenacious-fetch": "^2.1.0",

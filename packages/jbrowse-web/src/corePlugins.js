@@ -3,11 +3,11 @@ import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
 import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import Alignments from '@gmod/jbrowse-plugin-alignments'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
-import BamAdapterPlugin from './plugins/BamAdapter'
 import TwoBitAdapterPlugin from './plugins/TwoBitAdapter'
 import IndexedFastaAdapterPlugin from './plugins/IndexedFastaAdapter'
 import BigWigAdapterPlugin from './plugins/BigWigAdapter'
@@ -15,32 +15,28 @@ import BigBedAdapterPlugin from './plugins/BigBedAdapter'
 import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 
 // tracks
-import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
 import FilteringTrackPlugin from './plugins/FilteringTrack'
 import WiggleTrackPlugin from './plugins/WiggleTrack'
 
 // renderers
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
-import PileupRendererPlugin from './plugins/PileupRenderer'
 import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import WiggleRendererPlugin from './plugins/WiggleRenderer'
 import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 export default [
+  Alignments,
   DataManagement,
   ConfigEditing,
   MainMenuBarPlugin,
-  BamAdapterPlugin,
   TwoBitAdapterPlugin,
   IndexedFastaAdapterPlugin,
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
   LinearGenomeView,
-  AlignmentsTrackPlugin,
   SequenceTrackPlugin,
   SvgFeaturePlugin,
-  PileupRendererPlugin,
   DivSequenceRendererPlugin,
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,

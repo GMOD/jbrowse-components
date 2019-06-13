@@ -26,7 +26,7 @@ import {
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorDrawerWidget'
 
-export default class UCSCTrackHubConnection extends Plugin {
+export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addConnectionType(
       () =>
