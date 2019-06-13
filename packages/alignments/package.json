@@ -19,8 +19,5 @@
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
     "rxjs": "^6.5.1"
-  },
-  "otherStuff": {
-    "mobx-react-lite": "^1.1.0"
   }
 }
