@@ -1,178 +1,7 @@
 {
-  "tracks": [
+  "assemblies": [
     {
-      "configId": "7f9MEYvnw",
-      "type": "DynamicTrack",
-      "name": "Lollipop track",
-      "category": [
-        "Bar Category"
-      ],
       "assemblyName": "volvox",
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 190,
-            "end": 191,
-            "type": "foo",
-            "score": 200,
-            "name": "Boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 191,
-            "end": 192,
-            "type": "bar",
-            "score": 20,
-            "name": "Theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 210,
-            "end": 211,
-            "type": "baz",
-            "score": 300,
-            "name": "Nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 220,
-            "end": 221,
-            "score": 2,
-            "type": "quux",
-            "name": "Geoffray"
-          }
-        ]
-      },
-      "renderer": {
-        "type": "LollipopRenderer"
-      }
-    },
-    {
-      "configId": "gTdYq_j8M",
-      "type": "AlignmentsTrack",
-      "name": "volvox-sorted red/blue",
-      "category": [
-        "Bar Category",
-        "Baz Category"
-      ],
-      "assemblyName": "volvox",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "/test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "/test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "labels": {}
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "name": "volvox-sorted all green",
-      "category": [
-        "Bee Category",
-        "Boo Category"
-      ],
-      "assemblyName": "vvx",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "/test_data/volvox-sorted.bam"
-        },
-        "index": {
-          "location": {
-            "uri": "/test_data/volvox-sorted.bam.bai"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer",
-          "alignmentColor": "green"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer",
-          "labels": {}
-        }
-      }
-    },
-    {
-      "configId": "z3MB1J7HG",
-      "type": "FilteringTrack",
-      "name": "Filter Test",
-      "assemblyName": "volvox2",
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 100,
-            "end": 101,
-            "type": "foo",
-            "name": "Boris",
-            "note": "note for boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 110,
-            "end": 111,
-            "type": "bar",
-            "name": "Theresa",
-            "note": "note for theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 120,
-            "end": 121,
-            "type": "baz",
-            "name": "Nigel",
-            "note": "note for nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 130,
-            "end": 131,
-            "type": "quux",
-            "name": "Geoffray",
-            "note": "note for geoffray"
-          }
-        ]
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {}
-      },
-      "filterAttributes": [
-        "type",
-        "start",
-        "end"
-      ]
-    }
-  ],
-  "assemblies": {
-    "volvox": {
-      "configId": "volvox",
       "sequence": {
         "configId": "Ntr0BAB7d",
         "type": "ReferenceSequence",
@@ -211,10 +40,177 @@
             }
           ]
         }
-      }
+      },
+      "tracks": [
+        {
+          "configId": "7f9MEYvnw",
+          "type": "DynamicTrack",
+          "name": "Lollipop track",
+          "category": [
+            "Bar Category"
+          ],
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 190,
+                "end": 191,
+                "type": "foo",
+                "score": 200,
+                "name": "Boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 191,
+                "end": 192,
+                "type": "bar",
+                "score": 20,
+                "name": "Theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 210,
+                "end": 211,
+                "type": "baz",
+                "score": 300,
+                "name": "Nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 220,
+                "end": 221,
+                "score": 2,
+                "type": "quux",
+                "name": "Geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "LollipopRenderer"
+          }
+        },
+        {
+          "configId": "gTdYq_j8M",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue",
+          "category": [
+            "Bar Category",
+            "Baz Category"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted all green",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer",
+              "alignmentColor": "green"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "z3MB1J7HG",
+          "type": "FilteringTrack",
+          "name": "Filter Test",
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 100,
+                "end": 101,
+                "type": "foo",
+                "name": "Boris",
+                "note": "note for boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 110,
+                "end": 111,
+                "type": "bar",
+                "name": "Theresa",
+                "note": "note for theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 120,
+                "end": 121,
+                "type": "baz",
+                "name": "Nigel",
+                "note": "note for nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 130,
+                "end": 131,
+                "type": "quux",
+                "name": "Geoffray",
+                "note": "note for geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          },
+          "filterAttributes": [
+            "type",
+            "start",
+            "end"
+          ]
+        }
+      ]
     },
-    "volvox2": {
-      "configId": "volvox2",
+    {
+      "assemblyName": "volvox2",
       "sequence": {
         "configId": "fotPDlQyA",
         "type": "ReferenceSequence",
@@ -238,7 +234,7 @@
         }
       }
     }
-  },
+  ],
   "rpc": {
     "defaultDriver": "MainThreadRpcDriver"
   },
@@ -272,6 +268,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "ReferenceSequence",
@@ -284,12 +281,13 @@
             "configuration": "z3MB1J7HG"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       },
       {
         "type": "LinearGenomeView",
         "offsetPx": 200,
         "bpPerPx": 2,
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "AlignmentsTrack",
@@ -297,12 +295,13 @@
             "configuration": "gTdYq_j8M"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       },
       {
         "type": "LinearGenomeView",
         "offsetPx": 1800,
         "bpPerPx": 0.1,
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [
           {
             "type": "DynamicTrack",
@@ -310,7 +309,7 @@
             "configuration": "7f9MEYvnw"
           }
         ],
-        "configuration": {}
+        "trackSelectorType": "hierarchical"
       }
     ],
     "drawerWidgets": {

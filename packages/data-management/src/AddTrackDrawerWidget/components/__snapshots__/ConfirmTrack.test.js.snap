@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ConfirmTrack /> mounts with config 1`] = `
+<p
+  class="MuiTypography-root-353 MuiTypography-body1-362 ConfirmTrack-spacing-352"
+>
+  Using adapter 
+  <code>
+    FromConfigAdapter
+  </code>
+   and guessing track type
+   
+  <code>
+    AlignmentsTrack
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;
+
+exports[`<ConfirmTrack /> mounts with localPath 1`] = `
+<p
+  class="MuiTypography-root-236 MuiTypography-body1-245 ConfirmTrack-spacing-235"
+>
+  Using adapter 
+  <code>
+    BamAdapter
+  </code>
+   and guessing track type
+   
+  <code>
+    AlignmentsTrack
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;
+
+exports[`<ConfirmTrack /> mounts with uri 1`] = `
+<p
+  class="MuiTypography-root-119 MuiTypography-body1-128 ConfirmTrack-spacing-118"
+>
+  Using adapter 
+  <code>
+    BamAdapter
+  </code>
+   and guessing track type
+   
+  <code>
+    AlignmentsTrack
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;
+
+exports[`<ConfirmTrack /> renders 1`] = `
+<p
+  class="MuiTypography-root-2 MuiTypography-body1-11 ConfirmTrack-spacing-1"
+>
+  Using adapter 
+  <code>
+    BamAdapter
+  </code>
+   and guessing track type
+   
+  <code>
+    AlignmentsTrack
+  </code>
+  . Please enter a track name and, if necessary, update the track type.
+</p>
+`;

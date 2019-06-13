@@ -1,5 +1,9 @@
 import NCListAdapterPlugin from '@gmod/jbrowse-plugin-nclist-adapter'
 import CircularViewPlugin from '@gmod/jbrowse-plugin-circular-view'
+import DataManagement from '@gmod/jbrowse-plugin-data-management'
+import ConfigEditing from '@gmod/jbrowse-plugin-config-editing'
+import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
+
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
@@ -20,21 +24,16 @@ import WiggleTrackPlugin from './plugins/WiggleTrack'
 import LinearGenomeViewPlugin from './plugins/LinearGenomeView'
 
 // renderers
-import PileupRendererPlugin from './plugins/PileupRenderer'
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
+import PileupRendererPlugin from './plugins/PileupRenderer'
 import DivSequenceRendererPlugin from './plugins/DivSequenceRenderer'
 import WiggleRendererPlugin from './plugins/WiggleRenderer'
-
-// drawer widgets
-import HierarchicalTrackSelectorDrawerWidgetPlugin from './plugins/HierarchicalTrackSelectorDrawerWidget'
-import DataHubManagerDrawerWidgetPlugin from './plugins/DataHubManagerDrawerWidget'
-import AddTrackDrawerWidgetPlugin from './plugins/AddTrackDrawerWidget'
-import ConfigurationEditorPlugin from './plugins/ConfigurationEditorDrawerWidget'
 import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 export default [
+  DataManagement,
+  ConfigEditing,
   MainMenuBarPlugin,
-  HierarchicalTrackSelectorDrawerWidgetPlugin,
   BamAdapterPlugin,
   TwoBitAdapterPlugin,
   IndexedFastaAdapterPlugin,
@@ -43,12 +42,9 @@ export default [
   LinearGenomeViewPlugin,
   CircularViewPlugin,
   AlignmentsTrackPlugin,
-  DataHubManagerDrawerWidgetPlugin,
-  AddTrackDrawerWidgetPlugin,
-  ConfigurationEditorPlugin,
   SequenceTrackPlugin,
-  PileupRendererPlugin,
   SvgFeaturePlugin,
+  PileupRendererPlugin,
   DivSequenceRendererPlugin,
   FromConfigAdapterPlugin,
   FilteringTrackPlugin,
@@ -56,4 +52,5 @@ export default [
   WiggleRendererPlugin,
   LollipopRendererPlugin,
   NCListAdapterPlugin,
+  TrackHubRegistry,
 ]

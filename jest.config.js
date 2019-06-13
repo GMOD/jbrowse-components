@@ -25,7 +25,7 @@ module.exports = {
   ],
   resolver: 'jest-pnp-resolver',
   setupFiles: [
-    'react-app-polyfill/jsdom',
+    '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/enzymeSetup.js',
   ],
   testEnvironment: 'jsdom',

@@ -6,6 +6,7 @@ import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
 import DrawerWidgetType from './pluggableElementTypes/DrawerWidgetType'
 import MenuBarType from './pluggableElementTypes/MenuBarType'
+import ConnectionType from './pluggableElementTypes/ConnectionType'
 
 import { ConfigurationSchema } from './configuration'
 
@@ -46,6 +47,7 @@ export default class PluginManager {
     'renderer',
     'adapter',
     'track',
+    'connection',
     'view',
     'drawer widget',
     'menu bar',
@@ -55,6 +57,7 @@ export default class PluginManager {
     renderer: RendererType,
     adapter: AdapterType,
     track: TrackType,
+    connection: ConnectionType,
     view: ViewType,
     'drawer widget': DrawerWidgetType,
     'menu bar': MenuBarType,
@@ -69,12 +72,14 @@ export default class PluginManager {
     this.getViewType = this.getElementType.bind(this, 'view')
     this.getDrawerWidgetType = this.getElementType.bind(this, 'drawer widget')
     this.getMenuBarType = this.getElementType.bind(this, 'menu bar')
+    this.getConnectionType = this.getElementType.bind(this, 'connection')
     this.addRendererType = this.addElementType.bind(this, 'renderer')
     this.addAdapterType = this.addElementType.bind(this, 'adapter')
     this.addTrackType = this.addElementType.bind(this, 'track')
     this.addViewType = this.addElementType.bind(this, 'view')
     this.addDrawerWidgetType = this.addElementType.bind(this, 'drawer widget')
     this.addMenuBarType = this.addElementType.bind(this, 'menu bar')
+    this.addConnectionType = this.addElementType.bind(this, 'connection')
 
     // add all the initial plugins
     initialPlugins.forEach(plugin => {

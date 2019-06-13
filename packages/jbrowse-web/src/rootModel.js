@@ -1,8 +1,7 @@
-// Polyfill for TextDecoder
-import 'fast-text-encoding'
 import { autorun } from 'mobx'
 import { flow, types, getType, addDisposer } from 'mobx-state-tree'
 
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
@@ -40,6 +39,9 @@ export default pluginManager => {
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
       configuration: rootConfig(pluginManager),
+      connections: types.map(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
+      ),
     })
     .volatile(self => {
       const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
@@ -50,10 +52,7 @@ export default pluginManager => {
           rpcFuncs,
         },
       })
-      const assemblyManager = new AssemblyManager(
-        rpcManager,
-        self.configuration,
-      )
+      const assemblyManager = new AssemblyManager(rpcManager, self)
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -97,7 +96,33 @@ export default pluginManager => {
           })
         })
         addDisposer(self, disposer)
+
+        self.clearConnections()
+        self.configuration.connections.forEach(connectionConf => {
+          self.addConnection(connectionConf)
+        })
       },
+
+      addConnection(connectionConf) {
+        const connectionType = pluginManager.getConnectionType(
+          connectionConf.type,
+        )
+        const connectionName = readConfObject(connectionConf, 'name')
+        self.connections.set(connectionName, connectionType.stateModel.create())
+        self.connections
+          .get(connectionName)
+          .connect(connectionConf)
+          .then(() => self.updateAssemblies())
+      },
+
+      removeConnection(connectionName) {
+        self.connections.delete(connectionName)
+      },
+
+      updateAssemblies() {
+        self.assemblyManager.updateAssemblyData(self)
+      },
+
       configure(configSnapshot) {
         self.configuration = getType(self.configuration).create(configSnapshot)
       },
@@ -106,9 +131,7 @@ export default pluginManager => {
         let configSnapshot
         try {
           configSnapshot = JSON.parse(
-            new TextDecoder('utf-8').decode(
-              yield openLocation(configLocation).readFile(),
-            ),
+            yield openLocation(configLocation).readFile('utf8'),
           )
           self.configure(configSnapshot)
         } catch (error) {
@@ -154,6 +177,7 @@ export default pluginManager => {
           configuration,
         })
         self.views.push(newView)
+        self.updateAssemblies()
         return newView
       },
 
@@ -171,6 +195,15 @@ export default pluginManager => {
             self.hideDrawerWidget(drawerWidget)
         }
         self.views.remove(view)
+      },
+
+      addLinearGenomeViewOfAssembly(
+        assemblyName,
+        configuration,
+        initialState = {},
+      ) {
+        configuration.displayRegionsFromAssemblyName = assemblyName
+        return self.addView('LinearGenomeView', configuration, initialState)
       },
 
       addDrawerWidget(
@@ -261,6 +294,11 @@ export default pluginManager => {
         const editor = self.drawerWidgets.get('configEditor')
         editor.setTarget(configuration)
         self.showDrawerWidget(editor)
+      },
+
+      clearConnections() {
+        self.connections.clear()
+        self.updateAssemblies()
       },
     }))
 }

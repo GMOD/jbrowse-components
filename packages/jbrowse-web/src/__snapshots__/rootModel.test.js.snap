@@ -2,19 +2,13 @@
 
 exports[`can load configuration from a config object 1`] = `
 Object {
-  "assemblies": Object {
-    "volvox": Object {
+  "assemblies": Array [
+    Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "volvox",
-      "refNameAliases": Object {
-        "adapter": Object {
-          "configId": "Zd0NLmtxPZ2",
-          "type": "FromConfigAdapter",
-        },
-        "configId": "testid",
-      },
+      "assemblyName": "volvox",
+      "configId": "testid",
       "sequence": Object {
         "adapter": Object {
           "configId": "Zd0NLmtxPZ3",
@@ -28,7 +22,7 @@ Object {
         "type": "ReferenceSequence",
       },
     },
-  },
+  ],
   "configId": "testid",
   "rpc": Object {
     "configId": "testid",
@@ -39,12 +33,13 @@ Object {
 
 exports[`can load configuration from a file 1`] = `
 Object {
-  "assemblies": Object {
-    "volvox": Object {
+  "assemblies": Array [
+    Object {
       "aliases": Array [
         "vvx",
       ],
-      "configId": "volvox",
+      "assemblyName": "volvox",
+      "configId": "testid",
       "refNameAliases": Object {
         "adapter": Object {
           "configId": "testid",
@@ -85,9 +80,198 @@ Object {
         },
         "type": "ReferenceSequence",
       },
+      "tracks": Array [
+        Object {
+          "adapter": Object {
+            "configId": "testid",
+            "features": Array [
+              Object {
+                "end": 191,
+                "name": "Boris",
+                "refName": "ctgA",
+                "score": 200,
+                "start": 190,
+                "type": "foo",
+                "uniqueId": "one",
+              },
+              Object {
+                "end": 192,
+                "name": "Theresa",
+                "refName": "ctgA",
+                "score": 20,
+                "start": 191,
+                "type": "bar",
+                "uniqueId": "two",
+              },
+              Object {
+                "end": 211,
+                "name": "Nigel",
+                "refName": "ctgA",
+                "score": 300,
+                "start": 210,
+                "type": "baz",
+                "uniqueId": "three",
+              },
+              Object {
+                "end": 221,
+                "name": "Geoffray",
+                "refName": "ctgA",
+                "score": 2,
+                "start": 220,
+                "type": "quux",
+                "uniqueId": "four",
+              },
+            ],
+            "type": "FromConfigAdapter",
+          },
+          "category": Array [
+            "Bar Category",
+          ],
+          "configId": "7f9MEYvnw",
+          "name": "Lollipop track",
+          "renderer": Object {
+            "configId": "testid",
+            "type": "LollipopRenderer",
+          },
+          "type": "DynamicTrack",
+        },
+        Object {
+          "adapter": Object {
+            "bamLocation": Object {
+              "uri": "/test_data/volvox-sorted.bam",
+            },
+            "configId": "testid",
+            "index": Object {
+              "configId": "testid",
+              "location": Object {
+                "uri": "/test_data/volvox-sorted.bam.bai",
+              },
+            },
+            "type": "BamAdapter",
+          },
+          "category": Array [
+            "Bar Category",
+            "Baz Category",
+          ],
+          "configId": "gTdYq_j8M",
+          "name": "volvox-sorted red/blue",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "configId": "testid",
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "configId": "testid",
+              "labels": Object {
+                "configId": "testid",
+              },
+              "type": "SvgFeatureRenderer",
+            },
+            "configId": "testid",
+          },
+          "type": "AlignmentsTrack",
+        },
+        Object {
+          "adapter": Object {
+            "bamLocation": Object {
+              "uri": "/test_data/volvox-sorted.bam",
+            },
+            "configId": "testid",
+            "index": Object {
+              "configId": "testid",
+              "location": Object {
+                "uri": "/test_data/volvox-sorted.bam.bai",
+              },
+            },
+            "type": "BamAdapter",
+          },
+          "category": Array [
+            "Bee Category",
+            "Boo Category",
+          ],
+          "configId": "testid",
+          "name": "volvox-sorted all green",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "alignmentColor": "green",
+              "configId": "testid",
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "configId": "testid",
+              "labels": Object {
+                "configId": "testid",
+              },
+              "type": "SvgFeatureRenderer",
+            },
+            "configId": "testid",
+          },
+          "type": "AlignmentsTrack",
+        },
+        Object {
+          "adapter": Object {
+            "configId": "testid",
+            "features": Array [
+              Object {
+                "end": 101,
+                "name": "Boris",
+                "note": "note for boris",
+                "refName": "ctgA",
+                "start": 100,
+                "type": "foo",
+                "uniqueId": "one",
+              },
+              Object {
+                "end": 111,
+                "name": "Theresa",
+                "note": "note for theresa",
+                "refName": "ctgA",
+                "start": 110,
+                "type": "bar",
+                "uniqueId": "two",
+              },
+              Object {
+                "end": 121,
+                "name": "Nigel",
+                "note": "note for nigel",
+                "refName": "ctgA",
+                "start": 120,
+                "type": "baz",
+                "uniqueId": "three",
+              },
+              Object {
+                "end": 131,
+                "name": "Geoffray",
+                "note": "note for geoffray",
+                "refName": "ctgA",
+                "start": 130,
+                "type": "quux",
+                "uniqueId": "four",
+              },
+            ],
+            "type": "FromConfigAdapter",
+          },
+          "configId": "z3MB1J7HG",
+          "filterAttributes": Array [
+            "type",
+            "start",
+            "end",
+          ],
+          "name": "Filter Test",
+          "renderer": Object {
+            "configId": "testid",
+            "labels": Object {
+              "configId": "testid",
+            },
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "FilteringTrack",
+        },
+      ],
     },
-    "volvox2": Object {
-      "configId": "volvox2",
+    Object {
+      "assemblyName": "volvox2",
+      "configId": "testid",
       "refNameAliases": Object {
         "adapter": Object {
           "configId": "testid",
@@ -117,7 +301,7 @@ Object {
         "type": "ReferenceSequence",
       },
     },
-  },
+  ],
   "configId": "testid",
   "defaultSession": Object {
     "activeDrawerWidgets": Object {
@@ -157,9 +341,10 @@ Object {
     "views": Array [
       Object {
         "bpPerPx": 0.05,
-        "configuration": Object {},
+        "displayRegionsFromAssemblyName": "volvox",
         "id": "xdTd_biFQ",
         "offsetPx": 2000,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "Ntr0BAB7d",
@@ -176,8 +361,9 @@ Object {
       },
       Object {
         "bpPerPx": 2,
-        "configuration": Object {},
+        "displayRegionsFromAssemblyName": "volvox",
         "offsetPx": 200,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "gTdYq_j8M",
@@ -189,8 +375,9 @@ Object {
       },
       Object {
         "bpPerPx": 0.1,
-        "configuration": Object {},
+        "displayRegionsFromAssemblyName": "volvox",
         "offsetPx": 1800,
+        "trackSelectorType": "hierarchical",
         "tracks": Array [
           Object {
             "configuration": "7f9MEYvnw",
@@ -206,198 +393,6 @@ Object {
     "configId": "testid",
     "defaultDriver": "MainThreadRpcDriver",
   },
-  "tracks": Array [
-    Object {
-      "adapter": Object {
-        "configId": "testid",
-        "features": Array [
-          Object {
-            "end": 191,
-            "name": "Boris",
-            "refName": "ctgA",
-            "score": 200,
-            "start": 190,
-            "type": "foo",
-            "uniqueId": "one",
-          },
-          Object {
-            "end": 192,
-            "name": "Theresa",
-            "refName": "ctgA",
-            "score": 20,
-            "start": 191,
-            "type": "bar",
-            "uniqueId": "two",
-          },
-          Object {
-            "end": 211,
-            "name": "Nigel",
-            "refName": "ctgA",
-            "score": 300,
-            "start": 210,
-            "type": "baz",
-            "uniqueId": "three",
-          },
-          Object {
-            "end": 221,
-            "name": "Geoffray",
-            "refName": "ctgA",
-            "score": 2,
-            "start": 220,
-            "type": "quux",
-            "uniqueId": "four",
-          },
-        ],
-        "type": "FromConfigAdapter",
-      },
-      "assemblyName": "volvox",
-      "category": Array [
-        "Bar Category",
-      ],
-      "configId": "7f9MEYvnw",
-      "name": "Lollipop track",
-      "renderer": Object {
-        "configId": "testid",
-        "type": "LollipopRenderer",
-      },
-      "type": "DynamicTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bamLocation": Object {
-          "uri": "/test_data/volvox-sorted.bam",
-        },
-        "configId": "testid",
-        "index": Object {
-          "configId": "testid",
-          "location": Object {
-            "uri": "/test_data/volvox-sorted.bam.bai",
-          },
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyName": "volvox",
-      "category": Array [
-        "Bar Category",
-        "Baz Category",
-      ],
-      "configId": "gTdYq_j8M",
-      "name": "volvox-sorted red/blue",
-      "renderers": Object {
-        "PileupRenderer": Object {
-          "configId": "testid",
-          "type": "PileupRenderer",
-        },
-        "SvgFeatureRenderer": Object {
-          "configId": "testid",
-          "labels": Object {
-            "configId": "testid",
-          },
-          "type": "SvgFeatureRenderer",
-        },
-        "configId": "testid",
-      },
-      "type": "AlignmentsTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bamLocation": Object {
-          "uri": "/test_data/volvox-sorted.bam",
-        },
-        "configId": "testid",
-        "index": Object {
-          "configId": "testid",
-          "location": Object {
-            "uri": "/test_data/volvox-sorted.bam.bai",
-          },
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyName": "vvx",
-      "category": Array [
-        "Bee Category",
-        "Boo Category",
-      ],
-      "configId": "testid",
-      "name": "volvox-sorted all green",
-      "renderers": Object {
-        "PileupRenderer": Object {
-          "alignmentColor": "green",
-          "configId": "testid",
-          "type": "PileupRenderer",
-        },
-        "SvgFeatureRenderer": Object {
-          "configId": "testid",
-          "labels": Object {
-            "configId": "testid",
-          },
-          "type": "SvgFeatureRenderer",
-        },
-        "configId": "testid",
-      },
-      "type": "AlignmentsTrack",
-    },
-    Object {
-      "adapter": Object {
-        "configId": "testid",
-        "features": Array [
-          Object {
-            "end": 101,
-            "name": "Boris",
-            "note": "note for boris",
-            "refName": "ctgA",
-            "start": 100,
-            "type": "foo",
-            "uniqueId": "one",
-          },
-          Object {
-            "end": 111,
-            "name": "Theresa",
-            "note": "note for theresa",
-            "refName": "ctgA",
-            "start": 110,
-            "type": "bar",
-            "uniqueId": "two",
-          },
-          Object {
-            "end": 121,
-            "name": "Nigel",
-            "note": "note for nigel",
-            "refName": "ctgA",
-            "start": 120,
-            "type": "baz",
-            "uniqueId": "three",
-          },
-          Object {
-            "end": 131,
-            "name": "Geoffray",
-            "note": "note for geoffray",
-            "refName": "ctgA",
-            "start": 130,
-            "type": "quux",
-            "uniqueId": "four",
-          },
-        ],
-        "type": "FromConfigAdapter",
-      },
-      "assemblyName": "volvox2",
-      "configId": "z3MB1J7HG",
-      "filterAttributes": Array [
-        "type",
-        "start",
-        "end",
-      ],
-      "name": "Filter Test",
-      "renderer": Object {
-        "configId": "testid",
-        "labels": Object {
-          "configId": "testid",
-        },
-        "type": "SvgFeatureRenderer",
-      },
-      "type": "FilteringTrack",
-    },
-  ],
 }
 `;
 

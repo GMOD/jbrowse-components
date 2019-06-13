@@ -1,4 +1,4 @@
-import { getRoot, types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
 
 import { autorun } from 'mobx'
 
@@ -40,9 +40,10 @@ export default types.compose(
         }
         return new CompositeMap(featureMaps)
       },
-    }))
-    .volatile(() => ({
-      blockDefinitions: [],
+
+      get blockDefinitions() {
+        return getContainingView(self)[self.blockType]
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -61,49 +62,10 @@ export default types.compose(
             if (!blocksPresent[key]) self.deleteBlock(key)
           })
         })
-        const blockDefinitionDisposer = autorun(
-          async function getRefNamesAutorrun() {
-            // this obtains the genome views block definitions which
-            // includes essentially the reference sequence version of refseq names
-            let blockDefinitions = getContainingView(self)[self.blockType]
-            try {
-              const { assemblyManager } = getRoot(self)
-
-              // rename the reference sequence version of the refseq names
-              // into the data adapters version of them
-              // this is done in an autorun because the blocks that are in the view
-              // get continuously updated so we also continuously just get the refname mapping
-              const refNameMap = await assemblyManager.getRefNameMapForTrack(
-                self.configuration,
-              )
-              if (!refNameMap) return
-
-              blockDefinitions = blockDefinitions.map(blockDefinition => {
-                const { refName } = blockDefinition
-                if (refName && refNameMap.get(refName)) {
-                  return blockDefinition.renameReference(
-                    refNameMap.get(refName),
-                  )
-                }
-                return blockDefinition
-              })
-            } catch (e) {
-              self.setError(e)
-            } finally {
-              // finally update the block definitions with this, this is done in a finally because
-              // (a) a setError will cause error to be displayed in the blocks, so
-              // (b) the block definitions still need to be pushed into the track view
-              self.setBlockDefinitions(blockDefinitions)
-            }
-          },
-        )
 
         addDisposer(self, blockWatchDisposer)
-        addDisposer(self, blockDefinitionDisposer)
       },
-      setBlockDefinitions(blockDefinitions) {
-        self.blockDefinitions = blockDefinitions
-      },
+
       addBlock(key, block) {
         self.blockState.set(
           key,

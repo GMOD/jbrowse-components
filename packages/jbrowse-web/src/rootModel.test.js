@@ -11,9 +11,9 @@ test('can load configuration with the configure() action and resolve references 
 
 test('can load configuration from a config object', async () => {
   const { rootModel } = await createTestEnv({
-    assemblies: {
-      volvox: {
-        configId: 'volvox',
+    assemblies: [
+      {
+        assemblyName: 'volvox',
         sequence: {
           type: 'ReferenceSequence',
           adapter: {
@@ -23,15 +23,8 @@ test('can load configuration from a config object', async () => {
           },
         },
         aliases: ['vvx'],
-        refNameAliases: {
-          adapter: {
-            configId: 'Zd0NLmtxPZ2',
-            type: 'FromConfigAdapter',
-            features: [],
-          },
-        },
       },
-    },
+    ],
   })
 
   expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()

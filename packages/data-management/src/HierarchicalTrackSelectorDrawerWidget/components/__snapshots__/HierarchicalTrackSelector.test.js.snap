@@ -1,0 +1,223 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HierarchicalTrackSelector drawer widget renders with a couple of categorized tracks 1`] = `
+<div
+  class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
+>
+  <div
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
+  >
+    <label
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
+    >
+      Filter Tracks
+    </label>
+    <div
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+    >
+      <input
+        aria-invalid="false"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
+        type="text"
+        value=""
+      />
+      <div
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
+      >
+        <button
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label-68"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root-72"
+            >
+              clear
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root-98"
+          />
+        </button>
+      </div>
+    </div>
+    
+  </div>
+  <div
+    class="MuiFormGroup-root-82"
+  />
+  <button
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
+    tabindex="0"
+    type="button"
+  >
+    <span
+      class="MuiFab-label-85"
+    >
+      <span
+        aria-hidden="true"
+        class="material-icons MuiIcon-root-72"
+      >
+        add
+      </span>
+    </span>
+    <span
+      class="MuiTouchRipple-root-98"
+    />
+  </button>
+</div>
+`;
+
+exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncategorized tracks 1`] = `
+<div
+  class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
+>
+  <div
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
+  >
+    <label
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
+    >
+      Filter Tracks
+    </label>
+    <div
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+    >
+      <input
+        aria-invalid="false"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
+        type="text"
+        value=""
+      />
+      <div
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
+      >
+        <button
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label-68"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root-72"
+            >
+              clear
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root-98"
+          />
+        </button>
+      </div>
+    </div>
+    
+  </div>
+  <div
+    class="MuiFormGroup-root-82"
+  />
+  <button
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
+    tabindex="0"
+    type="button"
+  >
+    <span
+      class="MuiFab-label-85"
+    >
+      <span
+        aria-hidden="true"
+        class="material-icons MuiIcon-root-72"
+      >
+        add
+      </span>
+    </span>
+    <span
+      class="MuiTouchRipple-root-98"
+    />
+  </button>
+</div>
+`;
+
+exports[`HierarchicalTrackSelector drawer widget renders with just the required model elements 1`] = `
+<div
+  class="HierarchicalTrackSelector-root-1"
+  data-testid="hierarchical_track_selector"
+>
+  <div
+    class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
+  >
+    <label
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      data-shrink="false"
+    >
+      Filter Tracks
+    </label>
+    <div
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+    >
+      <input
+        aria-invalid="false"
+        class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
+        type="text"
+        value=""
+      />
+      <div
+        class="MuiInputAdornment-root-58 MuiInputAdornment-positionEnd-61"
+      >
+        <button
+          class="MuiButtonBase-root-69 MuiIconButton-root-63"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label-68"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root-72"
+            >
+              clear
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root-98"
+          />
+        </button>
+      </div>
+    </div>
+    
+  </div>
+  <div
+    class="MuiFormGroup-root-82"
+  />
+  <button
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
+    tabindex="0"
+    type="button"
+  >
+    <span
+      class="MuiFab-label-85"
+    >
+      <span
+        aria-hidden="true"
+        class="material-icons MuiIcon-root-72"
+      >
+        add
+      </span>
+    </span>
+    <span
+      class="MuiTouchRipple-root-98"
+    />
+  </button>
+</div>
+`;

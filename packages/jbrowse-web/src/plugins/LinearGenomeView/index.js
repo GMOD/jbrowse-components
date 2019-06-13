@@ -4,7 +4,6 @@ import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import modelFactory from './models'
 import ReactComponent from './components/LinearGenomeView'
 
-import configSchema from './models/configSchema'
 import BasicTrackFactory from './BasicTrack'
 import DynamicTrackFactory from './DynamicTrack'
 
@@ -40,7 +39,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
       return new ViewType({
         name: 'LinearGenomeView',
         stateModel: modelFactory(pluginManager),
-        configSchema,
         ReactComponent,
       })
     })

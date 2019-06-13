@@ -22,7 +22,7 @@ These types are specific to configuration schemas.
   ```
   or
   ```
-  { path: '/filesystem/path/to/resource.file' }
+  { localPath: '/filesystem/path/to/resource.file' }
   ```
 * `frozen` - any data structure. assumed to be immutable; internal changes to it will not be noticed by any mobx observers
 

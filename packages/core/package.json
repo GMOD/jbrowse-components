@@ -19,7 +19,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "npm test -- --coverage",
-    "lint": "tsc --noEmit && eslint --ext .js,.ts .",
+    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
     "clean": "rimraf dist",
     "docs": "typedoc --theme markdown --out docs --readme none .",
     "prebuild": "npm run clean",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@librpc/web": "git+https://github.com/rbuels/librpc-web.git",
     "@material-ui/core": "3.9.3",
-    "canvas": "^2.3.1",
+    "canvas": "^2.5.0",
     "file-uri-to-path": "^1.0.0",
     "generic-filehandle": "^1.0.8",
     "http-range-fetcher": "^1.2.2",

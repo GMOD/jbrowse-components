@@ -39,17 +39,6 @@ export const MenuItemModel = types
         rootModel.drawerWidgets.get('helpDrawerWidget'),
       )
     },
-    openAssemblyEditor() {
-      const rootModel = getRoot(self)
-      if (!rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'))
-        rootModel.addDrawerWidget(
-          'AssemblyEditorDrawerWidget',
-          'assemblyEditorDrawerWidget',
-        )
-      rootModel.showDrawerWidget(
-        rootModel.drawerWidgets.get('assemblyEditorDrawerWidget'),
-      )
-    },
     openConfigurationImport() {
       const rootModel = getRoot(self)
       if (!rootModel.drawerWidgets.get('importConfigurationDrawerWidget'))
@@ -69,7 +58,6 @@ export const MenuItemModel = types
           const re = new RegExp(`"${value}"`, 'g')
           if ((initialSnap.match(re) || []).length < 2) return undefined
         }
-        if (key === 'volatile') return undefined
         return value
       }
       const configSnap = JSON.stringify(
@@ -109,7 +97,6 @@ export const MainMenuBarModel = types
         menuItems: [
           { name: 'About', icon: 'info', callback: 'openAbout' },
           { name: 'Help', icon: 'help', callback: 'openHelp' },
-          { name: 'Assemblies', icon: 'edit', callback: 'openAssemblyEditor' },
         ],
       })
     },

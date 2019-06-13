@@ -1,6 +1,6 @@
 import fromEntries from 'object.fromentries'
 import { Feature } from './simpleFeature'
-import { IRegion } from '../mst-types'
+import { IRegion, INoAssemblyRegion } from '../mst-types'
 
 // @ts-ignore
 if (!Object.fromEntries) {
@@ -22,7 +22,11 @@ export const inProduction = !inDevelopment
  * @param {number} args.end end coordinate
  * @returns {string} the locstring
  */
-export function assembleLocString({ refName, start, end }: IRegion): string {
+export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
+  const { refName, start, end } = region
+  let assemblyName
+  if ((region as IRegion).assemblyName) ({ assemblyName } = region as IRegion)
+  if (assemblyName) return `${assemblyName}:${refName}:${start + 1}-${end}`
   return `${refName}:${start + 1}-${end}`
 }
 

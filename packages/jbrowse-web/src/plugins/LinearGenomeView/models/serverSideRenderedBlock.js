@@ -7,7 +7,7 @@ import {
 } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
@@ -16,7 +16,11 @@ import {
   checkAbortSignal,
   isAbortException,
 } from '@gmod/jbrowse-core/util'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getContainingAssembly,
+  getContainingView,
+} from '@gmod/jbrowse-core/util/tracks'
+
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // calls the render worker to render the block content
@@ -25,10 +29,30 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const { rpcManager } = getRoot(view)
+  const { rpcManager, assemblyManager } = getRoot(view)
+  const trackConf = track.configuration
+  let trackConfParent = getParent(trackConf)
+  if (!trackConfParent.assemblyName)
+    trackConfParent = getParent(trackConfParent)
+  const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
+  const trackAssemblyData =
+    assemblyManager.assemblyData.get(trackAssemblyName) || {}
+  const trackAssemblyAliases = trackAssemblyData.aliases || []
+  let cannotBeRenderedReason
+  if (
+    !(
+      trackAssemblyName === self.region.assemblyName ||
+      trackAssemblyAliases.includes(self.region.assemblyName)
+    )
+  )
+    cannotBeRenderedReason = 'region assembly does not match track assembly'
+  else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
-  const cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+  const assemblyName = readConfObject(
+    getContainingAssembly(track.configuration),
+    'assemblyName',
+  )
   return {
     rendererType,
     rpcManager,
@@ -36,6 +60,7 @@ function renderBlockData(self) {
     cannotBeRenderedReason,
     trackError: track.error,
     renderArgs: {
+      assemblyName,
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),

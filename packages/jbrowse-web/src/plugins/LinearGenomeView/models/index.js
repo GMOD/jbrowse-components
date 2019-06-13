@@ -1,23 +1,14 @@
-import { autorun, transaction, isObservable } from 'mobx'
-import {
-  addDisposer,
-  getParent,
-  getRoot,
-  getType,
-  types,
-} from 'mobx-state-tree'
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
-import { clamp } from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { clamp } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-
-import LinearGenomeViewConfigSchema from './configSchema'
-
-import BaseTrack from './baseTrack'
-import calculateStaticBlocks from '../util/calculateStaticBlocks'
+import { transaction } from 'mobx'
+import { getParent, getRoot, types } from 'mobx-state-tree'
 import calculateDynamicBlocks from '../util/calculateDynamicBlocks'
+import calculateStaticBlocks from '../util/calculateStaticBlocks'
+import BaseTrack from './baseTrack'
 
 const validBpPerPx = [
   1 / 50,
@@ -60,7 +51,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       type: types.literal('LinearGenomeView'),
       offsetPx: 0,
       bpPerPx: 1,
-      flipped: false,
+      displayedRegions: types.array(Region),
+      displayRegionsFromAssemblyName: types.maybe(types.string),
+      reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
       tracks: types.array(
@@ -68,9 +61,12 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       ),
       controlsWidth: 120,
       width: 800,
-      configuration: LinearGenomeViewConfigSchema,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
+      trackSelectorType: types.optional(
+        types.enumeration(['hierarchical']),
+        'hierarchical',
+      ),
       minimumBlockWidth: 20,
     })
     .views(self => ({
@@ -98,7 +94,7 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
       },
 
       get horizontallyFlipped() {
-        return getConf(self, 'reversed')
+        return self.reversed
       },
 
       get displayedRegionsTotalPx() {
@@ -115,22 +111,15 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         }
       },
     }))
-    .volatile(() => ({
-      displayedRegions: [],
-    }))
     .actions(self => ({
-      afterAttach() {
-        const displayedRegionsDisposer = autorun(() => {
-          const { assemblyManager } = getRoot(self)
-          if (assemblyManager)
-            self.setDisplayedRegions(assemblyManager.allRegions)
-        })
-
-        addDisposer(self, displayedRegionsDisposer)
-      },
       setWidth(newWidth) {
         self.width = newWidth
       },
+
+      horizontallyFlip() {
+        self.reversed = !self.reversed
+      },
+
       showTrack(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
@@ -166,17 +155,20 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
         if (!hiddenCount) self.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions) {
-        self.displayedRegions = regions.map(r => {
-          return isObservable(r) ? r : Region.create(r)
-        })
+      setDisplayedRegions(regions, isFromAssemblyName = false) {
+        self.displayedRegions = regions
+        if (!isFromAssemblyName)
+          this.setDisplayedRegionsFromAssemblyName(undefined)
+      },
+
+      setDisplayedRegionsFromAssemblyName(assemblyName) {
+        self.displayRegionsFromAssemblyName = assemblyName
+        const root = getRoot(self)
+        if (root.updateAssemblies) root.updateAssemblies()
       },
 
       activateTrackSelector() {
-        if (getType(self.configuration).name === 'AnonymousModel')
-          throw new Error('this view should have a real configuration')
-        const trackSelectorType = getConf(self, 'trackSelectorType')
-        if (trackSelectorType === 'hierarchical') {
+        if (self.trackSelectorType === 'hierarchical') {
           const rootModel = getRoot(self)
           if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
             rootModel.addDrawerWidget(
@@ -190,7 +182,9 @@ export default function LinearGenomeViewStateFactory(pluginManager) {
           selector.setView(self)
           rootModel.showDrawerWidget(selector)
         } else {
-          throw new Error(`invalid track selector type ${trackSelectorType}`)
+          throw new Error(
+            `invalid track selector type ${self.trackSelectorType}`,
+          )
         }
       },
 

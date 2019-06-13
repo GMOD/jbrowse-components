@@ -1,7 +1,7 @@
 import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
+import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { Observable, Observer } from 'rxjs'
 import { mergeAll, map } from 'rxjs/operators'
 
@@ -38,7 +38,8 @@ export default class BigWigAdapter extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: { bigWigLocation: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public constructor(config: { bigWigLocation: IFileLocation }) {
     super()
     this.bigwig = new BigWig({
       filehandle: openLocation(config.bigWigLocation),
@@ -78,7 +79,7 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: incorporate summary blocks
   public getRegionStats(
-    region: IRegion,
+    region: INoAssemblyRegion,
     opts: BaseOptions = {},
   ): Promise<FeatureStats> {
     const { refName, start, end } = region
@@ -92,7 +93,7 @@ export default class BigWigAdapter extends BaseAdapter {
 
   // todo: add caching
   public async getMultiRegionStats(
-    regions: IRegion[] = [],
+    regions: INoAssemblyRegion[] = [],
     opts: BaseOptions = {},
   ): Promise<FeatureStats> {
     if (!regions.length) {
@@ -135,7 +136,7 @@ export default class BigWigAdapter extends BaseAdapter {
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
   public getFeatures(
-    region: IRegion,
+    region: INoAssemblyRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
     const { refName, start, end } = region

@@ -7,7 +7,6 @@ describe('adapter can fetch features from volvox.bw', () => {
   beforeEach(() => {
     adapter = new BigWigAdapter(
       {
-        assemblyName: 'volvox',
         bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
       },
       {},

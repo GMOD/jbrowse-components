@@ -1,9 +1,8 @@
 import { getSnapshot } from 'mobx-state-tree'
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import MyPlugin from './index'
-// import { createTestEnv } from '../../JBrowse'
 
-xtest('plugin in a stock JBrowse', async () => {
-  function createTestEnv() {}
+test('plugin in a stock JBrowse', async () => {
   const { pluginManager } = await createTestEnv()
   expect(() => pluginManager.addPlugin(new MyPlugin())).toThrow(
     /JBrowse already configured, cannot add plugins/,

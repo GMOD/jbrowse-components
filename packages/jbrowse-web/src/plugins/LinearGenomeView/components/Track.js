@@ -21,6 +21,7 @@ const styles = {
 class Track extends Component {
   static propTypes = {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
+    trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
     onHorizontalScroll: PropTypes.func.isRequired,
   }
@@ -46,8 +47,8 @@ class Track extends Component {
       })
   }
 
-  mouseDown() {
-    this.setState({ mouseDragging: true })
+  mouseDown(event) {
+    this.setState({ mouseDragging: true, previousMouseX: event.clientX })
   }
 
   wheel(event) {
@@ -80,12 +81,12 @@ class Track extends Component {
 
   mouseMove(event) {
     const { onHorizontalScroll } = this.props
-    const { mouseDragging } = this.state
-    if (mouseDragging && this.previousMouseX !== undefined) {
-      const distance = event.clientX - this.previousMouseX
+    const { mouseDragging, previousMouseX } = this.state
+    if (mouseDragging && previousMouseX !== undefined) {
+      const distance = event.clientX - previousMouseX
       if (distance) onHorizontalScroll(-distance)
     }
-    this.previousMouseX = event.clientX
+    this.setState({ previousMouseX: event.clientX })
   }
 
   mouseLeave(event) {
@@ -99,9 +100,10 @@ class Track extends Component {
   }
 
   render() {
-    const { classes, children } = this.props
+    const { classes, children, trackId } = this.props
     return (
       <div
+        data-testid={`track-${trackId}`}
         className={classes.track}
         onMouseDown={this.mouseDown}
         onMouseMove={this.mouseMove}
