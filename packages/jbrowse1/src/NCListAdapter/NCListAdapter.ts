@@ -9,7 +9,7 @@ import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 
 import NCListFeature from './NCListFeature'
 
-export default class BamAdapter extends BaseAdapter {
+export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 

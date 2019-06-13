@@ -5,7 +5,7 @@ import { flow, types } from 'mobx-state-tree'
 import { fetchJb1 } from './jb1ConfigLoad'
 import { convertTrackConfig, createRefSeqsAdapter } from './jb1ToJb2'
 
-export default function modelFactory(pluginManager) {
+export default function(pluginManager) {
   return types.compose(
     'JBrowse1Connection',
     connectionModelFactory(pluginManager),

@@ -9,7 +9,7 @@ import {
   ucscAssemblies,
 } from './ucscTrackHub'
 
-export default function modelFactory(pluginManager) {
+export default function(pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
     connectionModelFactory(pluginManager),

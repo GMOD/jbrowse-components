@@ -11,7 +11,7 @@ const HelloWorldDrawerWidget = lazy(() =>
   import('./components/HelloWorldDrawerWidget'),
 )
 
-export default class HelloWorldMenuBarAndDrawerWidget extends Plugin {
+export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addMenuBarType(() => {
       const stateModel = HelloWorldMenuBarModelFactory(pluginManager)

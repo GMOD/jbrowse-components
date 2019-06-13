@@ -8,7 +8,7 @@ import {
   HeadingComponent as ConfigurationEditorHeadingComponent,
 } from './ConfigurationEditorDrawerWidget'
 
-export default class MainMenuBar extends Plugin {
+export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addDrawerWidgetType(() => {
       return new DrawerWidgetType({

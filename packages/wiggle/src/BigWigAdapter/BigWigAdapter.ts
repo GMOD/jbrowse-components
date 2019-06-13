@@ -23,7 +23,7 @@ interface StatsRegion {
   bpPerPx?: number
 }
 
-export default class BigWigAdapter extends BaseAdapter {
+export default class extends BaseAdapter {
   private bigwig: BigWig
 
   private statsCache: {
