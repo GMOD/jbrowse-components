@@ -1,9 +1,9 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
+import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
-import BaseAdapter from '@gmod/jbrowse-core/BaseAdapter'
+
+import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Observer, Observable } from 'rxjs'
 import { TabixIndexedFile } from '@gmod/tabix'
@@ -20,10 +20,10 @@ export default class VcfTabixAdapter extends BaseAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
-    vcfGzLocation: FileLocation
+    vcfGzLocation: IFileLocation
     index: {
       index: string
-      location: FileLocation
+      location: IFileLocation
     }
   }) {
     super()
@@ -61,7 +61,10 @@ export default class VcfTabixAdapter extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(query: IRegion): Observable<Feature> {
+  public getFeatures(
+    query: INoAssemblyRegion,
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const parser = await this.parser
