@@ -5,12 +5,12 @@ import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Alignments from '@gmod/jbrowse-plugin-alignments'
 import Sequence from '@gmod/jbrowse-plugin-sequence'
+import Bed from '@gmod/jbrowse-plugin-bed'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
-import BigBedAdapterPlugin from './plugins/BigBedAdapter'
 import FromConfigAdapterPlugin from './plugins/FromConfigAdapter'
 
 // tracks
@@ -26,7 +26,7 @@ export default [
   DataManagement,
   ConfigEditing,
   MainMenuBarPlugin,
-  BigBedAdapterPlugin,
+  Bed,
   LinearGenomeView,
   SvgFeaturePlugin,
   FromConfigAdapterPlugin,

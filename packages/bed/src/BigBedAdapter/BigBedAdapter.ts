@@ -1,13 +1,12 @@
-import { mergeAll, map } from 'rxjs/operators'
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
-
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { IRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
-import { Observable, Observer } from 'rxjs'
+import { IFileLocation, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Observable, Observer } from 'rxjs'
+import { map, mergeAll } from 'rxjs/operators'
 
 interface BEDFeature {
   chrom: string
@@ -28,7 +27,7 @@ interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
 }
 
-export default class BigBedAdapter extends BaseAdapter {
+export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private bigbed: any
 

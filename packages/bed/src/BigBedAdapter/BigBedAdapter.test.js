@@ -1,5 +1,4 @@
 import { toArray } from 'rxjs/operators'
-
 import BigBedAdapter from './BigBedAdapter'
 
 test('adapter can fetch features from volvox.bw', async () => {
