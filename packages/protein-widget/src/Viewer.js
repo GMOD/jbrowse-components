@@ -12,17 +12,17 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-import LinearGenomeViewPlugin from '@gmod/jbrowse-plugin-linear-genome-view'
+import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import Protein from '@gmod/jbrowse-plugin-protein'
 import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
-import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
 import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'
 import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
 import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
 
 const plugins = [
   FromConfigAdapterPlugin,
-  LinearGenomeViewPlugin,
-  SequenceRendererPlugin,
+  LinearGenomeView,
+  Protein,
   LollipopRendererPlugin,
   SvgFeatureRendererPlugin,
   FilteringTrackPlugin,
