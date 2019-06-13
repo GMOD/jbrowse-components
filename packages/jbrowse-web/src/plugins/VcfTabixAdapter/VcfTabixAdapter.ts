@@ -1,4 +1,5 @@
-import { openLocation, FileLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { INoAssemblyRegion, IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
