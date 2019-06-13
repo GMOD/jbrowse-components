@@ -15,7 +15,7 @@
     ]
   },
   "dependencies": {
-    "@gmod/bam": "^1.0.17",
+    "@gmod/bam": "^1.0.20",
     "@gmod/bbi": "^1.0.21",
     "@gmod/bed": "^2.0.0",
     "@gmod/indexedfasta": "^1.0.11",
@@ -38,7 +38,7 @@
     "color": "^3.1.1",
     "d3-scale": "^3.0.0",
     "file-saver": "^2.0.0",
-    "generic-filehandle": "^1.0.6",
+    "generic-filehandle": "^2.0.0",
     "http-range-fetcher": "^1.1.0",
     "json-stable-stringify": "^1.0.1",
     "mobx": "^5.5.2",
