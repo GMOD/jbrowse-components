@@ -12,6 +12,7 @@ import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // adapters
+import VcfTabixAdapterPlugin from './plugins/VcfTabixAdapter'
 
 // tracks
 import FilteringTrackPlugin from './plugins/FilteringTrack'
@@ -25,6 +26,7 @@ export default [
   DataManagement,
   Config,
   MainMenuBarPlugin,
+  VcfTabixAdapterPlugin,
   Bed,
   LinearGenomeView,
   SvgFeaturePlugin,

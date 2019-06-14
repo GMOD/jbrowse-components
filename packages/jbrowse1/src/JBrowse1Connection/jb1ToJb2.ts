@@ -162,7 +162,7 @@ export async function createRefSeqsAdapter(
     const refSeqsJson = await openLocation({ uri: refSeqs.url }).readFile(
       'utf8',
     )
-    const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson)
+    const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson as string)
     return refSeqAdapterFromConfig(refSeqsData)
   }
   if ('data' in refSeqs) {

@@ -125,6 +125,30 @@
         },
         {
           "type": "BasicTrack",
+          "configId": "test",
+          "name": "volvox filtered vcf",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.filtered.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "type": "BasicTrack",
           "name": "volvox bigbed",
           "category": [
             "Bee Category",

@@ -1,14 +1,14 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 export default class AssemblyManager {
-  constructor(rpcManager, rootModel) {
+  constructor(rpcManager, rootModel, opts = {}) {
     rpcManager.assemblyManager = this
     this.rpcManager = rpcManager
     this.refNameMaps = new Map()
-    this.updateAssemblyData(rootModel)
+    this.updateAssemblyData(rootModel, opts)
   }
 
-  updateAssemblyData(rootModel) {
+  updateAssemblyData(rootModel, opts = {}) {
     const rootConfig = rootModel.configuration
     this.assemblyData = new Map()
     for (const assemblyConfig of rootConfig.assemblies) {
@@ -73,15 +73,18 @@ export default class AssemblyManager {
       })
     })
 
-    this.setDisplayedRegions(rootModel)
+    this.setDisplayedRegions(rootModel, opts)
   }
 
-  async setDisplayedRegions(rootModel) {
+  async setDisplayedRegions(rootModel, opts = {}) {
     for (const view of rootModel.views) {
       const assemblyName = view.displayRegionsFromAssemblyName
       if (assemblyName && this.assemblyData.get(assemblyName).sequence) {
         // eslint-disable-next-line no-await-in-loop
-        const displayedRegions = await this.getRegionsForAssembly(assemblyName)
+        const displayedRegions = await this.getRegionsForAssembly(
+          assemblyName,
+          opts,
+        )
         view.setDisplayedRegions(displayedRegions, true)
       }
     }
@@ -95,7 +98,7 @@ export default class AssemblyManager {
    * @returns {Promise<object>} Object like { refName1: ['alias1', 'alias2'],
    * refName2: ['alias3', 'alias4'] }
    */
-  async getRefNameAliases(assemblyName) {
+  async getRefNameAliases(assemblyName, opts = {}) {
     const refNameAliases = {}
     const assemblyConfig = this.assemblyData.get(assemblyName)
     if (assemblyConfig.refNameAliases) {
@@ -107,6 +110,7 @@ export default class AssemblyManager {
           sessionId: assemblyName,
           adapterType: assemblyConfig.refNameAliases.adapter.type,
           adapterConfig: assemblyConfig.refNameAliases.adapter,
+          signal: opts.signal,
         },
         { timeout: 1000000 },
       )
@@ -123,10 +127,10 @@ export default class AssemblyManager {
    * @param {adapterConf} adapterConf Configuration model of an adapter
    * @param {string} assemblyName Assembly to use for aliasing
    */
-  async addRefNameMapForAdapter(adapterConf, assemblyName) {
+  async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
     const refNameMap = new Map()
 
-    const refNameAliases = await this.getRefNameAliases(assemblyName)
+    const refNameAliases = await this.getRefNameAliases(assemblyName, opts)
 
     const refNames = await this.rpcManager.call(
       readConfObject(adapterConf, 'configId'),
@@ -135,6 +139,7 @@ export default class AssemblyManager {
         sessionId: assemblyName,
         adapterType: readConfObject(adapterConf, 'type'),
         adapterConfig: adapterConf,
+        signal: opts.signal,
       },
       { timeout: 1000000 },
     )
@@ -166,10 +171,10 @@ export default class AssemblyManager {
    * @returns {Map} See `addRefNameMapForAdapter` for example Map, or an empty
    * map if the adapter is not found.
    */
-  async getRefNameMapForAdapter(adapterConf, assemblyName) {
+  async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
     const configId = readConfObject(adapterConf, 'configId')
     if (!this.refNameMaps.has(configId))
-      await this.addRefNameMapForAdapter(adapterConf, assemblyName)
+      await this.addRefNameMapForAdapter(adapterConf, assemblyName, opts)
     return this.refNameMaps.get(configId)
   }
 
@@ -180,32 +185,27 @@ export default class AssemblyManager {
     this.refNameMaps = new Map()
   }
 
-  async getRegionsForAssembly(assemblyName) {
+  async getRegionsForAssembly(assemblyName, opts = {}) {
     const assembly = this.assemblyData.get(assemblyName)
     if (assembly) {
       const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const adapterRegions = await this.rpcManager.call(
-          assembly.configId,
-          'getRegions',
-          {
-            sessionId: assemblyName,
-            adapterType: adapterConfig.type,
-            adapterConfig,
-          },
-          { timeout: 1000000 },
-        )
-        const adapterRegionsWithAssembly = adapterRegions.map(
-          adapterRegion => ({
-            ...adapterRegion,
-            assemblyName,
-          }),
-        )
-        return adapterRegionsWithAssembly
-      } catch (error) {
-        console.error('Failed to fetch sequence', error)
-      }
+      // eslint-disable-next-line no-await-in-loop
+      const adapterRegions = await this.rpcManager.call(
+        assembly.configId,
+        'getRegions',
+        {
+          sessionId: assemblyName,
+          adapterType: adapterConfig.type,
+          adapterConfig,
+          signal: opts.signal,
+        },
+        { timeout: 1000000 },
+      )
+      const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => ({
+        ...adapterRegion,
+        assemblyName,
+      }))
+      return adapterRegionsWithAssembly
     }
     return undefined
   }

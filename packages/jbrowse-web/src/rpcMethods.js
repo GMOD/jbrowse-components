@@ -73,7 +73,7 @@ export async function getRegions(
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getRegions()
+  return dataAdapter.getRegions({ signal })
 }
 
 export async function getRefNames(
@@ -90,20 +90,23 @@ export async function getRefNames(
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getRefNames()
+  return dataAdapter.getRefNames({ signal })
 }
 
 export async function getRefNameAliases(
   pluginManager,
-  { sessionId, adapterType, adapterConfig },
+  { sessionId, adapterType, signal, adapterConfig },
 ) {
+  if (isRemoteAbortSignal(signal)) {
+    signal = deserializeAbortSignal(signal)
+  }
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
     adapterType,
     adapterConfig,
   )
-  return dataAdapter.getRefNameAliases()
+  return dataAdapter.getRefNameAliases({ signal })
 }
 
 /**

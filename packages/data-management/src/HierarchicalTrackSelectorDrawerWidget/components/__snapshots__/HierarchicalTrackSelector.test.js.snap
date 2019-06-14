@@ -9,16 +9,16 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
       data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
       <input
-        aria-invalid="true"
+        aria-invalid="false"
         class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
@@ -42,27 +42,23 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-106"
+            class="MuiTouchRipple-root-98"
           />
         </button>
       </div>
     </div>
-    <p
-      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
-    >
-      No matches
-    </p>
+    
   </div>
   <div
-    class="MuiFormGroup-root-90"
+    class="MuiFormGroup-root-82"
   />
   <button
-    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-93"
+      class="MuiFab-label-85"
     >
       <span
         aria-hidden="true"
@@ -72,7 +68,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-106"
+      class="MuiTouchRipple-root-98"
     />
   </button>
 </div>
@@ -87,16 +83,16 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
       data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
       <input
-        aria-invalid="true"
+        aria-invalid="false"
         class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
@@ -120,27 +116,23 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-106"
+            class="MuiTouchRipple-root-98"
           />
         </button>
       </div>
     </div>
-    <p
-      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
-    >
-      No matches
-    </p>
+    
   </div>
   <div
-    class="MuiFormGroup-root-90"
+    class="MuiFormGroup-root-82"
   />
   <button
-    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-93"
+      class="MuiFab-label-85"
     >
       <span
         aria-hidden="true"
@@ -150,7 +142,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-106"
+      class="MuiTouchRipple-root-98"
     />
   </button>
 </div>
@@ -165,16 +157,16 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
     class="MuiFormControl-root-6 MuiFormControl-fullWidth-9 HierarchicalTrackSelector-searchBox-2"
   >
     <label
-      class="MuiFormLabel-root-21 MuiFormLabel-error-24 MuiInputLabel-error-13 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
+      class="MuiFormLabel-root-21 MuiInputLabel-root-10 MuiInputLabel-formControl-15 MuiInputLabel-animated-18"
       data-shrink="false"
     >
       Filter Tracks
     </label>
     <div
-      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-error-47 MuiInput-error-33 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
+      class="MuiInputBase-root-41 MuiInput-root-28 MuiInput-underline-32 MuiInputBase-fullWidth-50 MuiInput-fullWidth-35 MuiInputBase-formControl-42 MuiInput-formControl-29 MuiInputBase-adornedEnd-46"
     >
       <input
-        aria-invalid="true"
+        aria-invalid="false"
         class="MuiInputBase-input-51 MuiInput-input-36 MuiInputBase-inputAdornedEnd-57"
         type="text"
         value=""
@@ -198,27 +190,23 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
             </span>
           </span>
           <span
-            class="MuiTouchRipple-root-106"
+            class="MuiTouchRipple-root-98"
           />
         </button>
       </div>
     </div>
-    <p
-      class="MuiFormHelperText-root-81 MuiFormHelperText-error-82"
-    >
-      No matches
-    </p>
+    
   </div>
   <div
-    class="MuiFormGroup-root-90"
+    class="MuiFormGroup-root-82"
   />
   <button
-    class="MuiButtonBase-root-69 MuiFab-root-92 MuiFab-secondary-95 HierarchicalTrackSelector-fab-3"
+    class="MuiButtonBase-root-69 MuiFab-root-84 MuiFab-secondary-87 HierarchicalTrackSelector-fab-3"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiFab-label-93"
+      class="MuiFab-label-85"
     >
       <span
         aria-hidden="true"
@@ -228,7 +216,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with just the required 
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-106"
+      class="MuiTouchRipple-root-98"
     />
   </button>
 </div>

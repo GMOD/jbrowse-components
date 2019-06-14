@@ -21,6 +21,6 @@
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
     "react-simple-code-editor": "0.9.3",
-    "rxjs": "^6.5.1"
+    "rxjs": "^6.5.2"
   }
 }

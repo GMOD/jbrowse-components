@@ -96,6 +96,7 @@ function HierarchicalTrackSelector(props) {
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
   const filterError =
+    model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
 
   return (

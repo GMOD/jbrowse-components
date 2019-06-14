@@ -36,7 +36,6 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public constructor(config: { bigWigLocation: IFileLocation }) {
     super()
     this.bigwig = new BigWig({
