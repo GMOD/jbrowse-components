@@ -1,0 +1,21 @@
+{
+  "name": "@gmod/jbrowse-plugin-filtering",
+  "version": "2.0.0",
+  "description": "JBrowse 2 filtering tracks, etc.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/filtering"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "@material-ui/core": "3.9.3",
+    "mobx": "^5.5.2",
+    "mobx-react": "^5.3.6",
+    "mobx-state-tree": "3.10.2",
+    "prop-types": "^15.6.2",
+    "react": "^16.8.6"
+  }
+}

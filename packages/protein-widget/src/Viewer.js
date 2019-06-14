@@ -17,16 +17,9 @@ import Config from '@gmod/jbrowse-plugin-config'
 import Protein from '@gmod/jbrowse-plugin-protein'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
-import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
+import Filtering from '@gmod/jbrowse-plugin-filtering'
 
-const plugins = [
-  Config,
-  LinearGenomeView,
-  Protein,
-  Lollipop,
-  SVG,
-  FilteringTrackPlugin,
-]
+const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
 // want a lineargenomeview with a sequence track
 // and a variants track

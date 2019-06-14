@@ -1,9 +1,8 @@
-import React from 'react'
-import ReactPropTypes from 'prop-types'
-import { observer, PropTypes } from 'mobx-react'
-
-import { withStyles } from '@material-ui/core'
 import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { withStyles } from '@material-ui/core'
+import { observer, PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React from 'react'
 import FilterControls from './FilterControls'
 import FilterControlResizeHandle from './FilterControlsResizeHandle'
 

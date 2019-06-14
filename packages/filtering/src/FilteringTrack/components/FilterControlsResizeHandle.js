@@ -1,6 +1,6 @@
-import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core'
+import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 
 const styles = {
   dragHandle: {

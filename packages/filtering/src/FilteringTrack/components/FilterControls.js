@@ -1,19 +1,18 @@
-import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import {
-  withStyles,
-  FormControlLabel,
   Checkbox,
-  FormLabel,
   FormControl,
+  FormControlLabel,
   FormGroup,
   FormHelperText,
+  FormLabel,
   Typography,
+  withStyles,
 } from '@material-ui/core'
-import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import { reaction } from 'mobx'
-
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { observer, PropTypes as MxPropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 
 const styles = theme => ({
   root: {

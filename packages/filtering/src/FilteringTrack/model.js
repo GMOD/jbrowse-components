@@ -1,15 +1,7 @@
-import { types } from 'mobx-state-tree'
-
-import {
-  ConfigurationReference,
-  ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
-
+import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import {
-  basicTrackConfigSchemaFactory,
-  basicTrackStateModelFactory,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { basicTrackStateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { types } from 'mobx-state-tree'
 import FilteringTrackComponent from './components/FilteringTrack'
 
 function makeFilters(trackModel) {
@@ -27,28 +19,10 @@ function makeFilters(trackModel) {
   return filters
 }
 
-export default pluginManager => {
-  const basicTrackConfigSchema = basicTrackConfigSchemaFactory(pluginManager)
-  const basicTrackStateModel = basicTrackStateModelFactory(
-    basicTrackConfigSchema,
-  )
+export default configSchema => {
+  const basicTrackStateModel = basicTrackStateModelFactory(configSchema)
 
-  const configSchema = ConfigurationSchema(
-    'FilteringTrack',
-    {
-      filterAttributes: {
-        type: 'stringArray',
-        defaultValue: ['type'],
-        description: 'list of feature attributes to use for filtering',
-      },
-    },
-    {
-      baseConfiguration: basicTrackConfigSchema,
-      explicitlyTyped: true,
-    },
-  )
-
-  const stateModel = types.compose(
+  return types.compose(
     'FilteringTrack',
     basicTrackStateModel,
     types
@@ -89,5 +63,4 @@ export default pluginManager => {
         reactComponent: FilteringTrackComponent,
       })),
   )
-  return { configSchema, stateModel }
 }
