@@ -189,29 +189,23 @@ export default class AssemblyManager {
     const assembly = this.assemblyData.get(assemblyName)
     if (assembly) {
       const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const adapterRegions = await this.rpcManager.call(
-          assembly.configId,
-          'getRegions',
-          {
-            sessionId: assemblyName,
-            adapterType: adapterConfig.type,
-            adapterConfig,
-            signal: opts.signal,
-          },
-          { timeout: 1000000 },
-        )
-        const adapterRegionsWithAssembly = adapterRegions.map(
-          adapterRegion => ({
-            ...adapterRegion,
-            assemblyName,
-          }),
-        )
-        return adapterRegionsWithAssembly
-      } catch (error) {
-        console.error('Failed to fetch sequence', error)
-      }
+      // eslint-disable-next-line no-await-in-loop
+      const adapterRegions = await this.rpcManager.call(
+        assembly.configId,
+        'getRegions',
+        {
+          sessionId: assemblyName,
+          adapterType: adapterConfig.type,
+          adapterConfig,
+          signal: opts.signal,
+        },
+        { timeout: 1000000 },
+      )
+      const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => ({
+        ...adapterRegion,
+        assemblyName,
+      }))
+      return adapterRegionsWithAssembly
     }
     return undefined
   }
