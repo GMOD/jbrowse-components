@@ -1,5 +1,4 @@
 import { toArray } from 'rxjs/operators'
-
 import Adapter from './FromConfigAdapter'
 
 test('adapter can fetch features', async () => {

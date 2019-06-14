@@ -26,4 +26,14 @@ describe('Config editing', () => {
       configId: expect.any(String),
     })
   })
+
+  it('creates proper FromConfigAdapter', () => {
+    const adapter = pluginManager.getAdapterType('FromConfigAdapter')
+    const config = adapter.configSchema.create({
+      type: 'FromConfigAdapter',
+    })
+    expect(getSnapshot(config)).toMatchSnapshot({
+      configId: expect.any(String),
+    })
+  })
 })

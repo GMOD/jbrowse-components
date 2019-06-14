@@ -1,10 +1,10 @@
 {
-  "name": "@gmod/jbrowse-plugin-config-editing",
+  "name": "@gmod/jbrowse-plugin-config",
   "version": "2.0.0",
-  "description": "JBrowse 2 config editing",
+  "description": "JBrowse 2 config utilities",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/config-editing"
+    "test": "cd ../..; jest packages/config"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
@@ -20,6 +20,7 @@
     "prismjs": "^1.15.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.6",
-    "react-simple-code-editor": "0.9.3"
+    "react-simple-code-editor": "0.9.3",
+    "rxjs": "^6.5.1"
   }
 }

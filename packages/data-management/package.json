@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-config-editing": "^2.0.0",
+    "@gmod/jbrowse-plugin-config": "^2.0.0",
     "@gmod/ucsc-hub": "^0.1.2",
     "@material-ui/core": "3.9.3",
     "mobx-react": "^5.3.6",

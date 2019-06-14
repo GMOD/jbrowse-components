@@ -1,4 +1,4 @@
-import { ConfigurationEditor } from '@gmod/jbrowse-plugin-config-editing'
+import { ConfigurationEditor } from '@gmod/jbrowse-plugin-config'
 import { observer } from 'mobx-react-lite'
 import React from 'react'
 
