@@ -15,7 +15,7 @@ import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import Protein from '@gmod/jbrowse-plugin-protein'
-import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'
+import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
 import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
 
@@ -23,7 +23,7 @@ const plugins = [
   Config,
   LinearGenomeView,
   Protein,
-  LollipopRendererPlugin,
+  Lollipop,
   SvgFeatureRendererPlugin,
   FilteringTrackPlugin,
 ]

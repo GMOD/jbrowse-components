@@ -1,9 +1,9 @@
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import Rendering from './LollipopRendering'
 import ConfigSchema from '../configSchema'
-import { PrecomputedFloatingLayout, FloatingLayout } from '../Layout'
+import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
+import Rendering from './LollipopRendering'
 
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {

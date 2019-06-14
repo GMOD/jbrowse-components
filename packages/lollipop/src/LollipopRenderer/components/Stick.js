@@ -1,51 +1,10 @@
-import React, { Component } from 'react'
-import ReactPropTypes from 'prop-types'
-
-import { observer } from 'mobx-react'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { contrastingTextColor } from '@gmod/jbrowse-core/util/color'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { observer } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React, { Component } from 'react'
 
-function ScoreText({
-  feature,
-  config,
-  layoutRecord: {
-    y,
-    data: { anchorX, radiusPx, score },
-  },
-}) {
-  const innerColor = readConfObject(config, 'innerColor', [feature])
-
-  const scoreString = String(score)
-  const fontWidth = (radiusPx * 2) / scoreString.length
-  const fontHeight = fontWidth * 1.1
-  if (fontHeight < 12) return null
-  return (
-    <text
-      style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
-      x={anchorX}
-      y={y + radiusPx - fontHeight / 2.4}
-      textAnchor="middle"
-      dominantBaseline="hanging"
-    >
-      {scoreString}
-    </text>
-  )
-}
-
-ScoreText.propTypes = {
-  feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
-    .isRequired,
-  layoutRecord: ReactPropTypes.shape({
-    x: ReactPropTypes.number.isRequired,
-    y: ReactPropTypes.number.isRequired,
-    width: ReactPropTypes.number.isRequired,
-    height: ReactPropTypes.number.isRequired,
-  }).isRequired,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-}
-
-class Lollipop extends Component {
+class Stick extends Component {
   static propTypes = {
     feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
       .isRequired,
@@ -148,65 +107,26 @@ class Lollipop extends Component {
       layoutRecord: {
         anchorLocation,
         y,
-        data: { radiusPx, score },
+        data: { radiusPx },
       },
       selectedFeatureId,
     } = this.props
 
-    const styleOuter = {
-      fill: readConfObject(config, 'strokeColor', [feature]),
-    }
+    const style = { fill: readConfObject(config, 'bodyColor', [feature]) }
     if (String(selectedFeatureId) === String(feature.id())) {
-      styleOuter.fill = 'red'
+      style.fill = 'red'
     }
-
-    const styleInner = {
-      fill: readConfObject(config, 'innerColor', [feature]),
-    }
-
-    const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
-
     return (
-      <g>
-        <title>{readConfObject(config, 'caption', [feature])}</title>
-        <circle
-          cx={anchorLocation}
-          cy={y + radiusPx}
-          r={radiusPx}
-          style={styleOuter}
-          onMouseDown={this.onFeatureMouseDown}
-          onMouseEnter={this.onFeatureMouseEnter}
-          onMouseOut={this.onFeatureMouseOut}
-          onMouseOver={this.onFeatureMouseOver}
-          onMouseUp={this.onFeatureMouseUp}
-          onMouseLeave={this.onFeatureMouseLeave}
-          onMouseMove={this.onFeatureMouseMove}
-          onClick={this.onFeatureClick}
-          onFocus={this.onFeatureMouseOver}
-          onBlur={this.onFeatureMouseOut}
-        />
-        {radiusPx - strokeWidth <= 2 ? null : (
-          <circle
-            cx={anchorLocation}
-            cy={y + radiusPx}
-            r={radiusPx - strokeWidth}
-            style={styleInner}
-            onMouseDown={this.onFeatureMouseDown}
-            onMouseEnter={this.onFeatureMouseEnter}
-            onMouseOut={this.onFeatureMouseOut}
-            onMouseOver={this.onFeatureMouseOver}
-            onMouseUp={this.onFeatureMouseUp}
-            onMouseLeave={this.onFeatureMouseLeave}
-            onMouseMove={this.onFeatureMouseMove}
-            onClick={this.onFeatureClick}
-            onFocus={this.onFeatureMouseOver}
-            onBlur={this.onFeatureMouseOut}
-          />
-        )}
-        <ScoreText {...this.props} score={score} />
-      </g>
+      <line
+        x1={anchorLocation}
+        y1={0}
+        x2={anchorLocation}
+        y2={y + 2 * radiusPx}
+        stroke={readConfObject(config, 'stickColor', [feature])}
+        strokeWidth={readConfObject(config, 'stickWidth', ['feature'])}
+      />
     )
   }
 }
 
-export default observer(Lollipop)
+export default observer(Stick)

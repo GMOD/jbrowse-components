@@ -19,6 +19,7 @@
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-config": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
     "@gmod/jbrowse-plugin-protein": "^2.0.0",
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",

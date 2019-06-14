@@ -7,6 +7,7 @@ import Alignments from '@gmod/jbrowse-plugin-alignments'
 import Sequence from '@gmod/jbrowse-plugin-sequence'
 import Bed from '@gmod/jbrowse-plugin-bed'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
+import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
@@ -17,7 +18,6 @@ import FilteringTrackPlugin from './plugins/FilteringTrack'
 
 // renderers
 import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
-import LollipopRendererPlugin from './plugins/LollipopRenderer'
 
 export default [
   Alignments,
@@ -29,7 +29,7 @@ export default [
   LinearGenomeView,
   SvgFeaturePlugin,
   FilteringTrackPlugin,
-  LollipopRendererPlugin,
+  Lollipop,
   JBrowse1,
   TrackHubRegistry,
   Wiggle,
