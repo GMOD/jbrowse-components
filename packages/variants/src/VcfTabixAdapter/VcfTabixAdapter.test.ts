@@ -1,5 +1,4 @@
 import { toArray } from 'rxjs/operators'
-
 import Adapter from './VcfTabixAdapter'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {

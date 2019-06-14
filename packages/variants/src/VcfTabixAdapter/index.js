@@ -1,10 +1,9 @@
 import { types } from 'mobx-state-tree'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import VcfTabixAdapterClass from './VcfTabixAdapter'
 
-const configSchema = ConfigurationSchema(
+export { default as AdapterClass } from './VcfTabixAdapter'
+
+export const configSchema = ConfigurationSchema(
   'VcfTabixAdapter',
   {
     vcfGzLocation: {
@@ -25,16 +24,3 @@ const configSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
-
-export default class VcfTabixAdapterPlugin extends Plugin {
-  install(pluginManager) {
-    pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
-          name: 'VcfTabixAdapter',
-          configSchema,
-          AdapterClass: VcfTabixAdapterClass,
-        }),
-    )
-  }
-}

@@ -6,13 +6,11 @@ import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Alignments from '@gmod/jbrowse-plugin-alignments'
 import Sequence from '@gmod/jbrowse-plugin-sequence'
 import Bed from '@gmod/jbrowse-plugin-bed'
+import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
-
-// adapters
-import VcfTabixAdapterPlugin from './plugins/VcfTabixAdapter'
 
 // tracks
 import FilteringTrackPlugin from './plugins/FilteringTrack'
@@ -26,7 +24,7 @@ export default [
   DataManagement,
   Config,
   MainMenuBarPlugin,
-  VcfTabixAdapterPlugin,
+  Variants,
   Bed,
   LinearGenomeView,
   SvgFeaturePlugin,

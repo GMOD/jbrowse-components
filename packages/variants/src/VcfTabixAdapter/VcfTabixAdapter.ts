@@ -1,16 +1,15 @@
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
-import { GenericFilehandle } from 'generic-filehandle'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
+import { IFileLocation, INoAssemblyRegion } from '@gmod/jbrowse-core/mst-types'
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Observer, Observable } from 'rxjs'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
+import { GenericFilehandle } from 'generic-filehandle'
+import { Observable, Observer } from 'rxjs'
 import VcfFeature from './VcfFeature'
 
-export default class VcfTabixAdapter extends BaseAdapter {
+export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected vcf: any
 

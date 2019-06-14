@@ -1,0 +1,19 @@
+{
+  "name": "@gmod/jbrowse-plugin-variants",
+  "version": "2.0.0",
+  "description": "JBrowse 2 variant adapters, tracks, etc.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/variants"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/tabix": "^1.1.8",
+    "@gmod/vcf": "^3.0.0",
+    "generic-filehandle": "^2.0.0",
+    "mobx-state-tree": "3.10.2",
+    "rxjs": "^6.5.2"
+  }
+}
