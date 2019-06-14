@@ -9,14 +9,12 @@ import Bed from '@gmod/jbrowse-plugin-bed'
 import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
+import SVG from '@gmod/jbrowse-plugin-svg'
 
 import MainMenuBarPlugin from './plugins/MainMenuBar'
 
 // tracks
 import FilteringTrackPlugin from './plugins/FilteringTrack'
-
-// renderers
-import SvgFeaturePlugin from './plugins/SvgFeatureRenderer'
 
 export default [
   Alignments,
@@ -27,7 +25,7 @@ export default [
   Variants,
   Bed,
   LinearGenomeView,
-  SvgFeaturePlugin,
+  SVG,
   FilteringTrackPlugin,
   Lollipop,
   JBrowse1,

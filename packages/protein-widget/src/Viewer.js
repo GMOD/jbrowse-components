@@ -16,7 +16,7 @@ import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import Protein from '@gmod/jbrowse-plugin-protein'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
-import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
+import SVG from '@gmod/jbrowse-plugin-svg'
 import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
 
 const plugins = [
@@ -24,7 +24,7 @@ const plugins = [
   LinearGenomeView,
   Protein,
   Lollipop,
-  SvgFeatureRendererPlugin,
+  SVG,
   FilteringTrackPlugin,
 ]
 

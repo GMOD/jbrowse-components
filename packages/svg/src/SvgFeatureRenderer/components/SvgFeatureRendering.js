@@ -1,12 +1,9 @@
-import React, { Component } from 'react'
+import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-
-import './SvgFeatureRendering.scss'
-
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-
+import React, { Component } from 'react'
 import Box from './Box'
+import './SvgFeatureRendering.scss'
 
 class SvgFeatureRendering extends Component {
   static propTypes = {

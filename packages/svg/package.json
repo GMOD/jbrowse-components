@@ -1,0 +1,17 @@
+{
+  "name": "@gmod/jbrowse-plugin-svg",
+  "version": "2.0.0",
+  "description": "JBrowse 2 plugin for svg features",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/svg"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "mobx-react": "^5.3.6",
+    "prop-types": "^15.6.2",
+    "react": "^16.8.6"
+  }
+}
