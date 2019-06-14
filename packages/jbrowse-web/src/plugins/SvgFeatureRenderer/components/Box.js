@@ -226,7 +226,7 @@ class Box extends Component {
           title={feature.id()}
           x={featureLayout.left}
           y={featureLayout.top}
-          width={featureLayout.width}
+          width={Math.max(featureLayout.width, 1)}
           height={featureLayout.height}
           style={style}
           onMouseDown={this.onFeatureMouseDown}

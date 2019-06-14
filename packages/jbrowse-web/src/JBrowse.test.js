@@ -30,7 +30,7 @@ const readBuffer = async (url, args) => {
     const { start, end } = range[0]
     const len = end - start
     const buf = Buffer.alloc(len)
-    const bytesRead = await file.read(buf, 0, len, start)
+    const { bytesRead } = await file.read(buf, 0, len, start)
     const stat = await file.stat()
     return {
       status: 206,
