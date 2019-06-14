@@ -6776,15 +6776,6 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-generic-filehandle@^1.0.6:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-1.0.9.tgz#2a67e5cdb6ffa7727d76f135e56b0d4913a06ddd"
-  integrity sha512-1uZb20DQkyO6baZTwCHVOKb5eypuzQyvgAQkfVU42AM6lYLaNpg90EVdFh0j3RoIEE3dM7HsvROc12KAiTX1PQ==
-  dependencies:
-    "@babel/runtime" "^7.4.3"
-    es6-promisify "^6.0.1"
-    file-uri-to-path "^1.0.0"
-
 generic-filehandle@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.0.tgz#f3bd727eb88dfb2aa5d527b9c492c7fc075b0645"
