@@ -1,3 +1,4 @@
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import Button from '@material-ui/core/Button'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
@@ -18,7 +19,6 @@ import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 function styledBy(property, mapping) {
   return props => mapping[props[property]]

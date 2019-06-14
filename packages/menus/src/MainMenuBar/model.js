@@ -1,7 +1,7 @@
-import saveAs from 'file-saver'
-import { getRoot, types, getSnapshot } from 'mobx-state-tree'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+import saveAs from 'file-saver'
+import { getRoot, getSnapshot, types } from 'mobx-state-tree'
 
 export const MenuItemModel = types
   .model('MenuItemModel', {
@@ -84,7 +84,7 @@ const MenuModel = types
     },
   }))
 
-export const MainMenuBarModel = types
+export default types
   .model('MainMenuBarModel', {
     id: ElementId,
     type: types.literal('MainMenuBar'),
@@ -107,29 +107,3 @@ export const MainMenuBarModel = types
       self.menus.push(MenuModel.create({ name, menuItems }))
     },
   }))
-
-export const AboutDrawerWidgetModel = types.model('AboutDrawerWidget', {
-  id: ElementId,
-  type: types.literal('AboutDrawerWidget'),
-})
-
-export const HelpDrawerWidgetModel = types.model('HelpDrawerWidget', {
-  id: ElementId,
-  type: types.literal('HelpDrawerWidget'),
-})
-
-export const AssemblyEditorDrawerWidgetModel = types.model(
-  'AssemblyEditorDrawerWidget',
-  {
-    id: ElementId,
-    type: types.literal('AssemblyEditorDrawerWidget'),
-  },
-)
-
-export const ImportConfigurationDrawerWidgetModel = types.model(
-  'ImportConfigurationDrawerWidget',
-  {
-    id: ElementId,
-    type: types.literal('ImportConfigurationDrawerWidget'),
-  },
-)

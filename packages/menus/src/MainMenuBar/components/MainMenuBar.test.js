@@ -1,7 +1,7 @@
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
 import MainMenuBar from './MainMenuBar'
-import { createTestEnv } from '../../../JBrowse'
 
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
 

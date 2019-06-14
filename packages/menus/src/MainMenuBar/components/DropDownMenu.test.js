@@ -1,6 +1,6 @@
+import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import React from 'react'
 import { cleanup, fireEvent, render } from 'react-testing-library'
-import { createTestEnv } from '../../../JBrowse'
 import DropDownMenu from './DropDownMenu'
 
 jest.mock('popper.js', () => {
