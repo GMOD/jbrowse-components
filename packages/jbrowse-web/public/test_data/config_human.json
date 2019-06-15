@@ -91,6 +91,26 @@
           }
         },
         {
+          "type": "AlignmentsTrack",
+          "configId": "hg00096_lowcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina low coverage",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+              }
+            }
+          }
+        },
+
+        {
           "configId": "wiggle_global_autoscale",
           "type": "WiggleTrack",
           "name": "Encode global autoscale",
