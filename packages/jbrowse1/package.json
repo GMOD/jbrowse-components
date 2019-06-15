@@ -9,12 +9,14 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/nclist": "^0.1.0",
     "crc-32": "^1.2.0",
     "get-value": "^3.0.1",
-    "mobx-state-tree": "3.10.2",
-    "rxjs": "^6.5.2",
     "set-value": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "mobx-state-tree": "3.10.2",
+    "rxjs": "^6.0.0"
   }
 }

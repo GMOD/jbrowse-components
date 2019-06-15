@@ -1,32 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`one 1`] = `
-<div
-  className="WiggleRendering"
-  onFocus={[Function]}
-  onMouseLeave={[Function]}
-  onMouseMove={[Function]}
-  role="presentation"
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
->
-  <PrerenderedCanvas
-    bpPerPx={3}
-    height={500}
-    highResolutionScaling={1}
-    horizontallyFlipped={false}
-    region={
-      Object {
-        "end": 3,
-        "refName": "chr1",
-        "start": 1,
-      }
-    }
-    trackModel={Object {}}
-    width={500}
-  />
-</div>
+<Observer>
+  [Function]
+</Observer>
 `;

@@ -10,18 +10,20 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bbi": "^1.0.21",
-    "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "abortable-promise-cache": "^1.0.1",
     "color": "^3.1.1",
     "d3-scale": "^3.0.0",
-    "mobx": "^5.5.2",
-    "mobx-react": "^5.3.6",
-    "mobx-state-tree": "3.10.2",
-    "prop-types": "^15.6.2",
     "quick-lru": "^4.0.0",
-    "react": "^16.8.6",
-    "react-d3-axis": "^0.1.1",
-    "rxjs": "^6.5.2"
+    "react-d3-axis": "^0.1.1"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.10.2",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0",
+    "rxjs": "^6.0.0"
   }
 }

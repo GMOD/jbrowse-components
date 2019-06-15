@@ -1,5 +1,5 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { observer, propTypes as mobxPropTypes } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import Track from './Track'
 import TrackBlocks from './TrackBlocks'
@@ -19,7 +19,7 @@ function BlockBasedTrack(props) {
 }
 
 BlockBasedTrack.propTypes = {
-  model: mobxPropTypes.objectOrObservableObject.isRequired,
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(BlockBasedTrack)

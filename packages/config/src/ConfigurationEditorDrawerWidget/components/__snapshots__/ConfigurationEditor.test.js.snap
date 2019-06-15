@@ -1498,13 +1498,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     adapter
   </label>
   <div
-    className="_class-subSchemaContainer-2"
+    className="Component-subSchemaContainer-2"
   >
     <div
-      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 _class-paper-216"
+      className="MuiPaper-root-6 MuiPaper-elevation2-10 MuiPaper-rounded-7 Component-paper-216"
     >
       <div
-        className="_class-paperContent-217"
+        className="Component-paperContent-217"
       >
         <div
           className="MuiFormControl-root-33 MuiFormControl-fullWidth-36"
@@ -1749,7 +1749,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         index
       </label>
       <div
-        className="_class-subSchemaContainer-2"
+        className="Component-subSchemaContainer-2"
       >
         <div
           className="MuiFormGroup-root-118"
@@ -2130,7 +2130,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     renderers
   </label>
   <div
-    className="_class-subSchemaContainer-2"
+    className="Component-subSchemaContainer-2"
   >
     <div
       className="MuiFormGroup-root-118"
@@ -2141,7 +2141,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         PileupRenderer
       </label>
       <div
-        className="_class-subSchemaContainer-2"
+        className="Component-subSchemaContainer-2"
       >
         <div
           className="MuiFormGroup-root-118"
@@ -2435,7 +2435,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         SvgFeatureRenderer
       </label>
       <div
-        className="_class-subSchemaContainer-2"
+        className="Component-subSchemaContainer-2"
       >
         <div
           className="MuiFormGroup-root-118"
@@ -2780,7 +2780,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             labels
           </label>
           <div
-            className="_class-subSchemaContainer-2"
+            className="Component-subSchemaContainer-2"
           >
             <div
               className="MuiFormGroup-root-118"

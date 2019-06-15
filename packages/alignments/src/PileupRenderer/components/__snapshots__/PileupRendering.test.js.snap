@@ -1,55 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`one 1`] = `
-<div
-  className="PileupRendering"
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
->
-  <_default
-    bpPerPx={3}
-    height={500}
-    horizontallyFlipped={false}
-    layout={
-      Object {
-        "rectangles": Object {},
-        "totalHeight": 20,
-      }
-    }
-    region={
-      Object {
-        "end": 3,
-        "refName": "zonk",
-        "start": 1,
-      }
-    }
-    trackModel={Object {}}
-    width={500}
-  />
-  <canvas
-    className="highlightOverlayCanvas"
-    height={500}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onMouseDown={[Function]}
-    onMouseEnter={[Function]}
-    onMouseLeave={[Function]}
-    onMouseMove={[Function]}
-    onMouseOut={[Function]}
-    onMouseOver={[Function]}
-    onMouseUp={[Function]}
-    style={
-      Object {
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-      }
-    }
-    width={500}
-  />
-</div>
+<Observer>
+  [Function]
+</Observer>
 `;
