@@ -286,7 +286,7 @@ Array [
       "FQ": Array [
         -67.5,
       ],
-      "INDEL": null,
+      "INDEL": true,
       "MQ": Array [
         37,
       ],

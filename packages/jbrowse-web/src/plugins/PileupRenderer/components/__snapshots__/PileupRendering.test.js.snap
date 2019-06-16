@@ -26,6 +26,13 @@ exports[`one 1`] = `
         "start": 1,
       }
     }
+    style={
+      Object {
+        "left": 0,
+        "position": "absolute",
+        "top": 0,
+      }
+    }
     trackModel={Object {}}
     width={500}
   />
