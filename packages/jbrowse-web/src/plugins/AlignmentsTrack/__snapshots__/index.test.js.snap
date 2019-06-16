@@ -3,26 +3,26 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "adapter": Object {
-    "configId": "bHlPQmRwCx",
+    "configId": "testid",
     "index": Object {
-      "configId": "EQEcRkK7mP",
+      "configId": "testid",
     },
     "type": "BamAdapter",
   },
-  "configId": "fMlrlZouKM",
+  "configId": "testid",
   "renderers": Object {
     "PileupRenderer": Object {
-      "configId": "jFnwG_R5_d",
+      "configId": "testid",
       "type": "PileupRenderer",
     },
     "SvgFeatureRenderer": Object {
-      "configId": "72LDILuoLM",
+      "configId": "testid",
       "labels": Object {
-        "configId": "PbUAwCuls9",
+        "configId": "testid",
       },
       "type": "SvgFeatureRenderer",
     },
-    "configId": "Xoff3rwqAZ",
+    "configId": "testid",
   },
   "type": "AlignmentsTrack",
 }
