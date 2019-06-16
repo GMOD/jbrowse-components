@@ -161,7 +161,7 @@ const VariantSamples = props => {
 function VariantFeatureDetails(props) {
   const { classes } = props
   return (
-    <Paper className={classes.root}>
+    <Paper className={classes.root} data-testid="variant-side-drawer">
       <VariantCoreDetails {...props} />
       <Divider />
       <VariantAttributes {...props} />

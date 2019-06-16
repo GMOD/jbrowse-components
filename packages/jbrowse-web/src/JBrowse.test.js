@@ -12,6 +12,10 @@ import rangeParser from 'range-parser'
 import JBrowse from './JBrowse'
 import config from '../test_data/alignments_test.json'
 
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 fetchMock.config.sendAsJson = false
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
@@ -105,6 +109,23 @@ describe('some error state', () => {
           'HTTP 404 fetching /test_data/volvox-sorted.bam.bai.nonexist',
         ),
       ),
+    ).toBeTruthy()
+  })
+})
+
+describe('variant', () => {
+  it('click on a vcf feature', async () => {
+    const { container, getByTestId, getByTitle } = render(
+      <JBrowse configs={[config]} />,
+    )
+    fireEvent.click(
+      await waitForElement(() => getByTestId('volvox_filtered_vcf')),
+    )
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    await timeout(1000)
+    fireEvent.click(await waitForElement(() => getByTitle('vcf-2560')))
+    expect(
+      await waitForElement(() => getByTestId('variant-side-drawer')),
     ).toBeTruthy()
   })
 })
