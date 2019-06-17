@@ -389,6 +389,7 @@
         "type": "CircularView",
         "offsetRadians": 0,
         "bpPerRadian": 1,
+        "displayRegionsFromAssemblyName": "volvox",
         "tracks": [],
         "width": 985,
         "height": 400,

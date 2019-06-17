@@ -1,7 +1,22 @@
+function calculateStaticBlocks(self) {
+  const blocks = []
+  const marginPx = 5
+  for (const region of self.displayedRegions) {
+    blocks.push(region)
+    blocks.push({
+      type: 'margin',
+      widthBp: marginPx * self.bpPerPx,
+      widthPx: marginPx,
+    })
+  }
+  return blocks
+}
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
+  // const { degToRad } = jbrequire('@gmod/jbrowse-core/util')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const configSchema = ConfigurationSchema(
@@ -15,7 +30,7 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('CircularView'),
       offsetRadians: 0,
-      bpPerRadian: 1,
+      bpPerPx: 1,
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -23,10 +38,30 @@ export default pluginManager => {
       height: 400,
       configuration: configSchema,
       minimumBlockWidth: 20,
+      displayedRegions: types.array(Region),
+      displayRegionsFromAssemblyName: types.maybe(types.string),
     })
     .views(self => ({
+      get staticBlocks() {
+        return calculateStaticBlocks(self)
+      },
+      get radiusPx() {
+        const numRegions = self.displayedRegions.length
+        const paddingPx = 5
+        const circumferencePx =
+          paddingPx * numRegions + self.totalBp / self.bpPerPx
+        return circumferencePx / 2 / Math.PI
+      },
+      get totalBp() {
+        let total = 0
+        for (const region of self.displayedRegions) {
+          total += region.end - region.start
+        }
+        return total
+      },
       get figureDimensions() {
-        return [3000, 3000]
+        // return [3000, 3000]
+        return [self.radiusPx, self.radiusPx]
       },
       get figureWidth() {
         return self.figureDimensions[0]
@@ -61,6 +96,18 @@ export default pluginManager => {
 
       closeView() {
         getParent(self, 2).removeView(self)
+      },
+
+      setDisplayedRegions(regions, isFromAssemblyName = false) {
+        self.displayedRegions = regions
+        if (!isFromAssemblyName)
+          this.setDisplayedRegionsFromAssemblyName(undefined)
+      },
+
+      setDisplayedRegionsFromAssemblyName(assemblyName) {
+        self.displayRegionsFromAssemblyName = assemblyName
+        const root = getRoot(self)
+        if (root.updateAssemblies) root.updateAssemblies()
       },
     }))
 

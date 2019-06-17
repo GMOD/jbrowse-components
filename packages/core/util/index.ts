@@ -66,6 +66,15 @@ export function bpToPx(
   return roundToNearestPointOne((bp - region.start) / bpPerPx)
 }
 
+const oneEightyOverPi = 180.0 / Math.PI
+const piOverOneEighty = Math.PI / 180.0
+export function radToDeg(radians: number): number {
+  return radians * oneEightyOverPi
+}
+export function degToRad(degrees: number): number {
+  return degrees * piOverOneEighty
+}
+
 export function featureSpanPx(
   feature: Feature,
   region: IRegion,

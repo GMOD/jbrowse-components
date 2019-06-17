@@ -4,7 +4,8 @@ const svgFetch = fetch(exampleSvg).then(result => result.text())
 
 const dragHandleHeight = 3
 
-export default ({ jbrequire }) => {
+export default pluginManager => {
+  const { jbrequire } = pluginManager
   const { PropTypes } = jbrequire('mobx-react')
   const { observer } = jbrequire('mobx-react-lite')
   const ReactPropTypes = jbrequire('prop-types')
@@ -25,7 +26,7 @@ export default ({ jbrequire }) => {
     scroller: {
       overflow: 'auto',
     },
-    svgRoot: {
+    layerRoot: {
       background: 'none',
       // background: theme.palette.background.paper,
       boxSizing: 'content-box',
@@ -54,6 +55,21 @@ export default ({ jbrequire }) => {
     //   padding: theme.spacing.unit / 2,
     // },
   })
+
+  const RulerLayer = withStyles(styles)(
+    observer(({ classes, model }) => {
+      return (
+        <svg
+          className={classes.layerRoot}
+          width={`${model.figureWidth}px`}
+          height={`${model.figureHeight}px`}
+          version="1.1"
+        >
+
+        </svg>
+      )
+    }),
+  )
 
   function CircularView(props) {
     const { classes, model } = props
@@ -86,27 +102,7 @@ export default ({ jbrequire }) => {
               transformOrigin: '500px 500px',
             }}
           >
-            <svg
-              className={classes.svgRoot}
-              width={`${model.figureWidth}px`}
-              height={`${model.figureHeight}px`}
-              version="1.1"
-            >
-              <g
-                style={{
-                  transform: [
-                    'scale(0.33)',
-                    `translate(-${model.figureWidth}px, -${
-                      model.figureHeight
-                    }px)`,
-                    // `rotate(${(model.rotation * 180) / Math.PI}deg)`,
-                  ].join(' '),
-                  transformOrigin: `${model.figureWidth /
-                    2}px ${model.figureHeight / 2}px`,
-                }}
-                dangerouslySetInnerHTML={{ __html: testingSvg }}
-              />
-            </svg>
+            <RulerLayer model={model} />
           </div>
         </div>
 
@@ -136,5 +132,4 @@ export default ({ jbrequire }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
   return withStyles(styles)(observer(CircularView))
-  // return withStyles(styles)(observer(CircularView))
 }
