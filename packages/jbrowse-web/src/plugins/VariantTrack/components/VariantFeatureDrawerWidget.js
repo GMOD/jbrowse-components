@@ -65,7 +65,7 @@ const VariantCard = props => {
   )
 }
 
-const VariantCoreDetails = props => {
+const VariantCoreDetails = observer(props => {
   const { model, classes } = props
   const { refName, start, end } = model.featureData
   model.featureData.position = `${refName}:${start}..${end}`
@@ -89,8 +89,9 @@ const VariantCoreDetails = props => {
       })}
     </VariantCard>
   )
-}
-const VariantAttributes = props => {
+})
+
+const VariantAttributes = observer(props => {
   const { model, classes } = props
 
   // get everything in INFO plus the REF, ALT, and QUAL fields
@@ -116,9 +117,9 @@ const VariantAttributes = props => {
       )}
     </VariantCard>
   )
-}
+})
 
-const VariantSamples = props => {
+const VariantSamples = observer(props => {
   const { model, classes } = props
   if (!model.featureData.samples) {
     return null
@@ -157,7 +158,8 @@ const VariantSamples = props => {
       </Table>
     </VariantCard>
   )
-}
+})
+
 function VariantFeatureDetails(props) {
   const { classes } = props
   return (
