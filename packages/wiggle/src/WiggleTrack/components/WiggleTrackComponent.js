@@ -1,6 +1,6 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { observer } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../DensityRenderer/util'
@@ -63,4 +63,9 @@ function WiggleTrackComponent(props) {
     </BlockBasedTrack>
   )
 }
+
+WiggleTrackComponent.propTypes = {
+  model: MobxPropTypes.observableObject.isRequired,
+}
+
 export default observer(WiggleTrackComponent)

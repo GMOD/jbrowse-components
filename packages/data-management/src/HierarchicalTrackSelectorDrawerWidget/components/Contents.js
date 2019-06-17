@@ -131,6 +131,7 @@ function Contents(props) {
 }
 
 Contents.propTypes = {
+  assemblyName: propTypes.string,
   model: MobxPropTypes.observableObject.isRequired,
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
@@ -141,6 +142,7 @@ Contents.propTypes = {
 }
 
 Contents.defaultProps = {
+  assemblyName: undefined,
   filterPredicate: () => true,
   path: [],
   disabled: false,

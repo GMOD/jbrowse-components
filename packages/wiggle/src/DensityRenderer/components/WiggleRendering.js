@@ -10,6 +10,7 @@ class WiggleRendering extends Component {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     region: CommonPropTypes.Region.isRequired,
+    features: ReactPropTypes.instanceOf(Map).isRequired,
     bpPerPx: ReactPropTypes.number.isRequired,
     horizontallyFlipped: ReactPropTypes.bool,
     trackModel: ReactPropTypes.shape({

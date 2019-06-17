@@ -83,6 +83,7 @@ function Category(props) {
 }
 
 Category.propTypes = {
+  assemblyName: propTypes.string,
   model: MobxPropTypes.observableObject.isRequired,
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
@@ -92,6 +93,7 @@ Category.propTypes = {
 }
 
 Category.defaultProps = {
+  assemblyName: undefined,
   filterPredicate: () => true,
   path: [],
   disabled: false,

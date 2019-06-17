@@ -167,6 +167,7 @@ Rendering.propTypes = {
   bpPerPx: ReactPropTypes.number.isRequired,
   region: ReactPropTypes.shape({ end: ReactPropTypes.number.isRequired })
     .isRequired,
+  features: ReactPropTypes.instanceOf(Map).isRequired,
 }
 
 export default observer(Rendering)

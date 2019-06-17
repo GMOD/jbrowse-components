@@ -15,8 +15,10 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/styles'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import { getRoot } from 'mobx-state-tree'
+import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 
@@ -254,6 +256,12 @@ function ImportConfiguration(props) {
       ) : null}
     </div>
   )
+}
+
+ImportConfiguration.propTypes = {
+  addSessions: PropTypes.func.isRequired,
+  setActiveSession: PropTypes.func.isRequired,
+  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(ImportConfiguration)

@@ -322,6 +322,7 @@ function TrackHubRegistrySelect(props) {
 }
 
 TrackHubRegistrySelect.propTypes = {
+  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
