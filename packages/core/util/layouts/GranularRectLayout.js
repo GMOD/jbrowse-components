@@ -252,7 +252,7 @@ export default class GranularRectLayout {
     // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
-    this.hardRowLimit = 1500
+    this.hardRowLimit = 3000
 
     this.bitmap = []
     this.rectangles = {}
