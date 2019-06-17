@@ -17,7 +17,7 @@ class LayoutRow {
   constructor(rowNumber) {
     this.rowNumber = rowNumber
     this.padding = 1
-    this.sizeLimit = 1000000
+    this.widthLimit = 1000000
 
     // this.offset is the offset of the bits array relative to the genomic coordinates
     //      (modified by pitchX, but we don't know that in this class)
@@ -97,7 +97,7 @@ class LayoutRow {
       if (right - this.offset >= this.bits.length) {
         const additionalLength =
           right - this.offset - this.bits.length + 1 + this.bits.length
-        if (this.bits.length + additionalLength > this.sizeLimit) {
+        if (this.bits.length + additionalLength > this.widthLimit) {
           console.warn(
             'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
           )
@@ -112,7 +112,7 @@ class LayoutRow {
       // expand by 2x leftward if necessary
       if (left < this.offset) {
         const additionalLength = this.offset - left + currLength
-        if (this.bits.length + additionalLength > this.sizeLimit) {
+        if (this.bits.length + additionalLength > this.widthLimit) {
           console.warn(
             'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
           )
@@ -252,6 +252,7 @@ export default class GranularRectLayout {
     // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
+    this.hardRowLimit = 500
 
     this.bitmap = []
     this.rectangles = {}
@@ -331,9 +332,15 @@ export default class GranularRectLayout {
    * make a subarray if it does not exist
    * @private
    */
-  autovivifyRow(bitmap, y) {
+  autovivifyRow = (bitmap, y) => {
     let row = bitmap[y]
     if (!row) {
+      if (y > this.hardRowLimit) {
+        throw new Error(
+          `layout hard limit (${this.hardRowLimit *
+            this.pitchY}px) exceeded, aborting layout`,
+        )
+      }
       row = new LayoutRow(y)
       bitmap[y] = row
     }
