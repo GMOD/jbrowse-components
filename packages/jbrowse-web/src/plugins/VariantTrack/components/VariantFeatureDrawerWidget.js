@@ -57,7 +57,6 @@ const coreRenderedDetails = [
 
 const ValBox = props => {
   const { classes, value } = props
-  console.log(value)
   return Array.isArray(value) && value.length > 1 ? (
     <>
       <div>
