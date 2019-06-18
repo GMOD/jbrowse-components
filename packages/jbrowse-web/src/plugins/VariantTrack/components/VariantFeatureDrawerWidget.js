@@ -68,8 +68,8 @@ const VariantCard = props => {
 const VariantCoreDetails = props => {
   const { feature, classes } = props
   const { refName, start, end } = feature
-  feature.position = `${refName}:${start}..${end}`
   feature.length = end - start
+  feature.position = `${refName}:${start + 1}..${end}`
   return (
     <VariantCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
