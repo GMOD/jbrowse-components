@@ -3,7 +3,6 @@ import {
   fireEvent,
   render,
   waitForElement,
-  wait,
 } from 'react-testing-library'
 import React from 'react'
 
@@ -113,20 +112,18 @@ describe('some error state', () => {
   })
 })
 
+const t = 500
 describe('variant', () => {
-  // TODO - re-enable when react-16.9 comes out
-  xit('click on a vcf feature', async () => {
-    const { container, getByTestId: byId, getByTitle, getByText } = render(
+  it('click on a vcf feature', async () => {
+    const { getByTestId: byId, getByText } = render(
       <JBrowse configs={[config]} />,
     )
-    fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
-    await timeout(10)
+    await timeout(t)
     window.MODEL.views[0].setNewView(0.05, 5000)
-    await timeout(10)
-    const ret = await waitForElement(() => byId('vcf-2560'))
-    await timeout(10)
-    fireEvent.click(ret)
-    await timeout(10)
+    await timeout(t)
+    fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
+    await timeout(t)
+    fireEvent.click(await waitForElement(() => byId('vcf-2560')))
     expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
   })
 })
