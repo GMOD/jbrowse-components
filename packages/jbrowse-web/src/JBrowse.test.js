@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   waitForElement,
+  wait,
 } from 'react-testing-library'
 import React from 'react'
 
@@ -12,14 +13,13 @@ import rangeParser from 'range-parser'
 import JBrowse from './JBrowse'
 import config from '../test_data/alignments_test.json'
 
+fetchMock.config.sendAsJson = false
+
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-fetchMock.config.sendAsJson = false
-
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
-
 // fakes server responses from local file object with fetchMock
 const readBuffer = async (url, args) => {
   let file
@@ -115,17 +115,17 @@ describe('some error state', () => {
 
 describe('variant', () => {
   it('click on a vcf feature', async () => {
-    const { container, getByTestId, getByTitle } = render(
+    const { container, getByTestId: byId, getByTitle, getByText } = render(
       <JBrowse configs={[config]} />,
     )
-    fireEvent.click(
-      await waitForElement(() => getByTestId('volvox_filtered_vcf')),
-    )
+    fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
+    await timeout(10)
     window.MODEL.views[0].setNewView(0.05, 5000)
-    await timeout(1000)
-    fireEvent.click(await waitForElement(() => getByTitle('vcf-2560')))
-    expect(
-      await waitForElement(() => getByTestId('variant-side-drawer')),
-    ).toBeTruthy()
+    await timeout(10)
+    const ret = await waitForElement(() => byId('vcf-2560'))
+    await timeout(10)
+    fireEvent.click(ret)
+    await timeout(10)
+    expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
   })
 })
