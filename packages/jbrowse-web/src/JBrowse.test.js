@@ -5,6 +5,7 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
+import { act } from 'react-test-renderer'
 
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -17,6 +18,10 @@ fetchMock.config.sendAsJson = false
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+jest.mock('request-idle-callback', () => ({
+  requestIdleCallback: callback => callback(),
+  cancelIdleCallback: () => {},
+}))
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -112,17 +117,14 @@ describe('some error state', () => {
   })
 })
 
-const t = 500
 describe('variant', () => {
   it('click on a vcf feature', async () => {
     const { getByTestId: byId, getByText } = render(
       <JBrowse configs={[config]} />,
     )
-    await timeout(t)
+    await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)
-    await timeout(t)
     fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
-    await timeout(t)
     fireEvent.click(await waitForElement(() => byId('vcf-2560')))
     expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
   })
