@@ -65,17 +65,15 @@ const VariantCard = props => {
   )
 }
 
-const VariantCoreDetails = observer(props => {
-  const { model, classes } = props
-  const { refName, start, end } = model.featureData
-  model.featureData.position = `${refName}:${start}..${end}`
-  model.featureData.length = end - start
-  model.featureData.start += 1
-  model.featureData.score = model.featureData.QUAL
+const VariantCoreDetails = props => {
+  const { feature, classes } = props
+  const { refName, start, end } = feature
+  feature.position = `${refName}:${start}..${end}`
+  feature.length = end - start
   return (
     <VariantCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
-        const value = model.featureData[key.toLowerCase()]
+        const value = feature[key.toLowerCase()]
         return (
           value && (
             <div className={classes.fieldRow} key={key}>
@@ -89,14 +87,14 @@ const VariantCoreDetails = observer(props => {
       })}
     </VariantCard>
   )
-})
+}
 
-const VariantAttributes = observer(props => {
-  const { model, classes } = props
+const VariantAttributes = props => {
+  const { feature, classes } = props
 
   // get everything in INFO plus the REF, ALT, and QUAL fields
-  const attributes = Object.entries(model.featureData.INFO).concat(
-    ['REF', 'ALT', 'QUAL'].map(s => [s, model.featureData[s]]),
+  const attributes = Object.entries(feature.INFO).concat(
+    ['REF', 'ALT', 'QUAL'].map(s => [s, feature[s]]),
   )
   return (
     <VariantCard {...props} title="Attributes">
@@ -117,15 +115,15 @@ const VariantAttributes = observer(props => {
       )}
     </VariantCard>
   )
-})
+}
 
-const VariantSamples = observer(props => {
-  const { model, classes } = props
-  if (!model.featureData.samples) {
+const VariantSamples = props => {
+  const { feature, classes } = props
+  if (!feature.samples) {
     return null
   }
-  const ret = Object.keys(model.featureData.samples)
-  const infoFields = Object.keys(model.featureData.samples[ret[0]])
+  const ret = Object.keys(feature.samples)
+  const infoFields = Object.keys(feature.samples[ret[0]])
 
   return (
     <VariantCard {...props} title="Samples">
@@ -139,7 +137,7 @@ const VariantSamples = observer(props => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.entries(model.featureData.samples).map(
+          {Object.entries(feature.samples).map(
             ([key, value]) =>
               value && (
                 <TableRow key={key}>
@@ -158,17 +156,18 @@ const VariantSamples = observer(props => {
       </Table>
     </VariantCard>
   )
-})
+}
 
 function VariantFeatureDetails(props) {
-  const { classes } = props
+  const { classes, model } = props
+  const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
-      <VariantCoreDetails {...props} />
+      <VariantCoreDetails feature={feat} {...props} />
       <Divider />
-      <VariantAttributes {...props} />
+      <VariantAttributes feature={feat} {...props} />
       <Divider />
-      <VariantSamples {...props} />
+      <VariantSamples feature={feat} {...props} />
     </Paper>
   )
 }
