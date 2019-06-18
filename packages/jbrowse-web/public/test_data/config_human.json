@@ -212,15 +212,26 @@
       {
         "id": "Cma34s8JJ",
         "type": "LinearGenomeView",
-        "offsetPx": 5588838.780952381,
-        "bpPerPx": 0.21487039563437926,
+        "offsetPx": 835,
+        "bpPerPx": 50,
         "displayRegionsFromAssemblyName": "hg38",
         "tracks": [
           {
-            "type": "VariantTrack",
+            "type": "WiggleTrack",
             "height": 100,
-            "configuration": "indels"
+            "configuration": "wiggle_global_autoscale"
+          },
+          {
+            "type": "WiggleTrack",
+            "height": 100,
+            "configuration": "wiggle_local_autoscale"
+          },
+          {
+            "type": "BasicTrack",
+            "height": 100,
+            "configuration": "bigbed_peaks"
           }
+
         ],
         "trackSelectorType": "hierarchical"
       }
