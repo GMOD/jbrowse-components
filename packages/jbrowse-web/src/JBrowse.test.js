@@ -5,7 +5,6 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
-import { act } from 'react-test-renderer'
 
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -15,9 +14,6 @@ import config from '../test_data/alignments_test.json'
 
 fetchMock.config.sendAsJson = false
 
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 jest.mock('request-idle-callback', () => ({
   requestIdleCallback: callback => callback(),
   cancelIdleCallback: () => {},
