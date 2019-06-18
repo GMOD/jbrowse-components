@@ -41,6 +41,10 @@ const styles = theme => ({
   title: {
     fontSize: '1em',
   },
+
+  valbox: {
+    border: '1px solid #bbb',
+  },
 })
 
 const coreRenderedDetails = [
@@ -51,6 +55,24 @@ const coreRenderedDetails = [
   'Type',
 ]
 
+const ValBox = props => {
+  const { classes, value } = props
+  console.log(value)
+  return Array.isArray(value) && value.length > 1 ? (
+    <>
+      <div>
+        <br />
+        {value.map((v, i) => (
+          <div key={i} className={classes.valbox}>
+            {String(v)}
+          </div>
+        ))}
+      </div>
+    </>
+  ) : (
+    String(value)
+  )
+}
 const VariantCard = props => {
   const { children, classes, title } = props
   return (
@@ -78,9 +100,7 @@ const VariantCoreDetails = props => {
           value && (
             <div className={classes.fieldRow} key={key}>
               <div className={classes.fieldName}>{key}</div>
-              <div className={classes.fieldValue}>
-                {String(value.values || value)}
-              </div>
+              <div className={classes.fieldValue}>{String(value)}</div>
             </div>
           )
         )
@@ -103,13 +123,7 @@ const VariantAttributes = props => {
           value && (
             <div className={classes.fieldRow} key={key}>
               <div className={classes.fieldName}>{key}</div>
-              <div className={classes.fieldValue}>
-                {String(
-                  typeof value.values !== 'function' && value.values
-                    ? value.values
-                    : value,
-                )}
-              </div>
+              <div className={classes.fieldValue}>{String(value)}</div>
             </div>
           ),
       )}
@@ -147,7 +161,7 @@ const VariantSamples = props => {
                     </TableCell>
                     {infoFields.map(f => (
                       <TableCell className={classes.valueCell} key={f}>
-                        {value[f]}
+                        {String(value[f])}
                       </TableCell>
                     ))}
                   </TableRow>
