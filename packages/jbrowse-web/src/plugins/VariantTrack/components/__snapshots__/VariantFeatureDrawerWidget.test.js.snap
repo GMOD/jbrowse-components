@@ -34,7 +34,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
           <div
             class="VariantFeatureDetails-fieldValue-4"
           >
-            ctgA:undefined..undefined
+            ctgA:NaN..undefined
           </div>
         </div>
         NaN
