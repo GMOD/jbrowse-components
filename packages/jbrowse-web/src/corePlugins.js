@@ -16,6 +16,7 @@ import VcfTabixAdapterPlugin from './plugins/VcfTabixAdapter'
 
 // tracks
 import AlignmentsTrackPlugin from './plugins/AlignmentsTrack'
+import VariantTrackPlugin from './plugins/VariantTrack'
 import SequenceTrackPlugin from './plugins/SequenceTrack'
 import FilteringTrackPlugin from './plugins/FilteringTrack'
 import WiggleTrackPlugin from './plugins/WiggleTrack'
@@ -40,6 +41,7 @@ export default [
   BigWigAdapterPlugin,
   BigBedAdapterPlugin,
   VcfTabixAdapterPlugin,
+  VariantTrackPlugin,
   LinearGenomeViewPlugin,
   AlignmentsTrackPlugin,
   SequenceTrackPlugin,

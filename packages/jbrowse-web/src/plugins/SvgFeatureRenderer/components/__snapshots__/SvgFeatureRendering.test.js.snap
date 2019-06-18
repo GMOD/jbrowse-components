@@ -46,6 +46,7 @@ exports[`one feature 1`] = `
     transform="translate(0.3 0)"
   >
     <rect
+      data-testid="one"
       height={10}
       onBlur={[Function]}
       onClick={[Function]}

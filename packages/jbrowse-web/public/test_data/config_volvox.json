@@ -124,8 +124,8 @@
           }
         },
         {
-          "type": "BasicTrack",
-          "configId": "test",
+          "type": "VariantTrack",
+          "configId": "volvox_filtered_vcf",
           "name": "volvox filtered vcf",
           "category": [
             "Bee Category",
@@ -142,9 +142,6 @@
                 "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
           }
         },
         {

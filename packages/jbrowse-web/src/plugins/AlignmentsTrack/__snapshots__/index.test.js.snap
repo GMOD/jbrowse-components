@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plugin in a stock JBrowse 1`] = `
+Object {
+  "adapter": Object {
+    "configId": "testid",
+    "index": Object {
+      "configId": "testid",
+    },
+    "type": "BamAdapter",
+  },
+  "configId": "testid",
+  "renderers": Object {
+    "PileupRenderer": Object {
+      "configId": "testid",
+      "type": "PileupRenderer",
+    },
+    "SvgFeatureRenderer": Object {
+      "configId": "testid",
+      "labels": Object {
+        "configId": "testid",
+      },
+      "type": "SvgFeatureRenderer",
+    },
+    "configId": "testid",
+  },
+  "type": "AlignmentsTrack",
+}
+`;

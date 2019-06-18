@@ -159,6 +159,26 @@
               "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
             }
           }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "indels",
+          "name": "InDels",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
+            }
+          }
         }
       ]
     }
@@ -211,6 +231,7 @@
             "height": 100,
             "configuration": "bigbed_peaks"
           }
+
         ],
         "trackSelectorType": "hierarchical"
       }
