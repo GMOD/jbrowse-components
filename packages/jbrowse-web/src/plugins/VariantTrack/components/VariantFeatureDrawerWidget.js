@@ -127,33 +127,35 @@ const VariantSamples = props => {
 
   return (
     <VariantCard {...props} title="Samples">
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Sample</TableCell>
-            {infoFields.map(f => (
-              <TableCell key={f}>{f}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Object.entries(feature.samples).map(
-            ([key, value]) =>
-              value && (
-                <TableRow key={key}>
-                  <TableCell component="th" scope="row">
-                    {key}
-                  </TableCell>
-                  {infoFields.map(f => (
-                    <TableCell className={classes.valueCell} key={f}>
-                      {value[f]}
+      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sample</TableCell>
+              {infoFields.map(f => (
+                <TableCell key={f}>{f}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Object.entries(feature.samples).map(
+              ([key, value]) =>
+                value && (
+                  <TableRow key={key}>
+                    <TableCell component="th" scope="row">
+                      {key}
                     </TableCell>
-                  ))}
-                </TableRow>
-              ),
-          )}
-        </TableBody>
-      </Table>
+                    {infoFields.map(f => (
+                      <TableCell className={classes.valueCell} key={f}>
+                        {value[f]}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ),
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </VariantCard>
   )
 }
