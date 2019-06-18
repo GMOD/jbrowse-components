@@ -55,23 +55,6 @@ const coreRenderedDetails = [
   'Type',
 ]
 
-const ValBox = props => {
-  const { classes, value } = props
-  return Array.isArray(value) && value.length > 1 ? (
-    <>
-      <div>
-        <br />
-        {value.map((v, i) => (
-          <div key={i} className={classes.valbox}>
-            {String(v)}
-          </div>
-        ))}
-      </div>
-    </>
-  ) : (
-    String(value)
-  )
-}
 const VariantCard = props => {
   const { children, classes, title } = props
   return (
