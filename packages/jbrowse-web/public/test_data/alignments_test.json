@@ -116,6 +116,30 @@
               "uri": "/test_data/volvox_microarray.bw"
             }
           }
+        },
+        {
+          "configId": "volvox_microarray_line",
+          "defaultRendering": "line",
+          "type": "WiggleTrack",
+          "name": "wiggle_track",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_density",
+          "type": "WiggleTrack",
+          "defaultRendering": "density",
+          "name": "wiggle_track",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          }
         }
       ]
     }

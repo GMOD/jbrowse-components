@@ -152,4 +152,24 @@ describe('bigwig', () => {
     fireEvent.click(await waitForElement(() => byId('volvox_microarray')))
     await waitForElement(() => byId('prerendered_canvas'))
   })
+  it('open a bigwig line track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await waitForElement(() => byId('volvox_microarray_line')))
+    await waitForElement(() => byId('prerendered_canvas'))
+  })
+  it('open a bigwig density track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() => byId('volvox_microarray_density')),
+    )
+    await waitForElement(() => byId('prerendered_canvas'))
+  })
 })
