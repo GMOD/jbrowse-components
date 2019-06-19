@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-object-literal-type-assertion */
+
 import {
   calcStdFromSums,
   rectifyStats,
@@ -18,24 +20,24 @@ test('calc std', () => {
 
 test('test rectify', () => {
   // mean of 0 bases covered = 0
-  const t = {
-    basesCovered: 0,
-  }
-  expect(rectifyStats(<UnrectifiedFeatureStats>t).scoreMean).toEqual(0)
-  const s = {
+  expect(
+    rectifyStats(<UnrectifiedFeatureStats>{ basesCovered: 0 }).scoreMean,
+  ).toEqual(0)
+  const s = rectifyStats(<UnrectifiedFeatureStats>{
     featureCount: 10,
     scoreSum: 1000,
-  }
+  })
 
-  expect(rectifyStats(<UnrectifiedFeatureStats>s).scoreMean).toEqual(100)
-  expect(rectifyStats(<UnrectifiedFeatureStats>s).featureCount).toEqual(10)
+  expect(s.scoreMean).toEqual(100)
+  expect(s.featureCount).toEqual(10)
 
-  const s2 = {
-    featureCount: 3,
-    scoreSum: 6,
-    scoreSumSquares: 14,
-  }
-  expect(rectifyStats(<UnrectifiedFeatureStats>s2).scoreStdDev).toEqual(1) // calculated from a webapp
+  expect(
+    rectifyStats(<UnrectifiedFeatureStats>{
+      featureCount: 3,
+      scoreSum: 6,
+      scoreSumSquares: 14,
+    }).scoreStdDev,
+  ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 
 test('scores to stats', () => {
