@@ -1,0 +1,18 @@
+{
+  "name": "@gmod/jbrowse-plugin-lollipop",
+  "version": "2.0.0",
+  "description": "JBrowse 2 plugin for lollipops",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/lollipop"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@material-ui/core": "^3.0.0",
+    "mobx-react": "^6.0.0",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0"
+  }
+}

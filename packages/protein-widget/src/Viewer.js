@@ -12,21 +12,14 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-import LinearGenomeViewPlugin from '../../jbrowse-web/src/plugins/LinearGenomeView'
-import FromConfigAdapterPlugin from '../../jbrowse-web/src/plugins/FromConfigAdapter'
-import SequenceRendererPlugin from '../../jbrowse-web/src/plugins/ProteinReferenceSequenceRenderer'
-import LollipopRendererPlugin from '../../jbrowse-web/src/plugins/LollipopRenderer'
-import SvgFeatureRendererPlugin from '../../jbrowse-web/src/plugins/SvgFeatureRenderer'
-import FilteringTrackPlugin from '../../jbrowse-web/src/plugins/FilteringTrack'
+import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import Config from '@gmod/jbrowse-plugin-config'
+import Protein from '@gmod/jbrowse-plugin-protein'
+import Lollipop from '@gmod/jbrowse-plugin-lollipop'
+import SVG from '@gmod/jbrowse-plugin-svg'
+import Filtering from '@gmod/jbrowse-plugin-filtering'
 
-const plugins = [
-  FromConfigAdapterPlugin,
-  LinearGenomeViewPlugin,
-  SequenceRendererPlugin,
-  LollipopRendererPlugin,
-  SvgFeatureRendererPlugin,
-  FilteringTrackPlugin,
-]
+const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
 // want a lineargenomeview with a sequence track
 // and a variants track

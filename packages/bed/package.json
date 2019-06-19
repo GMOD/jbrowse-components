@@ -1,0 +1,19 @@
+{
+  "name": "@gmod/jbrowse-plugin-bed",
+  "version": "2.0.0",
+  "description": "JBrowse 2 bed adapters, tracks, etc.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/bed"
+  },
+  "author": "Garrett Stevens",
+  "license": "MIT",
+  "dependencies": {
+    "@gmod/bbi": "^1.0.21",
+    "@gmod/bed": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "rxjs": "^6.0.0"
+  }
+}

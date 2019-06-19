@@ -40,17 +40,22 @@
     "generic-filehandle": "^2.0.0",
     "http-range-fetcher": "^1.2.2",
     "json-stable-stringify": "^1.0.1",
-    "mobx": "^5.9.4",
-    "mobx-react": "^5.3.6",
-    "mobx-state-tree": "3.10.2",
     "object.fromentries": "^2.0.0",
-    "prop-types": "^15.6.2",
-    "react": "^16.8.6",
-    "rxjs": "^6.5.2",
     "shortid": "^2.2.13",
     "tenacious-fetch": "^2.1.0",
     "util.promisify": "^1.0.0",
     "whatwg-fetch": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@material-ui/core": "^3.0.0",
+    "@material-ui/lab": "^3.0.0-alpha.13",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.10.2",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
+    "rxjs": "^6.0.0"
   },
   "publishConfig": {
     "access": "public"
