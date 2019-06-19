@@ -14,7 +14,6 @@ interface Mismatch {
   cliplen?: number
 }
 
-
 export default class implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private record: any
@@ -215,7 +214,7 @@ export default class implements Feature {
     // CIGAR string are replaced by those from MD
     if (mdString) {
       mismatches = mismatches.filter(
-        m => !(m.type == 'deletion' || m.type == 'mismatch'),
+        m => !(m.type === 'deletion' || m.type === 'mismatch'),
       )
     }
 
@@ -246,7 +245,7 @@ export default class implements Feature {
       // if( op == 'M' || op == '=' || op == 'E' ) {
       //     // nothing
       // }
-      if (op == 'I')
+      if (op === 'I')
         // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
         mismatches.push({
           start: currOffset,
@@ -254,35 +253,35 @@ export default class implements Feature {
           base: `${len}`,
           length: 1,
         })
-      else if (op == 'D')
+      else if (op === 'D')
         mismatches.push({
           start: currOffset,
           type: 'deletion',
           base: '*',
           length: len,
         })
-      else if (op == 'N')
+      else if (op === 'N')
         mismatches.push({
           start: currOffset,
           type: 'skip',
           base: 'N',
           length: len,
         })
-      else if (op == 'X')
+      else if (op === 'X')
         mismatches.push({
           start: currOffset,
           type: 'mismatch',
           base: 'X',
           length: len,
         })
-      else if (op == 'H')
+      else if (op === 'H')
         mismatches.push({
           start: currOffset,
           type: 'hardclip',
           base: `H${len}`,
           length: 1,
         })
-      else if (op == 'S')
+      else if (op === 'S')
         mismatches.push({
           start: currOffset,
           type: 'softclip',
@@ -291,7 +290,7 @@ export default class implements Feature {
           length: 1,
         })
 
-      if (op != 'I' && op != 'S' && op != 'H') currOffset += len
+      if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
     })
     return mismatches
   }
@@ -303,14 +302,14 @@ export default class implements Feature {
     ops.forEach(oprec => {
       const op = oprec[0]
       const len = oprec[1]
-      if (op == 'D')
+      if (op === 'D')
         mismatches.push({
           start: currOffset,
           type: 'deletion',
           base: '*',
           length: len,
         })
-      else if (op == 'N')
+      else if (op === 'N')
         mismatches.push({
           start: currOffset,
           type: 'skip',
@@ -318,14 +317,13 @@ export default class implements Feature {
           length: len,
         })
 
-      if (op != 'I' && op != 'S' && op != 'H') currOffset += len
+      if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
     })
     return mismatches
   }
 
   private parseCigar(cigar: string): [string, number][] {
     return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
-      console.log(op)
       return [op.match(/\D/)[0], parseInt(op, 10)]
     })
   }
@@ -349,9 +347,8 @@ export default class implements Feature {
 
     function nextRecord() {
       // correct the start of the current mismatch if it comes after a cigar skip
-      const skipOffset = 0
       ;(cigarMismatches || []).forEach((mismatch: Mismatch) => {
-        if (mismatch.type == 'skip' && curr.start >= mismatch.start) {
+        if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
           curr.start += mismatch.length
         }
       })
@@ -408,9 +405,9 @@ export default class implements Feature {
     for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 1) {
       const op = cigarOps[i][0]
       const len = cigarOps[i][1]
-      if (op == 'S' || op == 'I') {
+      if (op === 'S' || op === 'I') {
         templateOffset += len
-      } else if (op == 'D' || op == 'P') {
+      } else if (op === 'D' || op === 'P') {
         refOffset += len
       } else {
         templateOffset += len

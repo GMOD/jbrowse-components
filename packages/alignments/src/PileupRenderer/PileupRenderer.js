@@ -87,7 +87,6 @@ export default class extends BoxRendererType {
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
       const mismatches = feature.get('mismatches')
       if (mismatches) {
-        console.log(mismatches)
         const map = { A: '#00bf00', C: '#4747ff', G: '#ffa500', T: '#f00' }
         for (let i = 0; i < mismatches.length; i += 1) {
           const m = mismatches[i]
