@@ -10,7 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bam": "^1.0.17",
-    "generic-filehandle": "^2.0.0"
+    "generic-filehandle": "^2.0.0",
+    "react-style-proptype": "^3.2.2"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

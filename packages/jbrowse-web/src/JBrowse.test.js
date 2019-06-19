@@ -50,6 +50,22 @@ afterEach(cleanup)
 
 fetchMock.mock('*', readBuffer)
 
+// this is just a little hack to silence a warning that we'll get until react
+// fixes this: https://github.com/facebook/react/pull/14853
+const originalError = console.error
+beforeAll(() => {
+  console.error = (...args) => {
+    if (/Warning.*not wrapped in act/.test(args[0])) {
+      return
+    }
+    originalError.call(console, ...args)
+  }
+})
+
+afterAll(() => {
+  console.error = originalError
+})
+
 describe('valid file tests', () => {
   it('access about menu', async () => {
     const { getByText } = render(<JBrowse configs={[config]} />)
@@ -123,5 +139,37 @@ describe('variant', () => {
     fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
     fireEvent.click(await waitForElement(() => byId('vcf-2560')))
     expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
+  })
+})
+
+describe('bigwig', () => {
+  it('open a bigwig track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await waitForElement(() => byId('volvox_microarray')))
+    await waitForElement(() => byId('prerendered_canvas'))
+  })
+  it('open a bigwig line track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await waitForElement(() => byId('volvox_microarray_line')))
+    await waitForElement(() => byId('prerendered_canvas'))
+  })
+  it('open a bigwig density track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() => byId('volvox_microarray_density')),
+    )
+    await waitForElement(() => byId('prerendered_canvas'))
   })
 })

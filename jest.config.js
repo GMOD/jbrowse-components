@@ -28,7 +28,7 @@ module.exports = {
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/enzymeSetup.js',
   ],
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',
   moduleNameMapper: {
     '^react-native$': 'react-native-web',

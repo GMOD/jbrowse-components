@@ -10,13 +10,14 @@ import {
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { addDisposer, getRoot, getSnapshot, types } from 'mobx-state-tree'
-import { getNiceDomain } from '../DensityRenderer/util'
+import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
   ['density', 'DensityRenderer'],
+  ['line', 'LinePlotRenderer'],
 ])
 export default configSchema =>
   types.compose(

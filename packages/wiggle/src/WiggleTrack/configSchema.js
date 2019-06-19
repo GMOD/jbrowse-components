@@ -9,6 +9,9 @@ export default pluginManager => {
   const DensityRendererConfigSchema = pluginManager.getRendererType(
     'DensityRenderer',
   ).configSchema
+  const LinePlotRendererConfigSchema = pluginManager.getRendererType(
+    'LinePlotRenderer',
+  ).configSchema
 
   return ConfigurationSchema(
     'WiggleTrack',
@@ -44,13 +47,14 @@ export default pluginManager => {
 
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot']),
+        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
         defaultValue: 'xyplot',
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
         DensityRenderer: DensityRendererConfigSchema,
         XYPlotRenderer: XYPlotRendererConfigSchema,
+        LinePlotRenderer: LinePlotRendererConfigSchema,
       }),
     },
     {

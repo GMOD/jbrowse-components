@@ -45,6 +45,7 @@ export default class PrerenderedCanvas extends Component {
     const { width, height, highResolutionScaling } = this.props
     return (
       <canvas
+        data-testid="prerendered_canvas"
         ref={this.featureCanvas}
         width={width * highResolutionScaling}
         height={height * highResolutionScaling}

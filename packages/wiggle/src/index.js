@@ -17,6 +17,10 @@ import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
   ReactComponent as XYPlotRendererReactComponent,
 } from './XYPlotRenderer'
+import LinePlotRenderer, {
+  configSchema as linePlotRendererConfigSchema,
+  ReactComponent as LinePlotRendererReactComponent,
+} from './LinePlotRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -44,6 +48,15 @@ export default class extends Plugin {
           name: 'DensityRenderer',
           ReactComponent: DensityRendererReactComponent,
           configSchema: densityRendererConfigSchema,
+        }),
+    )
+
+    pluginManager.addRendererType(
+      () =>
+        new LinePlotRenderer({
+          name: 'LinePlotRenderer',
+          ReactComponent: LinePlotRendererReactComponent,
+          configSchema: linePlotRendererConfigSchema,
         }),
     )
 

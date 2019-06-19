@@ -1,8 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { bpToPx } from '@gmod/jbrowse-core/util'
-import Color from 'color'
+import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { getOrigin, getScale } from '../util'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
@@ -18,15 +17,11 @@ export default class extends WiggleBaseRenderer {
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
-    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
     const scale = getScale({ ...scaleOpts, range: [0, height] })
-    const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
     const toY = rawscore => height - scale(rawscore)
-    const toHeight = rawscore => toY(originY) - toY(rawscore)
     let colorCallback
     if (readConfObject(config, 'color') === '#f0f') {
       colorCallback = feature =>
@@ -34,55 +29,30 @@ export default class extends WiggleBaseRenderer {
     } else {
       colorCallback = feature => readConfObject(config, 'color', [feature])
     }
+    const getCoord = coord =>
+      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
+    let lastVal
 
     for (const feature of features.values()) {
-      const s = feature.get('start')
-      const e = feature.get('end')
-      let leftPx = bpToPx(s, region, bpPerPx, horizontallyFlipped)
-      let rightPx = bpToPx(e, region, bpPerPx, horizontallyFlipped)
+      let leftPx = getCoord(feature.get('start'))
+      let rightPx = getCoord(feature.get('end'))
       if (horizontallyFlipped) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      let score = feature.get('score')
-      const maxr = feature.get('maxScore')
-      const minr = feature.get('minScore')
-
+      const score = feature.get('score')
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
       const c = colorCallback(feature)
-      if (summaryScoreMode === 'max') {
-        score = maxr === undefined ? score : maxr
-        ctx.fillStyle = c
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-      } else if (summaryScoreMode === 'min') {
-        score = minr === undefined ? score : minr
-        ctx.fillStyle = c
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-      } else if (summaryScoreMode === 'whiskers') {
-        // max
-        if (maxr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .lighten(0.6)
-            .toString()
-          ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
-        }
 
-        // normal
-        ctx.fillStyle = c
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-        // min
-        if (minr !== undefined) {
-          ctx.fillStyle = Color(c)
-            .darken(0.6)
-            .toString()
-          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
-        }
-      } else {
-        ctx.fillStyle = c
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-      }
+      ctx.strokeStyle = c
+      ctx.beginPath()
+      ctx.moveTo(leftPx, toY(typeof lastVal !== 'undefined' ? lastVal : score))
+      ctx.lineTo(leftPx, toY(score))
+      ctx.lineTo(rightPx, toY(score))
+      ctx.stroke()
+      lastVal = score
 
       if (highClipping) {
         ctx.fillStyle = clipColor

@@ -8,8 +8,8 @@ import * as serviceWorker from './serviceWorker'
 serviceWorker.register()
 
 const configs = [
-  { uri: 'test_data/config_volvox.json' },
   { uri: 'test_data/alignments_test.json' },
+  { uri: 'test_data/config_volvox.json' },
   { uri: 'test_data/config_human.json' },
   { uri: 'test_data/config_volvox_connection.json' },
   { uri: 'test_data/config_volvox_mainthread.json' },
