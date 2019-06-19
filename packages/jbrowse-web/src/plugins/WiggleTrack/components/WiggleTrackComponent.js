@@ -57,7 +57,9 @@ function WiggleTrackComponent(props) {
     )
   }
 
-  const needsScalebar = model.rendererTypeName === 'XYPlotRenderer'
+  const needsScalebar =
+    model.rendererTypeName === 'XYPlotRenderer' ||
+    model.rendererTypeName === 'LinePlotRenderer'
 
   return (
     <BlockBasedTrack {...props}>
