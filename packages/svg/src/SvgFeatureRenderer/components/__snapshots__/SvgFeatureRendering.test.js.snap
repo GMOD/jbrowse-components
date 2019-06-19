@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="20px"
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="100px"
+/>
+`;
+
+exports[`one feature 1`] = `
+<svg
+  className="SvgFeatureRendering"
+  height="25px"
+  onBlur={[Function]}
+  onClick={[Function]}
+  onFocus={[Function]}
+  onMouseDown={[Function]}
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+  onMouseUp={[Function]}
+  style={
+    Object {
+      "position": "relative",
+    }
+  }
+  width="333.3333333333333px"
+>
+  <g
+    transform="translate(0.3 0)"
+  >
+    <rect
+      data-testid="one"
+      height={10}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onMouseDown={[Function]}
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      onMouseMove={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+      onMouseUp={[Function]}
+      style={
+        Object {
+          "fill": "goldenrod",
+        }
+      }
+      title="one"
+      width={1}
+      x={0}
+      y={0}
+    />
+    <text
+      dominantBaseline="hanging"
+      style={
+        Object {
+          "fill": "black",
+          "fontSize": 13,
+        }
+      }
+      x={0}
+      y={12}
+    >
+      one
+    </text>
+  </g>
+</svg>
+`;

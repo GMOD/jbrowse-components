@@ -7,10 +7,6 @@ import {
   modelFactory as ucscModelFactory,
 } from './ucsc-trackhub'
 import {
-  configSchema as jbrowse1ConfigSchema,
-  modelFactory as jbrowse1ModelFactory,
-} from './jbrowse1'
-import {
   reactComponent as AddTrackReactComponent,
   stateModelFactory as AddTrackStateModelFactory,
   configSchema as AddTrackConfigSchema,
@@ -26,7 +22,7 @@ import {
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorDrawerWidget'
 
-export default class UCSCTrackHubConnection extends Plugin {
+export default class extends Plugin {
   install(pluginManager) {
     pluginManager.addConnectionType(
       () =>
@@ -37,18 +33,6 @@ export default class UCSCTrackHubConnection extends Plugin {
           displayName: 'UCSC Track Hub',
           description: 'A track or assembly hub in the Track Hub format',
           url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
-        }),
-    )
-
-    pluginManager.addConnectionType(
-      () =>
-        new ConnectionType({
-          name: 'JBrowse1Connection',
-          configSchema: jbrowse1ConfigSchema,
-          stateModel: jbrowse1ModelFactory(pluginManager),
-          displayName: 'JBrowse 1 Data',
-          description: 'A JBrowse 1 data directory',
-          url: '//jbrowse.org/',
         }),
     )
 

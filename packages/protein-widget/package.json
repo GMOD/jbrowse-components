@@ -17,11 +17,22 @@
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@gmod/jbrowse-core": "^2.0.0",
-    "mobx": "^5.9.0",
-    "mobx-react": "^5.4.3",
+    "@gmod/jbrowse-plugin-config": "^2.0.0",
+    "@gmod/jbrowse-plugin-filtering": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
+    "@gmod/jbrowse-plugin-protein": "^2.0.0",
+    "@gmod/jbrowse-plugin-svg": "^2.0.0",
+    "@material-ui/core": "3.9.3",
+    "@material-ui/lab": "^3.0.0-alpha.30",
+    "mobx": "^5.10.1",
+    "mobx-react": "^6.0.3",
+    "mobx-react-lite": "^1.4.0",
     "mobx-state-tree": "3.10.2",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "rxjs": "6.5.2",
     "typeface-roboto": "^0.0.54"
   }
 }

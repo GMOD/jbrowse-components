@@ -152,6 +152,8 @@ function ConfirmTrack(props) {
 
 ConfirmTrack.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
+  assemblyName: PropTypes.string.isRequired,
+  setAssemblyName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,

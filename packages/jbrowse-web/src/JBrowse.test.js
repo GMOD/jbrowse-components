@@ -14,8 +14,12 @@ import config from '../test_data/alignments_test.json'
 
 fetchMock.config.sendAsJson = false
 
-const getFile = url => new LocalFile(require.resolve(`../${url}`))
+jest.mock('request-idle-callback', () => ({
+  requestIdleCallback: callback => callback(),
+  cancelIdleCallback: () => {},
+}))
 
+const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
 const readBuffer = async (url, args) => {
   let file
@@ -30,7 +34,7 @@ const readBuffer = async (url, args) => {
     const { start, end } = range[0]
     const len = end - start
     const buf = Buffer.alloc(len)
-    const bytesRead = await file.read(buf, 0, len, start)
+    const { bytesRead } = await file.read(buf, 0, len, start)
     const stat = await file.stat()
     return {
       status: 206,
@@ -106,5 +110,18 @@ describe('some error state', () => {
         ),
       ),
     ).toBeTruthy()
+  })
+})
+
+describe('variant', () => {
+  it('click on a vcf feature', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await waitForElement(() => byId('volvox_filtered_vcf')))
+    fireEvent.click(await waitForElement(() => byId('vcf-2560')))
+    expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
   })
 })

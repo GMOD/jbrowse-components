@@ -19,7 +19,7 @@ Object {
           "configId": "testid",
           "type": "DivSequenceRenderer",
         },
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
       },
     },
   ],
@@ -78,7 +78,7 @@ Object {
           "configId": "testid",
           "type": "DivSequenceRenderer",
         },
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
       },
       "tracks": Array [
         Object {
@@ -298,7 +298,7 @@ Object {
           "configId": "testid",
           "type": "DivSequenceRenderer",
         },
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
       },
     },
   ],
@@ -349,7 +349,7 @@ Object {
           Object {
             "configuration": "Ntr0BAB7d",
             "height": 80,
-            "type": "ReferenceSequence",
+            "type": "ReferenceSequenceTrack",
           },
           Object {
             "configuration": "z3MB1J7HG",

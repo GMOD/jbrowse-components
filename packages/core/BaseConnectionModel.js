@@ -11,7 +11,8 @@ export default pluginManager => {
               pluginManager.pluggableConfigSchemaType('track'),
             ),
             sequence:
-              pluginManager.elementTypes.track.ReferenceSequence.configSchema,
+              pluginManager.elementTypes.track.ReferenceSequenceTrack
+                .configSchema,
             defaultSequence: false,
           })
           .actions(self => ({

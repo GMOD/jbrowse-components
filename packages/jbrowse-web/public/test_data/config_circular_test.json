@@ -4,7 +4,7 @@
       "assemblyName": "volvox",
       "sequence": {
         "configId": "iTo6LoXUeI",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
@@ -120,6 +120,27 @@
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
               "labels": {}
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "volvox_filtered_vcf",
+          "name": "volvox filtered vcf",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.filtered.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+              }
             }
           }
         },
@@ -334,7 +355,7 @@
     {
       "assemblyName": "volvox2",
       "sequence": {
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "FromConfigAdapter",
           "features": [
@@ -397,23 +418,12 @@
           "type": "CircularView"
         },
         "minimumBlockWidth": 20
-      },
-      {
-        "type": "CircularView",
-        "offsetRadians": 0,
-        "bpPerRadian": 1,
-        "displayedRegions": [
-          { "refName": "toast", "start": 0, "end": 100000, "assemblyName": "zonk"}
-        ],
-        "tracks": [],
-        "width": 985,
-        "height": 400,
-        "configuration": {
-          "configId": "C_mKt_rxqy",
-          "type": "CircularView"
-        },
-        "minimumBlockWidth": 20
       }
-    ]
+
+    ],
+    "drawerWidgets": {
+    },
+    "activeDrawerWidgets": {
+    }
   }
 }

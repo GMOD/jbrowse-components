@@ -4,7 +4,7 @@
       "assemblyName": "hg38",
       "sequence": {
         "configId": "VKYdNPZZ0",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
@@ -91,6 +91,26 @@
           }
         },
         {
+          "type": "AlignmentsTrack",
+          "configId": "hg00096_lowcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina low coverage",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+              }
+            }
+          }
+        },
+
+        {
           "configId": "wiggle_global_autoscale",
           "type": "WiggleTrack",
           "name": "Encode global autoscale",
@@ -137,6 +157,26 @@
             "type": "BigBedAdapter",
             "bigBedLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "indels",
+          "name": "InDels",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
             }
           }
         }
@@ -191,6 +231,7 @@
             "height": 100,
             "configuration": "bigbed_peaks"
           }
+
         ],
         "trackSelectorType": "hierarchical"
       }

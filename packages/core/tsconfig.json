@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": [
-      "es2017",
+      "esnext",
       "esnext.array",
       "dom"
     ],

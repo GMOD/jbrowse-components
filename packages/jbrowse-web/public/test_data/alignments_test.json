@@ -4,7 +4,7 @@
       "assemblyName": "volvox",
       "sequence": {
         "configId": "volvox_refseq",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
@@ -65,6 +65,28 @@
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
               "labels": {}
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "volvox_filtered_vcf",
+          "defaultRendering": "svg",
+          "name": "volvox filtered vcf",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.filtered.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+              }
             }
           }
         },

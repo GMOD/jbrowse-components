@@ -15,7 +15,7 @@ test('can load configuration from a config object', async () => {
       {
         assemblyName: 'volvox',
         sequence: {
-          type: 'ReferenceSequence',
+          type: 'ReferenceSequenceTrack',
           adapter: {
             configId: 'Zd0NLmtxPZ3',
             type: 'FromConfigAdapter',

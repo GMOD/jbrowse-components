@@ -1,0 +1,120 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VariantTrack drawer widget renders with just the required model elements 1`] = `
+<div>
+  <div
+    class="MuiPaper-root-8 MuiPaper-elevation2-12 MuiPaper-rounded-9"
+    data-testid="variant-side-drawer"
+  >
+    <div
+      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+    >
+      <div
+        class="MuiCardHeader-root-36 VariantFeatureDetails-header-5"
+      >
+        <div
+          class="MuiCardHeader-content-39"
+        >
+          <span
+            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 VariantFeatureDetails-title-6"
+          >
+            Primary data
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-78"
+      >
+        <div>
+          <div
+            class="VariantFeatureDetails-fieldName-3"
+          >
+            Position
+          </div>
+          <div
+            class="VariantFeatureDetails-fieldValue-4"
+          >
+            ctgA:NaN..undefined
+          </div>
+        </div>
+        NaN
+      </div>
+    </div>
+    <hr
+      class="MuiDivider-root-79"
+    />
+    <div
+      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+    >
+      <div
+        class="MuiCardHeader-root-36 VariantFeatureDetails-header-5"
+      >
+        <div
+          class="MuiCardHeader-content-39"
+        >
+          <span
+            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 VariantFeatureDetails-title-6"
+          >
+            Attributes
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-78"
+      >
+        <div>
+          <div
+            class="VariantFeatureDetails-fieldName-3"
+          >
+            MQ
+          </div>
+          <div
+            class="VariantFeatureDetails-fieldValue-4"
+          >
+            5
+          </div>
+        </div>
+        <div>
+          <div
+            class="VariantFeatureDetails-fieldName-3"
+          >
+            REF
+          </div>
+          <div
+            class="VariantFeatureDetails-fieldValue-4"
+          >
+            A
+          </div>
+        </div>
+        <div>
+          <div
+            class="VariantFeatureDetails-fieldName-3"
+          >
+            ALT
+          </div>
+          <div
+            class="VariantFeatureDetails-fieldValue-4"
+          >
+            C
+          </div>
+        </div>
+        <div>
+          <div
+            class="VariantFeatureDetails-fieldName-3"
+          >
+            QUAL
+          </div>
+          <div
+            class="VariantFeatureDetails-fieldValue-4"
+          >
+            10.4
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr
+      class="MuiDivider-root-79"
+    />
+  </div>
+</div>
+`;
