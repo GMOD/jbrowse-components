@@ -8,6 +8,7 @@ import {
 import Color from 'color'
 import React from 'react'
 import { getOrigin, getScale } from '../util'
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
@@ -58,6 +59,7 @@ export default class extends WiggleBaseRenderer {
       ctx.lineTo(leftPx, toY(score))
       ctx.lineTo(rightPx, toY(score))
       ctx.stroke()
+      lastVal = score
 
       if (highClipping) {
         ctx.fillStyle = clipColor
