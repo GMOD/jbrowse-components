@@ -51,7 +51,8 @@ export default function(pluginManager) {
     'SequenceAssembly',
     {
       ...baseConfigSchema,
-      sequence: pluginManager.elementTypes.track.ReferenceSequence.configSchema,
+      sequence:
+        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
     },
     { actions },
   )
@@ -71,7 +72,8 @@ export default function(pluginManager) {
     'Assembly',
     {
       ...baseConfigSchema,
-      sequence: pluginManager.elementTypes.track.ReferenceSequence.configSchema,
+      sequence:
+        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
       refNameAliases: ConfigurationSchema('RefNameAliases', {
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       }),

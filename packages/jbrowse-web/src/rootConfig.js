@@ -58,7 +58,7 @@ export default function(pluginManager) {
             },
           },
           sequence = {
-            type: 'ReferenceSequence',
+            type: 'ReferenceSequenceTrack',
             adapter: {
               type: 'FromConfigAdapter',
               regions: [],

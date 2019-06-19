@@ -1,7 +1,7 @@
 import React from 'react'
 import * as mst from 'mobx-state-tree'
 
-import RendererType from './pluggableElementTypes/RendererType'
+import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ViewType from './pluggableElementTypes/ViewType'
@@ -95,6 +95,7 @@ export default class PluginManager {
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
     }
+    // if (!plugin.install) console.error(plugin)
     plugin.install(this)
     this.plugins.push(plugin)
     return this

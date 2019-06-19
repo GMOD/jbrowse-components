@@ -4,7 +4,7 @@
       "assemblyName": "hg38",
       "sequence": {
         "configId": "VKYdNPZZ0",
-        "type": "ReferenceSequence",
+        "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
