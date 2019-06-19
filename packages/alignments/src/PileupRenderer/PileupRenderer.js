@@ -17,18 +17,11 @@ export default class extends BoxRendererType {
     horizontallyFlipped = false,
   ) {
     // const leftBase = region.start
-    const startPx = bpToPx(
-      feature.get('start'),
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
-    const endPx = bpToPx(
-      feature.get('end'),
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
+    const getCoord = coord =>
+      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
+    const startPx = getCoord(feature.get('start'))
+    const endPx = getCoord(feature.get('end'))
+
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     // if (Number.isNaN(startPx)) debugger
     // if (Number.isNaN(endPx)) debugger
@@ -66,6 +59,8 @@ export default class extends BoxRendererType {
   }) {
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
+    const getCoord = coord =>
+      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
 
     const layoutRecords = iterMap(
       features.values(),
@@ -90,6 +85,30 @@ export default class extends BoxRendererType {
     layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
+      const mismatches = feature.get('mismatches')
+      if (mismatches) {
+        console.log(mismatches)
+        const map = { A: '#00bf00', C: '#4747ff', G: '#ffa500', T: '#f00' }
+        for (let i = 0; i < mismatches.length; i += 1) {
+          const m = mismatches[i]
+
+          if (m.altbase) {
+            ctx.fillStyle = map[m.altbase.toUpperCase()]
+            ctx.fillRect(
+              getCoord(feature.get('start') + m.start),
+              topPx,
+              getCoord(feature.get('start') + m.start + m.length) -
+                getCoord(feature.get('start') + m.start),
+              heightPx,
+            )
+            ctx.fillText(
+              getCoord(feature.get('start') + m.start),
+              topPx,
+              m.altbase,
+            )
+          }
+        }
+      }
     })
 
     const imageData = await createImageBitmap(canvas)
