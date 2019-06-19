@@ -299,7 +299,7 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_negative.bw"
+              "uri": "/test_data/volvox_microarray.bw"
             }
           }
         },
@@ -332,7 +332,24 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_posneg_line",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray with +/- values",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "height": 300,
+          "defaultRendering": "line",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_posneg.bw"
             }
           }
         },
