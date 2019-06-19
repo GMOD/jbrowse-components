@@ -17,6 +17,7 @@ import WiggleTrackComponent from './components/WiggleTrackComponent'
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
   ['density', 'DensityRenderer'],
+  ['line', 'LinePlotRenderer'],
 ])
 export default configSchema =>
   types.compose(

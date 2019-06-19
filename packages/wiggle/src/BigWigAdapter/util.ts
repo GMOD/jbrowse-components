@@ -69,10 +69,10 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
  * @param features - list of features with start, end, score
  * @return array of numeric scores
  */
-export function calcRealStats(
-  region: { start: number; end: number },
+export function calcPerBaseStats(
+  region: INoAssemblyRegion,
   features: BBIFeature[],
-  opts: { windowSize: number },
+  opts: { windowSize: number } = { windowSize: 1 },
 ): number[] {
   const { start, end } = region
   const scores = []
