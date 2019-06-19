@@ -106,36 +106,36 @@ export default class VCFFeature implements Feature {
   _getSOTermAndDescription(
     ref: string,
     alt: string[],
-  ): [string | undefined, string | undefined] {
+  ): [string, string] | [undefined, undefined] {
     // it's just a remark if there are no alternate alleles
     if (!alt || alt === []) {
       return ['remark', 'no alternative alleles']
     }
 
-    const soTerms = new Set()
-    let descriptions = new Set()
+    const soTerms: Set<string> = new Set()
+    let descriptions: Set<string> = new Set()
     alt.forEach(a => {
       let [soTerm, description] = this._getSOAndDescFromAltDefs(ref, a)
       if (!soTerm) {
         ;[soTerm, description] = this._getSOAndDescByExamination(ref, a)
       }
-      if (soTerm) {
+      if (soTerm && description) {
         soTerms.add(soTerm)
         descriptions.add(description)
       }
     })
     // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
     if (descriptions.size > 1) {
-      const prefixes = new Set()
-      ;[...descriptions].forEach(desc => {
+      const prefixes: Set<string> = new Set()
+      descriptions.forEach(desc => {
         const prefix = desc.match(/(\w+? \w+? -> )(?:<)\w+(?:>)/)
         if (prefix && prefix[1]) prefixes.add(prefix[1])
         else prefixes.add(desc)
       })
       const new_descs: string[] = []
-      ;[...prefixes].forEach(prefix => {
+      ;[...prefixes].forEach((prefix: string) => {
         const suffixes: string[] = []
-        ;[...descriptions].forEach(desc => {
+        ;[...descriptions].forEach((desc: string) => {
           if (desc.startsWith(prefix)) {
             suffixes.push(desc.slice(prefix.length))
           }
@@ -164,7 +164,7 @@ export default class VCFFeature implements Feature {
   _getSOAndDescFromAltDefs(
     ref: string,
     alt: string,
-  ): [string | undefined, string | undefined] {
+  ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
     if (alt[0] !== '<') {
       return [undefined, undefined]

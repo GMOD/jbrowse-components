@@ -69,6 +69,28 @@
           }
         },
         {
+          "type": "VariantTrack",
+          "configId": "volvox_filtered_vcf",
+          "defaultRendering": "svg",
+          "name": "volvox filtered vcf",
+          "category": [
+            "Bee Category",
+            "Boo Category"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.filtered.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
           "configId": "volvox_alignments_nonexist",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (nonexist 404)",

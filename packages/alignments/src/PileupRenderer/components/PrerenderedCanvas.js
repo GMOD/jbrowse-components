@@ -7,6 +7,7 @@ export default class extends Component {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     imageData: ReactPropTypes.instanceOf(ImageBitmapType),
+    style: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   }
 
   static defaultProps = { imageData: undefined }
@@ -40,7 +41,14 @@ export default class extends Component {
   }
 
   render() {
-    const { width, height } = this.props
-    return <canvas ref={this.featureCanvas} width={width} height={height} />
+    const { width, height, style } = this.props
+    return (
+      <canvas
+        ref={this.featureCanvas}
+        width={width}
+        height={height}
+        style={style}
+      />
+    )
   }
 }

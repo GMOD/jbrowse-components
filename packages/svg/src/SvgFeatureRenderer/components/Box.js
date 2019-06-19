@@ -222,6 +222,7 @@ class Box extends Component {
       <g transform={`translate(${rootLayout.left} ${rootLayout.top})`}>
         <rect
           title={feature.id()}
+          data-testid={feature.id()}
           x={featureLayout.left}
           y={featureLayout.top}
           width={Math.max(featureLayout.width, 1)}
