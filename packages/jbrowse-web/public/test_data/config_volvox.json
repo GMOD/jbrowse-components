@@ -257,6 +257,22 @@
           }
         },
         {
+          "configId": "volvox_microarray_line",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "defaultRendering": "line",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          }
+        },
+        {
           "configId": "volvox_microarray_density",
           "type": "WiggleTrack",
           "name": "Volvox microarray",
@@ -325,13 +341,31 @@
           "type": "WiggleTrack",
           "name": "Volvox microarray with +/- values",
           "category": [
-            "BigWig"
+            "BigWig",
+            "XYPlot"
           ],
           "height": 300,
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "/test_data/volvox_microarray_posneg.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_coverage_line",
+          "type": "WiggleTrack",
+          "name": "Volvox - BAM coverage",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "defaultRendering": "line",
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
             }
           }
         },
@@ -416,39 +450,6 @@
             "type": "ReferenceSequence",
             "height": 80,
             "configuration": "iTo6LoXUeI"
-          },
-          {
-            "type": "FilteringTrack",
-            "height": 100,
-            "configuration": "i3jUPmrgMOS"
-          }
-        ],
-        "trackSelectorType": "hierarchical"
-      },
-      {
-        "type": "LinearGenomeView",
-        "offsetPx": 200,
-        "bpPerPx": 2,
-        "displayRegionsFromAssemblyName": "volvox",
-        "tracks": [
-          {
-            "type": "AlignmentsTrack",
-            "height": 200,
-            "configuration": "i3jUzmrgMOq"
-          }
-        ],
-        "trackSelectorType": "hierarchical"
-      },
-      {
-        "type": "LinearGenomeView",
-        "offsetPx": 1800,
-        "bpPerPx": 0.1,
-        "displayRegionsFromAssemblyName": "volvox",
-        "tracks": [
-          {
-            "type": "DynamicTrack",
-            "height": 100,
-            "configuration": "PDWVXl3526"
           }
         ],
         "trackSelectorType": "hierarchical"

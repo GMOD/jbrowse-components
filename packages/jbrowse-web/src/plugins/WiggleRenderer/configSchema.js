@@ -35,7 +35,7 @@ export default ConfigurationSchema(
     },
     renderType: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering type', ['xyplot', 'density']),
+      model: types.enumeration('Rendering type', ['xyplot', 'density', 'line']),
       description: 'The type of rendering for wiggle data to use',
       defaultValue: 'xyplot',
     },

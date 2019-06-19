@@ -26,6 +26,13 @@
           "type": "FromConfigAdapter",
           "features": [
             {
+              "refName": "chr22",
+              "uniqueId": "alias3",
+              "aliases": [
+                "22"
+              ]
+            },
+            {
               "refName": "chr1",
               "uniqueId": "alias1",
               "aliases": [
@@ -60,14 +67,24 @@
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "pacbio_bam",
+          "type": "AlignmentsTrack",
+          "name": "PacBio BAM",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/chr22.bam"
             },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+            "index": {
+              "location": {
+                "uri": "/test_data/chr22.bam.bai"
+              }
             }
           }
         },
@@ -157,6 +174,26 @@
             "type": "BigBedAdapter",
             "bigBedLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "pacbio_svs",
+          "name": "PacBio SVs",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/hs37d5.HG002-SequelII-CCS.sample.sv.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "/test_data/hs37d5.HG002-SequelII-CCS.sample.sv.vcf.gz.tbi"
+              }
             }
           }
         },

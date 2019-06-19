@@ -19,6 +19,7 @@ import { getNiceDomain } from '../WiggleRenderer/util'
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
   ['density', 'DensityRenderer'],
+  ['line', 'LinePlotRenderer'],
 ])
 export default (pluginManager, configSchema) =>
   types.compose(
