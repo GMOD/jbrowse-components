@@ -15,6 +15,7 @@ export default pluginManager => {
   const ResizeHandleHorizontal = jbrequire(
     '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
   )
+  const { polarToCartesian, radToDeg } = jbrequire('@gmod/jbrowse-core/util')
 
   const styles = theme => ({
     root: {
@@ -26,7 +27,7 @@ export default pluginManager => {
     scroller: {
       overflow: 'auto',
     },
-    layerRoot: {
+    sliceRoot: {
       background: 'none',
       // background: theme.palette.background.paper,
       boxSizing: 'content-box',
@@ -56,17 +57,54 @@ export default pluginManager => {
     // },
   })
 
-  const RulerLayer = withStyles(styles)(
-    observer(({ classes, model }) => {
-      return (
-        <svg
-          className={classes.layerRoot}
-          width={`${model.figureWidth}px`}
-          height={`${model.figureHeight}px`}
-          version="1.1"
-        >
+  // const RulerArc = withStyles(styles)(
+  //   observer(({ classes, block }) => {
 
-        </svg>
+  //   }))
+
+  const Slices = withStyles(styles)(
+    observer(({ classes, model }) => {
+      // <svg
+      //           style={{
+      //             // transform: `translate(${originOffset.x -
+      //             //   canvas.originX}px,${originOffset.y -
+      //             //   canvas.originY}px) rotate(${canvas.rotation}rad)`,
+      //             // transform: `translate(${-canvas.originX}px,${-canvas.originY}px) rotate(${
+      //             //   canvas.rotation
+      //             // }rad)`,
+      //             // background: 'rgba(0,0,0,0.1)',
+      //             transformOrigin: '0 0',
+      //             position: 'absolute',
+      //             left: model.centerXY[0],
+      //             top: model.centerXY[1],
+      //           }}
+      //           key={region.refName}
+      //           className={classes.sliceRoot}
+      //           width={`${canvas.widthPx}px`}
+      //           height={`${canvas.heightPx}px`}
+      //           version="1.1"
+      //         ></svg>
+      return (
+        <>
+          {model.staticSlices.map(({ region, canvas, spacingOffset }) => {
+            const endRad = (region.end - region.start) / model.bpPerRadian
+            const [endX, endY] = polarToCartesian(model.radiusPx, endRad)
+            return (
+              <g
+                key={region.refName}
+                transform={`translate(${spacingOffset.x}, ${
+                  spacingOffset.y
+                }) rotate(${radToDeg(canvas.rotation)})`}
+              >
+                <line x1={0} y1={0} x2={model.radiusPx} y2={0} stroke="blue" />
+                <text x={0} y={0} dominantBaseline="hanging">
+                  {region.refName}
+                </text>
+                <line x1={0} y1={0} x2={endX} y2={endY} stroke="red" />
+              </g>
+            )
+          })}
+        </>
       )
     }),
   )
@@ -83,6 +121,7 @@ export default pluginManager => {
         })
       }
     })
+
     return (
       <div className={classes.root}>
         <div
@@ -99,10 +138,36 @@ export default pluginManager => {
                 `rotate(${(model.offsetRadians * 180) / Math.PI}deg)`,
               ].join(' '),
               transition: 'transform 0.5s',
-              transformOrigin: '500px 500px',
+              // transformOrigin: '500px 500px',
             }}
           >
-            <RulerLayer model={model} />
+            <svg
+              style={{
+                // transform: `translate(${originOffset.x -
+                //   canvas.originX}px,${originOffset.y -
+                //   canvas.originY}px) rotate(${canvas.rotation}rad)`,
+                // transform: `translate(${-canvas.originX}px,${-canvas.originY}px) rotate(${
+                //   canvas.rotation
+                // }rad)`,
+                // background: 'rgba(0,0,0,0.1)',
+                transformOrigin: '0 0',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+              }}
+              className={classes.sliceRoot}
+              width={`${model.figureWidth}px`}
+              height={`${model.figureHeight}px`}
+              version="1.1"
+            >
+              <g
+                transform={`translate(${model.centerXY[0]}, ${
+                  model.centerXY[1]
+                })`}
+              >
+                <Slices model={model} />
+              </g>
+            </svg>
           </div>
         </div>
 

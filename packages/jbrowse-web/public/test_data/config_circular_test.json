@@ -385,11 +385,26 @@
     ],
     "views": [
       {
-        "id": "E6QVqhMRB",
         "type": "CircularView",
         "offsetRadians": 0,
         "bpPerRadian": 1,
         "displayRegionsFromAssemblyName": "volvox",
+        "tracks": [],
+        "width": 985,
+        "height": 400,
+        "configuration": {
+          "configId": "C_mKt_rxqy",
+          "type": "CircularView"
+        },
+        "minimumBlockWidth": 20
+      },
+      {
+        "type": "CircularView",
+        "offsetRadians": 0,
+        "bpPerRadian": 1,
+        "displayedRegions": [
+          { "refName": "toast", "start": 0, "end": 100000, "assemblyName": "zonk"}
+        ],
         "tracks": [],
         "width": 985,
         "height": 400,

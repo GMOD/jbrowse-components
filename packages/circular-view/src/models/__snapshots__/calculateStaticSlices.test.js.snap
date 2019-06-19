@@ -1,0 +1,126 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`one slice 1`] = `
+Slice {
+  "canvas": Object {
+    "heightPx": 2010,
+    "originX": 1005,
+    "originY": 1005,
+    "rotation": 0,
+    "widthPx": 2010,
+  },
+  "radiusPx": 1000,
+  "region": Object {
+    "end": 10000,
+    "refName": "toast",
+    "start": 0,
+  },
+  "spacingOffset": Object {
+    "rho": 0,
+    "theta": 3.141592653589793,
+    "thetaDegrees": 180,
+    "x": -0,
+    "y": 0,
+  },
+}
+`;
+
+exports[`two slices 1`] = `
+Array [
+  Slice {
+    "canvas": Object {
+      "heightPx": 1009.9999999999999,
+      "originX": 1005,
+      "originY": 4.999999999999877,
+      "rotation": 0,
+      "widthPx": 2010,
+    },
+    "radiusPx": 1000,
+    "region": Object {
+      "end": 10000,
+      "refName": "toast",
+      "start": 0,
+    },
+    "spacingOffset": Object {
+      "rho": 3.5355339059327373,
+      "theta": 1.5707963267948966,
+      "thetaDegrees": 90,
+      "x": 2.164890140588733e-16,
+      "y": 3.5355339059327373,
+    },
+  },
+  Slice {
+    "canvas": Object {
+      "heightPx": 1009.9999999999999,
+      "originX": 1005,
+      "originY": 4.999999999999877,
+      "rotation": 3.141592653589793,
+      "widthPx": 2010,
+    },
+    "radiusPx": 1000,
+    "region": Object {
+      "end": 10000,
+      "refName": "teest",
+      "start": 0,
+    },
+    "spacingOffset": Object {
+      "rho": 3.5355339059327373,
+      "theta": 4.71238898038469,
+      "thetaDegrees": 270,
+      "x": -6.494670421766199e-16,
+      "y": -3.5355339059327373,
+    },
+  },
+]
+`;
+
+exports[`volvox 1`] = `
+Array [
+  Slice {
+    "canvas": Object {
+      "heightPx": 2010,
+      "originX": 1005,
+      "originY": 1005,
+      "rotation": 0,
+      "widthPx": 2010,
+    },
+    "radiusPx": 1000,
+    "region": Object {
+      "assemblyName": "volvox",
+      "end": 50001,
+      "refName": "ctgA",
+      "start": 0,
+    },
+    "spacingOffset": Object {
+      "rho": 3.5355339059327373,
+      "theta": 2.801048043369174,
+      "thetaDegrees": 160.48823109843084,
+      "x": -3.3324984653172938,
+      "y": 1.180870009212648,
+    },
+  },
+  Slice {
+    "canvas": Object {
+      "heightPx": 639.6395989504593,
+      "originX": 5,
+      "originY": 5,
+      "rotation": 5.602096086738348,
+      "widthPx": 1010,
+    },
+    "radiusPx": 1000,
+    "region": Object {
+      "assemblyName": "volvox",
+      "end": 6079,
+      "refName": "ctgB",
+      "start": 0,
+    },
+    "spacingOffset": Object {
+      "rho": 3.5355339059327373,
+      "theta": 5.942640696958967,
+      "thetaDegrees": 340.48823109843084,
+      "x": 3.3324984653172933,
+      "y": -1.1808700092126485,
+    },
+  },
+]
+`;

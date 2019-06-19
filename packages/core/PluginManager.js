@@ -106,8 +106,10 @@ export default class PluginManager {
     if (typeof lib === 'function') {
       return lib(this)
     }
+    if (lib.default) return this.jbrequire(lib.default)
+
     throw new TypeError(
-      'lib passed to require must be either a string or a function',
+      'lib passed to jbrequire must be either a string or a function',
     )
   }
 

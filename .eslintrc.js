@@ -23,6 +23,7 @@ module.exports = {
     'no-debugger': 'warn',
     'no-param-reassign': 'off',
     'no-restricted-syntax': 'off',
+    'global-require': 'off',
     'no-underscore-dangle': 'warn',
     'no-unused-vars': 'warn',
     'no-use-before-define': 'off',

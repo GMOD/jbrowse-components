@@ -75,6 +75,10 @@ export function degToRad(degrees: number): number {
   return degrees * piOverOneEighty
 }
 
+export function polarToCartesian(rho: number, theta: number): [number, number] {
+  return [rho * Math.cos(theta), rho * Math.sin(theta)]
+}
+
 export function featureSpanPx(
   feature: Feature,
   region: IRegion,

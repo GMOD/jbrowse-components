@@ -1,23 +1,9 @@
-function calculateStaticBlocks(self) {
-  const blocks = []
-  const marginPx = 5
-  for (const region of self.displayedRegions) {
-    blocks.push(region)
-    blocks.push({
-      type: 'margin',
-      widthBp: marginPx * self.bpPerPx,
-      widthPx: marginPx,
-    })
-  }
-  return blocks
-}
-
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  // const { degToRad } = jbrequire('@gmod/jbrowse-core/util')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
+  const calculateStaticSlices = jbrequire(require('./calculateStaticSlices'))
 
   const configSchema = ConfigurationSchema(
     'CircularView',
@@ -30,27 +16,37 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('CircularView'),
       offsetRadians: 0,
-      bpPerPx: 1,
+      bpPerPx: 50,
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
       width: 800,
       height: 400,
       configuration: configSchema,
+      spacingPx: 10,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
     })
     .views(self => ({
-      get staticBlocks() {
-        return calculateStaticBlocks(self)
+      get staticSlices() {
+        return calculateStaticSlices(self)
+      },
+      get circumferencePx() {
+        return self.totalBp / self.bpPerPx
       },
       get radiusPx() {
-        const numRegions = self.displayedRegions.length
-        const paddingPx = 5
-        const circumferencePx =
-          paddingPx * numRegions + self.totalBp / self.bpPerPx
-        return circumferencePx / 2 / Math.PI
+        return self.circumferencePx / (2 * Math.PI)
+      },
+      get bpPerRadian() {
+        // return self.bpPerPx * self.radiusPx
+        return self.totalBp / (2 * Math.PI)
+      },
+      get pxPerRadian() {
+        return self.radiusPx
+      },
+      get centerXY() {
+        return [self.radiusPx, self.radiusPx]
       },
       get totalBp() {
         let total = 0
@@ -61,7 +57,7 @@ export default pluginManager => {
       },
       get figureDimensions() {
         // return [3000, 3000]
-        return [self.radiusPx, self.radiusPx]
+        return [self.radiusPx * 2 + 20, self.radiusPx * 2 + 20]
       },
       get figureWidth() {
         return self.figureDimensions[0]
