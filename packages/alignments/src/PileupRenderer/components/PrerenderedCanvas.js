@@ -1,13 +1,14 @@
 import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
+import stylePropType from 'react-style-proptype'
 
 export default class extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     imageData: ReactPropTypes.instanceOf(ImageBitmapType),
-    style: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+    style: stylePropType,
   }
 
   static defaultProps = { imageData: undefined }

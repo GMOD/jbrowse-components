@@ -125,3 +125,15 @@ describe('variant', () => {
     expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
   })
 })
+
+describe('bigwig', () => {
+  it('open a bigwig track', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await waitForElement(() => byId('volvox_microarray')))
+    await waitForElement(() => byId('track-volvox_microarray'))
+  })
+})

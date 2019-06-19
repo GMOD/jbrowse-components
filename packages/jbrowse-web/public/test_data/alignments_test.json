@@ -104,15 +104,16 @@
                 "uri": "/test_data/volvox-sorted.bam.bai.nonexist"
               }
             }
-          },
-          "defaultRendering": "svg",
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+          }
+        },
+        {
+          "configId": "volvox_microarray",
+          "type": "WiggleTrack",
+          "name": "wiggle_track",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
             }
           }
         }
