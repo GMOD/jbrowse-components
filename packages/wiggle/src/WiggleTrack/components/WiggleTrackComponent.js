@@ -3,7 +3,7 @@ import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
-import { getScale } from '../../DensityRenderer/util'
+import { getScale } from '../../util'
 
 const powersOfTen = []
 for (let i = -20; i < 20; i += 1) {
