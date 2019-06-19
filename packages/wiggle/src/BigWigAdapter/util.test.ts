@@ -21,22 +21,22 @@ test('calc std', () => {
 test('test rectify', () => {
   // mean of 0 bases covered = 0
   expect(
-    rectifyStats(<UnrectifiedFeatureStats>{ basesCovered: 0 }).scoreMean,
+    rectifyStats({ basesCovered: 0 } as UnrectifiedFeatureStats).scoreMean,
   ).toEqual(0)
-  const s = rectifyStats(<UnrectifiedFeatureStats>{
+  const s = rectifyStats({
     featureCount: 10,
     scoreSum: 1000,
-  })
+  } as UnrectifiedFeatureStats)
 
   expect(s.scoreMean).toEqual(100)
   expect(s.featureCount).toEqual(10)
 
   expect(
-    rectifyStats(<UnrectifiedFeatureStats>{
+    rectifyStats({
       featureCount: 3,
       scoreSum: 6,
       scoreSumSquares: 14,
-    }).scoreStdDev,
+    } as UnrectifiedFeatureStats).scoreStdDev,
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 
