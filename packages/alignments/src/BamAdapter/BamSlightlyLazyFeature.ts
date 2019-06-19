@@ -324,6 +324,7 @@ export default class implements Feature {
 
   private parseCigar(cigar: string): [string, number][] {
     return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
+      // @ts-ignore
       return [op.match(/\D/)[0], parseInt(op, 10)]
     })
   }
