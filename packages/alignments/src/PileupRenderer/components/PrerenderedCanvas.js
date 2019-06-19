@@ -11,7 +11,7 @@ export default class extends Component {
     style: stylePropType,
   }
 
-  static defaultProps = { imageData: undefined }
+  static defaultProps = { imageData: undefined, style: {} }
 
   constructor(props) {
     super(props)

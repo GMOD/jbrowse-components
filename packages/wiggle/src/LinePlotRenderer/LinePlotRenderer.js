@@ -1,13 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { bpToPx } from '@gmod/jbrowse-core/util'
-import {
-  createCanvas,
-  createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import Color from 'color'
-import React from 'react'
-import { getOrigin, getScale } from '../util'
+import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
 export default class extends WiggleBaseRenderer {
