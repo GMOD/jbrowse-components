@@ -134,6 +134,6 @@ describe('bigwig', () => {
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)
     fireEvent.click(await waitForElement(() => byId('volvox_microarray')))
-    await waitForElement(() => byId('track-volvox_microarray'))
+    await waitForElement(() => byId('prerendered_canvas'))
   })
 })
