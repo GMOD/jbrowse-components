@@ -14,7 +14,6 @@ import {
   rectifyStats,
   scoresToStats,
   blankStats,
-  calcPerBaseStats,
   UnrectifiedFeatureStats,
   FeatureStats,
 } from './util'
@@ -142,34 +141,19 @@ export default class BigWigAdapter extends BaseAdapter {
     const { refName, start, end } = region
     const { signal, bpPerPx } = opts
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      // const ob = await this.bigwig.getFeatureStream(refName, start, end, {
-      //   signal,
-      //   basesPerSpan: bpPerPx,
-      // })
-      const scores = await this.bigwig.getFeatures(refName, start, end, {
+      const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         signal,
         basesPerSpan: bpPerPx,
       })
-      console.log(scores)
-      const realScores = calcPerBaseStats({ refName, start, end }, scores)
-      realScores.forEach((s, i) => {
-        observer.next(
-          new SimpleFeature({
-            id: start + i + 1,
-            data: { score: s, start: start + i, end: start + i + 1 },
-          }),
-        )
-      })
-      observer.complete()
-      // ob.pipe(
-      //   mergeAll(),
-      //   map((record: BBIFeature) => {
-      //     return new SimpleFeature({
-      //       id: record.start + 1,
-      //       data: record,
-      //     })
-      //   }),
-      // ).subscribe(observer)
+      ob.pipe(
+        mergeAll(),
+        map((record: BBIFeature) => {
+          return new SimpleFeature({
+            id: record.start + 1,
+            data: record,
+          })
+        }),
+      ).subscribe(observer)
     })
   }
 

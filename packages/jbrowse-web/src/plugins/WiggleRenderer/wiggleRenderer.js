@@ -149,6 +149,7 @@ export class LinePlotRendererClass extends WiggleBaseRenderer {
       ctx.strokeStyle = c
       ctx.beginPath()
       ctx.moveTo(leftPx, toY(typeof lastVal !== 'undefined' ? lastVal : score))
+      ctx.lineTo(leftPx, toY(score))
       ctx.lineTo(rightPx, toY(score))
       ctx.stroke()
       lastVal = score
