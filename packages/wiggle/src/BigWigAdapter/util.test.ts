@@ -1,8 +1,8 @@
 import {
-  calcRealStats,
   calcStdFromSums,
   rectifyStats,
   scoresToStats,
+  calcRealStats,
 } from './util'
 
 test('calc std', () => {

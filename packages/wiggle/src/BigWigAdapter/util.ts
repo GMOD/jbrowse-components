@@ -72,6 +72,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
 export function calcRealStats(
   region: { start: number; end: number },
   features: BBIFeature[],
+  opts: { windowSize: number },
 ): number[] {
   const { start, end } = region
   const scores = []
