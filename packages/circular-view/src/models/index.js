@@ -24,6 +24,7 @@ export default pluginManager => {
       height: 400,
       configuration: configSchema,
       spacingPx: 10,
+      paddingPx: 20,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
@@ -33,20 +34,27 @@ export default pluginManager => {
         return calculateStaticSlices(self)
       },
       get circumferencePx() {
-        return self.totalBp / self.bpPerPx
+        return (
+          self.totalBp / self.bpPerPx +
+          self.spacingPx * self.displayedRegions.length
+        )
       },
       get radiusPx() {
         return self.circumferencePx / (2 * Math.PI)
       },
       get bpPerRadian() {
         // return self.bpPerPx * self.radiusPx
-        return self.totalBp / (2 * Math.PI)
+        return (
+          (self.totalBp +
+            self.displayedRegions.length * self.spacingPx * self.bpPerPx) /
+          (2 * Math.PI)
+        )
       },
       get pxPerRadian() {
         return self.radiusPx
       },
       get centerXY() {
-        return [self.radiusPx, self.radiusPx]
+        return [self.radiusPx + self.paddingPx, self.radiusPx + self.paddingPx]
       },
       get totalBp() {
         let total = 0
@@ -57,7 +65,10 @@ export default pluginManager => {
       },
       get figureDimensions() {
         // return [3000, 3000]
-        return [self.radiusPx * 2 + 20, self.radiusPx * 2 + 20]
+        return [
+          self.radiusPx * 2 + 2 * self.paddingPx,
+          self.radiusPx * 2 + 2 * self.paddingPx,
+        ]
       },
       get figureWidth() {
         return self.figureDimensions[0]
@@ -90,6 +101,14 @@ export default pluginManager => {
         self.offsetRadians -= distance
       },
 
+      zoomInButton() {
+        self.bpPerPx /= 1.4
+      },
+
+      zoomOutButton() {
+        self.bpPerPx *= 1.4
+      },
+
       closeView() {
         getParent(self, 2).removeView(self)
       },
@@ -98,6 +117,10 @@ export default pluginManager => {
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
+
+        self.displayedRegions = self.displayedRegions.filter(
+          ({ refName }) => !/[_-]/.test(refName),
+        )
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {

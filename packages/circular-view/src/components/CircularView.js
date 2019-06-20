@@ -15,7 +15,9 @@ export default pluginManager => {
   const ResizeHandleHorizontal = jbrequire(
     '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
   )
-  const { polarToCartesian, radToDeg } = jbrequire('@gmod/jbrowse-core/util')
+  const { polarToCartesian, radToDeg, assembleLocString } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   const styles = theme => ({
     root: {
@@ -32,6 +34,15 @@ export default pluginManager => {
       // background: theme.palette.background.paper,
       boxSizing: 'content-box',
       display: 'block',
+    },
+    refName: {
+      // fontSize: '11px',
+      // fontWeight: 'bold',
+      fontSize: '1rem',
+      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      fontWeight: 500,
+      lineHeight: 1.6,
+      letterSpacing: '0.0075em',
     },
     controls: {
       overflow: 'hidden',
@@ -56,6 +67,27 @@ export default pluginManager => {
     //   padding: theme.spacing.unit / 2,
     // },
   })
+
+  function sliceArcPath(slice, radiusPx, startBase, endBase) {
+    // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
+    if (slice.flipped) [startBase, endBase] = [endBase, startBase]
+    const startXY = slice.bpToXY(startBase, radiusPx)
+    const endXY = slice.bpToXY(endBase, radiusPx)
+    const largeArc =
+      Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
+    const sweepFlag = '1'
+    return [
+      'M',
+      ...startXY,
+      'A',
+      radiusPx,
+      radiusPx,
+      '0',
+      largeArc,
+      sweepFlag,
+      ...endXY,
+    ].join(' ')
+  }
 
   // const RulerArc = withStyles(styles)(
   //   observer(({ classes, block }) => {
@@ -86,22 +118,41 @@ export default pluginManager => {
       //         ></svg>
       return (
         <>
-          {model.staticSlices.map(({ region, canvas, spacingOffset }) => {
-            const endRad = (region.end - region.start) / model.bpPerRadian
-            const [endX, endY] = polarToCartesian(model.radiusPx, endRad)
+          {model.staticSlices.map(slice => {
+            const { region } = slice
+            // const endRad = (region.end - region.start) / model.bpPerRadian
+            // const [endX, endY] = polarToCartesian(model.radiusPx, endRad)
+            const startXY = slice.bpToXY(region.start, model.radiusPx)
+            const endXY = slice.bpToXY(region.end, model.radiusPx)
+            const centerRadians = (slice.endRadians + slice.startRadians) / 2
+            const textXY = polarToCartesian(model.radiusPx + 5, centerRadians)
+
+            // TODO: slice flipping
             return (
-              <g
-                key={region.refName}
-                transform={`translate(${spacingOffset.x}, ${
-                  spacingOffset.y
-                }) rotate(${radToDeg(canvas.rotation)})`}
-              >
-                <line x1={0} y1={0} x2={model.radiusPx} y2={0} stroke="blue" />
-                <text x={0} y={0} dominantBaseline="hanging">
+              <React.Fragment key={assembleLocString(region)}>
+                <text
+                  x={0}
+                  y={0}
+                  className={classes.refName}
+                  textAnchor="middle"
+                  dominantBaseline="baseline"
+                  transform={`translate(${textXY[0]},${
+                    textXY[1]
+                  }) rotate(${radToDeg(centerRadians) + 90})`}
+                >
                   {region.refName}
                 </text>
-                <line x1={0} y1={0} x2={endX} y2={endY} stroke="red" />
-              </g>
+                <path
+                  d={sliceArcPath(
+                    slice,
+                    model.radiusPx,
+                    region.start,
+                    region.end,
+                  )}
+                  stroke="black"
+                  fill="none"
+                />
+              </React.Fragment>
             )
           })}
         </>
@@ -134,11 +185,9 @@ export default pluginManager => {
           <div
             className={classes.rotator}
             style={{
-              transform: [
-                `rotate(${(model.offsetRadians * 180) / Math.PI}deg)`,
-              ].join(' '),
+              transform: [`rotate(${model.offsetRadians}rad)`].join(' '),
               transition: 'transform 0.5s',
-              // transformOrigin: '500px 500px',
+              transformOrigin: model.centerXY.map(x => `${x}px`).join(' '),
             }}
           >
             <svg
@@ -173,8 +222,8 @@ export default pluginManager => {
 
         <div className={classes.controls}>
           <button onClick={model.closeView}>X</button>
-          <button>-</button>
-          <button>+</button>
+          <button onClick={model.zoomOutButton}>-</button>
+          <button onClick={model.zoomInButton}>+</button>
           <button onClick={model.rotateClockwiseButton}>↻</button>
           <button onClick={model.rotateCounterClockwiseButton}>↺</button>
         </div>

@@ -1,0 +1,225 @@
+{
+  "assemblies": [
+    {
+      "assemblyName": "hg38",
+      "sequence": {
+        "configId": "VKYdNPZZ0",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      },
+      "aliases": [
+        "GRCh38"
+      ],
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "features": [
+            {
+              "refName": "chr1",
+              "uniqueId": "alias1",
+              "aliases": [
+                "1"
+              ]
+            },
+            {
+              "refName": "chr2",
+              "uniqueId": "alias2",
+              "aliases": [
+                "2"
+              ]
+            }
+          ]
+        }
+      },
+      "tracks": [
+        {
+          "configId": "na12878_exome",
+          "type": "AlignmentsTrack",
+          "name": "NA12878 Exome",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "configId": "hg00096_highcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina high coverage",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "configId": "hg00096_lowcov",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "HG00096 Illumina low coverage",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+              }
+            }
+          }
+        },
+
+        {
+          "configId": "wiggle_global_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode global autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "autoscale": "global",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          }
+        },
+        {
+          "configId": "wiggle_local_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode local autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          }
+        },
+        {
+          "configId": "bigbed_peaks",
+          "type": "BasicTrack",
+          "name": "Encode peaks",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "height": 300,
+          "renderer": {
+            "type": "PileupRenderer"
+          },
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "configId": "indels",
+          "name": "InDels",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+            },
+            "index": {
+              "index": "TBI",
+              "location": {
+                "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "rpc": {},
+  "defaultSession": {
+    "sessionName": "Human Circular",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Export configuration",
+                "icon": "cloud_download",
+                "callback": "exportConfiguration"
+              },
+              {
+                "name": "Import configuration",
+                "icon": "cloud_upload",
+                "callback": "importConfiguration"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "type": "CircularView",
+        "bpPerPx": 2000000,
+        "displayRegionsFromAssemblyName": "hg38",
+        "tracks": [
+        ]
+      }
+    ],
+    "drawerWidgets": {
+    },
+    "activeDrawerWidgets": {
+    }
+  }
+}
