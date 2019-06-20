@@ -13,6 +13,8 @@ interface Mismatch {
   cliplen?: number
 }
 
+type CigarOp = [string, number]
+
 export default class implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private record: any
@@ -235,7 +237,7 @@ export default class implements Feature {
     return mismatches
   }
 
-  private cigarToMismatches(ops: [string, number][]): Mismatch[] {
+  private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
     let currOffset = 0
     const mismatches: Mismatch[] = []
     ops.forEach(oprec => {
@@ -295,7 +297,7 @@ export default class implements Feature {
   }
 
   // parse just the skips and deletions out of a CIGAR string
-  private cigarToSkipsAndDeletions(ops: [string, number][]): Mismatch[] {
+  private cigarToSkipsAndDeletions(ops: CigarOp[]): Mismatch[] {
     let currOffset = 0
     const mismatches: Mismatch[] = []
     ops.forEach(oprec => {
@@ -321,7 +323,7 @@ export default class implements Feature {
     return mismatches
   }
 
-  private parseCigar(cigar: string): [string, number][] {
+  private parseCigar(cigar: string): CigarOp[] {
     return (cigar.toUpperCase().match(/\d+\D/g) || []).map((op: string) => {
       // @ts-ignore
       return [op.match(/\D/)[0], parseInt(op, 10)]
@@ -335,7 +337,7 @@ export default class implements Feature {
    */
   private mdToMismatches(
     mdstring: string,
-    cigarOps: [string, number][],
+    cigarOps: CigarOp[],
     cigarMismatches: Mismatch[],
   ): Mismatch[] {
     const mismatchRecords: Mismatch[] = []
@@ -399,10 +401,7 @@ export default class implements Feature {
     return mismatchRecords
   }
 
-  private getTemplateCoord(
-    refCoord: number,
-    cigarOps: [string, number][],
-  ): number {
+  private getTemplateCoord(refCoord: number, cigarOps: CigarOp[]): number {
     let templateOffset = 0
     let refOffset = 0
     for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 1) {

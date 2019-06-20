@@ -91,8 +91,8 @@ export default class extends BoxRendererType {
         for (let i = 0; i < mismatches.length; i += 1) {
           const m = mismatches[i]
 
-          if (m.altbase) {
-            ctx.fillStyle = map[m.altbase.toUpperCase()]
+          if (m.base) {
+            ctx.fillStyle = map[m.base.toUpperCase()]
             ctx.fillRect(
               getCoord(feature.get('start') + m.start),
               topPx,
@@ -103,7 +103,7 @@ export default class extends BoxRendererType {
             ctx.fillText(
               getCoord(feature.get('start') + m.start),
               topPx,
-              m.altbase,
+              m.base,
             )
           }
         }
