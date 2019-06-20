@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/camelcase */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable camelcase,no-underscore-dangle */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamAdapter from './BamAdapter'
@@ -28,107 +27,107 @@ export default class implements Feature {
     this.adapter = adapter
   }
 
-  _get_name() {
+  _get_name(): string {
     return this.record._get('name')
   }
 
-  _get_start() {
+  _get_start(): number {
     return this.record._get('start')
   }
 
-  _get_end() {
+  _get_end(): number {
     return this.record._get('end')
   }
 
-  _get_type() {
+  _get_type(): string {
     return 'match'
   }
 
-  _get_score() {
+  _get_score(): number {
     return this.record._get('mq')
   }
 
-  _get_mapping_quality() {
+  _get_mapping_quality(): number {
     return this.record.mappingQuality
   }
 
-  _get_flags() {
+  _get_flags(): string {
     return `0x${this.record.flags.toString(16)}`
   }
 
-  _get_strand() {
+  _get_strand(): number {
     return this.record.isReverseComplemented() ? -1 : 1
   }
 
-  _get_read_group_id() {
+  _get_read_group_id(): number {
     return this.record.readGroupId
   }
 
-  _get_qual() {
+  _get_qual(): string {
     return this.record._get('qual')
   }
 
-  _get_cigar() {
+  _get_cigar(): string {
     return this.record._get('cigar')
   }
 
-  _get_refname() {
+  _get_refname(): string | undefined {
     return this.adapter.refIdToName(this.record._refID)
   }
 
-  _get_qc_failed() {
+  _get_qc_failed(): boolean {
     return this.record.isFailedQc()
   }
 
-  _get_duplicate() {
+  _get_duplicate(): boolean {
     return this.record.isDuplicate()
   }
 
-  _get_secondary_alignment() {
+  _get_secondary_alignment(): boolean {
     return this.record.isSecondary()
   }
 
-  _get_supplementary_alignment() {
+  _get_supplementary_alignment(): boolean {
     return this.record.isSupplementary()
   }
 
-  _get_multi_segment_template() {
+  _get_multi_segment_template(): boolean {
     return this.record.isPaired()
   }
 
-  _get_multi_segment_all_correctly_aligned() {
+  _get_multi_segment_all_correctly_aligned(): boolean {
     return this.record.isProperlyPaired()
   }
 
-  _get_multi_segment_all_aligned() {
+  _get_multi_segment_all_aligned(): boolean {
     return this.record.isProperlyPaired()
   }
 
-  _get_multi_segment_next_segment_unmapped() {
+  _get_multi_segment_next_segment_unmapped(): boolean {
     return this.record.isMateUnmapped()
   }
 
-  _get_multi_segment_first() {
+  _get_multi_segment_first(): boolean {
     return this.record.isRead1()
   }
 
-  _get_multi_segment_last() {
+  _get_multi_segment_last(): boolean {
     return this.record.isRead2()
   }
 
-  _get_multi_segment_next_segment_reversed() {
+  _get_multi_segment_next_segment_reversed(): boolean {
     return this.record.isMateReverseComplemented()
   }
 
-  _get_unmapped() {
+  _get_unmapped(): boolean {
     return this.record.isSegmentUnmapped()
   }
 
-  _get_next_refname() {
+  _get_next_refname(): string | undefined {
     return this.adapter.refIdToName(this.record._next_refid())
   }
 
-  _get_next_segment_position() {
+  _get_next_segment_position(): string | undefined {
     return this.record.isPaired()
       ? `${this.adapter.refIdToName(
           this.record._next_refid(),
@@ -136,25 +135,25 @@ export default class implements Feature {
       : undefined
   }
 
-  _get_tags() {
+  _get_tags(): string[] {
     return this.record._tags()
   }
 
-  _get_seq() {
+  _get_seq(): string {
     return this.record.getReadBases()
   }
 
-  _get_md() {
+  _get_md(): string | undefined {
     return this.record._get('md')
   }
 
   set(): void {}
 
-  tags() {
+  tags(): string[] {
     return this._get_tags()
   }
 
-  id() {
+  id(): string {
     return this.record.get('id')
   }
 
@@ -169,19 +168,19 @@ export default class implements Feature {
     return this.record.get(field)
   }
 
-  parent() {
+  parent(): undefined {
     return undefined
   }
 
-  children() {
+  children(): undefined {
     return undefined
   }
 
-  pairedFeature() {
+  pairedFeature(): boolean {
     return false
   }
 
-  toJSON() {
+  toJSON(): Record<string, any> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plain: any = {}
     this.tags().forEach((t: string) => {
@@ -338,7 +337,7 @@ export default class implements Feature {
     mdstring: string,
     cigarOps: [string, number][],
     cigarMismatches: Mismatch[],
-  ) {
+  ): Mismatch[] {
     const mismatchRecords: Mismatch[] = []
     let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
 
@@ -346,7 +345,7 @@ export default class implements Feature {
     // on the template sequence, taking into account hard and soft
     // clipping of reads
 
-    function nextRecord() {
+    function nextRecord(): void {
       // correct the start of the current mismatch if it comes after a cigar skip
       ;(cigarMismatches || []).forEach((mismatch: Mismatch) => {
         if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
@@ -400,7 +399,10 @@ export default class implements Feature {
     return mismatchRecords
   }
 
-  private getTemplateCoord(refCoord: number, cigarOps: [string, number][]) {
+  private getTemplateCoord(
+    refCoord: number,
+    cigarOps: [string, number][],
+  ): number {
     let templateOffset = 0
     let refOffset = 0
     for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 1) {
