@@ -464,7 +464,7 @@
     ],
     "views": [
       {
-        "id": "BhLw7v7Not",
+        "id": "volvox_example",
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
@@ -484,7 +484,7 @@
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "filterText": "",
-        "view": "BhLw7v7Not"
+        "view": "volvox_example"
       }
     },
     "activeDrawerWidgets": {

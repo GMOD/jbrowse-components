@@ -173,7 +173,7 @@
     ],
     "views": [
       {
-        "id": "BhLw7v7Not",
+        "id": "integration_test",
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
@@ -185,7 +185,7 @@
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "filterText": "",
-        "view": "BhLw7v7Not"
+        "view": "integration_test"
       }
     },
     "activeDrawerWidgets": {
