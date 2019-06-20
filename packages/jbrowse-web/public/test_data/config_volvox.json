@@ -47,7 +47,7 @@
           "type": "DynamicTrack",
           "name": "Lollipop track",
           "category": [
-            "Bar Category"
+            "Miscellaneous"
           ],
           "adapter": {
             "type": "FromConfigAdapter",
@@ -95,12 +95,30 @@
           }
         },
         {
+          "configId": "volvox_long_reads",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-long-reads.fastq.sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-long-reads.fastq.sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "i3jUzmrgMOq",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue",
           "category": [
-            "Bar Category",
-            "Baz Category"
+            "Alignments"
           ],
           "adapter": {
             "type": "BamAdapter",
@@ -128,8 +146,7 @@
           "configId": "volvox_filtered_vcf",
           "name": "volvox filtered vcf",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Variants"
           ],
           "adapter": {
             "type": "VcfTabixAdapter",
@@ -146,10 +163,9 @@
         },
         {
           "type": "BasicTrack",
-          "name": "volvox bigbed",
+          "name": "BigBed genes",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Miscellaneous"
           ],
           "adapter": {
             "type": "BigBedAdapter",
@@ -165,8 +181,7 @@
           "type": "AlignmentsTrack",
           "name": "volvox-sorted all green",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Alignments"
           ],
           "adapter": {
             "type": "BamAdapter",
@@ -178,22 +193,13 @@
                 "uri": "/test_data/volvox-sorted.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer",
-              "alignmentColor": "green"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
-            }
           }
         },
         {
           "configId": "i3jUPmrgMOS",
           "type": "FilteringTrack",
-          "name": "Filter Test",
+          "name": "Filter track",
+          "category": ["Miscellaneous"],
           "adapter": {
             "type": "FromConfigAdapter",
             "features": [
@@ -247,7 +253,8 @@
         },
         {
           "type": "BasicTrack",
-          "name": "Volvox genes",
+          "name": "NCList genes",
+          "category": ["Miscellaneous"],
           "adapter": {
             "type": "NCListAdapter",
             "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"

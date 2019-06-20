@@ -109,7 +109,7 @@
         {
           "configId": "volvox_microarray",
           "type": "WiggleTrack",
-          "name": "wiggle_track",
+          "name": "wiggle_track xyplot",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
@@ -121,7 +121,7 @@
           "configId": "volvox_microarray_line",
           "defaultRendering": "line",
           "type": "WiggleTrack",
-          "name": "wiggle_track",
+          "name": "wiggle_track lineplot",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
@@ -133,7 +133,7 @@
           "configId": "volvox_microarray_density",
           "type": "WiggleTrack",
           "defaultRendering": "density",
-          "name": "wiggle_track",
+          "name": "wiggle_track density",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {

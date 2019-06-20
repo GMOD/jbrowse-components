@@ -10,7 +10,7 @@ import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import JBrowse from './JBrowse'
-import config from '../test_data/alignments_test.json'
+import config from '../test_data/config_integration_test.json'
 
 fetchMock.config.sendAsJson = false
 
