@@ -196,27 +196,23 @@ export default class implements Feature {
       mdAttributeName: 'md',
     },
   ): Mismatch[] {
-    let mismatches: Mismatch[] = []
-    if (this.cachedMismatches) {
-      return this.cachedMismatches
-    }
     const { cigarAttributeName, mdAttributeName } = opts
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
     const cigarOps = this.parseCigar(cigarString)
-    mismatches.concat(this.cigarToMismatches(cigarOps))
+    const mismatches = this.cigarToMismatches(cigarOps)
 
     // now let's look for CRAM or MD mismatches
     const mdString = this.get(mdAttributeName)
 
     // if there is an MD tag or CRAM mismatches, mismatches and deletions from the
     // CIGAR string are replaced by those from MD
-    if (mdString) {
-      mismatches = mismatches.filter(
-        m => !(m.type === 'deletion' || m.type === 'mismatch'),
-      )
-    }
+    // if (mdString) {
+    //   // mismatches = mismatches.filter(
+    //   //   m => (m.type === 'deletion' || m.type === 'mismatch'),
+    //   // )
+    // }
 
     // parse the MD tag if it has one
     if (mdString) {
@@ -225,15 +221,12 @@ export default class implements Feature {
 
     // uniqify the mismatches
     const seen: { [index: string]: boolean } = {}
-    mismatches = mismatches.filter(m => {
+    return mismatches.filter(m => {
       const key = `${m.type},${m.start},${m.length}`
       const s = seen[key]
       seen[key] = true
       return !s
     })
-    this.cachedMismatches = mismatches
-
-    return mismatches
   }
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
@@ -245,7 +238,7 @@ export default class implements Feature {
       // if( op == 'M' || op == '=' || op == 'E' ) {
       //     // nothing
       // }
-      if (op === 'I')
+      if (op === 'I') {
         // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
         mismatches.push({
           start: currOffset,
@@ -253,35 +246,35 @@ export default class implements Feature {
           base: `${len}`,
           length: 1,
         })
-      else if (op === 'D')
+      } else if (op === 'D') {
         mismatches.push({
           start: currOffset,
           type: 'deletion',
           base: '*',
           length: len,
         })
-      else if (op === 'N')
+      } else if (op === 'N') {
         mismatches.push({
           start: currOffset,
           type: 'skip',
           base: 'N',
           length: len,
         })
-      else if (op === 'X')
+      } else if (op === 'X') {
         mismatches.push({
           start: currOffset,
           type: 'mismatch',
           base: 'X',
           length: len,
         })
-      else if (op === 'H')
+      } else if (op === 'H') {
         mismatches.push({
           start: currOffset,
           type: 'hardclip',
           base: `H${len}`,
           length: 1,
         })
-      else if (op === 'S')
+      } else if (op === 'S') {
         mismatches.push({
           start: currOffset,
           type: 'softclip',
@@ -289,6 +282,7 @@ export default class implements Feature {
           cliplen: len,
           length: 1,
         })
+      }
 
       if (op !== 'I' && op !== 'S' && op !== 'H') currOffset += len
     })

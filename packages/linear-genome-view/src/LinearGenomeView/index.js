@@ -1,4 +1,4 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -106,6 +106,10 @@ export function stateModelFactory(pluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
+          highResolutionScaling: getConf(
+            getRoot(self),
+            'highResolutionScaling',
+          ),
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },

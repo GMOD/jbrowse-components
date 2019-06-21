@@ -3,7 +3,7 @@ import { bpToPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
-import PrerenderedCanvas from './PrerenderedCanvas'
+import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
 
 const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,
@@ -235,7 +235,6 @@ class PileupRendering extends Component {
       <div className="PileupRendering" style={{ position: 'relative' }}>
         <PrerenderedCanvas
           {...this.props}
-          width={canvasWidth}
           style={{ position: 'absolute', left: 0, top: 0 }}
         />
         <canvas

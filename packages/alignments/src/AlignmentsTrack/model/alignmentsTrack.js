@@ -110,8 +110,8 @@ export default (pluginManager, configSchema) =>
           )
           return {
             ...getParentRenderProps(self),
-            config,
             trackModel: self,
+            config,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
               const feature = self.features.get(featureId)

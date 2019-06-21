@@ -20,6 +20,7 @@ interface PileupRenderProps {
   width: number
   imageData: ImageBitmap
   horizontallyFlipped: boolean
+  highResolutionScaling: number
 }
 
 export default class extends BoxRendererType {
@@ -77,6 +78,7 @@ export default class extends BoxRendererType {
     region,
     bpPerPx,
     horizontallyFlipped,
+    highResolutionScaling = 1,
   }: PileupRenderProps): Promise<{
     imageData?: ImageBitmap
     height: number
@@ -105,34 +107,73 @@ export default class extends BoxRendererType {
     const height = layout.getTotalHeight()
     if (!(width > 0) || !(height > 0)) return { height: 0, width: 0 }
 
-    const canvas = createCanvas(Math.ceil(width), height)
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
     const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.font = 'bold 10px Courier New,monospace'
+    const charSize = ctx.measureText('A')
+    charSize.height = 7
+
     layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
       const mismatches: Mismatch[] = feature.get('mismatches')
       if (mismatches) {
-        const map: { [key: string]: string } = {
+        const colorForBase: { [key: string]: string } = {
           A: '#00bf00',
           C: '#4747ff',
           G: '#ffa500',
           T: '#f00',
+          deletion: 'grey',
         }
         for (let i = 0; i < mismatches.length; i += 1) {
-          const m = mismatches[i]
+          const mismatch = mismatches[i]
+          const start = feature.get('start') + mismatch.start
+          const end = start + mismatch.length
+          const leftPx = getCoord(start)
+          const widthPx = getCoord(end) - leftPx
 
-          if (m.base) {
-            const mstart = feature.get('start') + m.start
-            const mend = feature.get('start') + m.start + m.length
-            ctx.fillStyle = map[m.base.toUpperCase()] || 'black'
-            ctx.fillRect(
-              getCoord(mstart),
-              topPx,
-              getCoord(mend) - getCoord(mstart),
-              heightPx,
-            )
-            ctx.fillStyle = 'black'
-            ctx.fillText(m.base, getCoord(mstart))
+          if (mismatch.type == 'mismatch' || mismatch.type == 'deletion') {
+            ctx.fillStyle =
+              colorForBase[
+                mismatch.type == 'deletion' ? 'deletion' : mismatch.base
+              ]
+            ctx.fillRect(leftPx, topPx, widthPx, heightPx)
+
+            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+              ctx.fillStyle = mismatch.type == 'deletion' ? 'white' : 'black'
+              ctx.fillText(
+                mismatch.base,
+                leftPx + (widthPx - charSize.width) / 2 + 1,
+                topPx + heightPx,
+              )
+            }
+          } else if (mismatch.type == 'insertion') {
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
+            ctx.fillRect(leftPx - 2, topPx, 4, 1)
+            ctx.fillRect(leftPx - 2, topPx + heightPx - 1, 4, 1)
+            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+              ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+            }
+          } else if (
+            mismatch.type == 'hardclip' ||
+            mismatch.type == 'softclip'
+          ) {
+            ctx.fillStyle = mismatch.type == 'hardclip' ? 'red' : 'blue'
+            ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
+            ctx.fillRect(leftPx - 2, topPx, 4, 1)
+            ctx.fillRect(leftPx - 2, topPx + heightPx - 1, 4, 1)
+            if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
+              ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+            }
+          } else if (mismatch.type == 'skip') {
+            ctx.clearRect(leftPx, topPx, widthPx, heightPx)
+            ctx.fillStyle = '#333'
+            ctx.fillRect(leftPx, topPx + heightPx / 2, widthPx, 2)
           }
         }
       }
