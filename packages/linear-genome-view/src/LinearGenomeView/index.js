@@ -279,13 +279,8 @@ export function stateModelFactory(pluginManager) {
       horizontalScroll(distance) {
         const leftPadding = 10
         const rightPadding = 10
-        const displayRegionsTotalPx = self.displayedRegions.reduce(
-          (a, b) => a + (b.end - b.start) / self.bpPerPx,
-          0,
-        )
-        const maxOffset = displayRegionsTotalPx - leftPadding
-        const displayWidth = self.viewingRegionWidth
-        const minOffset = -displayWidth + rightPadding
+        const maxOffset = self.displayRegionsTotalPx - leftPadding
+        const minOffset = -self.viewingRegionWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },
 
