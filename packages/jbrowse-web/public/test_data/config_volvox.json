@@ -114,7 +114,7 @@
           }
         },
         {
-          "configId": "i3jUzmrgMOq",
+          "configId": "volvox_bam",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue",
           "category": [
@@ -474,6 +474,11 @@
             "type": "ReferenceSequenceTrack",
             "height": 80,
             "configuration": "iTo6LoXUeI"
+          },
+          {
+            "type": "AlignmentsTrack",
+            "configuration": "volvox_bam",
+            "height": 200
           }
         ],
         "trackSelectorType": "hierarchical"

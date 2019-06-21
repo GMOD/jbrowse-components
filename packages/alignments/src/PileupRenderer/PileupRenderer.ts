@@ -1,23 +1,44 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpToPx, iterMap } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
+import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+
+interface PileupRenderProps {
+  features: Map<string, Feature>
+  layout: any
+  config: any
+  region: IRegion
+  bpPerPx: number
+  height: number
+  width: number
+  imageData: ImageBitmap
+  horizontallyFlipped: boolean
+}
 
 export default class extends BoxRendererType {
   layoutFeature(
-    feature,
-    subLayout,
-    config,
-    bpPerPx,
-    region,
-    horizontallyFlipped = false,
-  ) {
+    feature: Feature,
+    subLayout: any,
+    config: any,
+    bpPerPx: number,
+    region: IRegion,
+    horizontallyFlipped: boolean = false,
+  ): {
+    feature: Feature
+    startPx: number
+    endPx: number
+    topPx: number
+    heightPx: number
+  } {
     // const leftBase = region.start
-    const getCoord = coord =>
+    const getCoord = (coord: number): number =>
       bpToPx(coord, region, bpPerPx, horizontallyFlipped)
     const startPx = getCoord(feature.get('start'))
     const endPx = getCoord(feature.get('end'))
@@ -56,10 +77,14 @@ export default class extends BoxRendererType {
     region,
     bpPerPx,
     horizontallyFlipped,
-  }) {
+  }: PileupRenderProps): Promise<{
+    imageData?: ImageBitmap
+    height: number
+    width: number
+  }> {
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
-    const getCoord = coord =>
+    const getCoord = (coord: number): number =>
       bpToPx(coord, region, bpPerPx, horizontallyFlipped)
 
     const layoutRecords = iterMap(
@@ -85,26 +110,29 @@ export default class extends BoxRendererType {
     layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
-      const mismatches = feature.get('mismatches')
+      const mismatches: Mismatch[] = feature.get('mismatches')
       if (mismatches) {
-        const map = { A: '#00bf00', C: '#4747ff', G: '#ffa500', T: '#f00' }
+        const map: { [key: string]: string } = {
+          A: '#00bf00',
+          C: '#4747ff',
+          G: '#ffa500',
+          T: '#f00',
+        }
         for (let i = 0; i < mismatches.length; i += 1) {
           const m = mismatches[i]
 
           if (m.base) {
-            ctx.fillStyle = map[m.base.toUpperCase()]
+            const mstart = feature.get('start') + m.start
+            const mend = feature.get('start') + m.start + m.length
+            ctx.fillStyle = map[m.base.toUpperCase()] || 'black'
             ctx.fillRect(
-              getCoord(feature.get('start') + m.start),
+              getCoord(mstart),
               topPx,
-              getCoord(feature.get('start') + m.start + m.length) -
-                getCoord(feature.get('start') + m.start),
+              getCoord(mend) - getCoord(mstart),
               heightPx,
             )
-            ctx.fillText(
-              getCoord(feature.get('start') + m.start),
-              topPx,
-              m.base,
-            )
+            ctx.fillStyle = 'black'
+            ctx.fillText(m.base, getCoord(mstart))
           }
         }
       }
@@ -114,7 +142,14 @@ export default class extends BoxRendererType {
     return { imageData, height, width }
   }
 
-  async render(renderProps) {
+  async render(
+    renderProps: PileupRenderProps,
+  ): Promise<{
+    element: any
+    imageData?: ImageBitmap
+    height: number
+    width: number
+  }> {
     const { height, width, imageData } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,

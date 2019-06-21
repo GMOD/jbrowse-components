@@ -15,7 +15,7 @@ export default ConfigurationSchema(
     alignmentHeight: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',
-      defaultValue: 5,
+      defaultValue: 7,
       functionSignature: ['feature'],
     },
   },

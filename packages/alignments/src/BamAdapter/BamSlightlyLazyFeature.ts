@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/camelcase */
-/* eslint-disable camelcase,no-underscore-dangle */
+/* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BamAdapter from './BamAdapter'
 
-interface Mismatch {
+export interface Mismatch {
   start: number
   length: number
   type: string
