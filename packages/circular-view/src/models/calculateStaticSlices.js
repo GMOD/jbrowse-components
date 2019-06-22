@@ -10,14 +10,18 @@ export default ({ jbrequire }) => {
       this.bpPerRadian = view.bpPerRadian
 
       this.startRadians = this.offsetRadians
-      this.endRadians =
-        (region.end - region.start) / this.bpPerRadian + this.offsetRadians
+      this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians
     }
 
     bpToXY(bp, radiusPx) {
-      const offsetBp = this.flipped
-        ? this.region.end - bp
-        : bp - this.region.start
+      let offsetBp
+      if (this.region.elided) {
+        offsetBp = this.region.widthBp / 2
+      } else if (this.flipped) {
+        offsetBp = this.region.end - bp
+      } else {
+        offsetBp = bp - this.region.start
+      }
       const totalRadians = offsetBp / this.bpPerRadian + this.offsetRadians
       return polarToCartesian(radiusPx, totalRadians)
     }
@@ -27,11 +31,10 @@ export default ({ jbrequire }) => {
     // TODO: calculate only slices that are visible
     const slices = []
     let currentRadianOffset = 0
-    for (const region of self.displayedRegions) {
+    for (const region of self.visibleRegions) {
       slices.push(new Slice(self, region, currentRadianOffset))
       currentRadianOffset +=
-        (region.end - region.start) / self.bpPerRadian +
-        self.spacingPx / self.pxPerRadian
+        region.widthBp / self.bpPerRadian + self.spacingPx / self.pxPerRadian
     }
     return slices
   }

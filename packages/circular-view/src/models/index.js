@@ -25,6 +25,7 @@ export default pluginManager => {
       configuration: configSchema,
       spacingPx: 10,
       paddingPx: 20,
+      minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
@@ -36,7 +37,7 @@ export default pluginManager => {
       get circumferencePx() {
         return (
           self.totalBp / self.bpPerPx +
-          self.spacingPx * self.displayedRegions.length
+          self.spacingPx * self.visibleRegions.length
         )
       },
       get radiusPx() {
@@ -46,7 +47,7 @@ export default pluginManager => {
         // return self.bpPerPx * self.radiusPx
         return (
           (self.totalBp +
-            self.displayedRegions.length * self.spacingPx * self.bpPerPx) /
+            self.visibleRegions.length * self.spacingPx * self.bpPerPx) /
           (2 * Math.PI)
         )
       },
@@ -58,8 +59,12 @@ export default pluginManager => {
       },
       get totalBp() {
         let total = 0
-        for (const region of self.displayedRegions) {
-          total += region.end - region.start
+        for (const region of self.visibleRegions) {
+          if (region.widthBp) {
+            total += region.widthBp
+          } else {
+            total += region.end - region.start
+          }
         }
         return total
       },
@@ -75,6 +80,32 @@ export default pluginManager => {
       },
       get figureHeight() {
         return self.figureDimensions[1]
+      },
+      // this is displayedRegions, post-processed to
+      // elide regions that are too small to see reasonably
+      get visibleRegions() {
+        const visible = []
+        self.displayedRegions.forEach(region => {
+          const widthBp = region.end - region.start
+          const widthPx = widthBp / self.bpPerPx
+          if (widthPx > self.minVisibleWidth) {
+            visible.push({ ...region, widthBp })
+          } else {
+            // too small to see, collapse into a single elision region
+            const lastVisible = visible[visible.length - 1]
+            if (lastVisible.elided) {
+              lastVisible.regions.push({ ...region })
+              lastVisible.widthBp += widthBp
+            } else {
+              visible.push({
+                elided: true,
+                widthBp,
+                regions: [{ ...region }],
+              })
+            }
+          }
+        })
+        return visible
       },
     }))
     .actions(self => ({
@@ -117,10 +148,6 @@ export default pluginManager => {
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
-
-        self.displayedRegions = self.displayedRegions.filter(
-          ({ refName }) => !/[_-]/.test(refName),
-        )
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {

@@ -35,7 +35,7 @@ export default pluginManager => {
       boxSizing: 'content-box',
       display: 'block',
     },
-    refName: {
+    rulerLabel: {
       // fontSize: '11px',
       // fontWeight: 'bold',
       fontSize: '1rem',
@@ -89,70 +89,122 @@ export default pluginManager => {
     ].join(' ')
   }
 
-  // const RulerArc = withStyles(styles)(
-  //   observer(({ classes, block }) => {
+  const ElisionRulerArc = withStyles(styles)(
+    observer(({ classes, model, slice }) => {
+      const { radiusPx } = model
+      const { endRadians, startRadians, region } = slice
+      const startXY = polarToCartesian(radiusPx, startRadians)
+      const endXY = polarToCartesian(radiusPx, endRadians)
+      const widthPx = (endRadians - startRadians) * radiusPx
+      const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
+      // TODO: draw the elision
+      const centerRadians = (endRadians + startRadians) / 2
+      const regionCountString = `[${Number(
+        region.regions.length,
+      ).toLocaleString()}]`
+      return (
+        <React.Fragment key={assembleLocString(region.regions[0])}>
+          <RulerLabel
+            text={regionCountString}
+            maxWidthPx={widthPx}
+            radians={centerRadians}
+            radiusPx={radiusPx}
+            title={`${Number(
+              region.regions.length,
+            ).toLocaleString()} more regions`}
+          />
+          <path
+            d={[
+              'M',
+              ...startXY,
+              'A',
+              radiusPx,
+              radiusPx,
+              '0',
+              largeArc,
+              '1',
+              ...endXY,
+            ].join(' ')}
+            stroke="gray"
+            strokeDasharray="1,1"
+            fill="none"
+          />
+        </React.Fragment>
+      )
+    }),
+  )
 
-  //   }))
+  const RulerLabel = withStyles(styles)(
+    observer(({ classes, text, maxWidthPx, radians, radiusPx, title }) => {
+      const textXY = polarToCartesian(radiusPx + 5, radians)
+      let visibleText = null
+      if (text && text.length * 7 > maxWidthPx) {
+        visibleText = '✹'
+      } else {
+        visibleText = text
+      }
+      return (
+        <text
+          x={0}
+          y={0}
+          className={classes.rulerLabel}
+          textAnchor="middle"
+          style={{}}
+          dominantBaseline="baseline"
+          transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
+        >
+          {visibleText}
+          <title>{title || text}</title>
+        </text>
+      )
+    }),
+  )
+
+  const RegionRulerArc = withStyles(styles)(
+    observer(({ classes, model, slice }) => {
+      const { radiusPx } = model
+      const { region, endRadians, startRadians } = slice
+      const centerRadians = (endRadians + startRadians) / 2
+      const widthPx = (endRadians - startRadians) * radiusPx
+
+      // TODO: slice flipping
+      return (
+        <React.Fragment>
+          <RulerLabel
+            text={region.refName}
+            maxWidthPx={widthPx}
+            radians={centerRadians}
+            radiusPx={radiusPx}
+          />
+          {
+            <path
+              d={sliceArcPath(slice, radiusPx, region.start, region.end)}
+              stroke="black"
+              fill="none"
+            />
+          }
+        </React.Fragment>
+      )
+    }),
+  )
 
   const Slices = withStyles(styles)(
     observer(({ classes, model }) => {
-      // <svg
-      //           style={{
-      //             // transform: `translate(${originOffset.x -
-      //             //   canvas.originX}px,${originOffset.y -
-      //             //   canvas.originY}px) rotate(${canvas.rotation}rad)`,
-      //             // transform: `translate(${-canvas.originX}px,${-canvas.originY}px) rotate(${
-      //             //   canvas.rotation
-      //             // }rad)`,
-      //             // background: 'rgba(0,0,0,0.1)',
-      //             transformOrigin: '0 0',
-      //             position: 'absolute',
-      //             left: model.centerXY[0],
-      //             top: model.centerXY[1],
-      //           }}
-      //           key={region.refName}
-      //           className={classes.sliceRoot}
-      //           width={`${canvas.widthPx}px`}
-      //           height={`${canvas.heightPx}px`}
-      //           version="1.1"
-      //         ></svg>
       return (
         <>
           {model.staticSlices.map(slice => {
-            const { region } = slice
-            // const endRad = (region.end - region.start) / model.bpPerRadian
-            // const [endX, endY] = polarToCartesian(model.radiusPx, endRad)
-            const startXY = slice.bpToXY(region.start, model.radiusPx)
-            const endXY = slice.bpToXY(region.end, model.radiusPx)
-            const centerRadians = (slice.endRadians + slice.startRadians) / 2
-            const textXY = polarToCartesian(model.radiusPx + 5, centerRadians)
-
-            // TODO: slice flipping
-            return (
-              <React.Fragment key={assembleLocString(region)}>
-                <text
-                  x={0}
-                  y={0}
-                  className={classes.refName}
-                  textAnchor="middle"
-                  dominantBaseline="baseline"
-                  transform={`translate(${textXY[0]},${
-                    textXY[1]
-                  }) rotate(${radToDeg(centerRadians) + 90})`}
-                >
-                  {region.refName}
-                </text>
-                <path
-                  d={sliceArcPath(
-                    slice,
-                    model.radiusPx,
-                    region.start,
-                    region.end,
-                  )}
-                  stroke="black"
-                  fill="none"
-                />
-              </React.Fragment>
+            return slice.region.elided ? (
+              <ElisionRulerArc
+                key={assembleLocString(slice.region.regions[0])}
+                model={model}
+                slice={slice}
+              />
+            ) : (
+              <RegionRulerArc
+                key={assembleLocString(slice.region)}
+                model={model}
+                slice={slice}
+              />
             )
           })}
         </>
@@ -163,8 +215,6 @@ export default pluginManager => {
   function CircularView(props) {
     const { classes, model } = props
     const [testingSvg, updateTestingSvg] = useState(undefined)
-    // const rootModel = getRoot(model)
-    // const { id } = model
     useEffect(() => {
       if (!testingSvg) {
         svgFetch.then(text => {
@@ -192,13 +242,6 @@ export default pluginManager => {
           >
             <svg
               style={{
-                // transform: `translate(${originOffset.x -
-                //   canvas.originX}px,${originOffset.y -
-                //   canvas.originY}px) rotate(${canvas.rotation}rad)`,
-                // transform: `translate(${-canvas.originX}px,${-canvas.originY}px) rotate(${
-                //   canvas.rotation
-                // }rad)`,
-                // background: 'rgba(0,0,0,0.1)',
                 transformOrigin: '0 0',
                 position: 'absolute',
                 left: 0,
@@ -212,7 +255,7 @@ export default pluginManager => {
               <g
                 transform={`translate(${model.centerXY[0]}, ${
                   model.centerXY[1]
-                })`}
+                }) rotate(-90)`}
               >
                 <Slices model={model} />
               </g>
