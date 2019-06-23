@@ -16,7 +16,7 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('CircularView'),
       offsetRadians: 0,
-      bpPerPx: 50,
+      bpPerPx: 2000000,
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -159,3 +159,13 @@ export default pluginManager => {
 
   return { stateModel, configSchema }
 }
+
+/*
+PLANS
+
+- slice visibility computation
+- tracks
+- ruler tick marks
+
+
+*/

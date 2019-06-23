@@ -5,9 +5,10 @@ export default ({ jbrequire }) => {
     flipped = false
 
     constructor(view, region, currentRadianOffset) {
+      const { bpPerRadian } = view
       this.region = region
       this.offsetRadians = currentRadianOffset
-      this.bpPerRadian = view.bpPerRadian
+      this.bpPerRadian = bpPerRadian
 
       this.startRadians = this.offsetRadians
       this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians

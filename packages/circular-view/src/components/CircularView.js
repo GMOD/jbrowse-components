@@ -1,7 +1,3 @@
-import exampleSvg from '../../test_data/circos_example_content.txt'
-
-const svgFetch = fetch(exampleSvg).then(result => result.text())
-
 const dragHandleHeight = 3
 
 export default pluginManager => {
@@ -10,7 +6,6 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react-lite')
   const ReactPropTypes = jbrequire('prop-types')
   const React = jbrequire('react')
-  const { useState, useEffect } = React
   const { withStyles } = jbrequire('@material-ui/core')
   const ResizeHandleHorizontal = jbrequire(
     '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
@@ -36,8 +31,6 @@ export default pluginManager => {
       display: 'block',
     },
     rulerLabel: {
-      // fontSize: '11px',
-      // fontWeight: 'bold',
       fontSize: '1rem',
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
       fontWeight: 500,
@@ -126,7 +119,7 @@ export default pluginManager => {
               ...endXY,
             ].join(' ')}
             stroke="gray"
-            strokeDasharray="1,1"
+            strokeDasharray="2,2"
             fill="none"
           />
         </React.Fragment>
@@ -214,14 +207,6 @@ export default pluginManager => {
 
   function CircularView(props) {
     const { classes, model } = props
-    const [testingSvg, updateTestingSvg] = useState(undefined)
-    useEffect(() => {
-      if (!testingSvg) {
-        svgFetch.then(text => {
-          updateTestingSvg(text)
-        })
-      }
-    })
 
     return (
       <div className={classes.root}>
@@ -267,8 +252,8 @@ export default pluginManager => {
           <button onClick={model.closeView}>X</button>
           <button onClick={model.zoomOutButton}>-</button>
           <button onClick={model.zoomInButton}>+</button>
-          <button onClick={model.rotateClockwiseButton}>↻</button>
           <button onClick={model.rotateCounterClockwiseButton}>↺</button>
+          <button onClick={model.rotateClockwiseButton}>↻</button>
         </div>
 
         <ResizeHandleHorizontal
