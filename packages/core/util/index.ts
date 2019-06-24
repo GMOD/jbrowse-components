@@ -69,14 +69,28 @@ export function bpToPx(
 const oneEightyOverPi = 180.0 / Math.PI
 const piOverOneEighty = Math.PI / 180.0
 export function radToDeg(radians: number): number {
-  return radians * oneEightyOverPi
+  return (radians * oneEightyOverPi) % 360
 }
 export function degToRad(degrees: number): number {
-  return degrees * piOverOneEighty
+  return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
+/**
+ * @returns [x, y]
+ */
 export function polarToCartesian(rho: number, theta: number): [number, number] {
   return [rho * Math.cos(theta), rho * Math.sin(theta)]
+}
+
+/**
+ * @param x the x
+ * @param y the y
+ * @returns [rho, theta]
+ */
+export function cartesianToPolar(x: number, y: number): [number, number] {
+  const rho = Math.sqrt(x * x + y * y)
+  const theta = Math.atan(y / x)
+  return [rho, theta]
 }
 
 export function featureSpanPx(

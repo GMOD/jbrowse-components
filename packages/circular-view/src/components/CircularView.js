@@ -6,6 +6,7 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react-lite')
   const ReactPropTypes = jbrequire('prop-types')
   const React = jbrequire('react')
+  const { useState, useEffect } = React
   const { withStyles } = jbrequire('@material-ui/core')
   const ResizeHandleHorizontal = jbrequire(
     '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
@@ -31,7 +32,7 @@ export default pluginManager => {
       display: 'block',
     },
     rulerLabel: {
-      fontSize: '1rem',
+      fontSize: '0.8rem',
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
       fontWeight: 500,
       lineHeight: 1.6,
@@ -99,6 +100,7 @@ export default pluginManager => {
         <React.Fragment key={assembleLocString(region.regions[0])}>
           <RulerLabel
             text={regionCountString}
+            view={model}
             maxWidthPx={widthPx}
             radians={centerRadians}
             radiusPx={radiusPx}
@@ -128,29 +130,65 @@ export default pluginManager => {
   )
 
   const RulerLabel = withStyles(styles)(
-    observer(({ classes, text, maxWidthPx, radians, radiusPx, title }) => {
-      const textXY = polarToCartesian(radiusPx + 5, radians)
-      let visibleText = null
-      if (text && text.length * 7 > maxWidthPx) {
-        visibleText = '✹'
-      } else {
-        visibleText = text
-      }
-      return (
-        <text
-          x={0}
-          y={0}
-          className={classes.rulerLabel}
-          textAnchor="middle"
-          style={{}}
-          dominantBaseline="baseline"
-          transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
-        >
-          {visibleText}
-          <title>{title || text}</title>
-        </text>
-      )
-    }),
+    observer(
+      ({ classes, view, text, maxWidthPx, radians, radiusPx, title }) => {
+        const textXY = polarToCartesian(radiusPx + 5, radians)
+        if (!text) return null
+
+        if (text.length * 6.5 < maxWidthPx) {
+          // text is rotated parallel to the ruler arc
+          return (
+            <text
+              x={0}
+              y={0}
+              className={classes.rulerLabel}
+              textAnchor="middle"
+              dominantBaseline="baseline"
+              transform={`translate(${textXY}) rotate(${radToDeg(radians) +
+                90})`}
+            >
+              {text}
+              <title>{title || text}</title>
+            </text>
+          )
+        }
+        if (maxWidthPx > 12) {
+          // text is rotated perpendicular to the ruler arc
+          const overallRotation = radToDeg(radians + view.offsetRadians)
+          if (overallRotation < 180) {
+            return (
+              <text
+                x={0}
+                y={0}
+                className={classes.rulerLabel}
+                textAnchor="start"
+                dominantBaseline="middle"
+                transform={`translate(${textXY}) rotate(${radToDeg(radians)})`}
+              >
+                {text}
+                <title>{title || text}</title>
+              </text>
+            )
+          }
+          return (
+            <text
+              x={0}
+              y={0}
+              className={classes.rulerLabel}
+              textAnchor="end"
+              dominantBaseline="middle"
+              transform={`translate(${textXY}) rotate(${radToDeg(radians) +
+                180})`}
+            >
+              {text}
+              <title>{title || text}</title>
+            </text>
+          )
+        }
+
+        return null
+      },
+    ),
   )
 
   const RegionRulerArc = withStyles(styles)(
@@ -165,6 +203,7 @@ export default pluginManager => {
         <React.Fragment>
           <RulerLabel
             text={region.refName}
+            view={model}
             maxWidthPx={widthPx}
             radians={centerRadians}
             radiusPx={radiusPx}
@@ -174,7 +213,9 @@ export default pluginManager => {
               d={sliceArcPath(slice, radiusPx, region.start, region.end)}
               stroke="black"
               fill="none"
-            />
+            >
+              <title>{region.refName}</title>
+            </path>
           }
         </React.Fragment>
       )
@@ -216,6 +257,7 @@ export default pluginManager => {
             width: `${model.width}px`,
             height: `${model.height}px`,
           }}
+          onScroll={model.onScroll}
         >
           <div
             className={classes.rotator}
@@ -227,7 +269,6 @@ export default pluginManager => {
           >
             <svg
               style={{
-                transformOrigin: '0 0',
                 position: 'absolute',
                 left: 0,
                 top: 0,
@@ -237,11 +278,7 @@ export default pluginManager => {
               height={`${model.figureHeight}px`}
               version="1.1"
             >
-              <g
-                transform={`translate(${model.centerXY[0]}, ${
-                  model.centerXY[1]
-                }) rotate(-90)`}
-              >
+              <g transform={`translate(${model.centerXY})`}>
                 <Slices model={model} />
               </g>
             </svg>

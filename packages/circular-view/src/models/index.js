@@ -4,7 +4,7 @@ export default pluginManager => {
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const calculateStaticSlices = jbrequire(require('./calculateStaticSlices'))
-
+  const { cartesianToPolar } = jbrequire('@gmod/jbrowse-core/util')
   const configSchema = ConfigurationSchema(
     'CircularView',
     {},
@@ -15,7 +15,7 @@ export default pluginManager => {
     .model('CircularView', {
       id: ElementId,
       type: types.literal('CircularView'),
-      offsetRadians: 0,
+      offsetRadians: -Math.PI / 2,
       bpPerPx: 2000000,
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
@@ -29,6 +29,8 @@ export default pluginManager => {
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
+      scrollX: 0,
+      scrollY: 0,
     })
     .views(self => ({
       get staticSlices() {
@@ -77,6 +79,37 @@ export default pluginManager => {
       },
       get figureWidth() {
         return self.figureDimensions[0]
+      },
+      get visibleArc() {
+        const [figCenterX, figCenterY] = self.centerXY
+
+        // polar coordinates of each corner of the viewport
+        // relative to the center of the circle
+        const viewTL = cartesianToPolar(
+          self.scrollX - figCenterX,
+          self.scrollY - figCenterY,
+        )
+        const viewTR = cartesianToPolar(
+          self.scrollX + self.width - figCenterX,
+          self.scrollY - figCenterY,
+        )
+        const viewBL = cartesianToPolar(
+          self.scrollX - figCenterX,
+          self.scrollY + self.height - figCenterY,
+        )
+        const viewBR = cartesianToPolar(
+          self.scrollX + self.width - figCenterX,
+          self.scrollY + self.height - figCenterY,
+        )
+
+        // correct for offsetRadians
+        ;[viewTL, viewTR, viewBL, viewBR].forEach(coord => {
+          coord[1] =
+            (((coord[1] - self.offsetRadians) % (2 * Math.PI)) + 2 * Math.PI) %
+            (2 * Math.PI)
+        })
+
+        // post-process that into thetaMin, thetaMax
       },
       get figureHeight() {
         return self.figureDimensions[1]
@@ -140,6 +173,11 @@ export default pluginManager => {
         self.bpPerPx *= 1.4
       },
 
+      onScroll(event) {
+        self.scrollX = event.currentTarget.scrollLeft
+        self.scrollY = event.currentTarget.scrollTop
+      },
+
       closeView() {
         getParent(self, 2).removeView(self)
       },
@@ -166,6 +204,6 @@ PLANS
 - slice visibility computation
 - tracks
 - ruler tick marks
-
+- set viewport scroll from state snapshot
 
 */
