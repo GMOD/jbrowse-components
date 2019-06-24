@@ -31,7 +31,7 @@ const styles = theme => ({
     wordBreak: 'break-word',
     fontSize: '0.8em',
     maxHeight: 300,
-    overflow: 'auto'
+    overflow: 'auto',
   },
   header: {
     padding: theme.spacing(0.5),
@@ -108,19 +108,52 @@ const tap = (value, fn) => {
 }
 
 const inspect = val => tap(val, console.log)
-const omit = ['id', 'name', 'start', 'end', 'strand']
+const omit = [
+  'id',
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'type',
+  'length',
+  'position',
+]
 const AlignmentAttributes = props => {
   const { feature, classes } = props
   return (
     <AlignmentCard {...props} title="Attributes">
       {Object.entries(feature)
-        .filter(([k, v]) => v !== undefined && !omit.includes(k))
+        .filter(
+          ([k, v]) =>
+            v !== undefined && !omit.includes(k) && !flags.includes(k),
+        )
         .map(([key, value]) => (
           <div className={classes.fieldRow} key={key}>
             <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>{String(feature[key])}</div>
+            <div className={classes.fieldValue}>{String(value)}</div>
           </div>
         ))}
+    </AlignmentCard>
+  )
+}
+const flags = [
+  'unmapped',
+  'qc_failed',
+  'duplicate',
+  'secondary_alignment',
+  'supplementary_alignment',
+]
+const AlignmentFlags = props => {
+  const { feature, classes } = props
+  return (
+    <AlignmentCard {...props} title="Flags">
+      {flags.map(key => (
+        <div className={classes.fieldRow} key={key}>
+          <div className={classes.fieldName}>{key}</div>
+          <div className={classes.fieldValue}>{String(feature[key])}</div>
+        </div>
+      ))}
     </AlignmentCard>
   )
 }
@@ -138,6 +171,8 @@ function AlignmentFeatureDetails(props) {
       <AlignmentCoreDetails feature={feat} {...props} />
       <Divider />
       <AlignmentAttributes feature={feat} {...props} />
+      <Divider />
+      <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
 }
