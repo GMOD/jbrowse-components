@@ -187,6 +187,9 @@ export default class implements Feature {
     this.tags().forEach((t: string) => {
       plain[t] = this.get(t)
     })
+    plain.refName = this.get('refName')
+    plain.name = this.get('name')
+    plain.type = this.get('type')
     return plain
   }
 

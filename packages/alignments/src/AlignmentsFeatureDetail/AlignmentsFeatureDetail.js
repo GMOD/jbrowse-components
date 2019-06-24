@@ -14,18 +14,38 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 const styles = theme => ({
-  root: {
-    margin: theme.spacing(1),
-    marginTop: theme.spacing(3),
-  },
   table: {
-    tableLayout: 'fixed',
-    width: '100%',
+    padding: 0,
   },
-  valueCell: {
-    wordWrap: 'break-word',
+  fieldName: {
+    display: 'inline-block',
+    minWidth: '90px',
+    fontSize: '0.9em',
+    borderBottom: '1px solid #0003',
+    backgroundColor: '#ddd',
+    marginRight: theme.spacing(1),
+    padding: theme.spacing(0.5),
+  },
+  fieldValue: {
+    display: 'inline-block',
+    wordBreak: 'break-word',
+    fontSize: '0.8em',
+    maxHeight: 300,
+    overflow: 'auto'
+  },
+  header: {
+    padding: theme.spacing(0.5),
+    backgroundColor: '#ddd',
+  },
+  title: {
+    fontSize: '1em',
+  },
+
+  valbox: {
+    border: '1px solid #bbb',
   },
 })
+
 
 const coreRenderedDetails = [
   'Position',
