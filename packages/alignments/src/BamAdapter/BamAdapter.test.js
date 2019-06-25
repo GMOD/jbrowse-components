@@ -51,8 +51,9 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', 
     end: 100,
   })
   const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray[0].toJSON().refName).toBe('ctgA')
-  expect(featuresArray[0].toJSON().start).toBe(2)
-  expect(featuresArray[0].toJSON().end).toBe(102)
-  expect(featuresArray[0].toJSON().mismatches).not.toBeTruthy()
+  const f = featuresArray[0].toJSON()
+  expect(f.refName).toBe('ctgA')
+  expect(f.start).toBe(2)
+  expect(f.end).toBe(102)
+  expect(f.mismatches).not.toBeTruthy()
 })
