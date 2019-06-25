@@ -93,3 +93,22 @@ test('test selection in alignments track model with mock root', async () => {
   expect(rootModel.selection).not.toBeTruthy()
 })
 
+test('open up a drawer widget', async () => {
+  const { pluginManager } = await createTestEnv()
+
+  const rootModel = createMockTrack(
+    pluginManager.getTrackType('AlignmentsTrack'),
+  )
+
+  rootModel.track.selectFeature({
+    id() {
+      return 1234
+    },
+  })
+  console.log('AlignmentsDrawerWidget', AlignmentsDrawerWidget)
+
+  const { container, getByTestId } = render(
+    <AlignmentsDrawerWidget model={rootModel.track} />,
+  )
+  console.log(container)
+})
