@@ -1,9 +1,5 @@
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import { getSnapshot, types } from 'mobx-state-tree'
-import { render, waitForElement } from 'react-testing-library'
-import React from 'react'
-import AlignmentsPlugin from './index'
-import AlignmentsDrawerWidget from './AlignmentsFeatureDetail'
 
 const createMockTrackStateModel = track =>
   types

@@ -7,27 +7,30 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import React from 'react'
+import React, { ComponentElement } from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {
   features: Map<string, Feature>
-  layout: any // eslint-ignore @typescript-eslint/no-explicit-any
-  config: any // eslint-ignore @typescript-eslint/no-explicit-any
+  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
   region: IRegion
   bpPerPx: number
   height: number
   width: number
-  imageData: ImageBitmap
   horizontallyFlipped: boolean
   highResolutionScaling: number
 }
-
+interface PrerenderedCanvasProps extends PileupRenderProps {
+  height: number
+  width: number
+  imageData?: ImageBitmap
+}
 export default class extends BoxRendererType {
   layoutFeature(
     feature: Feature,
-    subLayout: any, // eslint-ignore @typescript-eslint/no-explicit-any
-    config: any, // eslint-ignore @typescript-eslint/no-explicit-any
+    subLayout: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
     horizontallyFlipped: boolean = false,
@@ -186,7 +189,7 @@ export default class extends BoxRendererType {
   async render(
     renderProps: PileupRenderProps,
   ): Promise<{
-    element: any
+    element: ComponentElement<PrerenderedCanvasProps, any> // eslint-disable-line @typescript-eslint/no-explicit-any
     imageData?: ImageBitmap
     height: number
     width: number
@@ -197,6 +200,7 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
+    // @ts-ignore seems to think imageData is optional in some context?
     return { element, imageData, height, width }
   }
 }

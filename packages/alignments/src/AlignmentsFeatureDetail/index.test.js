@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { render } from 'react-testing-library'
 import React from 'react'
 import { stateModel } from './index'

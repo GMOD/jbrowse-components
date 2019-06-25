@@ -3,72 +3,72 @@
 exports[`open up a drawer widget 1`] = `
 <div>
   <div
-    class="MuiPaper-root-7 MuiPaper-elevation2-11 MuiPaper-rounded-8"
+    class="MuiPaper-root-8 MuiPaper-elevation2-12 MuiPaper-rounded-9 AlignmentFeatureDetails-root-1"
     data-testid="alignment-side-drawer"
   >
     <div
-      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
     >
       <div
-        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-38"
+          class="MuiCardHeader-content-39"
         >
           <span
-            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
           >
             Primary data
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-77"
+        class="MuiCardContent-root-78"
       >
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             Position
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             ctgA:3..102
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             Name
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             ctgA_3_555_0:0:0_2:0:0_102d
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             Length
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             100
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             Type
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             match
           </div>
@@ -76,119 +76,119 @@ exports[`open up a drawer widget 1`] = `
       </div>
     </div>
     <hr
-      class="MuiDivider-root-78"
+      class="MuiDivider-root-79"
     />
     <div
-      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
     >
       <div
-        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-38"
+          class="MuiCardHeader-content-39"
         >
           <span
-            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
           >
             Attributes
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-77"
+        class="MuiCardContent-root-78"
       >
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             seq
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             score
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             37
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             qual
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             MQ
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             37
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             CIGAR
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             100M
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             length_on_ref
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             100
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             template_length
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             0
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             seq_length
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             100
           </div>
@@ -196,83 +196,83 @@ exports[`open up a drawer widget 1`] = `
       </div>
     </div>
     <hr
-      class="MuiDivider-root-78"
+      class="MuiDivider-root-79"
     />
     <div
-      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
     >
       <div
-        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-38"
+          class="MuiCardHeader-content-39"
         >
           <span
-            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
           >
             Flags
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-77"
+        class="MuiCardContent-root-78"
       >
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             unmapped
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             false
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             qc_failed
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             false
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             duplicate
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             false
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             secondary_alignment
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             false
           </div>
         </div>
         <div>
           <div
-            class="AlignmentFeatureDetails-fieldName-2"
+            class="AlignmentFeatureDetails-fieldName-3"
           >
             supplementary_alignment
           </div>
           <div
-            class="AlignmentFeatureDetails-fieldValue-3"
+            class="AlignmentFeatureDetails-fieldValue-4"
           >
             false
           </div>

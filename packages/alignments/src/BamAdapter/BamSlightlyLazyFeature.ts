@@ -181,6 +181,7 @@ export default class implements Feature {
     return false
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): Record<string, any> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plain: any = {}

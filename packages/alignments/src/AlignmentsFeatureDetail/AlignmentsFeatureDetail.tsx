@@ -1,4 +1,4 @@
-/* eslint-ignore react/prop-types */
+/* eslint-disable react/prop-types */
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
@@ -10,8 +10,7 @@ import {
   Theme,
   WithStyles,
 } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

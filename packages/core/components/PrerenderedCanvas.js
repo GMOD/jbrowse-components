@@ -8,9 +8,14 @@ export default class PrerenderedCanvas extends Component {
     width: ReactPropTypes.number.isRequired,
     highResolutionScaling: ReactPropTypes.number,
     imageData: ReactPropTypes.instanceOf(ImageBitmapType),
+    style: ReactPropTypes.objectOf(ReactPropTypes.any),
   }
 
-  static defaultProps = { imageData: undefined, highResolutionScaling: 1 }
+  static defaultProps = {
+    imageData: undefined,
+    highResolutionScaling: 1,
+    style: {},
+  }
 
   constructor(props) {
     super(props)
