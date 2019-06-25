@@ -1,46 +1,54 @@
+/* eslint-ignore react/prop-types */
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { withStyles } from '@material-ui/styles'
+import {
+  withStyles,
+  createStyles,
+  Theme,
+  WithStyles,
+} from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 
-const styles = theme => ({
-  table: {
-    padding: 0,
-  },
-  fieldName: {
-    display: 'inline-block',
-    minWidth: '90px',
-    fontSize: '0.9em',
-    borderBottom: '1px solid #0003',
-    backgroundColor: '#ddd',
-    marginRight: theme.spacing(1),
-    padding: theme.spacing(0.5),
-  },
-  fieldValue: {
-    display: 'inline-block',
-    wordBreak: 'break-word',
-    fontSize: '0.8em',
-    maxHeight: 300,
-    overflow: 'auto',
-  },
-  header: {
-    padding: theme.spacing(0.5),
-    backgroundColor: '#ddd',
-  },
-  title: {
-    fontSize: '1em',
-  },
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {},
+    table: {
+      padding: 0,
+    },
+    fieldName: {
+      display: 'inline-block',
+      minWidth: '90px',
+      fontSize: '0.9em',
+      borderBottom: '1px solid #0003',
+      backgroundColor: '#ddd',
+      marginRight: theme.spacing.unit,
+      padding: 0.5 * theme.spacing.unit,
+    },
+    fieldValue: {
+      display: 'inline-block',
+      wordBreak: 'break-word',
+      fontSize: '0.8em',
+      maxHeight: 300,
+      overflow: 'auto',
+    },
+    header: {
+      padding: 0.5 * theme.spacing.unit,
+      backgroundColor: '#ddd',
+    },
+    title: {
+      fontSize: '1em',
+    },
 
-  valbox: {
-    border: '1px solid #bbb',
-  },
-})
-
+    valbox: {
+      border: '1px solid #bbb',
+    },
+  })
 
 const coreRenderedDetails = [
   'Position',
@@ -50,7 +58,12 @@ const coreRenderedDetails = [
   'Type',
 ]
 
-const AlignmentCard = props => {
+interface AlnCardProps extends WithStyles<typeof styles> {
+  title: string
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const AlignmentCard: FunctionComponent<AlnCardProps> = props => {
   const { children, classes, title } = props
   return (
     <Card>
@@ -63,14 +76,12 @@ const AlignmentCard = props => {
     </Card>
   )
 }
-
-AlignmentCard.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
+interface AlnProps extends AlnCardProps {
+  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const AlignmentCoreDetails = props => {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const AlignmentCoreDetails: FunctionComponent<AlnProps> = props => {
   const { feature, classes } = props
   const { refName, start, end } = feature
   feature.length = end - start
@@ -81,7 +92,7 @@ const AlignmentCoreDetails = props => {
         const value = feature[key.toLowerCase()]
         return (
           value && (
-            <div className={classes.fieldRow} key={key}>
+            <div key={key}>
               <div className={classes.fieldName}>{key}</div>
               <div className={classes.fieldValue}>{String(value)}</div>
             </div>
@@ -90,11 +101,6 @@ const AlignmentCoreDetails = props => {
       })}
     </AlignmentCard>
   )
-}
-
-AlignmentCoreDetails.propTypes = {
-  feature: PropTypes.shape().isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
 const omit = [
@@ -108,7 +114,9 @@ const omit = [
   'length',
   'position',
 ]
-const AlignmentAttributes = props => {
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const AlignmentAttributes: FunctionComponent<AlnProps> = props => {
   const { feature, classes } = props
   return (
     <AlignmentCard {...props} title="Attributes">
@@ -118,7 +126,7 @@ const AlignmentAttributes = props => {
             v !== undefined && !omit.includes(k) && !flags.includes(k),
         )
         .map(([key, value]) => (
-          <div className={classes.fieldRow} key={key}>
+          <div key={key}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>{String(value)}</div>
           </div>
@@ -133,12 +141,14 @@ const flags = [
   'secondary_alignment',
   'supplementary_alignment',
 ]
-const AlignmentFlags = props => {
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const { feature, classes } = props
   return (
     <AlignmentCard {...props} title="Flags">
       {flags.map(key => (
-        <div className={classes.fieldRow} key={key}>
+        <div key={key}>
           <div className={classes.fieldName}>{key}</div>
           <div className={classes.fieldValue}>{String(feature[key])}</div>
         </div>
@@ -147,12 +157,12 @@ const AlignmentFlags = props => {
   )
 }
 
-AlignmentAttributes.propTypes = {
-  feature: PropTypes.shape().isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
+interface AlnInputProps extends AlnCardProps {
+  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-function AlignmentFeatureDetails(props) {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
   const { classes, model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
@@ -166,8 +176,4 @@ function AlignmentFeatureDetails(props) {
   )
 }
 
-AlignmentFeatureDetails.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-}
-
+export default withStyles(styles)(observer(AlignmentFeatureDetails))
