@@ -92,4 +92,3 @@ test('test selection in alignments track model with mock root', async () => {
   rootModel.track.clearFeatureSelection()
   expect(rootModel.selection).not.toBeTruthy()
 })
-
