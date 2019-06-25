@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `
+exports[`create bam adapter config 1`] = `
 Object {
   "configId": Any<String>,
   "index": Object {
@@ -10,7 +10,7 @@ Object {
 }
 `;
 
-exports[`plugin in a stock JBrowse 2`] = `
+exports[`create track config 1`] = `
 Object {
   "adapter": Object {
     "configId": Any<String>,
