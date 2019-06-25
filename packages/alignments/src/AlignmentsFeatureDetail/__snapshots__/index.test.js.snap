@@ -1,0 +1,315 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`open up a drawer widget 1`] = `
+<div>
+  <div
+    class="MuiPaper-root-7 MuiPaper-elevation2-11 MuiPaper-rounded-8"
+    data-testid="alignment-side-drawer"
+  >
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Primary data
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      >
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            Position
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined:NaN..undefined
+          </div>
+        </div>
+        NaN
+      </div>
+    </div>
+    <hr
+      class="MuiDivider-root-78"
+    />
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Attributes
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      />
+    </div>
+    <hr
+      class="MuiDivider-root-78"
+    />
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Flags
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      >
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            unmapped
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            qc_failed
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            duplicate
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            secondary_alignment
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            supplementary_alignment
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`open up a drawer widget 2`] = `
+<div>
+  <div
+    class="MuiPaper-root-7 MuiPaper-elevation2-11 MuiPaper-rounded-8"
+    data-testid="alignment-side-drawer"
+  >
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Primary data
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      >
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            Position
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined:NaN..undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            Name
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            hi
+          </div>
+        </div>
+        NaN
+      </div>
+    </div>
+    <hr
+      class="MuiDivider-root-78"
+    />
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Attributes
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      />
+    </div>
+    <hr
+      class="MuiDivider-root-78"
+    />
+    <div
+      class="MuiPaper-root-7 MuiPaper-elevation1-10 MuiPaper-rounded-8 MuiCard-root-34"
+    >
+      <div
+        class="MuiCardHeader-root-35 AlignmentFeatureDetails-header-4"
+      >
+        <div
+          class="MuiCardHeader-content-38"
+        >
+          <span
+            class="MuiTypography-root-41 MuiTypography-headline-46 MuiCardHeader-title-39 AlignmentFeatureDetails-title-5"
+          >
+            Flags
+          </span>
+        </div>
+      </div>
+      <div
+        class="MuiCardContent-root-77"
+      >
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            unmapped
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            qc_failed
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            duplicate
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            secondary_alignment
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+        <div>
+          <div
+            class="AlignmentFeatureDetails-fieldName-2"
+          >
+            supplementary_alignment
+          </div>
+          <div
+            class="AlignmentFeatureDetails-fieldValue-3"
+          >
+            undefined
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
