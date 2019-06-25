@@ -97,12 +97,6 @@ AlignmentCoreDetails.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-const tap = (value, fn) => {
-  fn(value)
-  return value
-}
-
-const inspect = val => tap(val, console.log)
 const omit = [
   'id',
   'name',

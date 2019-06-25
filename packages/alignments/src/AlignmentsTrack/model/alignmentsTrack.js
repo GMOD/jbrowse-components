@@ -34,7 +34,7 @@ export default (pluginManager, configSchema) =>
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       .actions(self => ({
-        selectFeature(feature) {
+        selectFeature(feature: Feature) {
           const root = getRoot(self)
           // TODO: we shouldn't need to have to get this deep into knowing about
           // drawer widgets here, the drawer widget should be a reaction to

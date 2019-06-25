@@ -12,8 +12,8 @@ import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {
   features: Map<string, Feature>
-  layout: any
-  config: any
+  layout: any // eslint-ignore @typescript-eslint/no-explicit-any
+  config: any // eslint-ignore @typescript-eslint/no-explicit-any
   region: IRegion
   bpPerPx: number
   height: number
@@ -26,8 +26,8 @@ interface PileupRenderProps {
 export default class extends BoxRendererType {
   layoutFeature(
     feature: Feature,
-    subLayout: any,
-    config: any,
+    subLayout: any, // eslint-ignore @typescript-eslint/no-explicit-any
+    config: any, // eslint-ignore @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
     horizontallyFlipped: boolean = false,
@@ -136,22 +136,22 @@ export default class extends BoxRendererType {
           const leftPx = getCoord(start)
           const widthPx = getCoord(end) - leftPx
 
-          if (mismatch.type == 'mismatch' || mismatch.type == 'deletion') {
+          if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
             ctx.fillStyle =
               colorForBase[
-                mismatch.type == 'deletion' ? 'deletion' : mismatch.base
+                mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ]
             ctx.fillRect(leftPx, topPx, widthPx, heightPx)
 
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
-              ctx.fillStyle = mismatch.type == 'deletion' ? 'white' : 'black'
+              ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
               ctx.fillText(
                 mismatch.base,
                 leftPx + (widthPx - charSize.width) / 2 + 1,
                 topPx + heightPx,
               )
             }
-          } else if (mismatch.type == 'insertion') {
+          } else if (mismatch.type === 'insertion') {
             ctx.fillStyle = 'purple'
             ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
             ctx.fillRect(leftPx - 2, topPx, 4, 1)
@@ -160,17 +160,17 @@ export default class extends BoxRendererType {
               ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
             }
           } else if (
-            mismatch.type == 'hardclip' ||
-            mismatch.type == 'softclip'
+            mismatch.type === 'hardclip' ||
+            mismatch.type === 'softclip'
           ) {
-            ctx.fillStyle = mismatch.type == 'hardclip' ? 'red' : 'blue'
+            ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
             ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
             ctx.fillRect(leftPx - 2, topPx, 4, 1)
             ctx.fillRect(leftPx - 2, topPx + heightPx - 1, 4, 1)
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
               ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
             }
-          } else if (mismatch.type == 'skip') {
+          } else if (mismatch.type === 'skip') {
             ctx.clearRect(leftPx, topPx, widthPx, heightPx)
             ctx.fillStyle = '#333'
             ctx.fillRect(leftPx, topPx + heightPx / 2, widthPx, 2)
