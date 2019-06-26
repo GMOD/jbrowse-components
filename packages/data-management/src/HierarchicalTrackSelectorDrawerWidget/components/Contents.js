@@ -14,8 +14,8 @@ import TrackEntry from './TrackEntry'
 
 const styles = theme => ({
   divider: {
-    marginTop: theme.spacing.unit * 2,
-    marginBottom: theme.spacing.unit * 2,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
 })
 

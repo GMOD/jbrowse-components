@@ -1,23 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MainMenuBar /> renders 1`] = `
-<WithStyles(AppBar)
+<WithStyles(ForwardRef(AppBar))
   className="MainMenuBar-root-1"
   position="static"
 >
-  <WithStyles(Toolbar)
+  <WithStyles(ForwardRef(Toolbar))
     variant="dense"
   >
-    <WithStyles(Typography)
+    <WithStyles(ForwardRef(Typography))
       color="inherit"
       variant="h6"
     >
       JBrowse
-    </WithStyles(Typography)>
+    </WithStyles(ForwardRef(Typography))>
     <div
       className="MainMenuBar-grow-2"
     />
-    <WithStyles(DropDownMenu)
+    <WithStyles(undefined)
       key="Help"
       menuItems={
         Array [
@@ -91,6 +91,6 @@ exports[`<MainMenuBar /> renders 1`] = `
         }
       }
     />
-  </WithStyles(Toolbar)>
-</WithStyles(AppBar)>
+  </WithStyles(ForwardRef(Toolbar))>
+</WithStyles(ForwardRef(AppBar))>
 `;

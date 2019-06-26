@@ -21,24 +21,24 @@ import Contents from './Contents'
 const styles = theme => ({
   root: {
     textAlign: 'left',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
   searchBox: {
-    marginBottom: theme.spacing.unit * 2,
+    marginBottom: theme.spacing(2),
   },
   fab: {
     float: 'right',
     position: 'sticky',
-    marginTop: theme.spacing.unit * 2,
-    bottom: theme.spacing.unit * 2,
-    right: theme.spacing.unit * 2,
+    marginTop: theme.spacing(2),
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
   },
   connectionsPaper: {
-    padding: theme.spacing.unit,
-    marginTop: theme.spacing.unit,
+    padding: theme.spacing(1),
+    marginTop: theme.spacing(1),
   },
   tabs: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
 })
 

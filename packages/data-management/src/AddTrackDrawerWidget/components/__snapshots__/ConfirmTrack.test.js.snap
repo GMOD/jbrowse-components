@@ -2,7 +2,7 @@
 
 exports[`<ConfirmTrack /> mounts with config 1`] = `
 <p
-  class="MuiTypography-root-353 MuiTypography-body1-362 ConfirmTrack-spacing-352"
+  class="MuiTypography-root ConfirmTrack-spacing-334 MuiTypography-body1"
 >
   Using adapter 
   <code>
@@ -19,7 +19,7 @@ exports[`<ConfirmTrack /> mounts with config 1`] = `
 
 exports[`<ConfirmTrack /> mounts with localPath 1`] = `
 <p
-  class="MuiTypography-root-236 MuiTypography-body1-245 ConfirmTrack-spacing-235"
+  class="MuiTypography-root ConfirmTrack-spacing-223 MuiTypography-body1"
 >
   Using adapter 
   <code>
@@ -36,7 +36,7 @@ exports[`<ConfirmTrack /> mounts with localPath 1`] = `
 
 exports[`<ConfirmTrack /> mounts with uri 1`] = `
 <p
-  class="MuiTypography-root-119 MuiTypography-body1-128 ConfirmTrack-spacing-118"
+  class="MuiTypography-root ConfirmTrack-spacing-112 MuiTypography-body1"
 >
   Using adapter 
   <code>
@@ -53,7 +53,7 @@ exports[`<ConfirmTrack /> mounts with uri 1`] = `
 
 exports[`<ConfirmTrack /> renders 1`] = `
 <p
-  class="MuiTypography-root-2 MuiTypography-body1-11 ConfirmTrack-spacing-1"
+  class="MuiTypography-root ConfirmTrack-spacing-1 MuiTypography-body1"
 >
   Using adapter 
   <code>

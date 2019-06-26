@@ -2,32 +2,33 @@
 
 exports[`<DropDownMenu /> opens a menu and selects a menu item 1`] = `
 <li
-  class="MuiButtonBase-root-78 MuiListItem-root-131 MuiListItem-default-134 MuiListItem-gutters-139 MuiListItem-button-140 MuiMenuItem-root-128 MuiMenuItem-gutters-129"
+  aria-disabled="false"
+  class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
   data-testid="menuItemId"
   role="menuitem"
-  tabindex="0"
+  tabindex="-1"
 >
   <div
-    class="MuiListItemIcon-root-143"
+    class="MuiListItemIcon-root"
   >
     <span
       aria-hidden="true"
-      class="material-icons MuiIcon-root-81"
+      class="material-icons MuiIcon-root"
     >
       info
     </span>
   </div>
   <div
-    class="MuiListItemText-root-144"
+    class="MuiListItemText-root"
   >
     <span
-      class="MuiTypography-root-150 MuiTypography-subheading-157 MuiListItemText-primary-147"
+      class="MuiTypography-root MuiListItemText-primary MuiTypography-body1"
     >
       Test Item
     </span>
   </div>
   <span
-    class="MuiTouchRipple-root-90"
+    class="MuiTouchRipple-root"
   />
 </li>
 `;
@@ -39,24 +40,24 @@ exports[`<DropDownMenu /> renders 1`] = `
   <button
     aria-haspopup="true"
     aria-owns="menu-list-grow"
-    class="MuiButtonBase-root-30 MuiButton-root-4 MuiButton-text-6 MuiButton-flat-9 MuiButton-colorInherit-25"
+    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
     data-testid="dropDownMenuButton"
     tabindex="0"
     type="button"
   >
     <span
-      class="MuiButton-label-5"
+      class="MuiButton-label"
     >
       Test Menu
       <span
         aria-hidden="true"
-        class="material-icons MuiIcon-root-33"
+        class="material-icons MuiIcon-root"
       >
         arrow_drop_down
       </span>
     </span>
     <span
-      class="MuiTouchRipple-root-42"
+      class="MuiTouchRipple-root"
     />
   </button>
 </div>

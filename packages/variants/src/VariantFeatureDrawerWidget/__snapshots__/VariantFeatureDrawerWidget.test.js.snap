@@ -3,27 +3,27 @@
 exports[`VariantTrack drawer widget renders with just the required model elements 1`] = `
 <div>
   <div
-    class="MuiPaper-root-8 MuiPaper-elevation2-12 MuiPaper-rounded-9"
+    class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
     data-testid="variant-side-drawer"
   >
     <div
-      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
     >
       <div
-        class="MuiCardHeader-root-36 VariantFeatureDetails-header-5"
+        class="MuiCardHeader-root VariantFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-39"
+          class="MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 VariantFeatureDetails-title-6"
+            class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
           >
             Primary data
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-78"
+        class="MuiCardContent-root"
       >
         <div>
           <div
@@ -41,26 +41,26 @@ exports[`VariantTrack drawer widget renders with just the required model element
       </div>
     </div>
     <hr
-      class="MuiDivider-root-79"
+      class="MuiDivider-root"
     />
     <div
-      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
     >
       <div
-        class="MuiCardHeader-root-36 VariantFeatureDetails-header-5"
+        class="MuiCardHeader-root VariantFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-39"
+          class="MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 VariantFeatureDetails-title-6"
+            class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
           >
             Attributes
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-78"
+        class="MuiCardContent-root"
       >
         <div>
           <div
@@ -113,7 +113,7 @@ exports[`VariantTrack drawer widget renders with just the required model element
       </div>
     </div>
     <hr
-      class="MuiDivider-root-79"
+      class="MuiDivider-root"
     />
   </div>
 </div>

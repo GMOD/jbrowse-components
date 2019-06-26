@@ -28,7 +28,7 @@ function styledBy(property, mapping) {
 
 const useStyles = makeStyles(theme => ({
   root: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
   },
   paper: {
     display: 'flex',
@@ -36,8 +36,8 @@ const useStyles = makeStyles(theme => ({
   },
   dropZone: {
     textAlign: 'center',
-    margin: theme.spacing.unit * 2,
-    padding: theme.spacing.unit * 2,
+    margin: theme.spacing(2),
+    padding: theme.spacing(2),
     borderWidth: 2,
     borderRadius: 2,
     borderColor: styledBy('isDragActive', {
@@ -59,14 +59,14 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.text.secondary,
   },
   rejectedFiles: {
-    marginTop: theme.spacing.unit * 4,
+    marginTop: theme.spacing(4),
   },
   errorMessage: {
-    marginTop: theme.spacing.unit * 4,
+    marginTop: theme.spacing(4),
     textAlign: 'center',
   },
   listItem: {
-    padding: `0 ${theme.spacing.unit * 4}px`,
+    padding: theme.spacing(0, 4),
   },
 }))
 

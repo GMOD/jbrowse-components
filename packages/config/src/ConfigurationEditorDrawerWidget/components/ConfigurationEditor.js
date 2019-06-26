@@ -19,10 +19,10 @@ import TypeSelector from './TypeSelector'
 
 const memberStyles = theme => ({
   subSchemaContainer: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
     borderLeft: `1px solid ${theme.palette.secondary.main}`,
-    paddingLeft: theme.spacing.unit,
-    marginBottom: theme.spacing.unit,
+    paddingLeft: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
 })
 
@@ -98,11 +98,7 @@ const Schema = observer(({ schema }) => {
 
 const styles = theme => ({
   root: {
-    padding:
-      `${theme.spacing.unit}px ` +
-      `${theme.spacing.unit * 3}px ` +
-      `${theme.spacing.unit}px ` +
-      `${theme.spacing.unit}px`,
+    padding: theme.spacing(1, 3, 1, 1),
     background: theme.palette.background.default,
     overflowX: 'hidden',
   },
