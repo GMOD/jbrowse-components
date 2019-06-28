@@ -5,20 +5,20 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
   class="AddTrackDrawerWidget-root-1"
 >
   <div
-    class="MuiPaper-root-10 MuiPaper-elevation0-12 MuiStepper-root-6 MuiStepper-vertical-8 AddTrackDrawerWidget-stepper-2"
+    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddTrackDrawerWidget-stepper-2"
   >
     <div
-      class="MuiStep-root-37 MuiStep-vertical-39"
+      class="MuiStep-root MuiStep-vertical"
     >
       <span
-        class="MuiStepLabel-root-42 MuiStepLabel-vertical-44"
+        class="MuiStepLabel-root MuiStepLabel-vertical"
       >
         <span
-          class="MuiStepLabel-iconContainer-50"
+          class="MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root-58 MuiStepIcon-root-53 MuiStepIcon-active-55"
+            class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -29,7 +29,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
               r="12"
             />
             <text
-              class="MuiStepIcon-text-54"
+              class="MuiStepIcon-text"
               text-anchor="middle"
               x="12"
               y="16"
@@ -39,177 +39,56 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer-52"
+          class="MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiTypography-root-67 MuiTypography-body1-76 MuiStepLabel-label-45 MuiStepLabel-active-46"
+            class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
           >
             Enter track data
           </span>
         </span>
       </span>
       <div
-        class="MuiStepContent-root-103"
+        class="MuiStepContent-root"
         icon="1"
       >
         <div
-          class="MuiCollapse-container-106 MuiCollapse-entered-107 MuiStepContent-transition-105"
+          class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
           style="min-height: 0px;"
         >
           <div
-            class="MuiCollapse-wrapper-108"
+            class="MuiCollapse-wrapper"
           >
             <div
-              class="MuiCollapse-wrapperInner-109"
+              class="MuiCollapse-wrapperInner"
             >
               <div
-                class="TrackSourceSelect-root-110"
+                class="TrackSourceSelect-root-105"
               >
                 <fieldset
-                  class="MuiFormControl-root-112"
+                  class="MuiFormControl-root"
                 >
                   <div
                     aria-label="Data location"
-                    class="MuiFormGroup-root-116"
+                    class="MuiFormGroup-root"
                     role="radiogroup"
                   >
                     <label
-                      class="MuiFormControlLabel-root-118"
+                      class="MuiFormControlLabel-root"
                     >
                       <span
-                        class="MuiButtonBase-root-139 MuiIconButton-root-133 MuiPrivateSwitchBase-root-129 MuiRadio-root-124 MuiRadio-colorSecondary-128 MuiPrivateSwitchBase-checked-130 MuiRadio-checked-125"
+                        aria-disabled="false"
+                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-125 Mui-checked MuiIconButton-colorSecondary"
                       >
                         <span
-                          class="MuiIconButton-label-138"
+                          class="MuiIconButton-label"
                         >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root-58"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                            />
-                          </svg>
-                          <input
-                            checked=""
-                            class="MuiPrivateSwitchBase-input-132"
-                            data-testid="addTrackFromFileRadio"
-                            type="radio"
-                            value="fromFile"
-                          />
-                        </span>
-                        <span
-                          class="MuiTouchRipple-root-226"
-                        />
-                      </span>
-                      <span
-                        class="MuiTypography-root-67 MuiTypography-body1-76 MuiFormControlLabel-label-123"
-                      >
-                        From file
-                      </span>
-                    </label>
-                    <label
-                      class="MuiFormControlLabel-root-118"
-                    >
-                      <span
-                        class="MuiButtonBase-root-139 MuiIconButton-root-133 MuiPrivateSwitchBase-root-129 MuiRadio-root-124 MuiRadio-colorSecondary-128"
-                      >
-                        <span
-                          class="MuiIconButton-label-138"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root-58"
-                            focusable="false"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                            />
-                          </svg>
-                          <input
-                            class="MuiPrivateSwitchBase-input-132"
-                            data-testid="addTrackFromConfigRadio"
-                            type="radio"
-                            value="fromConfig"
-                          />
-                        </span>
-                        <span
-                          class="MuiTouchRipple-root-226"
-                        />
-                      </span>
-                      <span
-                        class="MuiTypography-root-67 MuiTypography-body1-76 MuiFormControlLabel-label-123"
-                      >
-                        From configuration
-                      </span>
-                    </label>
-                  </div>
-                </fieldset>
-                <div
-                  class="MuiPaper-root-10 MuiPaper-elevation2-14 MuiPaper-rounded-11 TrackSourceSelect-paper-111"
-                >
-                  <fieldset
-                    class="MuiFormControl-root-112"
-                  >
-                    <div
-                      class="MuiFormGroup-root-116"
-                      role="radiogroup"
-                    >
-                      <label
-                        class="MuiFormControlLabel-root-118"
-                      >
-                        <span
-                          class="MuiButtonBase-root-139 MuiIconButton-root-133 MuiPrivateSwitchBase-root-129 MuiRadio-root-124 MuiRadio-colorSecondary-128 MuiPrivateSwitchBase-checked-130 MuiRadio-checked-125"
-                        >
-                          <span
-                            class="MuiIconButton-label-138"
+                          <div
+                            class="PrivateRadioButtonIcon-root-140 PrivateRadioButtonIcon-checked-142"
                           >
                             <svg
                               aria-hidden="true"
-                              class="MuiSvgIcon-root-58"
-                              focusable="false"
-                              role="presentation"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                              />
-                            </svg>
-                            <input
-                              checked=""
-                              class="MuiPrivateSwitchBase-input-132"
-                              type="radio"
-                              value="uri"
-                            />
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root-226"
-                          />
-                        </span>
-                        <span
-                          class="MuiTypography-root-67 MuiTypography-body1-76 MuiFormControlLabel-label-123"
-                        >
-                          URL
-                        </span>
-                      </label>
-                      <label
-                        class="MuiFormControlLabel-root-118 MuiFormControlLabel-disabled-122"
-                      >
-                        <span
-                          class="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiIconButton-root-133 MuiIconButton-disabled-137 MuiPrivateSwitchBase-root-129 MuiRadio-root-124 MuiRadio-colorSecondary-128 MuiPrivateSwitchBase-disabled-131 MuiRadio-disabled-126"
-                          tabindex="-1"
-                        >
-                          <span
-                            class="MuiIconButton-label-138"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root-58"
+                              class="MuiSvgIcon-root"
                               focusable="false"
                               role="presentation"
                               viewBox="0 0 24 24"
@@ -218,8 +97,193 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                                 d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                               />
                             </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                              focusable="false"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                              />
+                            </svg>
+                          </div>
+                          <input
+                            checked=""
+                            class="PrivateSwitchBase-input-127"
+                            data-testid="addTrackFromFileRadio"
+                            type="radio"
+                            value="fromFile"
+                          />
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </span>
+                      <span
+                        class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                      >
+                        From file
+                      </span>
+                    </label>
+                    <label
+                      class="MuiFormControlLabel-root"
+                    >
+                      <span
+                        aria-disabled="false"
+                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary MuiIconButton-colorSecondary"
+                      >
+                        <span
+                          class="MuiIconButton-label"
+                        >
+                          <div
+                            class="PrivateRadioButtonIcon-root-140"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root"
+                              focusable="false"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                              />
+                            </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                              focusable="false"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                              />
+                            </svg>
+                          </div>
+                          <input
+                            class="PrivateSwitchBase-input-127"
+                            data-testid="addTrackFromConfigRadio"
+                            type="radio"
+                            value="fromConfig"
+                          />
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </span>
+                      <span
+                        class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                      >
+                        From configuration
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+                <div
+                  class="MuiPaper-root MuiPaper-elevation1 TrackSourceSelect-paper-106 MuiPaper-rounded"
+                >
+                  <fieldset
+                    class="MuiFormControl-root"
+                  >
+                    <div
+                      class="MuiFormGroup-root"
+                      role="radiogroup"
+                    >
+                      <label
+                        class="MuiFormControlLabel-root"
+                      >
+                        <span
+                          aria-disabled="false"
+                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-125 Mui-checked MuiIconButton-colorSecondary"
+                        >
+                          <span
+                            class="MuiIconButton-label"
+                          >
+                            <div
+                              class="PrivateRadioButtonIcon-root-140 PrivateRadioButtonIcon-checked-142"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root"
+                                focusable="false"
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                                focusable="false"
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                                />
+                              </svg>
+                            </div>
                             <input
-                              class="MuiPrivateSwitchBase-input-132"
+                              checked=""
+                              class="PrivateSwitchBase-input-127"
+                              type="radio"
+                              value="uri"
+                            />
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </span>
+                        <span
+                          class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                        >
+                          URL
+                        </span>
+                      </label>
+                      <label
+                        class="MuiFormControlLabel-root Mui-disabled"
+                      >
+                        <span
+                          aria-disabled="true"
+                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-126 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                          tabindex="-1"
+                        >
+                          <span
+                            class="MuiIconButton-label"
+                          >
+                            <div
+                              class="PrivateRadioButtonIcon-root-140"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root"
+                                focusable="false"
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                />
+                              </svg>
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                                focusable="false"
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                                />
+                              </svg>
+                            </div>
+                            <input
+                              class="PrivateSwitchBase-input-127"
                               disabled=""
                               type="radio"
                               value="localPath"
@@ -227,7 +291,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           </span>
                         </span>
                         <span
-                          class="MuiTypography-root-67 MuiTypography-body1-76 MuiFormControlLabel-label-123 MuiFormControlLabel-disabled-122"
+                          class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1"
                         >
                           Local File
                         </span>
@@ -235,20 +299,20 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                     </div>
                   </fieldset>
                   <div
-                    class="MuiFormControl-root-112 MuiFormControl-fullWidth-115"
+                    class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                   >
                     <label
-                      class="MuiFormLabel-root-153 MuiInputLabel-root-142 MuiInputLabel-formControl-147 MuiInputLabel-animated-150"
+                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                       data-shrink="false"
                     >
                       fileLocation
                     </label>
                     <div
-                      class="MuiInputBase-root-173 MuiInput-root-160 MuiInput-underline-164 MuiInputBase-fullWidth-182 MuiInput-fullWidth-167 MuiInputBase-formControl-174 MuiInput-formControl-161"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                     >
                       <input
                         aria-invalid="false"
-                        class="MuiInputBase-input-183 MuiInput-input-168"
+                        class="MuiInputBase-input MuiInput-input"
                         type="text"
                         value=""
                       />
@@ -261,26 +325,26 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                 class="AddTrackDrawerWidget-actionsContainer-4"
               >
                 <button
-                  class="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-text-192 MuiButton-flat-195 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
+                  class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-3 MuiButton-text Mui-disabled Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
                   <span
-                    class="MuiButton-label-191"
+                    class="MuiButton-label"
                   >
                     Back
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root-139 MuiButtonBase-disabled-140 MuiButton-root-190 MuiButton-contained-201 MuiButton-containedPrimary-202 MuiButton-raised-204 MuiButton-raisedPrimary-205 MuiButton-disabled-210 AddTrackDrawerWidget-button-3"
+                  class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-3 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
                   data-testid="addTrackNextButton"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
                   <span
-                    class="MuiButton-label-191"
+                    class="MuiButton-label"
                   >
                     Next
                   </span>
@@ -292,24 +356,24 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
       </div>
     </div>
     <div
-      class="MuiStepConnector-root-216 MuiStepConnector-vertical-218 MuiStepConnector-disabled-222"
+      class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled"
     >
       <span
-        class="MuiStepConnector-line-223 MuiStepConnector-lineVertical-225"
+        class="MuiStepConnector-line MuiStepConnector-lineVertical"
       />
     </div>
     <div
-      class="MuiStep-root-37 MuiStep-vertical-39"
+      class="MuiStep-root MuiStep-vertical"
     >
       <span
-        class="MuiStepLabel-root-42 MuiStepLabel-vertical-44 MuiStepLabel-disabled-49"
+        class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled"
       >
         <span
-          class="MuiStepLabel-iconContainer-50"
+          class="MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root-58 MuiStepIcon-root-53"
+            class="MuiSvgIcon-root MuiStepIcon-root"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -320,7 +384,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
               r="12"
             />
             <text
-              class="MuiStepIcon-text-54"
+              class="MuiStepIcon-text"
               text-anchor="middle"
               x="12"
               y="16"
@@ -330,17 +394,17 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer-52"
+          class="MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiTypography-root-67 MuiTypography-body1-76 MuiStepLabel-label-45"
+            class="MuiTypography-root MuiStepLabel-label MuiTypography-body2 MuiTypography-displayBlock"
           >
             Confirm track type
           </span>
         </span>
       </span>
       <div
-        class="MuiStepContent-root-103 MuiStepContent-last-104"
+        class="MuiStepContent-root MuiStepContent-last"
         disabled=""
         icon="2"
       />

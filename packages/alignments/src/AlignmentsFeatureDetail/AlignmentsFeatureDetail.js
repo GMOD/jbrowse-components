@@ -1,5 +1,5 @@
 import Paper from '@material-ui/core/Paper'
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -11,8 +11,8 @@ import React from 'react'
 
 const styles = theme => ({
   root: {
-    margin: theme.spacing.unit,
-    marginTop: theme.spacing.unit * 3,
+    margin: theme.spacing(1),
+    marginTop: theme.spacing(3),
   },
   table: {
     tableLayout: 'fixed',

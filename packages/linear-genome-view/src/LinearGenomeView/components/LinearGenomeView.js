@@ -18,7 +18,7 @@ const dragHandleHeight = 3
 const styles = theme => ({
   root: {
     position: 'relative',
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
     overflow: 'hidden',
   },
   linearGenomeView: {
@@ -45,7 +45,7 @@ const styles = theme => ({
     top: '0px',
   },
   iconButton: {
-    padding: theme.spacing.unit / 2,
+    padding: theme.spacing(0.5),
   },
 })
 

@@ -4,7 +4,7 @@ import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/lab/Slider'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { withStyles } from '@material-ui/core'
+import { withStyles } from '@material-ui/core/styles'
 
 const styles = {
   container: {

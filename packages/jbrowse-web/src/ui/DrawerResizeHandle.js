@@ -1,4 +1,4 @@
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import React from 'react'
