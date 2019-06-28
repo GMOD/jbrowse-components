@@ -3,27 +3,27 @@
 exports[`open up a drawer widget 1`] = `
 <div>
   <div
-    class="MuiPaper-root-8 MuiPaper-elevation2-12 MuiPaper-rounded-9 AlignmentFeatureDetails-root-1"
+    class="MuiPaper-root MuiPaper-elevation1 AlignmentFeatureDetails-root-1 MuiPaper-rounded"
     data-testid="alignment-side-drawer"
   >
     <div
-      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
     >
       <div
-        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-39"
+          class="MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
+            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
           >
             Primary data
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-78"
+        class="MuiCardContent-root"
       >
         <div>
           <div
@@ -76,26 +76,26 @@ exports[`open up a drawer widget 1`] = `
       </div>
     </div>
     <hr
-      class="MuiDivider-root-79"
+      class="MuiDivider-root"
     />
     <div
-      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
     >
       <div
-        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-39"
+          class="MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
+            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
           >
             Attributes
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-78"
+        class="MuiCardContent-root"
       >
         <div>
           <div
@@ -196,26 +196,26 @@ exports[`open up a drawer widget 1`] = `
       </div>
     </div>
     <hr
-      class="MuiDivider-root-79"
+      class="MuiDivider-root"
     />
     <div
-      class="MuiPaper-root-8 MuiPaper-elevation1-11 MuiPaper-rounded-9 MuiCard-root-35"
+      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
     >
       <div
-        class="MuiCardHeader-root-36 AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
       >
         <div
-          class="MuiCardHeader-content-39"
+          class="MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root-42 MuiTypography-headline-47 MuiCardHeader-title-40 AlignmentFeatureDetails-title-6"
+            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
           >
             Flags
           </span>
         </div>
       </div>
       <div
-        class="MuiCardContent-root-78"
+        class="MuiCardContent-root"
       >
         <div>
           <div

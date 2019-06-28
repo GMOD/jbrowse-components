@@ -1731,7 +1731,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       function(feature) {
   var s = feature.get('strand');
-  return s === '-' || s === -1 ? 'blue': 'red'
+  return s === '-' || s === -1 ? '#8F8FD8': '#EC8B8B'
 }
                     </textarea>
                     <pre
@@ -1860,7 +1860,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <span
                         class="token string"
                       >
-                        'blue'
+                        '#8F8FD8'
                       </span>
                       <span
                         class="token punctuation"
@@ -1871,7 +1871,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <span
                         class="token string"
                       >
-                        'red'
+                        '#EC8B8B'
                       </span>
                       
 
@@ -1973,7 +1973,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       aria-invalid="false"
                       class="MuiInputBase-input MuiInput-input"
                       type="number"
-                      value="5"
+                      value="7"
                     />
                   </div>
                   <p
