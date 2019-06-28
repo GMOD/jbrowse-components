@@ -120,15 +120,10 @@ export default configSchema =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          const highResolutionScaling = getConf(
-            getRoot(self),
-            'highResolutionScaling',
-          )
-          const { height, ready, domain } = self
           return {
             ...getParentRenderProps(self),
+            notReady: !self.ready,
             trackModel: self,
-            notReady: !ready,
             config,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
@@ -139,12 +134,11 @@ export default configSchema =>
               self.clearFeatureSelection()
             },
             scaleOpts: {
-              domain,
+              domain: self.domain,
               scaleType: getConf(self, 'scaleType'),
               inverted: getConf(self, 'inverted'),
             },
-            height,
-            highResolutionScaling,
+            height: self.height,
           }
         },
       }))

@@ -31,3 +31,29 @@ test('adapter can fetch features from volvox.bam', async () => {
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
+
+test('test usage of BamSlightlyLazyFeature toJSON (used in the drawer widget)', async () => {
+  const adapter = new Adapter({
+    bamLocation: {
+      localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+    },
+    index: {
+      location: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+      },
+      indexType: 'BAI',
+    },
+  })
+
+  const features = await adapter.getFeatures({
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  const f = featuresArray[0].toJSON()
+  expect(f.refName).toBe('ctgA')
+  expect(f.start).toBe(2)
+  expect(f.end).toBe(102)
+  expect(f.mismatches).not.toBeTruthy()
+})

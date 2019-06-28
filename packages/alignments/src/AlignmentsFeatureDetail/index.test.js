@@ -1,0 +1,35 @@
+/* eslint-disable @typescript-eslint/camelcase */
+import { render } from 'react-testing-library'
+import React from 'react'
+import { stateModel } from './index'
+import ReactComponent from './AlignmentsFeatureDetail'
+
+test('open up a drawer widget', async () => {
+  const rootModel = stateModel.create({ type: 'AlignmentsFeatureDrawerWidget' })
+  const { container, getByText } = render(<ReactComponent model={rootModel} />)
+  rootModel.setFeatureData({
+    seq:
+      'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
+    unmapped: false,
+    qc_failed: false,
+    duplicate: false,
+    secondary_alignment: false,
+    supplementary_alignment: false,
+    start: 2,
+    end: 102,
+    strand: 1,
+    score: 37,
+    qual:
+      '17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17',
+    MQ: 37,
+    CIGAR: '100M',
+    length_on_ref: 100,
+    template_length: 0,
+    seq_length: 100,
+    name: 'ctgA_3_555_0:0:0_2:0:0_102d',
+    refName: 'ctgA',
+    type: 'match',
+  })
+  expect(container).toMatchSnapshot()
+  expect(getByText('ctgA:3..102')).toBeTruthy()
+})
