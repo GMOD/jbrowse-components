@@ -26,8 +26,8 @@ const styles = (theme: Theme) =>
       fontSize: '0.9em',
       borderBottom: '1px solid #0003',
       backgroundColor: '#ddd',
-      marginRight: theme.spacing.unit,
-      padding: 0.5 * theme.spacing.unit,
+      marginRight: theme.spacing(1),
+      padding: theme.spacing(0.5),
     },
     fieldValue: {
       display: 'inline-block',
@@ -37,7 +37,7 @@ const styles = (theme: Theme) =>
       overflow: 'auto',
     },
     header: {
-      padding: 0.5 * theme.spacing.unit,
+      padding: 0.5 * theme.spacing(1),
       backgroundColor: '#ddd',
     },
     title: {
