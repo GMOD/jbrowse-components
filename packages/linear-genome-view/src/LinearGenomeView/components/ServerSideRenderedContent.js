@@ -58,7 +58,7 @@ class ServerSideRenderedContent extends Component {
           hydrate(mainThreadRendering, domNode.firstChild)
           this.hydrated = true
         },
-        { timeout: 10 },
+        { timeout: 50 },
       )
     }
   }
