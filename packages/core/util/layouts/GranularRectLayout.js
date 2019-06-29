@@ -424,6 +424,22 @@ export default class GranularRectLayout {
     )
   }
 
+  serializeRegion(region) {
+    const regionRectangles = {}
+    for (const iter of Object.entries(this.rectangles)) {
+      const [id, rect] = iter
+      const { l, r, originalHeight, top } = rect
+      const t = top * this.pitchY
+      const b = t + originalHeight
+      const lprime = l * this.pitchX
+      const rprime = r * this.pitchX
+      if (lprime < region.end && rprime > region.start) {
+        regionRectangles[id] = [lprime, t, rprime, b]
+      }
+    }
+    return { rectangles: regionRectangles, totalHeight: this.getTotalHeight() }
+  }
+
   toJSON() {
     const rectangles = objectFromEntries(this.getRectangles())
     // console.log(`${this.id} toJSON - ${count}`)

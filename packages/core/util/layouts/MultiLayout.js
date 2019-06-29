@@ -25,7 +25,8 @@ export default class MultiLayout {
   }
 
   discardRange(layoutName, ...args) {
-    return this.getSublayout(layoutName).discardRange(...args)
+    const layout = this.subLayouts.get(layoutName)
+    return layout && layout.discardRange(...args)
   }
 
   toJSON() {

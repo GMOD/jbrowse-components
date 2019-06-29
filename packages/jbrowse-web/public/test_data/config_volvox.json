@@ -163,6 +163,7 @@
         },
         {
           "type": "BasicTrack",
+          "configId": "bigbed_genes",
           "name": "BigBed genes",
           "category": [
             "Miscellaneous"
@@ -479,6 +480,11 @@
             "type": "AlignmentsTrack",
             "configuration": "volvox_bam",
             "height": 200
+          },
+          {
+            "type": "BasicTrack",
+            "height": 80,
+            "configuration": "bigbed_genes"
           }
         ],
         "trackSelectorType": "hierarchical"

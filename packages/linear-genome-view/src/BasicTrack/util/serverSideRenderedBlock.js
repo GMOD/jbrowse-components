@@ -219,5 +219,14 @@ export default types
       if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
       }
+      const track = getParent(self, 2)
+      const view = getContainingView(track)
+      const { rpcManager } = getRoot(view)
+      const { rendererType } = track
+      const { renderArgs } = renderBlockData(self)
+      rendererType.freeResourcesInClient(
+        rpcManager,
+        JSON.parse(JSON.stringify(renderArgs)),
+      )
     },
   }))
