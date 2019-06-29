@@ -1,3 +1,5 @@
+import { viewportVisibleSlice } from './viewportVisibleRegion'
+
 export default ({ jbrequire }) => {
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
 
@@ -29,10 +31,37 @@ export default ({ jbrequire }) => {
   }
 
   return function calculateStaticSlices(self) {
-    // TODO: calculate only slices that are visible
+    const {
+      rho: visibleRhoRange,
+      theta: visibleThetaRange,
+    } = viewportVisibleSlice(
+      [
+        self.scrollX,
+        self.scrollX + self.width,
+        self.scrollY,
+        self.scrollY + self.height,
+      ],
+      self.centerXY,
+      self.radiusPx,
+    )
+    // console.log(
+    //   [
+    //     self.scrollX,
+    //     self.scrollX + self.width,
+    //     self.scrollY,
+    //     self.scrollY + self.height,
+    //   ],
+    //   self.centerXY,
+    //   self.radiusPx,
+    // )
+    // console.log(
+    //   visibleThetaRange.map(t => (t * 180) / Math.PI),
+    //   visibleRhoRange,
+    // )
+
     const slices = []
     let currentRadianOffset = 0
-    for (const region of self.visibleRegions) {
+    for (const region of self.elidedRegions) {
       slices.push(new Slice(self, region, currentRadianOffset))
       currentRadianOffset +=
         region.widthBp / self.bpPerRadian + self.spacingPx / self.pxPerRadian

@@ -407,17 +407,8 @@
     "views": [
       {
         "type": "CircularView",
-        "offsetRadians": 0,
-        "bpPerRadian": 1,
-        "displayRegionsFromAssemblyName": "volvox",
-        "tracks": [],
-        "width": 985,
-        "height": 400,
-        "configuration": {
-          "configId": "C_mKt_rxqy",
-          "type": "CircularView"
-        },
-        "minimumBlockWidth": 20
+        "bpPerPx": 200,
+        "displayRegionsFromAssemblyName": "volvox"
       }
 
     ],

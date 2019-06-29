@@ -4,7 +4,7 @@ export default pluginManager => {
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const calculateStaticSlices = jbrequire(require('./calculateStaticSlices'))
-  const { cartesianToPolar } = jbrequire('@gmod/jbrowse-core/util')
+  const { clamp } = jbrequire('@gmod/jbrowse-core/util')
   const configSchema = ConfigurationSchema(
     'CircularView',
     {},
@@ -22,9 +22,11 @@ export default pluginManager => {
       ),
       width: 800,
       height: 400,
+      minimumRadiusPx: 25,
       configuration: configSchema,
       spacingPx: 10,
-      paddingPx: 20,
+      paddingPx: 80,
+      minBpPerPx: 0.01,
       minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
@@ -37,21 +39,19 @@ export default pluginManager => {
         return calculateStaticSlices(self)
       },
       get circumferencePx() {
+        let elidedBp = 0
+        for (const r of self.elidedRegions) {
+          elidedBp += r.widthBp
+        }
         return (
-          self.totalBp / self.bpPerPx +
-          self.spacingPx * self.visibleRegions.length
+          elidedBp / self.bpPerPx + self.spacingPx * self.elidedRegions.length
         )
       },
       get radiusPx() {
         return self.circumferencePx / (2 * Math.PI)
       },
       get bpPerRadian() {
-        // return self.bpPerPx * self.radiusPx
-        return (
-          (self.totalBp +
-            self.visibleRegions.length * self.spacingPx * self.bpPerPx) /
-          (2 * Math.PI)
-        )
+        return self.bpPerPx * self.radiusPx
       },
       get pxPerRadian() {
         return self.radiusPx
@@ -61,17 +61,16 @@ export default pluginManager => {
       },
       get totalBp() {
         let total = 0
-        for (const region of self.visibleRegions) {
-          if (region.widthBp) {
-            total += region.widthBp
-          } else {
-            total += region.end - region.start
-          }
+        for (const region of self.displayedRegions) {
+          total += region.end - region.start
         }
         return total
       },
+      get maxBpPerPx() {
+        const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
+        return self.totalBp / minCircumferencePx
+      },
       get figureDimensions() {
-        // return [3000, 3000]
         return [
           self.radiusPx * 2 + 2 * self.paddingPx,
           self.radiusPx * 2 + 2 * self.paddingPx,
@@ -80,53 +79,20 @@ export default pluginManager => {
       get figureWidth() {
         return self.figureDimensions[0]
       },
-      get visibleArc() {
-        const [figCenterX, figCenterY] = self.centerXY
-
-        // polar coordinates of each corner of the viewport
-        // relative to the center of the circle
-        const viewTL = cartesianToPolar(
-          self.scrollX - figCenterX,
-          self.scrollY - figCenterY,
-        )
-        const viewTR = cartesianToPolar(
-          self.scrollX + self.width - figCenterX,
-          self.scrollY - figCenterY,
-        )
-        const viewBL = cartesianToPolar(
-          self.scrollX - figCenterX,
-          self.scrollY + self.height - figCenterY,
-        )
-        const viewBR = cartesianToPolar(
-          self.scrollX + self.width - figCenterX,
-          self.scrollY + self.height - figCenterY,
-        )
-
-        // correct for offsetRadians
-        ;[viewTL, viewTR, viewBL, viewBR].forEach(coord => {
-          coord[1] =
-            (((coord[1] - self.offsetRadians) % (2 * Math.PI)) + 2 * Math.PI) %
-            (2 * Math.PI)
-        })
-
-        // post-process that into thetaMin, thetaMax
-      },
       get figureHeight() {
         return self.figureDimensions[1]
       },
       // this is displayedRegions, post-processed to
       // elide regions that are too small to see reasonably
-      get visibleRegions() {
+      get elidedRegions() {
         const visible = []
         self.displayedRegions.forEach(region => {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
-          if (widthPx > self.minVisibleWidth) {
-            visible.push({ ...region, widthBp })
-          } else {
+          if (widthPx < self.minVisibleWidth) {
             // too small to see, collapse into a single elision region
             const lastVisible = visible[visible.length - 1]
-            if (lastVisible.elided) {
+            if (lastVisible && lastVisible.elided) {
               lastVisible.regions.push({ ...region })
               lastVisible.widthBp += widthBp
             } else {
@@ -136,8 +102,20 @@ export default pluginManager => {
                 regions: [{ ...region }],
               })
             }
+          } else {
+            // big enough to see, display it
+            visible.push({ ...region, widthBp })
           }
         })
+
+        // remove any single-region elisions
+        for (let i = 0; i < visible.length; i += 1) {
+          const v = visible[i]
+          if (v.elided && v.regions.length == 1) {
+            delete v.elided
+            visible[i] = { ...v, ...v.regions[0] }
+          }
+        }
         return visible
       },
     }))
@@ -166,11 +144,15 @@ export default pluginManager => {
       },
 
       zoomInButton() {
-        self.bpPerPx /= 1.4
+        self.setBpPerPx(self.bpPerPx / 1.4)
       },
 
       zoomOutButton() {
-        self.bpPerPx *= 1.4
+        self.setBpPerPx(self.bpPerPx * 1.4)
+      },
+
+      setBpPerPx(newVal) {
+        self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
 
       onScroll(event) {
@@ -192,6 +174,10 @@ export default pluginManager => {
         self.displayRegionsFromAssemblyName = assemblyName
         const root = getRoot(self)
         if (root.updateAssemblies) root.updateAssemblies()
+      },
+
+      activateConfigurationUI() {
+        getRoot(self).editConfiguration(self.configuration)
       },
     }))
 

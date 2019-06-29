@@ -20,14 +20,19 @@ function findCircleIntersectionY(x, cx, cy, r, resultArray) {
   resultArray.push([x, cy + solution])
 }
 
-export function cartesianToPolar(x, y) {
-  const rho = Math.sqrt(x * x + y * y)
-  if (rho === 0) return [0, 0]
+function cartesianToTheta(x, y) {
   let theta = (Math.atan(y / x) + 2 * Math.PI) % (2 * Math.PI)
   if (x < 0) {
     if (y <= 0) theta += Math.PI
     else theta -= Math.PI
   }
+  return theta
+}
+
+export function cartesianToPolar(x, y) {
+  const rho = Math.sqrt(x * x + y * y)
+  if (rho === 0) return [0, 0]
+  const theta = cartesianToTheta(x, y)
   return [rho, theta]
 }
 
@@ -152,7 +157,15 @@ export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
     vertices.push([0, viewB])
   }
 
+  const verticesOriginal = vertices.map(([x, y]) => [x + cx, y + cy])
+
   // now convert them all to polar and take the max and min of rho and theta
+
+  // const viewportCenterTheta = cartesianToTheta(viewR + viewL, viewT + viewB)
+  const reflect = viewL >= 0 ? -1 : 1
+  // viewportCenterTheta < Math.PI / 2 || viewportCenterTheta > 1.5 * Math.PI
+  //   ? -1
+  //   : 1
   let rhoMin = Infinity
   let rhoMax = -Infinity
   let thetaMin = Infinity
@@ -161,7 +174,7 @@ export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
     // ignore vertex if outside the viewport
     const [vx, vy] = vertices[i]
     if (vx >= viewL && vx <= viewR && vy >= viewT && vy <= viewB) {
-      const [rho, theta] = cartesianToPolar(vx, vy)
+      const [rho, theta] = cartesianToPolar(vx * reflect, vy * reflect)
       // ignore vertex if outside the circle
       if (rho <= circleRadius + 0.001) {
         // ignore theta if rho is 0
@@ -172,15 +185,15 @@ export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
       }
     }
   }
-  // if the span is close to 180 or over it may be a reverse sweep
-  if (thetaMax - thetaMin > Math.PI - 0.0001) {
-    const [rho, theta] = cartesianToPolar(
-      (viewR + viewL) / 2,
-      (viewT + viewB) / 2,
-    )
-    if (theta < Math.PI / 2 || theta > 1.5 * Math.PI) {
-      ;[thetaMin, thetaMax] = [thetaMax, thetaMin + 2 * Math.PI]
-    }
+
+  if (reflect === -1) {
+    thetaMin += Math.PI
+    thetaMax += Math.PI
+  }
+
+  if (thetaMin > 2 * Math.PI && thetaMax > 2 * Math.PI) {
+    thetaMin -= 2 * Math.PI
+    thetaMax -= 2 * Math.PI
   }
 
   return {
