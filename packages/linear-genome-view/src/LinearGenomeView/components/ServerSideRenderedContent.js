@@ -3,8 +3,6 @@ import { observer, PropTypes } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { isAlive, isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
-import { requestIdleCallback } from 'request-idle-callback'
-
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
@@ -42,20 +40,26 @@ class ServerSideRenderedContent extends Component {
       domNode.firstChild.innerHTML = html
       // defer main-thread rendering and hydration for when
       // we have some free time. helps keep the framerate up.
-      const serializedRegion = isStateTreeNode(region)
-        ? getSnapshot(region)
-        : region
-      const mainThreadRendering = React.createElement(
-        renderingComponent,
-        {
-          ...data,
-          region: serializedRegion,
-          ...renderProps,
+      requestIdleCallback(
+        () => {
+          if (!isAlive(model) || !isAlive(region)) return
+          const serializedRegion = isStateTreeNode(region)
+            ? getSnapshot(region)
+            : region
+          const mainThreadRendering = React.createElement(
+            renderingComponent,
+            {
+              ...data,
+              region: serializedRegion,
+              ...renderProps,
+            },
+            null,
+          )
+          hydrate(mainThreadRendering, domNode.firstChild)
+          this.hydrated = true
         },
-        null,
+        { timeout: 10 },
       )
-      hydrate(mainThreadRendering, domNode.firstChild)
-      this.hydrated = true
     }
   }
 
