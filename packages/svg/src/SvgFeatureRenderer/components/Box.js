@@ -7,13 +7,16 @@ import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import './SvgFeatureRendering.scss'
 
-function Label({ layoutRecord, fontHeight, color, children }) {
+function Label({ layoutRecord, fontHeight, labelWidth, color, children }) {
+  const otherProps = {}
+  if (labelWidth) otherProps.textLength = labelWidth
   return (
     <text
       x={layoutRecord.left}
       y={layoutRecord.top}
       style={{ fontSize: fontHeight, fill: color }}
       dominantBaseline="hanging"
+      {...otherProps}
     >
       {children}
     </text>
@@ -24,6 +27,7 @@ Label.propTypes = {
     left: ReactPropTypes.number.isRequired,
   }).isRequired,
   fontHeight: ReactPropTypes.number.isRequired,
+  labelWidth: ReactPropTypes.number.isRequired,
   children: ReactPropTypes.node.isRequired,
   color: ReactPropTypes.string,
 }
@@ -93,7 +97,8 @@ class Box extends Component {
     )
     const rootLayout = new SceneGraph('root', startPx, 0, 0, 0)
     const featureHeight = readConfObject(args.config, 'height', [feature])
-    rootLayout.addChild('feature', 0, 0, endPx - startPx, featureHeight)
+    const featureWidth = endPx - startPx
+    rootLayout.addChild('feature', 0, 0, featureWidth, featureHeight)
 
     const name =
       readConfObject(args.config, ['labels', 'name'], [feature]) || ''
@@ -104,26 +109,34 @@ class Box extends Component {
       ['labels', 'fontSize'],
       ['feature'],
     )
-    const fontWidth = fontHeight * 0.75
+    const fontWidth = fontHeight * 0.55
     const shouldShowName = /\S/.test(name)
     const shouldShowDescription = /\S/.test(description)
     const textVerticalPadding = 2
+    let labelWidth
+    let descriptionWidth
     if (shouldShowName) {
+      labelWidth = Math.round(
+        Math.min(name.length * fontWidth, featureWidth + 50),
+      )
       rootLayout.addChild(
         'nameLabel',
         0,
         rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
-        name.length * fontWidth,
+        labelWidth,
         fontHeight,
       )
     }
     if (shouldShowDescription) {
+      descriptionWidth = Math.round(
+        Math.min(description.length * fontWidth, featureWidth + 50),
+      )
       rootLayout.addChild(
         'descriptionLabel',
         0,
         rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature')
           .bottom + textVerticalPadding,
-        description.length * fontWidth,
+        descriptionWidth,
         fontHeight,
       )
     }
@@ -145,6 +158,8 @@ class Box extends Component {
       shouldShowDescription,
       shouldShowName,
       fontHeight,
+      labelWidth,
+      descriptionWidth,
     }
   }
 
@@ -208,6 +223,8 @@ class Box extends Component {
         shouldShowDescription,
         shouldShowName,
         fontHeight,
+        labelWidth,
+        descriptionWidth,
       },
       selectedFeatureId,
     } = this.props
@@ -245,6 +262,7 @@ class Box extends Component {
             layoutRecord={rootLayout.getSubRecord('nameLabel')}
             fontHeight={fontHeight}
             color={readConfObject(config, ['labels', 'nameColor'], [feature])}
+            labelWidth={labelWidth}
           >
             {name}
           </Label>
@@ -258,6 +276,7 @@ class Box extends Component {
               ['labels', 'descriptionColor'],
               [feature],
             )}
+            labelWidth={descriptionWidth}
           >
             {description}
           </Label>

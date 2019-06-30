@@ -93,12 +93,13 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs) {
     const { dataAdapter, region, signal, bpPerPx } = renderArgs
     const features = new Map()
+    const bpExpansion = Math.round(50 * bpPerPx)
     await dataAdapter
       .getFeaturesInRegion(
         {
           ...region,
-          start: Math.floor(region.start),
-          end: Math.ceil(region.end),
+          start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+          end: Math.ceil(region.end + bpExpansion),
         },
         { signal, bpPerPx },
       )

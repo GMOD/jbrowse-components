@@ -34,7 +34,7 @@ test('can render a single region with Pileup + BamAdapter', async () => {
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
   )
-  expect(result.features.length).toBe(93)
+  expect(result.features.length).toBe(102)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
   expect(result.imageData.width).toBe(800)
@@ -66,7 +66,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['html', 'features', 'layout']),
   )
-  expect(result.features.length).toBe(25)
+  expect(result.features.length).toBe(32)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
 
