@@ -130,8 +130,8 @@ class Box extends Component {
 
     const topPx = layout.addRect(
       feature.id(),
-      rootLayout.left,
-      rootLayout.right,
+      feature.get('start'),
+      feature.get('end'),
       rootLayout.height,
     )
 
