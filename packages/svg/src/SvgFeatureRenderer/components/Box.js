@@ -128,10 +128,11 @@ class Box extends Component {
       )
     }
 
+    const start = feature.get('start')
     const topPx = layout.addRect(
       feature.id(),
-      feature.get('start'),
-      feature.get('end'),
+      start,
+      start + rootLayout.width * bpPerPx,
       rootLayout.height,
     )
 
