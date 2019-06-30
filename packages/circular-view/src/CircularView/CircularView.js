@@ -1,10 +1,9 @@
-import ReactComponentM from './components/CircularView'
-import modelM from './models'
-
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const ReactComponent = jbrequire(ReactComponentM)
-  const { stateModel, configSchema } = jbrequire(modelM)
+  const ReactComponent = jbrequire(require('./components/CircularView'))
+  const { stateModel, configSchema } = jbrequire(
+    require('./models/CircularView'),
+  )
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
