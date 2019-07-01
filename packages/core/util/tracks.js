@@ -102,15 +102,21 @@ export function guessAdapter(fileName, protocol) {
 
   if (/\.vcf\.gz$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: { [protocol]: fileName },
+      index: { location: { [protocol]: `${fileName}.tbi` }, indexType: 'TBI' },
     }
   if (/\.vcf\.gz\.tbi$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: { [protocol]: fileName.replace(/\.tbi$/i, '') },
+      index: { location: { [protocol]: fileName }, indexType: 'TBI' },
     }
   if (/\.vcf\.gz\.csi$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
+      index: { location: { [protocol]: fileName }, indexType: 'CSI' },
     }
 
   if (/\.vcf\.idx$/i.test(fileName))
@@ -219,6 +225,7 @@ export function guessTrackType(adapterType) {
     IndexedFastaAdapter: 'SequenceTrack',
     NCListAdapter: 'BasicTrack',
     TwoBitAdapter: 'SequenceTrack',
+    VcfTabixAdapter: 'VariantTrack',
   }[adapterType]
 }
 
