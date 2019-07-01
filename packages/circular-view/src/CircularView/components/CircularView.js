@@ -19,7 +19,7 @@ export default pluginManager => {
   const styles = theme => ({
     root: {
       position: 'relative',
-      marginBottom: theme.spacing.unit,
+      marginBottom: theme.spacing(1),
       overflow: 'hidden',
       background: 'white',
     },
