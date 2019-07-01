@@ -130,7 +130,10 @@ export default class PluginManager {
   pluggableMstType(typeGroup, fieldName, fallback = types.maybe(types.null)) {
     const pluggableTypes = this.getElementTypeMembers(typeGroup, fieldName)
     // try to smooth over the case when no types are registered, mostly encountered in tests
-    if (pluggableTypes.length === 0) return fallback
+    if (pluggableTypes.length === 0) {
+      console.warn(`No JBrowse pluggable types found matching ${typeGroup} ${fieldName}, returning null type`)
+      return fallback
+    }
     return types.union(...pluggableTypes)
   }
 
