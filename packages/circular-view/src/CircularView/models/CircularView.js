@@ -33,6 +33,7 @@ export default pluginManager => {
       displayRegionsFromAssemblyName: types.maybe(types.string),
       scrollX: 0,
       scrollY: 0,
+      trackSelectorType: 'hierarchical',
     })
     .views(self => ({
       get staticSlices() {
@@ -178,6 +179,27 @@ export default pluginManager => {
 
       activateConfigurationUI() {
         getRoot(self).editConfiguration(self.configuration)
+      },
+
+      activateTrackSelector() {
+        if (self.trackSelectorType === 'hierarchical') {
+          const rootModel = getRoot(self)
+          if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
+            rootModel.addDrawerWidget(
+              'HierarchicalTrackSelectorDrawerWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+          const selector = rootModel.drawerWidgets.get(
+            'hierarchicalTrackSelector',
+          )
+          selector.setView(self)
+          rootModel.showDrawerWidget(selector)
+        } else {
+          throw new Error(
+            `invalid track selector type ${self.trackSelectorType}`,
+          )
+        }
       },
     }))
 
