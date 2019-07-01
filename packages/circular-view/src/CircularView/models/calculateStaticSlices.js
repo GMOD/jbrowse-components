@@ -1,4 +1,7 @@
-import { viewportVisibleSlice } from './viewportVisibleRegion'
+import {
+  viewportVisibleSlice,
+  thetaRangesOverlap,
+} from './viewportVisibleRegion'
 
 export default ({ jbrequire }) => {
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
@@ -32,8 +35,8 @@ export default ({ jbrequire }) => {
 
   return function calculateStaticSlices(self) {
     const {
-      rho: visibleRhoRange,
-      theta: visibleThetaRange,
+      // rho: visibleRhoRange,
+      theta: [visibleThetaMin, visibleThetaMax],
     } = viewportVisibleSlice(
       [
         self.scrollX,
@@ -44,27 +47,23 @@ export default ({ jbrequire }) => {
       self.centerXY,
       self.radiusPx,
     )
-    // console.log(
-    //   [
-    //     self.scrollX,
-    //     self.scrollX + self.width,
-    //     self.scrollY,
-    //     self.scrollY + self.height,
-    //   ],
-    //   self.centerXY,
-    //   self.radiusPx,
-    // )
-    // console.log(
-    //   visibleThetaRange.map(t => (t * 180) / Math.PI),
-    //   visibleRhoRange,
-    // )
 
     const slices = []
     let currentRadianOffset = 0
     for (const region of self.elidedRegions) {
-      slices.push(new Slice(self, region, currentRadianOffset))
-      currentRadianOffset +=
+      const radianWidth =
         region.widthBp / self.bpPerRadian + self.spacingPx / self.pxPerRadian
+      if (
+        thetaRangesOverlap(
+          currentRadianOffset + self.offsetRadians,
+          radianWidth,
+          visibleThetaMin,
+          visibleThetaMax - visibleThetaMin,
+        )
+      ) {
+        slices.push(new Slice(self, region, currentRadianOffset))
+      }
+      currentRadianOffset += radianWidth
     }
     return slices
   }

@@ -36,6 +36,26 @@ export function cartesianToPolar(x, y) {
   return [rho, theta]
 }
 
+const twoPi = 2 * Math.PI
+export function thetaRangesOverlap(r1start, r1length, r2start, r2length) {
+  if (r1length <= 0 || r2length <= 0) return false
+  if (r1length + 0.0001 >= twoPi || r2length + 0.0001 >= twoPi) return true
+
+  // put both range starts between 2π and 4π
+  r1start = (((r1start % twoPi) + twoPi) % twoPi) + twoPi
+  r2start = (((r2start % twoPi) + twoPi) % twoPi) + twoPi
+
+  if (r1start < r2start + r2length && r1start + r1length > r2start) return true
+
+  // move r2 2π to the left and check
+  r2start -= twoPi
+  if (r1start < r2start + r2length && r1start + r1length > r2start) return true
+
+  // move it 2π to the right and check
+  r2start += twoPi + twoPi
+  return r1start < r2start + r2length && r1start + r1length > r2start
+}
+
 // return which arc range has any part of the circle visible in the viewport
 export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
   let [viewL, viewR, viewT, viewB] = viewSides

@@ -1,4 +1,8 @@
-import { viewportVisibleSlice, cartesianToPolar } from './viewportVisibleRegion'
+import {
+  viewportVisibleSlice,
+  cartesianToPolar,
+  thetaRangesOverlap,
+} from './viewportVisibleRegion'
 
 describe('viewportVisibleSlice', () => {
   // test('circle contained in viewport', () => {
@@ -118,6 +122,23 @@ describe('cartesian to polar', () => {
       const result = cartesianToPolar(...input)
       expect(result[0]).toBeCloseTo(output[0])
       expect((result[1] * 180) / Math.PI).toBeCloseTo(output[1])
+    })
+  })
+})
+
+describe('theta overlap testing', () => {
+  ;[
+    [[0, 2 * Math.PI, 0, 2 * Math.PI], true],
+    [[6.1, Math.PI / 2, 0, Math.PI / 2], true],
+    [[6.1, Math.PI / 2, 0, 0.1], true],
+    [[6.1, 0.1, 6.12, 0.05], true],
+    [[-12, 0.1, -12.05, 0.05], false],
+    [[-12, 0.1, -12.05, 0.06], true],
+  ].forEach(testCase => {
+    const [input, output] = testCase
+    test(`${input} -> ${output}`, () => {
+      const result = thetaRangesOverlap(...input)
+      expect(result).toBe(output)
     })
   })
 })
