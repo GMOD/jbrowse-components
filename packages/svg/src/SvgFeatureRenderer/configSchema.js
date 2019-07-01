@@ -64,6 +64,12 @@ export default ConfigurationSchema(
         functionSignature: ['feature'],
       },
     }),
+    maxFeatureGlyphExpansion: {
+      type: 'number',
+      description:
+        "maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use",
+      defaultValue: 500,
+    },
   },
   { explicitlyTyped: true },
 )

@@ -115,9 +115,16 @@ class Box extends Component {
     const textVerticalPadding = 2
     let labelWidth
     let descriptionWidth
+    const maxFeatureGlyphExpansion = readConfObject(
+      args.config,
+      'maxFeatureGlyphExpansion',
+    )
     if (shouldShowName) {
       labelWidth = Math.round(
-        Math.min(name.length * fontWidth, featureWidth + 50),
+        Math.min(
+          name.length * fontWidth,
+          featureWidth + maxFeatureGlyphExpansion,
+        ),
       )
       rootLayout.addChild(
         'nameLabel',
@@ -129,7 +136,10 @@ class Box extends Component {
     }
     if (shouldShowDescription) {
       descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, featureWidth + 50),
+        Math.min(
+          description.length * fontWidth,
+          featureWidth + maxFeatureGlyphExpansion,
+        ),
       )
       rootLayout.addChild(
         'descriptionLabel',
