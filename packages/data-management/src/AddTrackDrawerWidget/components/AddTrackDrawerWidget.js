@@ -101,7 +101,6 @@ function AddTrackDrawerWidget(props) {
 
   function handleBack() {
     setActiveStep(activeStep - 1)
-    setTrackData({})
   }
 
   function isNextDisabled() {
