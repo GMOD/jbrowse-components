@@ -13,6 +13,8 @@ import TrackResizeHandle from './TrackResizeHandle'
 
 import ZoomControls from './ZoomControls'
 
+import buttonStyles from './buttonStyles'
+
 const dragHandleHeight = 3
 
 const styles = theme => ({
@@ -44,9 +46,8 @@ const styles = theme => ({
     position: 'absolute',
     top: '0px',
   },
-  iconButton: {
-    padding: theme.spacing(0.5),
-  },
+
+  ...buttonStyles(theme),
 })
 
 function LinearGenomeView(props) {
@@ -107,6 +108,7 @@ function LinearGenomeView(props) {
               <ToggleButton
                 onClick={model.activateTrackSelector}
                 title="select tracks"
+                className={classes.toggleButton}
                 selected={
                   rootModel.visibleDrawerWidget &&
                   rootModel.visibleDrawerWidget.id ===

@@ -9,18 +9,23 @@ import Typography from '@material-ui/core/Typography'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import ConfigureToggleButton from '@gmod/jbrowse-core/components/ConfigureToggleButton'
 
-const styles = (/* theme */) => ({
+import buttonStyles from '../../LinearGenomeView/components/buttonStyles'
+
+const styles = theme => ({
   trackName: {
     margin: '0 auto',
     width: '90%',
     fontSize: '80%',
   },
+
   trackDescription: {
     margin: '0.25em auto',
     width: '90%',
     fontSize: '70%',
     // color: '#5a5a5a',
   },
+
+  ...buttonStyles(theme),
 })
 
 function TrackControls({ track, view, classes, onConfigureClick }) {
