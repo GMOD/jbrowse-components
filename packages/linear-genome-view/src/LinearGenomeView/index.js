@@ -1,4 +1,4 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -106,6 +106,10 @@ export function stateModelFactory(pluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
+          highResolutionScaling: getConf(
+            getRoot(self),
+            'highResolutionScaling',
+          ),
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },
@@ -279,13 +283,8 @@ export function stateModelFactory(pluginManager) {
       horizontalScroll(distance) {
         const leftPadding = 10
         const rightPadding = 10
-        const displayRegionsTotalPx = self.displayedRegions.reduce(
-          (a, b) => a + (b.end - b.start) / self.bpPerPx,
-          0,
-        )
-        const maxOffset = displayRegionsTotalPx - leftPadding
-        const displayWidth = self.viewingRegionWidth
-        const minOffset = -displayWidth + rightPadding
+        const maxOffset = self.displayRegionsTotalPx - leftPadding
+        const minOffset = -self.viewingRegionWidth + rightPadding
         self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
       },
 

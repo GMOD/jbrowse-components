@@ -19,7 +19,7 @@ const styles = theme => ({
   },
   valueCell: {
     wordWrap: 'break-word',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
   fieldName: {
     display: 'inline-block',
@@ -27,15 +27,15 @@ const styles = theme => ({
     fontSize: '0.9em',
     borderBottom: '1px solid #0003',
     backgroundColor: '#ddd',
-    marginRight: theme.spacing.unit,
-    padding: 0.5 * theme.spacing.unit,
+    marginRight: theme.spacing(1),
+    padding: theme.spacing(0.5),
   },
   fieldValue: {
     display: 'inline-block',
     fontSize: '0.8em',
   },
   header: {
-    padding: 0.5 * theme.spacing.unit,
+    padding: theme.spacing(0.5),
     backgroundColor: '#ddd',
   },
   title: {

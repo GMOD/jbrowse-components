@@ -44,7 +44,7 @@ const styles = theme => ({
     flexDirection: 'column',
   },
   paper: {
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
   },
 })
 

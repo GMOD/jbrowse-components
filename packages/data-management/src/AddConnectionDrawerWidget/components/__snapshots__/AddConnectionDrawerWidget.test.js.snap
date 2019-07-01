@@ -5,20 +5,20 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
   class="AddConnectionDrawerWidget-root-1"
 >
   <div
-    class="MuiPaper-root-9 MuiPaper-elevation0-11 MuiStepper-root-5 MuiStepper-vertical-7 AddConnectionDrawerWidget-stepper-2"
+    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddConnectionDrawerWidget-stepper-2"
   >
     <div
-      class="MuiStep-root-36 MuiStep-vertical-38"
+      class="MuiStep-root MuiStep-vertical"
     >
       <span
-        class="MuiStepLabel-root-41 MuiStepLabel-vertical-43"
+        class="MuiStepLabel-root MuiStepLabel-vertical"
       >
         <span
-          class="MuiStepLabel-iconContainer-49"
+          class="MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root-57 MuiStepIcon-root-52 MuiStepIcon-active-54"
+            class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -29,7 +29,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
               r="12"
             />
             <text
-              class="MuiStepIcon-text-53"
+              class="MuiStepIcon-text"
               text-anchor="middle"
               x="12"
               y="16"
@@ -39,68 +39,64 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer-51"
+          class="MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiTypography-root-66 MuiTypography-body1-75 MuiStepLabel-label-44 MuiStepLabel-active-45"
+            class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
           >
             Select a Connection Type
           </span>
         </span>
       </span>
       <div
-        class="MuiStepContent-root-102"
+        class="MuiStepContent-root"
         icon="1"
       >
         <div
-          class="MuiCollapse-container-105 MuiCollapse-entered-106 MuiStepContent-transition-104"
+          class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
           style="min-height: 0px;"
         >
           <div
-            class="MuiCollapse-wrapper-107"
+            class="MuiCollapse-wrapper"
           >
             <div
-              class="MuiCollapse-wrapperInner-108"
+              class="MuiCollapse-wrapperInner"
             >
               <form
                 autocomplete="off"
               >
                 <div
-                  class="MuiFormControl-root-109 MuiFormControl-fullWidth-112"
+                  class="MuiFormControl-root MuiFormControl-fullWidth"
                 >
                   <div
-                    class="MuiInputBase-root-133 MuiInput-root-120 MuiInput-underline-124 MuiInputBase-formControl-134 MuiInput-formControl-121"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
-                      class="MuiSelect-root-113"
+                      aria-haspopup="true"
+                      aria-pressed="false"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      role="button"
+                      tabindex="0"
                     >
-                      <div
-                        aria-haspopup="true"
-                        aria-pressed="false"
-                        class="MuiSelect-select-114 MuiSelect-selectMenu-117 MuiInputBase-input-143 MuiInput-input-128"
-                        role="button"
-                        tabindex="0"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </div>
-                      <input
-                        type="hidden"
-                        value=""
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root-57 MuiSelect-icon-119"
-                        focusable="false"
-                        role="presentation"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
+                      <span>
+                        ​
+                      </span>
                     </div>
+                    <input
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
                   </div>
                 </div>
               </form>
@@ -108,26 +104,26 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                 class="AddConnectionDrawerWidget-actionsContainer-4"
               >
                 <button
-                  class="MuiButtonBase-root-180 MuiButtonBase-disabled-181 MuiButton-root-154 MuiButton-text-156 MuiButton-flat-159 MuiButton-disabled-174 AddConnectionDrawerWidget-button-3"
+                  class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-3 MuiButton-text Mui-disabled Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
                   <span
-                    class="MuiButton-label-155"
+                    class="MuiButton-label"
                   >
                     Back
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root-180 MuiButtonBase-disabled-181 MuiButton-root-154 MuiButton-contained-165 MuiButton-containedPrimary-166 MuiButton-raised-168 MuiButton-raisedPrimary-169 MuiButton-disabled-174 AddConnectionDrawerWidget-button-3"
+                  class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-3 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
                   data-testid="addConnectionNext"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
                   <span
-                    class="MuiButton-label-155"
+                    class="MuiButton-label"
                   >
                     Next
                   </span>
@@ -139,24 +135,24 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
       </div>
     </div>
     <div
-      class="MuiStepConnector-root-183 MuiStepConnector-vertical-185 MuiStepConnector-disabled-189"
+      class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled"
     >
       <span
-        class="MuiStepConnector-line-190 MuiStepConnector-lineVertical-192"
+        class="MuiStepConnector-line MuiStepConnector-lineVertical"
       />
     </div>
     <div
-      class="MuiStep-root-36 MuiStep-vertical-38"
+      class="MuiStep-root MuiStep-vertical"
     >
       <span
-        class="MuiStepLabel-root-41 MuiStepLabel-vertical-43 MuiStepLabel-disabled-48"
+        class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled"
       >
         <span
-          class="MuiStepLabel-iconContainer-49"
+          class="MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root-57 MuiStepIcon-root-52"
+            class="MuiSvgIcon-root MuiStepIcon-root"
             focusable="false"
             role="presentation"
             viewBox="0 0 24 24"
@@ -167,7 +163,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
               r="12"
             />
             <text
-              class="MuiStepIcon-text-53"
+              class="MuiStepIcon-text"
               text-anchor="middle"
               x="12"
               y="16"
@@ -177,17 +173,17 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer-51"
+          class="MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiTypography-root-66 MuiTypography-body1-75 MuiStepLabel-label-44"
+            class="MuiTypography-root MuiStepLabel-label MuiTypography-body2 MuiTypography-displayBlock"
           >
             Configure Connection
           </span>
         </span>
       </span>
       <div
-        class="MuiStepContent-root-102 MuiStepContent-last-103"
+        class="MuiStepContent-root MuiStepContent-last"
         disabled=""
         icon="2"
       />

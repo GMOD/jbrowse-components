@@ -1,8 +1,8 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
-import { WiggleBaseRenderer } from '../DensityRenderer/DensityRenderer'
-import { getOrigin, getScale } from '../DensityRenderer/util'
+import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import { getOrigin, getScale } from '../util'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {

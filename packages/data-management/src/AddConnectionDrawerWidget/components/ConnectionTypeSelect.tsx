@@ -25,7 +25,7 @@ function ConnectionTypeSelect(props: {
   const { connectionTypeChoices, connectionType, setConnectionType } = props
 
   function handleChange(
-    event: React.ChangeEvent<{ name?: string; value: string }>,
+    event: React.ChangeEvent<{ name?: string; value: unknown }>,
   ): void {
     setConnectionType(
       connectionTypeChoices.find(

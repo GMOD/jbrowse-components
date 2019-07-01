@@ -33,24 +33,22 @@ export default (pluginManager, configSchema) =>
         reactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
-      // .actions(self => ({
-      //   afterAttach() {
-      //     onPatch(self, patch => {
-      //       console.log('patch', self.name, patch)
-      //     })
-      //   },
-      // }))
       .actions(self => ({
         selectFeature(feature) {
           const root = getRoot(self)
-          if (!root.drawerWidgets.get('alignmentsFeature'))
-            root.addDrawerWidget(
-              'AlignmentsFeatureDrawerWidget',
-              'alignmentsFeature',
-            )
-          const featureWidget = root.drawerWidgets.get('alignmentsFeature')
-          featureWidget.setFeatureData(feature.data)
-          root.showDrawerWidget(featureWidget)
+          // TODO: we shouldn't need to have to get this deep into knowing about
+          // drawer widgets here, the drawer widget should be a reaction to
+          // setting a selected feature...right???
+          if (root.drawerWidgets) {
+            if (!root.drawerWidgets.get('alignmentsFeature'))
+              root.addDrawerWidget(
+                'AlignmentsFeatureDrawerWidget',
+                'alignmentsFeature',
+              )
+            const featureWidget = root.drawerWidgets.get('alignmentsFeature')
+            featureWidget.setFeatureData(feature.data)
+            root.showDrawerWidget(featureWidget)
+          }
           root.setSelection(feature)
         },
         clearFeatureSelection() {
@@ -110,8 +108,8 @@ export default (pluginManager, configSchema) =>
           )
           return {
             ...getParentRenderProps(self),
-            config,
             trackModel: self,
+            config,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
               const feature = self.features.get(featureId)

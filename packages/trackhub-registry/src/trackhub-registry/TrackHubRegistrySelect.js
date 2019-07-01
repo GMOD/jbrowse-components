@@ -4,7 +4,7 @@ import FormLabel from '@material-ui/core/FormLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
@@ -40,7 +40,7 @@ const styles = theme => ({
     overflowY: 'auto',
   },
   genomeSelector: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
 })
 

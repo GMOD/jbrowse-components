@@ -47,7 +47,7 @@
           "type": "DynamicTrack",
           "name": "Lollipop track",
           "category": [
-            "Bar Category"
+            "Miscellaneous"
           ],
           "adapter": {
             "type": "FromConfigAdapter",
@@ -95,12 +95,30 @@
           }
         },
         {
-          "configId": "i3jUzmrgMOq",
+          "configId": "volvox_long_reads",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-long-reads.fastq.sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-long-reads.fastq.sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_bam",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue",
           "category": [
-            "Bar Category",
-            "Baz Category"
+            "Alignments"
           ],
           "adapter": {
             "type": "BamAdapter",
@@ -128,8 +146,7 @@
           "configId": "volvox_filtered_vcf",
           "name": "volvox filtered vcf",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Variants"
           ],
           "adapter": {
             "type": "VcfTabixAdapter",
@@ -146,10 +163,9 @@
         },
         {
           "type": "BasicTrack",
-          "name": "volvox bigbed",
+          "name": "BigBed genes",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Miscellaneous"
           ],
           "adapter": {
             "type": "BigBedAdapter",
@@ -165,8 +181,7 @@
           "type": "AlignmentsTrack",
           "name": "volvox-sorted all green",
           "category": [
-            "Bee Category",
-            "Boo Category"
+            "Alignments"
           ],
           "adapter": {
             "type": "BamAdapter",
@@ -178,22 +193,13 @@
                 "uri": "/test_data/volvox-sorted.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer",
-              "alignmentColor": "green"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
-            }
           }
         },
         {
           "configId": "i3jUPmrgMOS",
           "type": "FilteringTrack",
-          "name": "Filter Test",
+          "name": "Filter track",
+          "category": ["Miscellaneous"],
           "adapter": {
             "type": "FromConfigAdapter",
             "features": [
@@ -247,13 +253,30 @@
         },
         {
           "type": "BasicTrack",
-          "name": "Volvox genes",
+          "name": "NCList genes",
+          "category": ["Miscellaneous"],
           "adapter": {
             "type": "NCListAdapter",
             "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
           },
           "renderer": {
             "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "volvox_microarray_line",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "defaultRendering": "line",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
           }
         },
         {
@@ -283,7 +306,7 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_negative.bw"
+              "uri": "/test_data/volvox_microarray.bw"
             }
           }
         },
@@ -316,7 +339,24 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_microarray_posneg_line",
+          "type": "WiggleTrack",
+          "name": "Volvox microarray with +/- values",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "height": 300,
+          "defaultRendering": "line",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_posneg.bw"
             }
           }
         },
@@ -325,13 +365,31 @@
           "type": "WiggleTrack",
           "name": "Volvox microarray with +/- values",
           "category": [
-            "BigWig"
+            "BigWig",
+            "XYPlot"
           ],
           "height": 300,
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "/test_data/volvox_microarray_posneg.bw"
+            }
+          }
+        },
+        {
+          "configId": "volvox_coverage_line",
+          "type": "WiggleTrack",
+          "name": "Volvox - BAM coverage",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "defaultRendering": "line",
+          "height": 300,
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
             }
           }
         },
@@ -406,7 +464,7 @@
     ],
     "views": [
       {
-        "id": "BhLw7v7Not",
+        "id": "volvox_example",
         "type": "LinearGenomeView",
         "offsetPx": 2000,
         "bpPerPx": 0.05,
@@ -418,37 +476,9 @@
             "configuration": "iTo6LoXUeI"
           },
           {
-            "type": "FilteringTrack",
-            "height": 100,
-            "configuration": "i3jUPmrgMOS"
-          }
-        ],
-        "trackSelectorType": "hierarchical"
-      },
-      {
-        "type": "LinearGenomeView",
-        "offsetPx": 200,
-        "bpPerPx": 2,
-        "displayRegionsFromAssemblyName": "volvox",
-        "tracks": [
-          {
             "type": "AlignmentsTrack",
-            "height": 200,
-            "configuration": "i3jUzmrgMOq"
-          }
-        ],
-        "trackSelectorType": "hierarchical"
-      },
-      {
-        "type": "LinearGenomeView",
-        "offsetPx": 1800,
-        "bpPerPx": 0.1,
-        "displayRegionsFromAssemblyName": "volvox",
-        "tracks": [
-          {
-            "type": "DynamicTrack",
-            "height": 100,
-            "configuration": "PDWVXl3526"
+            "configuration": "volvox_bam",
+            "height": 200
           }
         ],
         "trackSelectorType": "hierarchical"
@@ -459,7 +489,7 @@
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "filterText": "",
-        "view": "BhLw7v7Not"
+        "view": "volvox_example"
       }
     },
     "activeDrawerWidgets": {

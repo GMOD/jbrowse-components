@@ -16,20 +16,20 @@ import TrackSourceSelect from './TrackSourceSelect'
 
 const styles = theme => ({
   root: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
   stepper: {
     backgroundColor: theme.palette.background.default,
   },
   button: {
-    marginTop: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
   },
   actionsContainer: {
-    marginBottom: theme.spacing.unit * 2,
+    marginBottom: theme.spacing(2),
   },
   stepContent: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
   },
 })
 

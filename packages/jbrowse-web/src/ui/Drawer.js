@@ -1,6 +1,6 @@
 import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'

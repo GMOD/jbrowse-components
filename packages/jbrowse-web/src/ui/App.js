@@ -3,7 +3,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
@@ -38,16 +38,16 @@ const styles = theme => ({
     float: 'right',
   },
   defaultDrawer: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
   },
   drawerToolbar: {
-    paddingLeft: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing(2),
   },
   drawerToolbarCloseButton: {
     flexGrow: 1,
   },
   drawerLoading: {
-    margin: theme.spacing.unit * 2,
+    margin: theme.spacing(2),
   },
   developer: {
     background: 'white',

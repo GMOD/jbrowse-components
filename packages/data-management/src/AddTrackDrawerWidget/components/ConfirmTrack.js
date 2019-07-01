@@ -16,7 +16,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 const styles = theme => ({
   spacing: {
-    marginBottom: theme.spacing.unit * 3,
+    marginBottom: theme.spacing(3),
   },
 })
 

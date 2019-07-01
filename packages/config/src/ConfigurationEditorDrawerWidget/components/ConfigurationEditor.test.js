@@ -1,5 +1,5 @@
 import React from 'react'
-import renderer from 'react-test-renderer'
+import { render } from 'react-testing-library'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
@@ -15,11 +15,10 @@ describe('ConfigurationEditor drawer widget', () => {
       },
     })
 
-    const component = renderer.create(
+    const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders all the different types of built-in slots', () => {
@@ -74,22 +73,20 @@ describe('ConfigurationEditor drawer widget', () => {
       },
     })
 
-    const component = renderer.create(
+    const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with defaults of the AlignmentsTrack schema', async () => {
     const { pluginManager } = await createTestEnv()
     const AlignmentsTrackSchema = AlignmentsTrackSchemaFactory(pluginManager)
-    const component = renderer.create(
+    const { container } = render(
       <ConfigurationEditor
         model={{ target: AlignmentsTrackSchema.create() }}
       />,
     )
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 })

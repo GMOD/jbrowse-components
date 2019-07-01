@@ -10,13 +10,14 @@ import {
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { addDisposer, getRoot, getSnapshot, types } from 'mobx-state-tree'
-import { getNiceDomain } from '../DensityRenderer/util'
+import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
   ['density', 'DensityRenderer'],
+  ['line', 'LinePlotRenderer'],
 ])
 export default configSchema =>
   types.compose(
@@ -119,15 +120,10 @@ export default configSchema =>
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          const highResolutionScaling = getConf(
-            getRoot(self),
-            'highResolutionScaling',
-          )
-          const { height, ready, domain } = self
           return {
             ...getParentRenderProps(self),
+            notReady: !self.ready,
             trackModel: self,
-            notReady: !ready,
             config,
             onFeatureClick(event, featureId) {
               // try to find the feature in our layout
@@ -138,12 +134,11 @@ export default configSchema =>
               self.clearFeatureSelection()
             },
             scaleOpts: {
-              domain,
+              domain: self.domain,
               scaleType: getConf(self, 'scaleType'),
               inverted: getConf(self, 'inverted'),
             },
-            height,
-            highResolutionScaling,
+            height: self.height,
           }
         },
       }))

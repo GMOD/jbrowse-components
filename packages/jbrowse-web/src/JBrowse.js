@@ -1,5 +1,5 @@
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { MuiThemeProvider } from '@material-ui/core/styles'
+import { ThemeProvider } from '@material-ui/styles'
 import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
@@ -125,7 +125,7 @@ function JBrowse(props) {
   window.MODEL = sessions.get(activeSession)
 
   return (
-    <MuiThemeProvider theme={Theme}>
+    <ThemeProvider theme={Theme}>
       <CssBaseline />
       <App
         rootModel={sessions.get(activeSession)}
@@ -137,7 +137,7 @@ function JBrowse(props) {
         setActiveSession={setActiveSession}
         addSessions={addSessions}
       />
-    </MuiThemeProvider>
+    </ThemeProvider>
   )
 }
 

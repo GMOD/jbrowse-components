@@ -8,14 +8,14 @@ export default ConfigurationSchema(
       description: 'the color of each feature in a pileup alignment',
       defaultValue: `function(feature) {
   var s = feature.get('strand');
-  return s === '-' || s === -1 ? 'blue': 'red'
+  return s === '-' || s === -1 ? '#8F8FD8': '#EC8B8B'
 }`,
       functionSignature: ['feature'],
     },
     alignmentHeight: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',
-      defaultValue: 5,
+      defaultValue: 7,
       functionSignature: ['feature'],
     },
   },

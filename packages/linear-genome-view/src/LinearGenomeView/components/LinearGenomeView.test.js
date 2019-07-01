@@ -1,5 +1,5 @@
 import React from 'react'
-import renderer from 'react-test-renderer'
+import { render } from 'react-testing-library'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import LinearGenomeView from './LinearGenomeView'
 
@@ -20,9 +20,8 @@ describe('LinearGenomeView genome view component', () => {
       },
     })
     const model = rootModel.views[0]
-    const component = renderer.create(<LinearGenomeView model={model} />)
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    const { container } = render(<LinearGenomeView model={model} />)
+    expect(container).toMatchSnapshot()
   })
   it('renders one track, no blocks', async () => {
     const { rootModel } = await createTestEnv({
@@ -74,9 +73,8 @@ describe('LinearGenomeView genome view component', () => {
       },
     })
     const model = rootModel.views[0]
-    const component = renderer.create(<LinearGenomeView model={model} />)
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    const { container } = render(<LinearGenomeView model={model} />)
+    expect(container).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
     const { rootModel } = await createTestEnv({
@@ -149,8 +147,7 @@ describe('LinearGenomeView genome view component', () => {
       },
     })
     const model = rootModel.views[0]
-    const component = renderer.create(<LinearGenomeView model={model} />)
-    const tree = component.toJSON()
-    expect(tree).toMatchSnapshot()
+    const { container } = render(<LinearGenomeView model={model} />)
+    expect(container).toMatchSnapshot()
   })
 })

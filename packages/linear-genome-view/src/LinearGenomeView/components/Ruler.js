@@ -1,4 +1,4 @@
-import { withStyles } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/styles'
 import React, { Fragment } from 'react'
 import ReactPropTypes from 'prop-types'
 import { PropTypes } from '@gmod/jbrowse-core/mst-types'

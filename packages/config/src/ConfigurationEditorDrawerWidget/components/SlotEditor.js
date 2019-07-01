@@ -96,7 +96,7 @@ const StringArrayEditor = observer(props => {
 
 const mapEditorStyles = theme => ({
   card: {
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
   },
 })
 
@@ -355,13 +355,13 @@ const valueComponents = {
 export const slotEditorStyles = theme => ({
   paper: {
     display: 'flex',
-    marginBottom: theme.spacing.unit * 2,
+    marginBottom: theme.spacing(2),
     position: 'relative',
     overflow: 'visible',
   },
   paperContent: {
     flex: 'auto',
-    padding: theme.spacing.unit,
+    padding: theme.spacing(1),
     overflow: 'auto',
   },
   slotModeSwitch: {
