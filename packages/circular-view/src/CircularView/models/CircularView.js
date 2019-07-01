@@ -1,8 +1,11 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
+  const { transaction } = jbrequire('mobx')
   const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { ConfigurationSchema, readConfObject } = jbrequire(
+    '@gmod/jbrowse-core/configuration',
+  )
   const calculateStaticSlices = jbrequire(require('./calculateStaticSlices'))
   const { clamp } = jbrequire('@gmod/jbrowse-core/util')
   const configSchema = ConfigurationSchema(
@@ -201,6 +204,37 @@ export default pluginManager => {
           )
         }
       },
+
+      toggleTrack(configuration) {
+        // if we have any tracks with that configuration, turn them off
+        const hiddenCount = self.hideTrack(configuration)
+        // if none had that configuration, turn one on
+        if (!hiddenCount) self.showTrack(configuration)
+      },
+
+      showTrack(configuration, initialSnapshot = {}) {
+        const { type } = configuration
+        if (!type) throw new Error('track configuration has no `type` listed')
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) throw new Error(`unknown track type ${type}`)
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        })
+        self.tracks.push(track)
+      },
+
+      hideTrack(configuration) {
+        // if we have any tracks with that configuration, turn them off
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        return shownTracks.length
+      },
     }))
 
   return { stateModel, configSchema }
@@ -209,7 +243,6 @@ export default pluginManager => {
 /*
 PLANS
 
-- slice visibility computation
 - tracks
 - ruler tick marks
 - set viewport scroll from state snapshot
