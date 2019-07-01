@@ -49,20 +49,22 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         let seq: string = await this.twobit.getSequence(refName, start, end)
-        if (seq.length !== end - start) {
-          // we might have queried past the end of the sequence
-          const size = await this.twobit.getSequenceSize(refName)
-          if (end > size) {
-            end = size
-            seq = await this.twobit.getSequence(refName, start, end)
+        if (seq) {
+          if (seq.length !== end - start) {
+            // we might have queried past the end of the sequence
+            const size = await this.twobit.getSequenceSize(refName)
+            if (end > size) {
+              end = size
+              seq = await this.twobit.getSequence(refName, start, end)
+            }
           }
+          observer.next(
+            new SimpleFeature({
+              id: `${refName} ${start}-${end}`,
+              data: { refName, start, end, seq },
+            }),
+          )
         }
-        observer.next(
-          new SimpleFeature({
-            id: `${refName} ${start}-${end}`,
-            data: { refName, start, end, seq },
-          }),
-        )
         observer.complete()
       },
     )
