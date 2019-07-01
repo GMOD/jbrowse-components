@@ -9,8 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/ucsc-hub": "^0.1.2",
-    "request-idle-callback": "^1.0.2"
+    "@gmod/ucsc-hub": "^0.1.2"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

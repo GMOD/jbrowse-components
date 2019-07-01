@@ -15,6 +15,7 @@ import config from '../test_data/config_integration_test.json'
 fetchMock.config.sendAsJson = false
 
 window.requestIdleCallback = cb => cb()
+window.cancelIdleCallback = () => {}
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
