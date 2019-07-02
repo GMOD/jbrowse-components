@@ -155,4 +155,15 @@ export default class ServerSideRenderer extends RendererType {
     this.serializeResultsInWorker(results, features, args)
     return results
   }
+
+  freeResourcesInClient(rpcManager, args) {
+    const serializedArgs = this.serializeArgsInClient(args)
+
+    const stateGroupName = args.sessionId
+    return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
+  }
+
+  freeResourcesInWorker(args) {
+    /* stub method */
+  }
 }

@@ -50,10 +50,19 @@ export default class extends ServerSideRendererType {
     return new LayoutSession()
   }
 
-  freeResources({ sessionId, region }) {
-    if (!region && this.sessions[sessionId]) {
+  freeResourcesInWorker(args) {
+    const { sessionId, region } = args
+    const session = this.sessions[sessionId]
+    if (!region && session) {
       delete this.sessions[sessionId]
       return 1
+    }
+    if (session) {
+      session.layout.discardRange(
+        region.refName,
+        args.region.start,
+        args.region.end,
+      )
     }
     // TODO: implement freeing for regions
     return 0
@@ -83,6 +92,6 @@ export default class extends ServerSideRendererType {
 
   serializeResultsInWorker(results, features, args) {
     super.serializeResultsInWorker(results, features, args)
-    results.layout = args.layout.toJSON()
+    results.layout = args.layout.serializeRegion(args.region)
   }
 }

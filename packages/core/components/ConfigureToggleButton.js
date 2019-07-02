@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactPropTypes from 'prop-types'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { withStyles, Icon } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
@@ -36,6 +37,7 @@ function ConfigureToggleButton(props) {
 
 ConfigureToggleButton.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
+  classes: ReactPropTypes.shape({ button: ReactPropTypes.string }).isRequired,
 }
 ConfigureToggleButton.defaultProps = {}
 
