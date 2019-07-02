@@ -48,13 +48,21 @@ export default class extends BaseAdapter {
   }: INoAssemblyRegion): Observable<Feature> {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
-        const seq = await this.twobit.getSequence(refName, start, end)
-        observer.next(
-          new SimpleFeature({
-            id: `${refName} ${start}-${end}`,
-            data: { refName, start, end, seq },
-          }),
+        const size = await this.twobit.getSequenceSize(refName)
+        const regionEnd = size !== undefined ? Math.min(size, end) : end
+        const seq: string = await this.twobit.getSequence(
+          refName,
+          start,
+          regionEnd,
         )
+        if (seq) {
+          observer.next(
+            new SimpleFeature({
+              id: `${refName} ${start}-${regionEnd}`,
+              data: { refName, start, end: regionEnd, seq },
+            }),
+          )
+        }
         observer.complete()
       },
     )

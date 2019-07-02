@@ -1243,10 +1243,10 @@
     tmp-promise "^1.0.4"
     typical "^2.6.1"
 
-"@gmod/indexedfasta@^1.0.11":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-1.0.12.tgz#b6953403b081ebe3ea78f12de3a9baca300d225f"
-  integrity sha512-PwsriJs1xFy7S/W15jG0u1hf3hFwvII7Az3093QJ6ondumn5pv+f80OhonqaNSWU6eaR7yqiQ+i+Wamum7FQSQ==
+"@gmod/indexedfasta@^1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-1.0.13.tgz#0ffa0a5a4218dc0471a4158d5672fd4b511f510f"
+  integrity sha512-70tCqaAn7hfCVi7qMJE6cLpAwLAFvNZd6SJ/8KmW+Xans8g33BJQ89VhUvGWxobNkiE84d0fHwpquQkTDo4zUg==
   dependencies:
     "@babel/runtime-corejs2" "^7.4.3"
     "@gmod/bgzf-filehandle" "^1.2.4"

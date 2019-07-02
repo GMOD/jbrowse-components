@@ -76,6 +76,7 @@ exports[`one feature 1`] = `
           "fontSize": 13,
         }
       }
+      textLength={21}
       x={0}
       y={12}
     >

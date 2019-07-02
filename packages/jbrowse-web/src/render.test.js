@@ -66,7 +66,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['html', 'features', 'layout']),
   )
-  expect(result.features.length).toBe(25)
+  expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
 

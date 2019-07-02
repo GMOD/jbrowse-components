@@ -1,5 +1,6 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import RendererType from './RendererType'
@@ -91,14 +92,17 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {Map} of features as { id => feature, ... }
    */
   async getFeatures(renderArgs) {
-    const { dataAdapter, region, signal, bpPerPx } = renderArgs
+    const { dataAdapter, region, signal, bpPerPx, config } = renderArgs
+    const maxFeatureGlyphExpansion =
+      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const features = new Map()
+    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     await dataAdapter
       .getFeaturesInRegion(
         {
           ...region,
-          start: Math.floor(region.start),
-          end: Math.ceil(region.end),
+          start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+          end: Math.ceil(region.end + bpExpansion),
         },
         { signal, bpPerPx },
       )
