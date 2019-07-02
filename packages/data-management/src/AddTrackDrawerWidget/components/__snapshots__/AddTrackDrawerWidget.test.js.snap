@@ -3,23 +3,23 @@
 exports[`<AddTrackDrawerWidget /> adds a track 1`] = `
 <div>
   <div
-    class="AddTrackDrawerWidget-root-233"
+    class="AddTrackDrawerWidget-root-229"
   >
     <div
-      class="MuiPaper-root-242 MuiPaper-elevation0-244 MuiStepper-root-238 MuiStepper-vertical-240 AddTrackDrawerWidget-stepper-234"
+      class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddTrackDrawerWidget-stepper-230"
     >
       <div
-        class="MuiStep-root-269 MuiStep-vertical-271 MuiStep-completed-273"
+        class="MuiStep-root MuiStep-vertical MuiStep-completed"
       >
         <span
-          class="MuiStepLabel-root-274 MuiStepLabel-vertical-276"
+          class="MuiStepLabel-root MuiStepLabel-vertical"
         >
           <span
-            class="MuiStepLabel-iconContainer-282"
+            class="MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root-290 MuiStepIcon-root-285 MuiStepIcon-completed-288"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-completed"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -30,39 +30,39 @@ exports[`<AddTrackDrawerWidget /> adds a track 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer-284"
+            class="MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiTypography-root-299 MuiTypography-body1-308 MuiStepLabel-label-277 MuiStepLabel-completed-279"
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-completed MuiTypography-body2 MuiTypography-displayBlock"
             >
               Confirm track type
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root-335"
+          class="MuiStepContent-root"
           icon="1"
         />
       </div>
       <div
-        class="MuiStepConnector-root-448 MuiStepConnector-vertical-450 MuiStepConnector-active-452"
+        class="MuiStepConnector-root MuiStepConnector-vertical MuiStepConnector-active"
       >
         <span
-          class="MuiStepConnector-line-455 MuiStepConnector-lineVertical-457"
+          class="MuiStepConnector-line MuiStepConnector-lineVertical"
         />
       </div>
       <div
-        class="MuiStep-root-269 MuiStep-vertical-271"
+        class="MuiStep-root MuiStep-vertical"
       >
         <span
-          class="MuiStepLabel-root-274 MuiStepLabel-vertical-276"
+          class="MuiStepLabel-root MuiStepLabel-vertical"
         >
           <span
-            class="MuiStepLabel-iconContainer-282"
+            class="MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root-290 MuiStepIcon-root-285 MuiStepIcon-active-287"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -73,7 +73,7 @@ exports[`<AddTrackDrawerWidget /> adds a track 1`] = `
                 r="12"
               />
               <text
-                class="MuiStepIcon-text-286"
+                class="MuiStepIcon-text"
                 text-anchor="middle"
                 x="12"
                 y="16"
@@ -83,186 +83,178 @@ exports[`<AddTrackDrawerWidget /> adds a track 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer-284"
+            class="MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiTypography-root-299 MuiTypography-body1-308 MuiStepLabel-label-277 MuiStepLabel-active-278"
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
             >
               Confirm track type
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root-335 MuiStepContent-last-336"
+          class="MuiStepContent-root MuiStepContent-last"
           icon="2"
         >
           <div
-            class="MuiCollapse-container-338 MuiCollapse-entered-339 MuiStepContent-transition-337"
+            class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
             style="min-height: 0px;"
           >
             <div
-              class="MuiCollapse-wrapper-340"
+              class="MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner-341"
+                class="MuiCollapse-wrapperInner"
               >
                 <p
-                  class="MuiTypography-root-299 MuiTypography-body1-308 ConfirmTrack-spacing-474"
+                  class="MuiTypography-root ConfirmTrack-spacing-466 MuiTypography-body1"
                 >
                   Please enter a track type and track name.
                 </p>
                 <div
-                  class="MuiFormControl-root-475 MuiFormControl-fullWidth-478 ConfirmTrack-spacing-474"
+                  class="MuiFormControl-root MuiTextField-root ConfirmTrack-spacing-466 MuiFormControl-fullWidth"
                 >
                   <label
-                    class="MuiFormLabel-root-490 MuiInputLabel-root-479 MuiInputLabel-formControl-484 MuiInputLabel-animated-487"
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                     data-shrink="false"
                   >
                     trackName
                   </label>
                   <div
-                    class="MuiInputBase-root-510 MuiInput-root-497 MuiInput-underline-501 MuiInputBase-fullWidth-519 MuiInput-fullWidth-504 MuiInputBase-formControl-511 MuiInput-formControl-498"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <input
                       aria-invalid="false"
-                      class="MuiInputBase-input-520 MuiInput-input-505"
+                      class="MuiInputBase-input MuiInput-input"
                       data-testid="trackNameInput"
                       type="text"
                       value=""
                     />
                   </div>
                   <p
-                    class="MuiFormHelperText-root-527"
+                    class="MuiFormHelperText-root"
                   >
                     A name for this track
                   </p>
                 </div>
                 <div
-                  class="MuiFormControl-root-475 MuiFormControl-fullWidth-478 ConfirmTrack-spacing-474"
+                  class="MuiFormControl-root MuiTextField-root ConfirmTrack-spacing-466 MuiFormControl-fullWidth"
                 >
                   <label
-                    class="MuiFormLabel-root-490 MuiInputLabel-root-479 MuiInputLabel-formControl-484 MuiInputLabel-animated-487"
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                     data-shrink="false"
                   >
                     trackType
                   </label>
                   <div
-                    class="MuiInputBase-root-510 MuiInput-root-497 MuiInput-underline-501 MuiInputBase-fullWidth-519 MuiInput-fullWidth-504 MuiInputBase-formControl-511 MuiInput-formControl-498"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
-                      class="MuiSelect-root-535"
+                      aria-haspopup="true"
+                      aria-pressed="false"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      role="button"
+                      tabindex="0"
                     >
-                      <div
-                        aria-haspopup="true"
-                        aria-pressed="false"
-                        class="MuiSelect-select-536 MuiSelect-selectMenu-539 MuiInputBase-input-520 MuiInput-input-505"
-                        role="button"
-                        tabindex="0"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </div>
-                      <input
-                        data-testid="trackTypeSelect"
-                        type="hidden"
-                        value=""
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root-290 MuiSelect-icon-541"
-                        focusable="false"
-                        role="presentation"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
+                      <span>
+                        ​
+                      </span>
                     </div>
+                    <input
+                      data-testid="trackTypeSelect"
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
                   </div>
                   <p
-                    class="MuiFormHelperText-root-527"
+                    class="MuiFormHelperText-root"
                   >
                     A track type
                   </p>
                 </div>
                 <div
-                  class="MuiFormControl-root-475 MuiFormControl-fullWidth-478"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
-                    class="MuiFormLabel-root-490 MuiInputLabel-root-479 MuiInputLabel-formControl-484 MuiInputLabel-animated-487"
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                     data-shrink="false"
                   >
                     assemblyName
                   </label>
                   <div
-                    class="MuiInputBase-root-510 MuiInput-root-497 MuiInput-underline-501 MuiInputBase-fullWidth-519 MuiInput-fullWidth-504 MuiInputBase-formControl-511 MuiInput-formControl-498"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
-                      class="MuiSelect-root-535"
+                      aria-haspopup="true"
+                      aria-pressed="false"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      role="button"
+                      tabindex="0"
                     >
-                      <div
-                        aria-haspopup="true"
-                        aria-pressed="false"
-                        class="MuiSelect-select-536 MuiSelect-selectMenu-539 MuiInputBase-input-520 MuiInput-input-505"
-                        role="button"
-                        tabindex="0"
-                      >
-                        <span>
-                          ​
-                        </span>
-                      </div>
-                      <input
-                        data-testid="assemblyNameSelect"
-                        type="hidden"
-                        value=""
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root-290 MuiSelect-icon-541"
-                        focusable="false"
-                        role="presentation"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
+                      <span>
+                        ​
+                      </span>
                     </div>
+                    <input
+                      data-testid="assemblyNameSelect"
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
                   </div>
                   <p
-                    class="MuiFormHelperText-root-527"
+                    class="MuiFormHelperText-root"
                   >
                     Assembly to which the track will be added
                   </p>
                 </div>
                 <div
-                  class="AddTrackDrawerWidget-actionsContainer-236"
+                  class="AddTrackDrawerWidget-actionsContainer-232"
                 >
                   <button
-                    class="MuiButtonBase-root-371 MuiButton-root-422 MuiButton-text-424 MuiButton-flat-427 AddTrackDrawerWidget-button-235"
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-231 MuiButton-text"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-423"
+                      class="MuiButton-label"
                     >
                       Back
                     </span>
                     <span
-                      class="MuiTouchRipple-root-546"
+                      class="MuiTouchRipple-root"
                     />
                   </button>
                   <button
-                    class="MuiButtonBase-root-371 MuiButtonBase-disabled-372 MuiButton-root-422 MuiButton-contained-433 MuiButton-containedPrimary-434 MuiButton-raised-436 MuiButton-raisedPrimary-437 MuiButton-disabled-442 AddTrackDrawerWidget-button-235"
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-231 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
                     data-testid="addTrackNextButton"
                     disabled=""
                     tabindex="-1"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-423"
+                      class="MuiButton-label"
                     >
                       Add
                     </span>

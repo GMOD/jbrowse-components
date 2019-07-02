@@ -3,23 +3,23 @@
 exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data directory URL 1`] = `
 <div>
   <div
-    class="AddConnectionDrawerWidget-root-481"
+    class="AddConnectionDrawerWidget-root-457"
   >
     <div
-      class="MuiPaper-root-489 MuiPaper-elevation0-491 MuiStepper-root-485 MuiStepper-vertical-487 AddConnectionDrawerWidget-stepper-482"
+      class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddConnectionDrawerWidget-stepper-458"
     >
       <div
-        class="MuiStep-root-516 MuiStep-vertical-518 MuiStep-completed-520"
+        class="MuiStep-root MuiStep-vertical MuiStep-completed"
       >
         <span
-          class="MuiStepLabel-root-521 MuiStepLabel-vertical-523"
+          class="MuiStepLabel-root MuiStepLabel-vertical"
         >
           <span
-            class="MuiStepLabel-iconContainer-529"
+            class="MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root-537 MuiStepIcon-root-532 MuiStepIcon-completed-535"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-completed"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -30,73 +30,70 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer-531"
+            class="MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiTypography-root-546 MuiTypography-body1-555 MuiStepLabel-label-524 MuiStepLabel-completed-526"
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-completed MuiTypography-body2 MuiTypography-displayBlock"
             >
               Select a Connection Type
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root-582"
+          class="MuiStepContent-root"
           icon="1"
         >
           <div
-            class="MuiCollapse-container-585 MuiStepContent-transition-584"
+            class="MuiCollapse-container MuiStepContent-transition"
             style="min-height: 0px; height: 0px; transition-duration: 0ms;"
           >
             <div
-              class="MuiCollapse-wrapper-587"
+              class="MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner-588"
+                class="MuiCollapse-wrapperInner"
               >
                 <form
                   autocomplete="off"
                 >
                   <div
-                    class="MuiFormControl-root-589 MuiFormControl-fullWidth-592"
+                    class="MuiFormControl-root MuiFormControl-fullWidth"
                   >
                     <div
-                      class="MuiInputBase-root-613 MuiInput-root-600 MuiInput-underline-604 MuiInputBase-formControl-614 MuiInput-formControl-601"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
                     >
                       <div
-                        class="MuiSelect-root-593"
+                        aria-haspopup="true"
+                        aria-pressed="false"
+                        class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                        role="button"
+                        tabindex="0"
                       >
-                        <div
-                          aria-haspopup="true"
-                          aria-pressed="false"
-                          class="MuiSelect-select-594 MuiSelect-selectMenu-597 MuiInputBase-input-623 MuiInput-input-608"
-                          role="button"
-                          tabindex="0"
-                        >
-                          JBrowse 1 Data
-                        </div>
-                        <input
-                          type="hidden"
-                          value="JBrowse1Connection"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root-537 MuiSelect-icon-599"
-                          focusable="false"
-                          role="presentation"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M7 10l5 5 5-5z"
-                          />
-                        </svg>
+                        JBrowse 1 Data
                       </div>
+                      <input
+                        type="hidden"
+                        value="JBrowse1Connection"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSelect-icon"
+                        focusable="false"
+                        role="presentation"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M7 10l5 5 5-5z"
+                        />
+                      </svg>
                     </div>
                     <p
-                      class="MuiFormHelperText-root-701 MuiFormHelperText-filled-707"
+                      class="MuiFormHelperText-root MuiFormHelperText-filled"
                     >
                       A JBrowse 1 data directory
                       <a
-                        class="MuiButtonBase-root-660 MuiIconButton-root-709"
+                        aria-disabled="false"
+                        class="MuiButtonBase-root MuiIconButton-root"
                         href="//jbrowse.org/"
                         rel="noopener noreferrer"
                         role="button"
@@ -104,50 +101,50 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
                         target="_blank"
                       >
                         <span
-                          class="MuiIconButton-label-714"
+                          class="MuiIconButton-label"
                         >
                           <span
                             aria-hidden="true"
-                            class="material-icons MuiIcon-root-715"
+                            class="material-icons MuiIcon-root"
                           >
                             open_in_new
                           </span>
                         </span>
                         <span
-                          class="MuiTouchRipple-root-694"
+                          class="MuiTouchRipple-root"
                         />
                       </a>
                     </p>
                   </div>
                 </form>
                 <div
-                  class="AddConnectionDrawerWidget-actionsContainer-484"
+                  class="AddConnectionDrawerWidget-actionsContainer-460"
                 >
                   <button
-                    class="MuiButtonBase-root-660 MuiButtonBase-disabled-661 MuiButton-root-634 MuiButton-text-636 MuiButton-flat-639 MuiButton-disabled-654 AddConnectionDrawerWidget-button-483"
+                    class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-459 MuiButton-text Mui-disabled Mui-disabled"
                     disabled=""
                     tabindex="-1"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-635"
+                      class="MuiButton-label"
                     >
                       Back
                     </span>
                   </button>
                   <button
-                    class="MuiButtonBase-root-660 MuiButton-root-634 MuiButton-contained-645 MuiButton-containedPrimary-646 MuiButton-raised-648 MuiButton-raisedPrimary-649 AddConnectionDrawerWidget-button-483"
+                    class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-459 MuiButton-contained MuiButton-containedPrimary"
                     data-testid="addConnectionNext-notcurrent"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-635"
+                      class="MuiButton-label"
                     >
                       Connect
                     </span>
                     <span
-                      class="MuiTouchRipple-root-694"
+                      class="MuiTouchRipple-root"
                     />
                   </button>
                 </div>
@@ -157,24 +154,24 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
         </div>
       </div>
       <div
-        class="MuiStepConnector-root-663 MuiStepConnector-vertical-665 MuiStepConnector-active-667"
+        class="MuiStepConnector-root MuiStepConnector-vertical MuiStepConnector-active"
       >
         <span
-          class="MuiStepConnector-line-670 MuiStepConnector-lineVertical-672"
+          class="MuiStepConnector-line MuiStepConnector-lineVertical"
         />
       </div>
       <div
-        class="MuiStep-root-516 MuiStep-vertical-518"
+        class="MuiStep-root MuiStep-vertical"
       >
         <span
-          class="MuiStepLabel-root-521 MuiStepLabel-vertical-523"
+          class="MuiStepLabel-root MuiStepLabel-vertical"
         >
           <span
-            class="MuiStepLabel-iconContainer-529"
+            class="MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root-537 MuiStepIcon-root-532 MuiStepIcon-active-534"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
               focusable="false"
               role="presentation"
               viewBox="0 0 24 24"
@@ -185,7 +182,7 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
                 r="12"
               />
               <text
-                class="MuiStepIcon-text-533"
+                class="MuiStepIcon-text"
                 text-anchor="middle"
                 x="12"
                 y="16"
@@ -195,162 +192,194 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer-531"
+            class="MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiTypography-root-546 MuiTypography-body1-555 MuiStepLabel-label-524 MuiStepLabel-active-525"
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
             >
               Configure Connection
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root-582 MuiStepContent-last-583"
+          class="MuiStepContent-root MuiStepContent-last"
           icon="2"
         >
           <div
-            class="MuiCollapse-container-585 MuiStepContent-transition-584"
+            class="MuiCollapse-container MuiStepContent-transition"
             style="min-height: 0px; height: 0px; transition-duration: 0ms;"
           >
             <div
-              class="MuiCollapse-wrapper-587"
+              class="MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner-588"
+                class="MuiCollapse-wrapperInner"
               >
                 <div
-                  class="ConfigurationEditor-root-724"
+                  class="ConfigurationEditor-root-687"
                 >
                   <div
-                    class="MuiPaper-root-489 MuiPaper-elevation2-493 MuiPaper-rounded-490 Component-paper-726"
+                    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-689 MuiPaper-rounded"
                   >
                     <div
-                      class="Component-paperContent-727"
+                      class="makeStyles-paperContent-690"
                     >
                       <div
-                        class="MuiFormControl-root-589 MuiFormControl-fullWidth-592"
+                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                       >
                         <label
-                          class="MuiFormLabel-root-740 MuiFormLabel-filled-744 MuiInputLabel-root-729 MuiInputLabel-formControl-734 MuiInputLabel-animated-737 MuiInputLabel-shrink-736"
+                          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
                           data-shrink="true"
                         >
                           name
                         </label>
                         <div
-                          class="MuiInputBase-root-613 MuiInput-root-600 MuiInput-underline-604 MuiInputBase-fullWidth-622 MuiInput-fullWidth-607 MuiInputBase-formControl-614 MuiInput-formControl-601"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input-623 MuiInput-input-608"
+                            class="MuiInputBase-input MuiInput-input"
                             type="text"
                             value="nameOfJBrowse1Connection"
                           />
                         </div>
                         <p
-                          class="MuiFormHelperText-root-701 MuiFormHelperText-filled-707"
+                          class="MuiFormHelperText-root MuiFormHelperText-filled"
                         >
                           a unique name for this connection
                         </p>
                       </div>
                     </div>
                     <div
-                      class="Component-slotModeSwitch-728"
+                      class="makeStyles-slotModeSwitch-691"
                     >
                       <button
-                        class="MuiButtonBase-root-660 MuiIconButton-root-709"
+                        class="MuiButtonBase-root MuiIconButton-root"
                         tabindex="0"
                         title="convert to callback"
                         type="button"
                       >
                         <span
-                          class="MuiIconButton-label-714"
+                          class="MuiIconButton-label"
                         >
                           <span
                             aria-hidden="true"
-                            class="material-icons MuiIcon-root-715"
+                            class="material-icons MuiIcon-root"
                           >
                             radio_button_unchecked
                           </span>
                         </span>
                         <span
-                          class="MuiTouchRipple-root-694"
+                          class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
                   </div>
                   <div
-                    class="MuiPaper-root-489 MuiPaper-elevation2-493 MuiPaper-rounded-490 Component-paper-726"
+                    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-689 MuiPaper-rounded"
                   >
                     <div
-                      class="Component-paperContent-727"
+                      class="makeStyles-paperContent-690"
                     >
                       <fieldset
-                        class="MuiFormControl-root-589"
+                        class="MuiFormControl-root"
                       >
                         <div
-                          class="MuiFormGroup-root-747"
+                          class="MuiFormGroup-root"
                           role="radiogroup"
                         >
                           <label
-                            class="MuiFormControlLabel-root-749"
+                            class="MuiFormControlLabel-root"
                           >
                             <span
-                              class="MuiButtonBase-root-660 MuiIconButton-root-709 MuiPrivateSwitchBase-root-760 MuiRadio-root-755 MuiRadio-colorSecondary-759 MuiPrivateSwitchBase-checked-761 MuiRadio-checked-756"
+                              aria-disabled="false"
+                              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-725 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-726 Mui-checked MuiIconButton-colorSecondary"
                             >
                               <span
-                                class="MuiIconButton-label-714"
+                                class="MuiIconButton-label"
                               >
-                                <svg
-                                  aria-hidden="true"
-                                  class="MuiSvgIcon-root-537"
-                                  focusable="false"
-                                  role="presentation"
-                                  viewBox="0 0 24 24"
+                                <div
+                                  class="PrivateRadioButtonIcon-root-729 PrivateRadioButtonIcon-checked-731"
                                 >
-                                  <path
-                                    d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                                  />
-                                </svg>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root"
+                                    focusable="false"
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                    />
+                                  </svg>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-730"
+                                    focusable="false"
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                                    />
+                                  </svg>
+                                </div>
                                 <input
                                   checked=""
-                                  class="MuiPrivateSwitchBase-input-763"
+                                  class="PrivateSwitchBase-input-728"
                                   type="radio"
                                   value="uri"
                                 />
                               </span>
                               <span
-                                class="MuiTouchRipple-root-694"
+                                class="MuiTouchRipple-root"
                               />
                             </span>
                             <span
-                              class="MuiTypography-root-546 MuiTypography-body1-555 MuiFormControlLabel-label-754"
+                              class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
                             >
                               URL
                             </span>
                           </label>
                           <label
-                            class="MuiFormControlLabel-root-749 MuiFormControlLabel-disabled-753"
+                            class="MuiFormControlLabel-root Mui-disabled"
                           >
                             <span
-                              class="MuiButtonBase-root-660 MuiButtonBase-disabled-661 MuiIconButton-root-709 MuiIconButton-disabled-713 MuiPrivateSwitchBase-root-760 MuiRadio-root-755 MuiRadio-colorSecondary-759 MuiPrivateSwitchBase-disabled-762 MuiRadio-disabled-757"
+                              aria-disabled="true"
+                              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-725 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-727 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
                               tabindex="-1"
                             >
                               <span
-                                class="MuiIconButton-label-714"
+                                class="MuiIconButton-label"
                               >
-                                <svg
-                                  aria-hidden="true"
-                                  class="MuiSvgIcon-root-537"
-                                  focusable="false"
-                                  role="presentation"
-                                  viewBox="0 0 24 24"
+                                <div
+                                  class="PrivateRadioButtonIcon-root-729"
                                 >
-                                  <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                                  />
-                                </svg>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root"
+                                    focusable="false"
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                    />
+                                  </svg>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-730"
+                                    focusable="false"
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
+                                    />
+                                  </svg>
+                                </div>
                                 <input
-                                  class="MuiPrivateSwitchBase-input-763"
+                                  class="PrivateSwitchBase-input-728"
                                   disabled=""
                                   type="radio"
                                   value="localPath"
@@ -358,7 +387,7 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
                               </span>
                             </span>
                             <span
-                              class="MuiTypography-root-546 MuiTypography-body1-555 MuiFormControlLabel-label-754 MuiFormControlLabel-disabled-753"
+                              class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1"
                             >
                               Local File
                             </span>
@@ -366,134 +395,135 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
                         </div>
                       </fieldset>
                       <div
-                        class="MuiFormControl-root-589 MuiFormControl-fullWidth-592"
+                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                       >
                         <label
-                          class="MuiFormLabel-root-740 MuiFormLabel-filled-744 MuiInputLabel-root-729 MuiInputLabel-formControl-734 MuiInputLabel-animated-737 MuiInputLabel-shrink-736"
+                          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
                           data-shrink="true"
                         >
                           dataDirLocation
                         </label>
                         <div
-                          class="MuiInputBase-root-613 MuiInput-root-600 MuiInput-underline-604 MuiInputBase-fullWidth-622 MuiInput-fullWidth-607 MuiInputBase-formControl-614 MuiInput-formControl-601"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input-623 MuiInput-input-608"
+                            class="MuiInputBase-input MuiInput-input"
                             type="text"
                             value="http://mysite.com/jbrowse/data/"
                           />
                         </div>
                         <p
-                          class="MuiFormHelperText-root-701 MuiFormHelperText-filled-707"
+                          class="MuiFormHelperText-root MuiFormHelperText-filled"
                         >
                           the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/
                         </p>
                       </div>
                     </div>
                     <div
-                      class="Component-slotModeSwitch-728"
+                      class="makeStyles-slotModeSwitch-691"
                     >
                       <button
-                        class="MuiButtonBase-root-660 MuiIconButton-root-709"
+                        class="MuiButtonBase-root MuiIconButton-root"
                         tabindex="0"
                         title="convert to callback"
                         type="button"
                       >
                         <span
-                          class="MuiIconButton-label-714"
+                          class="MuiIconButton-label"
                         >
                           <span
                             aria-hidden="true"
-                            class="material-icons MuiIcon-root-715"
+                            class="material-icons MuiIcon-root"
                           >
                             radio_button_unchecked
                           </span>
                         </span>
                         <span
-                          class="MuiTouchRipple-root-694"
+                          class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
                   </div>
                   <div
-                    class="MuiPaper-root-489 MuiPaper-elevation2-493 MuiPaper-rounded-490 Component-paper-726"
+                    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-689 MuiPaper-rounded"
                   >
                     <div
-                      class="Component-paperContent-727"
+                      class="makeStyles-paperContent-690"
                     >
                       <div
-                        class="MuiFormControl-root-589 MuiFormControl-fullWidth-592"
+                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                       >
                         <label
-                          class="MuiFormLabel-root-740 MuiInputLabel-root-729 MuiInputLabel-formControl-734 MuiInputLabel-animated-737"
+                          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
                           data-shrink="false"
                         >
                           assemblyName
                         </label>
                         <div
-                          class="MuiInputBase-root-613 MuiInput-root-600 MuiInput-underline-604 MuiInputBase-fullWidth-622 MuiInput-fullWidth-607 MuiInputBase-formControl-614 MuiInput-formControl-601"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                         >
                           <input
                             aria-invalid="false"
-                            class="MuiInputBase-input-623 MuiInput-input-608"
+                            class="MuiInputBase-input MuiInput-input"
                             type="text"
                             value=""
                           />
                         </div>
                         <p
-                          class="MuiFormHelperText-root-701"
+                          class="MuiFormHelperText-root"
                         >
                           the name of the assembly to which to add tracks
                         </p>
                       </div>
                     </div>
                     <div
-                      class="Component-slotModeSwitch-728"
+                      class="makeStyles-slotModeSwitch-691"
                     >
                       <button
-                        class="MuiButtonBase-root-660 MuiIconButton-root-709"
+                        class="MuiButtonBase-root MuiIconButton-root"
                         tabindex="0"
                         title="convert to callback"
                         type="button"
                       >
                         <span
-                          class="MuiIconButton-label-714"
+                          class="MuiIconButton-label"
                         >
                           <span
                             aria-hidden="true"
-                            class="material-icons MuiIcon-root-715"
+                            class="material-icons MuiIcon-root"
                           >
                             radio_button_unchecked
                           </span>
                         </span>
                         <span
-                          class="MuiTouchRipple-root-694"
+                          class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
                   </div>
                   <div
-                    class="MuiPaper-root-489 MuiPaper-elevation2-493 MuiPaper-rounded-490 Component-paper-726"
+                    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-689 MuiPaper-rounded"
                   >
                     <div
-                      class="Component-paperContent-727"
+                      class="makeStyles-paperContent-690"
                     >
                       <div
-                        class="MuiFormControl-root-589"
+                        class="MuiFormControl-root"
                       >
                         <label
-                          class="MuiFormControlLabel-root-749"
+                          class="MuiFormControlLabel-root"
                         >
                           <span
-                            class="MuiButtonBase-root-660 MuiIconButton-root-709 MuiPrivateSwitchBase-root-760 MuiCheckbox-root-764 MuiCheckbox-colorSecondary-769"
+                            aria-disabled="false"
+                            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-725 MuiCheckbox-root MuiCheckbox-colorSecondary MuiIconButton-colorSecondary"
                           >
                             <span
-                              class="MuiIconButton-label-714"
+                              class="MuiIconButton-label"
                             >
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root-537"
+                                class="MuiSvgIcon-root"
                                 focusable="false"
                                 role="presentation"
                                 viewBox="0 0 24 24"
@@ -503,85 +533,85 @@ exports[`<AddConnectionDrawerWidget /> can handle a custom JBrowse 1 data direct
                                 />
                               </svg>
                               <input
-                                class="MuiPrivateSwitchBase-input-763"
+                                class="PrivateSwitchBase-input-728"
                                 data-indeterminate="false"
                                 type="checkbox"
                                 value=""
                               />
                             </span>
                             <span
-                              class="MuiTouchRipple-root-694"
+                              class="MuiTouchRipple-root"
                             />
                           </span>
                           <span
-                            class="MuiTypography-root-546 MuiTypography-body1-555 MuiFormControlLabel-label-754"
+                            class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
                           >
                             useAssemblySequences
                           </span>
                         </label>
                         <p
-                          class="MuiFormHelperText-root-701"
+                          class="MuiFormHelperText-root"
                         >
                           override an existing assembly sequence with the one from this connection. probably safe to ignore this.
                         </p>
                       </div>
                     </div>
                     <div
-                      class="Component-slotModeSwitch-728"
+                      class="makeStyles-slotModeSwitch-691"
                     >
                       <button
-                        class="MuiButtonBase-root-660 MuiIconButton-root-709"
+                        class="MuiButtonBase-root MuiIconButton-root"
                         tabindex="0"
                         title="convert to callback"
                         type="button"
                       >
                         <span
-                          class="MuiIconButton-label-714"
+                          class="MuiIconButton-label"
                         >
                           <span
                             aria-hidden="true"
-                            class="material-icons MuiIcon-root-715"
+                            class="material-icons MuiIcon-root"
                           >
                             radio_button_unchecked
                           </span>
                         </span>
                         <span
-                          class="MuiTouchRipple-root-694"
+                          class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
                   </div>
                 </div>
                 <div
-                  class="AddConnectionDrawerWidget-actionsContainer-484"
+                  class="AddConnectionDrawerWidget-actionsContainer-460"
                 >
                   <button
-                    class="MuiButtonBase-root-660 MuiButton-root-634 MuiButton-text-636 MuiButton-flat-639 AddConnectionDrawerWidget-button-483"
+                    class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-459 MuiButton-text"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-635"
+                      class="MuiButton-label"
                     >
                       Back
                     </span>
                     <span
-                      class="MuiTouchRipple-root-694"
+                      class="MuiTouchRipple-root"
                     />
                   </button>
                   <button
-                    class="MuiButtonBase-root-660 MuiButton-root-634 MuiButton-contained-645 MuiButton-containedPrimary-646 MuiButton-raised-648 MuiButton-raisedPrimary-649 AddConnectionDrawerWidget-button-483"
+                    class="MuiButtonBase-root MuiButton-root AddConnectionDrawerWidget-button-459 MuiButton-contained MuiButton-containedPrimary"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-label-635"
+                      class="MuiButton-label"
                     >
                       Connect
                     </span>
                     <span
-                      class="MuiTouchRipple-root-694"
+                      class="MuiTouchRipple-root"
                     />
                   </button>
                 </div>
