@@ -9,6 +9,7 @@ test('one', () => {
     <WiggleRendering
       width={500}
       height={500}
+      features={new Map()}
       highResolutionScaling={1}
       region={{ refName: 'chr1', start: 1, end: 3 }}
       bpPerPx={3}
