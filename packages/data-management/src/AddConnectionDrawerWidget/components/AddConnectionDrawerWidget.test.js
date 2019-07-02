@@ -8,6 +8,8 @@ import React from 'react'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
+window.fetch = jest.fn(url => new Promise(resolve => resolve()))
+
 describe('<AddConnectionDrawerWidget />', () => {
   let model
   let rootModel
@@ -33,6 +35,32 @@ describe('<AddConnectionDrawerWidget />', () => {
   })
 
   it('can handle a custom UCSC trackHub URL', async () => {
+    const mockFetch = url => {
+      const urlText = url.href ? url.href : url
+      let responseText = ''
+      if (urlText.endsWith('hub.txt'))
+        responseText = `hub TestHub
+shortLabel Test Hub
+longLabel Test Genome Informatics Hub for human DNase and RNAseq data
+genomesFile genomes.txt
+email genome@test.com
+descriptionUrl test.html
+`
+      else if (urlText.endsWith('genomes.txt'))
+        responseText = `genome testAssembly
+trackDb hg19/trackDb.txt
+`
+      else if (urlText.endsWith('trackDb.txt'))
+        responseText = `track dnaseSignal
+bigDataUrl dnaseSignal.bigWig
+shortLabel DNAse Signal
+longLabel Depth of alignments of DNAse reads
+type bigWig
+`
+
+      return Promise.resolve(new Response(responseText, { url: urlText }))
+    }
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       getByTestId,
       container,
@@ -58,6 +86,14 @@ describe('<AddConnectionDrawerWidget />', () => {
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
+    const mockFetch = url => {
+      const urlText = url.href ? url.href : url
+      let responseText = ''
+      if (urlText.endsWith('trackList.json')) responseText = '{}'
+      else if (urlText.endsWith('refSeqs.json')) responseText = '[]'
+      return Promise.resolve(new Response(responseText, { url: urlText }))
+    }
+    jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       getByTestId,
       container,
