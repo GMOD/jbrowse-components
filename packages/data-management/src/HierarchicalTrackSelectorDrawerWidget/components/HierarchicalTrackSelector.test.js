@@ -3,6 +3,9 @@ import { render } from 'react-testing-library'
 import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
+window.requestIdleCallback = cb => cb()
+window.cancelIdleCallback = () => {}
+
 describe('HierarchicalTrackSelector drawer widget', () => {
   it('renders with just the required model elements', async () => {
     const { rootModel } = await createTestEnv()
