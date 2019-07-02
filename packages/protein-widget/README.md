@@ -9,6 +9,8 @@ can be re-mixed and integrated to make different things.
 # To run it
 
 ```bash
+npm i -g open-cli
+export NODE_ENV=development
 cd jbrowse-components
 yarn
 cd packages/protein-widget
