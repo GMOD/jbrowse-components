@@ -58,13 +58,8 @@ export default class extends ServerSideRendererType {
       return 1
     }
     if (session) {
-      session.layout.discardRange(
-        region.refName,
-        args.region.start,
-        args.region.end,
-      )
+      session.layout.discardRange(region.refName, region.start, region.end)
     }
-    // TODO: implement freeing for regions
     return 0
   }
 
@@ -91,7 +86,9 @@ export default class extends ServerSideRendererType {
   }
 
   serializeResultsInWorker(results, features, args) {
-    super.serializeResultsInWorker(results, features, args)
-    results.layout = args.layout.serializeRegion(args.region)
+    super.serializeResultsInWorker(results, features)
+    results.layout = args.layout.serializeRegion(
+      this.getExpandedGlyphRegion(args),
+    )
   }
 }

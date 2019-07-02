@@ -85,6 +85,18 @@ export default class ServerSideRenderer extends RendererType {
     return result
   }
 
+  getExpandedGlyphRegion(renderArgs) {
+    const { region, bpPerPx, config } = renderArgs
+    const maxFeatureGlyphExpansion =
+      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
+    return {
+      ...region,
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+      end: Math.ceil(region.end + bpExpansion),
+    }
+  }
+
   /**
    * use the dataAdapter to fetch the features to be rendered
    *
@@ -92,20 +104,13 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {Map} of features as { id => feature, ... }
    */
   async getFeatures(renderArgs) {
-    const { dataAdapter, region, signal, bpPerPx, config } = renderArgs
-    const maxFeatureGlyphExpansion =
-      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    const { dataAdapter, signal, bpPerPx } = renderArgs
     const features = new Map()
-    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     await dataAdapter
-      .getFeaturesInRegion(
-        {
-          ...region,
-          start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-          end: Math.ceil(region.end + bpExpansion),
-        },
-        { signal, bpPerPx },
-      )
+      .getFeaturesInRegion(this.getExpandedGlyphRegion(renderArgs), {
+        signal,
+        bpPerPx,
+      })
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
