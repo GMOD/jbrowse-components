@@ -63,7 +63,7 @@ export class Viewer {
             name: 'Sequence',
             description:
               'Amino acid sequence, and the underlying DNA sequence if available',
-            renderer: { type: 'ProteinReferenceSequenceRenderer' },
+            renderer: { type: 'ProteinReferenceSequenceTrackRenderer' },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
           domainsTrack: {
