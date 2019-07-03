@@ -99,7 +99,7 @@ export default class PluginManager {
       const pack = ReExports[lib]
       if (!pack)
         throw new Error(
-          `jbrequire is not needed for package '${lib}', just import it normally.`,
+          `No jbrequire re-export defined for package '${lib}'. Either import it normally, or add it to jbrowse-core ReExports`,
         )
       return pack
     }
