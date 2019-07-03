@@ -36,8 +36,8 @@ function renderBlockData(self) {
     trackConfParent = getParent(trackConfParent)
   const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
   const trackAssemblyData =
-    assemblyManager.assemblyData.get(trackAssemblyName) || {}
-  const trackAssemblyAliases = trackAssemblyData.aliases || []
+    (assemblyManager && assemblyManager.assemblyData.get(trackAssemblyName)) || {}
+  const trackAssemblyAliases = (trackAssemblyData && trackAssemblyData.aliases) || []
   let cannotBeRenderedReason
   if (
     !(
