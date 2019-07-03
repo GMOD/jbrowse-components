@@ -30,7 +30,7 @@
         "@types/jest": "^24.0.9",
         "@types/long": "^4.0.0",
         "@types/set-value": "^2.0.0",
-        "@typescript-eslint/eslint-plugin": "^1.7.0",
+        "@typescript-eslint/eslint-plugin": "^1.11.0",
         "@typescript-eslint/parser": "^1.7.0",
         "babel-eslint": "^10.0.1",
         "babel-jest": "^24.7.1",
