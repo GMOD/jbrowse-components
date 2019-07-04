@@ -85,7 +85,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       get staticBlocks() {
-        return calculateStaticBlocks(self, self.horizontallyFlipped)
+        return calculateStaticBlocks(self, self.horizontallyFlipped, 1)
       },
 
       get dynamicBlocks() {

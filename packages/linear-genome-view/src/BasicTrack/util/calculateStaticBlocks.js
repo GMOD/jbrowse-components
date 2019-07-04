@@ -1,8 +1,8 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
 import { BlockSet, ContentBlock, ElidedBlock } from './blockTypes'
 
-export function calculateBlocksReversed(self) {
-  return calculateBlocksForward(self).map(fwdBlock => {
+export function calculateBlocksReversed(self, extra = 0) {
+  return calculateBlocksForward(self, extra).map(fwdBlock => {
     const { parentRegion } = fwdBlock
     const revBlock = {
       ...fwdBlock,
@@ -14,7 +14,7 @@ export function calculateBlocksReversed(self) {
   })
 }
 
-export function calculateBlocksForward(self) {
+export function calculateBlocksForward(self, extra = 0) {
   const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
@@ -33,12 +33,12 @@ export function calculateBlocksForward(self) {
     )
 
     let windowRightBlockNum =
-      Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + 1
+      Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
     if (windowRightBlockNum >= regionBlockCount)
       windowRightBlockNum = regionBlockCount - 1
 
     let windowLeftBlockNum =
-      Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - 1
+      Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - extra
     if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
 
     for (
@@ -77,6 +77,8 @@ export function calculateBlocksForward(self) {
   return blocks
 }
 
-export default function calculateBlocks(view, reversed) {
-  return reversed ? calculateBlocksReversed(view) : calculateBlocksForward(view)
+export default function calculateBlocks(view, reversed, extra = 0) {
+  return reversed
+    ? calculateBlocksReversed(view, extra)
+    : calculateBlocksForward(view, extra)
 }
