@@ -1,4 +1,5 @@
 import { decorate, observable } from 'mobx'
+import { isStateTreeNode, isAlive } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 import rpcConfigSchema from './configSchema'
@@ -73,8 +74,11 @@ class RpcManager {
         assemblyName,
         { signal },
       )
-      if (refNameMap.has(args[0].region.refName))
-        args[0].region.setRefName(refNameMap.get(args[0].region.refName))
+      if (!isStateTreeNode(args[0].region) || isAlive(args[0].region)) {
+        if (refNameMap.has(args[0].region.refName)) {
+          args[0].region.setRefName(refNameMap.get(args[0].region.refName))
+        }
+      }
     }
     return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,
