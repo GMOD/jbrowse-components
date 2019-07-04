@@ -32,15 +32,13 @@ export function calculateBlocksForward(self) {
       (region.end - region.start) / blockSizeBp,
     )
 
-    let windowRightBlockNum = Math.floor(
-      (windowRightBp - regionBpOffset) / blockSizeBp,
-    )
+    let windowRightBlockNum =
+      Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + 1
     if (windowRightBlockNum >= regionBlockCount)
       windowRightBlockNum = regionBlockCount - 1
 
-    let windowLeftBlockNum = Math.floor(
-      (windowLeftBp - regionBpOffset) / blockSizeBp,
-    )
+    let windowLeftBlockNum =
+      Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - 1
     if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
 
     for (
