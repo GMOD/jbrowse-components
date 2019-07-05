@@ -44,17 +44,22 @@ export default class extends BoxRendererType {
     bpPerPx: number,
     region: IRegion,
     horizontallyFlipped: boolean = false,
-  ): LayoutRecord | undefined {
-    // const leftBase = region.start
-    const getCoord = (coord: number): number =>
-      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
-    const startPx = getCoord(feature.get('start'))
-    const endPx = getCoord(feature.get('end'))
+  ): LayoutRecord | null {
+    const startPx = bpToPx(
+      feature.get('start'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const endPx = bpToPx(
+      feature.get('end'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
 
     const maxHeight = readConfObject(config, 'maxHeight', [feature])
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
-    // if (Number.isNaN(startPx)) debugger
-    // if (Number.isNaN(endPx)) debugger
     if (feature.get('refName') !== region.refName) {
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
@@ -66,11 +71,11 @@ export default class extends BoxRendererType {
       feature.id(),
       feature.get('start'),
       feature.get('end'),
-      heightPx, // height
+      heightPx,
       feature,
     )
-    if (topPx > maxHeight) {
-      return undefined
+    if (topPx === null) {
+      return null
     }
 
     return {
@@ -128,8 +133,9 @@ export default class extends BoxRendererType {
     let maxHeightReached = false
 
     layoutRecords.forEach(feat => {
-      if (!feat) {
+      if (feat === null) {
         maxHeightReached = true
+        console.log('maxHeightReached WWWW')
         return
       }
       const { feature, startPx, endPx, topPx, heightPx } = feat
@@ -205,14 +211,20 @@ export default class extends BoxRendererType {
     imageData?: ImageBitmap
     height: number
     width: number
+    maxHeightReached: boolean
   }> {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
+    const {
+      height,
+      width,
+      imageData,
+      maxHeightReached,
+    } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
     )
     // @ts-ignore seems to think imageData is optional in some context?
-    return { element, imageData, height, width }
+    return { element, imageData, height, width, maxHeightReached }
   }
 }
