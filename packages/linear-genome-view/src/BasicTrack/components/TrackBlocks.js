@@ -57,9 +57,13 @@ function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
             >
               {state && state.reactComponent ? (
                 <state.reactComponent model={state} />
-              ) : (
-                ' '
-              )}
+              ) : null}
+              {state && state.maxHeightReached ? (
+                <div style={{ paddingTop: 5 }}>
+                  <hr />
+                  <p style={{ fontWeight: 'bold' }}>Max height reached</p>
+                </div>
+              ) : null}
             </Block>
           )
         }

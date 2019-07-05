@@ -135,7 +135,6 @@ export default class extends BoxRendererType {
     layoutRecords.forEach(feat => {
       if (feat === null) {
         maxHeightReached = true
-        console.log('maxHeightReached WWWW')
         return
       }
       const { feature, startPx, endPx, topPx, heightPx } = feat

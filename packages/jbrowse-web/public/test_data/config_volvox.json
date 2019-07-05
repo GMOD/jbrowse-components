@@ -133,7 +133,8 @@
           },
           "renderers": {
             "PileupRenderer": {
-              "type": "PileupRenderer"
+              "type": "PileupRenderer",
+              "maxHeight": 10
             },
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
