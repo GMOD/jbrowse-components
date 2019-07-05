@@ -1,17 +1,17 @@
 {
   "assemblies": [
     {
-      "assemblyName": "hg38",
+      "assemblyName": "hg19",
       "sequence": {
         "configId": "VKYdNPZZ0",
         "type": "ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+            "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta"
           },
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/1000genomes/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
+            "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai"
           }
         },
         "rendering": {
@@ -19,7 +19,7 @@
         }
       },
       "aliases": [
-        "GRCh38"
+        "GRCh37"
       ],
       "refNameAliases": {
         "adapter": {
@@ -214,7 +214,7 @@
         "type": "LinearGenomeView",
         "offsetPx": 835,
         "bpPerPx": 50,
-        "displayRegionsFromAssemblyName": "hg38",
+        "displayRegionsFromAssemblyName": "hg19",
         "tracks": [
           {
             "type": "WiggleTrack",
