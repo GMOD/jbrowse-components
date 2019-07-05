@@ -114,9 +114,28 @@
           }
         },
         {
+          "configId": "volvox_bam_altname",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (contigA)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted-altname.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted-altname.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "volvox_bam",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue",
+          "name": "volvox-sorted red/blue (ctgA)",
           "category": [
             "Alignments"
           ],
