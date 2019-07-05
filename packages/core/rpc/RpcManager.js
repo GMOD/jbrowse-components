@@ -69,14 +69,18 @@ class RpcManager {
   async call(stateGroupName, functionName, ...args) {
     const { assemblyName, signal } = args[0]
     if (assemblyName) {
+      const { region } = args[0]
+      const { refName } = region
       const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
         args[0].adapterConfig,
         assemblyName,
         { signal },
       )
-      if (!isStateTreeNode(args[0].region) || isAlive(args[0].region)) {
-        if (refNameMap.has(args[0].region.refName)) {
-          args[0].region.setRefName(refNameMap.get(args[0].region.refName))
+      if (refNameMap.has(refName)) {
+        if (isStateTreeNode(region) && isAlive(region)) {
+          region.setRefName(refNameMap.get(refName))
+        } else {
+          args[0].region.refName = refNameMap.get(refName)
         }
       }
     }
