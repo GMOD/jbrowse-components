@@ -166,6 +166,35 @@
               "uri": "/test_data/volvox_microarray.bw"
             }
           }
+        },
+        {
+          "configId": "volvox_bam_small_max_height",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (small max height)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer",
+              "maxHeight": 10
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
         }
       ]
     }

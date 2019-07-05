@@ -256,7 +256,6 @@ export default class GranularRectLayout {
 
     this.bitmap = []
     this.rectangles = {}
-    console.log(args, 'WEEEE')
     this.maxHeight = Math.ceil((args.maxHeight || Infinity) / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }

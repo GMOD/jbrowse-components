@@ -134,6 +134,15 @@ describe('some error state', () => {
       await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).toBeTruthy()
   })
+  it('test that bam with small max height displays message', async () => {
+    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    fireEvent.click(
+      await waitForElement(() => getByTestId('volvox_bam_small_max_height')),
+    )
+    expect(
+      await waitForElement(() => getByText('Max height reached')),
+    ).toBeTruthy()
+  })
 })
 
 describe('variant', () => {
