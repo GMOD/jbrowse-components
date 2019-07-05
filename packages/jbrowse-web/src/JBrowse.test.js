@@ -143,6 +143,15 @@ describe('some error state', () => {
       await waitForElement(() => getByText('Max height reached')),
     ).toBeTruthy()
   })
+  it('test that bam with contigA instead of ctgA displays', async () => {
+    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    fireEvent.click(
+      await waitForElement(() => getByTestId('volvox_bam_altname')),
+    )
+    expect(
+      await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+    ).toBeTruthy()
+  })
 })
 
 describe('variant', () => {

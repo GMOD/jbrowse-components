@@ -76,6 +76,7 @@ class RpcManager {
         assemblyName,
         { signal },
       )
+
       if (refNameMap.has(refName)) {
         if (isStateTreeNode(region) && isAlive(region)) {
           region.setRefName(refNameMap.get(refName))

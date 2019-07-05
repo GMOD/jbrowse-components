@@ -114,9 +114,28 @@
           }
         },
         {
+          "configId": "volvox_bam_altname",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (contigA)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "volvox_bam",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue",
+          "name": "volvox-sorted red/blue (ctgA)",
           "category": [
             "Alignments"
           ],
@@ -134,7 +153,7 @@
           "renderers": {
             "PileupRenderer": {
               "type": "PileupRenderer",
-              "maxHeight": 10
+              "maxHeight": 100
             },
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
@@ -177,24 +196,6 @@
           },
           "renderer": {
             "type": "SvgFeatureRenderer"
-          }
-        },
-        {
-          "type": "AlignmentsTrack",
-          "name": "volvox-sorted all green",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "/test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "/test_data/volvox-sorted.bam.bai"
-              }
-            }
           }
         },
         {
