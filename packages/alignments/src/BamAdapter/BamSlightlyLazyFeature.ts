@@ -201,24 +201,18 @@ export default class implements Feature {
     },
   ): Mismatch[] {
     const { cigarAttributeName, mdAttributeName } = opts
+    const mismatches = []
+    let cigarOps: CigarOp[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
-    const cigarOps = this.parseCigar(cigarString)
-    const mismatches = this.cigarToMismatches(cigarOps)
+    if (cigarString) {
+      cigarOps = this.parseCigar(cigarString)
+      mismatches.push(...this.cigarToMismatches(cigarOps))
+    }
 
     // now let's look for CRAM or MD mismatches
     const mdString = this.get(mdAttributeName)
-
-    // if there is an MD tag or CRAM mismatches, mismatches and deletions from the
-    // CIGAR string are replaced by those from MD
-    // if (mdString) {
-    //   // mismatches = mismatches.filter(
-    //   //   m => (m.type === 'deletion' || m.type === 'mismatch'),
-    //   // )
-    // }
-
-    // parse the MD tag if it has one
     if (mdString) {
       mismatches.push(...this.mdToMismatches(mdString, cigarOps, mismatches))
     }
