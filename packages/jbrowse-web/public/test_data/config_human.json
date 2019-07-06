@@ -185,7 +185,7 @@
   ],
   "rpc": {},
   "defaultSession": {
-    "sessionName": "Human Example",
+    "sessionName": "Human Example (hg19)",
     "menuBars": [
       {
         "type": "MainMenuBar",
