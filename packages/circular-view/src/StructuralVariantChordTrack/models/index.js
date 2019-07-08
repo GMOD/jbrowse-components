@@ -1,14 +1,11 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { autorun } = jbrequire('mobx')
-  const { types, addDisposer, getSnapshot } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
   const { ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
 
   const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
-
-  const BlockState = jbrequire(require('./BlockState'))
 
   const {
     configSchema: ChordTrackConfigSchema,
@@ -32,7 +29,7 @@ export default pluginManager => {
         type: types.literal('StructuralVariantChordTrack'),
         configuration: ConfigurationReference(configSchema),
 
-        blockState: types.map(BlockState),
+        // blockState: types.map(BlockState),
       }),
     )
     .views(self => ({
@@ -40,41 +37,7 @@ export default pluginManager => {
         return getContainingView(self).staticSlices
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        // watch the parent's blocks to update our block state when they change
-        const blockWatchDisposer = autorun(() => {
-          // create any blocks that we need to create
-          const blocksPresent = {}
-          self.blockDefinitions.forEach(block => {
-            blocksPresent[block.key] = true
-            if (!self.blockState.has(block.key)) {
-              self.addBlock(block.key, block)
-            }
-          })
-          // delete any blocks we need to delete
-          self.blockState.forEach((value, key) => {
-            if (!blocksPresent[key]) self.deleteBlock(key)
-          })
-        })
-
-        addDisposer(self, blockWatchDisposer)
-      },
-
-      addBlock(key, block) {
-        self.blockState.set(
-          key,
-          BlockState.create({
-            key,
-            block,
-          }),
-        )
-      },
-
-      deleteBlock(key) {
-        self.blockState.delete(key)
-      },
-    }))
+    .actions(self => ({}))
 
   return { stateModel, configSchema }
 }
