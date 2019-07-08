@@ -15,6 +15,7 @@ import TrackType from './pluggableElementTypes/TrackType'
 import * as Configuration from './configuration'
 import Plugin from './Plugin'
 import * as coreUtil from './util'
+import * as trackUtils from './util/tracks'
 
 import * as mstTypes from './mst-types'
 
@@ -37,5 +38,6 @@ export default {
   '@gmod/jbrowse-core/configuration': Configuration,
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,
+  '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/components/ResizeHandleHorizontal': ResizeHandleHorizontal,
 }

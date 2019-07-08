@@ -4,19 +4,23 @@ import {
 } from './viewportVisibleRegion'
 
 export default ({ jbrequire }) => {
-  const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
+  const { polarToCartesian, assembleLocString } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   class Slice {
     flipped = false
 
     constructor(view, region, currentRadianOffset) {
       const { bpPerRadian } = view
+      this.key = assembleLocString(region)
       this.region = region
       this.offsetRadians = currentRadianOffset
       this.bpPerRadian = bpPerRadian
 
       this.startRadians = this.offsetRadians
       this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians
+      Object.freeze(this)
     }
 
     bpToXY(bp, radiusPx) {
