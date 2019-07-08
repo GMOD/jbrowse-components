@@ -113,7 +113,6 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
     checkAbortSignal(aborter.signal)
     self.setRendered(data, html, rendererType.ReactComponent, renderProps)
   } catch (error) {
-    if (!isAbortException(error)) console.error(error)
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
       const track = getParent(self, 2)
