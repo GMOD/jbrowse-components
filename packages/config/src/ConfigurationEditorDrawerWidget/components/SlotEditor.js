@@ -22,7 +22,7 @@ import {
 } from '@material-ui/core'
 import { observer } from 'mobx-react-lite'
 import { getPropertyMembers } from 'mobx-state-tree'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
@@ -239,31 +239,43 @@ const NumberMapEditor = withStyles(mapEditorStyles)(
   }),
 )
 
-const NumberEditor = observer(({ slot }) => (
-  <TextField
-    label={slot.name}
-    helperText={slot.description}
-    value={slot.value}
-    type="number"
-    onChange={evt => {
-      const num = Number(evt.target.value)
-      if (!Number.isNaN(num)) slot.set(num)
-    }}
-  />
-))
+const NumberEditor = observer(({ slot }) => {
+  const [val, setVal] = useState(slot.value)
+  useEffect(() => {
+    const num = parseFloat(val, 10)
+    if (!Number.isNaN(num)) {
+      slot.set(num)
+    }
+  }, [slot, val])
+  return (
+    <TextField
+      label={slot.name}
+      helperText={slot.description}
+      value={val}
+      type="number"
+      onChange={evt => setVal(evt.target.value)}
+    />
+  )
+})
 
-const IntegerEditor = observer(({ slot }) => (
-  <TextField
-    label={slot.name}
-    helperText={slot.description}
-    value={slot.value}
-    type="number"
-    onChange={evt => {
-      const num = Number(evt.target.value)
-      if (!Number.isNaN(num)) slot.set(Math.round(num))
-    }}
-  />
-))
+const IntegerEditor = observer(({ slot }) => {
+  const [val, setVal] = useState(slot.value)
+  useEffect(() => {
+    const num = parseInt(val, 10)
+    if (!Number.isNaN(num)) {
+      slot.set(num)
+    }
+  }, [slot, val])
+  return (
+    <TextField
+      label={slot.name}
+      helperText={slot.description}
+      value={val}
+      type="number"
+      onChange={evt => setVal(evt.target.value)}
+    />
+  )
+})
 
 export const FileLocationEditor = observer(({ slot }) => {
   // TODO: this can only edit URIs right now, need to make this an actual
