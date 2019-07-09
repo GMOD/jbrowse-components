@@ -26,26 +26,27 @@ export const MenuItemModel = types
     },
     openAbout() {
       const session = getSession(self)
-      if (!session.drawerWidgets.get('aboutDrawerWidget'))
-        session.addDrawerWidget('AboutDrawerWidget', 'aboutDrawerWidget')
-      session.showDrawerWidget(session.drawerWidgets.get('aboutDrawerWidget'))
+      const drawerWidget = session.addDrawerWidget(
+        'AboutDrawerWidget',
+        'aboutDrawerWidget',
+      )
+      session.showDrawerWidget(drawerWidget)
     },
     openHelp() {
       const session = getSession(self)
-      if (!session.drawerWidgets.get('helpDrawerWidget'))
-        session.addDrawerWidget('HelpDrawerWidget', 'helpDrawerWidget')
-      session.showDrawerWidget(session.drawerWidgets.get('helpDrawerWidget'))
+      const drawerWidget = session.addDrawerWidget(
+        'HelpDrawerWidget',
+        'helpDrawerWidget',
+      )
+      session.showDrawerWidget(drawerWidget)
     },
     openConfigurationImport() {
       const session = getSession(self)
-      if (!session.drawerWidgets.get('importConfigurationDrawerWidget'))
-        session.addDrawerWidget(
-          'ImportConfigurationDrawerWidget',
-          'importConfigurationDrawerWidget',
-        )
-      session.showDrawerWidget(
-        session.drawerWidgets.get('importConfigurationDrawerWidget'),
+      const drawerWidget = session.addDrawerWidget(
+        'ImportConfigurationDrawerWidget',
+        'importConfigurationDrawerWidget',
       )
+      session.showDrawerWidget(drawerWidget)
     },
     exportConfiguration() {
       const session = getSession(self)

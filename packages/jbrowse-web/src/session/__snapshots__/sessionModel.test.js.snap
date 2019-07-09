@@ -26,7 +26,6 @@ Object {
   "configId": "testid",
   "rpc": Object {
     "configId": "testid",
-    "defaultDriver": "MainThreadRpcDriver",
   },
 }
 `;
@@ -401,7 +400,6 @@ Object {
   "configId": "fogbat",
   "rpc": Object {
     "configId": "testid",
-    "defaultDriver": "MainThreadRpcDriver",
   },
 }
 `;

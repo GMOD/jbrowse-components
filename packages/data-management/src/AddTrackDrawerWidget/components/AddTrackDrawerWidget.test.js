@@ -5,7 +5,7 @@ import {
   fireEvent,
   waitForElement,
 } from 'react-testing-library'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
@@ -14,8 +14,8 @@ describe('<AddTrackDrawerWidget />', () => {
   let session
   let model
 
-  beforeAll(async () => {
-    ;({ session } = await createTestEnv({
+  beforeAll(() => {
+    session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -90,12 +90,13 @@ describe('<AddTrackDrawerWidget />', () => {
           ],
         },
       ],
-    }))
-    const view = session.addLinearGenomeViewOfAssembly('volvox', {})
-    session.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
-      view: view.id,
     })
-    model = session.drawerWidgets.get('addTrackDrawerWidget')
+    const view = session.addLinearGenomeViewOfAssembly('volvox', {})
+    model = session.addDrawerWidget(
+      'AddTrackDrawerWidget',
+      'addTrackDrawerWidget',
+      { view: view.id },
+    )
   })
 
   afterEach(cleanup)

@@ -5,7 +5,7 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
 window.fetch = jest.fn(url => new Promise(resolve => resolve()))
@@ -14,17 +14,16 @@ describe('<AddConnectionDrawerWidget />', () => {
   let model
   let session
 
-  beforeAll(async () => {
-    ;({ session } = await createTestEnv({
+  beforeAll(() => {
+    session = createTestSession({
       configId: 'testing',
       defaultSession: {},
       rpc: { configId: 'testingRpc' },
-    }))
-    session.addDrawerWidget(
+    })
+    model = session.addDrawerWidget(
       'AddConnectionDrawerWidget',
       'addConnectionDrawerWidget',
     )
-    model = session.drawerWidgets.get('addConnectionDrawerWidget')
   })
 
   afterEach(cleanup)

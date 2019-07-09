@@ -41,13 +41,11 @@ export default (pluginManager, configSchema) =>
           // drawer widgets here, the drawer widget should be a reaction to
           // setting a selected feature...right???
           if (session.drawerWidgets) {
-            if (!session.drawerWidgets.get('alignmentsFeature'))
-              session.addDrawerWidget(
-                'AlignmentsFeatureDrawerWidget',
-                'alignmentsFeature',
-              )
-            const featureWidget = session.drawerWidgets.get('alignmentsFeature')
-            featureWidget.setFeatureData(feature.data)
+            const featureWidget = session.addDrawerWidget(
+              'AlignmentsFeatureDrawerWidget',
+              'alignmentsFeature',
+              { featureData: feature.data },
+            )
             session.showDrawerWidget(featureWidget)
           }
           session.setSelection(feature)

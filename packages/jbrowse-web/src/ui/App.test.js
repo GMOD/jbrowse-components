@@ -2,7 +2,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
-import { createTestEnv } from '../JBrowse'
+import { createTestSession } from '../jbrowseModel'
 
 describe('jbrowse-web app', () => {
   const div = document.createElement('div')
@@ -20,10 +20,11 @@ describe('jbrowse-web app', () => {
     ReactDOM.unmountComponentAtNode(div)
   }
 
-  it('renders an empty model without crashing', async () => {
-    const { session, pluginManager } = await createTestEnv({
+  it('renders an empty model without crashing', () => {
+    const session = createTestSession({
       defaultSession: {},
     })
+    const { pluginManager } = session
     expect(getSnapshot(session)).toMatchSnapshot({
       configuration: {
         configId: expect.any(String),
@@ -34,27 +35,27 @@ describe('jbrowse-web app', () => {
     render(session, pluginManager)
   })
 
-  it('accepts a custom drawer width', async () => {
-    const { session, pluginManager } = await createTestEnv({
-      defaultSession: { drawerWidth: 256 },
-    })
+  it('accepts a custom drawer width', () => {
+    const session = createTestSession({ defaultSession: { drawerWidth: 256 } })
+    const { pluginManager } = session
     expect(session.drawerWidth).toBe(256)
     expect(session.viewsWidth).toBe(512)
     render(session, pluginManager)
   })
 
-  it('throws if drawer width is too small', async () => {
-    await expect(
-      createTestEnv({
-        defaultSession: { drawerWidth: 50 },
-      }),
-    ).rejects.toThrow()
+  it('records error if drawer width is too small', () => {
+    const root = createTestSession(
+      { defaultSession: { drawerWidth: 50 } },
+      true,
+    )
+    expect(root.errorMessage).toBeTruthy()
   })
 
-  it('shrinks a drawer width that is too big', async () => {
-    const { session, pluginManager } = await createTestEnv({
+  it('shrinks a drawer width that is too big', () => {
+    const session = createTestSession({
       defaultSession: { width: 1024, drawerWidth: 256 },
     })
+    const { pluginManager } = session
     session.updateWidth(512)
     expect(session.drawerWidth).toBe(256)
     render(session, pluginManager)

@@ -183,7 +183,6 @@
       ]
     }
   ],
-  "rpc": {},
   "defaultSession": {
     "sessionName": "Human Example (hg19)",
     "menuBars": [
@@ -237,15 +236,15 @@
       }
     ],
     "drawerWidgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
+      "hierarchicalTrackSelector-Human Example (hg19)": {
+        "id": "hierarchicalTrackSelector-Human Example (hg19)",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "filterText": "",
         "view": "Cma34s8JJ"
       }
     },
     "activeDrawerWidgets": {
-      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      "hierarchicalTrackSelector-Human Example (hg19)": "hierarchicalTrackSelector-Human Example (hg19)"
     }
   }
 }

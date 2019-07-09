@@ -1,4 +1,4 @@
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import React from 'react'
 import { cleanup, fireEvent, render } from 'react-testing-library'
 import DropDownMenu from './DropDownMenu'
@@ -20,11 +20,11 @@ jest.mock('popper.js', () => {
 describe('<DropDownMenu />', () => {
   let session
 
-  beforeAll(async () => {
-    ;({ session } = await createTestEnv({
+  beforeAll(() => {
+    session = createTestSession({
       configId: 'testing',
       rpc: { defaultDriver: 'MainThreadRpcDriver' },
-    }))
+    })
     session.menuBars[0].unshiftMenu({
       name: 'Test Menu',
       menuItems: [

@@ -1,23 +1,19 @@
 import { autorun } from 'mobx'
-import { flow, types, getType, addDisposer } from 'mobx-state-tree'
+import { flow, types, getRoot, getType, addDisposer } from 'mobx-state-tree'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
-import RenderWorker from '../rpc.worker'
 import AssemblyManager from './AssemblyManager'
 import sessionConfigFactory from './sessionConfigFactory'
-
-import * as rpcFuncs from '../rpcMethods'
 
 export default pluginManager => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
-      sessionName: types.optional(types.string, 'UnnamedSession'),
+      sessionName: types.identifier,
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
         512,
@@ -44,14 +40,7 @@ export default pluginManager => {
       ),
     })
     .volatile(self => {
-      const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          WorkerClass: RenderWorker,
-        },
-        MainThreadRpcDriver: {
-          rpcFuncs,
-        },
-      })
+      const { rpcManager } = getRoot(self)
       const assemblyManager = new AssemblyManager(rpcManager, self)
       /**
        * this is the globally "selected" object. can be anything.
@@ -218,9 +207,15 @@ export default pluginManager => {
         )
         if (!typeDefinition)
           throw new Error(`unknown drawer widget type ${typeName}`)
-        const data = { ...initialState, id, type: typeName, configuration }
-        const model = typeDefinition.stateModel.create(data)
-        self.drawerWidgets.set(model.id, model)
+        const drawerWidgetSessionId = `${id}-${self.sessionName}`
+        const data = {
+          ...initialState,
+          id: drawerWidgetSessionId,
+          type: typeName,
+          configuration,
+        }
+        self.drawerWidgets.set(drawerWidgetSessionId, data)
+        return self.drawerWidgets.get(drawerWidgetSessionId)
       },
 
       showDrawerWidget(drawerWidget) {
@@ -285,14 +280,11 @@ export default pluginManager => {
             'must pass a configuration model to editConfiguration',
           )
         }
-        if (!self.drawerWidgets.get('configEditor'))
-          self.addDrawerWidget(
-            'ConfigurationEditorDrawerWidget',
-            'configEditor',
-            { target: configuration },
-          )
-        const editor = self.drawerWidgets.get('configEditor')
-        editor.setTarget(configuration)
+        const editor = self.addDrawerWidget(
+          'ConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: configuration },
+        )
         self.showDrawerWidget(editor)
       },
 

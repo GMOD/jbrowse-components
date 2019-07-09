@@ -38,13 +38,11 @@ export default configSchema =>
       .actions(self => ({
         selectFeature(feature) {
           const session = getSession(self)
-          if (!session.drawerWidgets.get('variantFeature'))
-            session.addDrawerWidget(
-              'VariantFeatureDrawerWidget',
-              'variantFeature',
-            )
-          const featureWidget = session.drawerWidgets.get('variantFeature')
-          featureWidget.setFeatureData(feature.data)
+          const featureWidget = session.addDrawerWidget(
+            'VariantFeatureDrawerWidget',
+            'variantFeature',
+            { featureData: feature.data },
+          )
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
         },

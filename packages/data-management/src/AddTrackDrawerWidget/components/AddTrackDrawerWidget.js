@@ -91,9 +91,7 @@ function AddTrackDrawerWidget(props) {
           adapter: trackAdapter,
         })
       model.view.showTrack(trackConf)
-      session.hideDrawerWidget(
-        session.drawerWidgets.get('addTrackDrawerWidget'),
-      )
+      session.hideDrawerWidget(model)
       return
     }
     setActiveStep(activeStep + 1)

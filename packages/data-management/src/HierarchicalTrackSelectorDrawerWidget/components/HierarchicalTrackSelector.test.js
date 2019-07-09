@@ -1,24 +1,23 @@
 import React from 'react'
 import { render } from 'react-testing-library'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 
 describe('HierarchicalTrackSelector drawer widget', () => {
-  it('renders with just the required model elements', async () => {
-    const { session } = await createTestEnv()
+  it('renders with just the required model elements', () => {
+    const session = createTestSession()
     const firstView = session.addView('LinearGenomeView')
-    firstView.activateTrackSelector()
-    const model = session.drawerWidgets.get('hierarchicalTrackSelector')
+    const model = firstView.activateTrackSelector()
 
     const { container } = render(<HierarchicalTrackSelector model={model} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with a couple of uncategorized tracks', async () => {
-    const { session } = await createTestEnv({
+  it('renders with a couple of uncategorized tracks', () => {
+    const session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -54,15 +53,14 @@ describe('HierarchicalTrackSelector drawer widget', () => {
     const firstView = session.addLinearGenomeViewOfAssembly('volvox', {})
     firstView.showTrack(session.configuration.assemblies[0].tracks[0])
     firstView.showTrack(session.configuration.assemblies[0].tracks[1])
-    firstView.activateTrackSelector()
-    const model = session.drawerWidgets.get('hierarchicalTrackSelector')
+    const model = firstView.activateTrackSelector()
 
     const { container } = render(<HierarchicalTrackSelector model={model} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with a couple of categorized tracks', async () => {
-    const { session } = await createTestEnv({
+  it('renders with a couple of categorized tracks', () => {
+    const session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -103,8 +101,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       'Foo Category',
       'Bar Category',
     ])
-    firstView.activateTrackSelector()
-    const model = session.drawerWidgets.get('hierarchicalTrackSelector')
+    const model = firstView.activateTrackSelector()
 
     const { container } = render(<HierarchicalTrackSelector model={model} />)
     expect(container.firstChild).toMatchSnapshot()

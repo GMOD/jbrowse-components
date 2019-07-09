@@ -1,4 +1,4 @@
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
 import MainMenuBar from './MainMenuBar'
@@ -12,8 +12,8 @@ describe('<MainMenuBar />', () => {
     shallow = createShallow()
   })
 
-  it('renders', async () => {
-    const { session } = await createTestEnv({
+  it('renders', () => {
+    const session = createTestSession({
       defaultSession: { menuBars: [{ id: 'testing', type: 'MainMenuBar' }] },
     })
     const model = session.menuBars[0]

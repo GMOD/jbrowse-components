@@ -3,7 +3,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/styles'
+import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
@@ -58,16 +58,14 @@ const styles = theme => ({
 function App(props) {
   const {
     classes,
-    getDrawerWidgetType,
-    getViewType,
-    getMenuBarType,
     session,
     sessionNames,
-    activeSession,
     setActiveSession,
-    addSessions,
+    addSession,
     size,
   } = props
+
+  const { pluginManager } = session
 
   useEffect(() => {
     session.updateWidth(size.width)
@@ -81,7 +79,7 @@ function App(props) {
       LazyReactComponent,
       HeadingComponent,
       heading,
-    } = getDrawerWidgetType(activeDrawerWidget.type)
+    } = pluginManager.getDrawerWidgetType(activeDrawerWidget.type)
     drawerComponent = (
       <Slide direction="left" in>
         <div>
@@ -119,7 +117,8 @@ function App(props) {
           >
             <LazyReactComponent
               model={activeDrawerWidget}
-              addSessions={addSessions}
+              session={session}
+              addSession={addSession}
               setActiveSession={setActiveSession}
             />
           </React.Suspense>
@@ -133,7 +132,9 @@ function App(props) {
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
-            const { LazyReactComponent } = getMenuBarType(menuBar.type)
+            const { LazyReactComponent } = pluginManager.getMenuBarType(
+              menuBar.type,
+            )
             return (
               <React.Suspense
                 key={`view-${menuBar.id}`}
@@ -142,6 +143,7 @@ function App(props) {
                 <LazyReactComponent
                   key={`view-${menuBar.id}`}
                   model={menuBar}
+                  session={session}
                 />
               </React.Suspense>
             )
@@ -152,8 +154,15 @@ function App(props) {
           style={{ width: session.width }}
         >
           {session.views.map(view => {
-            const { ReactComponent } = getViewType(view.type)
-            return <ReactComponent key={`view-${view.id}`} model={view} />
+            const { ReactComponent } = pluginManager.getViewType(view.type)
+            return (
+              <ReactComponent
+                key={`view-${view.id}`}
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            )
           })}
           <div className={classes.developer}>
             <h3>Developer tools</h3>
@@ -165,7 +174,7 @@ function App(props) {
             </button>
             <select
               onChange={event => setActiveSession(event.target.value)}
-              value={activeSession}
+              value={session.name}
             >
               {sessionNames.map(sessionName => (
                 <option key={sessionName} value={sessionName}>
@@ -189,14 +198,10 @@ function App(props) {
 App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   session: PropTypes.observableObject.isRequired,
-  getViewType: ReactPropTypes.func.isRequired,
-  getDrawerWidgetType: ReactPropTypes.func.isRequired,
-  getMenuBarType: ReactPropTypes.func.isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  activeSession: ReactPropTypes.string.isRequired,
   setActiveSession: ReactPropTypes.func.isRequired,
-  addSessions: ReactPropTypes.func.isRequired,
+  addSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

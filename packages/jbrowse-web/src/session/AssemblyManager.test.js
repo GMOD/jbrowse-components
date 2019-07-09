@@ -1,12 +1,12 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { createTestEnv } from '../JBrowse'
+import { createTestSession } from '../jbrowseModel'
 
 describe('Assembly Manager', () => {
   let session
   let assemblyManager
 
-  beforeAll(async () => {
-    ;({ session } = await createTestEnv({
+  beforeAll(() => {
+    session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -90,7 +90,7 @@ describe('Assembly Manager', () => {
           ],
         },
       ],
-    }))
+    })
     ;({ assemblyManager } = session)
   })
 

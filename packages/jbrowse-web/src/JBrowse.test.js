@@ -9,6 +9,7 @@ import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import model from './jbrowseModel'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 
@@ -65,8 +66,16 @@ afterAll(() => {
 })
 
 describe('valid file tests', () => {
+  let jbrowseState
+  beforeEach(() => {
+    jbrowseState = model.create({
+      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    })
+    jbrowseState.addSession(config)
+  })
+
   it('access about menu', async () => {
-    const { getByText } = render(<JBrowse configs={[config]} />)
+    const { getByText } = render(<JBrowse state={jbrowseState} />)
     await waitForElement(() => getByText('ctgA'))
     await waitForElement(() => getByText('JBrowse'))
     fireEvent.click(getByText('Help'))
@@ -77,7 +86,7 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const { getByTestId } = render(<JBrowse configs={[config]} />)
+    const { getByTestId } = render(<JBrowse state={jbrowseState} />)
     fireEvent.click(
       await waitForElement(() => getByTestId('volvox_alignments')),
     )
@@ -93,7 +102,7 @@ describe('valid file tests', () => {
   })
 
   it('opens track selector', async () => {
-    const { getByTestId } = render(<JBrowse configs={[config]} />)
+    const { getByTestId } = render(<JBrowse state={jbrowseState} />)
 
     await waitForElement(() => getByTestId('volvox_alignments'))
     expect(window.MODEL.views[0].tracks.length).toBe(0)
@@ -104,7 +113,7 @@ describe('valid file tests', () => {
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {
-    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    const { getByTestId, getByText } = render(<JBrowse state={jbrowseState} />)
     fireEvent.click(await waitForElement(() => getByTestId('volvox_refseq')))
     window.MODEL.views[0].setNewView(20, 0)
     await waitForElement(() => getByTestId('track-volvox_refseq'))
@@ -113,8 +122,16 @@ describe('valid file tests', () => {
 })
 
 describe('some error state', () => {
+  let jbrowseState
+  beforeEach(() => {
+    jbrowseState = model.create({
+      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    })
+    jbrowseState.addSession(config)
+  })
+
   it('test that track with 404 file displays error', async () => {
-    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    const { getByTestId, getByText } = render(<JBrowse state={jbrowseState} />)
     fireEvent.click(
       await waitForElement(() => getByTestId('volvox_alignments_nonexist')),
     )
@@ -127,7 +144,7 @@ describe('some error state', () => {
     ).toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const { getByTestId, getByText } = render(<JBrowse configs={[config]} />)
+    const { getByTestId, getByText } = render(<JBrowse state={jbrowseState} />)
     fireEvent.click(
       await waitForElement(() => getByTestId('volvox_bam_altname')),
     )
@@ -138,9 +155,17 @@ describe('some error state', () => {
 })
 
 describe('variant', () => {
+  let jbrowseState
+  beforeEach(() => {
+    jbrowseState = model.create({
+      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    })
+    jbrowseState.addSession(config)
+  })
+
   it('click on a vcf feature', async () => {
     const { getByTestId: byId, getByText } = render(
-      <JBrowse configs={[config]} />,
+      <JBrowse state={jbrowseState} />,
     )
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)
@@ -151,9 +176,17 @@ describe('variant', () => {
 })
 
 describe('bigwig', () => {
+  let jbrowseState
+  beforeEach(() => {
+    jbrowseState = model.create({
+      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    })
+    jbrowseState.addSession(config)
+  })
+
   it('open a bigwig track', async () => {
     const { getByTestId: byId, getByText } = render(
-      <JBrowse configs={[config]} />,
+      <JBrowse state={jbrowseState} />,
     )
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)
@@ -162,7 +195,7 @@ describe('bigwig', () => {
   })
   it('open a bigwig line track', async () => {
     const { getByTestId: byId, getByText } = render(
-      <JBrowse configs={[config]} />,
+      <JBrowse state={jbrowseState} />,
     )
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)
@@ -171,7 +204,7 @@ describe('bigwig', () => {
   })
   it('open a bigwig density track', async () => {
     const { getByTestId: byId, getByText } = render(
-      <JBrowse configs={[config]} />,
+      <JBrowse state={jbrowseState} />,
     )
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(0.05, 5000)

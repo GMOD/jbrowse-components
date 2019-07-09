@@ -1,11 +1,11 @@
 import React from 'react'
 import { render } from 'react-testing-library'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import LinearGenomeView from './LinearGenomeView'
 
 describe('LinearGenomeView genome view component', () => {
-  it('renders with an empty model', async () => {
-    const { session } = await createTestEnv({
+  it('renders with an empty model', () => {
+    const session = createTestSession({
       defaultSession: {
         views: [
           {
@@ -23,8 +23,8 @@ describe('LinearGenomeView genome view component', () => {
     const { container } = render(<LinearGenomeView model={model} />)
     expect(container).toMatchSnapshot()
   })
-  it('renders one track, no blocks', async () => {
-    const { session } = await createTestEnv({
+  it('renders one track, no blocks', () => {
+    const session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -76,8 +76,8 @@ describe('LinearGenomeView genome view component', () => {
     const { container } = render(<LinearGenomeView model={model} />)
     expect(container).toMatchSnapshot()
   })
-  it('renders two tracks, two regions', async () => {
-    const { session } = await createTestEnv({
+  it('renders two tracks, two regions', () => {
+    const session = createTestSession({
       assemblies: [
         {
           assemblyName: 'volvox',

@@ -18,14 +18,11 @@ const styles = {
 }
 
 function onClick(session) {
-  if (!session.drawerWidgets.get('id-helloworlddrawerwidget'))
-    session.addDrawerWidget(
+  const drawerWidget =  session.addDrawerWidget(
       'HelloWorldDrawerWidget',
       'id-helloworlddrawerwidget',
     )
-  session.showDrawerWidget(
-    session.drawerWidgets.get('id-helloworlddrawerwidget'),
-  )
+  session.showDrawerWidget(drawerWidget)
 }
 
 function HelloWorld(props) {

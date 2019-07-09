@@ -1,14 +1,14 @@
 import React from 'react'
 import { render, cleanup } from 'react-testing-library'
 import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import ConfirmTrack from './ConfirmTrack'
 
 describe('<ConfirmTrack />', () => {
   let session
 
-  beforeAll(async () => {
-    ;({ session } = await createTestEnv({ configId: 'testing' }))
+  beforeAll(() => {
+    session = createTestSession({ configId: 'testing' })
   })
 
   afterEach(cleanup)

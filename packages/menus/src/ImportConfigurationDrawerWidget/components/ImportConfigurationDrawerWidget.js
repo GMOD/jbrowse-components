@@ -141,9 +141,7 @@ function ImportConfiguration(props) {
     try {
       await addSessions(acceptedFilesParsed.map(file => file.config))
       setActiveSession(acceptedFilesParsed[0].config.defaultSession.sessionName)
-      session.hideDrawerWidget(
-        session.drawerWidgets.get('importConfigurationDrawerWidget'),
-      )
+      session.hideDrawerWidget(model)
     } catch (error) {
       setErrorMessage(`${error}`)
     }

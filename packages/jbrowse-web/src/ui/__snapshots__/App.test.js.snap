@@ -14,7 +14,6 @@ Object {
     },
     "rpc": Object {
       "configId": Any<String>,
-      "defaultDriver": "MainThreadRpcDriver",
     },
   },
   "connections": Object {},
@@ -25,7 +24,7 @@ Object {
       "id": Any<String>,
     },
   ],
-  "sessionName": "UnnamedSession",
+  "sessionName": "Unnamed Session eCXziEsguw",
   "views": Array [],
   "width": 512,
 }
