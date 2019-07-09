@@ -1,10 +1,10 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
 import { withStyles } from '@material-ui/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import DropDownMenu from './DropDownMenu'
@@ -20,7 +20,7 @@ const styles = {
 
 function MainMenuBar(props) {
   const { classes, model } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
   return (
     <AppBar className={classes.root} position="static">
@@ -34,14 +34,12 @@ function MainMenuBar(props) {
             key={menu.name}
             menuTitle={menu.name}
             menuItems={menu.menuItems}
-            rootModel={rootModel}
+            session={session}
           />
         ))}
         <div
           style={{
-            width: rootModel.activeDrawerWidgets.size
-              ? rootModel.drawerWidth
-              : 0,
+            width: session.activeDrawerWidgets.size ? session.drawerWidth : 0,
           }}
         />
       </Toolbar>

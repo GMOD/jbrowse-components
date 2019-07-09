@@ -23,7 +23,7 @@ const baseprops = {
       },
     },
   },
-  rootConfig: {},
+  sessionConfig: {},
   renderProps: { bpPerPx: 1 },
 }
 

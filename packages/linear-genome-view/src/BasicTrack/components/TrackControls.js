@@ -1,6 +1,6 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import React from 'react'
 import { PropTypes, observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 
 import { withStyles, IconButton, Icon } from '@material-ui/core'
@@ -32,8 +32,8 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
   let trackName = getConf(track, 'name') || track.id
   if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Refence Sequence'
-    const rootModel = getRoot(view)
-    rootModel.configuration.assemblies.forEach(assembly => {
+    const session = getSession(view)
+    session.configuration.assemblies.forEach(assembly => {
       if (assembly.sequence === track.configuration)
         trackName = `Reference Sequence (${readConfObject(
           assembly,

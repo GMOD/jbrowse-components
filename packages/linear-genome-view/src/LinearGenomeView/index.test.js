@@ -19,8 +19,9 @@ stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
-  const root = types
+  const sessionName = types
     .model({
+      sessionName: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
     })
@@ -34,7 +35,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
       config: {},
     })
 
-  const model = root.setView(
+  const model = sessionName.setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
@@ -46,8 +47,9 @@ test('can instantiate a mostly empty model and read a default configuration valu
 })
 
 test('can instantiate a model that lets you navigate', () => {
-  const root = types
+  const sessionName = types
     .model({
+      sessionName: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
     })
@@ -61,7 +63,7 @@ test('can instantiate a model that lets you navigate', () => {
       config: {},
     })
 
-  const model = root.setView(
+  const model = sessionName.setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
@@ -103,8 +105,9 @@ test('can instantiate a model that lets you navigate', () => {
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {
-  const root = types
+  const sessionName = types
     .model({
+      sessionName: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
     })
@@ -118,7 +121,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
       config: {},
     })
 
-  const model = root.setView(
+  const model = sessionName.setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
@@ -142,8 +145,9 @@ test('can instantiate a model that has multiple displayed regions', () => {
 })
 
 test('can instantiate a model that >2 regions', () => {
-  const root = types
+  const sessionName = types
     .model({
+      sessionName: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
     })
@@ -157,7 +161,7 @@ test('can instantiate a model that >2 regions', () => {
       config: {},
     })
 
-  const model = root.setView(
+  const model = sessionName.setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],

@@ -109,7 +109,7 @@ function(feature) {
     })
 
     ReactDOM.render(
-      <Provider rootModel={this.model}>
+      <Provider session={this.model}>
         <LinearGenomeViewType.ReactComponent model={this.model.view} />
       </Provider>,
       domElement,

@@ -41,5 +41,6 @@ Object {
       "sub1attr1": "zonk",
     },
   },
+  "sessionName": "testSession",
 }
 `;

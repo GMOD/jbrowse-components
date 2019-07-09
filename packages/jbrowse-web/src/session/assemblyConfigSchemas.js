@@ -2,11 +2,12 @@ import {
   ConfigurationSchema,
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
-import { getRoot, types } from 'mobx-state-tree'
+import { getSession } from '@gmod/jbrowse-core/util'
+import { types } from 'mobx-state-tree'
 
 const actions = self => ({
   addTrackConf(typeName, data, connectionName) {
-    const type = getRoot(self).pluginManager.getTrackType(typeName)
+    const type = getSession(self).pluginManager.getTrackType(typeName)
     if (!type) throw new Error(`unknown track type ${typeName}`)
     const schemaType = type.configSchema
     const conf = schemaType.create(Object.assign({ type: typeName }, data))

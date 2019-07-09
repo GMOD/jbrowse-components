@@ -4,6 +4,7 @@ import { getSnapshot, types } from 'mobx-state-tree'
 const createMockTrackStateModel = track =>
   types
     .model({
+      sessionName: 'testSession',
       selectedFeature: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
@@ -71,20 +72,20 @@ test('create track config', async () => {
   })
 })
 
-test('test selection in alignments track model with mock root', async () => {
+test('test selection in alignments track model with mock session', async () => {
   const { pluginManager } = await createTestEnv()
 
-  const rootModel = createMockTrack(
+  const sessionModel = createMockTrack(
     pluginManager.getTrackType('AlignmentsTrack'),
   )
 
-  rootModel.track.selectFeature({
+  sessionModel.track.selectFeature({
     id() {
       return 1234
     },
   })
-  expect(rootModel.selection.id()).toBe(1234)
+  expect(sessionModel.selection.id()).toBe(1234)
 
-  rootModel.track.clearFeatureSelection()
-  expect(rootModel.selection).not.toBeTruthy()
+  sessionModel.track.clearFeatureSelection()
+  expect(sessionModel.selection).not.toBeTruthy()
 })

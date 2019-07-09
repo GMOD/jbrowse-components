@@ -1,17 +1,17 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
 export default class AssemblyManager {
-  constructor(rpcManager, rootModel, opts = {}) {
+  constructor(rpcManager, session, opts = {}) {
     rpcManager.assemblyManager = this
     this.rpcManager = rpcManager
     this.refNameMaps = new Map()
-    this.updateAssemblyData(rootModel, opts)
+    this.updateAssemblyData(session, opts)
   }
 
-  updateAssemblyData(rootModel, opts = {}) {
-    const rootConfig = rootModel.configuration
+  updateAssemblyData(session, opts = {}) {
+    const sessionConfig = session.configuration
     this.assemblyData = new Map()
-    for (const assemblyConfig of rootConfig.assemblies) {
+    for (const assemblyConfig of sessionConfig.assemblies) {
       const assemblyName = readConfObject(assemblyConfig, 'assemblyName')
       const assemblyInfo = {}
       if (assemblyConfig.sequence)
@@ -36,7 +36,7 @@ export default class AssemblyManager {
         })
       })
     }
-    rootModel.connections.forEach(connection => {
+    session.connections.forEach(connection => {
       connection.assemblies.forEach(assembly => {
         const { assemblyName } = assembly
         if (!this.assemblyData.has(assemblyName)) {
@@ -73,11 +73,11 @@ export default class AssemblyManager {
       })
     })
 
-    this.setDisplayedRegions(rootModel, opts)
+    this.setDisplayedRegions(session, opts)
   }
 
-  async setDisplayedRegions(rootModel, opts = {}) {
-    for (const view of rootModel.views) {
+  async setDisplayedRegions(session, opts = {}) {
+    for (const view of session.views) {
       const assemblyName = view.displayRegionsFromAssemblyName
       if (assemblyName && this.assemblyData.get(assemblyName).sequence) {
         // eslint-disable-next-line no-await-in-loop

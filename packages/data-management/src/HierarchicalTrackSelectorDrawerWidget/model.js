@@ -1,5 +1,6 @@
-import { getRoot, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 export function generateHierarchy(trackConfigurations) {
@@ -51,9 +52,9 @@ export default pluginManager =>
     .views(self => ({
       trackConfigurations(assemblyName) {
         if (!self.view) return []
-        const root = getRoot(self)
+        const session = getSession(self)
         const trackConfigurations = []
-        root.configuration.assemblies.forEach(assemblyConf => {
+        session.configuration.assemblies.forEach(assemblyConf => {
           if (
             readConfObject(assemblyConf, 'assemblyName') === assemblyName ||
             readConfObject(assemblyConf, 'aliases').includes(assemblyName)
@@ -78,12 +79,12 @@ export default pluginManager =>
 
       connectionTrackConfigurations(connectionName, assemblyName) {
         if (!self.view) return []
-        const root = getRoot(self)
+        const session = getSession(self)
         const assemblyData =
-          root.assemblyManager.assemblyData.get(assemblyName) || {}
+          session.assemblyManager.assemblyData.get(assemblyName) || {}
         const aliases = assemblyData.aliases || []
         const trackConfigurations = []
-        const connection = root.connections.get(connectionName)
+        const connection = session.connections.get(connectionName)
         if (connection) {
           ;[assemblyName, ...aliases].forEach(an => {
             const assembly = connection.assemblies.get(an)

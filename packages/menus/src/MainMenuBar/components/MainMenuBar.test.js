@@ -13,10 +13,10 @@ describe('<MainMenuBar />', () => {
   })
 
   it('renders', async () => {
-    const { rootModel } = await createTestEnv({
+    const { session } = await createTestEnv({
       defaultSession: { menuBars: [{ id: 'testing', type: 'MainMenuBar' }] },
     })
-    const model = rootModel.menuBars[0]
+    const model = session.menuBars[0]
     const wrapper = shallow(<MainMenuBar model={model} />)
       .first()
       .shallow()

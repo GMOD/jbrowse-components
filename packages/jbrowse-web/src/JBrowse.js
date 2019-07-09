@@ -10,7 +10,7 @@ import '@gmod/jbrowse-core/fonts/material-icons.css'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import corePlugins from './corePlugins'
-import RootModelFactory from './session/sessionModelFactory'
+import sessionModelFactory from './session/sessionModelFactory'
 import App from './ui/App'
 import Theme from './ui/theme'
 
@@ -21,7 +21,7 @@ export async function createTestEnv(configSnapshot = {}) {
     rpc: { defaultDriver: 'MainThreadRpcDriver' },
   }
   return {
-    ...(await createRootModel(modelType, config)),
+    ...(await createSession(modelType, config)),
     pluginManager,
   }
 }
@@ -29,11 +29,11 @@ export async function createTestEnv(configSnapshot = {}) {
 function createModelType() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.configure()
-  const modelType = RootModelFactory(pluginManager)
+  const modelType = sessionModelFactory(pluginManager)
   return { modelType, pluginManager }
 }
 
-async function createRootModel(modelType, config) {
+async function createSession(modelType, config) {
   let configSnapshot = config
   if (config.uri || config.localPath) {
     try {
@@ -53,7 +53,7 @@ async function createRootModel(modelType, config) {
   } = defaultSession
   return {
     sessionName,
-    rootModel: modelType.create({
+    session: modelType.create({
       ...defaultSession,
       configuration: configSnapshot,
     }),
@@ -80,12 +80,12 @@ function JBrowse(props) {
       let newActiveSession
       for (const config of configs) {
         // eslint-disable-next-line no-await-in-loop
-        const { sessionName, rootModel } = await createRootModel(
+        const { sessionName, session } = await createSession(
           newModelType,
           config,
         )
         if (!newActiveSession) newActiveSession = sessionName
-        newSessions.set(sessionName, rootModel)
+        newSessions.set(sessionName, session)
       }
 
       setModelType(newModelType)
@@ -109,11 +109,8 @@ function JBrowse(props) {
     const newSessions = new Map()
     for (const config of newConfigs) {
       // eslint-disable-next-line no-await-in-loop
-      const { sessionName, rootModel } = await createRootModel(
-        modelType,
-        config,
-      )
-      newSessions.set(sessionName, rootModel)
+      const { sessionName, session } = await createSession(modelType, config)
+      newSessions.set(sessionName, session)
     }
     setSessions(new Map([...sessions, ...newSessions]))
   }
@@ -128,7 +125,7 @@ function JBrowse(props) {
     <ThemeProvider theme={Theme}>
       <CssBaseline />
       <App
-        rootModel={sessions.get(activeSession)}
+        session={sessions.get(activeSession)}
         getViewType={pluginManager.getViewType}
         getDrawerWidgetType={pluginManager.getDrawerWidgetType}
         getMenuBarType={pluginManager.getMenuBarType}

@@ -1,4 +1,4 @@
-import { types, getRoot } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { stringToFunction, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../mst-types'
@@ -172,7 +172,6 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile this as a function
           return stringToFunction(String(self.value), {
-            bind: [getRoot(self)],
             verifyFunctionSignature: inDevelopment
               ? functionSignature
               : undefined,

@@ -1,8 +1,9 @@
-import { detach, getType, types, getRoot } from 'mobx-state-tree'
+import { detach, getType, types } from 'mobx-state-tree'
 import {
   ConfigurationSchema,
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import AssemblyConfigsSchemasFactory from './assemblyConfigSchemas'
 
@@ -11,7 +12,7 @@ export default function(pluginManager) {
     pluginManager,
   )
   return ConfigurationSchema(
-    'JBrowseWebRoot',
+    'JBrowseWebSession',
     {
       // A map of assembly name -> assembly details
       assemblies: types.array(
@@ -40,12 +41,14 @@ export default function(pluginManager) {
       actions: self => ({
         addConnection(connectionConf) {
           self.connections.push(connectionConf)
-          getRoot(self).addConnection(connectionConf)
+          getSession(self).addConnection(connectionConf)
         },
 
         removeConnection(connectionConf) {
           self.connections.remove(connectionConf)
-          getRoot(self).deleteConnection(readConfObject(connectionConf, 'name'))
+          getSession(self).deleteConnection(
+            readConfObject(connectionConf, 'name'),
+          )
         },
 
         addAssembly(
@@ -73,13 +76,13 @@ export default function(pluginManager) {
             sequence,
           })
           self.assemblies.set(assemblyName, assembly)
-          getRoot(self).updateAssemblies()
+          getSession(self).updateAssemblies()
         },
 
         removeAssembly(assemblyName) {
           detach(self.assemblies.get(assemblyName))
           self.assemblies.delete(assemblyName)
-          getRoot(self).updateAssemblies()
+          getSession(self).updateAssemblies()
         },
       }),
     },

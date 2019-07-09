@@ -1,10 +1,4 @@
-import {
-  types,
-  getParent,
-  isAlive,
-  getRoot,
-  addDisposer,
-} from 'mobx-state-tree'
+import { types, getParent, isAlive, addDisposer } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -15,6 +9,7 @@ import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
+  getSession,
 } from '@gmod/jbrowse-core/util'
 import {
   getContainingAssembly,
@@ -29,7 +24,7 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const { rpcManager, assemblyManager } = getRoot(view)
+  const { rpcManager, assemblyManager } = getSession(view)
   const trackConf = track.configuration
   let trackConfParent = getParent(trackConf)
   if (!trackConfParent.assemblyName)
@@ -220,7 +215,7 @@ export default types
       }
       const track = getParent(self, 2)
       const view = getContainingView(track)
-      const { rpcManager } = getRoot(view)
+      const { rpcManager } = getSession(view)
       const { rendererType } = track
       const { renderArgs } = renderBlockData(self)
       rendererType.freeResourcesInClient(

@@ -1,3 +1,4 @@
+import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
 import fromEntries from 'object.fromentries'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
@@ -12,6 +13,14 @@ export const inDevelopment =
   process.env &&
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
+
+export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
+  let currentNode = node
+  // @ts-ignore
+  while (currentNode.sessionName === undefined)
+    currentNode = getParent(currentNode)
+  return currentNode
+}
 
 /**
  * Assemble a "locstring" from a location, like "ctgA:20-30".

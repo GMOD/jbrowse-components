@@ -31,7 +31,7 @@ class Drawer extends React.Component {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
     children: PropTypes.node,
     open: PropTypes.bool.isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
+    session: MobxPropTypes.observableObject.isRequired,
   }
 
   static defaultProps = {
@@ -45,18 +45,18 @@ class Drawer extends React.Component {
   }
 
   render() {
-    const { classes, children, open, rootModel } = this.props
+    const { classes, children, open, session } = this.props
     return (
       <Slide in={open} direction="left" appear={this.mounted}>
         <Paper
-          style={{ width: rootModel.drawerWidth }}
+          style={{ width: session.drawerWidth }}
           className={classes.paper}
           elevation={16}
           square
         >
           <DrawerResizeHandle
             className={classes.resizer}
-            onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
+            onHorizontalDrag={distance => session.resizeDrawer(distance)}
           />
           {children}
         </Paper>

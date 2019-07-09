@@ -1,3 +1,4 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import Fab from '@material-ui/core/Fab'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -12,7 +13,6 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
-import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -47,7 +47,7 @@ function HierarchicalTrackSelector(props) {
   const [assemblyIdx, setAssemblyIdx] = useState(0)
 
   const { model, classes } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
   function handleTabChange(event, newIdx) {
     setAssemblyIdx(newIdx)
@@ -67,24 +67,22 @@ function HierarchicalTrackSelector(props) {
 
   function addConnection() {
     handleFabClose()
-    if (!rootModel.drawerWidgets.get('addConnectionDrawerWidget'))
-      rootModel.addDrawerWidget(
+    if (!session.drawerWidgets.get('addConnectionDrawerWidget'))
+      session.addDrawerWidget(
         'AddConnectionDrawerWidget',
         'addConnectionDrawerWidget',
       )
-    rootModel.showDrawerWidget(
-      rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
+    session.showDrawerWidget(
+      session.drawerWidgets.get('addConnectionDrawerWidget'),
     )
   }
 
   function addTrack() {
     handleFabClose()
-    rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
+    session.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: model.view.id,
     })
-    rootModel.showDrawerWidget(
-      rootModel.drawerWidgets.get('addTrackDrawerWidget'),
-    )
+    session.showDrawerWidget(session.drawerWidgets.get('addTrackDrawerWidget'))
   }
 
   function filter(trackConfig) {
@@ -140,10 +138,10 @@ function HierarchicalTrackSelector(props) {
         assemblyName={assemblyName}
         top
       />
-      {rootModel.connections.size ? (
+      {session.connections.size ? (
         <>
           <Typography variant="h5">Connections:</Typography>
-          {Array.from(rootModel.connections.keys()).map(connectionName => (
+          {Array.from(session.connections.keys()).map(connectionName => (
             <Paper
               key={connectionName}
               className={classes.connectionsPaper}

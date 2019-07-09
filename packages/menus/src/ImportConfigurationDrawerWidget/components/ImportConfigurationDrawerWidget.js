@@ -1,4 +1,5 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
@@ -17,7 +18,6 @@ import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/styles'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
-import { getRoot } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -135,14 +135,14 @@ function ImportConfiguration(props) {
   const classes = useStyles({ isDragActive })
 
   const { addSessions, setActiveSession, model } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
   async function importConfigs() {
     try {
       await addSessions(acceptedFilesParsed.map(file => file.config))
       setActiveSession(acceptedFilesParsed[0].config.defaultSession.sessionName)
-      rootModel.hideDrawerWidget(
-        rootModel.drawerWidgets.get('importConfigurationDrawerWidget'),
+      session.hideDrawerWidget(
+        session.drawerWidgets.get('importConfigurationDrawerWidget'),
       )
     } catch (error) {
       setErrorMessage(`${error}`)

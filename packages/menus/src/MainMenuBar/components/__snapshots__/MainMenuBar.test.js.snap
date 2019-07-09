@@ -34,7 +34,7 @@ exports[`<MainMenuBar /> renders 1`] = `
         ]
       }
       menuTitle="Help"
-      rootModel={
+      session={
         Object {
           "activeDrawerWidgets": Object {},
           "configuration": Object {

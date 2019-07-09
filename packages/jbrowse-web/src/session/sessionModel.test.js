@@ -4,13 +4,13 @@ import { createTestEnv } from '../JBrowse'
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 test('can load configuration with the configure() action and resolve references to view configurations', async () => {
-  const { rootModel } = await createTestEnv({ configId: 'fogbat' })
+  const { session } = await createTestEnv({ configId: 'fogbat' })
 
-  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
+  expect(getSnapshot(session.configuration)).toMatchSnapshot()
 })
 
 test('can load configuration from a config object', async () => {
-  const { rootModel } = await createTestEnv({
+  const { session } = await createTestEnv({
     assemblies: [
       {
         assemblyName: 'volvox',
@@ -27,13 +27,13 @@ test('can load configuration from a config object', async () => {
     ],
   })
 
-  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
+  expect(getSnapshot(session.configuration)).toMatchSnapshot()
 })
 
 test('can load configuration from a file', async () => {
-  const { rootModel } = await createTestEnv({
+  const { session } = await createTestEnv({
     localPath: require.resolve('../../test_data/config_volvox_mainthread.json'),
   })
 
-  expect(getSnapshot(rootModel.configuration)).toMatchSnapshot()
+  expect(getSnapshot(session.configuration)).toMatchSnapshot()
 })

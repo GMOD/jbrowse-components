@@ -12,15 +12,16 @@ test('can make a layer over a very simple schema', () => {
   })
   const layerSchema = ConfigurationLayer(parentSchema)
 
-  const rootType = types.model({
+  const sessionType = types.model({
+    sessionName: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
   })
-  const root = rootType.create({
+  const session = sessionType.create({
     parent: { configId: 'yellow' },
     layer: { parentConfigId: 'yellow' },
   })
-  const { layer, parent } = root
+  const { layer, parent } = session
 
   // initially the layer has the same values as the parent
   expect(readConfObject(layer, 'foo')).toBe('bar')
@@ -61,11 +62,12 @@ test('can make a layer over a complex nested schema', () => {
   })
   const layerSchema = ConfigurationLayer(parentSchema)
 
-  const rootType = types.model({
+  const sessionType = types.model({
+    sessionName: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
   })
-  const root = rootType.create({
+  const session = sessionType.create({
     parent: {
       configId: 'blue',
       arrayOfSubs: [{}],
@@ -83,7 +85,7 @@ test('can make a layer over a complex nested schema', () => {
       },
     },
   })
-  const { layer, parent } = root
+  const { layer, parent } = session
 
   expect(readConfObject(layer, 'foo')).toBe('bar')
   expect(readConfObject(parent, 'foo')).toBe('bar')
@@ -141,7 +143,7 @@ test('can make a layer over a complex nested schema', () => {
     readConfObject(parent, ['mapOfSubs', 'one', 'mapMemberAttr1']),
   ).toEqual('pluto')
 
-  expect(getSnapshot(root)).toMatchSnapshot({
+  expect(getSnapshot(session)).toMatchSnapshot({
     parent: {
       arrayOfSubs: [{ configId: expect.any(String) }],
       sub1: { configId: expect.any(String) },

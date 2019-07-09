@@ -4,11 +4,12 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getSession } from '@gmod/jbrowse-core/util'
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { getRoot, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import TrackControls from './components/TrackControls'
 
 // using a map because it preserves order
@@ -36,17 +37,20 @@ export default configSchema =>
       }))
       .actions(self => ({
         selectFeature(feature) {
-          const root = getRoot(self)
-          if (!root.drawerWidgets.get('variantFeature'))
-            root.addDrawerWidget('VariantFeatureDrawerWidget', 'variantFeature')
-          const featureWidget = root.drawerWidgets.get('variantFeature')
+          const session = getSession(self)
+          if (!session.drawerWidgets.get('variantFeature'))
+            session.addDrawerWidget(
+              'VariantFeatureDrawerWidget',
+              'variantFeature',
+            )
+          const featureWidget = session.drawerWidgets.get('variantFeature')
           featureWidget.setFeatureData(feature.data)
-          root.showDrawerWidget(featureWidget)
-          root.setSelection(feature)
+          session.showDrawerWidget(featureWidget)
+          session.setSelection(feature)
         },
         clearFeatureSelection() {
-          const root = getRoot(self)
-          root.clearSelection()
+          const session = getSession(self)
+          session.clearSelection()
         },
         setRenderer(newRenderer) {
           self.selectedRendering = newRenderer
@@ -71,9 +75,9 @@ export default configSchema =>
          * is probably a feature
          */
         get selectedFeatureId() {
-          const root = getRoot(self)
-          if (!root) return undefined
-          const { selection } = root
+          const session = getSession(self)
+          if (!session) return undefined
+          const { selection } = session
           // does it quack like a feature?
           if (
             selection &&

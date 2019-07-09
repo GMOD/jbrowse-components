@@ -32,7 +32,7 @@ function ConfirmTrack(props) {
     trackAdapter,
     assemblyName,
     setAssemblyName,
-    rootModel,
+    session,
   } = props
 
   useEffect(() => {
@@ -115,7 +115,7 @@ function ConfirmTrack(props) {
           onChange={event => setTrackType(event.target.value)}
           inputProps={{ 'data-testid': 'trackTypeSelect' }}
         >
-          {rootModel.pluginManager
+          {session.pluginManager
             .getElementTypesInGroup('track')
             .map(installedTrackType => (
               <MenuItem
@@ -135,7 +135,7 @@ function ConfirmTrack(props) {
           onChange={event => setAssemblyName(event.target.value)}
           inputProps={{ 'data-testid': 'assemblyNameSelect' }}
         >
-          {rootModel.configuration.assemblies.map(assembly => {
+          {session.configuration.assemblies.map(assembly => {
             const newAssemblyName = readConfObject(assembly, 'assemblyName')
             return (
               <MenuItem key={newAssemblyName} value={newAssemblyName}>
@@ -167,7 +167,7 @@ ConfirmTrack.propTypes = {
     type: PropTypes.string,
   }).isRequired,
   setTrackAdapter: PropTypes.func.isRequired,
-  rootModel: MobxPropTypes.observableObject.isRequired,
+  session: MobxPropTypes.observableObject.isRequired,
 }
 
 ConfirmTrack.defaultProps = {

@@ -79,7 +79,7 @@ export default class ServerSideRenderer extends RendererType {
       'renderRegion',
       serializedArgs,
     )
-    // const result = await renderRegionWithWorker(rootModel, serializedArgs)
+    // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result

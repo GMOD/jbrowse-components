@@ -3,7 +3,7 @@ import ReactPropTypes from 'prop-types'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { withStyles, Icon } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
+import { getSession } from '../util'
 
 const styles = theme => ({
   button: {
@@ -14,7 +14,7 @@ const styles = theme => ({
 
 function ConfigureToggleButton(props) {
   const { classes, model, ...otherProps } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
   return (
     <ToggleButton
       type="button"
@@ -22,9 +22,9 @@ function ConfigureToggleButton(props) {
       style={{ minWidth: 0 }}
       className={classes.button}
       selected={
-        rootModel.visibleDrawerWidget &&
-        rootModel.visibleDrawerWidget.id === 'configEditor' &&
-        rootModel.visibleDrawerWidget.target.configId ===
+        session.visibleDrawerWidget &&
+        session.visibleDrawerWidget.id === 'configEditor' &&
+        session.visibleDrawerWidget.target.configId ===
           model.configuration.configId
       }
       value="configure"

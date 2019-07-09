@@ -1,6 +1,5 @@
 import {
   types,
-  getRoot,
   getParent,
   isArrayType,
   isMapType,
@@ -10,7 +9,7 @@ import {
   isOptionalType,
 } from 'mobx-state-tree'
 
-import { inDevelopment } from '../util'
+import { inDevelopment, getSession } from '../util'
 import { stringToFunction } from '../util/functionStrings'
 import ConfigurationSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './configurationSchema'
@@ -43,7 +42,6 @@ function ConfigurationLayerSlot(
         if (self.isCallback) {
           // compile this as a function
           return stringToFunction(String(self.value), {
-            bind: [getRoot(self)],
             verifyFunctionSignature: inDevelopment
               ? self.parentSlot.functionSignature
               : undefined,
@@ -139,7 +137,7 @@ function ConfigurationLayer(parentSchemaType) {
         if (self.parentConfigId) {
           return resolveIdentifier(
             parentSchemaType,
-            getRoot(self),
+            getSession(self),
             self.parentConfigId,
           )
         }

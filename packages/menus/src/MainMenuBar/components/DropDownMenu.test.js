@@ -18,20 +18,20 @@ jest.mock('popper.js', () => {
 })
 
 describe('<DropDownMenu />', () => {
-  let rootModel
+  let session
 
   beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({
+    ;({ session } = await createTestEnv({
       configId: 'testing',
       rpc: { defaultDriver: 'MainThreadRpcDriver' },
     }))
-    rootModel.menuBars[0].unshiftMenu({
+    session.menuBars[0].unshiftMenu({
       name: 'Test Menu',
       menuItems: [
         {
           name: 'Test Item',
           icon: 'info',
-          callback: 'function(rootModel){rootModel.updateDrawerWidth(200)}',
+          callback: 'function(session){session.updateDrawerWidth(200)}',
         },
       ],
     })
@@ -40,32 +40,32 @@ describe('<DropDownMenu />', () => {
   afterEach(cleanup)
 
   it('renders', () => {
-    const [menu] = rootModel.menuBars[0].menus
+    const [menu] = session.menuBars[0].menus
     const { container } = render(
       <DropDownMenu
         menuTitle={menu.name}
         menuItems={menu.menuItems}
-        rootModel={rootModel}
+        session={session}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('opens a menu and selects a menu item', async () => {
-    const [menu] = rootModel.menuBars[0].menus
+    const [menu] = session.menuBars[0].menus
     const { getByTestId } = render(
       <DropDownMenu
         menuTitle={menu.name}
         menuItems={menu.menuItems}
-        rootModel={rootModel}
+        session={session}
       />,
     )
     fireEvent.click(getByTestId('dropDownMenuButton'))
     const aboutMenuItem = getByTestId('menuItemId')
     expect(aboutMenuItem).toMatchSnapshot()
-    rootModel.updateDrawerWidth(256)
-    expect(rootModel.drawerWidth).toBe(256)
+    session.updateDrawerWidth(256)
+    expect(session.drawerWidth).toBe(256)
     fireEvent.click(aboutMenuItem)
-    expect(rootModel.drawerWidth).toBe(200)
+    expect(session.drawerWidth).toBe(200)
   })
 })

@@ -10,7 +10,7 @@ describe('jbrowse-web app', () => {
   function render(model, pluginManager) {
     ReactDOM.render(
       <App
-        rootModel={model}
+        session={model}
         getViewType={pluginManager.getViewType}
         getDrawerWidgetType={pluginManager.getDrawerWidgetType}
         getMenuBarType={pluginManager.getMenuBarType}
@@ -21,26 +21,26 @@ describe('jbrowse-web app', () => {
   }
 
   it('renders an empty model without crashing', async () => {
-    const { rootModel, pluginManager } = await createTestEnv({
+    const { session, pluginManager } = await createTestEnv({
       defaultSession: {},
     })
-    expect(getSnapshot(rootModel)).toMatchSnapshot({
+    expect(getSnapshot(session)).toMatchSnapshot({
       configuration: {
         configId: expect.any(String),
         rpc: { configId: expect.any(String) },
       },
       menuBars: [{ id: expect.any(String) }],
     })
-    render(rootModel, pluginManager)
+    render(session, pluginManager)
   })
 
   it('accepts a custom drawer width', async () => {
-    const { rootModel, pluginManager } = await createTestEnv({
+    const { session, pluginManager } = await createTestEnv({
       defaultSession: { drawerWidth: 256 },
     })
-    expect(rootModel.drawerWidth).toBe(256)
-    expect(rootModel.viewsWidth).toBe(512)
-    render(rootModel, pluginManager)
+    expect(session.drawerWidth).toBe(256)
+    expect(session.viewsWidth).toBe(512)
+    render(session, pluginManager)
   })
 
   it('throws if drawer width is too small', async () => {
@@ -52,12 +52,12 @@ describe('jbrowse-web app', () => {
   })
 
   it('shrinks a drawer width that is too big', async () => {
-    const { rootModel, pluginManager } = await createTestEnv({
+    const { session, pluginManager } = await createTestEnv({
       defaultSession: { width: 1024, drawerWidth: 256 },
     })
-    rootModel.updateWidth(512)
-    expect(rootModel.drawerWidth).toBe(256)
-    render(rootModel, pluginManager)
+    session.updateWidth(512)
+    expect(session.drawerWidth).toBe(256)
+    render(session, pluginManager)
   })
 
   // describe('restoring and rendering from snapshots', () => {

@@ -16,7 +16,7 @@ export default pluginManager => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
-    .model('JBrowseWebRootModel', {
+    .model('JBrowseWebSessionModel', {
       sessionName: types.optional(types.string, 'UnnamedSession'),
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),

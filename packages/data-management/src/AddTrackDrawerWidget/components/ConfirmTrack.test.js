@@ -5,10 +5,10 @@ import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
 import ConfirmTrack from './ConfirmTrack'
 
 describe('<ConfirmTrack />', () => {
-  let rootModel
+  let session
 
   beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({ configId: 'testing' }))
+    ;({ session } = await createTestEnv({ configId: 'testing' }))
   })
 
   afterEach(cleanup)
@@ -17,7 +17,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = () => {}
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -40,7 +40,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -64,7 +64,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ localPath: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -88,7 +88,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam', config: [] }}
         trackName=""
         setTrackName={mockFunction}

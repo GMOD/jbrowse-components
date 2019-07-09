@@ -5,7 +5,7 @@ import LinearGenomeView from './LinearGenomeView'
 
 describe('LinearGenomeView genome view component', () => {
   it('renders with an empty model', async () => {
-    const { rootModel } = await createTestEnv({
+    const { session } = await createTestEnv({
       defaultSession: {
         views: [
           {
@@ -19,12 +19,12 @@ describe('LinearGenomeView genome view component', () => {
         ],
       },
     })
-    const model = rootModel.views[0]
+    const model = session.views[0]
     const { container } = render(<LinearGenomeView model={model} />)
     expect(container).toMatchSnapshot()
   })
   it('renders one track, no blocks', async () => {
-    const { rootModel } = await createTestEnv({
+    const { session } = await createTestEnv({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -72,12 +72,12 @@ describe('LinearGenomeView genome view component', () => {
         ],
       },
     })
-    const model = rootModel.views[0]
+    const model = session.views[0]
     const { container } = render(<LinearGenomeView model={model} />)
     expect(container).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
-    const { rootModel } = await createTestEnv({
+    const { session } = await createTestEnv({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -146,7 +146,7 @@ describe('LinearGenomeView genome view component', () => {
         ],
       },
     })
-    const model = rootModel.views[0]
+    const model = session.views[0]
     const { container } = render(<LinearGenomeView model={model} />)
     expect(container).toMatchSnapshot()
   })

@@ -11,11 +11,11 @@ import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 jest.mock('shortid', () => ({ generate: () => 'testid' }))
 
 describe('<AddTrackDrawerWidget />', () => {
-  let rootModel
+  let session
   let model
 
   beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({
+    ;({ session } = await createTestEnv({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -91,11 +91,11 @@ describe('<AddTrackDrawerWidget />', () => {
         },
       ],
     }))
-    const view = rootModel.addLinearGenomeViewOfAssembly('volvox', {})
-    rootModel.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
+    const view = session.addLinearGenomeViewOfAssembly('volvox', {})
+    session.addDrawerWidget('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
       view: view.id,
     })
-    model = rootModel.drawerWidgets.get('addTrackDrawerWidget')
+    model = session.drawerWidgets.get('addTrackDrawerWidget')
   })
 
   afterEach(cleanup)
@@ -109,7 +109,7 @@ describe('<AddTrackDrawerWidget />', () => {
     const { container, getByTestId, getByText, getAllByRole } = render(
       <AddTrackDrawerWidget model={model} />,
     )
-    expect(rootModel.configuration.assemblies[0].tracks.length).toBe(1)
+    expect(session.configuration.assemblies[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
     fireEvent.change(getByTestId('trackNameInput'), {
@@ -122,6 +122,6 @@ describe('<AddTrackDrawerWidget />', () => {
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
     fireEvent.click(getByTestId('addTrackNextButton'))
-    expect(rootModel.configuration.assemblies[0].tracks.length).toBe(2)
+    expect(session.configuration.assemblies[0].tracks.length).toBe(2)
   })
 })

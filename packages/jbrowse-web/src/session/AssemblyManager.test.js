@@ -2,11 +2,11 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 import { createTestEnv } from '../JBrowse'
 
 describe('Assembly Manager', () => {
-  let rootModel
+  let session
   let assemblyManager
 
   beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({
+    ;({ session } = await createTestEnv({
       assemblies: [
         {
           assemblyName: 'volvox',
@@ -91,7 +91,7 @@ describe('Assembly Manager', () => {
         },
       ],
     }))
-    ;({ assemblyManager } = rootModel)
+    ;({ assemblyManager } = session)
   })
 
   it('gets ref name aliases', async () => {
@@ -108,14 +108,12 @@ describe('Assembly Manager', () => {
   })
 
   it('aliases ref names for a track', async () => {
-    rootModel.addLinearGenomeViewOfAssembly('volvox', {})
-    rootModel.views[0].showTrack(
-      rootModel.configuration.assemblies[0].tracks[0],
-    )
+    session.addLinearGenomeViewOfAssembly('volvox', {})
+    session.views[0].showTrack(session.configuration.assemblies[0].tracks[0])
 
     assemblyManager.clear()
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`Map {}`)
-    const adapter = getConf(rootModel.views[0].tracks[0], 'adapter')
+    const adapter = getConf(session.views[0].tracks[0], 'adapter')
     await assemblyManager.addRefNameMapForAdapter(adapter, 'volvox')
 
     expect(assemblyManager.refNameMaps).toMatchInlineSnapshot(`

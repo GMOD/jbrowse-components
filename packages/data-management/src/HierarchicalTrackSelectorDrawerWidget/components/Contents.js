@@ -1,10 +1,10 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
 import { withStyles } from '@material-ui/core/styles'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
-import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 // eslint-disable-next-line import/no-cycle
@@ -82,8 +82,8 @@ function Contents(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchy.size, categories.length, trackConfigurations.length])
 
-  const rootModel = getRoot(model)
-  const { assemblyManager } = rootModel
+  const session = getSession(model)
+  const { assemblyManager } = session
   const assemblyData = assemblyManager.assemblyData.get(assemblyName)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size

@@ -5,9 +5,9 @@ import { stateModel } from './index'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a drawer widget', async () => {
-  const rootModel = stateModel.create({ type: 'AlignmentsFeatureDrawerWidget' })
-  const { container, getByText } = render(<ReactComponent model={rootModel} />)
-  rootModel.setFeatureData({
+  const model = stateModel.create({ type: 'AlignmentsFeatureDrawerWidget' })
+  const { container, getByText } = render(<ReactComponent model={model} />)
+  model.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     unmapped: false,
