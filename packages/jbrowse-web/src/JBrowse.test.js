@@ -67,6 +67,7 @@ afterAll(() => {
 describe('valid file tests', () => {
   it('access about menu', async () => {
     const { getByText } = render(<JBrowse configs={[config]} />)
+    await waitForElement(() => getByText('ctgA'))
     await waitForElement(() => getByText('JBrowse'))
     fireEvent.click(getByText('Help'))
     fireEvent.click(getByText('About'))
