@@ -6,11 +6,11 @@ import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configura
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
-import RenderWorker from './rpc.worker'
-import AssemblyManager from './managers/AssemblyManager'
-import rootConfig from './rootConfig'
+import RenderWorker from '../rpc.worker'
+import AssemblyManager from './AssemblyManager'
+import sessionConfigFactory from './sessionConfigFactory'
 
-import * as rpcFuncs from './rpcMethods'
+import * as rpcFuncs from '../rpcMethods'
 
 export default pluginManager => {
   const minWidth = 384
@@ -38,7 +38,7 @@ export default pluginManager => {
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      configuration: rootConfig(pluginManager),
+      configuration: sessionConfigFactory(pluginManager),
       connections: types.map(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
