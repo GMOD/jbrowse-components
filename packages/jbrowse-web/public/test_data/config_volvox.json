@@ -114,28 +114,9 @@
           }
         },
         {
-          "configId": "volvox_bam_altname",
-          "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue (contigA)",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "/test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "/test_data/volvox-sorted.bam.bai"
-              }
-            }
-          }
-        },
-        {
           "configId": "volvox_bam",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue (ctgA)",
+          "name": "volvox-sorted red/blue",
           "category": [
             "Alignments"
           ],
@@ -152,8 +133,7 @@
           },
           "renderers": {
             "PileupRenderer": {
-              "type": "PileupRenderer",
-              "maxHeight": 100
+              "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
