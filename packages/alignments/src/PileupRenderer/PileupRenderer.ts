@@ -21,11 +21,21 @@ interface PileupRenderProps {
   horizontallyFlipped: boolean
   highResolutionScaling: number
 }
-interface PrerenderedCanvasProps extends PileupRenderProps {
+
+interface PileupImageData {
+  imageData?: ImageBitmap
   height: number
   width: number
-  imageData?: ImageBitmap
+  maxHeightReached: boolean
 }
+interface LayoutRecord {
+  feature: Feature
+  startPx: number
+  endPx: number
+  topPx: number
+  heightPx: number
+}
+
 export default class extends BoxRendererType {
   layoutFeature(
     feature: Feature,
@@ -34,22 +44,22 @@ export default class extends BoxRendererType {
     bpPerPx: number,
     region: IRegion,
     horizontallyFlipped: boolean = false,
-  ): {
-    feature: Feature
-    startPx: number
-    endPx: number
-    topPx: number
-    heightPx: number
-  } {
-    // const leftBase = region.start
-    const getCoord = (coord: number): number =>
-      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
-    const startPx = getCoord(feature.get('start'))
-    const endPx = getCoord(feature.get('end'))
+  ): LayoutRecord | null {
+    const startPx = bpToPx(
+      feature.get('start'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const endPx = bpToPx(
+      feature.get('end'),
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+    )
 
+    const maxHeight = readConfObject(config, 'maxHeight', [feature])
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
-    // if (Number.isNaN(startPx)) debugger
-    // if (Number.isNaN(endPx)) debugger
     if (feature.get('refName') !== region.refName) {
       throw new Error(
         `feature ${feature.id()} is not on the current region's reference sequence ${
@@ -61,9 +71,12 @@ export default class extends BoxRendererType {
       feature.id(),
       feature.get('start'),
       feature.get('end'),
-      heightPx, // height
+      heightPx,
       feature,
     )
+    if (topPx === null) {
+      return null
+    }
 
     return {
       feature,
@@ -74,19 +87,16 @@ export default class extends BoxRendererType {
     }
   }
 
-  async makeImageData({
-    features,
-    layout,
-    config,
-    region,
-    bpPerPx,
-    horizontallyFlipped,
-    highResolutionScaling = 1,
-  }: PileupRenderProps): Promise<{
-    imageData?: ImageBitmap
-    height: number
-    width: number
-  }> {
+  async makeImageData(props: PileupRenderProps): Promise<PileupImageData> {
+    const {
+      features,
+      layout,
+      config,
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+      highResolutionScaling = 1,
+    } = props
     if (!layout) throw new Error(`layout required`)
     if (!layout.addRect) throw new Error('invalid layout object')
     const getCoord = (coord: number): number =>
@@ -108,7 +118,8 @@ export default class extends BoxRendererType {
 
     const width = (region.end - region.start) / bpPerPx
     const height = layout.getTotalHeight()
-    if (!(width > 0) || !(height > 0)) return { height: 0, width: 0 }
+    if (!(width > 0) || !(height > 0))
+      return { height: 0, width: 0, maxHeightReached: false }
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
@@ -119,8 +130,14 @@ export default class extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
+    let maxHeightReached = false
 
-    layoutRecords.forEach(({ feature, startPx, endPx, topPx, heightPx }) => {
+    layoutRecords.forEach(feat => {
+      if (feat === null) {
+        maxHeightReached = true
+        return
+      }
+      const { feature, startPx, endPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
       const mismatches: Mismatch[] = feature.get('mismatches')
@@ -183,24 +200,30 @@ export default class extends BoxRendererType {
     })
 
     const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width }
+    return { imageData, height, width, maxHeightReached }
   }
 
   async render(
     renderProps: PileupRenderProps,
   ): Promise<{
-    element: ComponentElement<PrerenderedCanvasProps, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+    element: ComponentElement<PileupRenderProps & PileupImageData, any> // eslint-disable-line @typescript-eslint/no-explicit-any
     imageData?: ImageBitmap
     height: number
     width: number
+    maxHeightReached: boolean
   }> {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
+    const {
+      height,
+      width,
+      imageData,
+      maxHeightReached,
+    } = await this.makeImageData(renderProps)
     const element = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
     )
     // @ts-ignore seems to think imageData is optional in some context?
-    return { element, imageData, height, width }
+    return { element, imageData, height, width, maxHeightReached }
   }
 }

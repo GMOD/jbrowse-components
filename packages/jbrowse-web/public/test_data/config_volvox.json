@@ -179,24 +179,6 @@
           }
         },
         {
-          "type": "AlignmentsTrack",
-          "name": "volvox-sorted all green",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "/test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "/test_data/volvox-sorted.bam.bai"
-              }
-            }
-          }
-        },
-        {
           "configId": "i3jUPmrgMOS",
           "type": "FilteringTrack",
           "name": "Filter track",

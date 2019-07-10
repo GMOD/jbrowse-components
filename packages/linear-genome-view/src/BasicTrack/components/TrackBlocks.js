@@ -21,6 +21,19 @@ const styles = {
     backgroundImage:
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
   },
+
+  heightOverflowed: {
+    position: 'absolute',
+    color: 'rgb(77,77,77)',
+    borderBottom: '2px solid rgb(77,77,77)',
+    textShadow: 'white 0px 0px 1px',
+    whiteSpace: 'nowrap',
+    width: '100%',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    zIndex: 2000,
+    boxSizing: 'border-box',
+  },
 }
 
 const ElidedBlockMarker = withStyles(styles)(function ElidedBlockMarker({
@@ -57,9 +70,18 @@ function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
             >
               {state && state.reactComponent ? (
                 <state.reactComponent model={state} />
-              ) : (
-                ' '
-              )}
+              ) : null}
+              {state && state.maxHeightReached ? (
+                <div
+                  className={classes.heightOverflowed}
+                  style={{
+                    top: state.data.layout.totalHeight - 16,
+                    height: 16,
+                  }}
+                >
+                  Max height reached
+                </div>
+              ) : null}
             </Block>
           )
         }
