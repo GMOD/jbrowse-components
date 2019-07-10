@@ -166,7 +166,7 @@ class Lollipop extends Component {
     const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
 
     return (
-      <g>
+      <g data-testid={feature.id()}>
         <title>{readConfObject(config, 'caption', [feature])}</title>
         <circle
           cx={anchorLocation}

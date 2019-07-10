@@ -136,7 +136,21 @@ describe('some error state', () => {
   })
 })
 
-describe('variant', () => {
+describe('lollipop track test', () => {
+  it('see that a lollipop feature exists', async () => {
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse configs={[config]} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(1, 150)
+    fireEvent.click(await waitForElement(() => byId('lollipop_track')))
+
+    await waitForElement(() => byId('track-lollipop_track'))
+    expect(await waitForElement(() => byId('three'))).toBeTruthy()
+  })
+})
+
+describe('variant track test', () => {
   it('click on a vcf feature', async () => {
     const { getByTestId: byId, getByText } = render(
       <JBrowse configs={[config]} />,
