@@ -23,7 +23,12 @@ function flushLog() {
   if (logBuffer.length) {
     for (const l of logBuffer) {
       // eslint-disable-next-line no-console
-      console.log(...l)
+      const [head, ...rest] = l
+      if (head === 'rpc-error') {
+        console.error(head, ...rest)
+      } else {
+        console.log(head, ...rest)
+      }
     }
     logBuffer.length = 0
   }
