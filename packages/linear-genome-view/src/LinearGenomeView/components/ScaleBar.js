@@ -46,6 +46,9 @@ function ScaleBar({
   bpPerPx,
   width,
   horizontallyFlipped,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
 }) {
   const finalStyle = Object.assign({}, style, {
     height: `${height}px`,
@@ -58,7 +61,13 @@ function ScaleBar({
   )
 
   return (
-    <div style={finalStyle} className={classes.scaleBar}>
+    <div
+      style={finalStyle}
+      className={classes.scaleBar}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+    >
       {blocks.map(block => {
         return (
           <Block

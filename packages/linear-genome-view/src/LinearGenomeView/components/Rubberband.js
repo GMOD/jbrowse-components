@@ -66,8 +66,10 @@ class Rubberband extends Component {
     window.removeEventListener('mousemove', this.mouseMove, true)
   }
 
-  mouseMove = ({ clientX }) => {
+  mouseMove = event => {
+    const { clientX } = event
     const x = this.clientXToOffset(clientX)
+    event.preventDefault()
 
     const { rubberband } = this.state
     if (rubberband) {
