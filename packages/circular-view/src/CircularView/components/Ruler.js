@@ -109,8 +109,10 @@ export default pluginManager => {
         }
         if (maxWidthPx > 12) {
           // text is rotated perpendicular to the ruler arc
-          const overallRotation = radToDeg(radians + view.offsetRadians)
-          if (overallRotation < 180) {
+          const overallRotation = radToDeg(
+            radians + view.offsetRadians - Math.PI / 2,
+          )
+          if (overallRotation >= 180) {
             return (
               <text
                 x={0}
