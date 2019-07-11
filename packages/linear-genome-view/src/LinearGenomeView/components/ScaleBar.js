@@ -104,7 +104,14 @@ function ScaleBar({
     </div>
   )
 }
-ScaleBar.defaultProps = { style: {}, blocks: [], horizontallyFlipped: false }
+ScaleBar.defaultProps = {
+  style: {},
+  blocks: [],
+  horizontallyFlipped: false,
+  onMouseDown: () => {},
+  onMouseMove: () => {},
+  onMouseUp: () => {},
+}
 ScaleBar.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   style: PropTypes.objectOf(PropTypes.any),
@@ -117,6 +124,9 @@ ScaleBar.propTypes = {
   bpPerPx: PropTypes.number.isRequired,
   offsetPx: PropTypes.number.isRequired,
   horizontallyFlipped: PropTypes.bool,
+  onMouseDown: PropTypes.func,
+  onMouseMove: PropTypes.func,
+  onMouseUp: PropTypes.func,
 }
 
 export default withStyles(styles)(ScaleBar)

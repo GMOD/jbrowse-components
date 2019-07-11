@@ -58,7 +58,6 @@ export default class extends BoxRendererType {
       horizontallyFlipped,
     )
 
-    const maxHeight = readConfObject(config, 'maxHeight', [feature])
     const heightPx = readConfObject(config, 'alignmentHeight', [feature])
     if (feature.get('refName') !== region.refName) {
       throw new Error(

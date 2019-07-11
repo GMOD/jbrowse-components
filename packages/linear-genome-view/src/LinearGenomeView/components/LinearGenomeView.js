@@ -3,11 +3,10 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useState, useRef } from 'react'
+import { PropTypes as ReactPropTypes } from 'prop-types'
+import React, { useState } from 'react'
 
 import ScaleBar from './ScaleBar'
-import Rubberband from './Rubberband'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
@@ -83,6 +82,10 @@ const HighlightRegion = props => {
   )
 }
 
+HighlightRegion.propTypes = {
+  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+  rubberband: ReactPropTypes.array.isRequired,
+}
 
 function LinearGenomeView(props) {
   const scaleBarHeight = 32
