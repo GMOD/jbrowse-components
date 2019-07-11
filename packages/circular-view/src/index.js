@@ -7,6 +7,10 @@ export default class CircularViewPlugin {
     pluginManager.addTrackType(() =>
       pluginManager.jbrequire(require('./StructuralVariantChordTrack')),
     )
+
+    pluginManager.addRendererType(() =>
+      pluginManager.jbrequire(require('./StructuralVariantChordRenderer')),
+    )
   }
 
   configure() {}

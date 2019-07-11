@@ -1,31 +1,31 @@
 import {
-  viewportVisibleSlice,
+  viewportVisibleSection,
   cartesianToPolar,
   thetaRangesOverlap,
 } from './viewportVisibleRegion'
 
-describe('viewportVisibleSlice', () => {
+describe('viewportVisibleSection', () => {
   // test('circle contained in viewport', () => {
-  //   const result = viewportVisibleSlice([0, 1, 0, 1], [0.5, 0.5], 0.3)
+  //   const result = viewportVisibleSection([0, 1, 0, 1], [0.5, 0.5], 0.3)
   //   expect(result).toEqual({ rho: [0, 0.3], theta: [0, 2 * Math.PI] })
   // })
 
   // test('viewport completely inside circle', () => {
-  //   const result = viewportVisibleSlice([0, 1, 0, 1], [0.5, 0.5], 20)
+  //   const result = viewportVisibleSection([0, 1, 0, 1], [0.5, 0.5], 20)
   //   expect(result.theta).toEqual([0, 2 * Math.PI])
   //   expect(result.rho[0]).toEqual(0)
   //   expect(result.rho[1]).toBeCloseTo(0.7071)
   // })
 
   // test('viewport on left half of circle', () => {
-  //   const result = viewportVisibleSlice([200, 500, 0, 1000], [500, 500], 20)
+  //   const result = viewportVisibleSection([200, 500, 0, 1000], [500, 500], 20)
   //   expect(result).toEqual({
   //     rho: [0, 20],
   //     theta: [Math.PI / 2, 1.5 * Math.PI],
   //   })
   // })
   // test('viewport on right half of circle', () => {
-  //   const result = viewportVisibleSlice([200, 500, 0, 1000], [200, 500], 20)
+  //   const result = viewportVisibleSection([200, 500, 0, 1000], [200, 500], 20)
   //   expect(result).toEqual({
   //     rho: [0, 20],
   //     theta: [1.5 * Math.PI, 2.5 * Math.PI],
@@ -33,7 +33,7 @@ describe('viewportVisibleSlice', () => {
   // })
 
   // test('viewport corner in circle', () => {
-  //   const { theta, rho } = viewportVisibleSlice(
+  //   const { theta, rho } = viewportVisibleSection(
   //     [200, 500, 0, 700],
   //     [199, 701],
   //     100,
@@ -44,7 +44,7 @@ describe('viewportVisibleSlice', () => {
   // })
 
   // test('viewport on center right', () => {
-  //   const { theta, rho } = viewportVisibleSlice(
+  //   const { theta, rho } = viewportVisibleSection(
   //     [1102, 2153, 880, 1280],
   //     [1068.8119697255406, 1068.8119697255406],
   //     1048.8119697255406,
@@ -56,7 +56,7 @@ describe('viewportVisibleSlice', () => {
   // })
 
   // test('viewport on center right 2', () => {
-  //   const { theta, rho } = viewportVisibleSlice(
+  //   const { theta, rho } = viewportVisibleSection(
   //     [1816, 2937, 1074, 1474],
   //     [1468.6015446723616, 1468.6015446723616],
   //     1448.6015446723616,
@@ -68,7 +68,7 @@ describe('viewportVisibleSlice', () => {
   // })
 
   // test('viewport on lower center', () => {
-  //   const { theta, rho } = viewportVisibleSlice(
+  //   const { theta, rho } = viewportVisibleSection(
   //     [259, 1350, 1176, 1576],
   //     [787.7952717090081, 787.7952717090081],
   //     767.7952717090081,
@@ -80,7 +80,7 @@ describe('viewportVisibleSlice', () => {
   // })
 
   // test('viewport on upper center', () => {
-  //   const { theta, rho } = viewportVisibleSlice(
+  //   const { theta, rho } = viewportVisibleSection(
   //     [286, 1377, 0, 400],
   //     [787.7952717090081, 787.7952717090081],
   //     767.7952717090081,
@@ -94,7 +94,7 @@ describe('viewportVisibleSlice', () => {
   test('viewport on upper center 2', () => {
     // [180.48708681644143, 359.3411680673888] [4.6042679453532855, 541.6042679453533]
     // see '~/Desktop/Screen Shot 2019-06-28 at 3.01.22 PM.png'
-    const { theta, rho } = viewportVisibleSlice(
+    const { theta, rho } = viewportVisibleSection(
       [0, 962, 157, 557],
       [561.6042679453533, 561.6042679453533],
       541.6042679453533,

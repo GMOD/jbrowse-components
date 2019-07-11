@@ -58,7 +58,7 @@
             }
           },
           "renderer": {
-            "type": "PileupRenderer"
+            "type": "StructuralVariantChordRenderer"
           }
         }
       ]

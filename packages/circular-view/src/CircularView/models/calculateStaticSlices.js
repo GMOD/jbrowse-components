@@ -1,5 +1,5 @@
 import {
-  viewportVisibleSlice,
+  viewportVisibleSection,
   thetaRangesOverlap,
 } from './viewportVisibleRegion'
 
@@ -41,7 +41,7 @@ export default ({ jbrequire }) => {
     const {
       // rho: visibleRhoRange,
       theta: [visibleThetaMin, visibleThetaMax],
-    } = viewportVisibleSlice(
+    } = viewportVisibleSection(
       [
         self.scrollX,
         self.scrollX + self.width,

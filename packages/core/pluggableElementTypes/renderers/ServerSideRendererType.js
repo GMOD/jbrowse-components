@@ -93,15 +93,18 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs) {
     const { dataAdapter, region, signal, bpPerPx } = renderArgs
     const features = new Map()
+
+    // make sure the requested region's start and end are integers, if
+    // there is a region specification.
+    const requestRegion = { ...region }
+    if (requestRegion.start)
+      requestRegion.start = Math.floor(requestRegion.start)
+    if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+
+    console.log(requestRegion)
+
     await dataAdapter
-      .getFeaturesInRegion(
-        {
-          ...region,
-          start: Math.floor(region.start),
-          end: Math.ceil(region.end),
-        },
-        { signal, bpPerPx },
-      )
+      .getFeaturesInRegion(requestRegion, { signal, bpPerPx })
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),

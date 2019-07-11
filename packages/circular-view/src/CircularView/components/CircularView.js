@@ -68,17 +68,32 @@ export default pluginManager => {
     observer(({ classes, model }) => {
       return (
         <>
-          {model.staticSlices.map(slice => {
-            return (
-              <Ruler
-                key={assembleLocString(
-                  slice.region.elided ? slice.region.regions[0] : slice.region,
-                )}
-                model={model}
-                slice={slice}
-              />
-            )
-          })}
+          <>
+            {model.staticSlices.map(slice => {
+              return (
+                <Ruler
+                  key={assembleLocString(
+                    slice.region.elided
+                      ? slice.region.regions[0]
+                      : slice.region,
+                  )}
+                  model={model}
+                  slice={slice}
+                />
+              )
+            })}
+          </>
+          <>
+            {model.tracks.map(track => {
+              return (
+                <track.RenderingComponent
+                  key={track.id}
+                  track={track}
+                  view={model}
+                />
+              )
+            })}
+          </>
         </>
       )
     }),

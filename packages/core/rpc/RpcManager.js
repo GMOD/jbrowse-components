@@ -66,15 +66,16 @@ class RpcManager {
   }
 
   async call(stateGroupName, functionName, ...args) {
-    const { assemblyName, signal } = args[0]
-    if (assemblyName) {
+    const { assemblyName, signal, region, adapterConfig } = args[0]
+    if (assemblyName && region) {
       const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
-        args[0].adapterConfig,
+        adapterConfig,
         assemblyName,
         { signal },
       )
-      if (refNameMap.has(args[0].region.refName))
-        args[0].region.setRefName(refNameMap.get(args[0].region.refName))
+
+      if (refNameMap.has(region.refName))
+        region.setRefName(refNameMap.get(region.refName))
     }
     return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,

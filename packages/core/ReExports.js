@@ -12,6 +12,8 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
+import ServerSideRendererType from './pluggableElementTypes/renderers/ServerSideRendererType'
+
 import * as Configuration from './configuration'
 import Plugin from './Plugin'
 import * as coreUtil from './util'
@@ -35,6 +37,7 @@ export default {
   '@gmod/jbrowse-core/pluggableElementTypes/ViewType': ViewType,
   '@gmod/jbrowse-core/pluggableElementTypes/AdapterType': AdapterType,
   '@gmod/jbrowse-core/pluggableElementTypes/TrackType': TrackType,
+  '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
   '@gmod/jbrowse-core/configuration': Configuration,
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,

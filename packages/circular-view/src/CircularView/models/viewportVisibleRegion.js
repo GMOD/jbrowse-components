@@ -57,7 +57,7 @@ export function thetaRangesOverlap(r1start, r1length, r2start, r2length) {
 }
 
 // return which arc range has any part of the circle visible in the viewport
-export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
+export function viewportVisibleSection(viewSides, circleCenter, circleRadius) {
   let [viewL, viewR, viewT, viewB] = viewSides
   const [cx, cy] = circleCenter
 
@@ -220,16 +220,4 @@ export function viewportVisibleSlice(viewSides, circleCenter, circleRadius) {
     rho: [rhoMin, Math.min(circleRadius, rhoMax)],
     theta: [thetaMin, thetaMax],
   }
-  /*
-  cases:
-  * viewport completely contains circle - return all
-
-  * circle completely contains viewport
-  ** center is inside viewport - return all
-  ** center is outside viewport - take max and min of thetas
-
-  * viewport and circle do not intersect - return undefined
-
-  * viewport and circle partially intersect
-  */
 }
