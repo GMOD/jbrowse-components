@@ -232,7 +232,10 @@ class PileupRendering extends Component {
     // need to call this in render so we get the right observer behavior
     this.updateSelectionHighlight()
     return (
-      <div className="PileupRendering" style={{ position: 'relative' }}>
+      <div
+        className="PileupRendering"
+        style={{ position: 'relative', width: canvasWidth, height }}
+      >
         <PrerenderedCanvas
           {...this.props}
           style={{ position: 'absolute', left: 0, top: 0 }}
