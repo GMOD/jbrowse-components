@@ -1,4 +1,5 @@
 import { decorate, observable } from 'mobx'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 import rpcConfigSchema from './configSchema'
@@ -65,17 +66,39 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
+  renameRegionIfNeeded(refNameMap, container, keyForRegion) {
+    let region = container[keyForRegion]
+
+    if (region && refNameMap.has(region.refName)) {
+      // clone the region so we don't modify it
+      if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
+      else region = { ...region }
+
+      // modify it directly in the container
+      region.refName = refNameMap.get(region.refName)
+      container[keyForRegion] = region
+    }
+  }
+
   async call(stateGroupName, functionName, ...args) {
-    const { assemblyName, signal, region, adapterConfig } = args[0]
-    if (assemblyName && region) {
+    const { assemblyName, signal, region, regions, adapterConfig } = args[0]
+
+    // TODO: this renaming stuff should probably be moved to the session model
+    // when we have a session model
+    if (assemblyName) {
       const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
         adapterConfig,
         assemblyName,
         { signal },
       )
 
-      if (refNameMap.has(region.refName))
-        region.setRefName(refNameMap.get(region.refName))
+      this.renameRegionIfNeeded(refNameMap, args[0], 'region')
+
+      if (regions) {
+        regions.forEach((r, index) => {
+          this.renameRegionIfNeeded(refNameMap, regions, index)
+        })
+      }
     }
     return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,

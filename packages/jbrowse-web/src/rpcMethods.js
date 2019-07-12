@@ -130,10 +130,11 @@ export function freeResources(pluginManager, specification) {
 }
 
 /**
- * render a single region
+ * call a renderer with the given args
+ * s
  * @param {PluginManager} pluginManager
  * @param {object} args
- * @param {object} args.region
+ * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
  * @param {string} args.sessionId
  * @param {string} args.adapterType
  * @param {object} args.adapterConfig
@@ -141,9 +142,10 @@ export function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {AbortSignal} [args.signal]
  */
-export async function renderRegion(
+export async function render(
   pluginManager,
   {
+    regions,
     region,
     sessionId,
     adapterType,
@@ -178,6 +180,7 @@ export async function renderRegion(
     ...renderProps,
     sessionId,
     dataAdapter,
+    regions,
     region,
     signal,
   })

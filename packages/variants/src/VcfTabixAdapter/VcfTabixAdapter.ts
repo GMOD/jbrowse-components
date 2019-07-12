@@ -67,7 +67,6 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const parser = await this.parser
-        console.log(query)
         await this.vcf.getLines(
           query.refName,
           query.start,

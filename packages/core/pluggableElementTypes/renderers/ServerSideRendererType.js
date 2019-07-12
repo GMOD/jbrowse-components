@@ -1,5 +1,6 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { getSnapshot } from 'mobx-state-tree'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import RendererType from './RendererType'
@@ -28,6 +29,10 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
+    if (args.regions) {
+      args.regions = [...getSnapshot(args.regions)]
+    }
+    if (args.region) args.region = { ...getSnapshot(args.region) }
     return args
   }
 
@@ -67,7 +72,7 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    * Render method called on the client. Serializes args, then
-   * calls `renderRegion` with the RPC manager.
+   * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager, args) {
     const serializedArgs = this.serializeArgsInClient(args)
@@ -75,7 +80,7 @@ export default class ServerSideRenderer extends RendererType {
     const stateGroupName = args.sessionId
     const result = await rpcManager.call(
       stateGroupName,
-      'renderRegion',
+      'render',
       serializedArgs,
     )
     // const result = await renderRegionWithWorker(rootModel, serializedArgs)
@@ -91,20 +96,43 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {Map} of features as { id => feature, ... }
    */
   async getFeatures(renderArgs) {
-    const { dataAdapter, region, signal, bpPerPx } = renderArgs
+    const { dataAdapter, signal, bpPerPx } = renderArgs
+    let { regions } = renderArgs
     const features = new Map()
+    let featureObservable
 
-    // make sure the requested region's start and end are integers, if
-    // there is a region specification.
-    const requestRegion = { ...region }
-    if (requestRegion.start)
-      requestRegion.start = Math.floor(requestRegion.start)
-    if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+    if (!regions && renderArgs.region) {
+      regions = [renderArgs.region]
+    }
 
-    console.log(requestRegion)
+    if (!regions || regions.length === 0) return features
 
-    await dataAdapter
-      .getFeaturesInRegion(requestRegion, { signal, bpPerPx })
+    const requestRegions = regions.map(region => {
+      // make sure the requested region's start and end are integers, if
+      // there is a region specification.
+      const requestRegion = { ...region }
+      if (requestRegion.start)
+        requestRegion.start = Math.floor(requestRegion.start)
+      if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+      return requestRegion
+    })
+
+    if (requestRegions.length === 1) {
+      featureObservable = dataAdapter.getFeaturesInRegion(requestRegions[0], {
+        signal,
+        bpPerPx,
+      })
+    } else {
+      featureObservable = dataAdapter.getFeaturesInMultipleRegions(
+        requestRegions,
+        {
+          signal,
+          bpPerPx,
+        },
+      )
+    }
+
+    await featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
@@ -116,6 +144,7 @@ export default class ServerSideRenderer extends RendererType {
         ignoreElements(),
       )
       .toPromise()
+
     return features
   }
 

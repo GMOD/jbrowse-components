@@ -115,7 +115,7 @@ export default pluginManager => {
         // remove any single-region elisions
         for (let i = 0; i < visible.length; i += 1) {
           const v = visible[i]
-          if (v.elided && v.regions.length == 1) {
+          if (v.elided && v.regions.length === 1) {
             delete v.elided
             visible[i] = { ...v, ...v.regions[0] }
           }

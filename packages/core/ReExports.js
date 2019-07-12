@@ -1,5 +1,6 @@
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import React from 'react'
+import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
@@ -27,6 +28,7 @@ export default {
   mobx,
   'mobx-state-tree': mst,
   react: React,
+  'react-dom': ReactDom,
   'mobx-react': mxreact,
   'mobx-react-lite': mxreactlite,
   'prop-types': PropTypes,

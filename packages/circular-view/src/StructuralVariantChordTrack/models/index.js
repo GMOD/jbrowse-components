@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { reaction } = jbrequire('mobx')
+  const { reaction, trace } = jbrequire('mobx')
 
   const { types, getParent, addDisposer, isAlive, getRoot } = jbrequire(
     'mobx-state-tree',
@@ -47,50 +47,15 @@ export default pluginManager => {
       // NOTE: all this volatile stuff has to be filled in at once
       // so that it stays consistent
       filled: false,
+      html: '',
       data: undefined,
       error: undefined,
-      fillInProgress: undefined,
+      renderingComponent: undefined,
+      renderInProgress: undefined,
     }))
     .views(self => ({
       get blockDefinitions() {
         return getContainingView(self).staticSlices
-      },
-
-      /**
-       * the PluggableElementType for the currently defined adapter
-       */
-      get adapterType() {
-        const adapterConfig = getConf(self, 'adapter')
-        if (!adapterConfig)
-          throw new Error(`no adapter configuration provided for ${self.type}`)
-        const adapterType = pluginManager.getAdapterType(adapterConfig.type)
-        if (!adapterType)
-          throw new Error(`unknown adapter type ${adapterConfig.type}`)
-        return adapterType
-      },
-
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-
-      /**
-       * the pluggable element type object for this track's
-       * renderer
-       */
-      get rendererType() {
-        const track = self
-        const RendererType = pluginManager.getRendererType(
-          self.rendererTypeName,
-        )
-        if (!RendererType)
-          throw new Error(`renderer "${track.rendererTypeName}" not found`)
-        if (!RendererType.ReactComponent)
-          throw new Error(
-            `renderer ${
-              track.rendererTypeName
-            } has no ReactComponent, it may not be completely implemented yet`,
-          )
-        return RendererType
       },
     }))
     .actions(self => ({
@@ -98,7 +63,9 @@ export default pluginManager => {
         const track = self
         const renderDisposer = reaction(
           () => renderReactionData(self),
-          data => renderReactionEffect(self, data),
+          data => {
+            renderReactionEffect(self, data)
+          },
           {
             name: `${track.id} rendering`,
             delay: track.renderDelay,
@@ -117,7 +84,6 @@ export default pluginManager => {
         self.data = undefined
         self.error = undefined
         self.renderingComponent = undefined
-        self.renderProps = undefined
         self.renderInProgress = abortController
       },
       setMessage(messageText) {
@@ -130,17 +96,15 @@ export default pluginManager => {
         self.data = undefined
         self.error = undefined
         self.renderingComponent = undefined
-        self.renderProps = undefined
         self.renderInProgress = undefined
       },
-      setRendered(data, html, renderingComponent, renderProps) {
+      setRendered(data, html, renderingComponent) {
         self.filled = true
         self.message = undefined
         self.html = html
         self.data = data
         self.error = undefined
         self.renderingComponent = renderingComponent
-        self.renderProps = renderProps
         self.renderInProgress = undefined
       },
       setError(error) {
@@ -154,7 +118,6 @@ export default pluginManager => {
         self.data = undefined
         self.error = error
         self.renderingComponent = undefined
-        self.renderProps = undefined
         self.renderInProgress = undefined
       },
       beforeDestroy() {

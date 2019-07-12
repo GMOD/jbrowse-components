@@ -1,5 +1,6 @@
 export default ({ jbrequire }) => {
-  const { isAlive, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { trace } = jbrequire('mobx')
+  const { isAlive, getParent, getRoot, getSnapshot } = jbrequire('mobx-state-tree')
   const { assembleLocString, checkAbortSignal, isAbortException } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
@@ -13,6 +14,7 @@ export default ({ jbrequire }) => {
   function renderReactionData(self) {
     const track = self
     const view = getContainingView(track)
+    const { rendererType, renderProps } = track
     const { rpcManager, assemblyManager } = getRoot(view)
 
     // const trackConf = track.configuration
@@ -35,8 +37,6 @@ export default ({ jbrequire }) => {
     //   cannotBeRenderedReason = 'region assembly does not match track assembly'
     // else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
 
-    const renderProps = { ...track.renderProps }
-    const { rendererType } = track
     const assemblyName = readConfObject(
       getContainingAssembly(track.configuration),
       'assemblyName',
@@ -49,11 +49,11 @@ export default ({ jbrequire }) => {
       trackError: track.error,
       renderArgs: {
         assemblyName,
-        region: self.region,
         adapterType: track.adapterType.name,
         adapterConfig: getConf(track, 'adapter'),
         rendererType: rendererType.name,
         renderProps,
+        regions: view.displayedRegions,
         sessionId: track.id,
         timeout: 1000000, // 10000,
       },
@@ -99,7 +99,7 @@ export default ({ jbrequire }) => {
       //   console.log(...callId, 'request to abort render was ignored', html, data)
       // }
       checkAbortSignal(aborter.signal)
-      self.setRendered(data, html, rendererType.ReactComponent, renderProps)
+      self.setRendered(data, html, rendererType.ReactComponent)
     } catch (error) {
       if (!isAbortException(error)) console.error(error)
       if (isAbortException(error) && !aborter.signal.aborted) {
