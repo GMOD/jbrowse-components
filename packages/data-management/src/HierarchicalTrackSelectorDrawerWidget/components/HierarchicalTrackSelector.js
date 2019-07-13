@@ -1,11 +1,14 @@
 import { getSession } from '@gmod/jbrowse-core/util'
 import Fab from '@material-ui/core/Fab'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
+import Switch from '@material-ui/core/Switch'
 import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
 import { withStyles } from '@material-ui/core/styles'
@@ -92,9 +95,13 @@ function HierarchicalTrackSelector(props) {
 
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
+  if (!assemblyName) return null
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
+  const species = session.species.find(
+    s => readConfObject(s, ['assembly', 'name']) === assemblyName,
+  )
 
   return (
     <div
@@ -137,20 +144,59 @@ function HierarchicalTrackSelector(props) {
         assemblyName={assemblyName}
         top
       />
-      {session.connections.size ? (
+      <FormGroup>
+        {species.connections.map(connectionConf => (
+          <FormControlLabel
+            key={readConfObject(connectionConf, 'name')}
+            control={
+              <Switch
+                checked={
+                  session.connections.has(assemblyName) &&
+                  !!session.connections
+                    .get(assemblyName)
+                    .find(
+                      connection =>
+                        connection.name ===
+                        readConfObject(connectionConf, 'name'),
+                    )
+                }
+                onChange={() => {
+                  if (
+                    !(
+                      session.connections.has(assemblyName) &&
+                      !!session.connections
+                        .get(assemblyName)
+                        .find(
+                          connection =>
+                            connection.name ===
+                            readConfObject(connectionConf, 'name'),
+                        )
+                    )
+                  )
+                    session.makeConnection(connectionConf)
+                  else session.breakConnection(connectionConf)
+                }}
+                // value="checkedA"
+              />
+            }
+            label={readConfObject(connectionConf, 'name')}
+          />
+        ))}
+      </FormGroup>
+      {session.connections.has(assemblyName) ? (
         <>
           <Typography variant="h5">Connections:</Typography>
-          {Array.from(session.connections.keys()).map(connectionName => (
+          {session.connections.get(assemblyName).map(connection => (
             <Paper
-              key={connectionName}
+              key={connection.name}
               className={classes.connectionsPaper}
               elevation={8}
             >
-              <Typography variant="h6">{connectionName}</Typography>
+              <Typography variant="h6">{connection.name}</Typography>
               <Contents
                 model={model}
                 filterPredicate={filter}
-                connection={connectionName}
+                connection={connection}
                 assemblyName={assemblyName}
                 top
               />

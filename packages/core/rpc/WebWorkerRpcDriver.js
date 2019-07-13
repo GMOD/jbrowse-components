@@ -1,6 +1,6 @@
 import Rpc from '@librpc/web'
 
-import { objectFromEntries } from '../util'
+import { objectFromEntries, checkAbortSignal } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {
@@ -134,6 +134,7 @@ export default class WebWorkerRpcDriver {
   }
 
   call(pluginManager, stateGroupName, functionName, args, options = {}) {
+    checkAbortSignal(options.signal)
     const worker = this.getWorker(stateGroupName)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     return worker.call(functionName, filteredArgs, {

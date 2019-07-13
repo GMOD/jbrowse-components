@@ -25,14 +25,19 @@ class RpcManager {
 
   driverObjects = {}
 
-  constructor(pluginManager, mainConfiguration, backendConfigurations = {}) {
+  constructor(
+    pluginManager,
+    mainConfiguration,
+    backendConfigurations = {},
+    getRefNameMapForAdapter = () => {},
+  ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
     }
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
-    this.assemblyManager = null
+    this.getRefNameMapForAdapter = getRefNameMapForAdapter
   }
 
   getDriver(backendName) {
@@ -71,12 +76,12 @@ class RpcManager {
     if (assemblyName) {
       const { region } = args[0]
       const { refName } = region
-      const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
+      const refNameMap = await this.getRefNameMapForAdapter(
         args[0].adapterConfig,
         assemblyName,
         { signal },
       )
-      if (refNameMap.has(refName)) {
+      if (refNameMap && refNameMap.has(refName)) {
         if (isStateTreeNode(region) && isAlive(region)) {
           region.setRefName(refNameMap.get(refName))
         } else {
@@ -89,6 +94,7 @@ class RpcManager {
       stateGroupName,
       functionName,
       args,
+      { signal },
     )
   }
 }

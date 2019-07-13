@@ -136,7 +136,7 @@ function ConfirmTrack(props) {
           inputProps={{ 'data-testid': 'assemblyNameSelect' }}
         >
           {session.configuration.assemblies.map(assembly => {
-            const newAssemblyName = readConfObject(assembly, 'assemblyName')
+            const newAssemblyName = readConfObject(assembly, 'name')
             return (
               <MenuItem key={newAssemblyName} value={newAssemblyName}>
                 {newAssemblyName}

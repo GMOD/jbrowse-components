@@ -62,9 +62,13 @@ config slot "name", you can set its value using `model.target.name.set('someNewN
 The following is a frame of a basic state model
 
 ```js
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
 import { flow, types } from 'mobx-state-tree'
+import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'
 
 function modelFactory(pluginManager) {
@@ -84,15 +88,11 @@ function modelFactory(pluginManager) {
         // All tracks must be added under an assembly. This assembly might be
         // configured by the user or might be determined by the nature of the
         // connection
-        const assemblyName = readConfObject(connectionConf, 'assemblyName')
-        self.addAssembly({ assemblyName, tracks })
+        setTrackConfs(tracks)
 
         // If necessary, the tracks can be added incrementally
-        self.addEmptyAssembly(assemblyName)
         tracks.forEach(track => {
-          self.assemblies
-            .get(assemblyName)
-            .addTrackConf(track.type, track)
+          addTrackConf(track)
         })
       }),
     })),

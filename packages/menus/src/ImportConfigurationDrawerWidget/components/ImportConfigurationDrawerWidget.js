@@ -115,8 +115,8 @@ function ImportConfiguration(props) {
             }
           if (!config.error) {
             if (!config.defaultSession) config.defaultSession = {}
-            if (!config.defaultSession.sessionName)
-              config.defaultSession.sessionName = `Imported Config ${file.path}`
+            if (!config.defaultSession.name)
+              config.defaultSession.name = `Imported Config ${file.path}`
           }
         }
         newConfigs.push(config)
@@ -140,7 +140,7 @@ function ImportConfiguration(props) {
   async function importConfigs() {
     try {
       await addSessions(acceptedFilesParsed.map(file => file.config))
-      setActiveSession(acceptedFilesParsed[0].config.defaultSession.sessionName)
+      setActiveSession(acceptedFilesParsed[0].config.defaultSession.name)
       session.hideDrawerWidget(model)
     } catch (error) {
       setErrorMessage(`${error}`)
@@ -150,7 +150,7 @@ function ImportConfiguration(props) {
   function updateConfigName(newName, idx) {
     setAcceptedFilesParsed(
       acceptedFilesParsed.map((file, fileIdx) => {
-        if (idx === fileIdx) file.config.defaultSession.sessionName = newName
+        if (idx === fileIdx) file.config.defaultSession.name = newName
         return file
       }),
     )
@@ -189,7 +189,7 @@ function ImportConfiguration(props) {
                   </Typography>
                 ) : (
                   <TextField
-                    value={file.config.defaultSession.sessionName}
+                    value={file.config.defaultSession.name}
                     fullWidth
                     helperText={file.path}
                     onChange={event => {

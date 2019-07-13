@@ -83,9 +83,7 @@ function AddTrackDrawerWidget(props) {
     if (activeStep === steps.length - 1) {
       trackAdapter.features = trackData.config
       const trackConf = session.configuration.assemblies
-        .find(
-          assembly => readConfObject(assembly, 'assemblyName') === assemblyName,
-        )
+        .find(assembly => readConfObject(assembly, 'name') === assemblyName)
         .addTrackConf(trackType, {
           name: trackName,
           adapter: trackAdapter,

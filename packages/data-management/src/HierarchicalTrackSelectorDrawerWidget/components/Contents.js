@@ -82,19 +82,18 @@ function Contents(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchy.size, categories.length, trackConfigurations.length])
 
-  const session = getSession(model)
-  const { assemblyManager } = session
-  const assemblyData = assemblyManager.assemblyData.get(assemblyName)
+  const { assemblyData } = getSession(model)
+  const thisAssemblyData = assemblyData && assemblyData.get(assemblyName)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
   return (
     <>
-      {top && assemblyData && !connection ? (
+      {top && thisAssemblyData && !connection ? (
         <>
           <FormGroup>
             <TrackEntry
               model={model}
-              trackConf={assemblyData.sequence}
+              trackConf={thisAssemblyData.sequence}
               assemblyName={assemblyName}
             />
           </FormGroup>
@@ -135,7 +134,7 @@ Contents.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
-  connection: propTypes.string,
+  connection: MobxPropTypes.observableObject,
   classes: propTypes.objectOf(propTypes.string).isRequired,
   top: propTypes.bool,
 }
@@ -145,7 +144,7 @@ Contents.defaultProps = {
   filterPredicate: () => true,
   path: [],
   disabled: false,
-  connection: '',
+  connection: undefined,
   top: false,
 }
 

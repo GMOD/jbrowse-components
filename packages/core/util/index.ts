@@ -17,7 +17,7 @@ export const inProduction = !inDevelopment
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
   let currentNode = node
   // @ts-ignore
-  while (currentNode.sessionName === undefined)
+  while (currentNode.pluginManager === undefined)
     currentNode = getParent(currentNode)
   return currentNode
 }

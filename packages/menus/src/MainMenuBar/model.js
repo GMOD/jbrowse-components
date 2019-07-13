@@ -90,13 +90,14 @@ export default types
   })
   .actions(self => ({
     afterCreate() {
-      self.pushMenu({
-        name: 'Help',
-        menuItems: [
-          { name: 'About', icon: 'info', callback: 'openAbout' },
-          { name: 'Help', icon: 'help', callback: 'openHelp' },
-        ],
-      })
+      if (!self.menus.find(menu => menu.name === 'Help'))
+        self.pushMenu({
+          name: 'Help',
+          menuItems: [
+            { name: 'About', icon: 'info', callback: 'openAbout' },
+            { name: 'Help', icon: 'help', callback: 'openHelp' },
+          ],
+        })
     },
     unshiftMenu({ name, menuItems = [] }) {
       self.menus.unshift(MenuModel.create({ name, menuItems }))

@@ -56,14 +56,9 @@ const styles = theme => ({
 })
 
 function App(props) {
-  const {
-    classes,
-    session,
-    sessionNames,
-    setActiveSession,
-    addSession,
-    size,
-  } = props
+  const { classes, size, jbrowse } = props
+
+  const { session, sessionNames, addSession, activateSession } = jbrowse
 
   const { pluginManager } = session
 
@@ -119,7 +114,7 @@ function App(props) {
               model={activeDrawerWidget}
               session={session}
               addSession={addSession}
-              setActiveSession={setActiveSession}
+              setActiveSession={activateSession}
             />
           </React.Suspense>
         </div>
@@ -173,12 +168,12 @@ function App(props) {
               Add linear view
             </button>
             <select
-              onChange={event => setActiveSession(event.target.value)}
+              onChange={event => activateSession(event.target.value)}
               value={session.name}
             >
-              {sessionNames.map(sessionName => (
-                <option key={sessionName} value={sessionName}>
-                  {sessionName}
+              {sessionNames.map(name => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -197,11 +192,8 @@ function App(props) {
 
 App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  session: PropTypes.observableObject.isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
-  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  setActiveSession: ReactPropTypes.func.isRequired,
-  addSession: ReactPropTypes.func.isRequired,
+  jbrowse: PropTypes.observableObject.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

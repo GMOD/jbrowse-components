@@ -31,7 +31,7 @@ describe('jbrowse-web app', () => {
         rpc: { configId: expect.any(String) },
       },
       menuBars: [{ id: expect.any(String) }],
-      sessionName: expect.any(String),
+      name: expect.any(String),
     })
     render(session, pluginManager)
   })

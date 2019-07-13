@@ -13,13 +13,12 @@ export function getContainingView(node) {
 }
 
 /**
- * get the assembly configuration that contains a track configuration
+ * get the species configuration that contains a track configuration
  * @param {MSTNode} node
  */
-export function getContainingAssembly(trackConf) {
+export function getContainingSpecies(trackConf) {
   let trackConfParent = getParent(trackConf)
-  if (!trackConfParent.assemblyName)
-    trackConfParent = getParent(trackConfParent)
+  if (!trackConfParent.assembly) trackConfParent = getParent(trackConfParent)
   return trackConfParent
 }
 

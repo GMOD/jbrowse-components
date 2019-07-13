@@ -4,7 +4,7 @@ import { getSnapshot, types } from 'mobx-state-tree'
 const createMockTrackStateModel = track =>
   types
     .model({
-      sessionName: 'testSession',
+      name: 'testSession',
       selectedFeature: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),

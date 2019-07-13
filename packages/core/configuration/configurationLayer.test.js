@@ -13,7 +13,7 @@ test('can make a layer over a very simple schema', () => {
   const layerSchema = ConfigurationLayer(parentSchema)
 
   const sessionType = types.model({
-    sessionName: 'testSession',
+    name: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
   })
@@ -63,7 +63,7 @@ test('can make a layer over a complex nested schema', () => {
   const layerSchema = ConfigurationLayer(parentSchema)
 
   const sessionType = types.model({
-    sessionName: 'testSession',
+    name: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
   })

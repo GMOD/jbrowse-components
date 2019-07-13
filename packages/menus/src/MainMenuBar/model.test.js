@@ -6,7 +6,7 @@ jest.mock('file-saver')
 
 test('can export configuration', () => {
   const sessionSchema = types.model({
-    sessionName: 'testSession',
+    name: 'testSession',
     configuration: ConfigurationSchema('Toaster', {
       foo: { type: 'number', defaultValue: 42 },
     }),
