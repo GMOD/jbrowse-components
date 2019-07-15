@@ -82,8 +82,8 @@ class RpcManager {
         { signal },
       )
       if (refNameMap && refNameMap.has(refName)) {
-        if (isStateTreeNode(region) && isAlive(region)) {
-          region.setRefName(refNameMap.get(refName))
+        if (isStateTreeNode(region)) {
+          if (isAlive(region)) region.setRefName(refNameMap.get(refName))
         } else {
           args[0].region.refName = refNameMap.get(refName)
         }

@@ -1,5 +1,12 @@
 import { autorun } from 'mobx'
-import { types, flow, getParent, getRoot, addDisposer } from 'mobx-state-tree'
+import {
+  types,
+  flow,
+  getParent,
+  getRoot,
+  addDisposer,
+  isAlive,
+} from 'mobx-state-tree'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
@@ -68,9 +75,8 @@ export default pluginManager => {
       },
 
       get visibleDrawerWidget() {
-        let activeDrawerWidget
-        for (activeDrawerWidget of self.activeDrawerWidgets.values());
-        return activeDrawerWidget
+        if (isAlive(self)) return self.activeDrawerWidgets.values().next().value
+        return undefined
       },
     }))
     .actions(self => ({
