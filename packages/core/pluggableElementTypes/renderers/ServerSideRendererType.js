@@ -36,7 +36,7 @@ export default class ServerSideRenderer extends RendererType {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
-      const f = SimpleFeature.fromJSON(j)
+      const f = SimpleFeature.fromJSON({ data: j })
       featuresMap.set(String(f.id()), f)
     })
     result.features = featuresMap

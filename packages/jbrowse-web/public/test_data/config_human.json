@@ -143,6 +143,19 @@
           }
         },
         {
+          "type": "BasicTrack",
+          "configId": "nclist_genes",
+          "name": "Gencode v19",
+          "category": ["Genes"],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "bigbed_peaks",
           "type": "BasicTrack",
           "name": "Encode peaks",

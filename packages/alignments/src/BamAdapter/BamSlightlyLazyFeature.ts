@@ -191,6 +191,7 @@ export default class implements Feature {
     plain.refName = this.get('refName')
     plain.name = this.get('name')
     plain.type = this.get('type')
+    plain.uniqueId = this.id()
     return plain
   }
 
