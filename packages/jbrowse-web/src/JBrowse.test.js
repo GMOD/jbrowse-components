@@ -64,6 +64,33 @@ afterAll(() => {
   console.error = originalError
 })
 
+describe('<JBrowse />', () => {
+  it('renders with an empty config', async () => {
+    const { getByText } = render(<JBrowse config={{}} />)
+    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+  })
+
+  it('can use config from a url', async () => {
+    const { getByText } = render(
+      <JBrowse config={{ url: 'test_data/config_integration_test.json' }} />,
+    )
+    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+  })
+
+  it('can use config from a local file', async () => {
+    const { getByText } = render(
+      <JBrowse
+        config={{
+          localPath: require.resolve(
+            '../test_data/config_integration_test.json',
+          ),
+        }}
+      />,
+    )
+    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+  })
+})
+
 describe('valid file tests', () => {
   it('access about menu', async () => {
     const { getByText } = render(<JBrowse config={config} />)

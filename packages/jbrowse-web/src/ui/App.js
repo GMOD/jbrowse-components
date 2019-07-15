@@ -56,9 +56,14 @@ const styles = theme => ({
 })
 
 function App(props) {
-  const { classes, size, jbrowse } = props
-
-  const { session, sessionNames, addSession, activateSession } = jbrowse
+  const {
+    classes,
+    size,
+    session,
+    sessionNames,
+    addSessionSnapshot,
+    activateSession,
+  } = props
 
   const { pluginManager } = session
 
@@ -113,7 +118,7 @@ function App(props) {
             <LazyReactComponent
               model={activeDrawerWidget}
               session={session}
-              addSession={addSession}
+              addSessionSnapshot={addSessionSnapshot}
               setActiveSession={activateSession}
             />
           </React.Suspense>
@@ -193,7 +198,10 @@ function App(props) {
 App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
-  jbrowse: PropTypes.observableObject.isRequired,
+  session: PropTypes.observableObject.isRequired,
+  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
+  addSessionSnapshot: ReactPropTypes.func.isRequired,
+  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

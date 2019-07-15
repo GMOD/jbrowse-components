@@ -150,8 +150,8 @@ export default pluginManager => {
         if (!self.connections.has(assemblyName))
           self.connections.set(assemblyName, [])
         const assemblyConnections = self.connections.get(assemblyName)
-        assemblyConnections.push(connectionData)
-        return assemblyConnections[assemblyConnections.length - 1]
+        const length = assemblyConnections.push(connectionData)
+        return assemblyConnections[length - 1]
       },
 
       breakConnection(configuration) {

@@ -4,15 +4,13 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { flow, getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 import shortid from 'shortid'
 import corePlugins from './corePlugins'
 import RenderWorker from './rpc.worker'
 import * as rpcFuncs from './rpcMethods'
-import AssemblyConfigSchemasFactory from './session/assemblyConfigSchemas'
-import sessionModelFactory from './session/sessionModelFactory'
+import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
+import sessionModelFactory from './sessionModelFactory'
 
 const pluginManager = new PluginManager(corePlugins.map(P => new P()))
 pluginManager.configure()
@@ -40,30 +38,17 @@ const Species = ConfigurationSchema(
   },
   {
     actions: self => ({
-      addTrackConf(typeName, data, connectionName) {
-        const type = getSession(self).pluginManager.getTrackType(typeName)
-        if (!type) throw new Error(`unknown track type ${typeName}`)
-        const schemaType = type.configSchema
-        const conf = schemaType.create(Object.assign({ type: typeName }, data))
-        if (connectionName) {
-          const connectionNames = self.connections.map(connection =>
-            readConfObject(connection, 'connectionName'),
-          )
-          if (!connectionNames.includes(connectionName))
-            throw new Error(
-              `Cannot add track to non-existent connection: ${connectionName}`,
-            )
-          self.volatile.get(connectionName).tracks.push(conf)
-        } else self.tracks.push(conf)
-        return conf
+      addTrackConf(trackConf) {
+        const { type } = trackConf
+        if (!type) throw new Error(`unknown track type ${type}`)
+        const length = self.tracks.push(trackConf)
+        return self.tracks[length - 1]
       },
-      addConnectionConf(typeName, data) {
-        const type = getSession(self).pluginManager.getConnectionType(typeName)
-        if (!type) throw new Error(`unknown connection type ${typeName}`)
-        const schemaType = type.configSchema
-        const conf = schemaType.create(Object.assign({ type: typeName }, data))
-        self.connections.push(conf)
-        return conf
+      addConnectionConf(connectionConf) {
+        const { type } = connectionConf
+        if (!type) throw new Error(`unknown connection type ${type}`)
+        const length = self.connections.push(connectionConf)
+        return self.connections[length - 1]
       },
     }),
   },
@@ -88,44 +73,10 @@ const JBrowseWeb = types
     }),
   })
   .actions(self => ({
-    addSession(sessionConfig) {
-      if (sessionConfig.uri || sessionConfig.localPath)
-        self.addSessionFromLocation(sessionConfig)
-      else
-        try {
-          let { defaultSession } = sessionConfig
-          if (!defaultSession) defaultSession = {}
-          if (!defaultSession.menuBars)
-            defaultSession.menuBars = [{ type: 'MainMenuBar' }]
-          const {
-            name = `Unnamed Session ${shortid.generate()}`,
-          } = defaultSession
-
-          const data = {
-            name,
-            ...defaultSession,
-            configuration: sessionConfig,
-          }
-          self.sessions.set(name, data)
-          if (!self.session) {
-            self.activateSession(name)
-          }
-        } catch (error) {
-          console.error('Failed to add session', error)
-        }
+    addSessionSnapshot(sessionSnapshot) {
+      const length = self.sessionSnapshots.push(sessionSnapshot)
+      return self.sessionSnapshots[length - 1]
     },
-    addSessionFromLocation: flow(function* addSessionFromLocation(
-      sessionConfigLocation,
-    ) {
-      try {
-        const configSnapshot = JSON.parse(
-          yield openLocation(sessionConfigLocation).readFile('utf8'),
-        )
-        self.addSession(configSnapshot)
-      } catch (error) {
-        console.error('Failed to fetch config', error)
-      }
-    }),
     setSession(snapshot) {
       self.session = snapshot
     },
@@ -145,160 +96,168 @@ const JBrowseWeb = types
         )
       self.setSession(newSessionSnapshot)
     },
-
-    getRefNameAliases: flow(function* getRefNameAliases(
-      assemblyName,
-      opts = {},
-    ) {
-      const refNameAliases = {}
-      const assemblyConfig = self.assemblyData.get(assemblyName)
-      if (assemblyConfig.refNameAliases) {
-        const adapterRefNameAliases = yield self.rpcManager.call(
-          assemblyConfig.refNameAliases.adapter.configId,
-          'getRefNameAliases',
-          {
-            sessionId: assemblyName,
-            adapterType: assemblyConfig.refNameAliases.adapter.type,
-            adapterConfig: assemblyConfig.refNameAliases.adapter,
-            signal: opts.signal,
-          },
-          { timeout: 1000000 },
-        )
-        adapterRefNameAliases.forEach(alias => {
-          refNameAliases[alias.refName] = alias.aliases
-        })
-      }
-      return refNameAliases
-    }),
-
-    addRefNameMapForAdapter: flow(function* addRefNameMapForAdapter(
-      adapterConf,
-      assemblyName,
-      opts = {},
-    ) {
-      const adapterConfigId = readConfObject(adapterConf, 'configId')
-      if (!self.refNameMaps.has(adapterConfigId))
-        self.refNameMaps.set(adapterConfigId, new Map())
-      const refNameMap = self.refNameMaps.get(adapterConfigId)
-
-      const refNameAliases = yield self.getRefNameAliases(assemblyName, opts)
-
-      const refNames = yield self.rpcManager.call(
-        readConfObject(adapterConf, 'configId'),
-        'getRefNames',
-        {
-          sessionId: assemblyName,
-          adapterType: readConfObject(adapterConf, 'type'),
-          adapterConfig: adapterConf,
-          signal: opts.signal,
-        },
-        { timeout: 1000000 },
-      )
-      refNames.forEach(refName => {
-        if (refNameAliases[refName])
-          refNameAliases[refName].forEach(refNameAlias => {
-            refNameMap.set(refNameAlias, refName)
-          })
-        else
-          Object.keys(refNameAliases).forEach(configRefName => {
-            if (refNameAliases[configRefName].includes(refName)) {
-              refNameMap.set(configRefName, refName)
-              refNameAliases[configRefName].forEach(refNameAlias => {
-                if (refNameAlias !== refName)
-                  refNameMap.set(refNameAlias, refName)
-              })
-            }
-          })
-      })
-      return refNameMap
-    }),
-
-    getRefNameMapForAdapter: flow(function* getRefNameMapForAdapter(
-      adapterConf,
-      assemblyName,
-      opts = {},
-    ) {
-      const configId = readConfObject(adapterConf, 'configId')
-      if (!self.refNameMaps.has(configId)) {
-        return yield self.addRefNameMapForAdapter(
-          adapterConf,
-          assemblyName,
-          opts,
-        )
-      }
-      return self.refNameMaps.get(configId)
-    }),
   }))
   .views(self => ({
     get sessionNames() {
       return self.sessionSnapshots.map(sessionSnap => sessionSnap.name)
     },
-
-    get assemblyData() {
-      const assemblyData = new Map()
-      for (const speciesConfig of self.species) {
-        const assemblyConfig = speciesConfig.assembly
-        const assemblyName = readConfObject(assemblyConfig, 'name')
-        const assemblyInfo = {}
-        if (assemblyConfig.sequence)
-          assemblyInfo.sequence = assemblyConfig.sequence
-        const refNameAliasesConf = readConfObject(
-          assemblyConfig,
-          'refNameAliases',
-        )
-        if (refNameAliasesConf) assemblyInfo.refNameAliases = refNameAliasesConf
-        const aliases = readConfObject(assemblyConfig, 'aliases')
-        assemblyInfo.aliases = aliases
-        assemblyData.set(assemblyName, assemblyInfo)
-        aliases.forEach((assemblyAlias, idx) => {
-          const newAliases = [
-            ...aliases.slice(0, idx),
-            ...aliases.slice(idx + 1),
-            assemblyName,
-          ]
-          assemblyData.set(assemblyAlias, {
-            ...assemblyInfo,
-            aliases: newAliases,
+  }))
+  // Grouping the "assembly manager" stuff under an `extend` just for
+  // code organization
+  .extend(self => ({
+    views: {
+      get assemblyData() {
+        const assemblyData = new Map()
+        for (const speciesConfig of self.species) {
+          const assemblyConfig = speciesConfig.assembly
+          const assemblyName = readConfObject(assemblyConfig, 'name')
+          const assemblyInfo = {}
+          if (assemblyConfig.sequence)
+            assemblyInfo.sequence = assemblyConfig.sequence
+          const refNameAliasesConf = readConfObject(
+            assemblyConfig,
+            'refNameAliases',
+          )
+          if (refNameAliasesConf)
+            assemblyInfo.refNameAliases = refNameAliasesConf
+          const aliases = readConfObject(assemblyConfig, 'aliases')
+          assemblyInfo.aliases = aliases
+          assemblyData.set(assemblyName, assemblyInfo)
+          aliases.forEach((assemblyAlias, idx) => {
+            const newAliases = [
+              ...aliases.slice(0, idx),
+              ...aliases.slice(idx + 1),
+              assemblyName,
+            ]
+            assemblyData.set(assemblyAlias, {
+              ...assemblyInfo,
+              aliases: newAliases,
+            })
           })
-        })
-      }
-      for (const assemblyName of self.session.connections.keys()) {
-        const connectionConfs = self.session.connections.get(assemblyName)
-        // eslint-disable-next-line no-loop-func
-        connectionConfs.forEach(connectionConf => {
-          if (!assemblyData.has(assemblyName)) {
-            const assemblyInfo = {}
-            assemblyInfo.sequence = connectionConf.sequence
-            assemblyInfo.refNameAliases = connectionConf.refNameAliases
-            assemblyData.set(assemblyName, assemblyInfo)
-          } else {
-            if (
-              !assemblyData.get(assemblyName).refNameAliases &&
-              connectionConf.refNameAliases
-            ) {
-              assemblyData.get(assemblyName).refNameAliases = readConfObject(
-                connectionConf.refNameAliases,
-              )
-              assemblyData.get(assemblyName).aliases.forEach(alias => {
-                assemblyData.get(alias).refNameAliases = readConfObject(
+        }
+        for (const assemblyName of self.session.connections.keys()) {
+          const connectionConfs = self.session.connections.get(assemblyName)
+          // eslint-disable-next-line no-loop-func
+          connectionConfs.forEach(connectionConf => {
+            if (!assemblyData.has(assemblyName)) {
+              const assemblyInfo = {}
+              assemblyInfo.sequence = connectionConf.sequence
+              assemblyInfo.refNameAliases = connectionConf.refNameAliases
+              assemblyData.set(assemblyName, assemblyInfo)
+            } else {
+              if (
+                !assemblyData.get(assemblyName).refNameAliases &&
+                connectionConf.refNameAliases
+              ) {
+                assemblyData.get(assemblyName).refNameAliases = readConfObject(
                   connectionConf.refNameAliases,
                 )
-              })
+                assemblyData.get(assemblyName).aliases.forEach(alias => {
+                  assemblyData.get(alias).refNameAliases = readConfObject(
+                    connectionConf.refNameAliases,
+                  )
+                })
+              }
+              if (
+                (!assemblyData.get(assemblyName).sequence &&
+                  connectionConf.sequence) ||
+                connectionConf.defaultSequence
+              ) {
+                assemblyData.get(assemblyName).sequence =
+                  connectionConf.sequence
+                assemblyData.get(assemblyName).aliases.forEach(alias => {
+                  assemblyData.get(alias).sequence = connectionConf.sequence
+                })
+              }
             }
-            if (
-              (!assemblyData.get(assemblyName).sequence &&
-                connectionConf.sequence) ||
-              connectionConf.defaultSequence
-            ) {
-              assemblyData.get(assemblyName).sequence = connectionConf.sequence
-              assemblyData.get(assemblyName).aliases.forEach(alias => {
-                assemblyData.get(alias).sequence = connectionConf.sequence
-              })
-            }
-          }
+          })
+        }
+        return assemblyData
+      },
+    },
+    actions: {
+      getRefNameAliases: flow(function* getRefNameAliases(
+        assemblyName,
+        opts = {},
+      ) {
+        const refNameAliases = {}
+        const assemblyConfig = self.assemblyData.get(assemblyName)
+        if (assemblyConfig.refNameAliases) {
+          const adapterRefNameAliases = yield self.rpcManager.call(
+            assemblyConfig.refNameAliases.adapter.configId,
+            'getRefNameAliases',
+            {
+              sessionId: assemblyName,
+              adapterType: assemblyConfig.refNameAliases.adapter.type,
+              adapterConfig: assemblyConfig.refNameAliases.adapter,
+              signal: opts.signal,
+            },
+            { timeout: 1000000 },
+          )
+          adapterRefNameAliases.forEach(alias => {
+            refNameAliases[alias.refName] = alias.aliases
+          })
+        }
+        return refNameAliases
+      }),
+
+      addRefNameMapForAdapter: flow(function* addRefNameMapForAdapter(
+        adapterConf,
+        assemblyName,
+        opts = {},
+      ) {
+        const adapterConfigId = readConfObject(adapterConf, 'configId')
+        if (!self.refNameMaps.has(adapterConfigId))
+          self.refNameMaps.set(adapterConfigId, new Map())
+        const refNameMap = self.refNameMaps.get(adapterConfigId)
+
+        const refNameAliases = yield self.getRefNameAliases(assemblyName, opts)
+
+        const refNames = yield self.rpcManager.call(
+          readConfObject(adapterConf, 'configId'),
+          'getRefNames',
+          {
+            sessionId: assemblyName,
+            adapterType: readConfObject(adapterConf, 'type'),
+            adapterConfig: adapterConf,
+            signal: opts.signal,
+          },
+          { timeout: 1000000 },
+        )
+        refNames.forEach(refName => {
+          if (refNameAliases[refName])
+            refNameAliases[refName].forEach(refNameAlias => {
+              refNameMap.set(refNameAlias, refName)
+            })
+          else
+            Object.keys(refNameAliases).forEach(configRefName => {
+              if (refNameAliases[configRefName].includes(refName)) {
+                refNameMap.set(configRefName, refName)
+                refNameAliases[configRefName].forEach(refNameAlias => {
+                  if (refNameAlias !== refName)
+                    refNameMap.set(refNameAlias, refName)
+                })
+              }
+            })
         })
-      }
-      return assemblyData
+        return refNameMap
+      }),
+
+      getRefNameMapForAdapter: flow(function* getRefNameMapForAdapter(
+        adapterConf,
+        assemblyName,
+        opts = {},
+      ) {
+        const configId = readConfObject(adapterConf, 'configId')
+        if (!self.refNameMaps.has(configId)) {
+          return yield self.addRefNameMapForAdapter(
+            adapterConf,
+            assemblyName,
+            opts,
+          )
+        }
+        return self.refNameMaps.get(configId)
+      }),
     },
   }))
   .volatile(self => ({
@@ -314,13 +273,16 @@ const JBrowseWeb = types
     refNameMaps: new Map(),
   }))
 
-export function createTestSession(snapshot = {}, root = false) {
+export function createTestSession(snapshot = {}) {
   const jbrowseState = JBrowseWeb.create({
     configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
   })
-  jbrowseState.addSession(snapshot)
-  if (root) return jbrowseState
-  return jbrowseState.activeSession
+  jbrowseState.setSession({
+    name: 'testSession',
+    menuBars: [{ type: 'MainMenuBar' }],
+    ...snapshot,
+  })
+  return jbrowseState.session
 }
 
 export default JBrowseWeb

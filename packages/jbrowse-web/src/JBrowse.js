@@ -54,7 +54,14 @@ export default observer(({ config }) => {
   )
   if (status === 'error') DisplayComponent = <div>{message}</div>
   if (status === 'loaded' && jbrowseState.session)
-    DisplayComponent = <App jbrowse={jbrowseState} />
+    DisplayComponent = (
+      <App
+        session={jbrowseState.session}
+        sessionNames={jbrowseState.sessionNames}
+        addSessionSnapshot={jbrowseState.addSessionSnapshot}
+        activateSession={jbrowseState.activateSession}
+      />
+    )
 
   return (
     <ThemeProvider theme={Theme}>

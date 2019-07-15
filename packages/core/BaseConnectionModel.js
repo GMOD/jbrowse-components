@@ -23,8 +23,8 @@ export default pluginManager => {
         self.connect()
       },
       addTrackConf(trackConf) {
-        self.tracks.push(trackConf)
-        return self.tracks[self.tracks.length - 1]
+        const length = self.tracks.push(trackConf)
+        return self.tracks[length - 1]
       },
       setTrackConfs(trackConfs) {
         self.tracks = trackConfs
