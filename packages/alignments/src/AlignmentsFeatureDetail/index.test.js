@@ -30,6 +30,6 @@ test('open up a drawer widget', async () => {
     refName: 'ctgA',
     type: 'match',
   })
-  expect(container).toMatchSnapshot()
+  expect(container.firstChild).toMatchSnapshot()
   expect(getByText('ctgA:3..102')).toBeTruthy()
 })

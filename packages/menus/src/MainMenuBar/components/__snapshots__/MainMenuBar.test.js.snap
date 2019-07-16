@@ -1,95 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MainMenuBar /> renders 1`] = `
-<WithStyles(ForwardRef(AppBar))
-  className="MainMenuBar-root-1"
-  position="static"
+<header
+  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic MainMenuBar-root-1 MuiAppBar-colorPrimary"
 >
-  <WithStyles(ForwardRef(Toolbar))
-    variant="dense"
+  <div
+    class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
   >
-    <WithStyles(ForwardRef(Typography))
-      color="inherit"
-      variant="h6"
+    <h6
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
     >
       JBrowse
-    </WithStyles(ForwardRef(Typography))>
+    </h6>
     <div
-      className="MainMenuBar-grow-2"
-    />
-    <WithStyles(undefined)
-      key="Help"
-      menuItems={
-        Array [
-          Object {
-            "callback": "openAbout",
-            "icon": "info",
-            "name": "About",
-          },
-          Object {
-            "callback": "openHelp",
-            "icon": "help",
-            "name": "Help",
-          },
-        ]
-      }
-      menuTitle="Help"
-      session={
-        Object {
-          "activeDrawerWidgets": Object {},
-          "configuration": Object {
-            "configId": "testid",
-            "defaultSession": Object {
-              "menuBars": Array [
-                Object {
-                  "id": "testing",
-                  "type": "MainMenuBar",
-                },
-              ],
-            },
-            "rpc": Object {
-              "configId": "testid",
-            },
-          },
-          "connections": Object {},
-          "drawerWidgets": Object {},
-          "drawerWidth": 384,
-          "menuBars": Array [
-            Object {
-              "id": "testing",
-              "menus": Array [
-                Object {
-                  "menuItems": Array [
-                    Object {
-                      "callback": "openAbout",
-                      "icon": "info",
-                      "name": "About",
-                    },
-                    Object {
-                      "callback": "openHelp",
-                      "icon": "help",
-                      "name": "Help",
-                    },
-                  ],
-                  "name": "Help",
-                },
-              ],
-              "type": "MainMenuBar",
-            },
-          ],
-          "sessionName": "Unnamed Session testid",
-          "views": Array [],
-          "width": 512,
-        }
-      }
+      class="MainMenuBar-grow-2"
     />
     <div
-      style={
-        Object {
-          "width": 0,
-        }
-      }
+      class="DropDownMenu-root-73"
+    >
+      <button
+        aria-haspopup="true"
+        aria-owns="menu-list-grow"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
+        data-testid="dropDownMenuButton"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Help
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            arrow_drop_down
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+    <div
+      style="width: 0px;"
     />
-  </WithStyles(ForwardRef(Toolbar))>
-</WithStyles(ForwardRef(AppBar))>
+  </div>
+</header>
 `;

@@ -1,16 +1,10 @@
-import { createShallow } from '@material-ui/core/test-utils'
 import React from 'react'
+import { render } from 'react-testing-library'
 import AboutDrawerWidget from './AboutDrawerWidget'
 
 describe('<AboutDrawerWidget />', () => {
-  let shallow
-
-  beforeAll(() => {
-    shallow = createShallow()
-  })
-
   it('renders', () => {
-    const wrapper = shallow(<AboutDrawerWidget />)
-    expect(wrapper).toMatchSnapshot()
+    const { container } = render(<AboutDrawerWidget />)
+    expect(container.firstChild).toMatchSnapshot()
   })
 })

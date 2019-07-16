@@ -20,6 +20,6 @@ describe('VariantTrack drawer widget', () => {
     })
 
     const { container } = render(<VariantFeatureDetails model={f} />)
-    expect(container).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 })

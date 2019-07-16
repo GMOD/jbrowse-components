@@ -18,7 +18,7 @@ describe('ConfigurationEditor drawer widget', () => {
     const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    expect(container).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 
   it('renders all the different types of built-in slots', () => {
@@ -76,7 +76,7 @@ describe('ConfigurationEditor drawer widget', () => {
     const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    expect(container).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 
   it('renders with defaults of the AlignmentsTrack schema', () => {
@@ -87,6 +87,6 @@ describe('ConfigurationEditor drawer widget', () => {
         model={{ target: AlignmentsTrackSchema.create() }}
       />,
     )
-    expect(container).toMatchSnapshot()
+    expect(container.firstChild).toMatchSnapshot()
   })
 })
