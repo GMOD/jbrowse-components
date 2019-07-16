@@ -166,8 +166,6 @@ export function stateModelFactory(pluginManager) {
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
         self.displayRegionsFromAssemblyName = assemblyName
-        const session = getSession(self)
-        if (session.updateAssemblies) session.updateAssemblies()
       },
 
       activateTrackSelector() {

@@ -41,8 +41,7 @@ export default pluginManager => {
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
     })
-    .volatile(self => {
-      const { rpcManager, assemblyData, configuration, species } = getRoot(self)
+    .volatile((/* self */) => {
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -57,15 +56,23 @@ export default pluginManager => {
       const task = undefined
       return {
         pluginManager,
-        rpcManager,
-        assemblyData,
-        configuration,
-        species,
         selection,
         task,
       }
     })
     .views(self => ({
+      get rpcManager() {
+        return getRoot(self).rpcManager
+      },
+      get assemblyData() {
+        return getRoot(self).assemblyData
+      },
+      get configuration() {
+        return getRoot(self).configuration
+      },
+      get species() {
+        return getRoot(self).species
+      },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
         return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
@@ -91,7 +98,11 @@ export default pluginManager => {
         const displayedRegionsDisposer = autorun(async () => {
           for (const view of self.views) {
             const assemblyName = view.displayRegionsFromAssemblyName
-            if (assemblyName && self.assemblyData.get(assemblyName).sequence) {
+            if (
+              assemblyName &&
+              self.assemblyData.get(assemblyName) &&
+              self.assemblyData.get(assemblyName).sequence
+            ) {
               // eslint-disable-next-line no-await-in-loop
               const displayedRegions = await self.getRegionsForAssembly(
                 assemblyName,
@@ -193,18 +204,15 @@ export default pluginManager => {
         return actualDistance
       },
 
-      addView(typeName, configuration, initialState = {}) {
+      addView(typeName, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
 
-        const newView = typeDefinition.stateModel.create({
+        const length = self.views.push({
           ...initialState,
           type: typeName,
-          configuration,
         })
-        self.views.push(newView)
-        self.updateAssemblies()
-        return newView
+        return self.views[length - 1]
       },
 
       removeView(view) {
@@ -223,13 +231,23 @@ export default pluginManager => {
         self.views.remove(view)
       },
 
-      addLinearGenomeViewOfAssembly(
-        assemblyName,
-        configuration,
-        initialState = {},
-      ) {
-        configuration.displayRegionsFromAssemblyName = assemblyName
-        return self.addView('LinearGenomeView', configuration, initialState)
+      addSpecies(speciesConf) {
+        return getRoot(self).addSpecies(speciesConf)
+      },
+
+      addLinearGenomeViewOfSpecies(speciesName, initialState = {}) {
+        const species = self.species.find(
+          s => readConfObject(s.name) === speciesName,
+        )
+        if (!species)
+          throw new Error(
+            `Could not add view of species "${speciesName}", species name not found`,
+          )
+        initialState.displayRegionsFromAssemblyName = readConfObject(
+          species.assembly,
+          'name',
+        )
+        return self.addView('LinearGenomeView', initialState)
       },
 
       addDrawerWidget(
@@ -327,7 +345,6 @@ export default pluginManager => {
 
       clearConnections() {
         self.connections.clear()
-        self.updateAssemblies()
       },
     }))
 }

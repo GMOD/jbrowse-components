@@ -96,6 +96,10 @@ const JBrowseWeb = types
         )
       self.setSession(newSessionSnapshot)
     },
+    addSpecies(speciesConf) {
+      const length = self.species.push(speciesConf)
+      return self.species[length - 1]
+    },
   }))
   .views(self => ({
     get sessionNames() {

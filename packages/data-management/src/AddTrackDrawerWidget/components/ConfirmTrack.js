@@ -30,8 +30,8 @@ function ConfirmTrack(props) {
     trackType,
     setTrackType,
     trackAdapter,
-    assemblyName,
-    setAssemblyName,
+    speciesName,
+    setSpeciesName,
     session,
   } = props
 
@@ -78,7 +78,7 @@ function ConfirmTrack(props) {
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this file type.</Typography>
   if (trackData.uri || trackData.localPath || trackData.config) {
-    let message = <></>
+    let message = null
     if (trackData.uri || trackData.localPath)
       message = (
         <Typography className={classes.spacing}>
@@ -127,19 +127,19 @@ function ConfirmTrack(props) {
             ))}
         </TextField>
         <TextField
-          value={assemblyName}
-          label="assemblyName"
-          helperText="Assembly to which the track will be added"
+          value={speciesName}
+          label="speciesName"
+          helperText="Species to which the track will be added"
           select
           fullWidth
-          onChange={event => setAssemblyName(event.target.value)}
-          inputProps={{ 'data-testid': 'assemblyNameSelect' }}
+          onChange={event => setSpeciesName(event.target.value)}
+          inputProps={{ 'data-testid': 'speciesNameSelect' }}
         >
-          {session.configuration.assemblies.map(assembly => {
-            const newAssemblyName = readConfObject(assembly, 'name')
+          {session.species.map(species => {
+            const newSpeciesName = readConfObject(species, 'name')
             return (
-              <MenuItem key={newAssemblyName} value={newAssemblyName}>
-                {newAssemblyName}
+              <MenuItem key={newSpeciesName} value={newSpeciesName}>
+                {newSpeciesName}
               </MenuItem>
             )
           })}
@@ -152,8 +152,8 @@ function ConfirmTrack(props) {
 
 ConfirmTrack.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  assemblyName: PropTypes.string.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
+  speciesName: PropTypes.string.isRequired,
+  setSpeciesName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,

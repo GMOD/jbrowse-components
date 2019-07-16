@@ -2,7 +2,7 @@ import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 import saveAs from 'file-saver'
-import { getSnapshot, types } from 'mobx-state-tree'
+import { getRoot, getSnapshot, types } from 'mobx-state-tree'
 
 export const MenuItemModel = types
   .model('MenuItemModel', {
@@ -49,8 +49,8 @@ export const MenuItemModel = types
       session.showDrawerWidget(drawerWidget)
     },
     exportConfiguration() {
-      const session = getSession(self)
-      const initialSnap = JSON.stringify(getSnapshot(session.configuration))
+      const configuration = getRoot(self)
+      const initialSnap = JSON.stringify(getSnapshot(configuration))
       const filter = (key, value) => {
         if (key === 'configId' || key === 'id') {
           const re = new RegExp(`"${value}"`, 'g')
@@ -59,7 +59,7 @@ export const MenuItemModel = types
         return value
       }
       const configSnap = JSON.stringify(
-        getSnapshot(session.configuration),
+        getSnapshot(configuration),
         filter,
         '  ',
       )

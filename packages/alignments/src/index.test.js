@@ -9,6 +9,7 @@ const createMockTrackStateModel = track =>
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
       track: track.stateModel,
+      pluginManager: 'mockPluginManager',
     })
     .actions(self => {
       return {

@@ -1,3 +1,4 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
@@ -168,7 +169,13 @@ function App(props) {
             <h3>Developer tools</h3>
             <button
               type="button"
-              onClick={() => session.addView('LinearGenomeView', {})}
+              onClick={() => {
+                if (!session.species.length)
+                  throw new Error(`Must add a species before adding a view`)
+                session.addLinearGenomeViewOfSpecies(
+                  readConfObject(session.species[0], 'name'),
+                )
+              }}
             >
               Add linear view
             </button>

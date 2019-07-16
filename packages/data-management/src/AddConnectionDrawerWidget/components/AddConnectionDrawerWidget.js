@@ -1,3 +1,4 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
@@ -34,6 +35,7 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 function AddConnectionDrawerWidget(props) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
+  const [speciesName, setSpeciesName] = useState('')
 
   const [activeStep, setActiveStep] = useState(0)
 
@@ -57,6 +59,11 @@ function AddConnectionDrawerWidget(props) {
             )}
             connectionType={connectionType}
             setConnectionType={handleSetConnectionType}
+            speciesNameChoices={session.species.map(species =>
+              readConfObject(species, 'name'),
+            )}
+            speciesName={speciesName}
+            setSpeciesName={setSpeciesName}
           />
         )
       case 1:
@@ -82,7 +89,9 @@ function AddConnectionDrawerWidget(props) {
   }
 
   function handleFinish() {
-    session.configuration.addConnection(configModel)
+    session.species
+      .find(species => readConfObject(species, 'name') === speciesName)
+      .addConnectionConf(configModel)
     session.hideDrawerWidget(model)
   }
 

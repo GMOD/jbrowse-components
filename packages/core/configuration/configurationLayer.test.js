@@ -16,6 +16,7 @@ test('can make a layer over a very simple schema', () => {
     name: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
+    pluginManager: 'mockPluginManager',
   })
   const session = sessionType.create({
     parent: { configId: 'yellow' },
@@ -66,6 +67,7 @@ test('can make a layer over a complex nested schema', () => {
     name: 'testSession',
     parent: parentSchema,
     layer: layerSchema,
+    pluginManager: 'mockPluginManager',
   })
   const session = sessionType.create({
     parent: {

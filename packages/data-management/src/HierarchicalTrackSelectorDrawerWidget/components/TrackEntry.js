@@ -57,7 +57,9 @@ function TrackEntry(props) {
             className={classes.formControlLabel}
             control={
               <Checkbox
-                inputProps={{ 'data-testid': trackConf.configId }}
+                inputProps={{
+                  'data-testid': `htsTrackEntry-${trackConf.configId}`,
+                }}
                 className={classes.checkbox}
               />
             }

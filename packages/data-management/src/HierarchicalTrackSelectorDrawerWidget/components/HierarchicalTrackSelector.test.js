@@ -1,101 +1,117 @@
-import React from 'react'
-import { render } from 'react-testing-library'
 import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createMuiTheme } from '@material-ui/core'
+import { ThemeProvider } from '@material-ui/styles'
+import React from 'react'
+import { cleanup, render, waitForElement } from 'react-testing-library'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 
 describe('HierarchicalTrackSelector drawer widget', () => {
-  it('renders with just the required model elements', () => {
+  afterEach(cleanup)
+
+  it('renders nothing with no species', () => {
     const session = createTestSession()
     const firstView = session.addView('LinearGenomeView')
     const model = firstView.activateTrackSelector()
 
-    const { container } = render(<HierarchicalTrackSelector model={model} />)
+    const { container } = render(
+      <ThemeProvider theme={createMuiTheme()}>
+        <HierarchicalTrackSelector model={model} />
+      </ThemeProvider>,
+    )
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with a couple of uncategorized tracks', () => {
-    const session = createTestSession({
-      assemblies: [
-        {
-          assemblyName: 'volvox',
-          sequence: {
-            adapter: {
-              type: 'FromConfigAdapter',
-              features: [
-                {
-                  refName: 'ctgA',
-                  uniqueId: 'firstId',
-                  start: 0,
-                  end: 10,
-                  seq: 'cattgttgcg',
-                },
-              ],
-            },
+  it('renders with a couple of uncategorized tracks', async () => {
+    const session = createTestSession()
+    session.addSpecies({
+      name: 'volvox',
+      assembly: {
+        name: 'volMyt1',
+        sequence: {
+          configId: 'sequenceConfigId',
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'firstId',
+                start: 0,
+                end: 10,
+                seq: 'cattgttgcg',
+              },
+            ],
           },
-          tracks: [
-            {
-              configId: 'fooC',
-              type: 'BasicTrack',
-              adapter: { type: 'FromConfigAdapter', features: [] },
-            },
-            {
-              configId: 'barC',
-              type: 'BasicTrack',
-              adapter: { type: 'FromConfigAdapter', features: [] },
-            },
-          ],
+        },
+      },
+      tracks: [
+        {
+          configId: 'fooC',
+          type: 'BasicTrack',
+          adapter: { type: 'FromConfigAdapter', features: [] },
+        },
+        {
+          configId: 'barC',
+          type: 'BasicTrack',
+          adapter: { type: 'FromConfigAdapter', features: [] },
         },
       ],
     })
-    const firstView = session.addLinearGenomeViewOfAssembly('volvox', {})
-    firstView.showTrack(session.configuration.assemblies[0].tracks[0])
-    firstView.showTrack(session.configuration.assemblies[0].tracks[1])
+    const firstView = session.addLinearGenomeViewOfSpecies('volvox')
+    firstView.showTrack(session.species[0].tracks[0])
+    firstView.showTrack(session.species[0].tracks[1])
     const model = firstView.activateTrackSelector()
 
-    const { container } = render(<HierarchicalTrackSelector model={model} />)
+    const { container, getByTestId } = render(
+      <ThemeProvider theme={createMuiTheme()}>
+        <HierarchicalTrackSelector model={model} />
+      </ThemeProvider>,
+    )
+    await waitForElement(() => getByTestId('hierarchical_track_selector'))
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with a couple of categorized tracks', () => {
-    const session = createTestSession({
-      assemblies: [
-        {
-          assemblyName: 'volvox',
-          sequence: {
-            adapter: {
-              type: 'FromConfigAdapter',
-              features: [
-                {
-                  refName: 'ctgA',
-                  uniqueId: 'firstId',
-                  start: 0,
-                  end: 10,
-                  seq: 'cattgttgcg',
-                },
-              ],
-            },
+  it('renders with a couple of categorized tracks', async () => {
+    const session = createTestSession()
+    session.addSpecies({
+      name: 'volvox',
+      assembly: {
+        name: 'volvox',
+        sequence: {
+          configId: 'sequenceConfigId',
+          adapter: {
+            name: 'volMyt1',
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'firstId',
+                start: 0,
+                end: 10,
+                seq: 'cattgttgcg',
+              },
+            ],
           },
-          tracks: [
-            {
-              configId: 'fooC',
-              type: 'BasicTrack',
-              adapter: { type: 'FromConfigAdapter', features: [] },
-            },
-            {
-              configId: 'barC',
-              type: 'BasicTrack',
-              adapter: { type: 'FromConfigAdapter', features: [] },
-            },
-          ],
+        },
+      },
+      tracks: [
+        {
+          configId: 'fooC',
+          type: 'BasicTrack',
+          adapter: { type: 'FromConfigAdapter', features: [] },
+        },
+        {
+          configId: 'barC',
+          type: 'BasicTrack',
+          adapter: { type: 'FromConfigAdapter', features: [] },
         },
       ],
     })
-    const firstView = session.addLinearGenomeViewOfAssembly('volvox', {})
-    firstView.showTrack(session.configuration.assemblies[0].tracks[0])
-    firstView.showTrack(session.configuration.assemblies[0].tracks[1])
+    const firstView = session.addLinearGenomeViewOfSpecies('volvox')
+    firstView.showTrack(session.species[0].tracks[0])
+    firstView.showTrack(session.species[0].tracks[1])
     firstView.tracks[0].configuration.category.set(['Foo Category'])
     firstView.tracks[1].configuration.category.set([
       'Foo Category',
@@ -103,7 +119,12 @@ describe('HierarchicalTrackSelector drawer widget', () => {
     ])
     const model = firstView.activateTrackSelector()
 
-    const { container } = render(<HierarchicalTrackSelector model={model} />)
+    const { container, getByTestId } = render(
+      <ThemeProvider theme={createMuiTheme()}>
+        <HierarchicalTrackSelector model={model} />
+      </ThemeProvider>,
+    )
+    await waitForElement(() => getByTestId('hierarchical_track_selector'))
     expect(container.firstChild).toMatchSnapshot()
   })
 })

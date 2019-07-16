@@ -1,240 +1,400 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
-<div>
+<div
+  class="LinearGenomeView-root-1"
+>
   <div
-    class="LinearGenomeView-root-1"
+    class="LinearGenomeView-linearGenomeView-2"
+    style="display: grid; width: 512px; height: 55px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-linearGenomeView-2"
-      style="display: grid; width: 512px; height: 55px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      style="grid-row: scale-bar;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        tabindex="0"
+        title="close this view"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        data_testid="track_select"
+        tabindex="0"
+        title="select tracks"
+        type="button"
+        value="track_select"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            line_style
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+    <div
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
     >
       <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
-        style="grid-row: scale-bar;"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
-          tabindex="0"
-          title="close this view"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
-          data_testid="track_select"
-          tabindex="0"
-          title="select tracks"
-          type="button"
-          value="track_select"
-        >
-          <span
-            class="MuiToggleButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              line_style
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="Rubberband-rubberBandContainer-37"
-        role="presentation"
-      >
-        <div
-          class="ScaleBar-scaleBar-38"
-          style="height: 32px; width: 412px;"
-        />
-      </div>
-      <div
-        class="LinearGenomeView-zoomControls-6"
-        style="right: 4px; z-index: 1000;"
-      >
-        <div
-          class="ZoomControls-container-40"
-          style="height: 32px;"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_out
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-          <span
-            class="MuiSlider-root ZoomControls-slider-41"
-          >
-            <span
-              class="MuiSlider-rail"
-            />
-            <span
-              class="MuiSlider-track"
-            />
-            <input
-              type="hidden"
-              value="5.643856189774724"
-            />
-            <span
-              aria-orientation="horizontal"
-              aria-valuemax="5.643856189774724"
-              aria-valuemin="5.643856189774724"
-              aria-valuenow="5.643856189774724"
-              class="MuiSlider-thumb"
-              data-index="0"
-              role="slider"
-              tabindex="0"
-            />
-          </span>
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_in
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
-      </div>
-      <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
-        style="grid-row: track-foo; grid-column: controls;"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
-          style="min-width: 0;"
-          tabindex="0"
-          title="configure track"
-          type="button"
-          value="configure"
-        >
-          <span
-            class="MuiToggleButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              settings
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <p
-          class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
-        >
-          Foo Track
-        </p>
-        <span
-          class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
-        />
-      </div>
-      <div
-        class="TrackRenderingContainer-trackRenderingContainer-106"
-        role="presentation"
-        style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
-      >
-        <div
-          class="Track-track-107"
-          data-testid="track-testConfig"
-          role="presentation"
-        >
-          <div
-            class="TrackBlocks-trackBlocks-108"
-            data-testid="Block"
-          />
-        </div>
-      </div>
-      <div
-        class="TrackResizeHandle-dragHandle-110"
-        role="presentation"
-        style="grid-row: resize-foo; grid-column: span 2;"
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
       />
     </div>
+    <div
+      class="LinearGenomeView-zoomControls-6"
+      style="right: 4px; z-index: 1000;"
+    >
+      <div
+        class="ZoomControls-container-40"
+        style="height: 32px;"
+      >
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              zoom_out
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiSlider-root ZoomControls-slider-41"
+        >
+          <span
+            class="MuiSlider-rail"
+          />
+          <span
+            class="MuiSlider-track"
+          />
+          <input
+            type="hidden"
+            value="5.643856189774724"
+          />
+          <span
+            aria-orientation="horizontal"
+            aria-valuemax="5.643856189774724"
+            aria-valuemin="5.643856189774724"
+            aria-valuenow="5.643856189774724"
+            class="MuiSlider-thumb"
+            data-index="0"
+            role="slider"
+            tabindex="0"
+          />
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            >
+              zoom_in
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+    </div>
+    <div
+      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      style="grid-row: track-foo; grid-column: controls;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
+        tabindex="0"
+        title="close this track"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        style="min-width: 0;"
+        tabindex="0"
+        title="configure track"
+        type="button"
+        value="configure"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            settings
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <p
+        class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
+      >
+        Foo Track
+      </p>
+      <span
+        class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
+      />
+    </div>
+    <div
+      class="TrackRenderingContainer-trackRenderingContainer-106"
+      role="presentation"
+      style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
+    >
+      <div
+        class="Track-track-107"
+        data-testid="track-testConfig"
+        role="presentation"
+      >
+        <div
+          class="TrackBlocks-trackBlocks-108"
+          data-testid="Block"
+        />
+      </div>
+    </div>
+    <div
+      class="TrackResizeHandle-dragHandle-110"
+      role="presentation"
+      style="grid-row: resize-foo; grid-column: span 2;"
+    />
   </div>
 </div>
 `;
 
 exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
-<div>
+<div
+  class="LinearGenomeView-root-1"
+>
   <div
-    class="LinearGenomeView-root-1"
+    class="LinearGenomeView-linearGenomeView-2"
+    style="display: grid; width: 512px; height: 78px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-linearGenomeView-2"
-      style="display: grid; width: 512px; height: 78px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      style="grid-row: scale-bar;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        tabindex="0"
+        title="close this view"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        data_testid="track_select"
+        tabindex="0"
+        title="select tracks"
+        type="button"
+        value="track_select"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            line_style
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+    <div
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
     >
       <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
-        style="grid-row: scale-bar;"
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
+      >
+        <div
+          class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
+          style="left: 0px; width: 100px;"
+        >
+          <svg
+            height="32"
+            width="100"
+          >
+            <line
+              class="Ruler-majorTick-115"
+              data-bp="-1"
+              stroke="#555"
+              stroke-width="1"
+              x1="-1"
+              x2="-1"
+              y1="0"
+              y2="6"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="19"
+              stroke="#999"
+              stroke-width="1"
+              x1="19"
+              x2="19"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="39"
+              stroke="#999"
+              stroke-width="1"
+              x1="39"
+              x2="39"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="59"
+              stroke="#999"
+              stroke-width="1"
+              x1="59"
+              x2="59"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="79"
+              stroke="#999"
+              stroke-width="1"
+              x1="79"
+              x2="79"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-majorTick-115"
+              data-bp="99"
+              stroke="#555"
+              stroke-width="1"
+              x1="99"
+              x2="99"
+              y1="0"
+              y2="6"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="119"
+              stroke="#999"
+              stroke-width="1"
+              x1="119"
+              x2="119"
+              y1="0"
+              y2="4"
+            />
+            <text
+              class="Ruler-majorTickLabel-114"
+              dominant-baseline="hanging"
+              style="font-size: 11px;"
+              x="-4"
+              y="7"
+            >
+              0
+            </text>
+            <text
+              class="Ruler-majorTickLabel-114"
+              dominant-baseline="hanging"
+              style="font-size: 11px;"
+              x="96"
+              y="7"
+            >
+              100
+            </text>
+          </svg>
+        </div>
+        <div
+          class="ScaleBar-refLabel-39"
+        >
+          ctgA
+        </div>
+      </div>
+    </div>
+    <div
+      class="LinearGenomeView-zoomControls-6"
+      style="right: 4px; z-index: 1000;"
+    >
+      <div
+        class="ZoomControls-container-40"
+        style="height: 32px;"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+          class="MuiButtonBase-root MuiIconButton-root"
           tabindex="0"
-          title="close this view"
           type="button"
         >
           <span
@@ -244,29 +404,50 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               aria-hidden="true"
               class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
-              close
+              zoom_out
             </span>
           </span>
           <span
             class="MuiTouchRipple-root"
           />
         </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
-          data_testid="track_select"
-          tabindex="0"
-          title="select tracks"
-          type="button"
-          value="track_select"
+        <span
+          class="MuiSlider-root ZoomControls-slider-41"
         >
           <span
-            class="MuiToggleButton-label"
+            class="MuiSlider-rail"
+          />
+          <span
+            class="MuiSlider-track"
+          />
+          <input
+            type="hidden"
+            value="5.643856189774724"
+          />
+          <span
+            aria-orientation="horizontal"
+            aria-valuemax="5.643856189774724"
+            aria-valuemin="5.643856189774724"
+            aria-valuenow="5.643856189774724"
+            class="MuiSlider-thumb"
+            data-index="0"
+            role="slider"
+            tabindex="0"
+          />
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
           >
             <span
               aria-hidden="true"
               class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
-              line_style
+              zoom_in
             </span>
           </span>
           <span
@@ -274,375 +455,260 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </button>
       </div>
+    </div>
+    <div
+      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      style="grid-row: track-foo; grid-column: controls;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
+        tabindex="0"
+        title="close this track"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        style="min-width: 0;"
+        tabindex="0"
+        title="configure track"
+        type="button"
+        value="configure"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            settings
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <p
+        class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
+      >
+        Foo Track
+      </p>
+      <span
+        class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
+      />
+    </div>
+    <div
+      class="TrackRenderingContainer-trackRenderingContainer-106"
+      role="presentation"
+      style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
+    >
       <div
-        class="Rubberband-rubberBandContainer-37"
+        class="Track-track-107"
+        data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="ScaleBar-scaleBar-38"
-          style="height: 32px; width: 412px;"
+          class="TrackBlocks-trackBlocks-108"
+          data-testid="Block"
         >
           <div
             class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
             style="left: 0px; width: 100px;"
           >
-            <svg
-              height="32"
-              width="100"
-            >
-              <line
-                class="Ruler-majorTick-115"
-                data-bp="-1"
-                stroke="#555"
-                stroke-width="1"
-                x1="-1"
-                x2="-1"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="Ruler-minorTick-116"
-                data-bp="19"
-                stroke="#999"
-                stroke-width="1"
-                x1="19"
-                x2="19"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="Ruler-minorTick-116"
-                data-bp="39"
-                stroke="#999"
-                stroke-width="1"
-                x1="39"
-                x2="39"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="Ruler-minorTick-116"
-                data-bp="59"
-                stroke="#999"
-                stroke-width="1"
-                x1="59"
-                x2="59"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="Ruler-minorTick-116"
-                data-bp="79"
-                stroke="#999"
-                stroke-width="1"
-                x1="79"
-                x2="79"
-                y1="0"
-                y2="4"
-              />
-              <line
-                class="Ruler-majorTick-115"
-                data-bp="99"
-                stroke="#555"
-                stroke-width="1"
-                x1="99"
-                x2="99"
-                y1="0"
-                y2="6"
-              />
-              <line
-                class="Ruler-minorTick-116"
-                data-bp="119"
-                stroke="#999"
-                stroke-width="1"
-                x1="119"
-                x2="119"
-                y1="0"
-                y2="4"
-              />
-              <text
-                class="Ruler-majorTickLabel-114"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="-4"
-                y="7"
-              >
-                0
-              </text>
-              <text
-                class="Ruler-majorTickLabel-114"
-                dominant-baseline="hanging"
-                style="font-size: 11px;"
-                x="96"
-                y="7"
-              >
-                100
-              </text>
-            </svg>
-          </div>
-          <div
-            class="ScaleBar-refLabel-39"
-          >
-            ctgA
-          </div>
-        </div>
-      </div>
-      <div
-        class="LinearGenomeView-zoomControls-6"
-        style="right: 4px; z-index: 1000;"
-      >
-        <div
-          class="ZoomControls-container-40"
-          style="height: 32px;"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_out
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-          <span
-            class="MuiSlider-root ZoomControls-slider-41"
-          >
-            <span
-              class="MuiSlider-rail"
-            />
-            <span
-              class="MuiSlider-track"
-            />
-            <input
-              type="hidden"
-              value="5.643856189774724"
-            />
-            <span
-              aria-orientation="horizontal"
-              aria-valuemax="5.643856189774724"
-              aria-valuemin="5.643856189774724"
-              aria-valuenow="5.643856189774724"
-              class="MuiSlider-thumb"
-              data-index="0"
-              role="slider"
-              tabindex="0"
-            />
-          </span>
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_in
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
-      </div>
-      <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
-        style="grid-row: track-foo; grid-column: controls;"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
-          style="min-width: 0;"
-          tabindex="0"
-          title="configure track"
-          type="button"
-          value="configure"
-        >
-          <span
-            class="MuiToggleButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              settings
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <p
-          class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
-        >
-          Foo Track
-        </p>
-        <span
-          class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
-        />
-      </div>
-      <div
-        class="TrackRenderingContainer-trackRenderingContainer-106"
-        role="presentation"
-        style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
-      >
-        <div
-          class="Track-track-107"
-          data-testid="track-testConfig"
-          role="presentation"
-        >
-          <div
-            class="TrackBlocks-trackBlocks-108"
-            data-testid="Block"
-          >
             <div
-              class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
-              style="left: 0px; width: 100px;"
-            />
+              class="Component-blockMessage-121"
+            >
+              region assembly does not match track assembly
+            </div>
           </div>
         </div>
       </div>
-      <div
-        class="TrackResizeHandle-dragHandle-110"
-        role="presentation"
-        style="grid-row: resize-foo; grid-column: span 2;"
-      />
-      <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
-        style="grid-row: track-bar; grid-column: controls;"
+    </div>
+    <div
+      class="TrackResizeHandle-dragHandle-110"
+      role="presentation"
+      style="grid-row: resize-foo; grid-column: span 2;"
+    />
+    <div
+      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      style="grid-row: track-bar; grid-column: controls;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
+        tabindex="0"
+        title="close this track"
+        type="button"
       >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-73"
-          tabindex="0"
-          title="close this track"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              close
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
-          style="min-width: 0;"
-          tabindex="0"
-          title="configure track"
-          type="button"
-          value="configure"
-        >
-          <span
-            class="MuiToggleButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              settings
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <p
-          class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
-        >
-          Bar Track
-        </p>
         <span
-          class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
-        />
-      </div>
-      <div
-        class="TrackRenderingContainer-trackRenderingContainer-106"
-        role="presentation"
-        style="grid-row: track-bar; grid-column: blocks; width: 412px; height: 20px;"
-      >
-        <div
-          class="Track-track-107"
-          data-testid="track-testConfig2"
-          role="presentation"
+          class="MuiIconButton-label"
         >
-          <div
-            class="TrackBlocks-trackBlocks-108"
-            data-testid="Block"
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
-            <div
-              class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
-              style="left: 0px; width: 100px;"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="TrackResizeHandle-dragHandle-110"
-        role="presentation"
-        style="grid-row: resize-bar; grid-column: span 2;"
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        style="min-width: 0;"
+        tabindex="0"
+        title="configure track"
+        type="button"
+        value="configure"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            settings
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <p
+        class="MuiTypography-root TrackControls-trackName-71 MuiTypography-body1"
+      >
+        Bar Track
+      </p>
+      <span
+        class="MuiTypography-root TrackControls-trackDescription-72 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
+    <div
+      class="TrackRenderingContainer-trackRenderingContainer-106"
+      role="presentation"
+      style="grid-row: track-bar; grid-column: blocks; width: 412px; height: 20px;"
+    >
+      <div
+        class="Track-track-107"
+        data-testid="track-testConfig2"
+        role="presentation"
+      >
+        <div
+          class="TrackBlocks-trackBlocks-108"
+          data-testid="Block"
+        >
+          <div
+            class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
+            style="left: 0px; width: 100px;"
+          >
+            <div
+              class="Component-blockMessage-121"
+            >
+              region assembly does not match track assembly
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="TrackResizeHandle-dragHandle-110"
+      role="presentation"
+      style="grid-row: resize-bar; grid-column: span 2;"
+    />
   </div>
 </div>
 `;
 
 exports[`LinearGenomeView genome view component renders with an empty model 1`] = `
-<div>
+<div
+  class="LinearGenomeView-root-1"
+>
   <div
-    class="LinearGenomeView-root-1"
+    class="LinearGenomeView-linearGenomeView-2"
+    style="display: grid; width: 512px; height: 32px; position: relative; grid-template-rows: [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-linearGenomeView-2"
-      style="display: grid; width: 512px; height: 32px; position: relative; grid-template-rows: [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
+      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      style="grid-row: scale-bar;"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        tabindex="0"
+        title="close this view"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            close
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        data_testid="track_select"
+        tabindex="0"
+        title="select tracks"
+        type="button"
+        value="track_select"
+      >
+        <span
+          class="MuiToggleButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          >
+            line_style
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+    <div
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
     >
       <div
-        class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
-        style="grid-row: scale-bar;"
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
+      />
+    </div>
+    <div
+      class="LinearGenomeView-zoomControls-6"
+      style="right: 4px; z-index: 1000;"
+    >
+      <div
+        class="ZoomControls-container-40"
+        style="height: 32px;"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+          class="MuiButtonBase-root MuiIconButton-root"
           tabindex="0"
-          title="close this view"
           type="button"
         >
           <span
@@ -652,116 +718,56 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
               aria-hidden="true"
               class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
-              close
+              zoom_out
             </span>
           </span>
           <span
             class="MuiTouchRipple-root"
           />
         </button>
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
-          data_testid="track_select"
-          tabindex="0"
-          title="select tracks"
-          type="button"
-          value="track_select"
+        <span
+          class="MuiSlider-root ZoomControls-slider-41"
         >
           <span
-            class="MuiToggleButton-label"
+            class="MuiSlider-rail"
+          />
+          <span
+            class="MuiSlider-track"
+          />
+          <input
+            type="hidden"
+            value="5.643856189774724"
+          />
+          <span
+            aria-orientation="horizontal"
+            aria-valuemax="5.643856189774724"
+            aria-valuemin="5.643856189774724"
+            aria-valuenow="5.643856189774724"
+            class="MuiSlider-thumb"
+            data-index="0"
+            role="slider"
+            tabindex="0"
+          />
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
           >
             <span
               aria-hidden="true"
               class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
-              line_style
+              zoom_in
             </span>
           </span>
           <span
             class="MuiTouchRipple-root"
           />
         </button>
-      </div>
-      <div
-        class="Rubberband-rubberBandContainer-37"
-        role="presentation"
-      >
-        <div
-          class="ScaleBar-scaleBar-38"
-          style="height: 32px; width: 412px;"
-        />
-      </div>
-      <div
-        class="LinearGenomeView-zoomControls-6"
-        style="right: 4px; z-index: 1000;"
-      >
-        <div
-          class="ZoomControls-container-40"
-          style="height: 32px;"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_out
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-          <span
-            class="MuiSlider-root ZoomControls-slider-41"
-          >
-            <span
-              class="MuiSlider-rail"
-            />
-            <span
-              class="MuiSlider-track"
-            />
-            <input
-              type="hidden"
-              value="5.643856189774724"
-            />
-            <span
-              aria-orientation="horizontal"
-              aria-valuemax="5.643856189774724"
-              aria-valuemin="5.643856189774724"
-              aria-valuenow="5.643856189774724"
-              class="MuiSlider-thumb"
-              data-index="0"
-              role="slider"
-              tabindex="0"
-            />
-          </span>
-          <button
-            class="MuiButtonBase-root MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-              >
-                zoom_in
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
       </div>
     </div>
   </div>

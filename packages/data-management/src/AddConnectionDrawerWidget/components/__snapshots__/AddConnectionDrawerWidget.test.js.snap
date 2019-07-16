@@ -66,10 +66,62 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                 autocomplete="off"
               >
                 <div
-                  class="MuiFormControl-root MuiFormControl-fullWidth"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    speciesName
+                  </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                  >
+                    <div
+                      aria-haspopup="true"
+                      aria-pressed="false"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <span>
+                        ​
+                      </span>
+                    </div>
+                    <input
+                      data-testid="speciesNameSelect"
+                      type="hidden"
+                      value=""
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSelect-icon"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
+                  </div>
+                  <p
+                    class="MuiFormHelperText-root"
+                  >
+                    Species to which the track will be added
+                  </p>
+                </div>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    connectionType
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
                       aria-haspopup="true"

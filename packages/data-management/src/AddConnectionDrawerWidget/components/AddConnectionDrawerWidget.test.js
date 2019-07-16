@@ -14,11 +14,29 @@ describe('<AddConnectionDrawerWidget />', () => {
   let model
   let session
 
-  beforeAll(() => {
-    session = createTestSession({
-      configId: 'testing',
-      defaultSession: {},
-      rpc: { configId: 'testingRpc' },
+  beforeEach(() => {
+    session = createTestSession()
+    session.addSpecies({
+      name: 'volvox',
+      assembly: {
+        name: 'volMyt1',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'firstId',
+                start: 0,
+                end: 1000,
+                seq:
+                  'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
+              },
+            ],
+          },
+        },
+      },
     })
     model = session.addDrawerWidget(
       'AddConnectionDrawerWidget',
@@ -67,10 +85,11 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(
-      session.connections.has('Test UCSC connection name'),
-    ).not.toBeTruthy()
+    expect(session.species[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('volvox'), { container })
+    fireEvent.click(getByText('volvox'))
+    fireEvent.click(getAllByRole('button')[1])
     await waitForElement(() => getByText('UCSC Track Hub'), { container })
     fireEvent.click(getByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
@@ -81,7 +100,7 @@ type bigWig
       target: { value: 'http://test.com/hub.txt' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(session.connections.has('Test UCSC connection name')).toBeTruthy()
+    expect(session.species[0].connections.length).toBe(1)
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -100,10 +119,11 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(
-      session.connections.has('Test JBrowse 1 connection name'),
-    ).not.toBeTruthy()
+    expect(session.species[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('volvox'), { container })
+    fireEvent.click(getByText('volvox'))
+    fireEvent.click(getAllByRole('button')[1])
     await waitForElement(() => getByText('JBrowse 1 Data'), { container })
     fireEvent.click(getByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
@@ -114,8 +134,6 @@ type bigWig
       target: { value: 'http://test.com/jbrowse/data/' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(
-      session.connections.has('Test JBrowse 1 connection name'),
-    ).toBeTruthy()
+    expect(session.species[0].connections.length).toBe(1)
   })
 })

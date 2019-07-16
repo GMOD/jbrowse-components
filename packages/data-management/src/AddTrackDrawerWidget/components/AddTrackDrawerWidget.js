@@ -42,7 +42,7 @@ function AddTrackDrawerWidget(props) {
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
-  const [assemblyName, setAssemblyName] = useState('')
+  const [speciesName, setSpeciesName] = useState('')
 
   const { classes, model } = props
 
@@ -70,8 +70,8 @@ function AddTrackDrawerWidget(props) {
             setTrackType={setTrackType}
             trackAdapter={trackAdapter}
             setTrackAdapter={setTrackAdapter}
-            assemblyName={assemblyName}
-            setAssemblyName={setAssemblyName}
+            speciesName={speciesName}
+            setSpeciesName={setSpeciesName}
           />
         )
       default:
@@ -80,19 +80,20 @@ function AddTrackDrawerWidget(props) {
   }
 
   function handleNext() {
-    if (activeStep === steps.length - 1) {
-      trackAdapter.features = trackData.config
-      const trackConf = session.configuration.assemblies
-        .find(assembly => readConfObject(assembly, 'name') === assemblyName)
-        .addTrackConf(trackType, {
-          name: trackName,
-          adapter: trackAdapter,
-        })
-      model.view.showTrack(trackConf)
-      session.hideDrawerWidget(model)
+    if (activeStep !== steps.length - 1) {
+      setActiveStep(activeStep + 1)
       return
     }
-    setActiveStep(activeStep + 1)
+    trackAdapter.features = trackData.config
+    const trackConf = session.species
+      .find(species => readConfObject(species, 'name') === speciesName)
+      .addTrackConf({
+        type: trackType,
+        name: trackName,
+        adapter: trackAdapter,
+      })
+    model.view.showTrack(trackConf)
+    session.hideDrawerWidget(model)
   }
 
   function handleBack() {
@@ -104,7 +105,7 @@ function AddTrackDrawerWidget(props) {
       case 0:
         return !(trackData.uri || trackData.localPath || trackData.config)
       case 1:
-        return !(trackName && trackType && trackAdapter.type && assemblyName)
+        return !(trackName && trackType && trackAdapter.type && speciesName)
       default:
         return true
     }
