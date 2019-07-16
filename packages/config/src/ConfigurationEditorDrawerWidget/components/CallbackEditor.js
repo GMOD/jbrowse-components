@@ -12,6 +12,7 @@ import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
+import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 
 const styles = theme => ({
   callbackEditor: {
@@ -39,14 +40,21 @@ function useDebounce(value, delay, slot) {
   return debouncedValue
 }
 
-export function CallbackEditor(props) {
+function CallbackEditor(props) {
   const { slot, classes } = props
 
-  const [code, setCode] = useState(slot.value, 400)
+  const [code, setCode] = useState(slot.value)
+  const [error, setCodeError] = useState()
   const debouncedCode = useDebounce(code, 400)
 
   useEffect(() => {
-    slot.set(debouncedCode)
+    try {
+      stringToFunction(debouncedCode)
+      slot.set(debouncedCode)
+      setCodeError(null)
+    } catch (e) {
+      setCodeError(e)
+    }
   }, [debouncedCode, slot])
 
   return (
@@ -64,6 +72,7 @@ export function CallbackEditor(props) {
           highlight(newCode, languages.javascript, 'javascript')
         }
         padding={10}
+        style={{ background: error ? '#fdd' : undefined }}
       />
       <FormHelperText>{slot.description}</FormHelperText>
     </FormControl>
