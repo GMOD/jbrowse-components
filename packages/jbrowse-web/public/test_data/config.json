@@ -1024,8 +1024,8 @@
       }
     ],
     "drawerWidgets": {
-      "hierarchicalTrackSelector-Volvox Example": {
-        "id": "hierarchicalTrackSelector-Volvox Example",
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "collapsed": {},
         "filterText": "",
@@ -1033,7 +1033,7 @@
       }
     },
     "activeDrawerWidgets": {
-      "hierarchicalTrackSelector-Volvox Example": "hierarchicalTrackSelector-Volvox Example"
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     },
     "menuBars": [
       {
@@ -1203,8 +1203,8 @@
         }
       ],
       "drawerWidgets": {
-        "hierarchicalTrackSelector-Volvox Example": {
-          "id": "hierarchicalTrackSelector-Volvox Example",
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
           "collapsed": {},
           "filterText": "",
@@ -1212,7 +1212,7 @@
         }
       },
       "activeDrawerWidgets": {
-        "hierarchicalTrackSelector-Volvox Example": "hierarchicalTrackSelector-Volvox Example"
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       },
       "menuBars": [
         {
@@ -1309,14 +1309,14 @@
         }
       ],
       "drawerWidgets": {
-        "hierarchicalTrackSelector-Human Example (hg19)": {
+        "hierarchicalTrackSelector": {
           "type": "HierarchicalTrackSelectorDrawerWidget",
           "filterText": "",
           "view": "Cma34s8JJ"
         }
       },
       "activeDrawerWidgets": {
-        "hierarchicalTrackSelector-Human Example (hg19)": "hierarchicalTrackSelector-Human Example (hg19)"
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       },
       "configuration": {}
     }

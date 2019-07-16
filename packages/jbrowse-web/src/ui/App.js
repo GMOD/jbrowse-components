@@ -72,15 +72,14 @@ function App(props) {
     session.updateWidth(size.width)
   }, [session, size])
 
-  const drawerWidgets = Array.from(session.activeDrawerWidgets.values())
+  const { visibleDrawerWidget } = session
   let drawerComponent
-  if (drawerWidgets.length) {
-    const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
+  if (visibleDrawerWidget) {
     const {
       LazyReactComponent,
       HeadingComponent,
       heading,
-    } = pluginManager.getDrawerWidgetType(activeDrawerWidget.type)
+    } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
     drawerComponent = (
       <Slide direction="left" in>
         <div>
@@ -92,7 +91,7 @@ function App(props) {
             >
               <Typography variant="h6" color="inherit">
                 {HeadingComponent ? (
-                  <HeadingComponent model={activeDrawerWidget} />
+                  <HeadingComponent model={visibleDrawerWidget} />
                 ) : (
                   heading || undefined
                 )}
@@ -102,7 +101,7 @@ function App(props) {
                 className={classes.drawerCloseButton}
                 color="inherit"
                 aria-label="Close"
-                onClick={() => session.hideDrawerWidget(activeDrawerWidget)}
+                onClick={() => session.hideDrawerWidget(visibleDrawerWidget)}
               >
                 <Icon fontSize="small">close</Icon>
               </IconButton>
@@ -117,7 +116,7 @@ function App(props) {
             }
           >
             <LazyReactComponent
-              model={activeDrawerWidget}
+              model={visibleDrawerWidget}
               session={session}
               addSessionSnapshot={addSessionSnapshot}
               setActiveSession={activateSession}

@@ -82,7 +82,11 @@ export default pluginManager => {
       },
 
       get visibleDrawerWidget() {
-        if (isAlive(self)) return self.activeDrawerWidgets.values().next().value
+        if (isAlive(self))
+          // returns most recently added item in active drawer widgets
+          return Array.from(self.activeDrawerWidgets.values())[
+            self.activeDrawerWidgets.size - 1
+          ]
         return undefined
       },
     }))
@@ -262,15 +266,14 @@ export default pluginManager => {
         )
         if (!typeDefinition)
           throw new Error(`unknown drawer widget type ${typeName}`)
-        const drawerWidgetSessionId = `${id}-${self.name}`
         const data = {
           ...initialState,
-          id: drawerWidgetSessionId,
+          id,
           type: typeName,
           configuration,
         }
-        self.drawerWidgets.set(drawerWidgetSessionId, data)
-        return self.drawerWidgets.get(drawerWidgetSessionId)
+        self.drawerWidgets.set(id, data)
+        return self.drawerWidgets.get(id)
       },
 
       showDrawerWidget(drawerWidget) {
