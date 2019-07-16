@@ -222,11 +222,6 @@ export default pluginManager => {
       removeView(view) {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
-            id === 'configEditor' &&
-            drawerWidget.target.configId === view.configuration.configId
-          )
-            self.hideDrawerWidget(drawerWidget)
-          else if (
             id === 'hierarchicalTrackSelector' &&
             drawerWidget.view.id === view.id
           )
