@@ -11,7 +11,7 @@ window.cancelIdleCallback = () => {}
 describe('HierarchicalTrackSelector drawer widget', () => {
   afterEach(cleanup)
 
-  it('renders nothing with no species', () => {
+  it('renders nothing with no dataset', () => {
     const session = createTestSession()
     const firstView = session.addView('LinearGenomeView')
     const model = firstView.activateTrackSelector()
@@ -26,7 +26,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
 
   it('renders with a couple of uncategorized tracks', async () => {
     const session = createTestSession()
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         name: 'volMyt1',
@@ -59,9 +59,9 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         },
       ],
     })
-    const firstView = session.addLinearGenomeViewOfSpecies('volvox')
-    firstView.showTrack(session.species[0].tracks[0])
-    firstView.showTrack(session.species[0].tracks[1])
+    const firstView = session.addLinearGenomeViewOfDataset('volvox')
+    firstView.showTrack(session.datasets[0].tracks[0])
+    firstView.showTrack(session.datasets[0].tracks[1])
     const model = firstView.activateTrackSelector()
 
     const { container, getByTestId } = render(
@@ -75,7 +75,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
 
   it('renders with a couple of categorized tracks', async () => {
     const session = createTestSession()
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         name: 'volvox',
@@ -109,9 +109,9 @@ describe('HierarchicalTrackSelector drawer widget', () => {
         },
       ],
     })
-    const firstView = session.addLinearGenomeViewOfSpecies('volvox')
-    firstView.showTrack(session.species[0].tracks[0])
-    firstView.showTrack(session.species[0].tracks[1])
+    const firstView = session.addLinearGenomeViewOfDataset('volvox')
+    firstView.showTrack(session.datasets[0].tracks[0])
+    firstView.showTrack(session.datasets[0].tracks[1])
     firstView.tracks[0].configuration.category.set(['Foo Category'])
     firstView.tracks[1].configuration.category.set([
       'Foo Category',

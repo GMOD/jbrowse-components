@@ -20,17 +20,17 @@ function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function
-  speciesNameChoices: string[]
-  speciesName: string
-  setSpeciesName: Function
+  datasetNameChoices: string[]
+  datasetName: string
+  setDatasetName: Function
 }): JSX.Element {
   const {
     connectionTypeChoices,
     connectionType,
     setConnectionType,
-    speciesNameChoices,
-    speciesName,
-    setSpeciesName,
+    datasetNameChoices,
+    datasetName,
+    setDatasetName,
   } = props
 
   function handleChange(
@@ -47,17 +47,17 @@ function ConnectionTypeSelect(props: {
   return (
     <form autoComplete="off">
       <TextField
-        value={speciesName}
-        label="speciesName"
-        helperText="Species to which the track will be added"
+        value={datasetName}
+        label="datasetName"
+        helperText="Dataset to which the track will be added"
         select
         fullWidth
-        onChange={event => setSpeciesName(event.target.value)}
-        inputProps={{ 'data-testid': 'speciesNameSelect' }}
+        onChange={event => setDatasetName(event.target.value)}
+        inputProps={{ 'data-testid': 'datasetNameSelect' }}
       >
-        {speciesNameChoices.map(speciesNameChoice => (
-          <MenuItem key={speciesNameChoice} value={speciesNameChoice}>
-            {speciesNameChoice}
+        {datasetNameChoices.map(datasetNameChoice => (
+          <MenuItem key={datasetNameChoice} value={datasetNameChoice}>
+            {datasetNameChoice}
           </MenuItem>
         ))}
       </TextField>

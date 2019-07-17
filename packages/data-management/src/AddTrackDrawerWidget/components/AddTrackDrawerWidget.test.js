@@ -14,7 +14,7 @@ describe('<AddTrackDrawerWidget />', () => {
 
   beforeAll(() => {
     session = createTestSession()
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         name: 'volMyt1',
@@ -89,7 +89,7 @@ describe('<AddTrackDrawerWidget />', () => {
         },
       ],
     })
-    const view = session.addLinearGenomeViewOfSpecies('volvox')
+    const view = session.addLinearGenomeViewOfDataset('volvox')
     model = session.addDrawerWidget(
       'AddTrackDrawerWidget',
       'addTrackDrawerWidget',
@@ -108,7 +108,7 @@ describe('<AddTrackDrawerWidget />', () => {
     const { container, getByTestId, getByText, getAllByRole } = render(
       <AddTrackDrawerWidget model={model} />,
     )
-    expect(session.species[0].tracks.length).toBe(1)
+    expect(session.datasets[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
     fireEvent.change(getByTestId('trackNameInput'), {
@@ -121,6 +121,6 @@ describe('<AddTrackDrawerWidget />', () => {
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
     fireEvent.click(getByTestId('addTrackNextButton'))
-    expect(session.species[0].tracks.length).toBe(2)
+    expect(session.datasets[0].tracks.length).toBe(2)
   })
 })

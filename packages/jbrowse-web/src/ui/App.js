@@ -169,10 +169,10 @@ function App(props) {
             <button
               type="button"
               onClick={() => {
-                if (!session.species.length)
-                  throw new Error(`Must add a species before adding a view`)
-                session.addLinearGenomeViewOfSpecies(
-                  readConfObject(session.species[0], 'name'),
+                if (!session.datasets.length)
+                  throw new Error(`Must add a dataset before adding a view`)
+                session.addLinearGenomeViewOfDataset(
+                  readConfObject(session.datasets[0], 'name'),
                 )
               }}
             >

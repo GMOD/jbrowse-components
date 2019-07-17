@@ -20,13 +20,13 @@ const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
   pluginManager,
 )
 
-const Species = ConfigurationSchema(
-  'Species',
+const Dataset = ConfigurationSchema(
+  'Dataset',
   {
     name: {
       type: 'string',
       defaultValue: '',
-      description: 'Name of the species',
+      description: 'Name of the dataset',
     },
     assembly: types.union({ dispatcher }, ...assemblyConfigSchemas),
     // track configuration is an array of track config schemas. multiple
@@ -62,7 +62,7 @@ const JBrowseWeb = types
   .model('JBrowseWeb', {
     session: types.maybe(Session),
     sessionSnapshots: types.array(types.frozen(Session)),
-    species: types.array(Species),
+    datasets: types.array(Dataset),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
       // possibly consider this for global config editor
@@ -96,9 +96,9 @@ const JBrowseWeb = types
         )
       self.setSession(newSessionSnapshot)
     },
-    addSpecies(speciesConf) {
-      const length = self.species.push(speciesConf)
-      return self.species[length - 1]
+    addDataset(datasetConf) {
+      const length = self.datasets.push(datasetConf)
+      return self.datasets[length - 1]
     },
   }))
   .views(self => ({
@@ -112,8 +112,8 @@ const JBrowseWeb = types
     views: {
       get assemblyData() {
         const assemblyData = new Map()
-        for (const speciesConfig of self.species) {
-          const assemblyConfig = speciesConfig.assembly
+        for (const datasetConfig of self.datasets) {
+          const assemblyConfig = datasetConfig.assembly
           const assemblyName = readConfObject(assemblyConfig, 'name')
           const assemblyInfo = {}
           if (assemblyConfig.sequence)

@@ -70,8 +70,8 @@ export default pluginManager => {
       get configuration() {
         return getRoot(self).configuration
       },
-      get species() {
-        return getRoot(self).species
+      get datasets() {
+        return getRoot(self).datasets
       },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
@@ -230,20 +230,20 @@ export default pluginManager => {
         self.views.remove(view)
       },
 
-      addSpecies(speciesConf) {
-        return getRoot(self).addSpecies(speciesConf)
+      addDataset(datasetConf) {
+        return getRoot(self).addDataset(datasetConf)
       },
 
-      addLinearGenomeViewOfSpecies(speciesName, initialState = {}) {
-        const species = self.species.find(
-          s => readConfObject(s.name) === speciesName,
+      addLinearGenomeViewOfDataset(datsetName, initialState = {}) {
+        const dataset = self.datasets.find(
+          s => readConfObject(s.name) === datsetName,
         )
-        if (!species)
+        if (!dataset)
           throw new Error(
-            `Could not add view of species "${speciesName}", species name not found`,
+            `Could not add view of dataset "${datsetName}", dataset name not found`,
           )
         initialState.displayRegionsFromAssemblyName = readConfObject(
-          species.assembly,
+          dataset.assembly,
           'name',
         )
         return self.addView('LinearGenomeView', initialState)

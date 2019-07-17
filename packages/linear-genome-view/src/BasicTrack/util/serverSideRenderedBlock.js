@@ -12,7 +12,7 @@ import {
   getSession,
 } from '@gmod/jbrowse-core/util'
 import {
-  getContainingSpecies,
+  getContainingDataset,
   getContainingView,
 } from '@gmod/jbrowse-core/util/tracks'
 
@@ -56,7 +56,7 @@ function renderBlockData(self) {
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
   const assemblyName = readConfObject(
-    getContainingSpecies(track.configuration).assembly,
+    getContainingDataset(track.configuration).assembly,
     'name',
   )
   return {

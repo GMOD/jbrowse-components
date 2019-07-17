@@ -30,8 +30,8 @@ function ConfirmTrack(props) {
     trackType,
     setTrackType,
     trackAdapter,
-    speciesName,
-    setSpeciesName,
+    datasetName,
+    setDatasetName,
     session,
   } = props
 
@@ -127,19 +127,19 @@ function ConfirmTrack(props) {
             ))}
         </TextField>
         <TextField
-          value={speciesName}
-          label="speciesName"
-          helperText="Species to which the track will be added"
+          value={datasetName}
+          label="datasetName"
+          helperText="Dataset to which the track will be added"
           select
           fullWidth
-          onChange={event => setSpeciesName(event.target.value)}
-          inputProps={{ 'data-testid': 'speciesNameSelect' }}
+          onChange={event => setDatasetName(event.target.value)}
+          inputProps={{ 'data-testid': 'datasetNameSelect' }}
         >
-          {session.species.map(species => {
-            const newSpeciesName = readConfObject(species, 'name')
+          {session.datasets.map(dataset => {
+            const newDatasetName = readConfObject(dataset, 'name')
             return (
-              <MenuItem key={newSpeciesName} value={newSpeciesName}>
-                {newSpeciesName}
+              <MenuItem key={newDatasetName} value={newDatasetName}>
+                {newDatasetName}
               </MenuItem>
             )
           })}
@@ -152,8 +152,8 @@ function ConfirmTrack(props) {
 
 ConfirmTrack.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  speciesName: PropTypes.string.isRequired,
-  setSpeciesName: PropTypes.func.isRequired,
+  datasetName: PropTypes.string.isRequired,
+  setDatasetName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,

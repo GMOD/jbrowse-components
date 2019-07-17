@@ -8,7 +8,7 @@ describe('JBrowse MST model', () => {
     jbrowse.setEmptySession()
     expect(jbrowse.session).toBeTruthy()
     expect(jbrowse.sessionSnapshots.length).toBe(0)
-    expect(jbrowse.species.length).toBe(0)
+    expect(jbrowse.datasets.length).toBe(0)
     expect(getSnapshot(jbrowse.configuration)).toMatchSnapshot({
       configId: expect.any(String),
       rpc: { configId: expect.any(String) },
@@ -29,23 +29,25 @@ describe('JBrowse MST model', () => {
     expect(jbrowse.session).toBeTruthy()
   })
 
-  it('adds track and connection configs to a species', () => {
+  it('adds track and connection configs to a dataset', () => {
     const jbrowse = jbrowseModel.create({
-      species: [
+      datasets: [
         {
-          name: 'species1',
+          name: 'dataset1',
           assembly: { name: 'assembly1', aliases: ['assemblyA'] },
         },
       ],
     })
-    expect(jbrowse.species.length).toBe(1)
-    expect(getSnapshot(jbrowse.species[0])).toMatchSnapshot({
+    expect(jbrowse.datasets.length).toBe(1)
+    expect(getSnapshot(jbrowse.datasets[0])).toMatchSnapshot({
       configId: expect.any(String),
       assembly: {
         configId: expect.any(String),
       },
     })
-    const newTrackConf = jbrowse.species[0].addTrackConf({ type: 'BasicTrack' })
+    const newTrackConf = jbrowse.datasets[0].addTrackConf({
+      type: 'BasicTrack',
+    })
     expect(getSnapshot(newTrackConf)).toMatchSnapshot({
       configId: expect.any(String),
       adapter: {
@@ -54,14 +56,14 @@ describe('JBrowse MST model', () => {
       },
       renderer: { configId: expect.any(String) },
     })
-    expect(jbrowse.species[0].tracks.length).toBe(1)
-    const newConnectionConf = jbrowse.species[0].addConnectionConf({
+    expect(jbrowse.datasets[0].tracks.length).toBe(1)
+    const newConnectionConf = jbrowse.datasets[0].addConnectionConf({
       type: 'JBrowse1Connection',
     })
     expect(getSnapshot(newConnectionConf)).toMatchSnapshot({
       configId: expect.any(String),
     })
-    expect(jbrowse.species[0].connections.length).toBe(1)
+    expect(jbrowse.datasets[0].connections.length).toBe(1)
   })
 
   it('adds a session snapshot', () => {

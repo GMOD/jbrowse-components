@@ -29,8 +29,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        speciesName=""
-        setSpeciesName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -52,8 +52,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        speciesName=""
-        setSpeciesName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -76,8 +76,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { localPath: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        speciesName=""
-        setSpeciesName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -98,8 +98,8 @@ describe('<ConfirmTrack />', () => {
           type: 'FromConfigAdapter',
         }}
         setTrackAdapter={mockFunction}
-        speciesName=""
-        setSpeciesName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()

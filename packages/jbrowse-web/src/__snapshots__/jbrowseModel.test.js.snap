@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`JBrowse MST model adds track and connection configs to a species 1`] = `
+exports[`JBrowse MST model adds track and connection configs to a dataset 1`] = `
 Object {
   "assembly": Object {
     "aliases": Array [
@@ -10,11 +10,11 @@ Object {
     "name": "assembly1",
   },
   "configId": Any<String>,
-  "name": "species1",
+  "name": "dataset1",
 }
 `;
 
-exports[`JBrowse MST model adds track and connection configs to a species 2`] = `
+exports[`JBrowse MST model adds track and connection configs to a dataset 2`] = `
 Object {
   "adapter": Object {
     "configId": Any<String>,
@@ -32,7 +32,7 @@ Object {
 }
 `;
 
-exports[`JBrowse MST model adds track and connection configs to a species 3`] = `
+exports[`JBrowse MST model adds track and connection configs to a dataset 3`] = `
 Object {
   "configId": Any<String>,
   "type": "JBrowse1Connection",

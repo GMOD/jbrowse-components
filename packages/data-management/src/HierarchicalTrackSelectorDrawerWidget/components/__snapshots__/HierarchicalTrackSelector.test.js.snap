@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HierarchicalTrackSelector drawer widget renders nothing with no species 1`] = `null`;
+exports[`HierarchicalTrackSelector drawer widget renders nothing with no dataset 1`] = `null`;
 
 exports[`HierarchicalTrackSelector drawer widget renders with a couple of categorized tracks 1`] = `
 <div

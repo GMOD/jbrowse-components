@@ -16,7 +16,7 @@ describe('<AddConnectionDrawerWidget />', () => {
 
   beforeEach(() => {
     session = createTestSession()
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         name: 'volMyt1',
@@ -85,7 +85,7 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(session.species[0].connections.length).toBe(0)
+    expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
@@ -100,7 +100,7 @@ type bigWig
       target: { value: 'http://test.com/hub.txt' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(session.species[0].connections.length).toBe(1)
+    expect(session.datasets[0].connections.length).toBe(1)
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -119,7 +119,7 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(session.species[0].connections.length).toBe(0)
+    expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
@@ -134,6 +134,6 @@ type bigWig
       target: { value: 'http://test.com/jbrowse/data/' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(session.species[0].connections.length).toBe(1)
+    expect(session.datasets[0].connections.length).toBe(1)
   })
 })

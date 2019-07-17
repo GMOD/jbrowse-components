@@ -35,7 +35,7 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 function AddConnectionDrawerWidget(props) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
-  const [speciesName, setSpeciesName] = useState('')
+  const [datasetName, setDatasetName] = useState('')
 
   const [activeStep, setActiveStep] = useState(0)
 
@@ -59,11 +59,11 @@ function AddConnectionDrawerWidget(props) {
             )}
             connectionType={connectionType}
             setConnectionType={handleSetConnectionType}
-            speciesNameChoices={session.species.map(species =>
-              readConfObject(species, 'name'),
+            datasetNameChoices={session.datasets.map(dataset =>
+              readConfObject(dataset, 'name'),
             )}
-            speciesName={speciesName}
-            setSpeciesName={setSpeciesName}
+            datasetName={datasetName}
+            setDatasetName={setDatasetName}
           />
         )
       case 1:
@@ -89,8 +89,8 @@ function AddConnectionDrawerWidget(props) {
   }
 
   function handleFinish() {
-    session.species
-      .find(species => readConfObject(species, 'name') === speciesName)
+    session.datasets
+      .find(dataset => readConfObject(dataset, 'name') === datasetName)
       .addConnectionConf(configModel)
     session.hideDrawerWidget(model)
   }

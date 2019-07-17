@@ -1,7 +1,6 @@
 {
-  "species": [
+  "datasets": [
     {
-      "configId": "volvox_species",
       "name": "volvox",
       "assembly": {
         "name": "volvox",

@@ -50,15 +50,15 @@ export default pluginManager =>
         if (!self.view) return []
         const session = getSession(self)
         const trackConfigurations = []
-        session.species.forEach(speciesConf => {
+        session.datasets.forEach(datasetConf => {
           if (
-            readConfObject(speciesConf, ['assembly', 'name']) ===
+            readConfObject(datasetConf, ['assembly', 'name']) ===
               assemblyName ||
-            readConfObject(speciesConf, ['assembly', 'aliases']).includes(
+            readConfObject(datasetConf, ['assembly', 'aliases']).includes(
               assemblyName,
             )
           )
-            trackConfigurations.push(...speciesConf.tracks)
+            trackConfigurations.push(...datasetConf.tracks)
         })
 
         const relevantTrackConfigurations = trackConfigurations.filter(

@@ -99,7 +99,7 @@ function HierarchicalTrackSelector(props) {
   const filterError =
     model.trackConfigurations(assemblyName) > 0 &&
     model.trackConfigurations(assemblyName).filter(filter).length === 0
-  const species = session.species.find(
+  const dataset = session.datasets.find(
     s => readConfObject(s, ['assembly', 'name']) === assemblyName,
   )
 
@@ -145,7 +145,7 @@ function HierarchicalTrackSelector(props) {
         top
       />
       <FormGroup>
-        {species.connections.map(connectionConf => (
+        {dataset.connections.map(connectionConf => (
           <FormControlLabel
             key={readConfObject(connectionConf, 'name')}
             control={

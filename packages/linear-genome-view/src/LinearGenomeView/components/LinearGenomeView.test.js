@@ -41,7 +41,7 @@ describe('LinearGenomeView genome view component', () => {
         },
       ],
     })
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         name: 'volMyt1',
@@ -108,7 +108,7 @@ describe('LinearGenomeView genome view component', () => {
         },
       ],
     })
-    session.addSpecies({
+    session.addDataset({
       name: 'volvox',
       assembly: {
         assemblyName: 'volMyt1',

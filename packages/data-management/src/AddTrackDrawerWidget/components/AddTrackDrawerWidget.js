@@ -42,7 +42,7 @@ function AddTrackDrawerWidget(props) {
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
-  const [speciesName, setSpeciesName] = useState('')
+  const [datasetName, setDatasetName] = useState('')
 
   const { classes, model } = props
 
@@ -70,8 +70,8 @@ function AddTrackDrawerWidget(props) {
             setTrackType={setTrackType}
             trackAdapter={trackAdapter}
             setTrackAdapter={setTrackAdapter}
-            speciesName={speciesName}
-            setSpeciesName={setSpeciesName}
+            datasetName={datasetName}
+            setDatasetName={setDatasetName}
           />
         )
       default:
@@ -85,8 +85,8 @@ function AddTrackDrawerWidget(props) {
       return
     }
     trackAdapter.features = trackData.config
-    const trackConf = session.species
-      .find(species => readConfObject(species, 'name') === speciesName)
+    const trackConf = session.datasets
+      .find(dataset => readConfObject(dataset, 'name') === datasetName)
       .addTrackConf({
         type: trackType,
         name: trackName,
@@ -105,7 +105,7 @@ function AddTrackDrawerWidget(props) {
       case 0:
         return !(trackData.uri || trackData.localPath || trackData.config)
       case 1:
-        return !(trackName && trackType && trackAdapter.type && speciesName)
+        return !(trackName && trackType && trackAdapter.type && datasetName)
       default:
         return true
     }

@@ -33,8 +33,8 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
   if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Refence Sequence'
     const session = getSession(view)
-    session.species.forEach(speciesConf => {
-      const { assembly } = speciesConf
+    session.datasets.forEach(datsetConf => {
+      const { assembly } = datsetConf
       if (assembly.sequence === track.configuration)
         trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
     })
