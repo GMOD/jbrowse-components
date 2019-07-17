@@ -4,7 +4,8 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
-import React, { useState, useEffect } from 'react'
+import { getSnapshot } from 'mobx-state-tree'
+import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
 import jbrowseModel from './jbrowseModel'
 import App from './ui/App'
@@ -16,6 +17,7 @@ export default observer(({ config }) => {
   const [jbrowseState, setJBrowseState] = useState()
 
   useEffect(() => {
+    let intervalId
     async function loadConfig() {
       try {
         let configSnapshot = config
@@ -23,8 +25,23 @@ export default observer(({ config }) => {
           const configText = await openLocation(config).readFile('utf8')
           configSnapshot = JSON.parse(configText)
         }
+        const params = new URL(document.location).searchParams
+        const session = params.get('session')
+        if (session)
+          try {
+            configSnapshot.session = JSON.parse(atob(session))
+          } catch (error) {
+            console.error('could not load session from URL', error)
+          }
         const state = jbrowseModel.create(configSnapshot)
         if (!state.session) state.setEmptySession()
+        intervalId = setInterval(() => {
+          const l = document.location
+          const updatedUrl = `${l.origin}${l.pathname}?session=${btoa(
+            JSON.stringify(getSnapshot(state.session)),
+          )}`
+          window.history.replaceState({}, '', updatedUrl)
+        }, 3000)
         // poke some things for testing (this stuff will eventually be removed)
         window.ROOTMODEL = state
         window.MODEL = state.session
@@ -38,6 +55,10 @@ export default observer(({ config }) => {
     }
 
     loadConfig()
+
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [config])
 
   let DisplayComponent = (
