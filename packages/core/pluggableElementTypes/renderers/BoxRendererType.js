@@ -1,3 +1,4 @@
+import { readConfObject } from '../../configuration'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -9,9 +10,9 @@ export class LayoutSession {
   }
 
   makeLayout() {
-    const pitchX = this.bpPerPx
     return new MultiLayout(GranularRectLayout, {
-      pitchX,
+      maxHeight: readConfObject(this.config, 'maxHeight'),
+      pitchX: this.bpPerPx,
       pitchY: 3,
     })
   }
@@ -33,8 +34,8 @@ export class LayoutSession {
 }
 
 export default class extends ServerSideRendererType {
-  constructor(stuff) {
-    super({ ...stuff, sessions: {} })
+  constructor(args) {
+    super({ ...args, sessions: {} })
   }
 
   getWorkerSession(props) {

@@ -24,7 +24,9 @@ exports[`one feature 1`] = `
     y1="0"
     y2="16.286652959662007"
   />
-  <g>
+  <g
+    data-testid="one"
+  >
     <title />
     <circle
       cx="0.7"

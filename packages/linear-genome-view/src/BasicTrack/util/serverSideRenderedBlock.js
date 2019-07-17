@@ -109,15 +109,21 @@ async function renderBlockEffect(self, props, allowRefetch = true) {
     //   assembleLocString(renderArgs.region),
     //   renderArgs.rendererType,
     // ]
-    const { html, ...data } = await rendererType.renderInClient(
-      rpcManager,
-      renderArgs,
-    )
+    const {
+      html,
+      maxHeightReached,
+      ...data
+    } = await rendererType.renderInClient(rpcManager, renderArgs)
     // if (aborter.signal.aborted) {
     //   console.log(...callId, 'request to abort render was ignored', html, data)
-    // }
     checkAbortSignal(aborter.signal)
-    self.setRendered(data, html, rendererType.ReactComponent, renderProps)
+    self.setRendered(
+      data,
+      html,
+      maxHeightReached,
+      rendererType.ReactComponent,
+      renderProps,
+    )
   } catch (error) {
     if (isAbortException(error) && !aborter.signal.aborted) {
       // there is a bug in the underlying code and something is caching aborts. try to refetch once
@@ -151,6 +157,7 @@ export default types
     data: undefined,
     html: '',
     error: undefined,
+    maxHeightReached: false,
     reactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined,
     renderProps: undefined,
@@ -179,6 +186,7 @@ export default types
       self.html = ''
       self.data = undefined
       self.error = undefined
+      self.maxHeightReached = false
       self.renderingComponent = undefined
       self.renderProps = undefined
       self.renderInProgress = abortController
@@ -192,16 +200,18 @@ export default types
       self.html = ''
       self.data = undefined
       self.error = undefined
+      self.maxHeightReached = false
       self.renderingComponent = undefined
       self.renderProps = undefined
       self.renderInProgress = undefined
     },
-    setRendered(data, html, renderingComponent, renderProps) {
+    setRendered(data, html, maxHeightReached, renderingComponent, renderProps) {
       self.filled = true
       self.message = undefined
       self.html = html
       self.data = data
       self.error = undefined
+      self.maxHeightReached = maxHeightReached
       self.renderingComponent = renderingComponent
       self.renderProps = renderProps
       self.renderInProgress = undefined
@@ -215,6 +225,7 @@ export default types
       self.message = undefined
       self.html = undefined
       self.data = undefined
+      self.maxHeightReached = false
       self.error = error
       self.renderingComponent = undefined
       self.renderProps = undefined

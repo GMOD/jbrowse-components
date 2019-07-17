@@ -99,6 +99,32 @@
           }
         },
         {
+          "configId": "volvox_bam_small_max_height",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (small max height)",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer",
+              "maxHeight": 10
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
           "type": "VariantTrack",
           "configId": "volvox_filtered_vcf",
           "defaultRendering": "svg",
@@ -169,6 +195,58 @@
             "bigWigLocation": {
               "uri": "/test_data/volvox_microarray.bw"
             }
+          }
+        },
+        {
+          "configId": "lollipop_track",
+          "type": "DynamicTrack",
+          "name": "Lollipop track",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 190,
+                "end": 191,
+                "type": "foo",
+                "score": 200,
+                "name": "Boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 191,
+                "end": 192,
+                "type": "bar",
+                "score": 20,
+                "name": "Theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 210,
+                "end": 211,
+                "type": "baz",
+                "score": 300,
+                "name": "Nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 220,
+                "end": 221,
+                "score": 2,
+                "type": "quux",
+                "name": "Geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "LollipopRenderer"
           }
         }
       ]

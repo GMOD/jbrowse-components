@@ -85,6 +85,10 @@ export class FloatingLayout {
     return this.totalHeight
   }
 
+  serializeRegion(left, right) {
+    return this.toJSON()
+  }
+
   toJSON() {
     return { pairs: [...this.getLayout()], totalHeight: this.getTotalHeight() }
   }

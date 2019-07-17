@@ -1961,6 +1961,63 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
                   data-shrink="true"
                 >
+                  maxHeight
+                </label>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input"
+                    type="number"
+                    value="600"
+                  />
+                </div>
+                <p
+                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+                >
+                  the maximum height to be used in a pileup rendering
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-slotModeSwitch-5"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                tabindex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+          >
+            <div
+              class="makeStyles-paperContent-4"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root"
+              >
+                <label
+                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                  data-shrink="true"
+                >
                   alignmentHeight
                 </label>
                 <div
@@ -2292,7 +2349,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         spellcheck="false"
                         style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
                       >
-                        function(feature) { return feature.get('name') || feature.id() }
+                        function(feature) { return feature.get('name') || feature.get('id') }
                       </textarea>
                       <pre
                         aria-hidden="true"
@@ -2371,12 +2428,17 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         <span
                           class="token function"
                         >
-                          id
+                          get
                         </span>
                         <span
                           class="token punctuation"
                         >
                           (
+                        </span>
+                        <span
+                          class="token string"
+                        >
+                          'id'
                         </span>
                         <span
                           class="token punctuation"

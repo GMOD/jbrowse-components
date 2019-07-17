@@ -197,33 +197,6 @@
           }
         },
         {
-          "type": "AlignmentsTrack",
-          "name": "volvox-sorted all green",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "/test_data/volvox-sorted.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "/test_data/volvox-sorted.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
-            }
-          }
-        },
-        {
           "type": "FilteringTrack",
           "name": "Filter track",
           "category": [
@@ -878,6 +851,19 @@
             "LinePlotRenderer": {
               "type": "LinePlotRenderer"
             }
+          }
+        },
+        {
+          "type": "BasicTrack",
+          "configId": "nclist_genes",
+          "name": "Gencode v19",
+          "category": ["Genes"],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
           }
         },
         {

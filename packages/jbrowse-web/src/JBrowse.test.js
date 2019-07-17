@@ -72,7 +72,7 @@ describe('<JBrowse />', () => {
 
   it('can use config from a url', async () => {
     const { getByText } = render(
-      <JBrowse config={{ url: 'test_data/config_integration_test.json' }} />,
+      <JBrowse config={{ uri: 'test_data/config_integration_test.json' }} />,
     )
     expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
   })
@@ -172,9 +172,45 @@ describe('some error state', () => {
       await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).toBeTruthy()
   })
+  it('test that bam with small max height displays message', async () => {
+    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_bam_small_max_height'),
+      ),
+    )
+    expect(
+      await waitForElement(() => getByText('Max height reached')),
+    ).toBeTruthy()
+  })
+  it('test that bam with contigA instead of ctgA displays', async () => {
+    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_bam_altname'),
+      ),
+    )
+    expect(
+      await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+    ).toBeTruthy()
+  })
 })
 
-describe('variant', () => {
+describe('lollipop track test', () => {
+  it('see that a lollipop feature exists', async () => {
+    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(1, 150)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
+    )
+
+    await waitForElement(() => byId('track-lollipop_track'))
+    expect(await waitForElement(() => byId('three'))).toBeTruthy()
+  })
+})
+
+describe('variant track test', () => {
   it('click on a vcf feature', async () => {
     const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
     await waitForElement(() => getByText('JBrowse'))

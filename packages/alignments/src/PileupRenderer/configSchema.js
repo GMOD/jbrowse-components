@@ -12,6 +12,11 @@ export default ConfigurationSchema(
 }`,
       functionSignature: ['feature'],
     },
+    maxHeight: {
+      type: 'integer',
+      description: 'the maximum height to be used in a pileup rendering',
+      defaultValue: 600,
+    },
     alignmentHeight: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',

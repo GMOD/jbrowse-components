@@ -85,7 +85,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       get staticBlocks() {
-        return calculateStaticBlocks(self, self.horizontallyFlipped)
+        return calculateStaticBlocks(self, self.horizontallyFlipped, 1)
       },
 
       get dynamicBlocks() {
@@ -276,7 +276,9 @@ export function stateModelFactory(pluginManager) {
         const rightPadding = 10
         const maxOffset = self.displayRegionsTotalPx - leftPadding
         const minOffset = -self.viewingRegionWidth + rightPadding
-        self.offsetPx = clamp(self.offsetPx + distance, minOffset, maxOffset)
+        self.offsetPx = Math.round(
+          clamp(self.offsetPx + distance, minOffset, maxOffset),
+        )
       },
 
       /**

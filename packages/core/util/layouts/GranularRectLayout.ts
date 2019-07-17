@@ -1,4 +1,10 @@
 import { objectFromEntries } from '../index'
+import {
+  RectTuple,
+  SerializedLayout,
+  Rectangle,
+  BaseLayout,
+} from './BaseLayout'
 
 /**
  * Rectangle-layout manager that lays out rectangles using bitmaps at
@@ -12,127 +18,152 @@ import { objectFromEntries } from '../index'
 const minSizeToBotherWith = 10000
 const maxFeaturePitchWidth = 20000
 
+interface RowState<T> {
+  min: number
+  max: number
+  offset: number
+  bits: (Record<string, T> | undefined)[]
+}
 // a single row in the layout
-class LayoutRow {
-  constructor(rowNumber) {
+class LayoutRow<T> {
+  private rowNumber: number
+
+  private padding: number
+
+  private allFilled?: Record<string, T>
+
+  private widthLimit: number
+
+  private rowState?: RowState<T>
+
+  constructor(rowNumber: number) {
     this.rowNumber = rowNumber
     this.padding = 1
     this.widthLimit = 1000000
 
     // this.offset is the offset of the bits array relative to the genomic coordinates
     //      (modified by pitchX, but we don't know that in this class)
-    // this.bits is the array of items in the layout row, indexed by (x - this.offset)
+    // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
     // this.min is the leftmost edge of all the rectangles we have in the layout
     // this.max is the rightmost edge of all the rectangles we have in the layout
   }
 
-  log(msg) {
+  log(msg: string): void {
     // if (this.rowNumber === 0)
     // eslint-disable-next-line no-console
     console.log(`r${this.rowNumber}: ${msg}`)
   }
 
-  setAllFilled(data) {
+  setAllFilled(data: Record<string, T>): void {
     this.allFilled = data
   }
 
-  getItemAt(x) {
+  getItemAt(x: number): Record<string, T> | undefined {
     if (this.allFilled) return this.allFilled
-    // return (
-    //     this.min !== undefined &&
-    //     x >= this.min &&
-    //     x <= this.max &&
-    //     this.bits[x - this.min]
-    // )
+    if (!this.rowState) return undefined
 
-    if (this.min === undefined) return undefined
-    if (x < this.min) return undefined
-    if (x >= this.max) return undefined
-    const offset = x - this.offset
+    if (this.rowState.min === undefined) return undefined
+    if (x < this.rowState.min) return undefined
+    if (x >= this.rowState.max) return undefined
+    const offset = x - this.rowState.offset
     // if (offset < 0)
     //     debugger
-    // if (offset >= this.bits.length)
+    // if (offset >= this.rowState.bits.length)
     //     debugger
-    return this.bits[offset]
+    return this.rowState.bits[offset]
   }
 
-  isRangeClear(left, right) {
+  isRangeClear(left: number, right: number): boolean {
     if (this.allFilled) return false
 
-    if (this.min === undefined) return true
+    if (!this.rowState) return true
 
-    if (right <= this.min || left >= this.max) return true
+    const { min, max } = this.rowState
+
+    if (right <= min || left >= max) return true
 
     // TODO: check right and middle before looping
-    const maxX = Math.min(this.max, right)
-    let x = Math.max(this.min, left)
-    for (; x < right && x < maxX; x += 1) if (this.getItemAt(x)) return false
+    const maxX = Math.min(max, right)
+    let x = Math.max(min, left)
+    for (; x < right && x < maxX; x += 1) {
+      if (this.getItemAt(x)) {
+        return false
+      }
+    }
 
     return true
   }
 
-  initialize(left, right) {
-    // NOTE: this.min, this.max, and this.offset are interbase coordinates
+  initialize(left: number, right: number): RowState<T> {
+    // NOTE: this.rowState.min, this.rowState.max, and this.rowState.offset are interbase coordinates
     const rectWidth = right - left
-    this.offset = left - rectWidth
-    this.min = left
-    this.max = right
-    this.bits = new Array(right - left + 2 * rectWidth)
-    // this.log(`initialize ${this.min} - ${this.max} (${this.bits.length})`)
+    return {
+      offset: left - rectWidth,
+      min: left,
+      max: right,
+      bits: new Array(right - left + 2 * rectWidth),
+    }
+    // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
 
-  addRect(rect, data) {
+  addRect(rect: Rectangle<T>, data: Record<string, T>): void {
     const left = rect.l
     const right = rect.r + this.padding // only padding on the right
+    if (!this.rowState) {
+      this.rowState = this.initialize(left, right)
+    }
 
-    // initialize if necessary
-    if (this.min === undefined) {
-      this.initialize(left, right)
-    } else {
-      // or check if we need to expand to the left and/or to the right
+    // or check if we need to expand to the left and/or to the right
 
-      // expand rightward by the feature length + whole current length if necessary
-      const currLength = this.bits.length
+    // expand rightward by the feature length + whole current length if necessary
+    const currLength = this.rowState.bits.length
 
-      if (right - this.offset >= this.bits.length) {
-        const additionalLength =
-          right - this.offset - this.bits.length + 1 + this.bits.length
-        if (this.bits.length + additionalLength > this.widthLimit) {
-          console.warn(
-            'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
-          )
-          this.initialize(left, right)
-        } else if (additionalLength > 0) {
-          this.bits = this.bits.concat(new Array(additionalLength))
-          // this.log(`expand right (${additionalLength}): ${this.offset} | ${
-          // this.min} - ${this.max}`)
-        }
+    if (right - this.rowState.offset >= this.rowState.bits.length) {
+      const additionalLength =
+        right -
+        this.rowState.offset -
+        this.rowState.bits.length +
+        1 +
+        this.rowState.bits.length
+      if (this.rowState.bits.length + additionalLength > this.widthLimit) {
+        console.warn(
+          'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
+        )
+        this.initialize(left, right)
+      } else if (additionalLength > 0) {
+        this.rowState.bits = this.rowState.bits.concat(
+          new Array(additionalLength),
+        )
+        // this.log(`expand right (${additionalLength}): ${this.rowState.offset} | ${
+        // this.rowState.min} - ${this.rowState.max}`)
       }
+    }
 
-      // expand by 2x leftward if necessary
-      if (left < this.offset) {
-        const additionalLength = this.offset - left + currLength
-        if (this.bits.length + additionalLength > this.widthLimit) {
-          console.warn(
-            'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
-          )
-          this.initialize(left, right)
-        } else {
-          this.bits = new Array(additionalLength).concat(this.bits)
-          this.offset -= additionalLength
-          // this.log(`expand left (${additionalLength}): ${this.offset} | ${
-          //   this.min} - ${this.max}`)
-        }
+    // expand by 2x leftward if necessary
+    if (left < this.rowState.offset) {
+      const additionalLength = this.rowState.offset - left + currLength
+      if (this.rowState.bits.length + additionalLength > this.widthLimit) {
+        console.warn(
+          'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
+        )
+        this.initialize(left, right)
+      } else {
+        this.rowState.bits = new Array(additionalLength).concat(
+          this.rowState.bits,
+        )
+        this.rowState.offset -= additionalLength
+        // this.log(`expand left (${additionalLength}): ${this.rowState.offset} | ${
+        //   this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
     // set the bits in the bitmask
-    const oLeft = left - this.offset
-    const oRight = right - this.offset
+    const oLeft = left - this.rowState.offset
+    const oRight = right - this.rowState.offset
     // if (oLeft < 0) debugger
     // if (oRight < 0) debugger
     // if (oRight <= oLeft) debugger
-    // if (oRight > this.bits.length) debugger
+    // if (oRight > this.rowState.bits.length) debugger
     if (oRight - oLeft > maxFeaturePitchWidth) {
       console.warn(
         `Layout X pitch set too low, feature spans ${oRight -
@@ -143,111 +174,137 @@ class LayoutRow {
     }
 
     for (let x = oLeft; x < oRight; x += 1) {
-      // if (this.bits[x] && this.bits[x].get('name') !== data.get('name')) debugger
-      this.bits[x] = data
+      // if (this.rowState.bits[x] && this.rowState.bits[x].get('name') !== data.get('name')) debugger
+      this.rowState.bits[x] = data
     }
 
-    if (left < this.min) this.min = left
-    if (right > this.max) this.max = right
+    if (left < this.rowState.min) this.rowState.min = left
+    if (right > this.rowState.max) this.rowState.max = right
     // // this.log(`added ${leftX} - ${rightX}`)
   }
 
   /**
    *  Given a range of interbase coordinates, deletes all data dealing with that range
    */
-  discardRange(left, right) {
+  discardRange(left: number, right: number): void {
     if (this.allFilled) return // allFilled is irrevocable currently
 
     // if we have no data, do nothing
-    if (!this.bits) return
+    if (!this.rowState) return
 
     // if doesn't overlap at all, do nothing
-    if (right <= this.min || left >= this.max) return
+    if (right <= this.rowState.min || left >= this.rowState.max) return
 
     // if completely encloses range, discard everything
-    if (left <= this.min && right >= this.max) {
-      this.min = undefined
-      this.max = undefined
-      this.bits = undefined
-      this.offset = undefined
+    if (left <= this.rowState.min && right >= this.rowState.max) {
+      this.rowState = undefined
       return
     }
 
     // if overlaps left edge, adjust the min
-    if (right > this.min && left <= this.min) {
-      this.min = right
+    if (right > this.rowState.min && left <= this.rowState.min) {
+      this.rowState.min = right
     }
 
     // if overlaps right edge, adjust the max
-    if (left < this.max && right >= this.max) {
-      this.max = left
+    if (left < this.rowState.max && right >= this.rowState.max) {
+      this.rowState.max = left
     }
 
     // now trim the left, right, or both sides of the array
     if (
-      this.offset < this.min - minSizeToBotherWith &&
-      this.bits.length > this.max + minSizeToBotherWith - this.offset
+      this.rowState.offset < this.rowState.min - minSizeToBotherWith &&
+      this.rowState.bits.length >
+        this.rowState.max + minSizeToBotherWith - this.rowState.offset
     ) {
       // trim both sides
-      const leftTrimAmount = this.min - this.offset
-      const rightTrimAmount = this.bits.length - 1 - (this.max - this.offset)
+      const leftTrimAmount = this.rowState.min - this.rowState.offset
+      const rightTrimAmount =
+        this.rowState.bits.length -
+        1 -
+        (this.rowState.max - this.rowState.offset)
       // if (rightTrimAmount <= 0) debugger
       // if (leftTrimAmount <= 0) debugger
       // this.log(`trim both sides, ${leftTrimAmount} from left, ${rightTrimAmount} from right`)
-      this.bits = this.bits.slice(
+      this.rowState.bits = this.rowState.bits.slice(
         leftTrimAmount,
-        this.bits.length - rightTrimAmount,
+        this.rowState.bits.length - rightTrimAmount,
       )
-      this.offset += leftTrimAmount
-      // if (this.offset > this.min) debugger
-      // if (this.bits.length <= this.max - this.offset) debugger
-    } else if (this.offset < this.min - minSizeToBotherWith) {
+      this.rowState.offset += leftTrimAmount
+      // if (this.rowState.offset > this.rowState.min) debugger
+      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
+    } else if (this.rowState.offset < this.rowState.min - minSizeToBotherWith) {
       // trim left side
-      const desiredOffset = this.min - Math.floor(minSizeToBotherWith / 2)
-      const trimAmount = desiredOffset - this.offset
+      const desiredOffset =
+        this.rowState.min - Math.floor(minSizeToBotherWith / 2)
+      const trimAmount = desiredOffset - this.rowState.offset
       // this.log(`trim left side by ${trimAmount}`)
-      this.bits.splice(0, trimAmount)
-      this.offset += trimAmount
-      // if (this.offset > this.min) debugger
-      // if (this.bits.length <= this.max - this.offset) debugger
+      this.rowState.bits.splice(0, trimAmount)
+      this.rowState.offset += trimAmount
+      // if (this.rowState.offset > this.rowState.min) debugger
+      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
     } else if (
-      this.bits.length >
-      this.max - this.offset + minSizeToBotherWith
+      this.rowState.bits.length >
+      this.rowState.max - this.rowState.offset + minSizeToBotherWith
     ) {
       // trim right side
       const desiredLength =
-        this.max - this.offset + 1 + Math.floor(minSizeToBotherWith / 2)
-      // this.log(`trim right side by ${this.bits.length-desiredLength}`)
-      // if (desiredLength > this.bits.length) debugger
-      this.bits.length = desiredLength
-      // if (this.offset > this.min) debugger
-      // if (this.bits.length <= this.max - this.offset) debugger
+        this.rowState.max -
+        this.rowState.offset +
+        1 +
+        Math.floor(minSizeToBotherWith / 2)
+      // this.log(`trim right side by ${this.rowState.bits.length-desiredLength}`)
+      // if (desiredLength > this.rowState.bits.length) debugger
+      this.rowState.bits.length = desiredLength
+      // if (this.rowState.offset > this.rowState.min) debugger
+      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
     }
 
-    // if (this.offset > this.min) debugger
-    // if (this.bits.length <= this.max - this.offset) debugger
+    // if (this.rowState.offset > this.rowState.min) debugger
+    // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
 
     // if range now enclosed in the new bounds, loop through and clear the bits
-    const oLeft = Math.max(this.min, left) - this.offset
+    const oLeft = Math.max(this.rowState.min, left) - this.rowState.offset
     // if (oLeft < 0) debugger
-    // if (oLeft >= this.bits.length) debugger
+    // if (oLeft >= this.rowState.bits.length) debugger
     // if (oRight < 0) debugger
-    // if (oRight >= this.bits.length) debugger
+    // if (oRight >= this.rowState.bits.length) debugger
 
-    const oRight = Math.min(right, this.max) - this.offset
+    const oRight = Math.min(right, this.rowState.max) - this.rowState.offset
     for (let x = oLeft; x >= 0 && x < oRight; x += 1) {
-      this.bits[x] = undefined
+      this.rowState.bits[x] = undefined
     }
   }
 }
 
-export default class GranularRectLayout {
+export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * @param args.pitchX  layout grid pitch in the X direction
    * @param args.pitchY  layout grid pitch in the Y direction
    * @param args.maxHeight  maximum layout height, default Infinity (no max)
    */
-  constructor(args) {
+
+  private id: string
+
+  private pitchX: number
+
+  private pitchY: number
+
+  private hardRowLimit: number
+
+  private bitmap: LayoutRow<T>[]
+
+  private rectangles: Record<string, Rectangle<T>>
+
+  private maxHeight: number
+
+  private pTotalHeight: number
+
+  constructor(args: {
+    pitchX: number | undefined
+    pitchY: number | undefined
+    maxHeight: number | undefined
+  }) {
     this.id = Math.random().toString(36)
     // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
@@ -264,7 +321,13 @@ export default class GranularRectLayout {
    * @returns {Number} top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
    */
-  addRect(id, left, right, height, data) {
+  addRect(
+    id: string,
+    left: number,
+    right: number,
+    height: number,
+    data: Record<string, T>,
+  ): number | null {
     // if we have already laid it out, return its layout
     // console.log(`${this.id} add ${id}`)
     if (id in this.rectangles) {
@@ -281,10 +344,11 @@ export default class GranularRectLayout {
     const pHeight = Math.ceil(height / this.pitchY)
 
     // const midX = Math.floor((pLeft + pRight) / 2)
-    const rectangle = {
+    const rectangle: Rectangle<T> = {
       id,
       l: pLeft,
       r: pRight,
+      top: null,
       // mX: midX,
       h: pHeight,
       originalHeight: height,
@@ -298,10 +362,7 @@ export default class GranularRectLayout {
     }
 
     if (top > maxTop) {
-      rectangle.top = null
-      top = null
       this.rectangles[id] = rectangle
-      this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
       return null
     }
     rectangle.top = top
@@ -312,7 +373,7 @@ export default class GranularRectLayout {
     return top * this.pitchY
   }
 
-  collides(rect, top) {
+  collides(rect: Rectangle<T>, top: number): boolean {
     const { bitmap } = this
     // var mY = top + rect.h/2; // Y midpoint: ( top+height  + top ) / 2
 
@@ -332,7 +393,7 @@ export default class GranularRectLayout {
    * make a subarray if it does not exist
    * @private
    */
-  autovivifyRow = (bitmap, y) => {
+  autovivifyRow = (bitmap: LayoutRow<T>[], y: number) => {
     let row = bitmap[y]
     if (!row) {
       if (y > this.hardRowLimit) {
@@ -347,7 +408,7 @@ export default class GranularRectLayout {
     return row
   }
 
-  addRectToBitmap(rect, data) {
+  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
     if (rect.top === null) return
 
     data = data || true
@@ -375,7 +436,7 @@ export default class GranularRectLayout {
    *  Given a range of X coordinates, deletes all data dealing with
    *  the features.
    */
-  discardRange(left, right) {
+  discardRange(left: number, right: number): void {
     // console.log( 'discard', left, right );
     const pLeft = Math.floor(left / this.pitchX)
     const pRight = Math.floor(right / this.pitchX)
@@ -386,11 +447,11 @@ export default class GranularRectLayout {
     }
   }
 
-  hasSeen(id) {
+  hasSeen(id: string): boolean {
     return !!this.rectangles[id]
   }
 
-  getByCoord(x, y) {
+  getByCoord(x: number, y: number): Record<string, T> | undefined {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) return undefined
@@ -398,7 +459,7 @@ export default class GranularRectLayout {
     return row.getItemAt(pX)
   }
 
-  getByID(id) {
+  getByID(id: string): (Record<string, T> | boolean) | undefined {
     const r = this.rectangles[id]
     if (r) {
       return r.data || true
@@ -406,17 +467,17 @@ export default class GranularRectLayout {
     return undefined
   }
 
-  cleanup() {}
+  cleanup(): void {}
 
-  getTotalHeight() {
+  getTotalHeight(): number {
     return this.pTotalHeight * this.pitchY
   }
 
-  getRectangles() {
+  getRectangles(): Map<string, RectTuple> {
     return new Map(
       Object.entries(this.rectangles).map(([id, rect]) => {
         const { l, r, originalHeight, top } = rect
-        const t = top * this.pitchY
+        const t = (top || 0) * this.pitchY
         const b = t + originalHeight
         return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
         // count += 1
@@ -424,12 +485,12 @@ export default class GranularRectLayout {
     )
   }
 
-  serializeRegion(region) {
-    const regionRectangles = {}
+  serializeRegion(region: { start: number; end: number }): SerializedLayout {
+    const regionRectangles: { [key: string]: RectTuple } = {}
     for (const iter of Object.entries(this.rectangles)) {
       const [id, rect] = iter
       const { l, r, originalHeight, top } = rect
-      const t = top * this.pitchY
+      const t = (top || 0) * this.pitchY
       const b = t + originalHeight
       const lprime = l * this.pitchX
       const rprime = r * this.pitchX
@@ -440,7 +501,7 @@ export default class GranularRectLayout {
     return { rectangles: regionRectangles, totalHeight: this.getTotalHeight() }
   }
 
-  toJSON() {
+  toJSON(): SerializedLayout {
     const rectangles = objectFromEntries(this.getRectangles())
     // console.log(`${this.id} toJSON - ${count}`)
     return { rectangles, totalHeight: this.getTotalHeight() }

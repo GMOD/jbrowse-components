@@ -46,6 +46,9 @@ function ScaleBar({
   bpPerPx,
   width,
   horizontallyFlipped,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
 }) {
   const finalStyle = Object.assign({}, style, {
     height: `${height}px`,
@@ -58,7 +61,13 @@ function ScaleBar({
   )
 
   return (
-    <div style={finalStyle} className={classes.scaleBar}>
+    <div
+      style={finalStyle}
+      className={classes.scaleBar}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+    >
       {blocks.map(block => {
         return (
           <Block
@@ -95,7 +104,14 @@ function ScaleBar({
     </div>
   )
 }
-ScaleBar.defaultProps = { style: {}, blocks: [], horizontallyFlipped: false }
+ScaleBar.defaultProps = {
+  style: {},
+  blocks: [],
+  horizontallyFlipped: false,
+  onMouseDown: () => {},
+  onMouseMove: () => {},
+  onMouseUp: () => {},
+}
 ScaleBar.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   style: PropTypes.objectOf(PropTypes.any),
@@ -108,6 +124,9 @@ ScaleBar.propTypes = {
   bpPerPx: PropTypes.number.isRequired,
   offsetPx: PropTypes.number.isRequired,
   horizontallyFlipped: PropTypes.bool,
+  onMouseDown: PropTypes.func,
+  onMouseMove: PropTypes.func,
+  onMouseUp: PropTypes.func,
 }
 
 export default withStyles(styles)(ScaleBar)

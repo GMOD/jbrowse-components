@@ -35,7 +35,7 @@ export default ConfigurationSchema(
         description:
           'the primary name of the feature to show, if space is available',
         defaultValue:
-          "function(feature) { return feature.get('name') || feature.id() }",
+          "function(feature) { return feature.get('name') || feature.get('id') }",
         functionSignature: ['feature'],
       },
       nameColor: {
