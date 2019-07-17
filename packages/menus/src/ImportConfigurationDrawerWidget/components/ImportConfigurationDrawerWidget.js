@@ -92,9 +92,7 @@ function ImportConfiguration(props) {
           config = { error: `File is not in JSON format: ${file.path}` }
         else if (file.size > 512 * 1024 ** 2)
           config = {
-            error: `File is too large (${file.size} bytes, max of 512 MiB): ${
-              file.path
-            }`,
+            error: `File is too large (${file.size} bytes, max of 512 MiB): ${file.path}`,
           }
         else {
           const fileHandle = openLocation({ blob: file })

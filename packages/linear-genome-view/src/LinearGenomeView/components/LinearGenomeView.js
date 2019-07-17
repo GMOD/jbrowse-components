@@ -125,9 +125,7 @@ function LinearGenomeView(props) {
     gridTemplateRows: `[scale-bar] auto ${tracks
       .map(
         t =>
-          `[track-${t.id}] ${t.height}px [resize-${
-            t.id
-          }] ${dragHandleHeight}px`,
+          `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
       )
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,

@@ -10,9 +10,7 @@ export default class RendererType extends PluggableElementType {
     }
     if (!getDefaultValue(this.configSchema).type) {
       throw new Error(
-        `${this.name} config schema ${
-          this.configSchema.name
-        } is not explicitlyTyped`,
+        `${this.name} config schema ${this.configSchema.name} is not explicitlyTyped`,
       )
     }
   }
