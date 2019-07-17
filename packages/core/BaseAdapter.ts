@@ -103,7 +103,7 @@ export default abstract class BaseAdapter {
    * @returns {Observable[Feature]} see getFeatures()
    */
   public getFeaturesInMultipleRegions(
-    regions: [Region],
+    regions: Region[],
     opts: BaseOptions = {},
   ): Observable<Feature> {
     return merge(
