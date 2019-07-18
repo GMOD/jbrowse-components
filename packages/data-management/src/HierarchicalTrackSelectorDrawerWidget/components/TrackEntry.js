@@ -75,7 +75,11 @@ function TrackEntry(props) {
         </Tooltip>
         <IconButton
           className={classes.configureButton}
-          onClick={() => session.editConfiguration(trackConf)}
+          onClick={() =>
+            session.display('ConfigurationEditorDrawerWidget', 'configEditor', {
+              target: trackConf,
+            })
+          }
         >
           <Icon fontSize="small">settings</Icon>
         </IconButton>

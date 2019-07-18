@@ -37,22 +37,16 @@ export default (pluginManager, configSchema) =>
       .actions(self => ({
         selectFeature(feature) {
           const session = getSession(self)
-          // TODO: we shouldn't need to have to get this deep into knowing about
-          // drawer widgets here, the drawer widget should be a reaction to
-          // setting a selected feature...right???
-          if (session.drawerWidgets) {
-            const featureWidget = session.addDrawerWidget(
-              'AlignmentsFeatureDrawerWidget',
-              'alignmentsFeature',
-              { featureData: feature.data },
-            )
-            session.showDrawerWidget(featureWidget)
-          }
-          session.setSelection(feature)
+          session.display(
+            'AlignmentsFeatureDrawerWidget',
+            'alignmentsFeature',
+            { featureData: feature.data },
+          )
+          session.select(feature)
         },
         clearFeatureSelection() {
           const session = getSession(self)
-          session.clearSelection()
+          session.select(undefined)
         },
         setRenderer(newRenderer) {
           self.selectedRendering = newRenderer

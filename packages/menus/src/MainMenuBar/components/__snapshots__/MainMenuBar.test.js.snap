@@ -42,9 +42,6 @@ exports[`<MainMenuBar /> renders 1`] = `
         />
       </button>
     </div>
-    <div
-      style="width: 0px;"
-    />
   </div>
 </header>
 `;

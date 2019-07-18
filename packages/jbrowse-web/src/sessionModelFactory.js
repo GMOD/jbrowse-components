@@ -80,7 +80,9 @@ export default pluginManager => {
       get maxDrawerWidth() {
         return self.width - 256
       },
-
+      get displayed() {
+        return self.visibleDrawerWidget
+      },
       get visibleDrawerWidget() {
         if (isAlive(self))
           // returns most recently added item in active drawer widgets
@@ -249,6 +251,16 @@ export default pluginManager => {
         return self.addView('LinearGenomeView', initialState)
       },
 
+      display(typeName, id, initialState = {}) {
+        const drawerWidget = self.addDrawerWidget(typeName, id, initialState)
+        this.showDrawerWidget(drawerWidget)
+        return drawerWidget
+      },
+
+      hide(id) {
+        self.activeDrawerWidgets.delete(id)
+      },
+
       addDrawerWidget(
         typeName,
         id,
@@ -309,7 +321,7 @@ export default pluginManager => {
        * can be a feature, a view, just about anything
        * @param {object} thing
        */
-      setSelection(thing) {
+      select(thing) {
         self.selection = thing
         // console.log('selected', thing)
       },
@@ -333,12 +345,9 @@ export default pluginManager => {
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = self.addDrawerWidget(
-          'ConfigurationEditorDrawerWidget',
-          'configEditor',
-          { target: configuration },
-        )
-        self.showDrawerWidget(editor)
+        self.display('ConfigurationEditorDrawerWidget', 'configEditor', {
+          target: configuration,
+        })
       },
 
       clearConnections() {

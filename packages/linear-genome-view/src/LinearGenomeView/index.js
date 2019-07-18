@@ -171,13 +171,12 @@ export function stateModelFactory(pluginManager) {
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          const selector = session.addDrawerWidget(
+          const trackSel = session.display(
             'HierarchicalTrackSelectorDrawerWidget',
             'hierarchicalTrackSelector',
             { view: self },
           )
-          session.showDrawerWidget(selector)
-          return selector
+          return trackSel
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -287,10 +286,6 @@ export function stateModelFactory(pluginManager) {
        */
       centerAt(/* bp, refName */) {
         /* TODO */
-      },
-
-      activateConfigurationUI() {
-        getSession(self).editConfiguration(self.configuration)
       },
 
       setNewView(bpPerPx, offsetPx) {

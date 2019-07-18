@@ -18,11 +18,7 @@ const styles = {
 }
 
 function onClick(session) {
-  const drawerWidget =  session.addDrawerWidget(
-      'HelloWorldDrawerWidget',
-      'id-helloworlddrawerwidget',
-    )
-  session.showDrawerWidget(drawerWidget)
+  session.display('HelloWorldDrawerWidget', 'id-helloworlddrawerwidget')
 }
 
 function HelloWorld(props) {

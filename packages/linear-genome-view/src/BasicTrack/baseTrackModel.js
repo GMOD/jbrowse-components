@@ -118,7 +118,12 @@ export default types
     },
 
     get showConfigurationButton() {
-      return !!getSession(self).editConfiguration
+      const { pluginManager } = getSession(self)
+      const typeDefinition = pluginManager.getElementType(
+        'drawer widget',
+        'ConfigurationEditorDrawerWidget',
+      )
+      return !!typeDefinition
     },
 
     /**
@@ -148,6 +153,10 @@ export default types
     },
 
     activateConfigurationUI() {
-      getSession(self).editConfiguration(self.configuration)
+      getSession(self).display(
+        'ConfigurationEditorDrawerWidget',
+        'configEditor',
+        { target: self.configuration },
+      )
     },
   }))

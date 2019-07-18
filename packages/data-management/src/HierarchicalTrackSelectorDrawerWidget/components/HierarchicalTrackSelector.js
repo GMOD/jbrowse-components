@@ -70,21 +70,14 @@ function HierarchicalTrackSelector(props) {
 
   function addConnection() {
     handleFabClose()
-    const drawerWidget = session.addDrawerWidget(
-      'AddConnectionDrawerWidget',
-      'addConnectionDrawerWidget',
-    )
-    session.showDrawerWidget(drawerWidget)
+    session.display('AddConnectionDrawerWidget', 'addConnectionDrawerWidget')
   }
 
   function addTrack() {
     handleFabClose()
-    const drawerWidget = session.addDrawerWidget(
-      'AddTrackDrawerWidget',
-      'addTrackDrawerWidget',
-      { view: model.view.id },
-    )
-    session.showDrawerWidget(drawerWidget)
+    session.display('AddTrackDrawerWidget', 'addTrackDrawerWidget', {
+      view: model.view.id,
+    })
   }
 
   function filter(trackConfig) {

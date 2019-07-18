@@ -5,7 +5,7 @@ const createMockTrackStateModel = track =>
   types
     .model({
       name: 'testSession',
-      selectedFeature: types.frozen(),
+      selected: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
       track: track.stateModel,
@@ -13,12 +13,10 @@ const createMockTrackStateModel = track =>
     })
     .actions(self => {
       return {
-        setSelection(thing) {
+        select(thing) {
           self.selection = thing
         },
-        clearSelection() {
-          self.selection = undefined
-        },
+        display() {},
       }
     })
 

@@ -37,11 +37,6 @@ function MainMenuBar(props) {
             session={session}
           />
         ))}
-        <div
-          style={{
-            width: session.activeDrawerWidgets.size ? session.drawerWidth : 0,
-          }}
-        />
       </Toolbar>
     </AppBar>
   )

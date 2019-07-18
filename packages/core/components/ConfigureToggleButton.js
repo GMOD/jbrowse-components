@@ -22,10 +22,9 @@ function ConfigureToggleButton(props) {
       style={{ minWidth: 0 }}
       className={classes.button}
       selected={
-        session.visibleDrawerWidget &&
-        session.visibleDrawerWidget.id === 'configEditor' &&
-        session.visibleDrawerWidget.target.configId ===
-          model.configuration.configId
+        session.displayed &&
+        session.displayed.id === 'configEditor' &&
+        session.displayed.target.configId === model.configuration.configId
       }
       value="configure"
       {...otherProps}

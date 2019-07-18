@@ -92,7 +92,7 @@ function AddConnectionDrawerWidget(props) {
     session.datasets
       .find(dataset => readConfObject(dataset, 'name') === datasetName)
       .addConnectionConf(configModel)
-    session.hideDrawerWidget(model)
+    session.hide(model.id)
   }
 
   function checkNextEnabled() {

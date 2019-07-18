@@ -26,27 +26,18 @@ export const MenuItemModel = types
     },
     openAbout() {
       const session = getSession(self)
-      const drawerWidget = session.addDrawerWidget(
-        'AboutDrawerWidget',
-        'aboutDrawerWidget',
-      )
-      session.showDrawerWidget(drawerWidget)
+      session.display('AboutDrawerWidget', 'aboutDrawerWidget')
     },
     openHelp() {
       const session = getSession(self)
-      const drawerWidget = session.addDrawerWidget(
-        'HelpDrawerWidget',
-        'helpDrawerWidget',
-      )
-      session.showDrawerWidget(drawerWidget)
+      session.display('HelpDrawerWidget', 'helpDrawerWidget')
     },
     openConfigurationImport() {
       const session = getSession(self)
-      const drawerWidget = session.addDrawerWidget(
+      session.display(
         'ImportConfigurationDrawerWidget',
         'importConfigurationDrawerWidget',
       )
-      session.showDrawerWidget(drawerWidget)
     },
     exportConfiguration() {
       const configuration = getRoot(self)

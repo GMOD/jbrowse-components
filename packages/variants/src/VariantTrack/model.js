@@ -38,17 +38,14 @@ export default configSchema =>
       .actions(self => ({
         selectFeature(feature) {
           const session = getSession(self)
-          const featureWidget = session.addDrawerWidget(
-            'VariantFeatureDrawerWidget',
-            'variantFeature',
-            { featureData: feature.data },
-          )
-          session.showDrawerWidget(featureWidget)
-          session.setSelection(feature)
+          session.display('VariantFeatureDrawerWidget', 'variantFeature', {
+            featureData: feature.data,
+          })
+          session.select(feature)
         },
         clearFeatureSelection() {
           const session = getSession(self)
-          session.clearSelection()
+          session.select(undefined)
         },
         setRenderer(newRenderer) {
           self.selectedRendering = newRenderer

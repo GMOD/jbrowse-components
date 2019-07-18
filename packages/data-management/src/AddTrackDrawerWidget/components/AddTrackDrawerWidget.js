@@ -93,7 +93,7 @@ function AddTrackDrawerWidget(props) {
         adapter: trackAdapter,
       })
     model.view.showTrack(trackConf)
-    session.hideDrawerWidget(model)
+    session.hide(model.id)
   }
 
   function handleBack() {

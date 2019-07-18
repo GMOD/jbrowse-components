@@ -110,10 +110,9 @@ function LinearGenomeView(props) {
                 title="select tracks"
                 className={classes.toggleButton}
                 selected={
-                  session.visibleDrawerWidget &&
-                  session.visibleDrawerWidget.id ===
-                    'hierarchicalTrackSelector' &&
-                  session.visibleDrawerWidget.view.id === model.id
+                  session.displayed &&
+                  session.displayed.id === 'hierarchicalTrackSelector' &&
+                  session.displayed.view.id === model.id
                 }
                 value="track_select"
                 data_testid="track_select"

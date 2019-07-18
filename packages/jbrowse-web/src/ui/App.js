@@ -129,7 +129,14 @@ function App(props) {
 
   return (
     <div className={classes.root}>
-      <div className={classes.menuBarsAndComponents}>
+      <div
+        className={classes.menuBarsAndComponents}
+        style={{
+          width: session.activeDrawerWidgets.size
+            ? session.width - session.drawerWidth
+            : session.width,
+        }}
+      >
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
             const { LazyReactComponent } = pluginManager.getMenuBarType(
