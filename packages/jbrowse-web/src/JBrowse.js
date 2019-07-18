@@ -1,4 +1,5 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
+import { toUrlSafeB64, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -29,7 +30,7 @@ export default observer(({ config }) => {
         const session = params.get('session')
         if (session)
           try {
-            configSnapshot.session = JSON.parse(atob(session))
+            configSnapshot.session = JSON.parse(fromUrlSafeB64(session))
           } catch (error) {
             console.error('could not load session from URL', error)
           }
@@ -37,7 +38,7 @@ export default observer(({ config }) => {
         if (!state.session) state.setEmptySession()
         intervalId = setInterval(() => {
           const l = document.location
-          const updatedUrl = `${l.origin}${l.pathname}?session=${btoa(
+          const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
             JSON.stringify(getSnapshot(state.session)),
           )}`
           window.history.replaceState({}, '', updatedUrl)
