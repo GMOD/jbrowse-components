@@ -9,13 +9,14 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
+    "@material-ui/icons": "^4.2.1",
     "classnames": "^2.2.6"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@material-ui/core": "^4.0.0",
-    "@material-ui/styles": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.20",
+    "@material-ui/styles": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.10.2",

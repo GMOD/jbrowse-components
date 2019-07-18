@@ -18,9 +18,9 @@ const styles = {
 }
 
 function ZoomControls(props) {
-  const { classes, model, controlsHeight } = props
+  const { classes, model } = props
   return (
-    <div className={classes.container} style={{ height: controlsHeight }}>
+    <div className={classes.container}>
       <IconButton
         onClick={() => {
           model.zoomTo(model.bpPerPx * 2)
@@ -49,7 +49,6 @@ function ZoomControls(props) {
 ZoomControls.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
-  controlsHeight: PropTypes.number.isRequired,
 }
 
 export default withStyles(styles)(observer(ZoomControls))

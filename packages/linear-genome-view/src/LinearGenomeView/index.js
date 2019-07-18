@@ -33,6 +33,10 @@ const validBpPerPx = [
   100000,
   200000,
   500000,
+  1000000,
+  2000000,
+  5000000,
+  10000000,
 ]
 
 function constrainBpPerPx(newBpPerPx) {
@@ -113,6 +117,9 @@ export function stateModelFactory(pluginManager) {
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },
+      getIndex(refSeq) {
+        return self.displayedRegions.findIndex(r => r.refName === refSeq)
+      },
     }))
     .actions(self => ({
       setWidth(newWidth) {
@@ -166,6 +173,19 @@ export function stateModelFactory(pluginManager) {
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
         self.displayRegionsFromAssemblyName = assemblyName
+      },
+
+      activateSearch() {
+        const session = getSession(self)
+        const search = session.addDrawerWidget(
+          'SearchDrawerWidget',
+          'searchAndNav',
+          {
+            target: self,
+          },
+        )
+        search.setTarget(self)
+        session.showDrawerWidget(search)
       },
 
       activateTrackSelector() {
@@ -224,6 +244,11 @@ export function stateModelFactory(pluginManager) {
           offset: Math.round(bp - bpSoFar),
           index: self.displayedRegions.length - 1,
         }
+      },
+
+      navTo({ refSeq, start, end }) {
+        const index = self.getIndex(refSeq)
+        self.moveTo({ index, offset: start }, { index, offset: end })
       },
 
       /**
