@@ -84,7 +84,6 @@ function LinearGenomeView(props) {
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
   }
-  console.log(classes.toggleButton)
   return (
     <div className={classes.root}>
       <div
