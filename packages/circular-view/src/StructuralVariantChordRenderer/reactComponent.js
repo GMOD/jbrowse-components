@@ -20,6 +20,7 @@ export default ({ jbrequire }) => {
   }) {
     // find the blocks that our start and end points belong to
     const startBlock = blocksForRefs[feature.get('refName')]
+    if (!startBlock) return null
     const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
     if (svType === 'BND') {
       const breakendSpecification = (feature.get('ALT') || [])[0]
