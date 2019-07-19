@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import Slider from '@material-ui/lab/Slider'
+import Slider from '@material-ui/core/Slider'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { withStyles } from '@material-ui/core/styles'
 

@@ -35,6 +35,7 @@
   ],
   "dependencies": {
     "@librpc/web": "git+https://github.com/rbuels/librpc-web.git",
+    "@material-ui/lab": "^4.0.0-alpha.20",
     "canvas": "^2.5.0",
     "file-uri-to-path": "^1.0.0",
     "generic-filehandle": "^2.0.0",
@@ -48,7 +49,6 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.0.0",
-    "@material-ui/lab": "^4.0.0-alpha.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.10.2",
