@@ -11,6 +11,7 @@ import '@gmod/jbrowse-core/fonts/material-icons.css'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import * as rpcFuncs from '@gmod/jbrowse-core/rpc/rpcMethods'
 
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
@@ -40,15 +41,34 @@ export class Viewer {
       .model({
         view: LinearGenomeViewType.stateModel,
         configuration: ConfigurationSchema('ProteinViewer', {
+          assembly: ConfigurationSchema('ProteinAssembly', {
+            name: { type: 'string', defaultValue: 'protein' },
+          }),
           rpc: RpcManager.configSchema,
           sequenceTrack: BasicTrackType.configSchema,
           variantTrack: DynamicTrackType.configSchema,
           domainsTrack: FilteringTrackType.configSchema,
         }),
       })
-      .volatile(() => ({
+      .views(self => ({
+        get displayed() {
+          return undefined
+        },
+        get selection() {
+          return undefined
+        },
+      }))
+      .actions(self => ({
+        display() {},
+        hide() {},
+        select() {},
+      }))
+      .volatile(self => ({
         pluginManager: this.pluginManager,
         app: this,
+        rpcManager: new RpcManager(this.pluginManager, self.configuration.rpc, {
+          MainThreadRpcDriver: { rpcFuncs },
+        }),
       }))
       .create({
         view: {
@@ -63,7 +83,7 @@ export class Viewer {
             name: 'Sequence',
             description:
               'Amino acid sequence, and the underlying DNA sequence if available',
-            renderer: { type: 'ProteinReferenceSequenceRenderer' },
+            renderer: { type: 'ProteinReferenceSequenceTrackRenderer' },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
           domainsTrack: {
@@ -93,11 +113,7 @@ function(feature) {
         },
       })
 
-    this.rpcManager = new RpcManager(
-      this.pluginManager,
-      this.model.configuration.rpc,
-    )
-
+    this.rpcManager = this.model.rpcManager
     this.update(initialState)
 
     this.model.view.showTrack(this.model.configuration.sequenceTrack)
@@ -140,7 +156,7 @@ function(feature) {
         start: 0,
         end: dnaSequence.length / 3, // we are doing things in aa seq coordinates
         seq: dnaSequence,
-        seq_id: name,
+        refName: name,
         type: 'dna',
       })
     if (aaSequence) {
@@ -149,7 +165,7 @@ function(feature) {
         start: 0,
         end: aaSequence.length,
         seq: aaSequence,
-        seq_id: name,
+        refName: name,
         type: 'protein',
       })
     } else if (dnaSequence) {

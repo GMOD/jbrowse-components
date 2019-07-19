@@ -4,11 +4,11 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import * as rpcFuncs from '@gmod/jbrowse-core/rpc/rpcMethods'
 import { flow, getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
 import shortid from 'shortid'
 import corePlugins from './corePlugins'
 import RenderWorker from './rpc.worker'
-import * as rpcFuncs from './rpcMethods'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import sessionModelFactory from './sessionModelFactory'
 

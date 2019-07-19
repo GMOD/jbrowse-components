@@ -1,4 +1,4 @@
-import { createTestSession } from './jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import { renderRegion, freeResources } from './rpcMethods'
 
 let pluginManager
@@ -14,12 +14,16 @@ const baseprops = {
     configId: '7Hc9NkuD4x',
     type: 'BamAdapter',
     bamLocation: {
-      localPath: require.resolve('../public/test_data/volvox-sorted.bam'),
+      localPath: require.resolve(
+        '../../jbrowse-web/public/test_data/volvox-sorted.bam',
+      ),
     },
     index: {
       configId: 'sGW8va26pr',
       location: {
-        localPath: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
+        localPath: require.resolve(
+          '../../jbrowse-web/public/test_data/volvox-sorted.bam.bai',
+        ),
       },
     },
   },

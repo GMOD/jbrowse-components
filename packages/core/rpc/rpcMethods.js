@@ -1,12 +1,9 @@
+import { checkAbortSignal } from '../util'
+import { freeAdapterResources, getAdapter } from '../util/dataAdapterCache'
 import {
-  freeAdapterResources,
-  getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
-import {
-  isRemoteAbortSignal,
   deserializeAbortSignal,
-} from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+  isRemoteAbortSignal,
+} from './remoteAbortSignals'
 
 export async function getGlobalStats(
   pluginManager,
