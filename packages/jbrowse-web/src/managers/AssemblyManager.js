@@ -101,7 +101,9 @@ export default class AssemblyManager {
   async getRefNameAliases(assemblyName, opts = {}) {
     const refNameAliases = {}
     const assemblyConfig = this.assemblyData.get(assemblyName)
-    if (assemblyConfig.refNameAliases) {
+    if (typeof assemblyName !== 'string')
+      throw new TypeError('invalid assembly name')
+    if (assemblyConfig && assemblyConfig.refNameAliases) {
       // eslint-disable-next-line no-await-in-loop
       const adapterRefNameAliases = await this.rpcManager.call(
         assemblyConfig.refNameAliases.adapter.configId,

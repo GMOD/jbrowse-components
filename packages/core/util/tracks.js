@@ -1,4 +1,5 @@
 import { getParent, isRoot } from 'mobx-state-tree'
+import { isConfigurationModel } from '../configuration/configurationSchema';
 
 /* utility functions for use by track models and so forth */
 

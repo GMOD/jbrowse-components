@@ -44,6 +44,7 @@
       },
       "tracks": [
         {
+          "configId": "structural1",
           "type": "StructuralVariantChordTrack",
           "name": "structural test",
           "adapter": {
@@ -95,6 +96,10 @@
         "bpPerPx": 2000000,
         "displayRegionsFromAssemblyName": "hg38",
         "tracks": [
+          {
+            "type": "StructuralVariantChordTrack",
+            "configuration": "structural1"
+          }
         ]
       }
     ],

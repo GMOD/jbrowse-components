@@ -1,7 +1,7 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { checkAbortSignal, iterMap } from '../../util'
+import { checkAbortSignal, iterMap, objectFromEntries } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -21,11 +21,15 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args) {
-    if (args.renderProps.trackModel) {
+    const { trackModel } = args.renderProps
+    if (trackModel) {
       args.renderProps = {
         ...args.renderProps,
         trackModel: {
-          selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
+          selectedFeatureId: trackModel.selectedFeatureId,
+          // refNameMap:
+          //   trackModel.refNameMap &&
+          //   objectFromEntries(trackModel.refNameMap.entries()),
         },
       }
     }

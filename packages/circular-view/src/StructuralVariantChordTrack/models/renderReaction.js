@@ -1,6 +1,5 @@
 export default ({ jbrequire }) => {
-  const { trace } = jbrequire('mobx')
-  const { isAlive, getParent, getRoot, getSnapshot } = jbrequire('mobx-state-tree')
+  const { isAlive, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { assembleLocString, checkAbortSignal, isAbortException } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
@@ -15,7 +14,7 @@ export default ({ jbrequire }) => {
     const track = self
     const view = getContainingView(track)
     const { rendererType, renderProps } = track
-    const { rpcManager, assemblyManager } = getRoot(view)
+    const { rpcManager } = getRoot(view)
 
     // const trackConf = track.configuration
     // let trackConfParent = getParent(trackConf)
@@ -54,6 +53,7 @@ export default ({ jbrequire }) => {
         rendererType: rendererType.name,
         renderProps,
         regions: view.displayedRegions,
+        blockDefinitions: view.blockDefinitions,
         sessionId: track.id,
         timeout: 1000000, // 10000,
       },

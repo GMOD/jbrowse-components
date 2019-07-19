@@ -1,7 +1,8 @@
 import { Observer, Observable, merge } from 'rxjs'
+import { tap, takeUntil } from 'rxjs/operators'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
-import { checkAbortSignal } from './util'
+import { checkAbortSignal, observeAbortSignal } from './util'
 import { Feature } from './util/simpleFeature'
 
 export interface BaseOptions {
@@ -85,7 +86,9 @@ export default abstract class BaseAdapter {
         // console.warn(`no data for ${region.refName}`)
         observer.complete()
       } else {
-        this.getFeatures(region, opts).subscribe(observer)
+        this.getFeatures(region, opts)
+          .pipe(takeUntil(observeAbortSignal(opts.signal)))
+          .subscribe(observer)
       }
     })
   }
@@ -106,9 +109,12 @@ export default abstract class BaseAdapter {
     regions: Region[],
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    return merge(
+    const obs = merge(
       ...regions.map(region => this.getFeaturesInRegion(region, opts)),
     )
+
+    if (opts.signal) return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
+    return obs
   }
 
   /**

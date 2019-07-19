@@ -1,6 +1,8 @@
 import fromEntries from 'object.fromentries'
+import { Observer, fromEvent, Observable } from 'rxjs'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
+import { ObservableCreate } from './rxjs'
 
 // @ts-ignore
 if (!Object.fromEntries) {
@@ -150,6 +152,11 @@ export function checkAbortSignal(signal?: AbortSignal): void {
       throw e
     }
   }
+}
+
+export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
+  if (!signal) return Observable.create()
+  return fromEvent(signal, 'abort')
 }
 
 /**

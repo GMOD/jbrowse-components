@@ -1,17 +1,23 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { reaction, trace } = jbrequire('mobx')
+  const { reaction } = jbrequire('mobx')
 
   const { types, getParent, addDisposer, isAlive, getRoot } = jbrequire(
     'mobx-state-tree',
   )
-  const { ConfigurationSchema, ConfigurationReference } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const {
+    ConfigurationSchema,
+    ConfigurationReference,
+    readConfObject,
+  } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getContainingView, getContainingAssembly } = jbrequire(
+    '@gmod/jbrowse-core/util/tracks',
+  )
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
+  const { assembleLocString, isAbortException } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
     require('./renderReaction'),
@@ -22,6 +28,8 @@ export default pluginManager => {
     configSchema: ChordTrackConfigSchema,
     stateModel: ChordTrackStateModel,
   } = jbrequire(require('../../ChordTrack/models/ChordTrack'))
+
+  const { makeAbortableReaction } = jbrequire(require('./util'))
 
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',
@@ -55,25 +63,78 @@ export default pluginManager => {
     }))
     .views(self => ({
       get blockDefinitions() {
-        return getContainingView(self).staticSlices
+        const origSlices = getContainingView(self).staticSlices
+        if (!self.refNameMap) return origSlices
+
+        console.log('renaming slices')
+        const slices = JSON.parse(JSON.stringify(origSlices))
+
+        slices.forEach(slice => {
+          const regions = slice.region.elided
+            ? slice.region.regions
+            : [slice.region]
+          regions.forEach(region => {
+            const renamed = self.refNameMap.get(region.refName)
+            if (renamed && region.refName !== renamed) {
+              region.refName = renamed
+            }
+          })
+        })
+        return slices
       },
+    }))
+    .volatile(self => ({
+      refNameMap: undefined,
     }))
     .actions(self => ({
       afterAttach() {
-        const track = self
         const renderDisposer = reaction(
           () => renderReactionData(self),
           data => {
             renderReactionEffect(self, data)
           },
           {
-            name: `${track.id} rendering`,
-            delay: track.renderDelay,
+            name: `${self.id} rendering`,
+            delay: self.renderDelay || 300,
             fireImmediately: true,
           },
         )
         addDisposer(self, renderDisposer)
+
+        makeAbortableReaction(
+          self,
+          'loadAssemblyRefNameMap',
+          () => ({
+            root: getRoot(self),
+            assemblyName: readConfObject(
+              getContainingAssembly(self.configuration),
+              'assemblyName',
+            ),
+          }),
+          ({ root, assemblyName }, signal) => {
+            console.log(`looking up assembly ${assemblyName}`)
+            return root.assemblyManager.getRefNameMapForAdapter(
+              getConf(self, 'adapter'),
+              assemblyName,
+              { signal },
+            )
+          },
+          {
+            fireImmediately: true,
+            delay: 300,
+          },
+        )
       },
+
+      loadAssemblyRefNameMapStarted() {},
+      loadAssemblyRefNameMapSuccess(result) {
+        console.log('loaded refname map', result)
+        self.refNameMap = result
+      },
+      loadAssemblyRefNameMapError(error) {
+        console.error(error)
+      },
+
       setLoading(abortController) {
         if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
           self.renderInProgress.abort()

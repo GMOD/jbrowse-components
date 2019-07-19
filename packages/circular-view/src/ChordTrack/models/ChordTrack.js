@@ -1,14 +1,16 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   // const { transaction } = jbrequire('mobx')
-  const { types } = jbrequire('mobx-state-tree')
+  const { types, getParent } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
 
-  const { getParentRenderProps } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getParentRenderProps, getContainingView } = jbrequire(
+    '@gmod/jbrowse-core/util/tracks',
+  )
 
   const configSchema = ConfigurationSchema(
     'ChordTrack',
@@ -38,8 +40,16 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('ChordTrack'),
       configuration: ConfigurationReference(configSchema),
+      bezierRadiusRatio: 0.1,
     })
+    .volatile(self => ({
+      refNameMap: undefined,
+    }))
     .views(self => ({
+      get blockDefinitions() {
+        return getContainingView(self).staticSlices
+      },
+
       get RenderingComponent() {
         return (
           self.reactComponent ||
@@ -51,10 +61,14 @@ export default pluginManager => {
         )
       },
       get renderProps() {
+        const view = getParent(self, 2)
         return {
           ...getParentRenderProps(self),
           trackModel: self,
+          bezierRadius: view.radiusPx * self.bezierRadiusRatio,
+          radius: view.radiusPx,
           config: self.configuration.renderer,
+          blockDefinitions: self.blockDefinitions,
         }
       },
 
