@@ -106,7 +106,7 @@ const globalRangeCache = new HttpRangeFetcher({
   size: 100 * 1024 * 1024, // 100MB
   chunkSize: 2 ** 16, // 64KB
   aggregationTime: 500,
-  minimumTTL: 30000,
+  minimumTTL: 300000000,
 })
 
 function globalCacheFetch<T>(

@@ -66,7 +66,6 @@ export default pluginManager => {
         const origSlices = getContainingView(self).staticSlices
         if (!self.refNameMap) return origSlices
 
-        console.log('renaming slices')
         const slices = JSON.parse(JSON.stringify(origSlices))
 
         slices.forEach(slice => {
@@ -112,7 +111,6 @@ export default pluginManager => {
             ),
           }),
           ({ root, assemblyName }, signal) => {
-            console.log(`looking up assembly ${assemblyName}`)
             return root.assemblyManager.getRefNameMapForAdapter(
               getConf(self, 'adapter'),
               assemblyName,
