@@ -11,6 +11,7 @@ import '@gmod/jbrowse-core/fonts/material-icons.css'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import * as rpcFuncs from '@gmod/jbrowse-core/rpc/rpcMethods'
 
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
@@ -18,7 +19,6 @@ import Protein from '@gmod/jbrowse-plugin-protein'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
-import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
@@ -40,17 +40,22 @@ export class Viewer {
     this.model = types
       .model({
         view: LinearGenomeViewType.stateModel,
-        assembly: types.frozen(),
         configuration: ConfigurationSchema('ProteinViewer', {
+          assembly: ConfigurationSchema('ProteinAssembly', {
+            name: { type: 'string', defaultValue: 'protein' },
+          }),
           rpc: RpcManager.configSchema,
           sequenceTrack: BasicTrackType.configSchema,
           variantTrack: DynamicTrackType.configSchema,
           domainsTrack: FilteringTrackType.configSchema,
         }),
       })
-      .volatile(() => ({
+      .volatile(self => ({
         pluginManager: this.pluginManager,
         app: this,
+        rpcManager: new RpcManager(this.pluginManager, self.configuration.rpc, {
+          MainThreadRpcDriver: { rpcFuncs },
+        }),
       }))
       .create({
         view: {
@@ -58,9 +63,6 @@ export class Viewer {
           hideControls: true,
           width: widgetWidth,
           bpPerPx: 1 / 20,
-        },
-        assembly: {
-          name: 'protein',
         },
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
@@ -97,12 +99,6 @@ function(feature) {
           },
         },
       })
-
-    this.model.rpcManager = new RpcManager(
-      this.pluginManager,
-      this.model.configuration.rpc,
-      { MainThreadRpcDriver: { rpcFuncs } },
-    )
 
     this.update(initialState)
 
