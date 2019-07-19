@@ -23,15 +23,11 @@ module.exports = {
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
   resolver: 'jest-pnp-resolver',
-  setupFiles: [
-    '<rootDir>/config/jest/createRange.js',
-    '<rootDir>/config/jest/enzymeSetup.js',
-  ],
+  setupFiles: ['<rootDir>/config/jest/createRange.js'],
   testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',
   moduleNameMapper: {
     '^react-native$': 'react-native-web',
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
   },
-  snapshotSerializers: ['enzyme-to-json/serializer'],
 }

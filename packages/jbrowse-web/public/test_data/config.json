@@ -1,0 +1,1329 @@
+{
+  "datasets": [
+    {
+      "name": "volvox",
+      "assembly": {
+        "name": "volvox",
+        "aliases": [
+          "vvx"
+        ],
+        "sequence": {
+          "configId": "volvox_refseq_track",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "/test_data/volvox.2bit"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "refName": "ctgA",
+                "uniqueId": "alias1",
+                "aliases": [
+                  "A",
+                  "contigA"
+                ]
+              },
+              {
+                "refName": "ctgB",
+                "uniqueId": "alias2",
+                "aliases": [
+                  "B",
+                  "contigB"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "tracks": [
+        {
+          "type": "DynamicTrack",
+          "name": "Lollipop track",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 190,
+                "end": 191,
+                "type": "foo",
+                "score": 200,
+                "name": "Boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 191,
+                "end": 192,
+                "type": "bar",
+                "score": 20,
+                "name": "Theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 210,
+                "end": 211,
+                "type": "baz",
+                "score": 300,
+                "name": "Nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 220,
+                "end": 221,
+                "score": 2,
+                "type": "quux",
+                "name": "Geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "LollipopRenderer"
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-long-reads.fastq.sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-long-reads.fastq.sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "volvox_bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "/test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox-sorted.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "name": "volvox filtered vcf",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.filtered.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "bigbed_genes",
+          "type": "BasicTrack",
+          "name": "BigBed genes",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "/test_data/volvox.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          }
+        },
+        {
+          "type": "FilteringTrack",
+          "name": "Filter track",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "uniqueId": "one",
+                "refName": "ctgA",
+                "start": 100,
+                "end": 101,
+                "type": "foo",
+                "name": "Boris",
+                "note": "note for boris"
+              },
+              {
+                "uniqueId": "two",
+                "refName": "ctgA",
+                "start": 110,
+                "end": 111,
+                "type": "bar",
+                "name": "Theresa",
+                "note": "note for theresa"
+              },
+              {
+                "uniqueId": "three",
+                "refName": "ctgA",
+                "start": 120,
+                "end": 121,
+                "type": "baz",
+                "name": "Nigel",
+                "note": "note for nigel"
+              },
+              {
+                "uniqueId": "four",
+                "refName": "ctgA",
+                "start": 130,
+                "end": 131,
+                "type": "quux",
+                "name": "Geoffray",
+                "note": "note for geoffray"
+              }
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          },
+          "filterAttributes": [
+            "type",
+            "start",
+            "end"
+          ]
+        },
+        {
+          "type": "BasicTrack",
+          "name": "NCList genes",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          },
+          "defaultRendering": "line",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "Density"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          },
+          "defaultRendering": "density",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray",
+          "category": [
+            "BigWig",
+            "XYPlot"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.bw"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray - negative",
+          "category": [
+            "BigWig",
+            "Density"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          },
+          "defaultRendering": "density",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray - negative",
+          "category": [
+            "BigWig",
+            "XYPlot"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_negative.bw"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray with +/- values",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_posneg.bw"
+            }
+          },
+          "defaultRendering": "line",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox microarray with +/- values",
+          "category": [
+            "BigWig",
+            "XYPlot"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray_posneg.bw"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox - BAM coverage",
+          "category": [
+            "BigWig",
+            "Line"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+            }
+          },
+          "defaultRendering": "line",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "name": "Volvox - BAM coverage",
+          "category": [
+            "BigWig"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        }
+      ],
+      "connections": [
+        {
+          "type": "UCSCTrackHubConnection",
+          "name": "Volvox UCSC TrackHub",
+          "hubTxtLocation": {
+            "uri": "https://jbrowse.org/volvoxhub/hub.txt"
+          }
+        },
+        {
+          "type": "JBrowse1Connection",
+          "name": "Volvox JBrowse 1 Data",
+          "dataDirLocation": {
+            "uri": "https://jbrowse.org/code/JBrowse-1.16.4/sample_data/json/volvox/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Homo sapiens",
+      "assembly": {
+        "name": "hg19",
+        "aliases": [
+          "GRCh37"
+        ],
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "IndexedFastaAdapter",
+            "fastaLocation": {
+              "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta"
+            },
+            "faiLocation": {
+              "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "refName": "chr1",
+                "uniqueId": "hg19_alias1",
+                "aliases": [
+                  "1"
+                ]
+              },
+              {
+                "refName": "chr2",
+                "uniqueId": "hg19_alias2",
+                "aliases": [
+                  "2"
+                ]
+              },
+              {
+                "refName": "chr3",
+                "uniqueId": "hg19_alias3",
+                "aliases": [
+                  "3"
+                ]
+              },
+              {
+                "refName": "chr4",
+                "uniqueId": "hg19_alias4",
+                "aliases": [
+                  "4"
+                ]
+              },
+              {
+                "refName": "chr5",
+                "uniqueId": "hg19_alias5",
+                "aliases": [
+                  "5"
+                ]
+              },
+              {
+                "refName": "chr6",
+                "uniqueId": "hg19_alias6",
+                "aliases": [
+                  "6"
+                ]
+              },
+              {
+                "refName": "chr7",
+                "uniqueId": "hg19_alias7",
+                "aliases": [
+                  "7"
+                ]
+              },
+              {
+                "refName": "chr8",
+                "uniqueId": "hg19_alias8",
+                "aliases": [
+                  "8"
+                ]
+              },
+              {
+                "refName": "chr9",
+                "uniqueId": "hg19_alias9",
+                "aliases": [
+                  "9"
+                ]
+              },
+              {
+                "refName": "chr10",
+                "uniqueId": "hg19_alias10",
+                "aliases": [
+                  "10"
+                ]
+              },
+              {
+                "refName": "chr11",
+                "uniqueId": "hg19_alias11",
+                "aliases": [
+                  "11"
+                ]
+              },
+              {
+                "refName": "chr12",
+                "uniqueId": "hg19_alias12",
+                "aliases": [
+                  "12"
+                ]
+              },
+              {
+                "refName": "chr13",
+                "uniqueId": "hg19_alias13",
+                "aliases": [
+                  "13"
+                ]
+              },
+              {
+                "refName": "chr14",
+                "uniqueId": "hg19_alias14",
+                "aliases": [
+                  "14"
+                ]
+              },
+              {
+                "refName": "chr15",
+                "uniqueId": "hg19_alias15",
+                "aliases": [
+                  "15"
+                ]
+              },
+              {
+                "refName": "chr16",
+                "uniqueId": "hg19_alias16",
+                "aliases": [
+                  "16"
+                ]
+              },
+              {
+                "refName": "chr17",
+                "uniqueId": "hg19_alias17",
+                "aliases": [
+                  "17"
+                ]
+              },
+              {
+                "refName": "chr18",
+                "uniqueId": "hg19_alias18",
+                "aliases": [
+                  "18"
+                ]
+              },
+              {
+                "refName": "chr19",
+                "uniqueId": "hg19_alias19",
+                "aliases": [
+                  "19"
+                ]
+              },
+              {
+                "refName": "chr20",
+                "uniqueId": "hg19_alias20",
+                "aliases": [
+                  "20"
+                ]
+              },
+              {
+                "refName": "chr21",
+                "uniqueId": "hg19_alias21",
+                "aliases": [
+                  "21"
+                ]
+              },
+              {
+                "refName": "chr22",
+                "uniqueId": "hg19_alias22",
+                "aliases": [
+                  "22"
+                ]
+              },
+              {
+                "refName": "chrX",
+                "uniqueId": "hg19_aliasX",
+                "aliases": [
+                  "X"
+                ]
+              },
+              {
+                "refName": "chrY",
+                "uniqueId": "hg19_aliasY",
+                "aliases": [
+                  "Y"
+                ]
+              },
+              {
+                "refName": "chrM",
+                "uniqueId": "hg19_aliasMT",
+                "aliases": [
+                  "MT"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "tracks": [
+        {
+          "type": "AlignmentsTrack",
+          "name": "NA12878 Exome",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "configId": "chm1_pacbio",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "CHM1 pacbio",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "name": "HG00096 Illumina high coverage",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "name": "HG00096 Illumina low coverage",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "wiggle_global_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode global autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "configId": "wiggle_local_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode local autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "type": "BasicTrack",
+          "configId": "nclist_genes",
+          "name": "Gencode v19",
+          "category": ["Genes"],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "bigbed_peaks",
+          "type": "BasicTrack",
+          "name": "Encode peaks",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "name": "InDels",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "rpc": {}
+  },
+  "session": {
+    "name": "Volvox Example",
+    "width": 1192,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "volvox_example",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          },
+          {
+            "refName": "ctgB",
+            "start": 0,
+            "end": 6079,
+            "assemblyName": "volvox"
+          }
+        ],
+        "displayRegionsFromAssemblyName": "volvox",
+        "reversed": false,
+        "tracks": [
+          {
+            "id": "X6rIl1kHuP",
+            "type": "ReferenceSequenceTrack",
+            "height": 80,
+            "configuration": "volvox_refseq_track",
+            "blockState": {
+              "volvox:ctgA:101-150": {
+                "key": "volvox:ctgA:101-150",
+                "region": {
+                  "refName": "ctgA",
+                  "start": 100,
+                  "end": 150,
+                  "assemblyName": "volvox"
+                },
+                "isLeftEndOfDisplayedRegion": false,
+                "isRightEndOfDisplayedRegion": false
+              }
+            }
+          },
+          {
+            "id": "Uz2i0KbGEL",
+            "type": "AlignmentsTrack",
+            "height": 200,
+            "configuration": "volvox_bam",
+            "blockState": {
+              "volvox:ctgA:101-150": {
+                "key": "volvox:ctgA:101-150",
+                "region": {
+                  "refName": "ctgA",
+                  "start": 100,
+                  "end": 150,
+                  "assemblyName": "volvox"
+                },
+                "isLeftEndOfDisplayedRegion": false,
+                "isRightEndOfDisplayedRegion": false
+              }
+            },
+            "selectedRendering": ""
+          },
+          {
+            "id": "07cHDos6N9",
+            "type": "BasicTrack",
+            "height": 80,
+            "configuration": "bigbed_genes",
+            "blockState": {
+              "volvox:ctgA:101-150": {
+                "key": "volvox:ctgA:101-150",
+                "region": {
+                  "refName": "ctgA",
+                  "start": 100,
+                  "end": 150,
+                  "assemblyName": "volvox"
+                },
+                "isLeftEndOfDisplayedRegion": false,
+                "isRightEndOfDisplayedRegion": false
+              }
+            }
+          }
+        ],
+        "controlsWidth": 120,
+        "width": 808,
+        "hideControls": false,
+        "trackSelectorType": "hierarchical",
+        "minimumBlockWidth": 20
+      }
+    ],
+    "drawerWidgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorDrawerWidget",
+        "collapsed": {},
+        "filterText": "",
+        "view": "volvox_example"
+      }
+    },
+    "activeDrawerWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    },
+    "menuBars": [
+      {
+        "id": "83YVdWHrWt",
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "Admin",
+            "menuItems": [
+              {
+                "name": "Export configuration",
+                "icon": "cloud_download",
+                "callback": "exportConfiguration"
+              },
+              {
+                "name": "Import configuration",
+                "icon": "cloud_upload",
+                "callback": "importConfiguration"
+              }
+            ]
+          },
+          {
+            "name": "Help",
+            "menuItems": [
+              {
+                "name": "About",
+                "icon": "info",
+                "callback": "openAbout"
+              },
+              {
+                "name": "Help",
+                "icon": "help",
+                "callback": "openHelp"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "connections": {}
+  },
+  "sessionSnapshots": [
+    {
+      "name": "Volvox Example",
+      "width": 952,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "volvox_example",
+          "type": "LinearGenomeView",
+          "offsetPx": 2000,
+          "bpPerPx": 0.05,
+          "displayedRegions": [
+            {
+              "refName": "ctgA",
+              "start": 0,
+              "end": 50001,
+              "assemblyName": "volvox"
+            },
+            {
+              "refName": "ctgB",
+              "start": 0,
+              "end": 6079,
+              "assemblyName": "volvox"
+            }
+          ],
+          "displayRegionsFromAssemblyName": "volvox",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "X6rIl1kHuP",
+              "type": "ReferenceSequenceTrack",
+              "height": 80,
+              "configuration": "volvox_refseq_track",
+              "blockState": {
+                "volvox:ctgA:91-120": {
+                  "key": "volvox:ctgA:91-120",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 90,
+                    "end": 120,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                },
+                "volvox:ctgA:121-150": {
+                  "key": "volvox:ctgA:121-150",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 120,
+                    "end": 150,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                }
+              }
+            },
+            {
+              "id": "Uz2i0KbGEL",
+              "type": "AlignmentsTrack",
+              "height": 200,
+              "configuration": "volvox_bam",
+              "blockState": {
+                "volvox:ctgA:91-120": {
+                  "key": "volvox:ctgA:91-120",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 90,
+                    "end": 120,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                },
+                "volvox:ctgA:121-150": {
+                  "key": "volvox:ctgA:121-150",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 120,
+                    "end": 150,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                }
+              },
+              "selectedRendering": ""
+            },
+            {
+              "id": "07cHDos6N9",
+              "type": "BasicTrack",
+              "height": 80,
+              "configuration": "bigbed_genes",
+              "blockState": {
+                "volvox:ctgA:91-120": {
+                  "key": "volvox:ctgA:91-120",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 90,
+                    "end": 120,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                },
+                "volvox:ctgA:121-150": {
+                  "key": "volvox:ctgA:121-150",
+                  "region": {
+                    "refName": "ctgA",
+                    "start": 120,
+                    "end": 150,
+                    "assemblyName": "volvox"
+                  },
+                  "isLeftEndOfDisplayedRegion": false,
+                  "isRightEndOfDisplayedRegion": false
+                }
+              }
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 568,
+          "hideControls": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "volvox_example"
+        }
+      },
+      "activeDrawerWidgets": {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      },
+      "menuBars": [
+        {
+          "id": "83YVdWHrWt",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "configuration": {
+        "rpc": {}
+      },
+      "connections": {}
+    },
+    {
+      "name": "Human Example (hg19)",
+      "menuBars": [
+        {
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "views": [
+        {
+          "id": "Cma34s8JJ",
+          "type": "LinearGenomeView",
+          "offsetPx": 835,
+          "bpPerPx": 50,
+          "displayRegionsFromAssemblyName": "hg19",
+          "tracks": [
+            {
+              "type": "WiggleTrack",
+              "height": 100,
+              "configuration": "wiggle_global_autoscale"
+            },
+            {
+              "type": "WiggleTrack",
+              "height": 100,
+              "configuration": "wiggle_local_autoscale"
+            },
+            {
+              "type": "BasicTrack",
+              "height": 100,
+              "configuration": "bigbed_peaks"
+            }
+          ],
+          "trackSelectorType": "hierarchical"
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "filterText": "",
+          "view": "Cma34s8JJ"
+        }
+      },
+      "activeDrawerWidgets": {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      },
+      "configuration": {}
+    }
+  ]
+}

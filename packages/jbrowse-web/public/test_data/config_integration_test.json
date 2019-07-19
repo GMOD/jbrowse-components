@@ -1,44 +1,47 @@
 {
-  "assemblies": [
+  "datasets": [
     {
-      "assemblyName": "volvox",
-      "sequence": {
-        "configId": "volvox_refseq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "/test_data/volvox.2bit"
+      "name": "volvox",
+      "assembly": {
+        "name": "volvox",
+        "sequence": {
+          "configId": "volvox_refseq",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "/test_data/volvox.2bit"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
           }
         },
-        "rendering": {
-          "type": "DivSequenceRenderer"
-        }
-      },
-      "aliases": [
-        "vvx"
-      ],
-      "refNameAliases": {
-        "adapter": {
-          "type": "FromConfigAdapter",
-          "features": [
-            {
-              "refName": "ctgA",
-              "uniqueId": "alias1",
-              "aliases": [
-                "A",
-                "contigA"
-              ]
-            },
-            {
-              "refName": "ctgB",
-              "uniqueId": "alias2",
-              "aliases": [
-                "B",
-                "contigB"
-              ]
-            }
-          ]
+        "aliases": [
+          "vvx"
+        ],
+        "refNameAliases": {
+          "adapter": {
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "refName": "ctgA",
+                "uniqueId": "alias1",
+                "aliases": [
+                  "A",
+                  "contigA"
+                ]
+              },
+              {
+                "refName": "ctgB",
+                "uniqueId": "alias2",
+                "aliases": [
+                  "B",
+                  "contigB"
+                ]
+              }
+            ]
+          }
         }
       },
       "tracks": [
@@ -248,11 +251,8 @@
       ]
     }
   ],
-  "rpc": {
-    "defaultDriver": "MainThreadRpcDriver"
-  },
-  "defaultSession": {
-    "sessionName": "Integration test example",
+  "session": {
+    "name": "Integration test example",
     "menuBars": [
       {
         "type": "MainMenuBar",
@@ -285,15 +285,20 @@
       }
     ],
     "drawerWidgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
+      "hierarchicalTrackSelector-Integration test example": {
+        "id": "hierarchicalTrackSelector-Integration test example",
         "type": "HierarchicalTrackSelectorDrawerWidget",
         "filterText": "",
         "view": "integration_test"
       }
     },
     "activeDrawerWidgets": {
-      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      "hierarchicalTrackSelector-Integration test example": "hierarchicalTrackSelector-Integration test example"
+    }
+  },
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
     }
   }
 }

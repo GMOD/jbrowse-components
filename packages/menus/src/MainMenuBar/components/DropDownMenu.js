@@ -31,7 +31,7 @@ function DropDownMenu(props) {
   const [open, setOpen] = useState(false)
   const anchorEl = React.useRef(null)
 
-  const { classes, menuTitle, menuItems, rootModel } = props
+  const { classes, menuTitle, menuItems, session } = props
 
   function handleToggle() {
     setOpen(!open)
@@ -43,7 +43,7 @@ function DropDownMenu(props) {
     }
 
     setOpen(false)
-    if (callback) callback(rootModel)
+    if (callback) callback(session)
   }
 
   return (
@@ -107,7 +107,7 @@ DropDownMenu.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   menuTitle: PropTypes.string.isRequired,
   menuItems: MobxPropTypes.observableArray.isRequired,
-  rootModel: MobxPropTypes.objectOrObservableObject.isRequired,
+  session: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(DropDownMenu))

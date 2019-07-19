@@ -1,9 +1,9 @@
 import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
-import { clamp } from '@gmod/jbrowse-core/util'
+import { clamp, getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, getRoot, types } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
@@ -107,7 +107,7 @@ export function stateModelFactory(pluginManager) {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
           highResolutionScaling: getConf(
-            getRoot(self),
+            getSession(self),
             'highResolutionScaling',
           ),
           horizontallyFlipped: self.horizontallyFlipped,
@@ -166,29 +166,20 @@ export function stateModelFactory(pluginManager) {
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
         self.displayRegionsFromAssemblyName = assemblyName
-        const root = getRoot(self)
-        if (root.updateAssemblies) root.updateAssemblies()
       },
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const rootModel = getRoot(self)
-          if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
-            rootModel.addDrawerWidget(
-              'HierarchicalTrackSelectorDrawerWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-          const selector = rootModel.drawerWidgets.get(
+          const session = getSession(self)
+          const selector = session.addDrawerWidget(
+            'HierarchicalTrackSelectorDrawerWidget',
             'hierarchicalTrackSelector',
+            { view: self },
           )
-          selector.setView(self)
-          rootModel.showDrawerWidget(selector)
-        } else {
-          throw new Error(
-            `invalid track selector type ${self.trackSelectorType}`,
-          )
+          session.showDrawerWidget(selector)
+          return selector
         }
+        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
       zoomTo(newBpPerPx) {
@@ -299,7 +290,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       activateConfigurationUI() {
-        getRoot(self).editConfiguration(self.configuration)
+        getSession(self).editConfiguration(self.configuration)
       },
 
       setNewView(bpPerPx, offsetPx) {

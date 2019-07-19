@@ -1,10 +1,4 @@
-import {
-  types,
-  getParent,
-  isAlive,
-  getRoot,
-  addDisposer,
-} from 'mobx-state-tree'
+import { types, getParent, isAlive, addDisposer } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -15,9 +9,10 @@ import {
   assembleLocString,
   checkAbortSignal,
   isAbortException,
+  getSession,
 } from '@gmod/jbrowse-core/util'
 import {
-  getContainingAssembly,
+  getContainingDataset,
   getContainingView,
 } from '@gmod/jbrowse-core/util/tracks'
 
@@ -29,14 +24,25 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const { rpcManager, assemblyManager } = getRoot(view)
+  const { rpcManager } = getSession(view)
   const trackConf = track.configuration
-  let trackConfParent = getParent(trackConf)
-  if (!trackConfParent.assemblyName)
+  let trackConfParent = trackConf
+  do {
     trackConfParent = getParent(trackConfParent)
-  const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
+  } while (!(trackConfParent.assembly || 'defaultSequence' in trackConfParent))
+  if ('defaultSequence' in trackConfParent) {
+    trackConfParent = trackConfParent.configuration
+    do {
+      trackConfParent = getParent(trackConfParent)
+    } while (!trackConfParent.assembly)
+  }
+  const trackAssemblyName = readConfObject(trackConfParent, [
+    'assembly',
+    'name',
+  ])
+  const { assemblyData } = getSession(self)
   const trackAssemblyData =
-    assemblyManager.assemblyData.get(trackAssemblyName) || {}
+    (assemblyData && assemblyData.get(trackAssemblyName)) || {}
   const trackAssemblyAliases = trackAssemblyData.aliases || []
   let cannotBeRenderedReason
   if (
@@ -50,8 +56,8 @@ function renderBlockData(self) {
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
   const assemblyName = readConfObject(
-    getContainingAssembly(track.configuration),
-    'assemblyName',
+    getContainingDataset(track.configuration).assembly,
+    'name',
   )
   return {
     rendererType,
@@ -231,7 +237,7 @@ export default types
       }
       const track = getParent(self, 2)
       const view = getContainingView(track)
-      const { rpcManager } = getRoot(view)
+      const { rpcManager } = getSession(view)
       const { rendererType } = track
       const { renderArgs } = renderBlockData(self)
       rendererType.freeResourcesInClient(

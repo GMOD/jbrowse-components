@@ -1,23 +1,22 @@
 import { autorun } from 'mobx'
-import { flow, types, getType, addDisposer } from 'mobx-state-tree'
+import {
+  types,
+  flow,
+  getParent,
+  getRoot,
+  addDisposer,
+  isAlive,
+} from 'mobx-state-tree'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-
-import RenderWorker from './rpc.worker'
-import AssemblyManager from './managers/AssemblyManager'
-import rootConfig from './rootConfig'
-
-import * as rpcFuncs from './rpcMethods'
 
 export default pluginManager => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
-    .model('JBrowseWebRootModel', {
-      sessionName: types.optional(types.string, 'UnnamedSession'),
+    .model('JBrowseWebSessionModel', {
+      name: types.identifier,
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
         512,
@@ -31,28 +30,18 @@ export default pluginManager => {
         pluginManager.pluggableMstType('drawer widget', 'stateModel'),
       ),
       activeDrawerWidgets: types.map(
-        types.reference(
+        types.safeReference(
           pluginManager.pluggableMstType('drawer widget', 'stateModel'),
         ),
       ),
       menuBars: types.array(
         pluginManager.pluggableMstType('menu bar', 'stateModel'),
       ),
-      configuration: rootConfig(pluginManager),
       connections: types.map(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
+        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
     })
-    .volatile(self => {
-      const rpcManager = new RpcManager(pluginManager, self.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          WorkerClass: RenderWorker,
-        },
-        MainThreadRpcDriver: {
-          rpcFuncs,
-        },
-      })
-      const assemblyManager = new AssemblyManager(rpcManager, self)
+    .volatile((/* self */) => {
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -67,13 +56,23 @@ export default pluginManager => {
       const task = undefined
       return {
         pluginManager,
-        rpcManager,
-        assemblyManager,
         selection,
         task,
       }
     })
     .views(self => ({
+      get rpcManager() {
+        return getRoot(self).rpcManager
+      },
+      get assemblyData() {
+        return getRoot(self).assemblyData
+      },
+      get configuration() {
+        return getRoot(self).configuration
+      },
+      get datasets() {
+        return getRoot(self).datasets
+      },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
         return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
@@ -83,9 +82,12 @@ export default pluginManager => {
       },
 
       get visibleDrawerWidget() {
-        let activeDrawerWidget
-        for (activeDrawerWidget of self.activeDrawerWidgets.values());
-        return activeDrawerWidget
+        if (isAlive(self))
+          // returns most recently added item in active drawer widgets
+          return Array.from(self.activeDrawerWidgets.values())[
+            self.activeDrawerWidgets.size - 1
+          ]
+        return undefined
       },
     }))
     .actions(self => ({
@@ -97,49 +99,88 @@ export default pluginManager => {
         })
         addDisposer(self, disposer)
 
-        self.clearConnections()
-        self.configuration.connections.forEach(connectionConf => {
-          self.addConnection(connectionConf)
+        const displayedRegionsDisposer = autorun(async () => {
+          for (const view of self.views) {
+            const assemblyName = view.displayRegionsFromAssemblyName
+            if (
+              assemblyName &&
+              self.assemblyData.get(assemblyName) &&
+              self.assemblyData.get(assemblyName).sequence
+            ) {
+              // eslint-disable-next-line no-await-in-loop
+              const displayedRegions = await self.getRegionsForAssembly(
+                assemblyName,
+                self.assemblyData,
+              )
+              view.setDisplayedRegions(displayedRegions, true)
+            }
+          }
         })
+        addDisposer(self, displayedRegionsDisposer)
       },
 
-      addConnection(connectionConf) {
-        const connectionType = pluginManager.getConnectionType(
-          connectionConf.type,
-        )
-        const connectionName = readConfObject(connectionConf, 'name')
-        self.connections.set(connectionName, connectionType.stateModel.create())
-        self.connections
-          .get(connectionName)
-          .connect(connectionConf)
-          .then(() => self.updateAssemblies())
-      },
-
-      removeConnection(connectionName) {
-        self.connections.delete(connectionName)
-      },
-
-      updateAssemblies() {
-        self.assemblyManager.updateAssemblyData(self)
-      },
-
-      configure(configSnapshot) {
-        self.configuration = getType(self.configuration).create(configSnapshot)
-      },
-
-      loadConfig: flow(function* loadConfig(configLocation) {
-        let configSnapshot
-        try {
-          configSnapshot = JSON.parse(
-            yield openLocation(configLocation).readFile('utf8'),
+      getRegionsForAssembly: flow(function* getRegionsForAssembly(
+        assemblyName,
+        assemblyData,
+        opts = {},
+      ) {
+        const assembly = assemblyData.get(assemblyName)
+        if (assembly) {
+          const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+          // eslint-disable-next-line no-await-in-loop
+          const adapterRegions = yield self.rpcManager.call(
+            assembly.configId,
+            'getRegions',
+            {
+              sessionId: assemblyName,
+              adapterType: adapterConfig.type,
+              adapterConfig,
+              signal: opts.signal,
+            },
+            { timeout: 1000000 },
           )
-          self.configure(configSnapshot)
-        } catch (error) {
-          console.error('Failed to load config ', error)
-          throw error
+          const adapterRegionsWithAssembly = adapterRegions.map(
+            adapterRegion => ({
+              ...adapterRegion,
+              assemblyName,
+            }),
+          )
+          return adapterRegionsWithAssembly
         }
-        return configSnapshot
+        return undefined
       }),
+
+      makeConnection(configuration, initialSnapshot = {}) {
+        const { type } = configuration
+        if (!type) throw new Error('track configuration has no `type` listed')
+        const name = readConfObject(configuration, 'name')
+        const connectionType = pluginManager.getConnectionType(type)
+        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        let confParent = configuration
+        do {
+          confParent = getParent(confParent)
+        } while (!confParent.assembly)
+        const assemblyName = readConfObject(confParent.assembly, 'name')
+        const connectionData = { ...initialSnapshot, name, type, configuration }
+        if (!self.connections.has(assemblyName))
+          self.connections.set(assemblyName, [])
+        const assemblyConnections = self.connections.get(assemblyName)
+        const length = assemblyConnections.push(connectionData)
+        return assemblyConnections[length - 1]
+      },
+
+      breakConnection(configuration) {
+        const name = readConfObject(configuration, 'name')
+        let confParent = configuration
+        do {
+          confParent = getParent(confParent)
+        } while (!confParent.assembly)
+        const assemblyName = readConfObject(confParent.assembly, 'name')
+        const connection = self.connections
+          .get(assemblyName)
+          .find(c => c.name === name)
+        self.connections.get(assemblyName).remove(connection)
+      },
 
       updateWidth(width) {
         let newWidth = Math.floor(width)
@@ -167,28 +208,20 @@ export default pluginManager => {
         return actualDistance
       },
 
-      addView(typeName, configuration, initialState = {}) {
+      addView(typeName, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
 
-        const newView = typeDefinition.stateModel.create({
+        const length = self.views.push({
           ...initialState,
           type: typeName,
-          configuration,
         })
-        self.views.push(newView)
-        self.updateAssemblies()
-        return newView
+        return self.views[length - 1]
       },
 
       removeView(view) {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
-            id === 'configEditor' &&
-            drawerWidget.target.configId === view.configuration.configId
-          )
-            self.hideDrawerWidget(drawerWidget)
-          else if (
             id === 'hierarchicalTrackSelector' &&
             drawerWidget.view.id === view.id
           )
@@ -197,13 +230,23 @@ export default pluginManager => {
         self.views.remove(view)
       },
 
-      addLinearGenomeViewOfAssembly(
-        assemblyName,
-        configuration,
-        initialState = {},
-      ) {
-        configuration.displayRegionsFromAssemblyName = assemblyName
-        return self.addView('LinearGenomeView', configuration, initialState)
+      addDataset(datasetConf) {
+        return getRoot(self).addDataset(datasetConf)
+      },
+
+      addLinearGenomeViewOfDataset(datsetName, initialState = {}) {
+        const dataset = self.datasets.find(
+          s => readConfObject(s.name) === datsetName,
+        )
+        if (!dataset)
+          throw new Error(
+            `Could not add view of dataset "${datsetName}", dataset name not found`,
+          )
+        initialState.displayRegionsFromAssemblyName = readConfObject(
+          dataset.assembly,
+          'name',
+        )
+        return self.addView('LinearGenomeView', initialState)
       },
 
       addDrawerWidget(
@@ -218,9 +261,14 @@ export default pluginManager => {
         )
         if (!typeDefinition)
           throw new Error(`unknown drawer widget type ${typeName}`)
-        const data = { ...initialState, id, type: typeName, configuration }
-        const model = typeDefinition.stateModel.create(data)
-        self.drawerWidgets.set(model.id, model)
+        const data = {
+          ...initialState,
+          id,
+          type: typeName,
+          configuration,
+        }
+        self.drawerWidgets.set(id, data)
+        return self.drawerWidgets.get(id)
       },
 
       showDrawerWidget(drawerWidget) {
@@ -285,20 +333,16 @@ export default pluginManager => {
             'must pass a configuration model to editConfiguration',
           )
         }
-        if (!self.drawerWidgets.get('configEditor'))
-          self.addDrawerWidget(
-            'ConfigurationEditorDrawerWidget',
-            'configEditor',
-            { target: configuration },
-          )
-        const editor = self.drawerWidgets.get('configEditor')
-        editor.setTarget(configuration)
+        const editor = self.addDrawerWidget(
+          'ConfigurationEditorDrawerWidget',
+          'configEditor',
+          { target: configuration },
+        )
         self.showDrawerWidget(editor)
       },
 
       clearConnections() {
         self.connections.clear()
-        self.updateAssemblies()
       },
     }))
 }

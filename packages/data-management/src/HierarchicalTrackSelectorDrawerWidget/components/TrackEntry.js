@@ -1,3 +1,4 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -7,7 +8,6 @@ import { withStyles } from '@material-ui/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -42,7 +42,7 @@ const styles = theme => ({
 
 function TrackEntry(props) {
   const { model, disabled, trackConf, assemblyName, classes } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
     : readConfObject(trackConf, 'description')
@@ -57,7 +57,9 @@ function TrackEntry(props) {
             className={classes.formControlLabel}
             control={
               <Checkbox
-                inputProps={{ 'data-testid': trackConf.configId }}
+                inputProps={{
+                  'data-testid': `htsTrackEntry-${trackConf.configId}`,
+                }}
                 className={classes.checkbox}
               />
             }
@@ -73,7 +75,7 @@ function TrackEntry(props) {
         </Tooltip>
         <IconButton
           className={classes.configureButton}
-          onClick={() => rootModel.editConfiguration(trackConf)}
+          onClick={() => session.editConfiguration(trackConf)}
         >
           <Icon fontSize="small">settings</Icon>
         </IconButton>

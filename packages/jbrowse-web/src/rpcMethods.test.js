@@ -1,9 +1,9 @@
-import { createTestEnv } from './JBrowse'
+import { createTestSession } from './jbrowseModel'
 import { renderRegion, freeResources } from './rpcMethods'
 
 let pluginManager
-beforeAll(async () => {
-  ;({ pluginManager } = await createTestEnv())
+beforeAll(() => {
+  ;({ pluginManager } = createTestSession())
 })
 
 const baseprops = {
@@ -23,7 +23,7 @@ const baseprops = {
       },
     },
   },
-  rootConfig: {},
+  sessionConfig: {},
   renderProps: { bpPerPx: 1 },
 }
 

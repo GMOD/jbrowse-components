@@ -2,44 +2,18 @@
 
 exports[`no features 1`] = `
 <svg
-  className="SvgFeatureRendering"
+  class="SvgFeatureRendering"
   height="20px"
-  onBlur={[Function]}
-  onClick={[Function]}
-  onFocus={[Function]}
-  onMouseDown={[Function]}
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
-  onMouseOut={[Function]}
-  onMouseOver={[Function]}
-  onMouseUp={[Function]}
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
+  style="position: relative;"
   width="100px"
 />
 `;
 
 exports[`one feature 1`] = `
 <svg
-  className="SvgFeatureRendering"
+  class="SvgFeatureRendering"
   height="25px"
-  onBlur={[Function]}
-  onClick={[Function]}
-  onFocus={[Function]}
-  onMouseDown={[Function]}
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
-  onMouseOut={[Function]}
-  onMouseOver={[Function]}
-  onMouseUp={[Function]}
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
+  style="position: relative;"
   width="333.3333333333333px"
 >
   <g
@@ -47,38 +21,19 @@ exports[`one feature 1`] = `
   >
     <rect
       data-testid="one"
-      height={10}
-      onBlur={[Function]}
-      onClick={[Function]}
-      onFocus={[Function]}
-      onMouseDown={[Function]}
-      onMouseEnter={[Function]}
-      onMouseLeave={[Function]}
-      onMouseMove={[Function]}
-      onMouseOut={[Function]}
-      onMouseOver={[Function]}
-      onMouseUp={[Function]}
-      style={
-        Object {
-          "fill": "goldenrod",
-        }
-      }
+      height="10"
+      style="fill: goldenrod;"
       title="one"
-      width={1}
-      x={0}
-      y={0}
+      width="1"
+      x="0"
+      y="0"
     />
     <text
-      dominantBaseline="hanging"
-      style={
-        Object {
-          "fill": "black",
-          "fontSize": 13,
-        }
-      }
-      textLength={21}
-      x={0}
-      y={12}
+      dominant-baseline="hanging"
+      style="font-size: 13px; fill: black;"
+      textLength="21"
+      x="0"
+      y="12"
     >
       one
     </text>

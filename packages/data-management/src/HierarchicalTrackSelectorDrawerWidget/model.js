@@ -1,5 +1,6 @@
-import { getRoot, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 
 export function generateHierarchy(trackConfigurations) {
@@ -26,12 +27,8 @@ export default pluginManager =>
       type: types.literal('HierarchicalTrackSelectorDrawerWidget'),
       collapsed: types.map(types.boolean), // map of category path -> boolean of whether it is collapsed
       filterText: '',
-      view: types.maybe(
-        types.reference(pluginManager.pluggableMstType('view', 'stateModel'), {
-          onInvalidated(evt) {
-            evt.removeRef()
-          },
-        }),
+      view: types.safeReference(
+        pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
     .actions(self => ({
@@ -51,14 +48,17 @@ export default pluginManager =>
     .views(self => ({
       trackConfigurations(assemblyName) {
         if (!self.view) return []
-        const root = getRoot(self)
+        const session = getSession(self)
         const trackConfigurations = []
-        root.configuration.assemblies.forEach(assemblyConf => {
+        session.datasets.forEach(datasetConf => {
           if (
-            readConfObject(assemblyConf, 'assemblyName') === assemblyName ||
-            readConfObject(assemblyConf, 'aliases').includes(assemblyName)
+            readConfObject(datasetConf, ['assembly', 'name']) ===
+              assemblyName ||
+            readConfObject(datasetConf, ['assembly', 'aliases']).includes(
+              assemblyName,
+            )
           )
-            trackConfigurations.push(...assemblyConf.tracks)
+            trackConfigurations.push(...datasetConf.tracks)
         })
 
         const relevantTrackConfigurations = trackConfigurations.filter(
@@ -76,20 +76,9 @@ export default pluginManager =>
         return assemblyNames
       },
 
-      connectionTrackConfigurations(connectionName, assemblyName) {
+      connectionTrackConfigurations(connection) {
         if (!self.view) return []
-        const root = getRoot(self)
-        const assemblyData =
-          root.assemblyManager.assemblyData.get(assemblyName) || {}
-        const aliases = assemblyData.aliases || []
-        const trackConfigurations = []
-        const connection = root.connections.get(connectionName)
-        if (connection) {
-          ;[assemblyName, ...aliases].forEach(an => {
-            const assembly = connection.assemblies.get(an)
-            if (assembly) trackConfigurations.push(...assembly.tracks)
-          })
-        }
+        const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf => conf.viewType === self.view.type,
@@ -101,16 +90,14 @@ export default pluginManager =>
         return generateHierarchy(self.trackConfigurations(assemblyName))
       },
 
-      connectionHierarchy(connection, assemblyName) {
-        return generateHierarchy(
-          self.connectionTrackConfigurations(connection, assemblyName),
-        )
+      connectionHierarchy(connection) {
+        return generateHierarchy(self.connectionTrackConfigurations(connection))
       },
 
       // This recursively gets tracks from lower paths
       allTracksInCategoryPath(path, connection, assemblyName) {
         let currentHier = connection
-          ? self.connectionHierarchy(connection, assemblyName)
+          ? self.connectionHierarchy(connection)
           : self.hierarchy(assemblyName)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()

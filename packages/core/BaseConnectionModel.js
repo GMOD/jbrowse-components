@@ -1,53 +1,42 @@
-import { types } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
 
 export default pluginManager => {
   return types
     .model('Connection', {
-      assemblies: types.map(
-        types
-          .model('Assembly', {
-            assemblyName: types.identifier,
-            tracks: types.array(
-              pluginManager.pluggableConfigSchemaType('track'),
-            ),
-            sequence:
-              pluginManager.elementTypes.track.ReferenceSequenceTrack
-                .configSchema,
-            defaultSequence: false,
-          })
-          .actions(self => ({
-            addTrackConf(typeName, data) {
-              const type = pluginManager.getTrackType(typeName)
-              if (!type) throw new Error(`unknown track type ${typeName}`)
-              const schemaType = type.configSchema
-              const conf = schemaType.create(
-                Object.assign({ type: typeName }, data),
-              )
-              self.tracks.push(conf)
-              return conf
-            },
-            setSequence(sequenceConf) {
-              self.sequence = sequenceConf
-            },
-            setDefaultSequence(isDefault) {
-              self.defaultSequence = isDefault
-            },
-          })),
-      ),
+      name: types.identifier,
+      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      sequence:
+        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
+      defaultSequence: false,
     })
+    .views(self => ({
+      get assemblyConf() {
+        let configParent = self.configuration
+        do {
+          configParent = getParent(configParent)
+        } while (!configParent.assembly)
+        return configParent.assembly
+      },
+    }))
     .actions(self => ({
-      clear() {
-        self.assemblies.clear()
+      afterAttach() {
+        self.connect()
       },
-
-      addAssembly(assemblySnapshot) {
-        self.assemblies.set(assemblySnapshot.assemblyName, assemblySnapshot)
+      addTrackConf(trackConf) {
+        const length = self.tracks.push(trackConf)
+        return self.tracks[length - 1]
       },
-
-      addEmptyAssembly(assemblyName) {
-        self.assemblies.set(assemblyName, { assemblyName })
+      setTrackConfs(trackConfs) {
+        self.tracks = trackConfs
+        return self.track
       },
-
+      setSequence(sequenceConf) {
+        self.sequence = sequenceConf
+        return self.sequence
+      },
+      setDefaultSequence(isDefault) {
+        self.defaultSequence = isDefault
+      },
       // connect: flow(function* connect(connectionConf) {
       //   // Add assemblies and tracks here
       // }),

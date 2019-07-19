@@ -1,13 +1,15 @@
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import { getSnapshot, types } from 'mobx-state-tree'
 
 const createMockTrackStateModel = track =>
   types
     .model({
+      name: 'testSession',
       selectedFeature: types.frozen(),
       bpPerPx: 0.05,
       staticBlocks: types.frozen(),
       track: track.stateModel,
+      pluginManager: 'mockPluginManager',
     })
     .actions(self => {
       return {
@@ -31,8 +33,8 @@ const createMockTrack = track =>
     },
   })
 
-test('create bam adapter config', async () => {
-  const { pluginManager } = await createTestEnv()
+test('create bam adapter config', () => {
+  const { pluginManager } = createTestSession()
 
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
@@ -42,7 +44,7 @@ test('create bam adapter config', async () => {
   })
 })
 test('create track config', async () => {
-  const { pluginManager } = await createTestEnv()
+  const { pluginManager } = createTestSession()
 
   const AlignmentsTrack = pluginManager.getTrackType('AlignmentsTrack')
   const config2 = AlignmentsTrack.configSchema.create({
@@ -71,20 +73,20 @@ test('create track config', async () => {
   })
 })
 
-test('test selection in alignments track model with mock root', async () => {
-  const { pluginManager } = await createTestEnv()
+test('test selection in alignments track model with mock session', async () => {
+  const { pluginManager } = createTestSession()
 
-  const rootModel = createMockTrack(
+  const sessionModel = createMockTrack(
     pluginManager.getTrackType('AlignmentsTrack'),
   )
 
-  rootModel.track.selectFeature({
+  sessionModel.track.selectFeature({
     id() {
       return 1234
     },
   })
-  expect(rootModel.selection.id()).toBe(1234)
+  expect(sessionModel.selection.id()).toBe(1234)
 
-  rootModel.track.clearFeatureSelection()
-  expect(rootModel.selection).not.toBeTruthy()
+  sessionModel.track.clearFeatureSelection()
+  expect(sessionModel.selection).not.toBeTruthy()
 })

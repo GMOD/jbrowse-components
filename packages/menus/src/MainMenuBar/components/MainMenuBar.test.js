@@ -1,25 +1,15 @@
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
-import { createShallow } from '@material-ui/core/test-utils'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import React from 'react'
+import { render } from 'react-testing-library'
 import MainMenuBar from './MainMenuBar'
 
-jest.mock('shortid', () => ({ generate: () => 'testid' }))
-
 describe('<MainMenuBar />', () => {
-  let shallow
-
-  beforeAll(() => {
-    shallow = createShallow()
-  })
-
-  it('renders', async () => {
-    const { rootModel } = await createTestEnv({
+  it('renders', () => {
+    const session = createTestSession({
       defaultSession: { menuBars: [{ id: 'testing', type: 'MainMenuBar' }] },
     })
-    const model = rootModel.menuBars[0]
-    const wrapper = shallow(<MainMenuBar model={model} />)
-      .first()
-      .shallow()
-    expect(wrapper).toMatchSnapshot()
+    const model = session.menuBars[0]
+    const { container } = render(<MainMenuBar model={model} />)
+    expect(container.firstChild).toMatchSnapshot()
   })
 })

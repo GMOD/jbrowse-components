@@ -1,7 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`one 1`] = `
-<Observer>
-  [Function]
-</Observer>
+<div
+  class="WiggleRendering"
+  role="presentation"
+  style="position: relative;"
+>
+  <canvas
+    data-testid="prerendered_canvas"
+    height="500"
+    style="width: 500px; height: 500px;"
+    width="500"
+  />
+</div>
 `;

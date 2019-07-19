@@ -1,10 +1,8 @@
-import React from 'react'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import MenuItem from '@material-ui/core/MenuItem'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import FormControl from '@material-ui/core/FormControl'
-import Select from '@material-ui/core/Select'
+import TextField from '@material-ui/core/TextField'
+import React from 'react'
 
 interface ConnectionType {
   name: string
@@ -18,11 +16,22 @@ interface ConnectionType {
 }
 
 function ConnectionTypeSelect(props: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function
+  datasetNameChoices: string[]
+  datasetName: string
+  setDatasetName: Function
 }): JSX.Element {
-  const { connectionTypeChoices, connectionType, setConnectionType } = props
+  const {
+    connectionTypeChoices,
+    connectionType,
+    setConnectionType,
+    datasetNameChoices,
+    datasetName,
+    setDatasetName,
+  } = props
 
   function handleChange(
     event: React.ChangeEvent<{ name?: string; value: unknown }>,
@@ -37,32 +46,53 @@ function ConnectionTypeSelect(props: {
 
   return (
     <form autoComplete="off">
-      <FormControl fullWidth>
-        <Select value={connectionType.name || ''} onChange={handleChange}>
-          {connectionTypeChoices.map((connectionTypeChoice: ConnectionType) => (
-            <MenuItem
-              key={connectionTypeChoice.name}
-              value={connectionTypeChoice.name}
-            >
-              {connectionTypeChoice.displayName || connectionTypeChoice.name}
-            </MenuItem>
-          ))}
-        </Select>
-        {connectionType.description ? (
-          <FormHelperText>
-            {connectionType.description}
-            {connectionType.url ? (
-              <IconButton
-                href={connectionType.url}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <Icon>open_in_new</Icon>
-              </IconButton>
-            ) : null}
-          </FormHelperText>
-        ) : null}
-      </FormControl>
+      <TextField
+        value={datasetName}
+        label="datasetName"
+        helperText="Dataset to which the track will be added"
+        select
+        fullWidth
+        onChange={event => setDatasetName(event.target.value)}
+        inputProps={{ 'data-testid': 'datasetNameSelect' }}
+      >
+        {datasetNameChoices.map(datasetNameChoice => (
+          <MenuItem key={datasetNameChoice} value={datasetNameChoice}>
+            {datasetNameChoice}
+          </MenuItem>
+        ))}
+      </TextField>
+      <TextField
+        value={connectionType.name || ''}
+        label="connectionType"
+        helperText={
+          connectionType.description ? (
+            <>
+              {connectionType.description}
+              {connectionType.url ? (
+                <IconButton
+                  href={connectionType.url}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <Icon>open_in_new</Icon>
+                </IconButton>
+              ) : null}
+            </>
+          ) : null
+        }
+        select
+        fullWidth
+        onChange={handleChange}
+      >
+        {connectionTypeChoices.map((connectionTypeChoice: ConnectionType) => (
+          <MenuItem
+            key={connectionTypeChoice.name}
+            value={connectionTypeChoice.name}
+          >
+            {connectionTypeChoice.displayName || connectionTypeChoice.name}
+          </MenuItem>
+        ))}
+      </TextField>
     </form>
   )
 }

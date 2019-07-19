@@ -5,5 +5,7 @@ export default pluginManager =>
   types.model('AddTrackModel', {
     id: ElementId,
     type: types.literal('AddTrackDrawerWidget'),
-    view: types.reference(pluginManager.pluggableMstType('view', 'stateModel')),
+    view: types.safeReference(
+      pluginManager.pluggableMstType('view', 'stateModel'),
+    ),
   })

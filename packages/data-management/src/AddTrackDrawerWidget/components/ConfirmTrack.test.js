@@ -1,14 +1,14 @@
 import React from 'react'
 import { render, cleanup } from 'react-testing-library'
 import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import ConfirmTrack from './ConfirmTrack'
 
 describe('<ConfirmTrack />', () => {
-  let rootModel
+  let session
 
-  beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({ configId: 'testing' }))
+  beforeAll(() => {
+    session = createTestSession({ configId: 'testing' })
   })
 
   afterEach(cleanup)
@@ -17,7 +17,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = () => {}
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -29,8 +29,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        assemblyName=""
-        setAssemblyName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -40,7 +40,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -52,8 +52,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { uri: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        assemblyName=""
-        setAssemblyName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -64,7 +64,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ localPath: 'test.bam' }}
         trackName=""
         setTrackName={mockFunction}
@@ -76,8 +76,8 @@ describe('<ConfirmTrack />', () => {
           index: { location: { localPath: 'test.bam.bai' } },
         }}
         setTrackAdapter={mockFunction}
-        assemblyName=""
-        setAssemblyName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -88,7 +88,7 @@ describe('<ConfirmTrack />', () => {
     const mockFunction = jest.fn(() => {})
     const { container } = render(
       <ConfirmTrack
-        rootModel={rootModel}
+        session={session}
         trackData={{ uri: 'test.bam', config: [] }}
         trackName=""
         setTrackName={mockFunction}
@@ -98,8 +98,8 @@ describe('<ConfirmTrack />', () => {
           type: 'FromConfigAdapter',
         }}
         setTrackAdapter={mockFunction}
-        assemblyName=""
-        setAssemblyName={mockFunction}
+        datasetName=""
+        setDatasetName={mockFunction}
       />,
     )
     expect(container.firstChild).toMatchSnapshot()

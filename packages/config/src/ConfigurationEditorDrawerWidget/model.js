@@ -6,7 +6,7 @@ export default pluginManager =>
     .model('ConfigurationEditorDrawerWidget', {
       id: ElementId,
       type: types.literal('ConfigurationEditorDrawerWidget'),
-      target: types.reference(
+      target: types.safeReference(
         types.union(
           pluginManager.pluggableConfigSchemaType('track'),
           pluginManager.pluggableConfigSchemaType('view'),

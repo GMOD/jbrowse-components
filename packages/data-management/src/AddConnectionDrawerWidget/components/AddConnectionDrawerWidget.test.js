@@ -5,26 +5,43 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
 window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
 describe('<AddConnectionDrawerWidget />', () => {
   let model
-  let rootModel
+  let session
 
-  beforeAll(async () => {
-    ;({ rootModel } = await createTestEnv({
-      configId: 'testing',
-      defaultSession: {},
-      rpc: { configId: 'testingRpc' },
-    }))
-    rootModel.addDrawerWidget(
+  beforeEach(() => {
+    session = createTestSession()
+    session.addDataset({
+      name: 'volvox',
+      assembly: {
+        name: 'volMyt1',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'firstId',
+                start: 0,
+                end: 1000,
+                seq:
+                  'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
+              },
+            ],
+          },
+        },
+      },
+    })
+    model = session.addDrawerWidget(
       'AddConnectionDrawerWidget',
       'addConnectionDrawerWidget',
     )
-    model = rootModel.drawerWidgets.get('addConnectionDrawerWidget')
   })
 
   afterEach(cleanup)
@@ -68,10 +85,11 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(
-      rootModel.connections.has('Test UCSC connection name'),
-    ).not.toBeTruthy()
+    expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('volvox'), { container })
+    fireEvent.click(getByText('volvox'))
+    fireEvent.click(getAllByRole('button')[1])
     await waitForElement(() => getByText('UCSC Track Hub'), { container })
     fireEvent.click(getByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
@@ -82,7 +100,7 @@ type bigWig
       target: { value: 'http://test.com/hub.txt' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(rootModel.connections.has('Test UCSC connection name')).toBeTruthy()
+    expect(session.datasets[0].connections.length).toBe(1)
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -101,10 +119,11 @@ type bigWig
       getByText,
       getByValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
-    expect(
-      rootModel.connections.has('Test JBrowse 1 connection name'),
-    ).not.toBeTruthy()
+    expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
+    await waitForElement(() => getByText('volvox'), { container })
+    fireEvent.click(getByText('volvox'))
+    fireEvent.click(getAllByRole('button')[1])
     await waitForElement(() => getByText('JBrowse 1 Data'), { container })
     fireEvent.click(getByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
@@ -115,8 +134,6 @@ type bigWig
       target: { value: 'http://test.com/jbrowse/data/' },
     })
     fireEvent.click(getByTestId('addConnectionNext'))
-    expect(
-      rootModel.connections.has('Test JBrowse 1 connection name'),
-    ).toBeTruthy()
+    expect(session.datasets[0].connections.length).toBe(1)
   })
 })

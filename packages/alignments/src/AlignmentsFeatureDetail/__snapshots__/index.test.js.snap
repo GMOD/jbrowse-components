@@ -1,281 +1,279 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`open up a drawer widget 1`] = `
-<div>
+<div
+  class="MuiPaper-root MuiPaper-elevation1 AlignmentFeatureDetails-root-1 MuiPaper-rounded"
+  data-testid="alignment-side-drawer"
+>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 AlignmentFeatureDetails-root-1 MuiPaper-rounded"
-    data-testid="alignment-side-drawer"
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
     >
       <div
-        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-content"
       >
-        <div
-          class="MuiCardHeader-content"
+        <span
+          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
-          <span
-            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
-          >
-            Primary data
-          </span>
+          Primary data
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          Position
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          ctgA:3..102
         </div>
       </div>
-      <div
-        class="MuiCardContent-root"
-      >
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            Position
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            ctgA:3..102
-          </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          Name
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            Name
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            ctgA_3_555_0:0:0_2:0:0_102d
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          ctgA_3_555_0:0:0_2:0:0_102d
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            Length
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            100
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          Length
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            Type
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            match
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          100
+        </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          Type
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          match
         </div>
       </div>
     </div>
-    <hr
-      class="MuiDivider-root"
-    />
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+  >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
     >
       <div
-        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-content"
       >
-        <div
-          class="MuiCardHeader-content"
+        <span
+          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
-          <span
-            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
-          >
-            Attributes
-          </span>
+          Attributes
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          seq
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
         </div>
       </div>
-      <div
-        class="MuiCardContent-root"
-      >
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            seq
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-          </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          score
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            score
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            37
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          37
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            qual
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          qual
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            MQ
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            37
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            CIGAR
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            100M
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          MQ
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            length_on_ref
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            100
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          37
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            template_length
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            0
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          CIGAR
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            seq_length
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            100
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          100M
+        </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          length_on_ref
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          100
+        </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          template_length
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          0
+        </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          seq_length
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          100
         </div>
       </div>
     </div>
-    <hr
-      class="MuiDivider-root"
-    />
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+  >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
     >
       <div
-        class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+        class="MuiCardHeader-content"
       >
-        <div
-          class="MuiCardHeader-content"
+        <span
+          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
-          <span
-            class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
-          >
-            Flags
-          </span>
+          Flags
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          unmapped
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          false
         </div>
       </div>
-      <div
-        class="MuiCardContent-root"
-      >
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            unmapped
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            false
-          </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          qc_failed
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            qc_failed
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            false
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          false
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            duplicate
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            false
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          duplicate
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            secondary_alignment
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            false
-          </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          false
         </div>
-        <div>
-          <div
-            class="AlignmentFeatureDetails-fieldName-3"
-          >
-            supplementary_alignment
-          </div>
-          <div
-            class="AlignmentFeatureDetails-fieldValue-4"
-          >
-            false
-          </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          secondary_alignment
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          false
+        </div>
+      </div>
+      <div>
+        <div
+          class="AlignmentFeatureDetails-fieldName-3"
+        >
+          supplementary_alignment
+        </div>
+        <div
+          class="AlignmentFeatureDetails-fieldValue-4"
+        >
+          false
         </div>
       </div>
     </div>
