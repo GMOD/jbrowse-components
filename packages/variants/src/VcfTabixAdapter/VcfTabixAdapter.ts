@@ -54,8 +54,8 @@ export default class extends BaseAdapter {
       .then((header: string) => new VcfParser({ header }))
   }
 
-  public async getRefNames(): Promise<string[]> {
-    return this.vcf.getReferenceSequenceNames()
+  public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
+    return this.vcf.getReferenceSequenceNames(opts)
   }
 
   /**
@@ -70,11 +70,8 @@ export default class extends BaseAdapter {
     return ObservableCreate<Feature>(
       async (observer: Observer<Feature>): Promise<void> => {
         const parser = await this.parser
-        await this.vcf.getLines(
-          query.refName,
-          query.start,
-          query.end,
-          (line: string, fileOffset: number) => {
+        await this.vcf.getLines(query.refName, query.start, query.end, {
+          lineCallback(line: string, fileOffset: number) {
             const variant = parser.parseLine(line)
 
             const feature = new VcfFeature({
@@ -84,7 +81,8 @@ export default class extends BaseAdapter {
             }) as Feature
             observer.next(feature)
           },
-        )
+          signal: opts.signal,
+        })
         observer.complete()
       },
     )
