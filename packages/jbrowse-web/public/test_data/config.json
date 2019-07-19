@@ -750,6 +750,25 @@
         },
         {
           "type": "AlignmentsTrack",
+          "configId": "chm1_pacbio",
+          "category": [
+            "1000 genomes"
+          ],
+          "name": "CHM1 pacbio",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
           "category": [
             "1000 genomes"
