@@ -233,8 +233,6 @@ class Box extends Component {
         shouldShowDescription,
         shouldShowName,
         fontHeight,
-        labelWidth,
-        descriptionWidth,
       },
       selectedFeatureId,
     } = this.props
