@@ -147,6 +147,7 @@
         },
         {
           "type": "BasicTrack",
+          "configId": "nclist_long_names",
           "name": "nclist with long names/descriptions",
           "adapter": {
             "type": "NCListAdapter",

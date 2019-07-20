@@ -238,10 +238,7 @@ class Box extends Component {
       },
       selectedFeatureId,
     } = this.props
-    const maxFeatureGlyphExpansion = readConfObject(
-      config,
-      'maxFeatureGlyphExpansion',
-    )
+    const exp = readConfObject(config, 'maxFeatureGlyphExpansion')
 
     const style = { fill: readConfObject(config, 'color1', [feature]) }
     if (String(selectedFeatureId) === String(feature.id())) {
@@ -251,11 +248,11 @@ class Box extends Component {
     const featureLayout = rootLayout.getSubRecord('feature')
     const fontWidth = fontHeight * fontWidthScaleFactor
     const LabelText = ({ width, text }) => {
+      const totalWidth = width + exp
       return (
         <>
-          {fontWidth * text.length > width + maxFeatureGlyphExpansion
-            ? `${text.slice(0, (width + maxFeatureGlyphExpansion) / fontWidth)}
-          ...`
+          {fontWidth * text.length > totalWidth
+            ? `${text.slice(0, totalWidth / fontWidth)}...`
             : text}
         </>
       )
