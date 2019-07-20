@@ -16,7 +16,14 @@ export default class extends ServerSideRendererType {
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
     )
-    const ctx = canvas.getContext('2d')
+    let ctx
+    try {
+      ctx = canvas.getContext('2d')
+    } catch (e) {
+      throw new Error(
+        'unable to get canvas context, browser likely does not support OffscreenCanvas',
+      )
+    }
     ctx.scale(highResolutionScaling, highResolutionScaling)
     this.draw(ctx, props)
 

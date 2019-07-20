@@ -124,7 +124,14 @@ export default class extends BoxRendererType {
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
     )
-    const ctx = canvas.getContext('2d')
+    let ctx: any
+    try {
+      ctx = canvas.getContext('2d')
+    } catch (e) {
+      throw new Error(
+        'unable to get canvas context, browser likely does not support OffscreenCanvas',
+      )
+    }
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
