@@ -9,6 +9,9 @@ import 'typeface-roboto'
 import jbrowseModel from './jbrowseModel'
 import App from './ui/App'
 import Theme from './ui/theme'
+import * as serviceWorker from './serviceWorker'
+
+serviceWorker.register()
 
 export default observer(({ config }) => {
   const [status, setStatus] = useState('loading')
