@@ -223,6 +223,24 @@ describe('variant track test', () => {
   })
 })
 
+describe('nclist track test with long name', () => {
+  it('click on a vcf feature', async () => {
+    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(1, -539)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-nclist_long_names')),
+    )
+    expect(
+      await waitForElement(() =>
+        getByText(
+          'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz12345678...',
+        ),
+      ),
+    ).toBeTruthy()
+  })
+})
+
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)

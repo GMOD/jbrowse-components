@@ -146,6 +146,19 @@
           }
         },
         {
+          "type": "BasicTrack",
+          "configId": "nclist_long_names",
+          "name": "nclist with long names/descriptions",
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "/test_data/volvox_long_names_nclist/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {}
+          }
+        },
+        {
           "configId": "volvox_alignments_nonexist",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (nonexist 404)",
