@@ -22,6 +22,11 @@ import {
   ReactComponent as MainMenuBarReactComponent,
   stateModel as mainMenuBarStateModel,
 } from './MainMenuBar'
+import {
+  configSchema as sessionManagerConfigSchema,
+  ReactComponent as SessionManagerReactComponent,
+  stateModel as sessionManagerStateModel,
+} from './SessionManager'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -52,6 +57,16 @@ export default class extends Plugin {
         configSchema: importConfigurationConfigSchema,
         stateModel: importConfigurationStateModel,
         LazyReactComponent: lazy(() => ImportConfigurationReactComponent),
+      })
+    })
+
+    pluginManager.addDrawerWidgetType(() => {
+      return new DrawerWidgetType({
+        name: 'SessionManager',
+        heading: 'Sessions',
+        configSchema: sessionManagerConfigSchema,
+        stateModel: sessionManagerStateModel,
+        LazyReactComponent: lazy(() => SessionManagerReactComponent),
       })
     })
 

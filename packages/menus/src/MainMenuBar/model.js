@@ -71,10 +71,14 @@ export const MenuItemModel = types
     },
   }))
 
+export const MenuDividerModel = types.model('MenuDividerModel', {
+  name: types.literal('divider'),
+})
+
 const MenuModel = types
   .model('MenuModel', {
     name: types.string,
-    menuItems: types.array(MenuItemModel),
+    menuItems: types.array(types.union(MenuItemModel, MenuDividerModel)),
   })
   .actions(self => ({
     addMenuItem({ name, icon = undefined, callback = undefined }) {

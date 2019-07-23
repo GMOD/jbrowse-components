@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SessionManager /> renders 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root-1 MuiPaper-rounded"
+>
+  <ul
+    class="MuiList-root MuiList-padding MuiList-subheader"
+  >
+    <li
+      class="MuiListSubheader-root MuiListSubheader-sticky MuiListSubheader-gutters"
+    >
+      Choose a session to open
+    </li>
+  </ul>
+</div>
+`;

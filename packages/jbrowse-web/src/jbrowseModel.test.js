@@ -5,9 +5,9 @@ describe('JBrowse MST model', () => {
   it('creates with defaults', () => {
     const jbrowse = jbrowseModel.create()
     expect(jbrowse.session).toBeUndefined()
-    jbrowse.setEmptySession()
+    jbrowse.setDefaultSession()
     expect(jbrowse.session).toBeTruthy()
-    expect(jbrowse.sessionSnapshots.length).toBe(0)
+    expect(jbrowse.savedSessions.length).toBe(0)
     expect(jbrowse.datasets.length).toBe(0)
     expect(getSnapshot(jbrowse.configuration)).toMatchSnapshot({
       configId: expect.any(String),
@@ -22,10 +22,10 @@ describe('JBrowse MST model', () => {
 
   it('activates a session snapshot', () => {
     const jbrowse = jbrowseModel.create({
-      sessionSnapshots: [{ name: 'testSession' }],
+      savedSessions: [{ name: 'testSession' }],
     })
     expect(jbrowse.session).toBeUndefined()
-    jbrowse.setSession(jbrowse.sessionSnapshots[0])
+    jbrowse.setSession(jbrowse.savedSessions[0])
     expect(jbrowse.session).toBeTruthy()
   })
 
@@ -69,7 +69,7 @@ describe('JBrowse MST model', () => {
   it('adds a session snapshot', () => {
     const jbrowse = jbrowseModel.create()
     jbrowse.addSessionSnapshot({ name: 'testSession' })
-    expect(jbrowse.sessionSnapshots.length).toBe(1)
+    expect(jbrowse.savedSessions.length).toBe(1)
   })
 
   it('throws if session is invalid', () => {
@@ -77,6 +77,6 @@ describe('JBrowse MST model', () => {
   })
 
   it('throws if session snapshot is invalid', () => {
-    expect(() => jbrowseModel.create({ sessionSnapshots: [{}] })).toThrow()
+    expect(() => jbrowseModel.create({ savedSessions: [{}] })).toThrow()
   })
 })

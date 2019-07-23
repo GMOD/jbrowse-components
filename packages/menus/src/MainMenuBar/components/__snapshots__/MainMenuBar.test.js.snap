@@ -7,16 +7,8 @@ exports[`<MainMenuBar /> renders 1`] = `
   <div
     class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
   >
-    <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
-    >
-      JBrowse
-    </h6>
     <div
-      class="MainMenuBar-grow-2"
-    />
-    <div
-      class="DropDownMenu-root-73"
+      class="DropDownMenu-root-43"
     >
       <button
         aria-haspopup="true"
@@ -42,6 +34,22 @@ exports[`<MainMenuBar /> renders 1`] = `
         />
       </button>
     </div>
+    <div
+      class="MainMenuBar-grow-2"
+    />
+    <p
+      class="MuiTypography-root MuiTypography-body1"
+    >
+      testSession
+    </p>
+    <div
+      class="MainMenuBar-grow-2"
+    />
+    <h6
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
+    >
+      JBrowse
+    </h6>
     <div
       style="width: 0px;"
     />

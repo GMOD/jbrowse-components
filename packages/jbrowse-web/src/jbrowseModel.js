@@ -61,7 +61,11 @@ window.resolveIdentifier = resolveIdentifier
 const JBrowseWeb = types
   .model('JBrowseWeb', {
     session: types.maybe(Session),
-    sessionSnapshots: types.array(types.frozen(Session)),
+    defaultSession: types.optional(types.frozen(Session), {
+      name: `Unnamed Session ${shortid.generate()}`,
+      menuBars: [{ type: 'MainMenuBar' }],
+    }),
+    savedSessions: types.array(types.frozen(Session)),
     datasets: types.array(Dataset),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
@@ -70,29 +74,30 @@ const JBrowseWeb = types
         type: 'number',
         defaultValue: 2,
       },
+      updateUrl: {
+        type: 'boolean',
+        defaultValue: true,
+      },
     }),
   })
   .actions(self => ({
     addSessionSnapshot(sessionSnapshot) {
-      const length = self.sessionSnapshots.push(sessionSnapshot)
-      return self.sessionSnapshots[length - 1]
+      const length = self.savedSessions.push(sessionSnapshot)
+      return self.savedSessions[length - 1]
     },
     setSession(snapshot) {
       self.session = snapshot
     },
-    setEmptySession() {
-      self.setSession({
-        name: `Unnamed Session ${shortid.generate()}`,
-        menuBars: [{ type: 'MainMenuBar' }],
-      })
+    setDefaultSession() {
+      self.setSession(self.defaultSession)
     },
     activateSession(name) {
-      const newSessionSnapshot = self.sessionSnapshots.find(
+      const newSessionSnapshot = self.savedSessions.find(
         sessionSnap => sessionSnap.name === name,
       )
       if (!newSessionSnapshot)
         throw new Error(
-          `Can't activate session ${name}, it is not in the sessionSnapshots`,
+          `Can't activate session ${name}, it is not in the savedSessions`,
         )
       self.setSession(newSessionSnapshot)
     },
@@ -102,8 +107,8 @@ const JBrowseWeb = types
     },
   }))
   .views(self => ({
-    get sessionNames() {
-      return self.sessionSnapshots.map(sessionSnap => sessionSnap.name)
+    get savedSessionNames() {
+      return self.savedSessions.map(sessionSnap => sessionSnap.name)
     },
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for

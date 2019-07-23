@@ -73,6 +73,9 @@ export default pluginManager => {
       get datasets() {
         return getRoot(self).datasets
       },
+      get savedSessions() {
+        return getRoot(self).savedSessions
+      },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
         return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
@@ -343,6 +346,18 @@ export default pluginManager => {
 
       clearConnections() {
         self.connections.clear()
+      },
+
+      addSessionSnapshot(sessionSnapshot) {
+        return getRoot(self).addSessionSnapshot(sessionSnapshot)
+      },
+
+      activateSession(sessionName) {
+        return getRoot(self).activateSession(sessionName)
+      },
+
+      setDefaultSession() {
+        return getRoot(self).setDefaultSession()
       },
     }))
 }

@@ -1256,6 +1256,37 @@
         "type": "MainMenuBar",
         "menus": [
           {
+            "name": "File",
+            "menuItems": [
+              {
+                "name": "New Session",
+                "icon": "add",
+                "callback": "function(session) {session.setDefaultSession();}"
+              },
+              {
+                "name": "divider"
+              },
+              {
+                "name": "Open Session",
+                "icon": "folder_open",
+                "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+              },
+              {
+                "name": "divider"
+              },
+              {
+                "name": "Save Session",
+                "icon": "save",
+                "callback": "function(session) {console.log(session);}"
+              },
+              {
+                "name": "Save Session As...",
+                "icon": "save",
+                "callback": "function(session) {console.log(session);}"
+              }
+            ]
+          },
+          {
             "name": "Admin",
             "menuItems": [
               {

@@ -57,14 +57,7 @@ const styles = theme => ({
 })
 
 function App(props) {
-  const {
-    classes,
-    size,
-    session,
-    sessionNames,
-    addSessionSnapshot,
-    activateSession,
-  } = props
+  const { classes, size, session } = props
 
   const { pluginManager } = session
 
@@ -115,12 +108,7 @@ function App(props) {
               />
             }
           >
-            <LazyReactComponent
-              model={visibleDrawerWidget}
-              session={session}
-              addSessionSnapshot={addSessionSnapshot}
-              setActiveSession={activateSession}
-            />
+            <LazyReactComponent model={visibleDrawerWidget} session={session} />
           </React.Suspense>
         </div>
       </Slide>
@@ -178,16 +166,6 @@ function App(props) {
             >
               Add linear view
             </button>
-            <select
-              onChange={event => activateSession(event.target.value)}
-              value={session.name}
-            >
-              {sessionNames.map(name => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
           </div>
         </Scrollbars>
       </div>
@@ -205,9 +183,6 @@ App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   session: PropTypes.observableObject.isRequired,
-  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  addSessionSnapshot: ReactPropTypes.func.isRequired,
-  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))
