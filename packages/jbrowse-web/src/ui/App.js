@@ -13,7 +13,6 @@ import { observer } from 'mobx-react-lite'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { withSize } from 'react-sizeme'
-import { Scrollbars } from 'react-custom-scrollbars'
 
 import Drawer from './Drawer'
 
