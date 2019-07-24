@@ -141,6 +141,7 @@
               }
             }
           },
+          "defaultRendering": "svg",
           "renderers": {
             "PileupRenderer": {
               "type": "PileupRenderer"

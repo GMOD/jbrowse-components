@@ -224,7 +224,7 @@ describe('variant track test', () => {
 })
 
 describe('nclist track test with long name', () => {
-  it('click on a vcf feature', async () => {
+  it('see that a feature gets ellipses', async () => {
     const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
     await waitForElement(() => getByText('JBrowse'))
     window.MODEL.views[0].setNewView(1, -539)
@@ -238,6 +238,28 @@ describe('nclist track test with long name', () => {
         ),
       ),
     ).toBeTruthy()
+  })
+})
+describe('test configuration editor', () => {
+  it('change color on track', async () => {
+    const { getByTestId: byId, getByText, getByTitle, getByValue } = render(
+      <JBrowse config={config} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    window.MODEL.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
+    )
+    // clicks config button
+    fireEvent.click(await waitForElement(() => getByTitle('configure track')))
+    // opens up config panel
+    expect(await waitForElement(() => byId('configEditor'))).toBeTruthy()
+    const input = await waitForElement(() => getByValue('goldenrod'))
+    console.log(input.value)
+    input.value = 'green'
+    fireEvent.change(input)
+    console.log(input.value)
+    const ret = await waitForElement(() => byId('vcf-2560'))
   })
 })
 

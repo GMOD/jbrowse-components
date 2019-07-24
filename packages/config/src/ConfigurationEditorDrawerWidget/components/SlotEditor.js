@@ -60,7 +60,10 @@ const StringArrayEditor = observer(props => {
           >
             <TextField
               value={val}
-              onChange={evt => slot.setAtIndex(idx, evt.target.value)}
+              onChange={evt => {
+                console.log('helloooo')
+                slot.setAtIndex(idx, evt.target.value)
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment>
