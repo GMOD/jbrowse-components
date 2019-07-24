@@ -18,6 +18,15 @@ import {
 const minSizeToBotherWith = 10000
 const maxFeaturePitchWidth = 20000
 
+function segments_intersect(
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+): boolean {
+  return x2 >= y1 && y2 >= x1
+}
+
 interface RowState<T> {
   min: number
   max: number
@@ -492,10 +501,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       const { l, r, originalHeight, top } = rect
       const t = (top || 0) * this.pitchY
       const b = t + originalHeight
-      const lprime = l * this.pitchX
-      const rprime = r * this.pitchX
-      if (lprime < region.end && rprime > region.start) {
-        regionRectangles[id] = [lprime, t, rprime, b]
+      const y1 = l * this.pitchX
+      const y2 = r * this.pitchX
+      const x1 = region.start
+      const x2 = region.end
+      if (segments_intersect(x1, x2, y1, y2)) {
+        regionRectangles[id] = [x1, t, x2, b]
       }
     }
     return { rectangles: regionRectangles, totalHeight: this.getTotalHeight() }
