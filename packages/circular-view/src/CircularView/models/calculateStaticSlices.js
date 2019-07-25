@@ -11,12 +11,13 @@ export default ({ jbrequire }) => {
   class Slice {
     flipped = false
 
-    constructor(view, region, currentRadianOffset) {
+    constructor(view, region, currentRadianOffset, isVisible) {
       const { bpPerRadian } = view
       this.key = assembleLocString(region)
       this.region = region
       this.offsetRadians = currentRadianOffset
       this.bpPerRadian = bpPerRadian
+      this.visible = isVisible
 
       this.startRadians = this.offsetRadians
       this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians
@@ -57,16 +58,18 @@ export default ({ jbrequire }) => {
     for (const region of self.elidedRegions) {
       const radianWidth =
         region.widthBp / self.bpPerRadian + self.spacingPx / self.pxPerRadian
-      if (
+      const slice = new Slice(
+        self,
+        region,
+        currentRadianOffset,
         thetaRangesOverlap(
           currentRadianOffset + self.offsetRadians,
           radianWidth,
           visibleThetaMin,
           visibleThetaMax - visibleThetaMin,
-        )
-      ) {
-        slices.push(new Slice(self, region, currentRadianOffset))
-      }
+        ),
+      )
+      slices.push(slice)
       currentRadianOffset += radianWidth
     }
     return slices
