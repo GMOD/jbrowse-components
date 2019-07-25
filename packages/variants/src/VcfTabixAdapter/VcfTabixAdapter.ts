@@ -38,8 +38,10 @@ export default class extends BaseAdapter {
       filehandle: GenericFilehandle
       tbiFilehandle?: GenericFilehandle
       csiFilehandle?: GenericFilehandle
+      chunkCacheSize?: number
     } = {
       filehandle: openLocation(vcfGzLocation),
+      chunkCacheSize: 50 * 2 ** 20,
     }
 
     const indexFile = openLocation(indexLocation)
