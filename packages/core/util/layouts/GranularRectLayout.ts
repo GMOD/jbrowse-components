@@ -18,7 +18,7 @@ import {
 const minSizeToBotherWith = 10000
 const maxFeaturePitchWidth = 20000
 
-function segments_intersect(
+function segmentsIntersect(
   x1: number,
   x2: number,
   y1: number,
@@ -505,7 +505,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       const y2 = r * this.pitchX
       const x1 = region.start
       const x2 = region.end
-      if (segments_intersect(x1, x2, y1, y2)) {
+      if (segmentsIntersect(x1, x2, y1, y2)) {
         regionRectangles[id] = [x1, t, x2, b]
       }
     }
