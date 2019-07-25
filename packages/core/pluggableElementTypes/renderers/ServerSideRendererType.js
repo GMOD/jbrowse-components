@@ -166,20 +166,18 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args) {
+    checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
+    const features = await this.getFeatures(args)
     checkAbortSignal(args.signal)
 
-    const features = await this.getFeatures(args)
     const renderProps = { ...args, features }
 
-    checkAbortSignal(args.signal)
-
     const results = await this.render({ ...renderProps, signal: args.signal })
+    checkAbortSignal(args.signal)
     results.html = renderToString(results.element)
     delete results.element
-
-    checkAbortSignal(args.signal)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
