@@ -5,6 +5,7 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
+import 'jest-dom'
 
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -16,6 +17,10 @@ fetchMock.config.sendAsJson = false
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -255,7 +260,8 @@ describe('test configuration editor', () => {
     const input = await waitForElement(() => getByValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
     const ret = await waitForElement(() => byId('vcf-2560'))
-    expect(ret).toHaveStyle('background: green')
+    await timeout(1000)
+    expect(ret).toMatchSnapshot()
   })
 })
 
