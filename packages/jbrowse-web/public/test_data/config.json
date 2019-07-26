@@ -1275,14 +1275,9 @@
                 "name": "divider"
               },
               {
-                "name": "Save Session",
-                "icon": "save",
-                "callback": "function(session) {console.log(session);}"
-              },
-              {
-                "name": "Save Session As...",
-                "icon": "save",
-                "callback": "function(session) {console.log(session);}"
+                "name": "Duplicate Session",
+                "icon": "file_copy",
+                "callback": "function(session) {session.duplicateCurrentSession();}"
               }
             ]
           },

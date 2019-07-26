@@ -360,6 +360,10 @@ export default pluginManager => {
         return getRoot(self).renameCurrentSession(sessionName)
       },
 
+      duplicateCurrentSession() {
+        return getRoot(self).duplicateCurrentSession()
+      },
+
       activateSession(sessionName) {
         return getRoot(self).activateSession(sessionName)
       },

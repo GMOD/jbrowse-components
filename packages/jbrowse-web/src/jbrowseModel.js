@@ -98,6 +98,11 @@ const JBrowseWeb = types
       snapshot.name = sessionName
       this.setSession(snapshot)
     },
+    duplicateCurrentSession() {
+      const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+      snapshot.name = `${self.session.name} (copy)`
+      this.setSession(snapshot)
+    },
     activateSession(name) {
       const newSessionSnapshot = self.savedSessions.find(
         sessionSnap => sessionSnap.name === name,
