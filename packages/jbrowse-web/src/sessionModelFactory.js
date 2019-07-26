@@ -129,7 +129,7 @@ export default pluginManager => {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           // eslint-disable-next-line no-await-in-loop
           const adapterRegions = yield self.rpcManager.call(
-            assembly.configId,
+            adapterConfig.configId,
             'getRegions',
             {
               sessionId: assemblyName,
