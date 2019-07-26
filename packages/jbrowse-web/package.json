@@ -56,5 +56,6 @@
     "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
     "test": "node scripts/test.js",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
-  }
+  },
+  "homepage": "."
 }
