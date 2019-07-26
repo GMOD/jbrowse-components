@@ -4,6 +4,8 @@ import TextField from '@material-ui/core/TextField'
 import { ChromePicker } from 'react-color'
 import React, { Component, useState, useEffect } from 'react'
 
+// this is needed because passing a entire color object into the react-color
+// for alpha, can't pass in an rgba string for example
 function serializeColor(color) {
   if (color instanceof Object) {
     const { r, g, b, a } = color
@@ -17,19 +19,20 @@ export const ColorPicker = props => {
   const [color, setColor] = useState(value)
   const [displayed, setDisplayed] = useState(false)
 
+  const c = serializeColor(color)
   useEffect(() => {
-    onChange(serializeColor(color))
-  }, [color, onChange])
+    onChange(c)
+  }, [c, onChange])
   return (
     <>
       <TextField
-        value={serializeColor(color)}
+        value={c}
         InputProps={{
           style: {
-            color,
+            color: c,
             borderRightWidth: '25px',
             borderRightStyle: 'solid',
-            borderRightColor: color,
+            borderRightColor: c,
           },
         }}
         onClick={() => setDisplayed(!displayed)}

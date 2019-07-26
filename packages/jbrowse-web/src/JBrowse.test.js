@@ -255,11 +255,9 @@ describe('test configuration editor', () => {
     // opens up config panel
     expect(await waitForElement(() => byId('configEditor'))).toBeTruthy()
     const input = await waitForElement(() => getByValue('goldenrod'))
-    console.log(input.value)
-    input.value = 'green'
-    fireEvent.change(input)
-    console.log(input.value)
+    fireEvent.change(input, { target: { value: 'green' } })
     const ret = await waitForElement(() => byId('vcf-2560'))
+    expect(ret).toMatchSnapshot()
   })
 })
 
