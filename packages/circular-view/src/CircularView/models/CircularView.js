@@ -1,3 +1,5 @@
+import { viewportVisibleSection } from './viewportVisibleRegion'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { transaction } = jbrequire('mobx')
@@ -6,8 +8,12 @@ export default pluginManager => {
   const { ConfigurationSchema, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const calculateStaticSlices = jbrequire(require('./calculateStaticSlices'))
   const { clamp } = jbrequire('@gmod/jbrowse-core/util')
+
+  const { calculateStaticSlices, sliceIsVisible } = jbrequire(
+    require('./slices'),
+  )
+
   const configSchema = ConfigurationSchema(
     'CircularView',
     {},
@@ -41,6 +47,21 @@ export default pluginManager => {
     .views(self => ({
       get staticSlices() {
         return calculateStaticSlices(self)
+      },
+      get visibleStaticSlices() {
+        return self.staticSlices.filter(sliceIsVisible.bind(this, self))
+      },
+      get visibleSection() {
+        return viewportVisibleSection(
+          [
+            self.scrollX,
+            self.scrollX + self.width,
+            self.scrollY,
+            self.scrollY + self.height,
+          ],
+          self.centerXY,
+          self.radiusPx,
+        )
       },
       get circumferencePx() {
         let elidedBp = 0

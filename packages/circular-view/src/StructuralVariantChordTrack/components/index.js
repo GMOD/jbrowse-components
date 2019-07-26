@@ -8,7 +8,7 @@ export default ({ jbrequire }) => {
 
   const Loading = jbrequire(require('./Loading'))
 
-  const RpcRenderedContent = observer(({ model }) => {
+  const RpcRenderedSvgGroup = observer(({ model }) => {
     const { id, data, html, filled, renderProps, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
@@ -17,10 +17,12 @@ export default ({ jbrequire }) => {
       const domNode = ssrContainerNode.current
       if (domNode) {
         if (domNode.firstChild && domNode.firstChild.innerHTML) {
-          unmountComponentAtNode(domNode.firstChild)
+          domNode.style.display = 'none'
+          requestIdleCallback(() => unmountComponentAtNode(domNode.firstChild))
         }
         domNode.innerHTML = `<g className="ssr-container-inner"></g>`
         if (filled) {
+          domNode.style.display = 'inline'
           domNode.firstChild.innerHTML = html
           // defer main-thread rendering and hydration for when
           // we have some free time. helps keep the framerate up.
@@ -51,9 +53,8 @@ export default ({ jbrequire }) => {
   })
 
   function StructuralVariantChordTrack({ track, view }) {
-    // return <g dangerouslySetInnerHTML={{ __html: track.html }} />
     if (!track.filled) return <Loading model={track} />
-    return <RpcRenderedContent model={track} />
+    return <RpcRenderedSvgGroup model={track} />
   }
   return observer(StructuralVariantChordTrack)
 }

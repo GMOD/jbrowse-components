@@ -94,7 +94,7 @@ export default pluginManager => {
           },
           {
             name: `${self.id} rendering`,
-            delay: self.renderDelay || 300,
+            // delay: self.renderDelay || 300,
             fireImmediately: true,
           },
         )
