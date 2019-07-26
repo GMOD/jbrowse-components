@@ -2,13 +2,13 @@
 
 exports[`<MainMenuBar /> renders 1`] = `
 <header
-  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic MainMenuBar-root-1 MuiAppBar-colorPrimary"
+  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic makeStyles-root-1 MuiAppBar-colorPrimary"
 >
   <div
     class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
   >
     <div
-      class="DropDownMenu-root-43"
+      class="DropDownMenu-root-45"
     >
       <button
         aria-haspopup="true"
@@ -35,7 +35,7 @@ exports[`<MainMenuBar /> renders 1`] = `
       </button>
     </div>
     <div
-      class="MainMenuBar-grow-2"
+      class="makeStyles-grow-2"
     />
     <p
       class="MuiTypography-root MuiTypography-body1"
@@ -43,8 +43,29 @@ exports[`<MainMenuBar /> renders 1`] = `
       testSession
     </p>
     <div
-      class="MainMenuBar-grow-2"
-    />
+      class="makeStyles-grow-2"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-icon-4"
+          >
+            edit
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+       
+    </div>
     <h6
       class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
     >

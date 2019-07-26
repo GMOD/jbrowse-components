@@ -5,7 +5,6 @@ import {
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { flow, getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
-import shortid from 'shortid'
 import corePlugins from './corePlugins'
 import RenderWorker from './rpc.worker'
 import * as rpcFuncs from './rpcMethods'
@@ -62,7 +61,7 @@ const JBrowseWeb = types
   .model('JBrowseWeb', {
     session: types.maybe(Session),
     defaultSession: types.optional(types.frozen(Session), {
-      name: `Unnamed Session ${shortid.generate()}`,
+      name: `New Session ${new Date(Date.now()).toISOString()}`,
       menuBars: [{ type: 'MainMenuBar' }],
     }),
     savedSessions: types.array(types.frozen(Session)),
@@ -81,15 +80,23 @@ const JBrowseWeb = types
     }),
   })
   .actions(self => ({
-    addSessionSnapshot(sessionSnapshot) {
+    addSavedSession(sessionSnapshot) {
       const length = self.savedSessions.push(sessionSnapshot)
       return self.savedSessions[length - 1]
+    },
+    removeSavedSession(sessionSnapshot) {
+      self.savedSessions.remove(sessionSnapshot)
     },
     setSession(snapshot) {
       self.session = snapshot
     },
     setDefaultSession() {
       self.setSession(self.defaultSession)
+    },
+    renameCurrentSession(sessionName) {
+      const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+      snapshot.name = sessionName
+      this.setSession(snapshot)
     },
     activateSession(name) {
       const newSessionSnapshot = self.savedSessions.find(

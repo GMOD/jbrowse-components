@@ -1,26 +1,67 @@
 import { getSession } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
-import { withStyles } from '@material-ui/styles'
+import { makeStyles, useTheme } from '@material-ui/styles'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
+import Input from '@material-ui/core/Input'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
+
 import { values } from 'mobx'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React from 'react'
+import { PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react-lite'
+import React, { useState } from 'react'
 import DropDownMenu from './DropDownMenu'
 
-const styles = {
+const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
   },
   grow: {
     flexGrow: 1,
   },
-}
+  input: {
+    color: theme.palette.primary.contrastText,
+  },
+  icon: {
+    color: theme.palette.primary.contrastText,
+  },
+}))
 
 function MainMenuBar(props) {
-  const { classes, model } = props
+  const { model } = props
   const session = getSession(model)
+
+  const classes = useStyles()
+  const theme = useTheme()
+  const [editing, setEditing] = useState(false)
+  const [editedName, setEditedName] = useState('')
+
+  function handleEditToggle() {
+    if (editing) {
+      if (editedName !== session.name) session.renameCurrentSession(editedName)
+      setEditedName('')
+      setEditing(false)
+    } else {
+      setEditedName(session.name)
+      setEditing(true)
+    }
+  }
+
+  function handleSessionNameChange(event) {
+    setEditedName(event.target.value)
+  }
+
+  const sessionNameComponent = editing ? (
+    <Input
+      className={classes.input}
+      autoFocus
+      value={editedName}
+      onChange={handleSessionNameChange}
+    />
+  ) : (
+    <Typography>{session.name}</Typography>
+  )
 
   return (
     <AppBar className={classes.root} position="static">
@@ -34,8 +75,12 @@ function MainMenuBar(props) {
           />
         ))}
         <div className={classes.grow} />
-        <Typography>{session.name}</Typography>
-        <div className={classes.grow} />
+        {sessionNameComponent}
+        <div className={classes.grow}>
+          <IconButton onClick={handleEditToggle}>
+            <Icon className={classes.icon}>{editing ? 'check' : 'edit'}</Icon>
+          </IconButton>{' '}
+        </div>
         <Typography variant="h6" color="inherit">
           JBrowse
         </Typography>
@@ -50,11 +95,7 @@ function MainMenuBar(props) {
 }
 
 MainMenuBar.propTypes = {
-  classes: PropTypes.shape({
-    grow: PropTypes.shape.isRequired,
-    root: PropTypes.shape.isRequired,
-  }).isRequired,
   model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(MainMenuBar))
+export default observer(MainMenuBar)

@@ -68,7 +68,7 @@ describe('JBrowse MST model', () => {
 
   it('adds a session snapshot', () => {
     const jbrowse = jbrowseModel.create()
-    jbrowse.addSessionSnapshot({ name: 'testSession' })
+    jbrowse.addSavedSession({ name: 'testSession' })
     expect(jbrowse.savedSessions.length).toBe(1)
   })
 

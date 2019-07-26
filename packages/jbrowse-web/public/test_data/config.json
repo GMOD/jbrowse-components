@@ -1267,7 +1267,7 @@
                 "name": "divider"
               },
               {
-                "name": "Open Session",
+                "name": "Open Session ...",
                 "icon": "folder_open",
                 "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
               },
@@ -1321,7 +1321,7 @@
     ],
     "connections": {}
   },
-  "sessionSnapshots": [
+  "savedSessions": [
     {
       "name": "Volvox Example",
       "width": 1192,

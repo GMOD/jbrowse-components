@@ -348,8 +348,16 @@ export default pluginManager => {
         self.connections.clear()
       },
 
-      addSessionSnapshot(sessionSnapshot) {
-        return getRoot(self).addSessionSnapshot(sessionSnapshot)
+      addSavedSession(sessionSnapshot) {
+        return getRoot(self).addSavedSession(sessionSnapshot)
+      },
+
+      removeSavedSession(sessionSnapshot) {
+        return getRoot(self).removeSavedSession(sessionSnapshot)
+      },
+
+      renameCurrentSession(sessionName) {
+        return getRoot(self).renameCurrentSession(sessionName)
       },
 
       activateSession(sessionName) {
