@@ -2,6 +2,7 @@ export default ({ jbrequire }) => {
   const React = jbrequire('react')
   const { observer } = jbrequire('mobx-react')
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   function bpToRadians(block, pos) {
     const blockStart = block.region.elided ? 0 : block.region.start
@@ -16,6 +17,7 @@ export default ({ jbrequire }) => {
     feature,
     blocksForRefs,
     radius,
+    config,
     bezierRadius,
   }) {
     // find the blocks that our start and end points belong to
@@ -37,10 +39,12 @@ export default ({ jbrequire }) => {
           bezierRadius,
           (endRadians + startRadians) / 2,
         )
+
+        const strokeColor = readConfObject(config, 'strokeColor', [feature])
         return (
           <path
             d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-            stroke="black"
+            stroke={strokeColor}
             fill="transparent"
           />
         )
