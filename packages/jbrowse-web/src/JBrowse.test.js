@@ -250,14 +250,12 @@ describe('test configuration editor', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
-    // clicks config button
     fireEvent.click(await waitForElement(() => getByTitle('configure track')))
-    // opens up config panel
     expect(await waitForElement(() => byId('configEditor'))).toBeTruthy()
     const input = await waitForElement(() => getByValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
     const ret = await waitForElement(() => byId('vcf-2560'))
-    expect(ret).toMatchSnapshot()
+    expect(ret).toHaveStyle('background: green')
   })
 })
 

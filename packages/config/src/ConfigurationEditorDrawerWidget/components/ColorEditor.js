@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import TextField from '@material-ui/core/TextField'
 import { ChromePicker } from 'react-color'
-import React, { Component, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
@@ -62,31 +62,27 @@ ColorPicker.defaultProps = {
   TextFieldProps: {},
 }
 
-class ColorEditor extends Component {
-  static propTypes = {
-    slot: ReactPropTypes.shape({
-      value: ReactPropTypes.string.isRequired,
-      set: ReactPropTypes.func.isRequired,
-    }).isRequired,
-  }
-
-  render() {
-    const { slot } = this.props
-    return (
-      <ColorPicker
-        label={slot.name}
-        name="color"
-        value={slot.value}
-        onChange={color => {
-          slot.set(color)
-        }}
-        TextFieldProps={{
-          helperText: slot.description,
-          fullWidth: true,
-        }}
-      />
-    )
-  }
+function ColorEditor(props) {
+  const { slot } = props
+  return (
+    <ColorPicker
+      label={slot.name}
+      name="color"
+      value={slot.value}
+      onChange={color => {
+        slot.set(color)
+      }}
+      TextFieldProps={{
+        helperText: slot.description,
+        fullWidth: true,
+      }}
+    />
+  )
 }
-
+ColorEditor.propTypes = {
+  slot: ReactPropTypes.shape({
+    value: ReactPropTypes.string.isRequired,
+    set: ReactPropTypes.func.isRequired,
+  }).isRequired,
+}
 export default observer(ColorEditor)
