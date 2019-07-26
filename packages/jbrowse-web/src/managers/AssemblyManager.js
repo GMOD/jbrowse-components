@@ -106,7 +106,7 @@ export default class AssemblyManager {
     if (assemblyConfig && assemblyConfig.refNameAliases) {
       // eslint-disable-next-line no-await-in-loop
       const adapterRefNameAliases = await this.rpcManager.call(
-        assemblyConfig.refNameAliases.adapter.configId,
+        assemblyConfig.refNameAliases.adapter.configId || 'assemblyDefault',
         'getRefNameAliases',
         {
           sessionId: assemblyName,
@@ -193,7 +193,7 @@ export default class AssemblyManager {
       const adapterConfig = readConfObject(assembly.sequence, 'adapter')
       // eslint-disable-next-line no-await-in-loop
       const adapterRegions = await this.rpcManager.call(
-        assembly.configId,
+        assembly.configId || `assembly-${assemblyName}`,
         'getRegions',
         {
           sessionId: assemblyName,

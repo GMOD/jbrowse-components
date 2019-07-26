@@ -95,7 +95,9 @@ export default class WebWorkerRpcDriver {
   // filter the given object and just remove any non-clonable things from it
   filterArgs(thing, pluginManager, stateGroupName) {
     if (Array.isArray(thing)) {
-      return thing.filter(isClonable).map(this.filterArgs, this)
+      return thing
+        .filter(isClonable)
+        .map(t => this.filterArgs(t, pluginManager, stateGroupName))
     }
     if (typeof thing === 'object') {
       // AbortSignals are specially handled
@@ -109,7 +111,10 @@ export default class WebWorkerRpcDriver {
       const newobj = objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v)]),
+          .map(([k, v]) => [
+            k,
+            this.filterArgs(v, pluginManager, stateGroupName),
+          ]),
       )
       return newobj
     }
@@ -134,6 +139,9 @@ export default class WebWorkerRpcDriver {
   }
 
   call(pluginManager, stateGroupName, functionName, args, options = {}) {
+    if (stateGroupName === undefined) {
+      throw new TypeError('stateGroupName is required')
+    }
     const worker = this.getWorker(stateGroupName)
     const filteredArgs = this.filterArgs(args, pluginManager, stateGroupName)
     return worker.call(functionName, filteredArgs, {
