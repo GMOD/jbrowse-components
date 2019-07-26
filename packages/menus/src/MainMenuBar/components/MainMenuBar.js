@@ -1,6 +1,6 @@
 import { getSession } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
-import { makeStyles, useTheme } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Input from '@material-ui/core/Input'
@@ -33,7 +33,6 @@ function MainMenuBar(props) {
   const session = getSession(model)
 
   const classes = useStyles()
-  const theme = useTheme()
   const [editing, setEditing] = useState(false)
   const [editedName, setEditedName] = useState('')
 
