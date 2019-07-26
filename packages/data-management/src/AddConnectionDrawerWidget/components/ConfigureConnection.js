@@ -1,6 +1,5 @@
 import { ConfigurationEditor } from '@gmod/jbrowse-plugin-config'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
-import { observer } from 'mobx-react-lite'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 

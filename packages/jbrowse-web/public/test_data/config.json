@@ -1077,7 +1077,8 @@
     "configId": "WBBdhiJUQdj",
     "rpc": {
       "configId": "A8raoinDhoH"
-    }
+    },
+    "updateUrl": false
   },
   "session": {
     "name": "Volvox Example",
@@ -1239,16 +1240,13 @@
       }
     ],
     "drawerWidgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
-        "type": "HierarchicalTrackSelectorDrawerWidget",
-        "collapsed": {},
-        "filterText": "",
-        "view": "volvox_example"
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
       }
     },
     "activeDrawerWidgets": {
-      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      "sessionManager": "sessionManager"
     },
     "menuBars": [
       {

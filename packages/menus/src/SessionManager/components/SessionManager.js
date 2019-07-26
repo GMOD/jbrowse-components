@@ -15,7 +15,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
-import { observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles(theme => ({
   root: {

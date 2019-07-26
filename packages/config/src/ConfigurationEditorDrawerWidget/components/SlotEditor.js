@@ -20,7 +20,7 @@ import {
   TextField,
   withStyles,
 } from '@material-ui/core'
-import { observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import CallbackEditor from './CallbackEditor'
