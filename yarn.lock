@@ -9965,6 +9965,11 @@ ms@^2.0.0, ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.1.tgz#30a5864eb3ebb0a66f2ebe6d727af06a09d86e0a"
   integrity sha512-tgp+dl5cGk28utYktBsrFqA7HKgrhgPsg6Z/EfhWI4gl1Hwq8B/GmY/0oXZ6nF8hDVesS/FpnYaD/kOWhYQvyg==
 
+mst-middlewares@3.10.2:
+  version "3.10.2"
+  resolved "https://registry.yarnpkg.com/mst-middlewares/-/mst-middlewares-3.10.2.tgz#704fb3cdc91e231c4ea8672d5be0fdaffa519dc9"
+  integrity sha512-P9J3g0a5idBVW2mcBSWY/TZ6nY5Ml42+Y4Rmx0Hc3LxXoqk4zOHXHXyerffX07jd+5/EoYS/ZQU9uanxHQ/nVQ==
+
 multicast-dns-service-types@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/multicast-dns-service-types/-/multicast-dns-service-types-1.1.0.tgz#899f11d9686e5e05cb91b35d5f0e63b773cfc901"

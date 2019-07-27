@@ -1,7 +1,6 @@
 import { autorun } from 'mobx'
 import {
   types,
-  flow,
   getParent,
   getRoot,
   addDisposer,
@@ -76,6 +75,9 @@ export default pluginManager => {
       get savedSessions() {
         return getRoot(self).savedSessions
       },
+      get history() {
+        return getRoot(self).history
+      },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
         return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
@@ -115,43 +117,43 @@ export default pluginManager => {
                 assemblyName,
                 self.assemblyData,
               )
-              view.setDisplayedRegions(displayedRegions, true)
+              self.history.withoutUndo(() =>
+                view.setDisplayedRegions(displayedRegions, true),
+              )
             }
           }
         })
         addDisposer(self, displayedRegionsDisposer)
       },
 
-      getRegionsForAssembly: flow(function* getRegionsForAssembly(
-        assemblyName,
-        assemblyData,
-        opts = {},
-      ) {
+      getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-          // eslint-disable-next-line no-await-in-loop
-          const adapterRegions = yield self.rpcManager.call(
-            assembly.configId,
-            'getRegions',
-            {
-              sessionId: assemblyName,
-              adapterType: adapterConfig.type,
-              adapterConfig,
-              signal: opts.signal,
-            },
-            { timeout: 1000000 },
-          )
-          const adapterRegionsWithAssembly = adapterRegions.map(
-            adapterRegion => ({
-              ...adapterRegion,
-              assemblyName,
-            }),
-          )
-          return adapterRegionsWithAssembly
+          return self.rpcManager
+            .call(
+              assembly.configId,
+              'getRegions',
+              {
+                sessionId: assemblyName,
+                adapterType: adapterConfig.type,
+                adapterConfig,
+                signal: opts.signal,
+              },
+              { timeout: 1000000 },
+            )
+            .then(adapterRegions => {
+              const adapterRegionsWithAssembly = adapterRegions.map(
+                adapterRegion => ({
+                  ...adapterRegion,
+                  assemblyName,
+                }),
+              )
+              return adapterRegionsWithAssembly
+            })
         }
-        return undefined
-      }),
+        return Promise.resolve(undefined)
+      },
 
       makeConnection(configuration, initialSnapshot = {}) {
         const { type } = configuration
