@@ -10,6 +10,7 @@ import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
+import jbrowseModel from './jbrowseModel'
 
 fetchMock.config.sendAsJson = false
 
@@ -68,6 +69,11 @@ describe('<JBrowse />', () => {
     const { getByText } = render(<JBrowse config={{}} />)
     expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
   })
+  it('renders with an initialState', async () => {
+    const state = jbrowseModel.create(config)
+    const { getByText } = render(<JBrowse initialState={state} />)
+    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+  })
 
   it('can use config from a url', async () => {
     const { getByText } = render(
@@ -103,42 +109,46 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const { getByTestId } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_alignments'),
       ),
     )
-    const start = window.MODEL.views[0].offsetPx
+
+    const start = state.session.views[0].offsetPx
     const track = await waitForElement(() =>
       getByTestId('track-volvox_alignments'),
     )
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
-    const end = window.MODEL.views[0].offsetPx
+    const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
   })
 
   it('opens track selector', async () => {
-    const { getByTestId } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId } = render(<JBrowse initialState={state} />)
 
     await waitForElement(() => getByTestId('htsTrackEntry-volvox_alignments'))
-    expect(window.MODEL.views[0].tracks.length).toBe(0)
+    expect(state.session.views[0].tracks.length).toBe(0)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_alignments'),
       ),
     )
-    expect(window.MODEL.views[0].tracks.length).toBe(1)
+    expect(state.session.views[0].tracks.length).toBe(1)
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {
-    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() => getByTestId('htsTrackEntry-volvox_refseq')),
     )
-    window.MODEL.views[0].setNewView(20, 0)
+    state.session.views[0].setNewView(20, 0)
     await waitForElement(() => getByTestId('track-volvox_refseq'))
     expect(getByText('Zoom in to see sequence')).toBeTruthy()
   })
@@ -146,7 +156,8 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
-    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
@@ -161,7 +172,8 @@ describe('some error state', () => {
     ).toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_bam_altname'),
@@ -172,7 +184,8 @@ describe('some error state', () => {
     ).toBeTruthy()
   })
   it('test that bam with small max height displays message', async () => {
-    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_bam_small_max_height'),
@@ -183,7 +196,8 @@ describe('some error state', () => {
     ).toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const { getByTestId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_bam_altname'),
@@ -197,9 +211,12 @@ describe('some error state', () => {
 
 describe('lollipop track test', () => {
   it('see that a lollipop feature exists', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(1, 150)
+    state.session.views[0].setNewView(1, 150)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
     )
@@ -211,9 +228,12 @@ describe('lollipop track test', () => {
 
 describe('variant track test', () => {
   it('click on a vcf feature', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
@@ -224,9 +244,12 @@ describe('variant track test', () => {
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(1, -539)
+    state.session.views[0].setNewView(1, -539)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-nclist_long_names')),
     )
@@ -241,11 +264,12 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
+    const state = jbrowseModel.create(config)
     const { getByTestId: byId, getByText, getByTitle, getByValue } = render(
-      <JBrowse config={config} />,
+      <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
@@ -260,27 +284,36 @@ describe('test configuration editor', () => {
 
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
     await waitForElement(() => byId('prerendered_canvas'))
   })
   it('open a bigwig line track', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
     await waitForElement(() => byId('prerendered_canvas'))
   })
   it('open a bigwig density track', async () => {
-    const { getByTestId: byId, getByText } = render(<JBrowse config={config} />)
+    const state = jbrowseModel.create(config)
+    const { getByTestId: byId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
     await waitForElement(() => getByText('JBrowse'))
-    window.MODEL.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() =>
         byId('htsTrackEntry-volvox_microarray_density'),
