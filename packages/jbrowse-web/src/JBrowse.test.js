@@ -4,7 +4,7 @@ import {
   render,
   waitForElement,
   waitForDomChange,
-} from '@testing-library/react'
+} from 'react-testing-library'
 import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -287,8 +287,11 @@ describe('test configuration editor', () => {
     ).resolves.toBeTruthy()
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
-    await timeout(1000) // TODO: needed to wait for the ssr-rerender. could avoid by detecting or waiting on the re-render but not sure how
     const ret = await waitForElement(() => byId('vcf-2560'))
+    // TODO: remove timeout which waits for SSR re-render
+    // Note: a series of like 5 or 6 waitForDomChange calls
+    // on container also works instead of timeout
+    await timeout(1000)
     expect(ret).toMatchSnapshot()
   })
 })

@@ -4,7 +4,7 @@ exports[`test configuration editor change color on track 1`] = `
 <rect
   data-testid="vcf-2560"
   height="10"
-  style="fill:green"
+  style="fill:goldenrod"
   title="vcf-2560"
   width="20"
   x="0"
