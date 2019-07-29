@@ -39,6 +39,7 @@ const styles = theme => ({
   components: {
     display: 'block',
     overflowY: 'auto',
+    height: '100%',
   },
   drawerCloseButton: {
     float: 'right',
