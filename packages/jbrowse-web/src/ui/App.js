@@ -12,7 +12,6 @@ import { PropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import { withSize } from 'react-sizeme'
 
 import Drawer from './Drawer'
 
@@ -28,19 +27,21 @@ const styles = theme => ({
     overflow: 'hidden',
     background: '#808080',
   },
-  menuBars: {},
+  menuBars: {
+    display: 'block',
+  },
   menuBarsAndComponents: {
-    display: 'flex',
-    flexDirection: 'column',
+    flex: '1 100%',
+  },
+  defaultDrawer: {
+    flex: '1 100%',
   },
   components: {
+    display: 'block',
     overflowY: 'auto',
   },
   drawerCloseButton: {
     float: 'right',
-  },
-  defaultDrawer: {
-    margin: theme.spacing(1),
   },
   drawerToolbar: {
     paddingLeft: theme.spacing(2),
@@ -60,7 +61,6 @@ const styles = theme => ({
 function App(props) {
   const {
     classes,
-    size,
     session,
     sessionNames,
     addSessionSnapshot,
@@ -70,8 +70,8 @@ function App(props) {
   const { pluginManager } = session
 
   useEffect(() => {
-    session.updateWidth(size.width)
-  }, [session, size])
+    session.updateWidth(window.innerWidth)
+  }, [session])
 
   const { visibleDrawerWidget } = session
   let drawerComponent
@@ -83,7 +83,7 @@ function App(props) {
     } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
     drawerComponent = (
       <Slide direction="left" in>
-        <div>
+        <div className={classes.defaultDrawer}>
           <AppBar position="static">
             <Toolbar
               variant="dense"
@@ -208,4 +208,4 @@ App.propTypes = {
   activateSession: ReactPropTypes.func.isRequired,
 }
 
-export default withSize()(withStyles(styles)(observer(App)))
+export default withStyles(styles)(observer(App))

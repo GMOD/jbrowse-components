@@ -14,7 +14,6 @@ const styles = theme => ({
     height: '100%',
     flex: '1 0 auto',
     zIndex: theme.zIndex.drawer,
-    position: 'fixed',
     top: 0,
     outline: 'none',
     left: 'auto',

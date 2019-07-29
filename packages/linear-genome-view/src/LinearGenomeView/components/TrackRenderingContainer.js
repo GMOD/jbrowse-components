@@ -16,14 +16,13 @@ const styles = {
  * mostly does UI gestures: drag scrolling, etc
  */
 function TrackRenderingContainer(props) {
-  const { trackId, width, height, children, classes } = props
+  const { trackId, height, children, classes } = props
   return (
     <div
       className={classes.trackRenderingContainer}
       style={{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
-        width,
         height,
       }}
       role="presentation"
@@ -35,7 +34,6 @@ function TrackRenderingContainer(props) {
 TrackRenderingContainer.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   trackId: PropTypes.string.isRequired,
-  width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
   children: PropTypes.node,
 }
