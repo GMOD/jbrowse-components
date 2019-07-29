@@ -32,8 +32,8 @@ export default observer(({ config, initialState }) => {
         }
         if (!state.session) state.setEmptySession()
         // poke some things for testing (this stuff will eventually be removed)
-        // window.ROOTMODEL = state
-        // window.MODEL = state.session
+        window.ROOTMODEL = state
+        window.MODEL = state.session
         setStatus('loaded')
       } catch (error) {
         setStatus('error')

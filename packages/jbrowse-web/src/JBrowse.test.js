@@ -3,7 +3,8 @@ import {
   fireEvent,
   render,
   waitForElement,
-} from 'react-testing-library'
+  waitForDomChange,
+} from '@testing-library/react'
 import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -13,7 +14,9 @@ import config from '../test_data/config_integration_test.json'
 import jbrowseModel from './jbrowseModel'
 
 fetchMock.config.sendAsJson = false
-
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 
@@ -144,13 +147,15 @@ describe('valid file tests', () => {
 
   it('opens reference sequence track and expects zoom in message', async () => {
     const state = jbrowseModel.create(config)
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const { getAllByText, getByTestId } = render(
+      <JBrowse initialState={state} />,
+    )
     fireEvent.click(
       await waitForElement(() => getByTestId('htsTrackEntry-volvox_refseq')),
     )
     state.session.views[0].setNewView(20, 0)
     await waitForElement(() => getByTestId('track-volvox_refseq'))
-    expect(getByText('Zoom in to see sequence')).toBeTruthy()
+    expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
   })
 })
 
@@ -163,13 +168,13 @@ describe('some error state', () => {
         getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
       ),
     )
-    expect(
-      await waitForElement(() =>
+    await expect(
+      waitForElement(() =>
         getByText(
           'HTTP 404 fetching /test_data/volvox-sorted.bam.bai.nonexist',
         ),
       ),
-    ).toBeTruthy()
+    ).resolves.toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = jbrowseModel.create(config)
@@ -179,9 +184,9 @@ describe('some error state', () => {
         getByTestId('htsTrackEntry-volvox_bam_altname'),
       ),
     )
-    expect(
-      await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
-    ).toBeTruthy()
+    await expect(
+      waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+    ).resolves.toBeTruthy()
   })
   it('test that bam with small max height displays message', async () => {
     const state = jbrowseModel.create(config)
@@ -191,9 +196,9 @@ describe('some error state', () => {
         getByTestId('htsTrackEntry-volvox_bam_small_max_height'),
       ),
     )
-    expect(
-      await waitForElement(() => getByText('Max height reached')),
-    ).toBeTruthy()
+    await expect(
+      waitForElement(() => getByText('Max height reached')),
+    ).resolves.toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = jbrowseModel.create(config)
@@ -203,43 +208,42 @@ describe('some error state', () => {
         getByTestId('htsTrackEntry-volvox_bam_altname'),
       ),
     )
-    expect(
-      await waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
-    ).toBeTruthy()
+    await expect(
+      waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+    ).resolves.toBeTruthy()
   })
 })
 
-describe('lollipop track test', () => {
-  it('see that a lollipop feature exists', async () => {
-    const state = jbrowseModel.create(config)
-    const { getByTestId: byId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('JBrowse'))
-    state.session.views[0].setNewView(1, 150)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
-    )
+test('lollipop track test', async () => {
+  const state = jbrowseModel.create(config)
+  const { getByTestId: byId, getByText } = render(
+    <JBrowse initialState={state} />,
+  )
+  await waitForElement(() => getByText('JBrowse'))
+  state.session.views[0].setNewView(1, 150)
+  fireEvent.click(
+    await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
+  )
 
-    await waitForElement(() => byId('track-lollipop_track'))
-    expect(await waitForElement(() => byId('three'))).toBeTruthy()
-  })
+  await waitForElement(() => byId('track-lollipop_track'))
+  await expect(waitForElement(() => byId('three'))).resolves.toBeTruthy()
 })
 
-describe('variant track test', () => {
-  it('click on a vcf feature', async () => {
-    const state = jbrowseModel.create(config)
-    const { getByTestId: byId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('JBrowse'))
-    state.session.views[0].setNewView(0.05, 5000)
-    fireEvent.click(
-      await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
-    )
-    fireEvent.click(await waitForElement(() => byId('vcf-2560')))
-    expect(await waitForElement(() => getByText('ctgA:277..277'))).toBeTruthy()
-  })
+test('variant track test - opens feature detail view', async () => {
+  const state = jbrowseModel.create(config)
+  const { getByTestId: byId, queryAllByTestId, getByText, container } = render(
+    <JBrowse initialState={state} />,
+  )
+  await waitForElement(() => getByText('JBrowse'))
+  state.session.views[0].setNewView(0.05, 5000)
+  fireEvent.click(
+    await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
+  )
+  const ret = await waitForElement(() => byId('vcf-2560'))
+  fireEvent.click(ret)
+  await expect(
+    waitForElement(() => getByText('ctgA:277..277')),
+  ).resolves.toBeTruthy()
 })
 
 describe('nclist track test with long name', () => {
@@ -253,30 +257,37 @@ describe('nclist track test with long name', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-nclist_long_names')),
     )
-    expect(
-      await waitForElement(() =>
+    await expect(
+      waitForElement(() =>
         getByText(
           'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz12345678...',
         ),
       ),
-    ).toBeTruthy()
+    ).resolves.toBeTruthy()
   })
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const state = jbrowseModel.create(config)
-    const { getByTestId: byId, getByText, getByTitle, getByValue } = render(
-      <JBrowse initialState={state} />,
-    )
+    const {
+      getByTestId: byId,
+      getByText,
+      getByTitle,
+      getByDisplayValue,
+      container,
+    } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('JBrowse'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
     fireEvent.click(await waitForElement(() => getByTitle('configure track')))
-    expect(await waitForElement(() => byId('configEditor'))).toBeTruthy()
-    const input = await waitForElement(() => getByValue('goldenrod'))
+    await expect(
+      waitForElement(() => byId('configEditor')),
+    ).resolves.toBeTruthy()
+    const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
+    await timeout(1000) // TODO: needed to wait for the ssr-rerender. could avoid by detecting or waiting on the re-render but not sure how
     const ret = await waitForElement(() => byId('vcf-2560'))
     expect(ret).toMatchSnapshot()
   })
@@ -293,7 +304,9 @@ describe('bigwig', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
-    await waitForElement(() => byId('prerendered_canvas'))
+    await expect(
+      waitForElement(() => byId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
     const state = jbrowseModel.create(config)
@@ -305,7 +318,9 @@ describe('bigwig', () => {
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
-    await waitForElement(() => byId('prerendered_canvas'))
+    await expect(
+      waitForElement(() => byId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
     const state = jbrowseModel.create(config)
@@ -319,6 +334,8 @@ describe('bigwig', () => {
         byId('htsTrackEntry-volvox_microarray_density'),
       ),
     )
-    await waitForElement(() => byId('prerendered_canvas'))
+    await expect(
+      waitForElement(() => byId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
   })
 })
