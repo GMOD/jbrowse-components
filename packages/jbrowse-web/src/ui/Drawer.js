@@ -48,7 +48,7 @@ class Drawer extends React.Component {
     return (
       <Slide in={open} direction="left" appear={this.mounted}>
         <Paper
-          style={{ width: session.drawerWidth }}
+          style={{ width: open ? session.drawerWidth : 0 }}
           className={classes.paper}
           elevation={16}
           square
