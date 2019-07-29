@@ -1,11 +1,5 @@
 import { autorun } from 'mobx'
-import {
-  types,
-  getParent,
-  getRoot,
-  addDisposer,
-  isAlive,
-} from 'mobx-state-tree'
+import { types, getParent, addDisposer, isAlive } from 'mobx-state-tree'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
@@ -40,43 +34,42 @@ export default pluginManager => {
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
     })
-    .volatile((/* self */) => {
+    .volatile((/* self */) => ({
+      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
        * kind of thing it is.
        */
-      const selection = undefined
+      selection: undefined,
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * { taskName: "configure", target: thing_being_configured }
        */
-      const task = undefined
-      return {
-        pluginManager,
-        selection,
-        task,
-      }
-    })
+      task: undefined,
+    }))
     .views(self => ({
       get rpcManager() {
-        return getRoot(self).rpcManager
+        return getParent(self).jbrowse.rpcManager
       },
       get assemblyData() {
-        return getRoot(self).assemblyData
+        return getParent(self).jbrowse.assemblyData
       },
       get configuration() {
-        return getRoot(self).configuration
+        return getParent(self).jbrowse.configuration
       },
       get datasets() {
-        return getRoot(self).datasets
+        return getParent(self).jbrowse.datasets
       },
       get savedSessions() {
-        return getRoot(self).savedSessions
+        return getParent(self).jbrowse.savedSessions
+      },
+      get savedSessionNames() {
+        return getParent(self).jbrowse.savedSessionNames
       },
       get history() {
-        return getRoot(self).history
+        return getParent(self).history
       },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
@@ -117,7 +110,7 @@ export default pluginManager => {
                 assemblyName,
                 self.assemblyData,
               )
-              self.history.withoutUndo(() =>
+              getParent(self).history.withoutUndo(() =>
                 view.setDisplayedRegions(displayedRegions, true),
               )
             }
@@ -236,7 +229,7 @@ export default pluginManager => {
       },
 
       addDataset(datasetConf) {
-        return getRoot(self).addDataset(datasetConf)
+        return getParent(self).jbrowse.addDataset(datasetConf)
       },
 
       addLinearGenomeViewOfDataset(datsetName, initialState = {}) {
@@ -351,27 +344,27 @@ export default pluginManager => {
       },
 
       addSavedSession(sessionSnapshot) {
-        return getRoot(self).addSavedSession(sessionSnapshot)
+        return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot) {
-        return getRoot(self).removeSavedSession(sessionSnapshot)
+        return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName) {
-        return getRoot(self).renameCurrentSession(sessionName)
+        return getParent(self).renameCurrentSession(sessionName)
       },
 
       duplicateCurrentSession() {
-        return getRoot(self).duplicateCurrentSession()
+        return getParent(self).duplicateCurrentSession()
       },
 
       activateSession(sessionName) {
-        return getRoot(self).activateSession(sessionName)
+        return getParent(self).activateSession(sessionName)
       },
 
       setDefaultSession() {
-        return getRoot(self).setDefaultSession()
+        return getParent(self).setDefaultSession()
       },
     }))
 }

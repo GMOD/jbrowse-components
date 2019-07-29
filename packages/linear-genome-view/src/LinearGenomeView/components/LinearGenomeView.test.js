@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from 'react-testing-library'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import LinearGenomeView from './LinearGenomeView'
 
 describe('LinearGenomeView genome view component', () => {

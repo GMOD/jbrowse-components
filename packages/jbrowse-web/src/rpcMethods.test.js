@@ -1,4 +1,4 @@
-import { createTestSession } from './jbrowseModel'
+import { createTestSession } from './rootModel'
 import { renderRegion, freeResources } from './rpcMethods'
 
 let pluginManager

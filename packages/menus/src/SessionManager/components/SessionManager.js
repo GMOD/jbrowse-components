@@ -84,6 +84,7 @@ export default observer(({ session }) => {
             return (
               <ListItem
                 button
+                disabled={session.name === sessionSnapshot.name}
                 onClick={() => session.activateSession(sessionSnapshot.name)}
                 key={sessionSnapshot.name}
               >
@@ -92,11 +93,16 @@ export default observer(({ session }) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={sessionSnapshot.name}
-                  secondary={viewDetails}
+                  secondary={
+                    session.name === sessionSnapshot.name
+                      ? 'Currently open'
+                      : viewDetails
+                  }
                 />
                 <ListItemSecondaryAction>
                   <IconButton
                     edge="end"
+                    disabled={session.name === sessionSnapshot.name}
                     aria-label="Delete"
                     onClick={() => handleDialogOpen(idx)}
                   >

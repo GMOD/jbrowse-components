@@ -37,7 +37,13 @@ function MainMenuBar(props) {
 
   function handleEditToggle() {
     if (editing) {
-      if (editedName !== session.name) session.renameCurrentSession(editedName)
+      if (editedName !== session.name) {
+        if (session.savedSessionNames.includes(editedName))
+          console.error(
+            `Cannot rename session to ${editedName}, a saved session with that name already exists`,
+          )
+        else session.renameCurrentSession(editedName)
+      }
       setEditedName('')
       setEditing(false)
     } else {
@@ -56,6 +62,9 @@ function MainMenuBar(props) {
       autoFocus
       value={editedName}
       onChange={handleSessionNameChange}
+      onKeyDown={event => {
+        if (event.keyCode === 13) handleEditToggle()
+      }}
     />
   ) : (
     <Typography>{session.name}</Typography>

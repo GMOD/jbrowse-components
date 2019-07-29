@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import MyPlugin from './index'
 
 describe('Data management', () => {

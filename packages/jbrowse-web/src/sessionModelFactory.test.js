@@ -1,6 +1,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
-import { createTestSession } from './jbrowseModel'
+import { createTestSession } from './rootModel'
 import sessionModelFactory from './sessionModelFactory'
 
 describe('JBrowseWebSessionModel', () => {
