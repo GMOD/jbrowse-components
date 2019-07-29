@@ -24,10 +24,18 @@ const styles = theme => ({
   },
   root: {
     height: '100vh',
+    display: 'flex',
+    overflow: 'hidden',
     background: '#808080',
   },
   menuBars: {},
-  components: {},
+  menuBarsAndComponents: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  components: {
+    overflowY: 'auto',
+  },
   drawerCloseButton: {
     float: 'right',
   },
@@ -122,7 +130,7 @@ function App(props) {
 
   return (
     <div className={classes.root}>
-      <div>
+      <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
             const { LazyReactComponent } = pluginManager.getMenuBarType(
@@ -142,41 +150,43 @@ function App(props) {
             )
           })}
         </div>
-        {session.views.map(view => {
-          const { ReactComponent } = pluginManager.getViewType(view.type)
-          return (
-            <ReactComponent
-              key={`view-${view.id}`}
-              model={view}
-              session={session}
-              getTrackType={pluginManager.getTrackType}
-            />
-          )
-        })}
-        <div className={classes.developer}>
-          <h3>Developer tools</h3>
-          <button
-            type="button"
-            onClick={() => {
-              if (!session.datasets.length)
-                throw new Error(`Must add a dataset before adding a view`)
-              session.addLinearGenomeViewOfDataset(
-                readConfObject(session.datasets[0], 'name'),
-              )
-            }}
-          >
-            Add linear view
-          </button>
-          <select
-            onChange={event => activateSession(event.target.value)}
-            value={session.name}
-          >
-            {sessionNames.map(name => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+        <div className={classes.components}>
+          {session.views.map(view => {
+            const { ReactComponent } = pluginManager.getViewType(view.type)
+            return (
+              <ReactComponent
+                key={`view-${view.id}`}
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            )
+          })}
+          <div className={classes.developer}>
+            <h3>Developer tools</h3>
+            <button
+              type="button"
+              onClick={() => {
+                if (!session.datasets.length)
+                  throw new Error(`Must add a dataset before adding a view`)
+                session.addLinearGenomeViewOfDataset(
+                  readConfObject(session.datasets[0], 'name'),
+                )
+              }}
+            >
+              Add linear view
+            </button>
+            <select
+              onChange={event => activateSession(event.target.value)}
+              value={session.name}
+            >
+              {sessionNames.map(name => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
       <Drawer
