@@ -13,6 +13,7 @@ import { observer } from 'mobx-react-lite'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 
+import { withSize } from 'react-sizeme'
 import Drawer from './Drawer'
 
 const styles = theme => ({
@@ -63,6 +64,7 @@ function App(props) {
   const {
     classes,
     session,
+    size,
     sessionNames,
     addSessionSnapshot,
     activateSession,
@@ -71,8 +73,8 @@ function App(props) {
   const { pluginManager } = session
 
   useEffect(() => {
-    session.updateWidth(window.innerWidth)
-  }, [session])
+    session.updateWidth(size.width)
+  }, [session, size.width])
 
   const { visibleDrawerWidget } = session
   let drawerComponent
@@ -209,4 +211,4 @@ App.propTypes = {
   activateSession: ReactPropTypes.func.isRequired,
 }
 
-export default withStyles(styles)(observer(App))
+export default withSize()(withStyles(styles)(observer(App)))
