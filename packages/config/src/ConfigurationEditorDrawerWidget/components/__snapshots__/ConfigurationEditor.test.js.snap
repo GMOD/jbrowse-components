@@ -3,6 +3,7 @@
 exports[`ConfigurationEditor drawer widget renders all the different types of built-in slots 1`] = `
 <div
   class="ConfigurationEditor-root-1"
+  data-testid="configEditor"
 >
   <div
     class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
@@ -787,12 +788,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
       >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-          data-shrink="true"
-        >
-          colorTest
-        </label>
         <div
           class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
           style="color: rgb(57, 100, 148); border-right-width: 25px; border-right-style: solid; border-right-color: #396494;"
@@ -800,7 +795,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input"
-            name="color"
             type="text"
             value="#396494"
           />
@@ -923,6 +917,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
 exports[`ConfigurationEditor drawer widget renders with defaults of the AlignmentsTrack schema 1`] = `
 <div
   class="ConfigurationEditor-root-1"
+  data-testid="configEditor"
 >
   <div
     class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
@@ -2084,12 +2079,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
               >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color1
-                </label>
                 <div
                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   style="color: goldenrod; border-right-width: 25px; border-right-style: solid; border-right-color: goldenrod;"
@@ -2097,7 +2086,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiInput-input"
-                    name="color"
                     type="text"
                     value="goldenrod"
                   />
@@ -2143,12 +2131,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
               >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color2
-                </label>
                 <div
                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   style="color: black; border-right-width: 25px; border-right-style: solid; border-right-color: black;"
@@ -2156,7 +2138,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiInput-input"
-                    name="color"
                     type="text"
                     value="black"
                   />
@@ -2202,12 +2183,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
               >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color3
-                </label>
                 <div
                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   style="color: rgb(53, 112, 137); border-right-width: 25px; border-right-style: solid; border-right-color: #357089;"
@@ -2215,7 +2190,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiInput-input"
-                    name="color"
                     type="text"
                     value="#357089"
                   />
@@ -2531,12 +2505,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <div
                     class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                   >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                      data-shrink="true"
-                    >
-                      nameColor
-                    </label>
                     <div
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                       style="color: black; border-right-width: 25px; border-right-style: solid; border-right-color: black;"
@@ -2544,7 +2512,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input"
-                        name="color"
                         type="text"
                         value="black"
                       />
@@ -2760,12 +2727,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <div
                     class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                   >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                      data-shrink="true"
-                    >
-                      descriptionColor
-                    </label>
                     <div
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                       style="color: blue; border-right-width: 25px; border-right-style: solid; border-right-color: blue;"
@@ -2773,7 +2734,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input"
-                        name="color"
                         type="text"
                         value="blue"
                       />
@@ -2936,6 +2896,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
 exports[`ConfigurationEditor drawer widget renders with just the required model elements 1`] = `
 <div
   class="ConfigurationEditor-root-1"
+  data-testid="configEditor"
 >
   <div
     class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"

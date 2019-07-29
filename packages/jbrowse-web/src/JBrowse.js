@@ -10,25 +10,30 @@ import jbrowseModel from './jbrowseModel'
 import App from './ui/App'
 import Theme from './ui/theme'
 
-export default observer(({ config }) => {
+export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
-  const [jbrowseState, setJBrowseState] = useState()
+  const [jbrowseState, setJBrowseState] = useState(initialState)
 
   useEffect(() => {
     async function loadConfig() {
       try {
         let configSnapshot = config
-        if (config.uri || config.localPath) {
+        if (config && (config.uri || config.localPath)) {
           const configText = await openLocation(config).readFile('utf8')
           configSnapshot = JSON.parse(configText)
         }
-        const state = jbrowseModel.create(configSnapshot)
+        let state
+        if (jbrowseState) {
+          state = jbrowseState
+        } else {
+          state = jbrowseModel.create(configSnapshot)
+          setJBrowseState(state)
+        }
         if (!state.session) state.setEmptySession()
         // poke some things for testing (this stuff will eventually be removed)
         window.ROOTMODEL = state
         window.MODEL = state.session
-        setJBrowseState(state)
         setStatus('loaded')
       } catch (error) {
         setStatus('error')
@@ -38,7 +43,7 @@ export default observer(({ config }) => {
     }
 
     loadConfig()
-  }, [config])
+  }, [config, jbrowseState])
 
   let DisplayComponent = (
     <CircularProgress

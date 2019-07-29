@@ -107,7 +107,7 @@ const styles = theme => ({
 function ConfigurationEditor(props) {
   const { classes, model } = props
   return (
-    <div className={classes.root}>
+    <div className={classes.root} data-testid="configEditor">
       {!model.target ? 'no target set' : <Schema schema={model.target} />}
     </div>
   )

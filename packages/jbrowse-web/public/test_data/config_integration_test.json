@@ -143,6 +143,13 @@
                 "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
+          },
+          "renderers": {
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "maxFeatureGlyphExpansion": 0,
+              "labels": {}
+            }
           }
         },
         {
