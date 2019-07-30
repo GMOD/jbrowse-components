@@ -91,11 +91,6 @@ function MainMenuBar(props) {
         <Typography variant="h6" color="inherit">
           JBrowse
         </Typography>
-        <div
-          style={{
-            width: session.activeDrawerWidgets.size ? session.drawerWidth : 0,
-          }}
-        />
       </Toolbar>
     </AppBar>
   )

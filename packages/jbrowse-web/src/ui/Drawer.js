@@ -14,7 +14,6 @@ const styles = theme => ({
     height: '100%',
     flex: '1 0 auto',
     zIndex: theme.zIndex.drawer,
-    position: 'fixed',
     top: 0,
     outline: 'none',
     left: 'auto',
@@ -49,7 +48,7 @@ class Drawer extends React.Component {
     return (
       <Slide in={open} direction="left" appear={this.mounted}>
         <Paper
-          style={{ width: session.drawerWidth }}
+          style={{ width: open ? session.drawerWidth : 0 }}
           className={classes.paper}
           elevation={16}
           square

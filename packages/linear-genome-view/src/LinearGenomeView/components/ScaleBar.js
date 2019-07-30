@@ -44,12 +44,10 @@ function ScaleBar({
   blocks,
   offsetPx,
   bpPerPx,
-  width,
   horizontallyFlipped,
 }) {
   const finalStyle = Object.assign({}, style, {
     height: `${height}px`,
-    width: `${width}px`,
   })
 
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
@@ -104,7 +102,6 @@ ScaleBar.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   style: PropTypes.objectOf(PropTypes.any),
   height: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
   blocks: PropTypes.shape({
     map: PropTypes.func.isRequired,
     getBlocks: PropTypes.func.isRequired,

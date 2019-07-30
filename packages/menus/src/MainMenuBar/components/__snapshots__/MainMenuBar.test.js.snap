@@ -98,9 +98,6 @@ exports[`<MainMenuBar /> renders 1`] = `
     >
       JBrowse
     </h6>
-    <div
-      style="width: 0px;"
-    />
   </div>
 </header>
 `;

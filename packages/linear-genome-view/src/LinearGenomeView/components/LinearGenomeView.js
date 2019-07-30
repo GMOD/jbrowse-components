@@ -54,15 +54,7 @@ function LinearGenomeView(props) {
   const scaleBarHeight = 32
   const { classes, model } = props
   const session = getSession(model)
-  const {
-    id,
-    staticBlocks,
-    tracks,
-    bpPerPx,
-    width,
-    controlsWidth,
-    offsetPx,
-  } = model
+  const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
@@ -71,8 +63,6 @@ function LinearGenomeView(props) {
     scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
   const style = {
     display: 'grid',
-    width: `${width}px`,
-    height: `${height}px`,
     position: 'relative',
     gridTemplateRows: `[scale-bar] auto ${tracks
       .map(
@@ -137,7 +127,6 @@ function LinearGenomeView(props) {
             blocks={staticBlocks}
             offsetPx={offsetPx}
             horizontallyFlipped={model.horizontallyFlipped}
-            width={model.viewingRegionWidth}
           />
         </Rubberband>
 
@@ -166,7 +155,6 @@ function LinearGenomeView(props) {
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}
             trackId={track.id}
-            width={model.viewingRegionWidth}
             height={track.height}
           >
             <track.RenderingComponent
