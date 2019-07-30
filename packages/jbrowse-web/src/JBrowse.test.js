@@ -199,18 +199,6 @@ describe('some error state', () => {
       waitForElement(() => getByText('Max height reached')),
     ).resolves.toBeTruthy()
   })
-  it('test that bam with contigA instead of ctgA displays', async () => {
-    const state = rootModel.create({ jbrowse: config })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    fireEvent.click(
-      await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_bam_altname'),
-      ),
-    )
-    await expect(
-      waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
-    ).resolves.toBeTruthy()
-  })
 })
 
 test('lollipop track test', async () => {
