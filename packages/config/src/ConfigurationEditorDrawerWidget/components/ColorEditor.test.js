@@ -1,8 +1,6 @@
 import React from 'react'
 import { render, fireEvent } from 'react-testing-library'
 
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import { ColorPicker } from './ColorEditor'
 
 describe('ColorPicker widget', () => {

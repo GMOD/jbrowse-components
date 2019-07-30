@@ -3,7 +3,6 @@ import {
   fireEvent,
   render,
   waitForElement,
-  waitForDomChange,
 } from 'react-testing-library'
 import React from 'react'
 import fetchMock from 'fetch-mock'
@@ -231,7 +230,7 @@ test('lollipop track test', async () => {
 
 test('variant track test - opens feature detail view', async () => {
   const state = jbrowseModel.create(config)
-  const { getByTestId: byId, queryAllByTestId, getByText, container } = render(
+  const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
   await waitForElement(() => getByText('JBrowse'))
@@ -274,7 +273,6 @@ describe('test configuration editor', () => {
       getByText,
       getByTitle,
       getByDisplayValue,
-      container,
     } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('JBrowse'))
     state.session.views[0].setNewView(0.05, 5000)
