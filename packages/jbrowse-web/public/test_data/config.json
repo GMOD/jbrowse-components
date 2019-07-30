@@ -1259,13 +1259,16 @@
         }
       ],
       "drawerWidgets": {
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "volvox_example"
         }
       },
       "activeDrawerWidgets": {
-        "sessionManager": "sessionManager"
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       },
       "menuBars": [
         {
