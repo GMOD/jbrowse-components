@@ -285,11 +285,11 @@ describe('test configuration editor', () => {
     ).resolves.toBeTruthy()
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
-    const ret = await waitForElement(() => byId('vcf-2560'))
     // TODO: remove timeout which waits for SSR re-render
     // Note: a series of like 5 or 6 waitForDomChange calls
     // on container also works instead of timeout
     await timeout(1000)
+    const ret = await waitForElement(() => byId('vcf-2560'))
     expect(ret).toMatchSnapshot()
   })
 })
