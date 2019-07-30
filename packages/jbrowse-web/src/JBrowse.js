@@ -34,7 +34,12 @@ export default observer(({ config }) => {
         const urlSession = params.get('session')
         if (urlSession)
           try {
-            r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+            const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
+              urlSession,
+            )
+            if (savedSessionIndex !== -1)
+              r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
+            else r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
           } catch (error) {
             console.error('could not load session from URL', error)
           }
