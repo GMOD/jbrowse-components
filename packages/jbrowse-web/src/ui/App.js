@@ -33,14 +33,14 @@ const styles = theme => ({
   },
   menuBarsAndComponents: {
     flex: '1 100%',
+    height: '100%',
+    overflowY: 'auto',
   },
   defaultDrawer: {
     flex: '1 100%',
   },
   components: {
     display: 'block',
-    overflowY: 'auto',
-    height: '100%',
   },
   drawerCloseButton: {
     float: 'right',
@@ -56,7 +56,7 @@ const styles = theme => ({
   },
   developer: {
     background: 'white',
-    padding: '0 10px 10px 10px',
+    display: 'block',
   },
 })
 
