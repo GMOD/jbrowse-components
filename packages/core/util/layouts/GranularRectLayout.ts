@@ -506,7 +506,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       const x1 = region.start
       const x2 = region.end
       if (segmentsIntersect(x1, x2, y1, y2)) {
-        regionRectangles[id] = [x1, t, x2, b]
+        regionRectangles[id] = [y1, t, y2, b]
       }
     }
     return { rectangles: regionRectangles, totalHeight: this.getTotalHeight() }
