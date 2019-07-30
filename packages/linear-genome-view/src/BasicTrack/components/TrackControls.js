@@ -3,11 +3,10 @@ import React from 'react'
 import { PropTypes, observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
-import { withStyles, IconButton, Icon } from '@material-ui/core'
-import Typography from '@material-ui/core/Typography'
+import { withStyles, IconButton, Icon, Typography } from '@material-ui/core'
+import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import ConfigureToggleButton from '@gmod/jbrowse-core/components/ConfigureToggleButton'
 
 import buttonStyles from '../../LinearGenomeView/components/buttonStyles'
 
@@ -30,9 +29,9 @@ const styles = theme => ({
 
 function TrackControls({ track, view, classes, onConfigureClick }) {
   let trackName = getConf(track, 'name') || track.id
+  const session = getSession(track)
   if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Refence Sequence'
-    const session = getSession(view)
     session.datasets.forEach(datsetConf => {
       const { assembly } = datsetConf
       if (assembly.sequence === track.configuration)
@@ -49,11 +48,23 @@ function TrackControls({ track, view, classes, onConfigureClick }) {
         <Icon fontSize="small">close</Icon>
       </IconButton>
       {track.showConfigurationButton ? (
-        <ConfigureToggleButton
-          onClick={onConfigureClick}
+        <ToggleButton
+          type="button"
           title="configure track"
-          model={track}
-        />
+          size="small"
+          style={{ minWidth: 0 }}
+          className={classes.toggleButton}
+          selected={
+            session.visibleDrawerWidget &&
+            session.visibleDrawerWidget.id === 'configEditor' &&
+            session.visibleDrawerWidget.target.configId ===
+              track.configuration.configId
+          }
+          value="configure"
+          onClick={onConfigureClick}
+        >
+          <Icon fontSize="small">settings</Icon>
+        </ToggleButton>
       ) : null}
       <Typography variant="body1" className={classes.trackName}>
         {trackName}

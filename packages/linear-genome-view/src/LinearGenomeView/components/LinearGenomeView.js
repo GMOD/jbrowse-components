@@ -4,9 +4,10 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React from 'react'
 
 import ScaleBar from './ScaleBar'
+import Rubberband from './Rubberband'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
@@ -45,47 +46,9 @@ const styles = theme => ({
     position: 'absolute',
     top: '0px',
   },
-  rubberband: {
-    height: '10000px',
-    background: '#aad8',
-    position: 'absolute',
-    zIndex: 9999,
-  },
-  rubberBandContainer: {
-    position: 'relative',
-    cursor: 'crosshair',
-    zIndex: 999,
-  },
 
   ...buttonStyles(theme),
 })
-
-const HighlightRegion = props => {
-  const { classes, rubberband } = props
-
-  let leftPx
-  let rightPx
-  if (rubberband) {
-    ;[leftPx, rightPx] = rubberband
-    if (rightPx < leftPx) {
-      ;[leftPx, rightPx] = [rightPx, leftPx]
-    }
-  }
-  return (
-    <div
-      className={classes.rubberband}
-      style={{
-        left: leftPx,
-        width: rightPx - leftPx,
-      }}
-    />
-  )
-}
-
-HighlightRegion.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  rubberband: ReactPropTypes.array.isRequired,
-}
 
 function LinearGenomeView(props) {
   const scaleBarHeight = 32
@@ -100,17 +63,6 @@ function LinearGenomeView(props) {
     controlsWidth,
     offsetPx,
   } = model
-
-  // Scrolling event handlers
-  const [mouseState, setMouseState] = useState({
-    dragging: false,
-    previousMouseX: undefined,
-  })
-  // Rubberband event handlers
-  const [rubberbandState, setRubberbandState] = useState({
-    dragging: false,
-  })
-
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
@@ -136,47 +88,6 @@ function LinearGenomeView(props) {
         className={classes.linearGenomeView}
         key={`view-${id}`}
         style={style}
-        onWheel={event => model.horizontalScroll(event.deltaX)}
-        onMouseMove={event => {
-          if (mouseState.dragging && mouseState.previousMouseX !== undefined) {
-            const distance = event.clientX - mouseState.previousMouseX
-            if (distance) model.horizontalScroll(-distance)
-          }
-          setMouseState({
-            dragging: mouseState.dragging,
-            previousMouseX: event.clientX,
-          })
-          if (rubberbandState.dragging) {
-            // prevent mouse selections over text
-            event.preventDefault()
-            setRubberbandState({
-              ...rubberbandState,
-              end: event.clientX,
-            })
-          }
-        }}
-        onMouseLeave={event =>
-          setMouseState({ dragging: false, previousMouseX: undefined })
-        }
-        onMouseDown={event => {
-          setMouseState({ dragging: true, previousMouseX: event.clientX })
-        }}
-        onMouseUp={event => {
-          setMouseState({ dragging: false, previousMouseX: undefined })
-          if (rubberbandState.dragging) {
-            setRubberbandState({ dragging: false })
-            let leftPx = rubberbandState.start - model.controlsWidth
-            let rightPx = rubberbandState.end - model.controlsWidth
-            if (rightPx < leftPx) {
-              ;[leftPx, rightPx] = [rightPx, leftPx]
-            }
-            if (rightPx - leftPx > 3) {
-              const leftOffset = model.pxToBp(leftPx)
-              const rightOffset = model.pxToBp(rightPx)
-              model.moveTo(leftOffset, rightOffset)
-            }
-          }
-        }}
       >
         <div
           className={classnames(classes.controls, classes.viewControls)}
@@ -210,33 +121,25 @@ function LinearGenomeView(props) {
           )}
         </div>
 
-        <ScaleBar
+        <Rubberband
           style={{
             gridColumn: 'blocks',
             gridRow: 'scale-bar',
-            cursor: 'crosshair',
           }}
-          height={scaleBarHeight}
-          bpPerPx={bpPerPx}
-          blocks={staticBlocks}
           offsetPx={offsetPx}
-          horizontallyFlipped={model.horizontallyFlipped}
-          width={model.viewingRegionWidth}
-          onMouseDown={event => {
-            setRubberbandState({
-              dragging: true,
-              start: event.clientX,
-              end: event.clientX + 1,
-            })
-            event.stopPropagation()
-          }}
-        />
-        {rubberbandState.dragging ? (
-          <HighlightRegion
-            rubberband={[rubberbandState.start, rubberbandState.end]}
-            {...props}
+          blocks={staticBlocks}
+          bpPerPx={bpPerPx}
+          model={model}
+        >
+          <ScaleBar
+            height={scaleBarHeight}
+            bpPerPx={bpPerPx}
+            blocks={staticBlocks}
+            offsetPx={offsetPx}
+            horizontallyFlipped={model.horizontallyFlipped}
+            width={model.viewingRegionWidth}
           />
-        ) : null}
+        </Rubberband>
 
         <div
           className={classes.zoomControls}
@@ -271,6 +174,7 @@ function LinearGenomeView(props) {
               offsetPx={offsetPx}
               bpPerPx={bpPerPx}
               blockState={{}}
+              onHorizontalScroll={model.horizontalScroll}
             />
           </TrackRenderingContainer>,
           <TrackResizeHandle

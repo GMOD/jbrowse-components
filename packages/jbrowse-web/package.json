@@ -31,15 +31,15 @@
     "@gmod/jbrowse-plugin-variants": "^2.0.0",
     "@gmod/jbrowse-plugin-wiggle": "^2.0.0",
     "@librpc/web": "git+https://github.com/rbuels/librpc-web.git",
-    "@material-ui/core": "^4.0.1",
-    "@material-ui/lab": "^4.0.0-alpha.0",
-    "@material-ui/styles": "^4.0.1",
+    "@material-ui/core": "^4.0.0",
+    "@material-ui/styles": "^4.0.0",
     "classnames": "^2.2.6",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
     "mobx-state-tree": "3.10.2",
     "mst-middlewares": "3.10.2",
     "prop-types": "^15.7.2",
+    "raf": "^3.4.1",
     "react": "^16.8.0",
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^16.8.0",
@@ -55,5 +55,6 @@
     "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
     "test": "node scripts/test.js",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
-  }
+  },
+  "homepage": "."
 }

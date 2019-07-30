@@ -125,7 +125,7 @@ export default pluginManager => {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
           return self.rpcManager
             .call(
-              assembly.configId,
+              adapterConfig.configId,
               'getRegions',
               {
                 sessionId: assemblyName,

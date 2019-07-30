@@ -14,22 +14,27 @@ import rootModel from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
 
-export default observer(({ config }) => {
+export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
-  const [root, setRoot] = useState({})
+  const [root, setRoot] = useState(initialState)
 
   useEffect(() => {
     async function loadConfig() {
       try {
-        let configSnapshot = config
-        const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-        if (localStorageConfig) configSnapshot = JSON.parse(localStorageConfig)
-        if (configSnapshot.uri || configSnapshot.localPath) {
-          const configText = await openLocation(config).readFile('utf8')
-          configSnapshot = JSON.parse(configText)
+        let r
+        if (initialState) r = initialState
+        else {
+          let configSnapshot = config || {}
+          const localStorageConfig = localStorage.getItem('jbrowse-web-data')
+          if (localStorageConfig)
+            configSnapshot = JSON.parse(localStorageConfig)
+          if (configSnapshot.uri || configSnapshot.localPath) {
+            const configText = await openLocation(config).readFile('utf8')
+            configSnapshot = JSON.parse(configText)
+          }
+          r = rootModel.create({ jbrowse: configSnapshot })
         }
-        const r = rootModel.create({ jbrowse: configSnapshot })
         const params = new URL(document.location).searchParams
         const urlSession = params.get('session')
         if (urlSession)
@@ -77,17 +82,17 @@ export default observer(({ config }) => {
     }
 
     loadConfig()
-  }, [config, session])
+  }, [config, initialState])
 
   useEffect(() => {
     let disposer = () => {}
-    if (root.session)
+    if (root && root.session)
       disposer = onSnapshot(root.session, snapshot => {
         root.jbrowse.updateSavedSession(snapshot)
       })
 
     return disposer
-  }, [root.jbrowse, root.session])
+  }, [root])
 
   useEffect(() => {
     let localStorageSessionIntervalId
@@ -114,7 +119,7 @@ export default observer(({ config }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  const { session, jbrowse } = root
+  const { session, jbrowse } = root || {}
   const { configuration } = jbrowse || {}
   useEffect(() => {
     let urlIntervalId

@@ -13,7 +13,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-9"
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -33,7 +33,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-10"
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -56,9 +56,14 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </button>
     </div>
     <div
-      class="ScaleBar-scaleBar-38"
-      style="grid-column: blocks; grid-row: scale-bar; cursor: crosshair; height: 32px; width: 412px;"
-    />
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
+    >
+      <div
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
+      />
+    </div>
     <div
       class="LinearGenomeView-zoomControls-6"
       style="right: 4px; z-index: 1000;"
@@ -156,7 +161,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-74 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -187,23 +192,23 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-106"
+      class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
     >
       <div
-        class="Track-track-107"
+        class="Track-track-106"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-108"
+          class="TrackBlocks-trackBlocks-107"
           data-testid="Block"
         />
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-111"
+      class="TrackResizeHandle-dragHandle-110"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -224,7 +229,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-9"
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -244,7 +249,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-10"
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -267,111 +272,116 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
     </div>
     <div
-      class="ScaleBar-scaleBar-38"
-      style="grid-column: blocks; grid-row: scale-bar; cursor: crosshair; height: 32px; width: 412px;"
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
     >
       <div
-        class="Block-block-112 Block-leftBorder-113 Block-rightBorder-114"
-        style="left: 0px; width: 100px;"
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
       >
-        <svg
-          height="32"
-          width="100"
+        <div
+          class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
+          style="left: 0px; width: 100px;"
         >
-          <line
-            class="Ruler-majorTick-116"
-            data-bp="-1"
-            stroke="#555"
-            stroke-width="1"
-            x1="-1"
-            x2="-1"
-            y1="0"
-            y2="6"
-          />
-          <line
-            class="Ruler-minorTick-117"
-            data-bp="19"
-            stroke="#999"
-            stroke-width="1"
-            x1="19"
-            x2="19"
-            y1="0"
-            y2="4"
-          />
-          <line
-            class="Ruler-minorTick-117"
-            data-bp="39"
-            stroke="#999"
-            stroke-width="1"
-            x1="39"
-            x2="39"
-            y1="0"
-            y2="4"
-          />
-          <line
-            class="Ruler-minorTick-117"
-            data-bp="59"
-            stroke="#999"
-            stroke-width="1"
-            x1="59"
-            x2="59"
-            y1="0"
-            y2="4"
-          />
-          <line
-            class="Ruler-minorTick-117"
-            data-bp="79"
-            stroke="#999"
-            stroke-width="1"
-            x1="79"
-            x2="79"
-            y1="0"
-            y2="4"
-          />
-          <line
-            class="Ruler-majorTick-116"
-            data-bp="99"
-            stroke="#555"
-            stroke-width="1"
-            x1="99"
-            x2="99"
-            y1="0"
-            y2="6"
-          />
-          <line
-            class="Ruler-minorTick-117"
-            data-bp="119"
-            stroke="#999"
-            stroke-width="1"
-            x1="119"
-            x2="119"
-            y1="0"
-            y2="4"
-          />
-          <text
-            class="Ruler-majorTickLabel-115"
-            dominant-baseline="hanging"
-            style="font-size: 11px;"
-            x="-4"
-            y="7"
+          <svg
+            height="32"
+            width="100"
           >
-            0
-          </text>
-          <text
-            class="Ruler-majorTickLabel-115"
-            dominant-baseline="hanging"
-            style="font-size: 11px;"
-            x="96"
-            y="7"
-          >
-            100
-          </text>
-        </svg>
-      </div>
-      <div
-        class="ScaleBar-refLabel-39"
-      >
-        ctgA
+            <line
+              class="Ruler-majorTick-115"
+              data-bp="-1"
+              stroke="#555"
+              stroke-width="1"
+              x1="-1"
+              x2="-1"
+              y1="0"
+              y2="6"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="19"
+              stroke="#999"
+              stroke-width="1"
+              x1="19"
+              x2="19"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="39"
+              stroke="#999"
+              stroke-width="1"
+              x1="39"
+              x2="39"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="59"
+              stroke="#999"
+              stroke-width="1"
+              x1="59"
+              x2="59"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="79"
+              stroke="#999"
+              stroke-width="1"
+              x1="79"
+              x2="79"
+              y1="0"
+              y2="4"
+            />
+            <line
+              class="Ruler-majorTick-115"
+              data-bp="99"
+              stroke="#555"
+              stroke-width="1"
+              x1="99"
+              x2="99"
+              y1="0"
+              y2="6"
+            />
+            <line
+              class="Ruler-minorTick-116"
+              data-bp="119"
+              stroke="#999"
+              stroke-width="1"
+              x1="119"
+              x2="119"
+              y1="0"
+              y2="4"
+            />
+            <text
+              class="Ruler-majorTickLabel-114"
+              dominant-baseline="hanging"
+              style="font-size: 11px;"
+              x="-4"
+              y="7"
+            >
+              0
+            </text>
+            <text
+              class="Ruler-majorTickLabel-114"
+              dominant-baseline="hanging"
+              style="font-size: 11px;"
+              x="96"
+              y="7"
+            >
+              100
+            </text>
+          </svg>
+        </div>
+        <div
+          class="ScaleBar-refLabel-39"
+        >
+          ctgA
+        </div>
       </div>
     </div>
     <div
@@ -471,7 +481,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-74 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -502,25 +512,25 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-106"
+      class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
     >
       <div
-        class="Track-track-107"
+        class="Track-track-106"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-108"
+          class="TrackBlocks-trackBlocks-107"
           data-testid="Block"
         >
           <div
-            class="Block-block-112 Block-leftBorder-113 Block-rightBorder-114"
+            class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-122"
+              class="Component-blockMessage-121"
             >
               region assembly does not match track assembly
             </div>
@@ -529,7 +539,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-111"
+      class="TrackResizeHandle-dragHandle-110"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -558,7 +568,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root ConfigureToggleButton-button-75 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-74 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -589,25 +599,25 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-106"
+      class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
       style="grid-row: track-bar; grid-column: blocks; width: 412px; height: 20px;"
     >
       <div
-        class="Track-track-107"
+        class="Track-track-106"
         data-testid="track-testConfig2"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-108"
+          class="TrackBlocks-trackBlocks-107"
           data-testid="Block"
         >
           <div
-            class="Block-block-112 Block-leftBorder-113 Block-rightBorder-114"
+            class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-122"
+              class="Component-blockMessage-121"
             >
               region assembly does not match track assembly
             </div>
@@ -616,7 +626,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-111"
+      class="TrackResizeHandle-dragHandle-110"
       role="presentation"
       style="grid-row: resize-bar; grid-column: span 2;"
     />
@@ -637,7 +647,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-9"
+        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -657,7 +667,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-10"
+        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -680,9 +690,14 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       </button>
     </div>
     <div
-      class="ScaleBar-scaleBar-38"
-      style="grid-column: blocks; grid-row: scale-bar; cursor: crosshair; height: 32px; width: 412px;"
-    />
+      class="Rubberband-rubberBandContainer-37"
+      role="presentation"
+    >
+      <div
+        class="ScaleBar-scaleBar-38"
+        style="height: 32px; width: 412px;"
+      />
+    </div>
     <div
       class="LinearGenomeView-zoomControls-6"
       style="right: 4px; z-index: 1000;"

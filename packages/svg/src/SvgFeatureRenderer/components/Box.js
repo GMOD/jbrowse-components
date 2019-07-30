@@ -7,9 +7,9 @@ import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import './SvgFeatureRendering.scss'
 
-function Label({ layoutRecord, fontHeight, labelWidth, color, children }) {
+const fontWidthScaleFactor = 0.55
+function Label({ layoutRecord, fontHeight, color, children }) {
   const otherProps = {}
-  if (labelWidth) otherProps.textLength = labelWidth
   return (
     <text
       x={layoutRecord.left}
@@ -27,7 +27,6 @@ Label.propTypes = {
     left: ReactPropTypes.number.isRequired,
   }).isRequired,
   fontHeight: ReactPropTypes.number.isRequired,
-  labelWidth: ReactPropTypes.number.isRequired,
   children: ReactPropTypes.node.isRequired,
   color: ReactPropTypes.string,
 }
@@ -109,7 +108,7 @@ class Box extends Component {
       ['labels', 'fontSize'],
       ['feature'],
     )
-    const fontWidth = fontHeight * 0.55
+    const fontWidth = fontHeight * fontWidthScaleFactor
     const shouldShowName = /\S/.test(name)
     const shouldShowDescription = /\S/.test(description)
     const textVerticalPadding = 2
@@ -126,6 +125,7 @@ class Box extends Component {
           featureWidth + maxFeatureGlyphExpansion,
         ),
       )
+
       rootLayout.addChild(
         'nameLabel',
         0,
@@ -233,11 +233,10 @@ class Box extends Component {
         shouldShowDescription,
         shouldShowName,
         fontHeight,
-        labelWidth,
-        descriptionWidth,
       },
       selectedFeatureId,
     } = this.props
+    const exp = readConfObject(config, 'maxFeatureGlyphExpansion')
 
     const style = { fill: readConfObject(config, 'color1', [feature]) }
     if (String(selectedFeatureId) === String(feature.id())) {
@@ -245,7 +244,17 @@ class Box extends Component {
     }
 
     const featureLayout = rootLayout.getSubRecord('feature')
-
+    const fontWidth = fontHeight * fontWidthScaleFactor
+    const LabelText = ({ width, text }) => {
+      const totalWidth = width + exp
+      return (
+        <>
+          {fontWidth * text.length > totalWidth
+            ? `${text.slice(0, totalWidth / fontWidth)}...`
+            : text}
+        </>
+      )
+    }
     return (
       <g transform={`translate(${rootLayout.left} ${rootLayout.top})`}>
         <rect
@@ -272,9 +281,8 @@ class Box extends Component {
             layoutRecord={rootLayout.getSubRecord('nameLabel')}
             fontHeight={fontHeight}
             color={readConfObject(config, ['labels', 'nameColor'], [feature])}
-            labelWidth={labelWidth}
           >
-            {name}
+            <LabelText width={featureLayout.width} text={name} />
           </Label>
         )}
         {!shouldShowDescription ? null : (
@@ -286,9 +294,8 @@ class Box extends Component {
               ['labels', 'descriptionColor'],
               [feature],
             )}
-            labelWidth={descriptionWidth}
           >
-            {description}
+            <LabelText width={featureLayout.width} text={description} />
           </Label>
         )}
       </g>
