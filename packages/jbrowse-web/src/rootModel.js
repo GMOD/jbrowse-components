@@ -10,9 +10,15 @@ const RootModel = types
   .actions(self => ({
     setSession(sessionSnapshot) {
       self.session = sessionSnapshot
+      self.jbrowse.updateSavedSession(sessionSnapshot)
     },
     setDefaultSession() {
-      self.setSession(self.jbrowse.defaultSession)
+      self.setSession({
+        ...self.jbrowse.defaultSession,
+        name: `${self.jbrowse.defaultSession.name} ${new Date(
+          Date.now(),
+        ).toISOString()}`,
+      })
     },
     renameCurrentSession(sessionName) {
       const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))

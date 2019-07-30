@@ -23,19 +23,32 @@ export default observer(({ config }) => {
     async function loadConfig() {
       try {
         let configSnapshot = config
-        if (config.uri || config.localPath) {
+        const localStorageConfig = localStorage.getItem('jbrowse-web-data')
+        if (localStorageConfig) configSnapshot = JSON.parse(localStorageConfig)
+        if (configSnapshot.uri || configSnapshot.localPath) {
           const configText = await openLocation(config).readFile('utf8')
           configSnapshot = JSON.parse(configText)
         }
         const r = rootModel.create({ jbrowse: configSnapshot })
         const params = new URL(document.location).searchParams
-        const session = params.get('session')
-        if (session)
+        const urlSession = params.get('session')
+        if (urlSession)
           try {
-            r.setSession(JSON.parse(fromUrlSafeB64(session)))
+            r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
           } catch (error) {
             console.error('could not load session from URL', error)
           }
+        else {
+          const localStorageSession = localStorage.getItem(
+            'jbrowse-web-session',
+          )
+          try {
+            const parsedSession = JSON.parse(localStorageSession)
+            if (parsedSession) r.setSession(parsedSession)
+          } catch (error) {
+            console.error('could not load session from local storage', error)
+          }
+        }
         if (!r.session) {
           if (r.jbrowse.savedSessions.length) {
             const { name } = r.jbrowse.savedSessions[0]
@@ -59,7 +72,7 @@ export default observer(({ config }) => {
     }
 
     loadConfig()
-  }, [config])
+  }, [config, session])
 
   useEffect(() => {
     let disposer = () => {}
@@ -72,17 +85,26 @@ export default observer(({ config }) => {
   }, [root.jbrowse, root.session])
 
   useEffect(() => {
-    let localStorageIntervalId
-    if (status === 'loaded')
-      localStorageIntervalId = setInterval(() => {
+    let localStorageSessionIntervalId
+    let localStorageDataIntervalId
+    if (status === 'loaded') {
+      localStorageSessionIntervalId = setInterval(() => {
         localStorage.setItem(
-          'jbrowse-web-data',
+          'jbrowse-web-session',
           JSON.stringify(getSnapshot(root.session)),
         )
       }, 3000)
+      localStorageDataIntervalId = setInterval(() => {
+        localStorage.setItem(
+          'jbrowse-web-data',
+          JSON.stringify(getSnapshot(root.jbrowse)),
+        )
+      }, 3000)
+    }
 
     return () => {
-      clearInterval(localStorageIntervalId)
+      clearInterval(localStorageSessionIntervalId)
+      clearInterval(localStorageDataIntervalId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])

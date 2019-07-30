@@ -9,9 +9,10 @@ describe('Root MST model', () => {
       },
     })
     expect(root.session).toBeUndefined()
+    expect(root.jbrowse.savedSessions.length).toBe(0)
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
-    expect(root.jbrowse.savedSessions.length).toBe(0)
+    expect(root.jbrowse.savedSessions.length).toBe(1)
     expect(root.jbrowse.datasets.length).toBe(0)
     expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot({
       configId: expect.any(String),

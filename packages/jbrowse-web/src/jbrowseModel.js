@@ -58,7 +58,7 @@ window.resolveIdentifier = resolveIdentifier
 const JBrowseWeb = types
   .model('JBrowseWeb', {
     defaultSession: types.optional(types.frozen(Session), {
-      name: `New Session ${new Date(Date.now()).toISOString()}`,
+      name: `New Session`,
       menuBars: [{ type: 'MainMenuBar' }],
     }),
     savedSessions: types.array(types.frozen(Session)),
