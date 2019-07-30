@@ -12,9 +12,8 @@ import { PropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import { withSize } from 'react-sizeme'
-import { Scrollbars } from 'react-custom-scrollbars'
 
+import { withSize } from 'react-sizeme'
 import Drawer from './Drawer'
 
 const styles = theme => ({
@@ -29,17 +28,22 @@ const styles = theme => ({
     overflow: 'hidden',
     background: '#808080',
   },
-  menuBars: {},
-  menuBarsAndComponents: {
-    display: 'flex',
-    flexDirection: 'column',
+  menuBars: {
+    display: 'block',
   },
-  components: {},
-  drawerCloseButton: {
-    float: 'right',
+  menuBarsAndComponents: {
+    flex: '1 100%',
+    height: '100%',
+    overflowY: 'auto',
   },
   defaultDrawer: {
-    margin: theme.spacing(1),
+    flex: '1 100%',
+  },
+  components: {
+    display: 'block',
+  },
+  drawerCloseButton: {
+    float: 'right',
   },
   drawerToolbar: {
     paddingLeft: theme.spacing(2),
@@ -52,15 +56,15 @@ const styles = theme => ({
   },
   developer: {
     background: 'white',
-    padding: '0 10px 10px 10px',
+    display: 'block',
   },
 })
 
 function App(props) {
   const {
     classes,
-    size,
     session,
+    size,
     sessionNames,
     addSessionSnapshot,
     activateSession,
@@ -70,7 +74,7 @@ function App(props) {
 
   useEffect(() => {
     session.updateWidth(size.width)
-  }, [session, size])
+  }, [session, size.width])
 
   const { visibleDrawerWidget } = session
   let drawerComponent
@@ -82,7 +86,7 @@ function App(props) {
     } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
     drawerComponent = (
       <Slide direction="left" in>
-        <div>
+        <div className={classes.defaultDrawer}>
           <AppBar position="static">
             <Toolbar
               variant="dense"
@@ -149,10 +153,7 @@ function App(props) {
             )
           })}
         </div>
-        <Scrollbars
-          className={classes.components}
-          style={{ width: session.width }}
-        >
+        <div className={classes.components}>
           {session.views.map(view => {
             const { ReactComponent } = pluginManager.getViewType(view.type)
             return (
@@ -189,7 +190,7 @@ function App(props) {
               ))}
             </select>
           </div>
-        </Scrollbars>
+        </div>
       </div>
       <Drawer
         session={session}

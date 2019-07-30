@@ -6,7 +6,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 >
   <div
     class="LinearGenomeView-linearGenomeView-2"
-    style="display: grid; width: 512px; height: 55px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
@@ -61,7 +61,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     >
       <div
         class="ScaleBar-scaleBar-38"
-        style="height: 32px; width: 412px;"
+        style="height: 32px;"
       />
     </div>
     <div
@@ -194,7 +194,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
+      style="grid-row: track-foo; grid-column: blocks; height: 20px;"
     >
       <div
         class="Track-track-106"
@@ -222,7 +222,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 >
   <div
     class="LinearGenomeView-linearGenomeView-2"
-    style="display: grid; width: 512px; height: 78px; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
@@ -277,7 +277,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       <div
         class="ScaleBar-scaleBar-38"
-        style="height: 32px; width: 412px;"
+        style="height: 32px;"
       >
         <div
           class="Block-block-111 Block-leftBorder-112 Block-rightBorder-113"
@@ -514,7 +514,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-foo; grid-column: blocks; width: 412px; height: 20px;"
+      style="grid-row: track-foo; grid-column: blocks; height: 20px;"
     >
       <div
         class="Track-track-106"
@@ -601,7 +601,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-bar; grid-column: blocks; width: 412px; height: 20px;"
+      style="grid-row: track-bar; grid-column: blocks; height: 20px;"
     >
       <div
         class="Track-track-106"
@@ -640,7 +640,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
 >
   <div
     class="LinearGenomeView-linearGenomeView-2"
-    style="display: grid; width: 512px; height: 32px; position: relative; grid-template-rows: [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
@@ -695,7 +695,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     >
       <div
         class="ScaleBar-scaleBar-38"
-        style="height: 32px; width: 412px;"
+        style="height: 32px;"
       />
     </div>
     <div
