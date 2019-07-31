@@ -29,7 +29,7 @@ export default pluginManager => {
     stateModel: ChordTrackStateModel,
   } = jbrequire(require('../../ChordTrack/models/ChordTrack'))
 
-  const { makeAbortableReaction } = jbrequire(require('./util'))
+  const refNameMapKeeper = jbrequire(require('./refNameMapKeeper'))
 
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',
@@ -44,6 +44,7 @@ export default pluginManager => {
     .compose(
       'StructuralVariantChordTrack',
       ChordTrackStateModel,
+      refNameMapKeeper,
       types.model({
         type: types.literal('StructuralVariantChordTrack'),
         configuration: ConfigurationReference(configSchema),
@@ -82,9 +83,6 @@ export default pluginManager => {
         return slices
       },
     }))
-    .volatile(self => ({
-      refNameMap: undefined,
-    }))
     .actions(self => ({
       afterAttach() {
         const renderDisposer = reaction(
@@ -99,38 +97,6 @@ export default pluginManager => {
           },
         )
         addDisposer(self, renderDisposer)
-
-        makeAbortableReaction(
-          self,
-          'loadAssemblyRefNameMap',
-          () => ({
-            root: getRoot(self),
-            assemblyName: readConfObject(
-              getContainingAssembly(self.configuration),
-              'assemblyName',
-            ),
-          }),
-          ({ root, assemblyName }, signal) => {
-            return root.assemblyManager.getRefNameMapForAdapter(
-              getConf(self, 'adapter'),
-              assemblyName,
-              { signal },
-            )
-          },
-          {
-            fireImmediately: true,
-            delay: 300,
-          },
-        )
-      },
-
-      loadAssemblyRefNameMapStarted() {},
-      loadAssemblyRefNameMapSuccess(result) {
-        console.log('loaded refname map', result)
-        self.refNameMap = result
-      },
-      loadAssemblyRefNameMapError(error) {
-        console.error(error)
       },
 
       setLoading(abortController) {

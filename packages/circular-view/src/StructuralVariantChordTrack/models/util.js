@@ -5,12 +5,13 @@ export default ({ jbrequire }) => {
   const { isAbortException } = jbrequire('@gmod/jbrowse-core/util')
 
   /**
-   * makes a mobx reaction with the given functions, with additional wiring to call actions
+   * makes a mobx reaction with the given functions, that calls actions
    * on the model for each stage of execution, and to abort the reaction function when the
    * model is destroyed.
    *
-   * will call flowNameStarted(signal), flowNameSuccess(result), and flowNameError(error) actions
-   * on the given state tree model.
+   * Will call flowNameStarted(signal), lowNameSuccess(result), and
+   * flowNameError(error) actions on the given state tree model when the
+   * async reaction function starts, completes, and errors respectively.
    *
    * @param {StateTreeNode} self
    * @param {string} flowName
