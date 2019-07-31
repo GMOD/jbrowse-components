@@ -2,6 +2,7 @@ import { toByteArray, fromByteArray } from 'base64-js'
 import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import fromEntries from 'object.fromentries'
+import { useEffect, useState } from 'react'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 
@@ -67,6 +68,22 @@ function b64PadSuffix(b64: string): string {
       throw new Error('base64 not a valid length')
   }
   return b64 + '='.repeat(num)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useDebounce(value: any, delay: number): any {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
 }
 
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {

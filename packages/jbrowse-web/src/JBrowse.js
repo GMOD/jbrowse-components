@@ -1,12 +1,16 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
-import { toUrlSafeB64, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
+import {
+  toUrlSafeB64,
+  fromUrlSafeB64,
+  useDebounce,
+} from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
-import { getSnapshot, onSnapshot } from 'mobx-state-tree'
+import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
@@ -18,6 +22,12 @@ export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState)
+  const [url, setUrl] = useState()
+  const debouncedUrl = useDebounce(url, 400)
+
+  useEffect(() => {
+    window.history.replaceState({}, '', debouncedUrl)
+  }, [debouncedUrl])
 
   useEffect(() => {
     async function loadConfig() {
@@ -95,49 +105,40 @@ export default observer(({ config, initialState }) => {
   }, [root])
 
   useEffect(() => {
-    let localStorageSessionIntervalId
-    let localStorageDataIntervalId
+    let localStorageSessionDisposer = () => {}
+    let localStorageDataDisposer = () => {}
     if (status === 'loaded') {
-      localStorageSessionIntervalId = setInterval(() => {
-        localStorage.setItem(
-          'jbrowse-web-session',
-          JSON.stringify(getSnapshot(root.session)),
-        )
-      }, 3000)
-      localStorageDataIntervalId = setInterval(() => {
-        localStorage.setItem(
-          'jbrowse-web-data',
-          JSON.stringify(getSnapshot(root.jbrowse)),
-        )
-      }, 3000)
+      localStorageSessionDisposer = onSnapshot(root.session, snapshot => {
+        localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
+      })
+      localStorageDataDisposer = onSnapshot(root.jbrowse, snapshot => {
+        localStorage.setItem('jbrowse-web-data', JSON.stringify(snapshot))
+      })
     }
 
     return () => {
-      clearInterval(localStorageSessionIntervalId)
-      clearInterval(localStorageDataIntervalId)
+      localStorageSessionDisposer()
+      localStorageDataDisposer()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [root, status])
 
   const { session, jbrowse } = root || {}
   const { configuration } = jbrowse || {}
   useEffect(() => {
-    let urlIntervalId
+    let urlDisposer
     if (session) {
       const updateUrl = readConfObject(configuration, 'updateUrl')
       if (updateUrl)
-        urlIntervalId = setInterval(() => {
+        urlDisposer = onSnapshot(session, snapshot => {
           const l = document.location
           const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-            JSON.stringify(getSnapshot(session)),
+            JSON.stringify(snapshot),
           )}`
-          window.history.replaceState({}, '', updatedUrl)
-        }, 3000)
+          setUrl(updatedUrl)
+        })
     }
 
-    return () => {
-      clearInterval(urlIntervalId)
-    }
+    return urlDisposer
   }, [configuration, session])
 
   let DisplayComponent = (
