@@ -32,26 +32,22 @@ function WiggleTrackComponent(props) {
         ? axisProps.values.filter(s => powersOfTen.includes(s))
         : axisProps.values
     return (
-      <div
+      <svg
         style={{
           position: 'absolute',
           top: 0,
           left: 300,
-          pointerEvents: 'none',
-          zIndex: 100,
           width: 35,
-          height,
+          height: '100%',
         }}
       >
-        <svg style={{ height }}>
-          <Axis
-            {...axisProps}
-            values={values}
-            format={n => n}
-            style={{ orient: RIGHT }}
-          />
-        </svg>
-      </div>
+        <Axis
+          {...axisProps}
+          values={values}
+          format={n => n}
+          style={{ orient: RIGHT }}
+        />
+      </svg>
     )
   }
 

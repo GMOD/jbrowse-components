@@ -101,7 +101,6 @@ class WiggleRendering extends Component {
         style={{
           overflow: 'hidden',
           height: this.props.height,
-          position: 'relative',
         }}
       >
         <PrerenderedCanvas {...this.props} />
