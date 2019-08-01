@@ -55,7 +55,9 @@ class Track extends Component {
     const { onHorizontalScroll } = this.props
     const delta = { x: 0, y: 0 }
     delta.x =
-      Math.abs(event.deltaY) > Math.abs(2 * event.deltaX) ? 0 : -event.deltaX
+      Math.abs(event.deltaY) > Math.abs(2 * event.deltaX)
+        ? 0
+        : -event.deltaX * (1 + event.deltaMode * 50)
     delta.y = event.deltaY * -10
 
     delta.x = Math.round(delta.x)
