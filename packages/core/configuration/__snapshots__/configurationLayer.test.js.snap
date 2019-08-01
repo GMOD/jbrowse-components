@@ -22,6 +22,7 @@ Object {
       "sub1attr1": "zook",
     },
   },
+  "name": "testSession",
   "parent": Object {
     "arrayOfSubs": Array [
       Object {
@@ -41,5 +42,6 @@ Object {
       "sub1attr1": "zonk",
     },
   },
+  "pluginManager": "mockPluginManager",
 }
 `;

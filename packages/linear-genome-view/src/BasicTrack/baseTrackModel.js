@@ -8,7 +8,8 @@ import {
   getContainingView,
   getParentRenderProps,
 } from '@gmod/jbrowse-core/util/tracks'
-import { getRoot, types } from 'mobx-state-tree'
+import { getSession } from '@gmod/jbrowse-core/util'
+import { types } from 'mobx-state-tree'
 import React from 'react'
 import TrackControls from './components/TrackControls'
 
@@ -34,7 +35,7 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
 // a reference to a track configuration (stored under
-// root.configuration.assemblies.get(assemblyName).tracks).
+// session.configuration.assemblies.get(assemblyName).tracks).
 
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
@@ -85,8 +86,8 @@ export default types
      */
     get rendererType() {
       const track = getContainingView(self)
-      const rootModel = getRoot(self)
-      const RendererType = rootModel.pluginManager.getRendererType(
+      const session = getSession(self)
+      const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
       if (!RendererType)
@@ -105,10 +106,10 @@ export default types
      */
     get adapterType() {
       const adapterConfig = getConf(self, 'adapter')
-      const rootModel = getRoot(self)
+      const session = getSession(self)
       if (!adapterConfig)
         throw new Error(`no adapter configuration provided for ${self.type}`)
-      const adapterType = rootModel.pluginManager.getAdapterType(
+      const adapterType = session.pluginManager.getAdapterType(
         adapterConfig.type,
       )
       if (!adapterType)
@@ -117,7 +118,7 @@ export default types
     },
 
     get showConfigurationButton() {
-      return !!getRoot(self).editConfiguration
+      return !!getSession(self).editConfiguration
     },
 
     /**
@@ -147,6 +148,6 @@ export default types
     },
 
     activateConfigurationUI() {
-      getRoot(self).editConfiguration(self.configuration)
+      getSession(self).editConfiguration(self.configuration)
     },
   }))

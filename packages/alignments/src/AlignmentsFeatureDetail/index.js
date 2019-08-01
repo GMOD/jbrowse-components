@@ -8,10 +8,8 @@ const stateModel = types
   .model('AlignmentsFeatureDrawerWidget', {
     id: ElementId,
     type: types.literal('AlignmentsFeatureDrawerWidget'),
+    featureData: types.frozen({}),
   })
-  .volatile(() => ({
-    featureData: {},
-  }))
   .actions(self => ({
     setFeatureData(data) {
       self.featureData = data

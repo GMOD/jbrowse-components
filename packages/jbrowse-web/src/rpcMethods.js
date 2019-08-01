@@ -122,7 +122,7 @@ export function freeResources(pluginManager, specification) {
 
   // pass the freeResources hint along to all the renderers as well
   pluginManager.getElementTypesInGroup('renderer').forEach(renderer => {
-    const count = renderer.freeResources(specification)
+    const count = renderer.freeResourcesInWorker(specification)
     if (count) deleteCount += count
   })
 

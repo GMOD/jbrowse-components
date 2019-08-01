@@ -8,9 +8,8 @@ const styles = {
     cursor: 'col-resize',
     width: 4,
     height: '100%',
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
-    left: 0,
   },
 }
 

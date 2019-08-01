@@ -1,20 +1,19 @@
 import React from 'react'
-import ShallowRenderer from 'react-test-renderer/shallow'
+import { render } from 'react-testing-library'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point
 test('one', () => {
-  const renderer = new ShallowRenderer()
-  renderer.render(
+  const { container } = render(
     <WiggleRendering
       width={500}
       height={500}
+      features={new Map()}
       highResolutionScaling={1}
       region={{ refName: 'chr1', start: 1, end: 3 }}
       bpPerPx={3}
     />,
   )
-  const result = renderer.getRenderOutput()
 
-  expect(result).toMatchSnapshot()
+  expect(container.firstChild).toMatchSnapshot()
 })

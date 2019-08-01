@@ -1,7 +1,8 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
-import { checkAbortSignal, iterMap, objectFromEntries } from '../../util'
+import { readConfObject } from '../../configuration'
+import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -34,9 +35,9 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
     if (args.regions) {
-      args.regions = [...getSnapshot(args.regions)]
+      args.regions = [...args.regions]
     }
-    if (args.region) args.region = { ...getSnapshot(args.region) }
+    if (args.region) args.region = { ...args.region }
     return args
   }
 
@@ -44,7 +45,7 @@ export default class ServerSideRenderer extends RendererType {
     // deserialize some of the results that came back from the worker
     const featuresMap = new Map()
     result.features.forEach(j => {
-      const f = SimpleFeature.fromJSON(j)
+      const f = SimpleFeature.fromJSON({ data: j })
       featuresMap.set(String(f.id()), f)
     })
     result.features = featuresMap
@@ -87,10 +88,26 @@ export default class ServerSideRenderer extends RendererType {
       'render',
       serializedArgs,
     )
-    // const result = await renderRegionWithWorker(rootModel, serializedArgs)
+    // const result = await renderRegionWithWorker(session, serializedArgs)
 
     this.deserializeResultsInClient(result, args)
     return result
+  }
+
+  getExpandedGlyphRegion(region, renderArgs) {
+    if (!region) return region
+    const { bpPerPx, config } = renderArgs
+    const maxFeatureGlyphExpansion = readConfObject(
+      config,
+      'maxFeatureGlyphExpansion',
+    )
+    if (!maxFeatureGlyphExpansion) return region
+    const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
+    return {
+      ...region,
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
+      end: Math.ceil(region.end + bpExpansion),
+    }
   }
 
   /**
@@ -122,10 +139,13 @@ export default class ServerSideRenderer extends RendererType {
     })
 
     if (requestRegions.length === 1) {
-      featureObservable = dataAdapter.getFeaturesInRegion(requestRegions[0], {
-        signal,
-        bpPerPx,
-      })
+      featureObservable = dataAdapter.getFeaturesInRegion(
+        this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+        {
+          signal,
+          bpPerPx,
+        },
+      )
     } else {
       featureObservable = dataAdapter.getFeaturesInMultipleRegions(
         requestRegions,
@@ -184,5 +204,16 @@ export default class ServerSideRenderer extends RendererType {
     // as the result of renderRegionWithWorker.
     this.serializeResultsInWorker(results, features, args)
     return results
+  }
+
+  freeResourcesInClient(rpcManager, args) {
+    const serializedArgs = this.serializeArgsInClient(args)
+
+    const stateGroupName = args.sessionId
+    return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
+  }
+
+  freeResourcesInWorker(args) {
+    /* stub method */
   }
 }

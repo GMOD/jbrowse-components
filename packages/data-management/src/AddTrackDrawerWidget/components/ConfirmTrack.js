@@ -30,9 +30,9 @@ function ConfirmTrack(props) {
     trackType,
     setTrackType,
     trackAdapter,
-    assemblyName,
-    setAssemblyName,
-    rootModel,
+    datasetName,
+    setDatasetName,
+    session,
   } = props
 
   useEffect(() => {
@@ -78,7 +78,7 @@ function ConfirmTrack(props) {
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this file type.</Typography>
   if (trackData.uri || trackData.localPath || trackData.config) {
-    let message = <></>
+    let message = null
     if (trackData.uri || trackData.localPath)
       message = (
         <Typography className={classes.spacing}>
@@ -115,7 +115,7 @@ function ConfirmTrack(props) {
           onChange={event => setTrackType(event.target.value)}
           inputProps={{ 'data-testid': 'trackTypeSelect' }}
         >
-          {rootModel.pluginManager
+          {session.pluginManager
             .getElementTypesInGroup('track')
             .map(installedTrackType => (
               <MenuItem
@@ -127,19 +127,19 @@ function ConfirmTrack(props) {
             ))}
         </TextField>
         <TextField
-          value={assemblyName}
-          label="assemblyName"
-          helperText="Assembly to which the track will be added"
+          value={datasetName}
+          label="datasetName"
+          helperText="Dataset to which the track will be added"
           select
           fullWidth
-          onChange={event => setAssemblyName(event.target.value)}
-          inputProps={{ 'data-testid': 'assemblyNameSelect' }}
+          onChange={event => setDatasetName(event.target.value)}
+          inputProps={{ 'data-testid': 'datasetNameSelect' }}
         >
-          {rootModel.configuration.assemblies.map(assembly => {
-            const newAssemblyName = readConfObject(assembly, 'assemblyName')
+          {session.datasets.map(dataset => {
+            const newDatasetName = readConfObject(dataset, 'name')
             return (
-              <MenuItem key={newAssemblyName} value={newAssemblyName}>
-                {newAssemblyName}
+              <MenuItem key={newDatasetName} value={newDatasetName}>
+                {newDatasetName}
               </MenuItem>
             )
           })}
@@ -152,8 +152,8 @@ function ConfirmTrack(props) {
 
 ConfirmTrack.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  assemblyName: PropTypes.string.isRequired,
-  setAssemblyName: PropTypes.func.isRequired,
+  datasetName: PropTypes.string.isRequired,
+  setDatasetName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,
@@ -167,7 +167,7 @@ ConfirmTrack.propTypes = {
     type: PropTypes.string,
   }).isRequired,
   setTrackAdapter: PropTypes.func.isRequired,
-  rootModel: MobxPropTypes.observableObject.isRequired,
+  session: MobxPropTypes.observableObject.isRequired,
 }
 
 ConfirmTrack.defaultProps = {

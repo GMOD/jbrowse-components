@@ -1,5 +1,5 @@
 import { decorate, observable } from 'mobx'
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode, isAlive } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 import rpcConfigSchema from './configSchema'
@@ -25,14 +25,24 @@ class RpcManager {
 
   driverObjects = {}
 
-  constructor(pluginManager, mainConfiguration, backendConfigurations = {}) {
+  constructor(
+    pluginManager,
+    mainConfiguration,
+    backendConfigurations = {},
+    getRefNameMapForAdapter = () => {},
+  ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
     }
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
+    // try {
+    //   this.getDriverForCall()
+    // } catch(e) {
+    //   debugger
+    // }
     this.backendConfigurations = backendConfigurations
-    this.assemblyManager = null
+    this.getRefNameMapForAdapter = getRefNameMapForAdapter
   }
 
   getDriver(backendName) {
@@ -68,7 +78,7 @@ class RpcManager {
 
   renameRegionIfNeeded(refNameMap, container, keyForRegion) {
     let region = container[keyForRegion]
-
+    if (isStateTreeNode(region) && !isAlive(region)) return
     if (region && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
       if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
@@ -86,7 +96,7 @@ class RpcManager {
     // TODO: this renaming stuff should probably be moved to the session model
     // when we have a session model
     if (assemblyName) {
-      const refNameMap = await this.assemblyManager.getRefNameMapForAdapter(
+      const refNameMap = await this.getRefNameMapForAdapter(
         adapterConfig,
         assemblyName,
         { signal },
@@ -105,13 +115,9 @@ class RpcManager {
       stateGroupName,
       functionName,
       args,
+      { signal },
     )
   }
 }
-
-decorate(RpcManager, {
-  mainConfiguration: observable,
-  backendConfigurations: observable,
-})
 
 export default RpcManager

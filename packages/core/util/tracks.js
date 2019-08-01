@@ -14,13 +14,12 @@ export function getContainingView(node) {
 }
 
 /**
- * get the assembly configuration that contains a track configuration
+ * get the dataset configuration that contains a track configuration
  * @param {MSTNode} node
  */
-export function getContainingAssembly(trackConf) {
+export function getContainingDataset(trackConf) {
   let trackConfParent = getParent(trackConf)
-  if (!trackConfParent.assemblyName)
-    trackConfParent = getParent(trackConfParent)
+  if (!trackConfParent.assembly) trackConfParent = getParent(trackConfParent)
   return trackConfParent
 }
 

@@ -2,75 +2,37 @@
 
 exports[`no features 1`] = `
 <svg
-  className="LollipopRendering"
-  height={20}
-  onBlur={[Function]}
-  onClick={[Function]}
-  onFocus={[Function]}
-  onMouseDown={[Function]}
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
-  onMouseOut={[Function]}
-  onMouseOver={[Function]}
-  onMouseUp={[Function]}
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
-  width={100}
+  class="LollipopRendering"
+  height="20"
+  style="position: relative;"
+  width="100"
 />
 `;
 
 exports[`one feature 1`] = `
 <svg
-  className="LollipopRendering"
-  height={16.286652959662007}
-  onBlur={[Function]}
-  onClick={[Function]}
-  onFocus={[Function]}
-  onMouseDown={[Function]}
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
-  onMouseOut={[Function]}
-  onMouseOver={[Function]}
-  onMouseUp={[Function]}
-  style={
-    Object {
-      "position": "relative",
-    }
-  }
-  width={333.3333333333333}
+  class="LollipopRendering"
+  height="16.286652959662007"
+  style="position: relative;"
+  width="333.3333333333333"
 >
   <line
     stroke="black"
-    strokeWidth={2}
-    x1={0.7}
-    x2={0.7}
-    y1={0}
-    y2={16.286652959662007}
+    stroke-width="2"
+    x1="0.7"
+    x2="0.7"
+    y1="0"
+    y2="16.286652959662007"
   />
-  <g>
+  <g
+    data-testid="one"
+  >
     <title />
     <circle
-      cx={0.7}
-      cy={10.643326479831003}
-      onBlur={[Function]}
-      onClick={[Function]}
-      onFocus={[Function]}
-      onMouseDown={[Function]}
-      onMouseEnter={[Function]}
-      onMouseLeave={[Function]}
-      onMouseMove={[Function]}
-      onMouseOut={[Function]}
-      onMouseOver={[Function]}
-      onMouseUp={[Function]}
-      r={5.643326479831003}
-      style={
-        Object {
-          "fill": "green",
-        }
-      }
+      cx="0.7"
+      cy="10.643326479831003"
+      r="5.643326479831003"
+      style="fill: green;"
     />
   </g>
 </svg>

@@ -1,9 +1,9 @@
-import { createTestEnv } from './JBrowse'
+import { createTestSession } from './jbrowseModel'
 import { renderRegion, freeResources } from './rpcMethods'
 
 let pluginManager
-beforeAll(async () => {
-  ;({ pluginManager } = await createTestEnv())
+beforeAll(() => {
+  ;({ pluginManager } = createTestSession())
 })
 
 const baseprops = {
@@ -23,7 +23,7 @@ const baseprops = {
       },
     },
   },
-  rootConfig: {},
+  sessionConfig: {},
   renderProps: { bpPerPx: 1 },
 }
 
@@ -32,10 +32,19 @@ test('can render a single region with Pileup + BamAdapter', async () => {
 
   const result = await renderRegion(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
-    new Set(['features', 'html', 'layout', 'height', 'width', 'imageData']),
+    new Set([
+      'features',
+      'html',
+      'layout',
+      'height',
+      'width',
+      'imageData',
+      'maxHeightReached',
+    ]),
   )
   expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
+  expect(result.maxHeightReached).toBe(false)
   expect(result.layout).toMatchSnapshot()
   expect(result.imageData.width).toBe(800)
   expect(result.imageData.height).toBe(result.layout.totalHeight)
@@ -66,7 +75,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['html', 'features', 'layout']),
   )
-  expect(result.features.length).toBe(25)
+  expect(result.features.length).toBe(93)
   expect(result.html).toMatchSnapshot()
   expect(result.layout).toMatchSnapshot()
 

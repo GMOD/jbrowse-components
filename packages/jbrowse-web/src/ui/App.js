@@ -1,9 +1,10 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/styles'
+import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
@@ -11,9 +12,8 @@ import { PropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import { withSize } from 'react-sizeme'
-import { Scrollbars } from 'react-custom-scrollbars'
 
+import { withSize } from 'react-sizeme'
 import Drawer from './Drawer'
 
 const styles = theme => ({
@@ -28,17 +28,22 @@ const styles = theme => ({
     overflow: 'hidden',
     background: '#808080',
   },
-  menuBars: {},
-  menuBarsAndComponents: {
-    display: 'flex',
-    flexDirection: 'column',
+  menuBars: {
+    display: 'block',
   },
-  components: {},
-  drawerCloseButton: {
-    float: 'right',
+  menuBarsAndComponents: {
+    flex: '1 100%',
+    height: '100%',
+    overflowY: 'auto',
   },
   defaultDrawer: {
-    margin: theme.spacing(1),
+    flex: '1 100%',
+  },
+  components: {
+    display: 'block',
+  },
+  drawerCloseButton: {
+    float: 'right',
   },
   drawerToolbar: {
     paddingLeft: theme.spacing(2),
@@ -51,40 +56,37 @@ const styles = theme => ({
   },
   developer: {
     background: 'white',
-    padding: '0 10px 10px 10px',
+    display: 'block',
   },
 })
 
 function App(props) {
   const {
     classes,
-    getDrawerWidgetType,
-    getViewType,
-    getMenuBarType,
-    rootModel,
-    sessionNames,
-    activeSession,
-    setActiveSession,
-    addSessions,
+    session,
     size,
+    sessionNames,
+    addSessionSnapshot,
+    activateSession,
   } = props
 
-  useEffect(() => {
-    rootModel.updateWidth(size.width)
-  }, [rootModel, size])
+  const { pluginManager } = session
 
-  const drawerWidgets = Array.from(rootModel.activeDrawerWidgets.values())
+  useEffect(() => {
+    session.updateWidth(size.width)
+  }, [session, size.width])
+
+  const { visibleDrawerWidget } = session
   let drawerComponent
-  if (drawerWidgets.length) {
-    const activeDrawerWidget = drawerWidgets[drawerWidgets.length - 1]
+  if (visibleDrawerWidget) {
     const {
       LazyReactComponent,
       HeadingComponent,
       heading,
-    } = getDrawerWidgetType(activeDrawerWidget.type)
+    } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
     drawerComponent = (
       <Slide direction="left" in>
-        <div>
+        <div className={classes.defaultDrawer}>
           <AppBar position="static">
             <Toolbar
               variant="dense"
@@ -93,7 +95,7 @@ function App(props) {
             >
               <Typography variant="h6" color="inherit">
                 {HeadingComponent ? (
-                  <HeadingComponent model={activeDrawerWidget} />
+                  <HeadingComponent model={visibleDrawerWidget} />
                 ) : (
                   heading || undefined
                 )}
@@ -103,7 +105,7 @@ function App(props) {
                 className={classes.drawerCloseButton}
                 color="inherit"
                 aria-label="Close"
-                onClick={() => rootModel.hideDrawerWidget(activeDrawerWidget)}
+                onClick={() => session.hideDrawerWidget(visibleDrawerWidget)}
               >
                 <Icon fontSize="small">close</Icon>
               </IconButton>
@@ -118,9 +120,10 @@ function App(props) {
             }
           >
             <LazyReactComponent
-              model={activeDrawerWidget}
-              addSessions={addSessions}
-              setActiveSession={setActiveSession}
+              model={visibleDrawerWidget}
+              session={session}
+              addSessionSnapshot={addSessionSnapshot}
+              setActiveSession={activateSession}
             />
           </React.Suspense>
         </div>
@@ -132,8 +135,10 @@ function App(props) {
     <div className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
-          {rootModel.menuBars.map(menuBar => {
-            const { LazyReactComponent } = getMenuBarType(menuBar.type)
+          {session.menuBars.map(menuBar => {
+            const { LazyReactComponent } = pluginManager.getMenuBarType(
+              menuBar.type,
+            )
             return (
               <React.Suspense
                 key={`view-${menuBar.id}`}
@@ -142,49 +147,67 @@ function App(props) {
                 <LazyReactComponent
                   key={`view-${menuBar.id}`}
                   model={menuBar}
+                  session={session}
                 />
               </React.Suspense>
             )
           })}
         </div>
-        <Scrollbars
-          className={classes.components}
-          style={{ width: rootModel.width }}
-        >
-          {rootModel.views.map(view => {
-            const { ReactComponent } = getViewType(view.type)
-            return <ReactComponent key={`view-${view.id}`} model={view} />
+        <div className={classes.components}>
+          {session.views.map(view => {
+            const { ReactComponent } = pluginManager.getViewType(view.type)
+            return (
+              <ReactComponent
+                key={`view-${view.id}`}
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            )
           })}
           <div className={classes.developer}>
             <h3>Developer tools</h3>
             <button
               type="button"
-              onClick={() => rootModel.addView('LinearGenomeView', {})}
+              onClick={() => {
+                if (!session.datasets.length)
+                  throw new Error(`Must add a dataset before adding a view`)
+                session.addLinearGenomeViewOfDataset(
+                  readConfObject(session.datasets[0], 'name'),
+                )
+              }}
             >
               Add linear view
             </button>
             <button
               type="button"
-              onClick={() => rootModel.addView('CircularView', {})}
+              onClick={() => {
+                if (!session.datasets.length)
+                  throw new Error(`Must add a dataset before adding a view`)
+                session.addViewOfDataset(
+                  'CircularView',
+                  readConfObject(session.datasets[0], 'name'),
+                )
+              }}
             >
               Add circular view
             </button>
             <select
-              onChange={event => setActiveSession(event.target.value)}
-              value={activeSession}
+              onChange={event => activateSession(event.target.value)}
+              value={session.name}
             >
-              {sessionNames.map(sessionName => (
-                <option key={sessionName} value={sessionName}>
-                  {sessionName}
+              {sessionNames.map(name => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>
           </div>
-        </Scrollbars>
+        </div>
       </div>
       <Drawer
-        rootModel={rootModel}
-        open={Boolean(rootModel.activeDrawerWidgets.size)}
+        session={session}
+        open={Boolean(session.activeDrawerWidgets.size)}
       >
         {drawerComponent}
       </Drawer>
@@ -194,15 +217,11 @@ function App(props) {
 
 App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  rootModel: PropTypes.observableObject.isRequired,
-  getViewType: ReactPropTypes.func.isRequired,
-  getDrawerWidgetType: ReactPropTypes.func.isRequired,
-  getMenuBarType: ReactPropTypes.func.isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
+  session: PropTypes.observableObject.isRequired,
   sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  activeSession: ReactPropTypes.string.isRequired,
-  setActiveSession: ReactPropTypes.func.isRequired,
-  addSessions: ReactPropTypes.func.isRequired,
+  addSessionSnapshot: ReactPropTypes.func.isRequired,
+  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

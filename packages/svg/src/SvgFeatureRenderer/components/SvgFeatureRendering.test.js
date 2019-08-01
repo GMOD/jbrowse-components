@@ -2,12 +2,12 @@ import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayo
 import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
-import TestRenderer from 'react-test-renderer'
+import { render } from 'react-testing-library'
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {
-  const renderer = TestRenderer.create(
+  const { container } = render(
     <Rendering
       width={500}
       height={500}
@@ -17,13 +17,12 @@ test('no features', () => {
       bpPerPx={3}
     />,
   )
-  const result = renderer.toJSON()
 
-  expect(result).toMatchSnapshot()
+  expect(container.firstChild).toMatchSnapshot()
 })
 
 test('one feature', () => {
-  const renderer = TestRenderer.create(
+  const { container } = render(
     <Rendering
       width={500}
       height={500}
@@ -36,7 +35,6 @@ test('one feature', () => {
       bpPerPx={3}
     />,
   )
-  const result = renderer.toJSON()
 
-  expect(result).toMatchSnapshot()
+  expect(container.firstChild).toMatchSnapshot()
 })

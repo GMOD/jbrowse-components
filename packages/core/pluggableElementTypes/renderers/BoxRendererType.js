@@ -1,3 +1,4 @@
+import { readConfObject } from '../../configuration'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -9,9 +10,9 @@ export class LayoutSession {
   }
 
   makeLayout() {
-    const pitchX = this.bpPerPx
     return new MultiLayout(GranularRectLayout, {
-      pitchX,
+      maxHeight: readConfObject(this.config, 'maxHeight'),
+      pitchX: this.bpPerPx,
       pitchY: 3,
     })
   }
@@ -33,8 +34,8 @@ export class LayoutSession {
 }
 
 export default class extends ServerSideRendererType {
-  constructor(stuff) {
-    super({ ...stuff, sessions: {} })
+  constructor(args) {
+    super({ ...args, sessions: {} })
   }
 
   getWorkerSession(props) {
@@ -50,12 +51,16 @@ export default class extends ServerSideRendererType {
     return new LayoutSession()
   }
 
-  freeResources({ sessionId, region }) {
-    if (!region && this.sessions[sessionId]) {
+  freeResourcesInWorker(args) {
+    const { sessionId, region } = args
+    const session = this.sessions[sessionId]
+    if (!region && session) {
       delete this.sessions[sessionId]
       return 1
     }
-    // TODO: implement freeing for regions
+    if (session) {
+      session.layout.discardRange(region.refName, region.start, region.end)
+    }
     return 0
   }
 
@@ -82,7 +87,9 @@ export default class extends ServerSideRendererType {
   }
 
   serializeResultsInWorker(results, features, args) {
-    super.serializeResultsInWorker(results, features, args)
-    results.layout = args.layout.toJSON()
+    super.serializeResultsInWorker(results, features)
+    results.layout = args.layout.serializeRegion(
+      this.getExpandedGlyphRegion(args.region, args),
+    )
   }
 }

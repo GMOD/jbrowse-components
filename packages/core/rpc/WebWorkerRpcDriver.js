@@ -1,6 +1,6 @@
 import Rpc from '@librpc/web'
 
-import { objectFromEntries } from '../util'
+import { objectFromEntries, checkAbortSignal } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {

@@ -7,13 +7,16 @@ import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import './SvgFeatureRendering.scss'
 
+const fontWidthScaleFactor = 0.55
 function Label({ layoutRecord, fontHeight, color, children }) {
+  const otherProps = {}
   return (
     <text
       x={layoutRecord.left}
       y={layoutRecord.top}
       style={{ fontSize: fontHeight, fill: color }}
       dominantBaseline="hanging"
+      {...otherProps}
     >
       {children}
     </text>
@@ -93,7 +96,8 @@ class Box extends Component {
     )
     const rootLayout = new SceneGraph('root', startPx, 0, 0, 0)
     const featureHeight = readConfObject(args.config, 'height', [feature])
-    rootLayout.addChild('feature', 0, 0, endPx - startPx, featureHeight)
+    const featureWidth = endPx - startPx
+    rootLayout.addChild('feature', 0, 0, featureWidth, featureHeight)
 
     const name =
       readConfObject(args.config, ['labels', 'name'], [feature]) || ''
@@ -104,34 +108,54 @@ class Box extends Component {
       ['labels', 'fontSize'],
       ['feature'],
     )
-    const fontWidth = fontHeight * 0.75
+    const fontWidth = fontHeight * fontWidthScaleFactor
     const shouldShowName = /\S/.test(name)
     const shouldShowDescription = /\S/.test(description)
     const textVerticalPadding = 2
+    let labelWidth
+    let descriptionWidth
+    const maxFeatureGlyphExpansion = readConfObject(
+      args.config,
+      'maxFeatureGlyphExpansion',
+    )
     if (shouldShowName) {
+      labelWidth = Math.round(
+        Math.min(
+          name.length * fontWidth,
+          featureWidth + maxFeatureGlyphExpansion,
+        ),
+      )
+
       rootLayout.addChild(
         'nameLabel',
         0,
         rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
-        name.length * fontWidth,
+        labelWidth,
         fontHeight,
       )
     }
     if (shouldShowDescription) {
+      descriptionWidth = Math.round(
+        Math.min(
+          description.length * fontWidth,
+          featureWidth + maxFeatureGlyphExpansion,
+        ),
+      )
       rootLayout.addChild(
         'descriptionLabel',
         0,
         rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature')
           .bottom + textVerticalPadding,
-        description.length * fontWidth,
+        descriptionWidth,
         fontHeight,
       )
     }
 
+    const start = feature.get('start')
     const topPx = layout.addRect(
       feature.id(),
-      rootLayout.left,
-      rootLayout.right,
+      start,
+      start + rootLayout.width * bpPerPx,
       rootLayout.height,
     )
 
@@ -144,6 +168,8 @@ class Box extends Component {
       shouldShowDescription,
       shouldShowName,
       fontHeight,
+      labelWidth,
+      descriptionWidth,
     }
   }
 
@@ -210,6 +236,7 @@ class Box extends Component {
       },
       selectedFeatureId,
     } = this.props
+    const exp = readConfObject(config, 'maxFeatureGlyphExpansion')
 
     const style = { fill: readConfObject(config, 'color1', [feature]) }
     if (String(selectedFeatureId) === String(feature.id())) {
@@ -217,7 +244,17 @@ class Box extends Component {
     }
 
     const featureLayout = rootLayout.getSubRecord('feature')
-
+    const fontWidth = fontHeight * fontWidthScaleFactor
+    const LabelText = ({ width, text }) => {
+      const totalWidth = width + exp
+      return (
+        <>
+          {fontWidth * text.length > totalWidth
+            ? `${text.slice(0, totalWidth / fontWidth)}...`
+            : text}
+        </>
+      )
+    }
     return (
       <g transform={`translate(${rootLayout.left} ${rootLayout.top})`}>
         <rect
@@ -245,7 +282,7 @@ class Box extends Component {
             fontHeight={fontHeight}
             color={readConfObject(config, ['labels', 'nameColor'], [feature])}
           >
-            {name}
+            <LabelText width={featureLayout.width} text={name} />
           </Label>
         )}
         {!shouldShowDescription ? null : (
@@ -258,7 +295,7 @@ class Box extends Component {
               [feature],
             )}
           >
-            {description}
+            <LabelText width={featureLayout.width} text={description} />
           </Label>
         )}
       </g>

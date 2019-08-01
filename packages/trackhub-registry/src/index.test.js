@@ -1,11 +1,11 @@
-import { createTestEnv } from '@gmod/jbrowse-web/src/JBrowse'
+import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import MyPlugin from './index'
 
 describe('Data management', () => {
   let pluginManager
 
-  beforeAll(async () => {
-    ;({ pluginManager } = await createTestEnv({ configId: 'testing' }))
+  beforeAll(() => {
+    ;({ pluginManager } = createTestSession({ configId: 'testing' }))
   })
 
   it("won't add if already added", () => {

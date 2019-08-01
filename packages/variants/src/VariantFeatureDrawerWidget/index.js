@@ -10,10 +10,8 @@ export const stateModel = types
   .model('VariantFeatureDrawerWidget', {
     id: ElementId,
     type: types.literal('VariantFeatureDrawerWidget'),
+    featureData: types.frozen({}),
   })
-  .volatile(() => ({
-    featureData: {},
-  }))
   .actions(self => ({
     setFeatureData(data) {
       self.featureData = data

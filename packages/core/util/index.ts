@@ -1,3 +1,9 @@
+import {
+  getParent,
+  IAnyStateTreeNode,
+  isStateTreeNode,
+  getSnapshot,
+} from 'mobx-state-tree'
 import fromEntries from 'object.fromentries'
 import { Observer, fromEvent, Observable } from 'rxjs'
 import { Feature } from './simpleFeature'
@@ -14,6 +20,14 @@ export const inDevelopment =
   process.env &&
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
+
+export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
+  let currentNode = node
+  // @ts-ignore
+  while (currentNode.pluginManager === undefined)
+    currentNode = getParent(currentNode)
+  return currentNode
+}
 
 /**
  * Assemble a "locstring" from a location, like "ctgA:20-30".
@@ -179,3 +193,8 @@ export function isAbortException(exception: Error): boolean {
     !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
+
+// export function getSnapshotIfNode(thing: Node): Record<string, any> {
+//   if (isStateTreeNode(thing)) return getSnapshot(thing)
+//   return thing
+// }

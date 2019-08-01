@@ -53,6 +53,7 @@ function getModelConfig(tree) {
  *  will be sent to each of the slotNames
  */
 function readConfObject(confObject, slotPath, args) {
+  if (!confObject) throw new TypeError('must provide conf object to read')
   if (!slotPath) return getSnapshot(confObject)
   if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]

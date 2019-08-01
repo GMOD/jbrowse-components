@@ -7,7 +7,8 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react-lite')
   const ReactPropTypes = jbrequire('prop-types')
   const React = jbrequire('react')
-  const { withStyles, Icon, IconButton } = jbrequire('@material-ui/core')
+  const { Icon, IconButton } = jbrequire('@material-ui/core')
+  const { withStyles } = jbrequire('@material-ui/core/styles')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const ResizeHandleHorizontal = jbrequire(
     '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
@@ -16,53 +17,55 @@ export default pluginManager => {
 
   const Ruler = jbrequire(require('./Ruler'))
 
-  const styles = theme => ({
-    root: {
-      position: 'relative',
-      marginBottom: theme.spacing(1),
-      overflow: 'hidden',
-      background: 'white',
-    },
-    scroller: {
-      overflow: 'auto',
-    },
-    sliceRoot: {
-      background: 'none',
-      // background: theme.palette.background.paper,
-      boxSizing: 'content-box',
-      display: 'block',
-    },
-    iconButton: {
-      padding: '4px',
-      margin: '0 2px 0 2px',
-    },
-    controls: {
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      position: 'absolute',
-      background: '#eee',
-      boxSizing: 'border-box',
-      borderRight: '1px solid #a2a2a2',
-      borderBottom: '1px solid #a2a2a2',
-      left: 0,
-      top: 0,
-    },
-    // viewControls: {
-    //   height: '100%',
-    //   borderBottom: '1px solid #9e9e9e',
-    //   boxSizing: 'border-box',
-    // },
-    // trackControls: {
-    //   whiteSpace: 'normal',
-    // },
-    // zoomControls: {
-    //   position: 'absolute',
-    //   top: '0px',
-    // },
-    // iconButton: {
-    //   padding: theme.spacing.unit / 2,
-    // },
-  })
+  const styles = theme => {
+    return {
+      root: {
+        position: 'relative',
+        marginBottom: theme.spacing.unit,
+        overflow: 'hidden',
+        background: 'white',
+      },
+      scroller: {
+        overflow: 'auto',
+      },
+      sliceRoot: {
+        background: 'none',
+        // background: theme.palette.background.paper,
+        boxSizing: 'content-box',
+        display: 'block',
+      },
+      iconButton: {
+        padding: '4px',
+        margin: '0 2px 0 2px',
+      },
+      controls: {
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        position: 'absolute',
+        background: '#eee',
+        boxSizing: 'border-box',
+        borderRight: '1px solid #a2a2a2',
+        borderBottom: '1px solid #a2a2a2',
+        left: 0,
+        top: 0,
+      },
+      // viewControls: {
+      //   height: '100%',
+      //   borderBottom: '1px solid #9e9e9e',
+      //   boxSizing: 'border-box',
+      // },
+      // trackControls: {
+      //   whiteSpace: 'normal',
+      // },
+      // zoomControls: {
+      //   position: 'absolute',
+      //   top: '0px',
+      // },
+      // iconButton: {
+      //   padding: theme.spacing.unit / 2,
+      // },
+    }
+  }
 
   const Slices = withStyles(styles)(
     observer(({ classes, model }) => {

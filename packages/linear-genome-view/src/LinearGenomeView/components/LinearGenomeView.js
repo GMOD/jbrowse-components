@@ -1,8 +1,8 @@
 import { Icon, IconButton, withStyles } from '@material-ui/core'
+import { getSession } from '@gmod/jbrowse-core/util'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
@@ -12,6 +12,8 @@ import TrackRenderingContainer from './TrackRenderingContainer'
 import TrackResizeHandle from './TrackResizeHandle'
 
 import ZoomControls from './ZoomControls'
+
+import buttonStyles from './buttonStyles'
 
 const dragHandleHeight = 3
 
@@ -44,24 +46,15 @@ const styles = theme => ({
     position: 'absolute',
     top: '0px',
   },
-  iconButton: {
-    padding: theme.spacing(0.5),
-  },
+
+  ...buttonStyles(theme),
 })
 
 function LinearGenomeView(props) {
   const scaleBarHeight = 32
   const { classes, model } = props
-  const rootModel = getRoot(model)
-  const {
-    id,
-    staticBlocks,
-    tracks,
-    bpPerPx,
-    width,
-    controlsWidth,
-    offsetPx,
-  } = model
+  const session = getSession(model)
+  const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
@@ -70,8 +63,6 @@ function LinearGenomeView(props) {
     scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
   const style = {
     display: 'grid',
-    width: `${width}px`,
-    height: `${height}px`,
     position: 'relative',
     gridTemplateRows: `[scale-bar] auto ${tracks
       .map(
@@ -83,7 +74,6 @@ function LinearGenomeView(props) {
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
   }
-  // console.log(style)
   return (
     <div className={classes.root}>
       <div
@@ -107,11 +97,12 @@ function LinearGenomeView(props) {
               <ToggleButton
                 onClick={model.activateTrackSelector}
                 title="select tracks"
+                className={classes.toggleButton}
                 selected={
-                  rootModel.visibleDrawerWidget &&
-                  rootModel.visibleDrawerWidget.id ===
+                  session.visibleDrawerWidget &&
+                  session.visibleDrawerWidget.id ===
                     'hierarchicalTrackSelector' &&
-                  rootModel.visibleDrawerWidget.view.id === model.id
+                  session.visibleDrawerWidget.view.id === model.id
                 }
                 value="track_select"
                 data_testid="track_select"
@@ -138,7 +129,6 @@ function LinearGenomeView(props) {
             blocks={staticBlocks}
             offsetPx={offsetPx}
             horizontallyFlipped={model.horizontallyFlipped}
-            width={model.viewingRegionWidth}
           />
         </Rubberband>
 
@@ -167,7 +157,6 @@ function LinearGenomeView(props) {
           <TrackRenderingContainer
             key={`track-rendering:${track.id}`}
             trackId={track.id}
-            width={model.viewingRegionWidth}
             height={track.height}
           >
             <track.RenderingComponent

@@ -193,6 +193,8 @@ export default pluginManager => {
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
+
+        self.setBpPerPx(self.bpPerPx)
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {

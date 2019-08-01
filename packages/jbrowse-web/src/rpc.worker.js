@@ -41,15 +41,17 @@ function wrapForRpc(func) {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, func.name, ...args])
-    const retP = func(jbPluginManager, ...args).catch(error => {
-      if (isAbortException(error)) {
-        // logBuffer.push(['rpc-abort', myId, func.name, ...args])
-      } else {
-        logBuffer.push(['rpc-error', myId, func.name, error])
-        flushLog()
-      }
-      throw error
-    })
+    const retP = Promise.resolve()
+      .then(() => func(jbPluginManager, ...args))
+      .catch(error => {
+        if (isAbortException(error)) {
+          // logBuffer.push(['rpc-abort', myId, func.name, ...args])
+        } else {
+          logBuffer.push(['rpc-error', myId, func.name, error])
+          flushLog()
+        }
+        throw error
+      })
 
     // uncomment below to log returns
     // retP.then(

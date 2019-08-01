@@ -2,14 +2,18 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
+import {
+  checkAbortSignal,
+  isAbortException,
+  getSession,
+} from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
   getParentRenderProps,
 } from '@gmod/jbrowse-core/util/tracks'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
-import { addDisposer, getRoot, getSnapshot, types } from 'mobx-state-tree'
+import { addDisposer, getSnapshot, types } from 'mobx-state-tree'
 import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
@@ -34,7 +38,7 @@ export default configSchema =>
           const getYAxisScale = autorun(
             async function getYAxisScaleAutorun() {
               try {
-                const { rpcManager } = getRoot(self)
+                const { rpcManager } = getSession(self)
                 const autoscaleType = getConf(self, 'autoscale')
                 const aborter = new AbortController()
                 const { signal } = aborter

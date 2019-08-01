@@ -88,7 +88,7 @@ Category.propTypes = {
   path: propTypes.arrayOf(propTypes.string),
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
-  connection: propTypes.string,
+  connection: MobxPropTypes.observableObject,
   classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
@@ -97,7 +97,7 @@ Category.defaultProps = {
   filterPredicate: () => true,
   path: [],
   disabled: false,
-  connection: '',
+  connection: undefined,
 }
 
 export default withStyles(styles)(observer(Category))

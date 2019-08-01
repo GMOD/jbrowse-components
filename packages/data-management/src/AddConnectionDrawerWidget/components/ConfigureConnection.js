@@ -13,7 +13,7 @@ function ConfigureConnection(props) {
 }
 
 ConfigureConnection.propTypes = {
-  connectionType: PropTypes.string.isRequired,
+  connectionType: PropTypes.shape().isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 

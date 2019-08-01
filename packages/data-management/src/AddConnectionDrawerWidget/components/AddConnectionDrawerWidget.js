@@ -1,3 +1,5 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
@@ -7,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
-import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
 import ConfigureConnection from './ConfigureConnection'
@@ -34,13 +35,14 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 function AddConnectionDrawerWidget(props) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
+  const [datasetName, setDatasetName] = useState('')
 
   const [activeStep, setActiveStep] = useState(0)
 
   const { classes, model } = props
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
-  const { pluginManager } = rootModel
+  const { pluginManager } = session
 
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)
@@ -57,6 +59,11 @@ function AddConnectionDrawerWidget(props) {
             )}
             connectionType={connectionType}
             setConnectionType={handleSetConnectionType}
+            datasetNameChoices={session.datasets.map(dataset =>
+              readConfObject(dataset, 'name'),
+            )}
+            datasetName={datasetName}
+            setDatasetName={setDatasetName}
           />
         )
       case 1:
@@ -82,10 +89,10 @@ function AddConnectionDrawerWidget(props) {
   }
 
   function handleFinish() {
-    rootModel.configuration.addConnection(configModel)
-    rootModel.hideDrawerWidget(
-      rootModel.drawerWidgets.get('addConnectionDrawerWidget'),
-    )
+    session.datasets
+      .find(dataset => readConfObject(dataset, 'name') === datasetName)
+      .addConnectionConf(configModel)
+    session.hideDrawerWidget(model)
   }
 
   function checkNextEnabled() {

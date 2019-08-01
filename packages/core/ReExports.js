@@ -8,6 +8,7 @@ import * as mxreactlite from 'mobx-react-lite'
 import PropTypes from 'prop-types'
 
 import * as MUICore from '@material-ui/core'
+import * as MUIStyles from '@material-ui/core/styles'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import ViewType from './pluggableElementTypes/ViewType'
@@ -33,6 +34,7 @@ export default {
   'mobx-react-lite': mxreactlite,
   'prop-types': PropTypes,
   '@material-ui/core': MUICore,
+  '@material-ui/core/styles': MUIStyles,
   '@material-ui/lab/ToggleButton': ToggleButton,
 
   '@gmod/jbrowse-core/Plugin': Plugin,

@@ -1,3 +1,4 @@
+import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
@@ -7,7 +8,6 @@ import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import { observer } from 'mobx-react-lite'
-import { getRoot } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import React, { useState } from 'react'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
@@ -42,11 +42,11 @@ function AddTrackDrawerWidget(props) {
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
-  const [assemblyName, setAssemblyName] = useState('')
+  const [datasetName, setDatasetName] = useState('')
 
   const { classes, model } = props
 
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
   function getStepContent() {
     switch (activeStep) {
@@ -62,7 +62,7 @@ function AddTrackDrawerWidget(props) {
       case 1:
         return (
           <ConfirmTrack
-            rootModel={rootModel}
+            session={session}
             trackData={trackData}
             trackName={trackName}
             setTrackName={setTrackName}
@@ -70,8 +70,8 @@ function AddTrackDrawerWidget(props) {
             setTrackType={setTrackType}
             trackAdapter={trackAdapter}
             setTrackAdapter={setTrackAdapter}
-            assemblyName={assemblyName}
-            setAssemblyName={setAssemblyName}
+            datasetName={datasetName}
+            setDatasetName={setDatasetName}
           />
         )
       default:
@@ -80,28 +80,24 @@ function AddTrackDrawerWidget(props) {
   }
 
   function handleNext() {
-    if (activeStep === steps.length - 1) {
-      trackAdapter.features = trackData.config
-      const trackConf = rootModel.configuration.assemblies
-        .find(
-          assembly => readConfObject(assembly, 'assemblyName') === assemblyName,
-        )
-        .addTrackConf(trackType, {
-          name: trackName,
-          adapter: trackAdapter,
-        })
-      model.view.showTrack(trackConf)
-      rootModel.hideDrawerWidget(
-        rootModel.drawerWidgets.get('addTrackDrawerWidget'),
-      )
+    if (activeStep !== steps.length - 1) {
+      setActiveStep(activeStep + 1)
       return
     }
-    setActiveStep(activeStep + 1)
+    trackAdapter.features = trackData.config
+    const trackConf = session.datasets
+      .find(dataset => readConfObject(dataset, 'name') === datasetName)
+      .addTrackConf({
+        type: trackType,
+        name: trackName,
+        adapter: trackAdapter,
+      })
+    model.view.showTrack(trackConf)
+    session.hideDrawerWidget(model)
   }
 
   function handleBack() {
     setActiveStep(activeStep - 1)
-    setTrackData({})
   }
 
   function isNextDisabled() {
@@ -109,7 +105,7 @@ function AddTrackDrawerWidget(props) {
       case 0:
         return !(trackData.uri || trackData.localPath || trackData.config)
       case 1:
-        return !(trackName && trackType && trackAdapter.type && assemblyName)
+        return !(trackName && trackType && trackAdapter.type && datasetName)
       default:
         return true
     }

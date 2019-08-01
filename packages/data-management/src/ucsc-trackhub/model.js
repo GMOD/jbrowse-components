@@ -1,6 +1,10 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@gmod/jbrowse-core/configuration'
 import { flow, types } from 'mobx-state-tree'
+import configSchema from './configSchema'
 import {
   fetchGenomesFile,
   fetchHubFile,
@@ -13,24 +17,29 @@ export default function(pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
     connectionModelFactory(pluginManager),
-    types.model().actions(self => ({
-      connect: flow(function* connect(connectionConf) {
-        const hubFileLocation = readConfObject(connectionConf, 'hubTxtLocation')
-        const hubFile = yield fetchHubFile(hubFileLocation)
-        let genomesFileLocation
-        if (hubFileLocation.uri)
-          genomesFileLocation = {
-            uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri).href,
-          }
-        else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
-        const genomesFile = yield fetchGenomesFile(genomesFileLocation)
-        let assemblyNames = readConfObject(connectionConf, 'assemblyNames')
-        if (!assemblyNames.length) assemblyNames = genomesFile.keys()
-        for (const assemblyName of assemblyNames) {
-          const defaultSequence = !!readConfObject(
-            connectionConf,
-            'useAssemblySequences',
-          ).includes(assemblyName)
+    types
+      .model({ configuration: ConfigurationReference(configSchema) })
+      .actions(self => ({
+        connect: flow(function* connect() {
+          const connectionName = readConfObject(self.configuration, 'name')
+          const hubFileLocation = readConfObject(
+            self.configuration,
+            'hubTxtLocation',
+          )
+          const hubFile = yield fetchHubFile(hubFileLocation)
+          let genomesFileLocation
+          if (hubFileLocation.uri)
+            genomesFileLocation = {
+              uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
+                .href,
+            }
+          else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+          const genomesFile = yield fetchGenomesFile(genomesFileLocation)
+          const assemblyName = readConfObject(self.assemblyConf, 'name')
+          if (!genomesFile.has(assemblyName))
+            throw new Error(
+              `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
+            )
           const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
           let sequence
           if (twoBitPath) {
@@ -77,9 +86,9 @@ export default function(pluginManager) {
             }
           const trackDbFile = yield fetchTrackDbFile(trackDbFileLocation)
           const tracks = generateTracks(trackDbFile, trackDbFileLocation)
-          self.addAssembly({ assemblyName, tracks, sequence, defaultSequence })
-        }
-      }),
-    })),
+          self.setSequence(sequence)
+          self.setTrackConfs(tracks)
+        }),
+      })),
   )
 }

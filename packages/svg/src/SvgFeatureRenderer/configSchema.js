@@ -35,7 +35,7 @@ export default ConfigurationSchema(
         description:
           'the primary name of the feature to show, if space is available',
         defaultValue:
-          "function(feature) { return feature.get('name') || feature.id() }",
+          "function(feature) { return feature.get('name') || feature.get('id') }",
         functionSignature: ['feature'],
       },
       nameColor: {
@@ -64,6 +64,12 @@ export default ConfigurationSchema(
         functionSignature: ['feature'],
       },
     }),
+    maxFeatureGlyphExpansion: {
+      type: 'number',
+      description:
+        "maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use",
+      defaultValue: 500,
+    },
   },
   { explicitlyTyped: true },
 )

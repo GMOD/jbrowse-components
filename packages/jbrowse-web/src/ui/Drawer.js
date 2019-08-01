@@ -14,7 +14,6 @@ const styles = theme => ({
     height: '100%',
     flex: '1 0 auto',
     zIndex: theme.zIndex.drawer,
-    position: 'fixed',
     top: 0,
     outline: 'none',
     left: 'auto',
@@ -31,7 +30,7 @@ class Drawer extends React.Component {
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
     children: PropTypes.node,
     open: PropTypes.bool.isRequired,
-    rootModel: MobxPropTypes.observableObject.isRequired,
+    session: MobxPropTypes.observableObject.isRequired,
   }
 
   static defaultProps = {
@@ -45,18 +44,18 @@ class Drawer extends React.Component {
   }
 
   render() {
-    const { classes, children, open, rootModel } = this.props
+    const { classes, children, open, session } = this.props
     return (
       <Slide in={open} direction="left" appear={this.mounted}>
         <Paper
-          style={{ width: rootModel.drawerWidth }}
+          style={{ width: open ? session.drawerWidth : 0 }}
           className={classes.paper}
           elevation={16}
           square
         >
           <DrawerResizeHandle
             className={classes.resizer}
-            onHorizontalDrag={distance => rootModel.resizeDrawer(distance)}
+            onHorizontalDrag={distance => session.resizeDrawer(distance)}
           />
           {children}
         </Paper>

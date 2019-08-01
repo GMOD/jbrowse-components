@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<AboutDrawerWidget /> renders 1`] = `
-<WithStyles(ForwardRef(Typography))
-  variant="h6"
+<h6
+  class="MuiTypography-root MuiTypography-h6"
 >
   About JBrowse:
-</WithStyles(ForwardRef(Typography))>
+</h6>
 `;

@@ -1,120 +1,118 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`VariantTrack drawer widget renders with just the required model elements 1`] = `
-<div>
+<div
+  class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
+  data-testid="variant-side-drawer"
+>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded"
-    data-testid="variant-side-drawer"
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+      class="MuiCardHeader-root VariantFeatureDetails-header-5"
     >
       <div
-        class="MuiCardHeader-root VariantFeatureDetails-header-5"
+        class="MuiCardHeader-content"
       >
-        <div
-          class="MuiCardHeader-content"
+        <span
+          class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
-          <span
-            class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
-          >
-            Primary data
-          </span>
-        </div>
-      </div>
-      <div
-        class="MuiCardContent-root"
-      >
-        <div>
-          <div
-            class="VariantFeatureDetails-fieldName-3"
-          >
-            Position
-          </div>
-          <div
-            class="VariantFeatureDetails-fieldValue-4"
-          >
-            ctgA:NaN..undefined
-          </div>
-        </div>
-        NaN
+          Primary data
+        </span>
       </div>
     </div>
-    <hr
-      class="MuiDivider-root"
-    />
     <div
-      class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+      class="MuiCardContent-root"
     >
-      <div
-        class="MuiCardHeader-root VariantFeatureDetails-header-5"
-      >
+      <div>
         <div
-          class="MuiCardHeader-content"
+          class="VariantFeatureDetails-fieldName-3"
         >
-          <span
-            class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
-          >
-            Attributes
-          </span>
+          Position
+        </div>
+        <div
+          class="VariantFeatureDetails-fieldValue-4"
+        >
+          ctgA:NaN..undefined
         </div>
       </div>
+      NaN
+    </div>
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+  >
+    <div
+      class="MuiCardHeader-root VariantFeatureDetails-header-5"
+    >
       <div
-        class="MuiCardContent-root"
+        class="MuiCardHeader-content"
       >
-        <div>
-          <div
-            class="VariantFeatureDetails-fieldName-3"
-          >
-            MQ
-          </div>
-          <div
-            class="VariantFeatureDetails-fieldValue-4"
-          >
-            5
-          </div>
+        <span
+          class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+        >
+          Attributes
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="VariantFeatureDetails-fieldName-3"
+        >
+          MQ
         </div>
-        <div>
-          <div
-            class="VariantFeatureDetails-fieldName-3"
-          >
-            REF
-          </div>
-          <div
-            class="VariantFeatureDetails-fieldValue-4"
-          >
-            A
-          </div>
+        <div
+          class="VariantFeatureDetails-fieldValue-4"
+        >
+          5
         </div>
-        <div>
-          <div
-            class="VariantFeatureDetails-fieldName-3"
-          >
-            ALT
-          </div>
-          <div
-            class="VariantFeatureDetails-fieldValue-4"
-          >
-            C
-          </div>
+      </div>
+      <div>
+        <div
+          class="VariantFeatureDetails-fieldName-3"
+        >
+          REF
         </div>
-        <div>
-          <div
-            class="VariantFeatureDetails-fieldName-3"
-          >
-            QUAL
-          </div>
-          <div
-            class="VariantFeatureDetails-fieldValue-4"
-          >
-            10.4
-          </div>
+        <div
+          class="VariantFeatureDetails-fieldValue-4"
+        >
+          A
+        </div>
+      </div>
+      <div>
+        <div
+          class="VariantFeatureDetails-fieldName-3"
+        >
+          ALT
+        </div>
+        <div
+          class="VariantFeatureDetails-fieldValue-4"
+        >
+          C
+        </div>
+      </div>
+      <div>
+        <div
+          class="VariantFeatureDetails-fieldName-3"
+        >
+          QUAL
+        </div>
+        <div
+          class="VariantFeatureDetails-fieldValue-4"
+        >
+          10.4
         </div>
       </div>
     </div>
-    <hr
-      class="MuiDivider-root"
-    />
   </div>
+  <hr
+    class="MuiDivider-root"
+  />
 </div>
 `;

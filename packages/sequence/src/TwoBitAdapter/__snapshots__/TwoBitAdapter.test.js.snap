@@ -11,3 +11,5 @@ Array [
   },
 ]
 `;
+
+exports[`adapter can fetch features from volvox.2bit 2`] = `Array []`;

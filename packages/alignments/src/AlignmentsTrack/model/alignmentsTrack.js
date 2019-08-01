@@ -3,12 +3,13 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { getRoot, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import TrackControls from '../components/TrackControls'
 
 // using a map because it preserves order
@@ -35,25 +36,23 @@ export default (pluginManager, configSchema) =>
       }))
       .actions(self => ({
         selectFeature(feature) {
-          const root = getRoot(self)
+          const session = getSession(self)
           // TODO: we shouldn't need to have to get this deep into knowing about
           // drawer widgets here, the drawer widget should be a reaction to
           // setting a selected feature...right???
-          if (root.drawerWidgets) {
-            if (!root.drawerWidgets.get('alignmentsFeature'))
-              root.addDrawerWidget(
-                'AlignmentsFeatureDrawerWidget',
-                'alignmentsFeature',
-              )
-            const featureWidget = root.drawerWidgets.get('alignmentsFeature')
-            featureWidget.setFeatureData(feature.data)
-            root.showDrawerWidget(featureWidget)
+          if (session.drawerWidgets) {
+            const featureWidget = session.addDrawerWidget(
+              'AlignmentsFeatureDrawerWidget',
+              'alignmentsFeature',
+              { featureData: feature.data },
+            )
+            session.showDrawerWidget(featureWidget)
           }
-          root.setSelection(feature)
+          session.setSelection(feature)
         },
         clearFeatureSelection() {
-          const root = getRoot(self)
-          root.clearSelection()
+          const session = getSession(self)
+          session.clearSelection()
         },
         setRenderer(newRenderer) {
           self.selectedRendering = newRenderer
@@ -82,9 +81,9 @@ export default (pluginManager, configSchema) =>
          * is probably a feature
          */
         get selectedFeatureId() {
-          const root = getRoot(self)
-          if (!root) return undefined
-          const { selection } = root
+          const session = getSession(self)
+          if (!session) return undefined
+          const { selection } = session
           // does it quack like a feature?
           if (
             selection &&

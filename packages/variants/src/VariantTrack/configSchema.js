@@ -17,7 +17,7 @@ export default pluginManager => {
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup', 'svg']),
-        defaultValue: 'pileup',
+        defaultValue: 'svg',
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {

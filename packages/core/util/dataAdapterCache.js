@@ -78,7 +78,7 @@ export function freeAdapterResources(specification) {
   } else {
     // otherwise call freeResources on all the cached data adapters
     Object.values(adapterCache).forEach(cacheEntry => {
-      cacheEntry.adapter.freeResources(specification)
+      cacheEntry.dataAdapter.freeResources(specification)
     })
   }
 
