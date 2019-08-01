@@ -66,6 +66,7 @@ class WiggleRendering extends Component {
 
   render() {
     const { featureUnderMouse, offsetX } = this.state
+    const { height } = this.props
 
     const toP = s => parseFloat(s.toPrecision(6))
     const getFeatRepr = feature => {
@@ -100,7 +101,7 @@ class WiggleRendering extends Component {
         className="WiggleRendering"
         style={{
           overflow: 'hidden',
-          height: this.props.height,
+          height,
         }}
       >
         <PrerenderedCanvas {...this.props} />

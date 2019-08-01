@@ -37,7 +37,7 @@ function WiggleTrackComponent(props) {
           position: 'absolute',
           top: 0,
           left: 300,
-          width: 35,
+          pointerEvents: 'none',
           height: '100%',
         }}
       >
