@@ -54,19 +54,9 @@ class Track extends Component {
   wheel(event) {
     const { onHorizontalScroll } = this.props
     const delta = { x: 0, y: 0 }
-    if ('wheelDeltaX' in event) {
-      delta.x = event.wheelDeltaX / 2
-      delta.y = event.wheelDeltaY / 2
-    } else if ('deltaX' in event) {
-      delta.x =
-        Math.abs(event.deltaY) > Math.abs(2 * event.deltaX) ? 0 : event.deltaX
-      delta.y = event.deltaY * -10
-    } else if (event.wheelDelta) {
-      delta.y = event.wheelDelta / 2
-      if (window.opera) delta.y = -delta.y
-    } else if (event.detail) {
-      delta.y = -event.detail * 100
-    }
+    delta.x =
+      Math.abs(event.deltaY) > Math.abs(2 * event.deltaX) ? 0 : -event.deltaX
+    delta.y = event.deltaY * -10
 
     delta.x = Math.round(delta.x)
     delta.y = Math.round(delta.y)
