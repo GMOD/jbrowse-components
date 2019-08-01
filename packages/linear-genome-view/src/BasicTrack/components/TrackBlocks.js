@@ -11,7 +11,7 @@ const styles = {
     textAlign: 'left',
     width: '100%',
     background: '#404040',
-    minHeight: '100%',
+    height: '100%',
   },
   elidedBlock: {
     position: 'absolute',

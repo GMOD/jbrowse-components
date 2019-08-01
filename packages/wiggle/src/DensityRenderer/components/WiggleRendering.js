@@ -98,7 +98,11 @@ class WiggleRendering extends Component {
         role="presentation"
         onFocus={() => {}}
         className="WiggleRendering"
-        style={{ position: 'relative' }}
+        style={{
+          overflow: 'hidden',
+          height: this.props.height,
+          position: 'relative',
+        }}
       >
         <PrerenderedCanvas {...this.props} />
         {featureUnderMouse ? getMouseoverFlag(featureUnderMouse) : null}
