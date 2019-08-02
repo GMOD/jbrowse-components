@@ -24,6 +24,7 @@ class Track extends Component {
     trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
     onHorizontalScroll: PropTypes.func.isRequired,
+    onVerticalScroll: PropTypes.func.isRequired,
   }
 
   static defaultProps = { children: null }
@@ -52,21 +53,11 @@ class Track extends Component {
   }
 
   wheel(event) {
-    const { onHorizontalScroll } = this.props
+    const { onHorizontalScroll, onVerticalScroll } = this.props
     const delta = { x: 0, y: 0 }
-    delta.x =
-      Math.abs(event.deltaY) > Math.abs(2 * event.deltaX)
-        ? 0
-        : -event.deltaX * (1 + event.deltaMode * 50)
-    delta.y = event.deltaY * -10
-
-    delta.x = Math.round(delta.x)
-    delta.y = Math.round(delta.y)
-
-    if (delta.x) {
-      onHorizontalScroll(-delta.x)
-      event.preventDefault()
-    }
+    onHorizontalScroll(event.deltaX)
+    onVerticalScroll(event.deltaY)
+    event.preventDefault()
   }
 
   mouseMove(event) {

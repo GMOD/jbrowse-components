@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core'
@@ -6,7 +6,6 @@ import { withStyles } from '@material-ui/core'
 const styles = {
   trackRenderingContainer: {
     overflowY: 'auto',
-    overflowX: 'hidden',
     background: '#333',
     whiteSpace: 'nowrap',
   },
@@ -16,14 +15,19 @@ const styles = {
  * mostly does UI gestures: drag scrolling, etc
  */
 function TrackRenderingContainer(props) {
-  const { trackId, height, children, classes } = props
+  const { trackId, heightA, children, classes, scrollTop } = props
+  const nameRef = useRef()
+
+  if (nameRef.current) {
+    nameRef.current.scrollTop = scrollTop
+  }
   return (
     <div
       className={classes.trackRenderingContainer}
+      ref={nameRef}
       style={{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
-        height,
       }}
       role="presentation"
     >
@@ -34,7 +38,6 @@ function TrackRenderingContainer(props) {
 TrackRenderingContainer.propTypes = {
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   trackId: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired,
   children: PropTypes.node,
 }
 
