@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
