@@ -1,4 +1,5 @@
-import React from 'react'
+/* eslint-disable react/require-default-props */
+import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core'
@@ -15,15 +16,24 @@ const styles = {
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
-function TrackRenderingContainer(props) {
-  const { trackId, height, children, classes } = props
+function TrackRenderingContainer({
+  trackId,
+  children,
+  classes,
+  scrollTop = 0,
+}) {
+  const nameRef = useRef()
+
+  if (nameRef.current) {
+    nameRef.current.scrollTop = scrollTop
+  }
   return (
     <div
       className={classes.trackRenderingContainer}
+      ref={nameRef}
       style={{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
-        height,
       }}
       role="presentation"
     >
@@ -32,14 +42,10 @@ function TrackRenderingContainer(props) {
   )
 }
 TrackRenderingContainer.propTypes = {
+  scrollTop: PropTypes.number,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   trackId: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired,
   children: PropTypes.node,
-}
-
-TrackRenderingContainer.defaultProps = {
-  children: undefined,
 }
 
 export default withStyles(styles)(observer(TrackRenderingContainer))
