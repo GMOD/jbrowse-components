@@ -50,9 +50,9 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 
-function TrackContainer({ model, track, key }) {
+const TrackContainer = observer(({ model, track }) => {
   const classes = useStyles()
-  const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
+  const { bpPerPx, offsetPx } = model
   const [scrollTop, setScrollTop] = useState(0)
   return (
     <>
@@ -81,7 +81,9 @@ function TrackContainer({ model, track, key }) {
           blockState={{}}
           onHorizontalScroll={model.horizontalScroll}
           onVerticalScroll={value =>
-            setScrollTop(Math.min(Math.max(scrollTop + value, 0), track.height))
+            setScrollTop(
+              Math.min(Math.max(scrollTop + value, 0), track.height + 10),
+            )
           }
         />
       </TrackRenderingContainer>
@@ -92,9 +94,10 @@ function TrackContainer({ model, track, key }) {
       />
     </>
   )
-}
+})
 
 TrackContainer.propTypes = {
+  model: PropTypes.objectOrObservableObject.isRequired,
   track: ReactPropTypes.shape({}).isRequired,
 }
 
@@ -189,7 +192,7 @@ function LinearGenomeView(props) {
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />
         </div>
         {tracks.map(track => (
-          <TrackContainer key={track.configId} model={model} track={track} />
+          <TrackContainer key={track.id} model={model} track={track} />
         ))}
       </div>
     </div>

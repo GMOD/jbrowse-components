@@ -54,7 +54,6 @@ class Track extends Component {
 
   wheel(event) {
     const { onHorizontalScroll, onVerticalScroll } = this.props
-    const delta = { x: 0, y: 0 }
     onHorizontalScroll(event.deltaX)
     onVerticalScroll(event.deltaY)
     event.preventDefault()

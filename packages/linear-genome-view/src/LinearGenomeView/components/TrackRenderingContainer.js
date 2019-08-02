@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core'
@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core'
 const styles = {
   trackRenderingContainer: {
     overflowY: 'auto',
+    overflowX: 'hidden',
     background: '#333',
     whiteSpace: 'nowrap',
   },
@@ -14,8 +15,12 @@ const styles = {
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
-function TrackRenderingContainer(props) {
-  const { trackId, heightA, children, classes, scrollTop } = props
+function TrackRenderingContainer({
+  trackId,
+  children,
+  classes,
+  scrollTop = 0,
+}) {
   const nameRef = useRef()
 
   if (nameRef.current) {
@@ -36,13 +41,10 @@ function TrackRenderingContainer(props) {
   )
 }
 TrackRenderingContainer.propTypes = {
+  scrollTop: PropTypes.number,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
   trackId: PropTypes.string.isRequired,
   children: PropTypes.node,
-}
-
-TrackRenderingContainer.defaultProps = {
-  children: undefined,
 }
 
 export default withStyles(styles)(observer(TrackRenderingContainer))
