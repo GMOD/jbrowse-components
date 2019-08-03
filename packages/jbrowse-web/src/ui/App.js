@@ -1,4 +1,3 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
@@ -14,7 +13,9 @@ import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 
 import { withSize } from 'react-sizeme'
+
 import Drawer from './Drawer'
+import DevTools from './DevTools'
 
 const styles = theme => ({
   '@global': {
@@ -53,10 +54,6 @@ const styles = theme => ({
   },
   drawerLoading: {
     margin: theme.spacing(2),
-  },
-  developer: {
-    background: 'white',
-    display: 'block',
   },
 })
 
@@ -165,44 +162,11 @@ function App(props) {
               />
             )
           })}
-          <div className={classes.developer}>
-            <h3>Developer tools</h3>
-            <button
-              type="button"
-              onClick={() => {
-                if (!session.datasets.length)
-                  throw new Error(`Must add a dataset before adding a view`)
-                session.addLinearGenomeViewOfDataset(
-                  readConfObject(session.datasets[0], 'name'),
-                )
-              }}
-            >
-              Add linear view
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!session.datasets.length)
-                  throw new Error(`Must add a dataset before adding a view`)
-                session.addViewOfDataset(
-                  'CircularView',
-                  readConfObject(session.datasets[0], 'name'),
-                )
-              }}
-            >
-              Add circular view
-            </button>
-            <select
-              onChange={event => activateSession(event.target.value)}
-              value={session.name}
-            >
-              {sessionNames.map(name => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <DevTools
+            session={session}
+            sessionNames={sessionNames}
+            activateSession={activateSession}
+          />
         </div>
       </div>
       <Drawer

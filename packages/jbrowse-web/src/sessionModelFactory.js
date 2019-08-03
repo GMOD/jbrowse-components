@@ -253,6 +253,17 @@ export default pluginManager => {
         return self.addView(viewType, initialState)
       },
 
+      addViewFromAnotherView(viewType, otherView, initialState = {}) {
+        const state = { ...initialState }
+        if (otherView.displayRegionsFromAssemblyName) {
+          state.displayRegionsFromAssemblyName =
+            otherView.displayRegionsFromAssemblyName
+        } else {
+          state.displayedRegions = otherView.displayedRegions
+        }
+        return self.addView(viewType, state)
+      },
+
       addDrawerWidget(
         typeName,
         id,
