@@ -1,6 +1,6 @@
 export default ({ jbrequire }) => {
-  const ServerSideRendererType = jbrequire(
-    '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType',
+  const ChordRendererType = jbrequire(
+    '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -17,7 +17,7 @@ export default ({ jbrequire }) => {
     },
     { explicitlyTyped: true },
   )
-  return new ServerSideRendererType({
+  return new ChordRendererType({
     name: 'StructuralVariantChordRenderer',
     ReactComponent,
     configSchema,

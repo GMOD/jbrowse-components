@@ -6,7 +6,7 @@ export default ({ jbrequire }) => {
   const { readConfObject, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const { getContainingView, getContainingAssembly } = jbrequire(
+  const { getContainingView, getContainingDataset } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
 
@@ -37,15 +37,14 @@ export default ({ jbrequire }) => {
     // else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
 
     const assemblyName = readConfObject(
-      getContainingAssembly(track.configuration),
-      'assemblyName',
+      getContainingDataset(track.configuration).assembly,
+      'name',
     )
-    return {
+    const data = {
       rendererType,
       rpcManager,
       renderProps,
       // cannotBeRenderedReason,
-      trackError: track.error,
       renderArgs: {
         assemblyName,
         adapterType: track.adapterType.name,
@@ -58,11 +57,15 @@ export default ({ jbrequire }) => {
         timeout: 1000000, // 10000,
       },
     }
+    return data
   }
 
   async function renderReactionEffect(self, props, allowRefetch = true) {
+    if (!props) {
+      return
+    }
+
     const {
-      trackError,
       rendererType,
       renderProps,
       rpcManager,
@@ -72,10 +75,6 @@ export default ({ jbrequire }) => {
     // console.log(getContainingView(self).rendererType)
     if (!isAlive(self)) return
 
-    if (trackError) {
-      self.setError(trackError)
-      return
-    }
     if (cannotBeRenderedReason) {
       self.setMessage(cannotBeRenderedReason)
       return
@@ -91,6 +90,15 @@ export default ({ jbrequire }) => {
       //   assembleLocString(renderArgs.region),
       //   renderArgs.rendererType,
       // ]
+
+      // check renderertype compatibility
+      if (!self.isCompatibleWithRenderer(rendererType))
+        throw new Error(
+          `renderer ${
+            rendererType.name
+          } is not compatible with this track type`,
+        )
+
       const { html, ...data } = await rendererType.renderInClient(
         rpcManager,
         renderArgs,
@@ -113,8 +121,6 @@ export default ({ jbrequire }) => {
         console.warn(`cached abort detected, failed to recover "${track.name}"`)
       }
       if (isAlive(self) && !isAbortException(error)) {
-        // setting the aborted exception as an error will draw the "aborted" error, and we
-        // have not found how to create a re-render if this occurs
         self.setError(error)
       }
     }

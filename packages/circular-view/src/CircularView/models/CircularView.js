@@ -8,7 +8,7 @@ export default pluginManager => {
   const { ConfigurationSchema, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const { clamp } = jbrequire('@gmod/jbrowse-core/util')
+  const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(
     require('./slices'),
@@ -209,23 +209,16 @@ export default pluginManager => {
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const rootModel = getRoot(self)
-          if (!rootModel.drawerWidgets.get('hierarchicalTrackSelector'))
-            rootModel.addDrawerWidget(
-              'HierarchicalTrackSelectorDrawerWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-          const selector = rootModel.drawerWidgets.get(
+          const session = getSession(self)
+          const selector = session.addDrawerWidget(
+            'HierarchicalTrackSelectorDrawerWidget',
             'hierarchicalTrackSelector',
+            { view: self },
           )
-          selector.setView(self)
-          rootModel.showDrawerWidget(selector)
-        } else {
-          throw new Error(
-            `invalid track selector type ${self.trackSelectorType}`,
-          )
+          session.showDrawerWidget(selector)
+          return selector
         }
+        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
       toggleTrack(configuration) {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { withStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'

@@ -1,3 +1,5 @@
+import { trace } from 'mobx';
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { reaction } = jbrequire('mobx')
@@ -11,7 +13,7 @@ export default pluginManager => {
     readConfObject,
   } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const { getContainingView, getContainingAssembly } = jbrequire(
+  const { getContainingView, getContainingDataset } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -91,7 +93,7 @@ export default pluginManager => {
             renderReactionEffect(self, data)
           },
           {
-            name: `${self.id} rendering`,
+            name: `${self.type} ${self.id} rendering`,
             // delay: self.renderDelay || 300,
             fireImmediately: true,
           },

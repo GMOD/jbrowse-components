@@ -128,8 +128,9 @@ function readConfObjects(confObject, slotNames, args) {
  *   will be sent to each of the slotNames
  */
 function getConf(model, slotName, args) {
+  if (!model) throw new TypeError('must provide a model object')
   if (!model.configuration) {
-    throw new Error('cannot getConf on this model, it has no configuration')
+    throw new TypeError('cannot getConf on this model, it has no configuration')
   }
   return readConfObject(model.configuration, slotName, args)
 }

@@ -15,6 +15,8 @@ import ViewType from './pluggableElementTypes/ViewType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
 import ServerSideRendererType from './pluggableElementTypes/renderers/ServerSideRendererType'
+import CircularChordRendererType from './pluggableElementTypes/renderers/CircularChordRendererType'
+import BoxRendererType from './pluggableElementTypes/renderers/BoxRendererType'
 
 import * as Configuration from './configuration'
 import Plugin from './Plugin'
@@ -42,6 +44,8 @@ export default {
   '@gmod/jbrowse-core/pluggableElementTypes/AdapterType': AdapterType,
   '@gmod/jbrowse-core/pluggableElementTypes/TrackType': TrackType,
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
+  '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
+  '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
   '@gmod/jbrowse-core/configuration': Configuration,
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,

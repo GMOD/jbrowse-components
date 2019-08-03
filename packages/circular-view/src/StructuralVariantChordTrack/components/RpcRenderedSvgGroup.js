@@ -1,11 +1,11 @@
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
-  const { isAlive, isStateTreeNode, getSnapshot } = jbrequire('mobx-state-tree')
-  const { useEffect, useState, useRef, Fragment } = React
-  const { observer } = jbrequire('mobx-react')
+  const { isAlive } = jbrequire('mobx-state-tree')
+  const { useEffect, useRef } = React
+  const { observer } = jbrequire('mobx-react-lite')
   const { unmountComponentAtNode, hydrate } = jbrequire('react-dom')
 
-  const RpcRenderedSvgGroup = observer(({ model }) => {
+  function RpcRenderedSvgGroup({ model }) {
     const { id, data, html, filled, renderProps, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
@@ -44,7 +44,7 @@ export default ({ jbrequire }) => {
     })
 
     return <g ref={ssrContainerNode} />
-  })
+  }
 
-  return RpcRenderedSvgGroup
+  return observer(RpcRenderedSvgGroup)
 }

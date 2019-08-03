@@ -7,7 +7,7 @@ export default pluginManager => {
 
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const { getContainingAssembly } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getContainingDataset } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const model = types
@@ -23,12 +23,12 @@ export default pluginManager => {
           () => ({
             root: getRoot(self),
             assemblyName: readConfObject(
-              getContainingAssembly(self.configuration),
-              'assemblyName',
+              getContainingDataset(self.configuration).assembly,
+              'name',
             ),
           }),
           ({ root, assemblyName }, signal) => {
-            return root.assemblyManager.getRefNameMapForAdapter(
+            return root.rpcManager.getRefNameMapForAdapter(
               getConf(self, 'adapter'),
               assemblyName,
               { signal },

@@ -7,6 +7,9 @@ export default pluginManager => {
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
+  const CircularChordRendererType = jbrequire(
+    '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
+  )
 
   const { getParentRenderProps, getContainingView } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
@@ -107,6 +110,10 @@ export default pluginManager => {
             } has no ReactComponent, it may not be completely implemented yet`,
           )
         return RendererType
+      },
+
+      isCompatibleWithRenderer(renderer) {
+        return !!(renderer instanceof CircularChordRendererType)
       },
     }))
 
