@@ -73,6 +73,12 @@ const TrackContainer = observer(({ model, track }) => {
         trackId={track.id}
         height={track.height}
         scrollTop={scrollTop}
+        onHorizontalScroll={model.horizontalScroll}
+        onVerticalScroll={value => {
+          setScrollTop(
+            Math.min(Math.max(scrollTop + value, 0), track.height + 10),
+          )
+        }}
       >
         <track.RenderingComponent
           model={track}
@@ -80,11 +86,6 @@ const TrackContainer = observer(({ model, track }) => {
           bpPerPx={bpPerPx}
           blockState={{}}
           onHorizontalScroll={model.horizontalScroll}
-          onVerticalScroll={value =>
-            setScrollTop(
-              Math.min(Math.max(scrollTop + value, 0), track.height + 10),
-            )
-          }
         />
       </TrackRenderingContainer>
       <TrackResizeHandle
