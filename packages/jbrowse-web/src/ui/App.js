@@ -144,7 +144,10 @@ function App(props) {
         className={classes.menuBarsAndComponents}
         ref={nameRef}
         onWheel={event => {
-          if (nameRef.current.scrollHeight > nameRef.current.clientHeight) {
+          if (
+            !session.shouldntScroll &&
+            nameRef.current.scrollHeight > nameRef.current.clientHeight
+          ) {
             setScrollTop(
               clamp(
                 scrollTop + event.deltaY,
