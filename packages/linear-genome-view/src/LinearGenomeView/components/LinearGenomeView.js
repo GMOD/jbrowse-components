@@ -1,5 +1,5 @@
 import { Icon, IconButton, makeStyles } from '@material-ui/core'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { clamp, getSession } from '@gmod/jbrowse-core/util'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
@@ -54,6 +54,7 @@ const TrackContainer = observer(({ model, track }) => {
   const classes = useStyles()
   const { bpPerPx, offsetPx } = model
   const [scrollTop, setScrollTop] = useState(0)
+  const session = getSession(model)
   return (
     <>
       <div
@@ -73,6 +74,16 @@ const TrackContainer = observer(({ model, track }) => {
         trackId={track.id}
         height={track.height}
         scrollTop={scrollTop}
+        onHorizontalScroll={model.horizontalScroll}
+        onVerticalScroll={value => {
+          const n = scrollTop + value
+          if (n > 0 && n < track.height + 10) {
+            session.shouldntScroll = true
+            setScrollTop(clamp(n, 0, track.height + 10))
+          } else {
+            session.shouldntScroll = false
+          }
+        }}
       >
         <track.RenderingComponent
           model={track}
@@ -80,11 +91,6 @@ const TrackContainer = observer(({ model, track }) => {
           bpPerPx={bpPerPx}
           blockState={{}}
           onHorizontalScroll={model.horizontalScroll}
-          onVerticalScroll={value =>
-            setScrollTop(
-              Math.min(Math.max(scrollTop + value, 0), track.height + 10),
-            )
-          }
         />
       </TrackRenderingContainer>
       <TrackResizeHandle

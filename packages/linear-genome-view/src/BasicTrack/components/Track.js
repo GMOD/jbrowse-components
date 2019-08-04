@@ -24,7 +24,6 @@ class Track extends Component {
     trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
     onHorizontalScroll: PropTypes.func.isRequired,
-    onVerticalScroll: PropTypes.func.isRequired,
   }
 
   static defaultProps = { children: null }
@@ -38,25 +37,10 @@ class Track extends Component {
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
     this.mouseLeave = this.mouseLeave.bind(this)
-    this.wheel = this.wheel.bind(this)
-  }
-
-  componentDidMount() {
-    if (this.mainNode.current)
-      this.mainNode.current.addEventListener('wheel', this.wheel, {
-        passive: false,
-      })
   }
 
   mouseDown(event) {
     this.setState({ mouseDragging: true, previousMouseX: event.clientX })
-  }
-
-  wheel(event) {
-    const { onHorizontalScroll, onVerticalScroll } = this.props
-    onHorizontalScroll(event.deltaX)
-    onVerticalScroll(event.deltaY)
-    event.preventDefault()
   }
 
   mouseMove(event) {
