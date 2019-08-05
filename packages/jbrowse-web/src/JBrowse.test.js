@@ -2,6 +2,7 @@ import {
   cleanup,
   fireEvent,
   render,
+  wait,
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
@@ -13,9 +14,6 @@ import config from '../test_data/config_integration_test.json'
 import jbrowseModel from './jbrowseModel'
 
 fetchMock.config.sendAsJson = false
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 
@@ -285,13 +283,14 @@ describe('test configuration editor', () => {
     ).resolves.toBeTruthy()
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
-    // TODO: remove timeout which waits for SSR re-render
-    // Note: a series of like 5 or 6 waitForDomChange calls
-    // on container also works instead of timeout
-    await timeout(1000)
-    const ret = await waitForElement(() => byId('vcf-2560'))
-    expect(ret).toMatchSnapshot()
-  })
+    await wait(() => {
+      expect(
+        Array.from(byId('vcf-2560').attributes).find(
+          attr => attr.name === 'style',
+        ).value,
+      ).toBe('fill:green')
+    })
+  }, 10000)
 })
 
 describe('bigwig', () => {
