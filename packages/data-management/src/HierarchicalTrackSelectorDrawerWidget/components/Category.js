@@ -13,13 +13,13 @@ import Contents from './Contents'
 const styles = theme => ({
   expansionPanelDetails: {
     display: 'block',
-    padding: '8px',
+    padding: theme.spacing(1),
   },
   content: {
     '&$expanded': {
-      margin: '8px 0',
+      margin: theme.spacing(1, 0),
     },
-    margin: '8px 0',
+    margin: theme.spacing(1, 0),
   },
   root: {
     background: theme.palette.grey[300],
@@ -30,9 +30,11 @@ const styles = theme => ({
     },
     margin: 0,
     minHeight: 0,
-    padding: '0 8px',
+    padding: theme.spacing(0, 1),
   },
-  expanded: {},
+  expanded: {
+    // empty block needed to keep small
+  },
 })
 
 function Category(props) {
