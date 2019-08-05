@@ -101,19 +101,28 @@ export default class extends BoxRendererType {
     const getCoord = (coord: number): number =>
       bpToPx(coord, region, bpPerPx, horizontallyFlipped)
 
-    const layoutRecords = iterMap(
-      features.values(),
-      feature =>
-        this.layoutFeature(
-          feature,
-          layout,
-          config,
-          bpPerPx,
-          region,
-          horizontallyFlipped,
-        ),
-      features.size,
-    )
+    let layoutRecords
+
+    const getFeatureLayout = (): (LayoutRecord | null)[] =>
+      iterMap(
+        features.values(),
+        feature =>
+          this.layoutFeature(
+            feature,
+            layout,
+            config,
+            bpPerPx,
+            region,
+            horizontallyFlipped,
+          ),
+        features.size,
+      )
+    try {
+      layoutRecords = getFeatureLayout()
+    } catch (e) {
+      layout.reinitialize()
+      layoutRecords = getFeatureLayout()
+    }
 
     const width = (region.end - region.start) / bpPerPx
     const height = layout.getTotalHeight()

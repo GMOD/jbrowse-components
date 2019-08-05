@@ -326,6 +326,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
 
+  reinitialize(): void {
+    this.bitmap = []
+    this.rectangles = {}
+    this.pTotalHeight = 0
+  }
+
   /**
    * @returns {Number} top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
@@ -340,6 +346,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // if we have already laid it out, return its layout
     // console.log(`${this.id} add ${id}`)
     if (id in this.rectangles) {
+      if (this.rectangles[id].originalHeight !== height) {
+        throw new Error('we require a new layout')
+      }
       const storedRec = this.rectangles[id]
       if (storedRec.top === null) return null
 
