@@ -29,7 +29,15 @@ const RootModel = types
     },
     duplicateCurrentSession() {
       const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-      snapshot.name = `${self.session.name} (copy)`
+      let newSnapshotName = `${self.session.name} (copy)`
+      if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
+        let newSnapshotCopyNumber = 2
+        do {
+          newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
+          newSnapshotCopyNumber += 1
+        } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
+      }
+      snapshot.name = newSnapshotName
       self.setSession(snapshot)
     },
     activateSession(name) {
