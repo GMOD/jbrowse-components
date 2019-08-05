@@ -1,5 +1,6 @@
 import {
   Icon,
+  Select,
   IconButton,
   InputBase,
   Typography,
@@ -224,7 +225,7 @@ function TextFieldOrTypography({ onChange, value = '' }) {
 }
 TextFieldOrTypography.propTypes = {
   onChange: ReactPropTypes.func.isRequired,
-  value: ReactPropTypes.string,
+  value: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
 function Search(props) {
@@ -256,8 +257,7 @@ Search.propTypes = {
   onSubmit: ReactPropTypes.func.isRequired,
 }
 
-function Header(props) {
-  const { model } = props
+function Header({ model, header, setHeader }) {
   const classes = useStyles()
   const navTo = locstring => {
     const [refSeq, rest = ''] = locstring.split(':')
@@ -268,6 +268,9 @@ function Header(props) {
   }
   return (
     <div className={classes.headerBar}>
+      {model.hideControls ? null : (
+        <Controls header={header} setHeader={setHeader} model={model} />
+      )}
       <div className={classes.emphasis}>
         <TextFieldOrTypography
           value={model.displayRegionsFromAssemblyName}
@@ -277,7 +280,22 @@ function Header(props) {
         />
       </div>
       <div className={classes.spacer} />
+
       <Search onSubmit={navTo} />
+      <Select
+        value="Select refSeq"
+        name="refseq"
+        onChange={event => {
+          if (event.target.value !== '')
+            model.navTo({ refSeq: event.target.value })
+        }}
+      >
+        {model.displayedRegions.map(r => (
+          <MenuItem key={r.refName} value={r.refName}>
+            {r.refName}
+          </MenuItem>
+        ))}
+      </Select>
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />
@@ -285,12 +303,66 @@ function Header(props) {
   )
 }
 
+Header.propTypes = {
+  setHeader: ReactPropTypes.func.isRequired,
+  header: ReactPropTypes.bool.isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
+function Controls({ model, header, setHeader }) {
+  const classes = useStyles()
+  return (
+    <>
+      <IconButton
+        onClick={model.closeView}
+        className={classes.iconButton}
+        title="close this view"
+      >
+        <Icon fontSize="small">close</Icon>
+      </IconButton>
+      <LongMenu
+        className={classes.iconButton}
+        options={[
+          {
+            title: 'Show track selector',
+            key: 'track_selector',
+            callback: model.activateTrackSelector,
+          },
+          {
+            title: 'Horizontal flip',
+            key: 'flip',
+            callback: model.horizontallyFlip,
+          },
+          {
+            title: 'Show all regions',
+            key: 'showall',
+            callback: model.showAllRegions,
+          },
+          {
+            title: header ? 'Hide header' : 'Show header',
+            key: 'hide_header',
+            callback: () => {
+              setHeader(!header)
+            },
+          },
+        ]}
+      />
+    </>
+  )
+}
+
+Controls.propTypes = {
+  setHeader: ReactPropTypes.func.isRequired,
+  header: ReactPropTypes.bool.isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
 function LinearGenomeView(props) {
   const { model } = props
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
-  const session = getSession(model)
-  const [header, setHeader] = useState(true)
   const classes = useStyles()
+  const [header, setHeader] = useState(true)
+
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
@@ -300,7 +372,7 @@ function LinearGenomeView(props) {
     position: 'relative',
     gridTemplateRows: `${
       header ? '[header] auto ' : ''
-    }[scale-bar] auto ${tracks
+    } [scale-bar] auto ${tracks
       .map(
         t =>
           `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -316,46 +388,15 @@ function LinearGenomeView(props) {
         key={`view-${id}`}
         style={style}
       >
-        {header ? <Header model={model} /> : null}
+        {header ? (
+          <Header header={header} setHeader={setHeader} model={model} />
+        ) : null}
         <div
           className={classnames(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          {model.hideControls ? null : (
-            <>
-              <IconButton
-                onClick={model.closeView}
-                className={classes.iconButton}
-                title="close this view"
-              >
-                <Icon fontSize="small">close</Icon>
-              </IconButton>
-              <LongMenu
-                className={classes.iconButton}
-                options={[
-                  {
-                    title: 'Show track selector',
-                    key: 'track_selector',
-                    callback: model.activateTrackSelector,
-                  },
-                  {
-                    title: 'Horizontal flip',
-                    key: 'flip',
-                    callback: model.flipCurrentView,
-                  },
-                  {
-                    title: 'Show all regions',
-                    key: 'showall',
-                    callback: model.showAllRegions,
-                  },
-                  {
-                    title: header ? 'Hide header' : 'Show header',
-                    key: 'hide_header',
-                    callback: () => setHeader(!header),
-                  },
-                ]}
-              />
-            </>
+          {model.hideControls || header ? null : (
+            <Controls header={header} setHeader={setHeader} model={model} />
           )}
         </div>
 
@@ -402,10 +443,6 @@ function LinearGenomeView(props) {
 }
 LinearGenomeView.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
-  header: ReactPropTypes.bool,
-}
-LinearGenomeView.defaultProps = {
-  header: true,
 }
 
 export default observer(LinearGenomeView)

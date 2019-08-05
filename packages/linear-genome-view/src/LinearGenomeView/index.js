@@ -180,19 +180,6 @@ export function stateModelFactory(pluginManager) {
         self.displayRegionsFromAssemblyName = assemblyName
       },
 
-      activateSearch() {
-        const session = getSession(self)
-        const search = session.addDrawerWidget(
-          'SearchDrawerWidget',
-          'searchAndNav',
-          {
-            target: self,
-          },
-        )
-        search.setTarget(self)
-        session.showDrawerWidget(search)
-      },
-
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -253,6 +240,12 @@ export function stateModelFactory(pluginManager) {
 
       navTo({ refSeq, start, end }) {
         const index = self.getIndex(refSeq)
+        if (start === undefined) {
+          start = self.displayedRegions[index].start // eslint-disable-line
+        }
+        if (end === undefined) {
+          end = self.displayedRegions[index].end //eslint-disable-line
+        }
         self.moveTo({ index, offset: start }, { index, offset: end })
       },
 
@@ -329,7 +322,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       showAllRegions() {
-        self.bpPerPx = self.maxBpPerPx
+        self.bpPerPx = self.totalBp / self.viewingRegionWidth
         self.offsetPx = 0
       },
     }))

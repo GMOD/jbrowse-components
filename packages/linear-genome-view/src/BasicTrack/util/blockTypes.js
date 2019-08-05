@@ -1,6 +1,10 @@
 export class BlockSet {
   blocks = []
 
+  constructor(blocks = []) {
+    this.blocks = blocks
+  }
+
   push(block) {
     if (block instanceof ElidedBlock) {
       if (this.blocks.length) {

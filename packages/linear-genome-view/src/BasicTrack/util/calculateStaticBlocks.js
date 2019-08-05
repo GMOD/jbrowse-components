@@ -2,16 +2,18 @@ import { assembleLocString } from '@gmod/jbrowse-core/util'
 import { BlockSet, ContentBlock, ElidedBlock } from './blockTypes'
 
 export function calculateBlocksReversed(self, extra = 0) {
-  return calculateBlocksForward(self, extra).map(fwdBlock => {
-    const { parentRegion } = fwdBlock
-    const revBlock = {
-      ...fwdBlock,
-      start: parentRegion.end - fwdBlock.end,
-      end: parentRegion.end - fwdBlock.start,
-    }
-    revBlock.key = assembleLocString(revBlock)
-    return revBlock
-  })
+  return new BlockSet(
+    calculateBlocksForward(self, extra).map(fwdBlock => {
+      const { parentRegion } = fwdBlock
+      const revBlock = new ContentBlock({
+        ...fwdBlock,
+        start: parentRegion.end - fwdBlock.end,
+        end: parentRegion.end - fwdBlock.start,
+      })
+      revBlock.key = assembleLocString(revBlock)
+      return revBlock
+    }),
+  )
 }
 
 export function calculateBlocksForward(self, extra = 0) {
