@@ -61,7 +61,9 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
           style={{
             width: `${1 / bpPerPx}px`,
           }}
-          className={`base base-${letter.toLowerCase()}`}
+          className={`base base-${letter.toLowerCase()} ${
+            bpPerPx < 0.1 ? 'border' : ''
+          }`}
         >
           {bpPerPx < 0.1 ? letter : ''}
         </div>
