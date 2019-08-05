@@ -37,44 +37,10 @@ class Track extends Component {
     this.mouseDown = this.mouseDown.bind(this)
     this.mouseMove = this.mouseMove.bind(this)
     this.mouseLeave = this.mouseLeave.bind(this)
-    this.wheel = this.wheel.bind(this)
-  }
-
-  componentDidMount() {
-    if (this.mainNode.current)
-      this.mainNode.current.addEventListener('wheel', this.wheel, {
-        passive: false,
-      })
   }
 
   mouseDown(event) {
     this.setState({ mouseDragging: true, previousMouseX: event.clientX })
-  }
-
-  wheel(event) {
-    const { onHorizontalScroll } = this.props
-    const delta = { x: 0, y: 0 }
-    if ('wheelDeltaX' in event) {
-      delta.x = event.wheelDeltaX / 2
-      delta.y = event.wheelDeltaY / 2
-    } else if ('deltaX' in event) {
-      delta.x =
-        Math.abs(event.deltaY) > Math.abs(2 * event.deltaX) ? 0 : event.deltaX
-      delta.y = event.deltaY * -10
-    } else if (event.wheelDelta) {
-      delta.y = event.wheelDelta / 2
-      if (window.opera) delta.y = -delta.y
-    } else if (event.detail) {
-      delta.y = -event.detail * 100
-    }
-
-    delta.x = Math.round(delta.x)
-    delta.y = Math.round(delta.y)
-
-    if (delta.x) {
-      onHorizontalScroll(-delta.x)
-      event.preventDefault()
-    }
   }
 
   mouseMove(event) {

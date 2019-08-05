@@ -53,20 +53,19 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   if (horizontallyFlipped) s = s.reverse()
 
   return (
-    <>
+    <div style={{ display: 'flex' }}>
       {s.map((letter, iter) => (
         <div
           /* eslint-disable-next-line */
           key={`${region.start}-${iter}`}
-          style={{
-            width: `${1 / bpPerPx}px`,
-          }}
-          className={`base base-${letter.toLowerCase()}`}
+          className={`base base-${letter.toLowerCase()} ${
+            bpPerPx < 0.1 ? 'border' : ''
+          }`}
         >
           {bpPerPx < 0.1 ? letter : ''}
         </div>
       ))}
-    </>
+    </div>
   )
 }
 
@@ -89,7 +88,7 @@ function DivSequenceRendering(props) {
       className="DivSequenceRendering"
       style={{ height: `${height}px`, fontSize: `${height * 0.8}px` }}
     >
-      {bpPerPx >= 1 ? (
+      {bpPerPx >= 0.5 ? (
         <div className="blur">Zoom in to see sequence</div>
       ) : (
         <SequenceDivs {...props} />

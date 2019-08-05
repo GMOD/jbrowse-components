@@ -4,7 +4,7 @@ exports[`one 1`] = `
 <div
   class="WiggleRendering"
   role="presentation"
-  style="position: relative;"
+  style="overflow: hidden; height: 500px;"
 >
   <canvas
     data-testid="prerendered_canvas"

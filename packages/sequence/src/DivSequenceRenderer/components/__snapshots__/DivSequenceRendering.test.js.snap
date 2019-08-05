@@ -19,58 +19,53 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
   style="height: 16px; font-size: 12.8px;"
 >
   <div
-    class="base base-a"
-    style="width: 20px;"
+    style="display: flex;"
   >
-    A
-  </div>
-  <div
-    class="base base-b"
-    style="width: 20px;"
-  >
-    B
-  </div>
-  <div
-    class="base base-c"
-    style="width: 20px;"
-  >
-    C
-  </div>
-  <div
-    class="base base-d"
-    style="width: 20px;"
-  >
-    D
-  </div>
-  <div
-    class="base base-e"
-    style="width: 20px;"
-  >
-    E
-  </div>
-  <div
-    class="base base-f"
-    style="width: 20px;"
-  >
-    F
-  </div>
-  <div
-    class="base base-g"
-    style="width: 20px;"
-  >
-    G
-  </div>
-  <div
-    class="base base-h"
-    style="width: 20px;"
-  >
-    H
-  </div>
-  <div
-    class="base base-i"
-    style="width: 20px;"
-  >
-    I
+    <div
+      class="base base-a border"
+    >
+      A
+    </div>
+    <div
+      class="base base-b border"
+    >
+      B
+    </div>
+    <div
+      class="base base-c border"
+    >
+      C
+    </div>
+    <div
+      class="base base-d border"
+    >
+      D
+    </div>
+    <div
+      class="base base-e border"
+    >
+      E
+    </div>
+    <div
+      class="base base-f border"
+    >
+      F
+    </div>
+    <div
+      class="base base-g border"
+    >
+      G
+    </div>
+    <div
+      class="base base-h border"
+    >
+      H
+    </div>
+    <div
+      class="base base-i border"
+    >
+      I
+    </div>
   </div>
 </div>
 `;

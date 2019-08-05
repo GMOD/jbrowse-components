@@ -11,7 +11,8 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
+import { clamp } from '@gmod/jbrowse-core/util'
 
 import { withSize } from 'react-sizeme'
 import Drawer from './Drawer'
@@ -64,6 +65,7 @@ function App(props) {
   const { classes, size, session } = props
 
   const { pluginManager } = session
+  const [scrollTop, setScrollTop] = useState(0)
 
   useEffect(() => {
     session.updateWidth(size.width)
@@ -118,10 +120,32 @@ function App(props) {
       </Slide>
     )
   }
+  const nameRef = useRef()
+
+  if (nameRef.current) {
+    nameRef.current.scrollTop = scrollTop
+  }
 
   return (
     <div className={classes.root}>
-      <div className={classes.menuBarsAndComponents}>
+      <div
+        className={classes.menuBarsAndComponents}
+        ref={nameRef}
+        onWheel={event => {
+          if (
+            !session.shouldntScroll &&
+            nameRef.current.scrollHeight > nameRef.current.clientHeight
+          ) {
+            setScrollTop(
+              clamp(
+                scrollTop + event.deltaY,
+                0,
+                nameRef.current.scrollHeight - nameRef.current.clientHeight,
+              ),
+            )
+          }
+        }}
+      >
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
             const { LazyReactComponent } = pluginManager.getMenuBarType(

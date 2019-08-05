@@ -9,9 +9,13 @@
     color: black;
     height: 100%;
     overflow: hidden;
-    border: 0.5px solid #666;
-    border-collapse: collapse;
+    min-height: 16px;
+    flex: 1;
+  }
+  .border {
+    border: 1px solid grey;
     box-sizing: border-box;
+    border-collapse: collapse;
   }
   .base-a {
     background-color: #00BF00;

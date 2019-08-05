@@ -183,7 +183,9 @@ class PileupRendering extends Component {
     const { offsetX, offsetY } = event.nativeEvent
     if (!(offsetX >= 0))
       throw new Error(
-        'invalid offsetX, does this browser provide offsetX and offsetY on mouse events?',
+        `invalid offsetX, does this browser provide offsetX and offsetY on mouse events? ${offsetX} ${String(
+          event,
+        )}`,
       )
 
     const { layout, bpPerPx, region, horizontallyFlipped } = this.props

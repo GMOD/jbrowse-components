@@ -1,10 +1,10 @@
-import { Icon, IconButton, withStyles } from '@material-ui/core'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { Icon, IconButton, makeStyles } from '@material-ui/core'
+import { clamp, getSession } from '@gmod/jbrowse-core/util'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 
 import ScaleBar from './ScaleBar'
 import Rubberband from './Rubberband'
@@ -17,7 +17,7 @@ import buttonStyles from './buttonStyles'
 
 const dragHandleHeight = 3
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -48,19 +48,75 @@ const styles = theme => ({
   },
 
   ...buttonStyles(theme),
+}))
+
+const TrackContainer = observer(({ model, track }) => {
+  const classes = useStyles()
+  const { bpPerPx, offsetPx } = model
+  const [scrollTop, setScrollTop] = useState(0)
+  const session = getSession(model)
+  return (
+    <>
+      <div
+        className={classnames(classes.controls, classes.trackControls)}
+        key={`controls:${track.id}`}
+        style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+      >
+        <track.ControlsComponent
+          track={track}
+          key={track.id}
+          view={model}
+          onConfigureClick={track.activateConfigurationUI}
+        />
+      </div>
+      <TrackRenderingContainer
+        key={`track-rendering:${track.id}`}
+        trackId={track.id}
+        height={track.height}
+        scrollTop={scrollTop}
+        onHorizontalScroll={model.horizontalScroll}
+        onVerticalScroll={(value, max) => {
+          const n = scrollTop + value
+          if (n > 0 && n < max) {
+            session.shouldntScroll = true
+          } else {
+            session.shouldntScroll = false
+          }
+          setScrollTop(clamp(n, 0, max))
+        }}
+      >
+        <track.RenderingComponent
+          model={track}
+          offsetPx={offsetPx}
+          bpPerPx={bpPerPx}
+          blockState={{}}
+          onHorizontalScroll={model.horizontalScroll}
+        />
+      </TrackRenderingContainer>
+      <TrackResizeHandle
+        key={`handle:${track.id}`}
+        trackId={track.id}
+        onVerticalDrag={model.resizeTrack}
+      />
+    </>
+  )
 })
 
+TrackContainer.propTypes = {
+  model: PropTypes.objectOrObservableObject.isRequired,
+  track: ReactPropTypes.shape({}).isRequired,
+}
+
 function LinearGenomeView(props) {
-  const scaleBarHeight = 32
-  const { classes, model } = props
-  const session = getSession(model)
+  const { model } = props
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
+  const scaleBarHeight = 32
+  const session = getSession(model)
+  const classes = useStyles()
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
    */
-  const height =
-    scaleBarHeight + tracks.reduce((a, b) => a + b.height + dragHandleHeight, 0)
   const style = {
     display: 'grid',
     position: 'relative',
@@ -139,45 +195,15 @@ function LinearGenomeView(props) {
         >
           <ZoomControls model={model} controlsHeight={scaleBarHeight} />
         </div>
-        {tracks.map(track => [
-          <div
-            className={classnames(classes.controls, classes.trackControls)}
-            key={`controls:${track.id}`}
-            style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-          >
-            <track.ControlsComponent
-              track={track}
-              key={track.id}
-              view={model}
-              onConfigureClick={track.activateConfigurationUI}
-            />
-          </div>,
-          <TrackRenderingContainer
-            key={`track-rendering:${track.id}`}
-            trackId={track.id}
-            height={track.height}
-          >
-            <track.RenderingComponent
-              model={track}
-              offsetPx={offsetPx}
-              bpPerPx={bpPerPx}
-              blockState={{}}
-              onHorizontalScroll={model.horizontalScroll}
-            />
-          </TrackRenderingContainer>,
-          <TrackResizeHandle
-            key={`handle:${track.id}`}
-            trackId={track.id}
-            onVerticalDrag={model.resizeTrack}
-          />,
-        ])}
+        {tracks.map(track => (
+          <TrackContainer key={track.id} model={model} track={track} />
+        ))}
       </div>
     </div>
   )
 }
 LinearGenomeView.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(LinearGenomeView))
+export default observer(LinearGenomeView)

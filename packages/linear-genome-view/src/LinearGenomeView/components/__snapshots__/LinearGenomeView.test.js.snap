@@ -2,18 +2,18 @@
 
 exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
 <div
-  class="LinearGenomeView-root-1"
+  class="makeStyles-root-1"
 >
   <div
-    class="LinearGenomeView-linearGenomeView-2"
+    class="makeStyles-linearGenomeView-2"
     style="display: grid; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      class="makeStyles-controls-3 makeStyles-viewControls-4"
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -33,7 +33,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -65,7 +65,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       />
     </div>
     <div
-      class="LinearGenomeView-zoomControls-6"
+      class="makeStyles-zoomControls-6"
       style="right: 4px; z-index: 1000;"
     >
       <div
@@ -137,7 +137,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      class="makeStyles-controls-3 makeStyles-trackControls-5"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
@@ -194,7 +194,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-foo; grid-column: blocks; height: 20px;"
+      style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
         class="Track-track-106"
@@ -218,18 +218,18 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 
 exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
 <div
-  class="LinearGenomeView-root-1"
+  class="makeStyles-root-1"
 >
   <div
-    class="LinearGenomeView-linearGenomeView-2"
+    class="makeStyles-linearGenomeView-2"
     style="display: grid; position: relative; grid-template-rows: [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      class="makeStyles-controls-3 makeStyles-viewControls-4"
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -249,7 +249,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -385,7 +385,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="LinearGenomeView-zoomControls-6"
+      class="makeStyles-zoomControls-6"
       style="right: 4px; z-index: 1000;"
     >
       <div
@@ -457,7 +457,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      class="makeStyles-controls-3 makeStyles-trackControls-5"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
@@ -514,7 +514,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-foo; grid-column: blocks; height: 20px;"
+      style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
         class="Track-track-106"
@@ -544,7 +544,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: resize-foo; grid-column: span 2;"
     />
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-trackControls-5"
+      class="makeStyles-controls-3 makeStyles-trackControls-5"
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
@@ -601,7 +601,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="TrackRenderingContainer-trackRenderingContainer-105"
       role="presentation"
-      style="grid-row: track-bar; grid-column: blocks; height: 20px;"
+      style="grid-row: track-bar; grid-column: blocks;"
     >
       <div
         class="Track-track-106"
@@ -636,18 +636,18 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 
 exports[`LinearGenomeView genome view component renders with an empty model 1`] = `
 <div
-  class="LinearGenomeView-root-1"
+  class="makeStyles-root-1"
 >
   <div
-    class="LinearGenomeView-linearGenomeView-2"
+    class="makeStyles-linearGenomeView-2"
     style="display: grid; position: relative; grid-template-rows: [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="LinearGenomeView-controls-3 LinearGenomeView-viewControls-4"
+      class="makeStyles-controls-3 makeStyles-viewControls-4"
       style="grid-row: scale-bar;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root LinearGenomeView-iconButton-7"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-7"
         tabindex="0"
         title="close this view"
         type="button"
@@ -667,7 +667,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root LinearGenomeView-toggleButton-8"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
         data_testid="track_select"
         tabindex="0"
         title="select tracks"
@@ -699,7 +699,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       />
     </div>
     <div
-      class="LinearGenomeView-zoomControls-6"
+      class="makeStyles-zoomControls-6"
       style="right: 4px; z-index: 1000;"
     >
       <div
