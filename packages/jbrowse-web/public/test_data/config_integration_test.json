@@ -306,21 +306,22 @@
         }
       ],
       "drawerWidgets": {
-        "hierarchicalTrackSelector-Integration test example": {
-          "id": "hierarchicalTrackSelector-Integration test example",
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
           "type": "HierarchicalTrackSelectorDrawerWidget",
           "filterText": "",
           "view": "integration_test"
         }
       },
       "activeDrawerWidgets": {
-        "hierarchicalTrackSelector-Integration test example": "hierarchicalTrackSelector-Integration test example"
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
     }
   ],
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    }
+    },
+    "updateUrl": false
   }
 }

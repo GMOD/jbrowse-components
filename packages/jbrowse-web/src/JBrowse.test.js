@@ -8,6 +8,7 @@ import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import rootModel from './rootModel'
@@ -18,6 +19,13 @@ function timeout(ms) {
 }
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+window.TextEncoder = TextEncoder
+window.TextDecoder = TextDecoder
+
+Storage.prototype.getItem = jest.fn(() => null)
+Storage.prototype.setItem = jest.fn()
+Storage.prototype.removeItem = jest.fn()
+Storage.prototype.clear = jest.fn()
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
