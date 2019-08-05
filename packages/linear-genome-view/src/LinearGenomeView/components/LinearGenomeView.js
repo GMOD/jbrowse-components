@@ -79,10 +79,10 @@ const TrackContainer = observer(({ model, track }) => {
           const n = scrollTop + value
           if (n > 0 && n < max) {
             session.shouldntScroll = true
-            setScrollTop(clamp(n, 0, max))
           } else {
             session.shouldntScroll = false
           }
+          setScrollTop(clamp(n, 0, max))
         }}
       >
         <track.RenderingComponent
