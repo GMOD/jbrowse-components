@@ -309,11 +309,6 @@ function LinearGenomeView(props) {
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
   }
 
-  const searchFeatures = model.activateSearch
-  const showAllRegions = () => {}
-  const setFlip = () => {}
-  const showTrackSelector = model.activateTrackSelector
-
   return (
     <div className={classes.root}>
       <div
@@ -341,18 +336,17 @@ function LinearGenomeView(props) {
                   {
                     title: 'Show track selector',
                     key: 'track_selector',
-                    callback: showTrackSelector,
+                    callback: model.activateTrackSelector,
                   },
-                  { title: 'Horizontal flip', key: 'flip', callback: setFlip },
+                  {
+                    title: 'Horizontal flip',
+                    key: 'flip',
+                    callback: model.flipCurrentView,
+                  },
                   {
                     title: 'Show all regions',
                     key: 'showall',
-                    callback: showAllRegions,
-                  },
-                  {
-                    title: 'Search features',
-                    key: 'search_features',
-                    callback: searchFeatures,
+                    callback: model.showAllRegions,
                   },
                   {
                     title: header ? 'Hide header' : 'Show header',

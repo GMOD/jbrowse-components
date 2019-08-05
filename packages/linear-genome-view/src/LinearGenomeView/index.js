@@ -76,14 +76,19 @@ export function stateModelFactory(pluginManager) {
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
       },
-      get maxBpPerPx() {
-        const displayWidth = self.viewingRegionWidth
+
+      get totalBp() {
         let totalbp = 0
         self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
         })
-        return constrainBpPerPx(totalbp / displayWidth)
+        return totalbp
       },
+
+      get maxBpPerPx() {
+        return constrainBpPerPx(self.totalBp / self.viewingRegionWidth)
+      },
+
       get minBpPerPx() {
         return constrainBpPerPx(0)
       },
@@ -321,6 +326,11 @@ export function stateModelFactory(pluginManager) {
       setNewView(bpPerPx, offsetPx) {
         self.bpPerPx = bpPerPx
         self.offsetPx = offsetPx
+      },
+
+      showAllRegions() {
+        self.bpPerPx = self.maxBpPerPx
+        self.offsetPx = 0
       },
     }))
 }
