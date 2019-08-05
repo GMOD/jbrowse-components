@@ -88,7 +88,7 @@ function DivSequenceRendering(props) {
       className="DivSequenceRendering"
       style={{ height: `${height}px`, fontSize: `${height * 0.8}px` }}
     >
-      {bpPerPx >= 1 ? (
+      {bpPerPx >= 0.5 ? (
         <div className="blur">Zoom in to see sequence</div>
       ) : (
         <SequenceDivs {...props} />
