@@ -53,14 +53,11 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
   if (horizontallyFlipped) s = s.reverse()
 
   return (
-    <>
+    <div style={{ display: 'flex' }}>
       {s.map((letter, iter) => (
         <div
           /* eslint-disable-next-line */
           key={`${region.start}-${iter}`}
-          style={{
-            width: `${1 / bpPerPx}px`,
-          }}
           className={`base base-${letter.toLowerCase()} ${
             bpPerPx < 0.1 ? 'border' : ''
           }`}
@@ -68,7 +65,7 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
           {bpPerPx < 0.1 ? letter : ''}
         </div>
       ))}
-    </>
+    </div>
   )
 }
 

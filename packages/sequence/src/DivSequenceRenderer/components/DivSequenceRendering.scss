@@ -9,6 +9,8 @@
     color: black;
     height: 100%;
     overflow: hidden;
+    min-height: 16px;
+    flex: 1;
   }
   .border {
     border: 1px solid grey;
