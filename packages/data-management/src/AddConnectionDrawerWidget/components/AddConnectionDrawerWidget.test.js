@@ -5,7 +5,7 @@ import {
   waitForElement,
 } from 'react-testing-library'
 import React from 'react'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
 window.fetch = jest.fn(url => new Promise(resolve => resolve()))

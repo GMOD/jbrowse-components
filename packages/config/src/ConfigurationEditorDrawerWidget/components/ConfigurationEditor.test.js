@@ -2,7 +2,7 @@ import React from 'react'
 import { render } from 'react-testing-library'
 
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AlignmentsTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/AlignmentsTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 

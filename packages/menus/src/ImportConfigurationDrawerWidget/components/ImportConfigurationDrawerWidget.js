@@ -16,8 +16,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/styles'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
-import { observer } from 'mobx-react-lite'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -92,9 +91,7 @@ function ImportConfiguration(props) {
           config = { error: `File is not in JSON format: ${file.path}` }
         else if (file.size > 512 * 1024 ** 2)
           config = {
-            error: `File is too large (${file.size} bytes, max of 512 MiB): ${
-              file.path
-            }`,
+            error: `File is too large (${file.size} bytes, max of 512 MiB): ${file.path}`,
           }
         else {
           const fileHandle = openLocation({ blob: file })

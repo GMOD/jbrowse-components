@@ -12,6 +12,7 @@ import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
+import { useDebounce } from '@gmod/jbrowse-core/util'
 import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
 
 const styles = theme => ({
@@ -24,21 +25,6 @@ const styles = theme => ({
     fontSize: '90%',
   },
 })
-
-function useDebounce(value, delay, slot) {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay, slot])
-
-  return debouncedValue
-}
 
 function CallbackEditor(props) {
   const { slot, classes } = props

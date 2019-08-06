@@ -1,5 +1,6 @@
 import Button from '@material-ui/core/Button'
 import ClickAwayListener from '@material-ui/core/ClickAwayListener'
+import Divider from '@material-ui/core/Divider'
 import Grow from '@material-ui/core/Grow'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -10,10 +11,9 @@ import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
 import { withStyles } from '@material-ui/core/styles'
 import { values } from 'mobx'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
-import { observer } from 'mobx-react-lite'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 const styles = theme => ({
   root: {
@@ -29,7 +29,7 @@ const styles = theme => ({
 
 function DropDownMenu(props) {
   const [open, setOpen] = useState(false)
-  const anchorEl = React.useRef(null)
+  const anchorEl = useRef(null)
 
   const { classes, menuTitle, menuItems, session } = props
 
@@ -38,9 +38,7 @@ function DropDownMenu(props) {
   }
 
   function handleClose(event, callback) {
-    if (anchorEl.current.contains(event.target)) {
-      return
-    }
+    if (anchorEl.current.contains(event.target)) return
 
     setOpen(false)
     if (callback) callback(session)
@@ -76,23 +74,27 @@ function DropDownMenu(props) {
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList>
-                  {values(menuItems).map(menuItem => (
-                    <MenuItem
-                      key={menuItem.name}
-                      onClick={event => handleClose(event, menuItem.func)}
-                      data-testid="menuItemId"
-                    >
-                      {menuItem.icon ? (
-                        <ListItemIcon key={menuItem.name}>
-                          <Icon>{menuItem.icon}</Icon>
-                        </ListItemIcon>
-                      ) : null}
-                      <ListItemText
-                        inset={!menuItem.icon}
-                        primary={menuItem.name}
-                      />
-                    </MenuItem>
-                  ))}
+                  {values(menuItems).map((menuItem, idx) =>
+                    menuItem.name === 'divider' ? (
+                      <Divider key={`divider-${idx}`} />
+                    ) : (
+                      <MenuItem
+                        key={menuItem.name}
+                        onClick={event => handleClose(event, menuItem.func)}
+                        data-testid="menuItemId"
+                      >
+                        {menuItem.icon ? (
+                          <ListItemIcon key={menuItem.name}>
+                            <Icon>{menuItem.icon}</Icon>
+                          </ListItemIcon>
+                        ) : null}
+                        <ListItemText
+                          inset={!menuItem.icon}
+                          primary={menuItem.name}
+                        />
+                      </MenuItem>
+                    ),
+                  )}
                 </MenuList>
               </ClickAwayListener>
             </Paper>

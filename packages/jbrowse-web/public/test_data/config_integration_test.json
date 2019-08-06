@@ -271,54 +271,57 @@
       ]
     }
   ],
-  "session": {
-    "name": "Integration test example",
-    "menuBars": [
-      {
-        "type": "MainMenuBar",
-        "menus": [
-          {
-            "name": "Admin",
-            "menuItems": [
-              {
-                "name": "Export configuration",
-                "icon": "cloud_download",
-                "callback": "exportConfiguration"
-              },
-              {
-                "name": "Import configuration",
-                "icon": "cloud_upload",
-                "callback": "importConfiguration"
-              }
-            ]
-          }
-        ]
+  "savedSessions": [
+    {
+      "name": "Integration test example",
+      "menuBars": [
+        {
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "views": [
+        {
+          "id": "integration_test",
+          "type": "LinearGenomeView",
+          "offsetPx": 2000,
+          "bpPerPx": 0.05,
+          "displayRegionsFromAssemblyName": "volvox"
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "filterText": "",
+          "view": "integration_test"
+        }
+      },
+      "activeDrawerWidgets": {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
-    ],
-    "views": [
-      {
-        "id": "integration_test",
-        "type": "LinearGenomeView",
-        "offsetPx": 2000,
-        "bpPerPx": 0.05,
-        "displayRegionsFromAssemblyName": "volvox"
-      }
-    ],
-    "drawerWidgets": {
-      "hierarchicalTrackSelector-Integration test example": {
-        "id": "hierarchicalTrackSelector-Integration test example",
-        "type": "HierarchicalTrackSelectorDrawerWidget",
-        "filterText": "",
-        "view": "integration_test"
-      }
-    },
-    "activeDrawerWidgets": {
-      "hierarchicalTrackSelector-Integration test example": "hierarchicalTrackSelector-Integration test example"
     }
-  },
+  ],
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    }
+    },
+    "updateUrl": false
   }
 }

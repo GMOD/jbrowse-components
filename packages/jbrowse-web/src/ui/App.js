@@ -1,5 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AppBar from '@material-ui/core/AppBar'
+import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -8,8 +9,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
-import { PropTypes } from 'mobx-react'
-import { observer } from 'mobx-react-lite'
+import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useEffect } from 'react'
 import { clamp } from '@gmod/jbrowse-core/util'
@@ -62,14 +62,7 @@ const styles = theme => ({
 })
 
 function App(props) {
-  const {
-    classes,
-    session,
-    size,
-    sessionNames,
-    addSessionSnapshot,
-    activateSession,
-  } = props
+  const { classes, size, session } = props
 
   const { pluginManager } = session
   const [scrollTop, setScrollTop] = useState(0)
@@ -121,12 +114,7 @@ function App(props) {
               />
             }
           >
-            <LazyReactComponent
-              model={visibleDrawerWidget}
-              session={session}
-              addSessionSnapshot={addSessionSnapshot}
-              setActiveSession={activateSession}
-            />
+            <LazyReactComponent model={visibleDrawerWidget} session={session} />
           </React.Suspense>
         </div>
       </Slide>
@@ -191,8 +179,8 @@ function App(props) {
           })}
           <div className={classes.developer}>
             <h3>Developer tools</h3>
-            <button
-              type="button"
+            <Button
+              variant="outlined"
               onClick={() => {
                 if (!session.datasets.length)
                   throw new Error(`Must add a dataset before adding a view`)
@@ -202,17 +190,21 @@ function App(props) {
               }}
             >
               Add linear view
-            </button>
-            <select
-              onChange={event => activateSession(event.target.value)}
-              value={session.name}
+            </Button>
+            <Button
+              disabled={!session.history.canUndo}
+              onClick={() => session.history.undo()}
             >
-              {sessionNames.map(name => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              undo
+              <Icon>undo</Icon>
+            </Button>
+            <Button
+              disabled={!session.history.canRedo}
+              onClick={() => session.history.redo()}
+            >
+              <Icon>redo</Icon>
+              redo
+            </Button>
           </div>
         </div>
       </div>
@@ -230,9 +222,6 @@ App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   session: PropTypes.observableObject.isRequired,
-  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  addSessionSnapshot: ReactPropTypes.func.isRequired,
-  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

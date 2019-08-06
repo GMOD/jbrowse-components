@@ -8,9 +8,10 @@ import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
-import jbrowseModel from './jbrowseModel'
+import rootModel from './rootModel'
 
 fetchMock.config.sendAsJson = false
 function timeout(ms) {
@@ -18,6 +19,13 @@ function timeout(ms) {
 }
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+window.TextEncoder = TextEncoder
+window.TextDecoder = TextDecoder
+
+Storage.prototype.getItem = jest.fn(() => null)
+Storage.prototype.setItem = jest.fn()
+Storage.prototype.removeItem = jest.fn()
+Storage.prototype.clear = jest.fn()
 
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
@@ -72,7 +80,7 @@ describe('<JBrowse />', () => {
     expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
   })
   it('renders with an initialState', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByText } = render(<JBrowse initialState={state} />)
     expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
   })
@@ -111,7 +119,7 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
@@ -131,7 +139,7 @@ describe('valid file tests', () => {
   })
 
   it('opens track selector', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)
 
     await waitForElement(() => getByTestId('htsTrackEntry-volvox_alignments'))
@@ -145,7 +153,7 @@ describe('valid file tests', () => {
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getAllByText, getByTestId } = render(
       <JBrowse initialState={state} />,
     )
@@ -160,7 +168,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
@@ -176,7 +184,7 @@ describe('some error state', () => {
     ).resolves.toBeTruthy()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
@@ -188,7 +196,7 @@ describe('some error state', () => {
     ).resolves.toBeTruthy()
   })
   it('test that bam with small max height displays message', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
@@ -199,22 +207,10 @@ describe('some error state', () => {
       waitForElement(() => getByText('Max height reached')),
     ).resolves.toBeTruthy()
   })
-  it('test that bam with contigA instead of ctgA displays', async () => {
-    const state = jbrowseModel.create(config)
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    fireEvent.click(
-      await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_bam_altname'),
-      ),
-    )
-    await expect(
-      waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
-    ).resolves.toBeTruthy()
-  })
 })
 
 test('lollipop track test', async () => {
-  const state = jbrowseModel.create(config)
+  const state = rootModel.create({ jbrowse: config })
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
@@ -229,7 +225,7 @@ test('lollipop track test', async () => {
 })
 
 test('variant track test - opens feature detail view', async () => {
-  const state = jbrowseModel.create(config)
+  const state = rootModel.create({ jbrowse: config })
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
@@ -247,7 +243,7 @@ test('variant track test - opens feature detail view', async () => {
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -267,7 +263,7 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const {
       getByTestId: byId,
       getByText,
@@ -296,7 +292,7 @@ describe('test configuration editor', () => {
 
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -310,7 +306,7 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -324,7 +320,7 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
-    const state = jbrowseModel.create(config)
+    const state = rootModel.create({ jbrowse: config })
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )

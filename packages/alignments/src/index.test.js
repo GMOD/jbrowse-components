@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { getSnapshot, types } from 'mobx-state-tree'
 
 const createMockTrackStateModel = track =>

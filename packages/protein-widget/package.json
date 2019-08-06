@@ -27,7 +27,6 @@
     "@material-ui/lab": "^4.0.0-alpha.0",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
-    "mobx-react-lite": "^1.4.0",
     "mobx-state-tree": "3.10.2",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
