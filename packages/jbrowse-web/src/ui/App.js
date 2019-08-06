@@ -134,7 +134,8 @@ function App(props) {
         onWheel={event => {
           if (
             !session.shouldntScroll &&
-            nameRef.current.scrollHeight > nameRef.current.clientHeight
+            nameRef.current.scrollHeight > nameRef.current.clientHeight &&
+            Math.abs(event.deltaY) > 2 * Math.abs(event.deltaX)
           ) {
             setScrollTop(
               clamp(

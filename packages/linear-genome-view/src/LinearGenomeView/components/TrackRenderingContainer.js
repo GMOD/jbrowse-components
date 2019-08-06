@@ -32,12 +32,19 @@ class TrackRenderingContainer extends Component {
 
   wheel(event) {
     const { onHorizontalScroll, onVerticalScroll } = this.props
-    if (this.mainNode.current.scrollHeight > this.mainNode.current.clientHeight)
-      onVerticalScroll(
-        event.deltaY,
-        this.mainNode.current.scrollHeight - this.mainNode.current.clientHeight,
-      )
-    onHorizontalScroll(event.deltaX)
+    if (Math.abs(event.deltaY) > 2 * Math.abs(event.deltaX)) {
+      if (
+        this.mainNode.current.scrollHeight > this.mainNode.current.clientHeight
+      ) {
+        onVerticalScroll(
+          event.deltaY,
+          this.mainNode.current.scrollHeight -
+            this.mainNode.current.clientHeight,
+        )
+      }
+    } else if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+      onHorizontalScroll(event.deltaX)
+    }
     event.preventDefault()
   }
 
