@@ -133,6 +133,7 @@ export function stateModelFactory(pluginManager) {
 
       horizontallyFlip() {
         self.reversed = !self.reversed
+        self.displayedRegions = self.displayedRegions.reverse()
       },
 
       showTrack(configuration, initialSnapshot = {}) {

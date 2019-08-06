@@ -206,15 +206,19 @@ function TextFieldOrTypography({ onChange, value = '' }) {
   const classes = useStyles()
   const [name, setName] = useState(value)
   const [edit, setEdit] = useState(false)
+  const submit = event => {
+    setEdit(false)
+    onChange(name)
+    event.preventDefault()
+  }
   return edit ? (
-    <TextField
-      value={name}
-      onChange={event => setName(event.target.value)}
-      onBlur={() => {
-        setEdit(false)
-        onChange(name)
-      }}
-    />
+    <form onSubmit={submit}>
+      <TextField
+        value={name}
+        onChange={event => setName(event.target.value)}
+        onBlur={submit}
+      />
+    </form>
   ) : (
     <Typography className={classes.viewName} onClick={() => setEdit(true)}>
       {name}
