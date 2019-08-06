@@ -10,8 +10,6 @@ import {
   MenuItem,
   makeStyles,
 } from '@material-ui/core'
-import MoreVertIcon from '@material-ui/icons/MoreVert'
-import SearchIcon from '@material-ui/icons/Search'
 import { clamp, getSession } from '@gmod/jbrowse-core/util'
 
 import classnames from 'classnames'
@@ -163,7 +161,7 @@ function LongMenu(props) {
         className={className}
         onClick={handleClick}
       >
-        <MoreVertIcon />
+        <Icon>more_vert</Icon>
       </IconButton>
       <Menu
         id="long-menu"
@@ -247,7 +245,7 @@ function Search(props) {
           placeholder="Enter locstring"
         />
         <IconButton className={classes.iconButton} aria-label="search">
-          <SearchIcon />
+          <Icon>search</Icon>
         </IconButton>
       </form>
     </Paper>
@@ -262,8 +260,14 @@ function Header({ model, header, setHeader }) {
   const navTo = locstring => {
     const [refSeq, rest = ''] = locstring.split(':')
     const [start, end] = rest.split('..')
-    if (refSeq !== undefined && start !== undefined && end !== undefined) {
-      model.navTo({ refSeq, start, end })
+    if (refSeq !== undefined) {
+      if (start !== undefined && end !== undefined) {
+        model.navTo({ refSeq, start: +start, end: +end })
+      } else if (start !== undefined) {
+        model.navTo({ refSeq, start: +start })
+      } else {
+        model.navTo({ refSeq })
+      }
     }
   }
   return (

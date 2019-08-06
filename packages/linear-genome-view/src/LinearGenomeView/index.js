@@ -240,13 +240,15 @@ export function stateModelFactory(pluginManager) {
 
       navTo({ refSeq, start, end }) {
         const index = self.getIndex(refSeq)
-        if (start === undefined) {
-          start = self.displayedRegions[index].start // eslint-disable-line
+        if (index !== -1) {
+          if (start === undefined) {
+            start = self.displayedRegions[index].start // eslint-disable-line
+          }
+          if (end === undefined) {
+            end = self.displayedRegions[index].end //eslint-disable-line
+          }
+          self.moveTo({ index, offset: start }, { index, offset: end })
         }
-        if (end === undefined) {
-          end = self.displayedRegions[index].end //eslint-disable-line
-        }
-        self.moveTo({ index, offset: start }, { index, offset: end })
       },
 
       /**
