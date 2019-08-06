@@ -723,6 +723,33 @@
       "tracks": [
         {
           "type": "AlignmentsTrack",
+          "name": "HG002.hs37d5.11kb",
+          "category": [
+            "PacBio"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
           "category": [
             "1000 genomes"
@@ -752,7 +779,7 @@
           "type": "AlignmentsTrack",
           "configId": "chm1_pacbio",
           "category": [
-            "1000 genomes"
+            "PacBio"
           ],
           "name": "CHM1 pacbio",
           "adapter": {
@@ -916,6 +943,60 @@
             "index": {
               "location": {
                 "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "name": "hs37d5.HG002-SequelII-CCS",
+          "category": [
+            "PacBio"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "name": "chm.full.37d5.vcf.gz",
+          "category": [
+            "PacBio"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
               }
             }
           },
