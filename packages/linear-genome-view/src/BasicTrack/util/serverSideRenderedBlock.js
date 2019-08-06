@@ -11,10 +11,7 @@ import {
   isAbortException,
   getSession,
 } from '@gmod/jbrowse-core/util'
-import {
-  getContainingDataset,
-  getContainingView,
-} from '@gmod/jbrowse-core/util/tracks'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -36,18 +33,15 @@ function renderBlockData(self) {
       trackConfParent = getParent(trackConfParent)
     } while (!trackConfParent.assembly)
   }
-  const trackAssemblyName = readConfObject(trackConfParent, [
-    'assembly',
-    'name',
-  ])
+  const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
   const { assemblyData } = getSession(self)
   const trackAssemblyData =
-    (assemblyData && assemblyData.get(trackAssemblyName)) || {}
+    (assemblyData && assemblyData.get(assemblyName)) || {}
   const trackAssemblyAliases = trackAssemblyData.aliases || []
   let cannotBeRenderedReason
   if (
     !(
-      trackAssemblyName === self.region.assemblyName ||
+      assemblyName === self.region.assemblyName ||
       trackAssemblyAliases.includes(self.region.assemblyName)
     )
   )
@@ -55,10 +49,6 @@ function renderBlockData(self) {
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
-  const assemblyName = readConfObject(
-    getContainingDataset(track.configuration).assembly,
-    'name',
-  )
   return {
     rendererType,
     rpcManager,
