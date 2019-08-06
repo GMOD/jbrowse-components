@@ -725,7 +725,8 @@
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.11kb",
           "category": [
-            "PacBio"
+            "PacBio",
+            "BAM"
           ],
           "adapter": {
             "type": "BamAdapter",
@@ -779,7 +780,8 @@
           "type": "AlignmentsTrack",
           "configId": "chm1_pacbio",
           "category": [
-            "PacBio"
+            "PacBio",
+            "BAM"
           ],
           "name": "CHM1 pacbio",
           "adapter": {
@@ -960,7 +962,8 @@
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
           "category": [
-            "PacBio"
+            "PacBio",
+            "VCF"
           ],
           "adapter": {
             "type": "VcfTabixAdapter",
@@ -987,7 +990,8 @@
           "type": "VariantTrack",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
-            "PacBio"
+            "PacBio",
+            "VCF"
           ],
           "adapter": {
             "type": "VcfTabixAdapter",
