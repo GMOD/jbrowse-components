@@ -292,10 +292,13 @@ describe('test configuration editor', () => {
     const rect2 = await waitForElement(() => byId('vcf-6370'))
     fireEvent.click(rect1)
     fireEvent.click(rect2)
-    await wait(() => {
-      expect(rect1).toHaveStyle('fill:green')
-    })
-  }, 10000)
+    await wait(
+      () => {
+        expect(rect1).toHaveStyle('fill:green')
+      },
+      { timeout: 15000 },
+    )
+  }, 20000)
 })
 
 describe('bigwig', () => {
