@@ -1,5 +1,5 @@
 import { createTestSession } from './rootModel'
-import { renderRegion, freeResources } from './rpcMethods'
+import { render, freeResources } from './rpcMethods'
 
 let pluginManager
 beforeAll(() => {
@@ -30,7 +30,7 @@ const baseprops = {
 test('can render a single region with Pileup + BamAdapter', async () => {
   const testprops = { ...baseprops, rendererType: 'PileupRenderer' }
 
-  const result = await renderRegion(pluginManager, testprops)
+  const result = await render(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set([
       'features',
@@ -71,7 +71,7 @@ test('can render a single region with SvgFeatures + BamAdapter', async () => {
     region: { refName: 'ctgA', start: 0, end: 300 },
   }
 
-  const result = await renderRegion(pluginManager, testprops)
+  const result = await render(pluginManager, testprops)
   expect(new Set(Object.keys(result))).toEqual(
     new Set(['html', 'features', 'layout']),
   )
@@ -99,7 +99,7 @@ test('throws if no session ID', async () => {
     sessionId: undefined,
   }
 
-  await expect(renderRegion(pluginManager, testprops)).rejects.toThrow(
+  await expect(render(pluginManager, testprops)).rejects.toThrow(
     /must pass a unique session id/,
   )
 })
@@ -110,7 +110,7 @@ test('throws on unrecoginze worker', async () => {
     rendererType: 'NonexistentRenderer',
   }
 
-  await expect(renderRegion(pluginManager, testprops)).rejects.toThrow(
+  await expect(render(pluginManager, testprops)).rejects.toThrow(
     /renderer "NonexistentRenderer" not found/,
   )
 })
