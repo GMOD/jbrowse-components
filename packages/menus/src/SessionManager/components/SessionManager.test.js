@@ -1,6 +1,6 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import SessionManager from './SessionManager'
 
 describe('<SessionManager />', () => {

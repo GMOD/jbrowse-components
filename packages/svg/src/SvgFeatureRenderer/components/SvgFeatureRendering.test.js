@@ -2,7 +2,7 @@ import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayo
 import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 // these tests do very little, let's try to expand them at some point

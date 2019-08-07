@@ -2,7 +2,7 @@ import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { createMuiTheme } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/styles'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import MainMenuBar from './MainMenuBar'
 
 describe('<MainMenuBar />', () => {

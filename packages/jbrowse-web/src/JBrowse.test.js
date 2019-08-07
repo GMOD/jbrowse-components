@@ -3,7 +3,7 @@ import {
   fireEvent,
   render,
   waitForElement,
-} from 'react-testing-library'
+} from '@testing-library/react'
 import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -169,7 +169,9 @@ describe('valid file tests', () => {
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const { getByTestId, getAllByText } = render(
+      <JBrowse initialState={state} />,
+    )
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
@@ -177,7 +179,7 @@ describe('some error state', () => {
     )
     await expect(
       waitForElement(() =>
-        getByText(
+        getAllByText(
           'HTTP 404 fetching /test_data/volvox-sorted.bam.bai.nonexist',
         ),
       ),
@@ -185,26 +187,30 @@ describe('some error state', () => {
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const { getByTestId, getAllByText } = render(
+      <JBrowse initialState={state} />,
+    )
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_bam_altname'),
       ),
     )
     await expect(
-      waitForElement(() => getByText('ctgA_110_638_0:0:0_3:0:0_15b')),
+      waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).resolves.toBeTruthy()
   })
   it('test that bam with small max height displays message', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const { getByTestId, getAllByText } = render(
+      <JBrowse initialState={state} />,
+    )
     fireEvent.click(
       await waitForElement(() =>
         getByTestId('htsTrackEntry-volvox_bam_small_max_height'),
       ),
     )
     await expect(
-      waitForElement(() => getByText('Max height reached')),
+      waitForElement(() => getAllByText('Max height reached')),
     ).resolves.toBeTruthy()
   })
 })
@@ -293,7 +299,7 @@ describe('test configuration editor', () => {
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getByText } = render(
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('JBrowse'))
@@ -302,12 +308,12 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
     )
     await expect(
-      waitForElement(() => byId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getByText } = render(
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('JBrowse'))
@@ -316,12 +322,12 @@ describe('bigwig', () => {
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
     )
     await expect(
-      waitForElement(() => byId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
     const state = rootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getByText } = render(
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
     await waitForElement(() => getByText('JBrowse'))
@@ -332,7 +338,7 @@ describe('bigwig', () => {
       ),
     )
     await expect(
-      waitForElement(() => byId('prerendered_canvas')),
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
     ).resolves.toBeTruthy()
   })
 })
