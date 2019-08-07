@@ -59,7 +59,9 @@ function SvgFeatureRendering(props) {
     return handler(event)
   }
 
-  function chooseGlyphComponent(/* feature */) {
+  function chooseGlyphComponent(feature) {
+    const strand = feature.get('strand')
+    if ([1, -1, '+', '-'].includes(strand)) return Chevron
     return Box
   }
 
