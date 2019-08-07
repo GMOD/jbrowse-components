@@ -1,13 +1,12 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types, getRoot } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
 
   const { makeAbortableReaction } = jbrequire(require('./util'))
 
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
-
-  const { getContainingDataset } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getTrackAssemblyName } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const model = types
@@ -21,14 +20,11 @@ export default pluginManager => {
           self,
           'loadAssemblyRefNameMap',
           () => ({
-            root: getRoot(self),
-            assemblyName: readConfObject(
-              getContainingDataset(self.configuration).assembly,
-              'name',
-            ),
+            session: getSession(self),
+            assemblyName: getTrackAssemblyName(self),
           }),
-          ({ root, assemblyName }, signal) => {
-            return root.rpcManager.getRefNameMapForAdapter(
+          ({ session, assemblyName }, signal) => {
+            return session.rpcManager.getRefNameMapForAdapter(
               getConf(self, 'adapter'),
               assemblyName,
               { signal },

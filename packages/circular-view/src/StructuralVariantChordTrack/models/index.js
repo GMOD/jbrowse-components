@@ -1,25 +1,15 @@
-import { trace } from 'mobx';
+import { trace } from 'mobx'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { reaction } = jbrequire('mobx')
 
-  const { types, getParent, addDisposer, isAlive, getRoot } = jbrequire(
-    'mobx-state-tree',
+  const { types, addDisposer } = jbrequire('mobx-state-tree')
+  const { ConfigurationSchema, ConfigurationReference } = jbrequire(
+    '@gmod/jbrowse-core/configuration',
   )
-  const {
-    ConfigurationSchema,
-    ConfigurationReference,
-    readConfObject,
-  } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const { getContainingView, getContainingDataset } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
-  )
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { assembleLocString, isAbortException } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
     require('./renderReaction'),

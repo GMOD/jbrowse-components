@@ -1,5 +1,5 @@
 import { getParent, isRoot } from 'mobx-state-tree'
-import { isConfigurationModel } from '../configuration/configurationSchema';
+import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */
 
@@ -11,6 +11,22 @@ export function getContainingView(node) {
   let currentNode = node
   while (currentNode.bpPerPx === undefined) currentNode = getParent(currentNode)
   return currentNode
+}
+
+export function getTrackAssemblyName(track) {
+  const trackConf = track.configuration
+  let trackConfParent = trackConf
+  do {
+    trackConfParent = getParent(trackConfParent)
+  } while (!(trackConfParent.assembly || 'defaultSequence' in trackConfParent))
+  if ('defaultSequence' in trackConfParent) {
+    trackConfParent = trackConfParent.configuration
+    do {
+      trackConfParent = getParent(trackConfParent)
+    } while (!trackConfParent.assembly)
+  }
+  const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
+  return assemblyName
 }
 
 /**

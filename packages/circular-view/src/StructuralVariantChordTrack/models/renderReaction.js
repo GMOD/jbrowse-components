@@ -1,20 +1,21 @@
 export default ({ jbrequire }) => {
-  const { isAlive, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { isAlive, getParent } = jbrequire('mobx-state-tree')
   const { assembleLocString, checkAbortSignal, isAbortException } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
   const { readConfObject, getConf } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const { getContainingView, getContainingDataset } = jbrequire(
+  const { getContainingView, getTrackAssemblyName } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   function renderReactionData(self) {
     const track = self
     const view = getContainingView(track)
     const { rendererType, renderProps } = track
-    const { rpcManager } = getRoot(view)
+    const { rpcManager } = getSession(view)
 
     // const trackConf = track.configuration
     // let trackConfParent = getParent(trackConf)
@@ -36,10 +37,7 @@ export default ({ jbrequire }) => {
     //   cannotBeRenderedReason = 'region assembly does not match track assembly'
     // else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
 
-    const assemblyName = readConfObject(
-      getContainingDataset(track.configuration).assembly,
-      'name',
-    )
+    const assemblyName = getTrackAssemblyName(track)
     const data = {
       rendererType,
       rpcManager,
