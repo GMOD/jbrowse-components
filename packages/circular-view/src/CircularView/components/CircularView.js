@@ -175,7 +175,7 @@ export default pluginManager => {
         <div
           className={classes.scroller}
           style={{
-            width: `${model.width}px`,
+            width: '100%',
             height: `${model.height}px`,
           }}
           onScroll={model.onScroll}

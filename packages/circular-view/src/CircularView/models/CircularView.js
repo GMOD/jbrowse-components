@@ -181,8 +181,23 @@ export default pluginManager => {
       },
 
       onScroll(event) {
-        self.scrollX = event.currentTarget.scrollLeft
-        self.scrollY = event.currentTarget.scrollTop
+        const {
+          scrollLeft,
+          clientHeight,
+          scrollHeight,
+          scrollTop,
+        } = event.currentTarget
+
+        self.scrollX = scrollLeft
+        const n = scrollTop
+        const max = scrollHeight - clientHeight
+        const session = getSession(self)
+        if (n > 0 && n < max) {
+          session.shouldntScroll = true
+        } else {
+          session.shouldntScroll = false
+        }
+        self.scrollY = scrollTop
       },
 
       closeView() {
