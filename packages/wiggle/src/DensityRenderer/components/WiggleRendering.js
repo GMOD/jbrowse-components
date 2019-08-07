@@ -66,6 +66,7 @@ class WiggleRendering extends Component {
 
   render() {
     const { featureUnderMouse, offsetX } = this.state
+    const { height } = this.props
 
     const toP = s => parseFloat(s.toPrecision(6))
     const getFeatRepr = feature => {
@@ -98,7 +99,10 @@ class WiggleRendering extends Component {
         role="presentation"
         onFocus={() => {}}
         className="WiggleRendering"
-        style={{ position: 'relative' }}
+        style={{
+          overflow: 'hidden',
+          height,
+        }}
       >
         <PrerenderedCanvas {...this.props} />
         {featureUnderMouse ? getMouseoverFlag(featureUnderMouse) : null}

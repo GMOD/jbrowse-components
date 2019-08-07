@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SessionManager /> renders 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root-1 MuiPaper-rounded"
+>
+  <ul
+    class="MuiList-root MuiList-padding MuiList-subheader"
+  >
+    <li
+      class="MuiListSubheader-root MuiListSubheader-sticky MuiListSubheader-gutters"
+    >
+      Choose a session to open
+    </li>
+    <li
+      class="MuiListItem-container"
+    >
+      <div
+        aria-disabled="true"
+        class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters Mui-disabled MuiListItem-button MuiListItem-secondaryAction Mui-disabled"
+        role="button"
+        tabindex="-1"
+      >
+        <div
+          class="MuiListItemIcon-root"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            view_list
+          </span>
+        </div>
+        <div
+          class="MuiListItemText-root MuiListItemText-multiline"
+        >
+          <span
+            class="MuiTypography-root MuiListItemText-primary MuiTypography-body1"
+          >
+            testSession
+          </span>
+          <p
+            class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary"
+          >
+            Currently open
+          </p>
+        </div>
+      </div>
+      <div
+        class="MuiListItemSecondaryAction-root"
+      >
+        <button
+          aria-label="Delete"
+          class="MuiButtonBase-root MuiIconButton-root Mui-disabled MuiIconButton-edgeEnd Mui-disabled"
+          disabled=""
+          tabindex="-1"
+          type="button"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root"
+            >
+              delete
+            </span>
+          </span>
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>
+`;

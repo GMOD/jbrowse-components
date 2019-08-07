@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`JBrowse MST model adds track and connection configs to a dataset 1`] = `
+exports[`Root MST model adds track and connection configs to a dataset 1`] = `
 Object {
   "assembly": Object {
     "aliases": Array [
@@ -14,7 +14,7 @@ Object {
 }
 `;
 
-exports[`JBrowse MST model adds track and connection configs to a dataset 2`] = `
+exports[`Root MST model adds track and connection configs to a dataset 2`] = `
 Object {
   "adapter": Object {
     "configId": Any<String>,
@@ -32,18 +32,19 @@ Object {
 }
 `;
 
-exports[`JBrowse MST model adds track and connection configs to a dataset 3`] = `
+exports[`Root MST model adds track and connection configs to a dataset 3`] = `
 Object {
   "configId": Any<String>,
   "type": "JBrowse1Connection",
 }
 `;
 
-exports[`JBrowse MST model creates with defaults 1`] = `
+exports[`Root MST model creates with defaults 1`] = `
 Object {
   "configId": Any<String>,
   "rpc": Object {
     "configId": Any<String>,
+    "defaultDriver": "MainThreadRpcDriver",
   },
 }
 `;

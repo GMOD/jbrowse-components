@@ -161,9 +161,7 @@ export function ConfigurationSchema(
         modelDefinition[slotName] = ConfigSlot(slotName, slotDefinition)
       } catch (e) {
         throw new Error(
-          `invalid config slot definition for ${modelName}.${slotName}: ${
-            e.message
-          }`,
+          `invalid config slot definition for ${modelName}.${slotName}: ${e.message}`,
         )
       }
     } else if (

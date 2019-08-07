@@ -1,11 +1,9 @@
-import {
-  getParent,
-  IAnyStateTreeNode,
-  isStateTreeNode,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { toByteArray, fromByteArray } from 'base64-js'
+import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
+import { inflate, deflate } from 'pako'
+import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
-import { Observer, fromEvent, Observable } from 'rxjs'
+import { useEffect, useState } from 'react'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 import { ObservableCreate } from './rxjs'
@@ -20,6 +18,75 @@ export const inDevelopment =
   process.env &&
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
+
+/**
+ * Compress and encode a string as url-safe base64
+ * @param str a string to compress and encode
+ * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ */
+export function toUrlSafeB64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  const deflated = deflate(bytes)
+  const encoded = fromByteArray(deflated)
+  const pos = encoded.indexOf('=')
+  return pos > 0
+    ? encoded
+        .slice(0, pos)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+/**
+ * Decode and inflate a url-safe base64 to a string
+ * @param b64 a base64 string to decode and inflate
+ * @see https://en.wikipedia.org/wiki/Base64#URL_applications
+ */
+export function fromUrlSafeB64(b64: string): string {
+  const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
+  const bytes = toByteArray(originalB64)
+  const inflated = inflate(bytes)
+  return new TextDecoder().decode(inflated)
+}
+
+/**
+ * Pad the end of a base64 string with "=" to make it valid
+ * @param b64 unpadded b64 string
+ */
+function b64PadSuffix(b64: string): string {
+  let num = 0
+  const mo = b64.length % 4
+  switch (mo) {
+    case 3:
+      num = 1
+      break
+    case 2:
+      num = 2
+      break
+    case 0:
+      num = 0
+      break
+    default:
+      throw new Error('base64 not a valid length')
+  }
+  return b64 + '='.repeat(num)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useDebounce(value: any, delay: number): any {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
   let currentNode = node

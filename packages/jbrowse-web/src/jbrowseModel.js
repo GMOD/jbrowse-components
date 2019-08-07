@@ -1,21 +1,18 @@
-import {
-  ConfigurationSchema,
-  readConfObject,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { flow, getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
-import shortid from 'shortid'
+import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
+import assemblyManager from './assemblyManager'
+import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import RenderWorker from './rpc.worker'
 import * as rpcFuncs from './rpcMethods'
-import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import sessionModelFactory from './sessionModelFactory'
 
 const pluginManager = new PluginManager(corePlugins.map(P => new P()))
 pluginManager.configure()
 
-const Session = sessionModelFactory(pluginManager)
+export const Session = sessionModelFactory(pluginManager)
 const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
   pluginManager,
 )
@@ -60,8 +57,11 @@ window.resolveIdentifier = resolveIdentifier
 
 const JBrowseWeb = types
   .model('JBrowseWeb', {
-    session: types.maybe(Session),
-    sessionSnapshots: types.array(types.frozen(Session)),
+    defaultSession: types.optional(types.frozen(Session), {
+      name: `New Session`,
+      menuBars: [{ type: 'MainMenuBar' }],
+    }),
+    savedSessions: types.array(types.frozen(Session)),
     datasets: types.array(Dataset),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
@@ -70,31 +70,32 @@ const JBrowseWeb = types
         type: 'number',
         defaultValue: 2,
       },
+      updateUrl: {
+        type: 'boolean',
+        defaultValue: true,
+      },
     }),
   })
   .actions(self => ({
-    addSessionSnapshot(sessionSnapshot) {
-      const length = self.sessionSnapshots.push(sessionSnapshot)
-      return self.sessionSnapshots[length - 1]
+    addSavedSession(sessionSnapshot) {
+      const length = self.savedSessions.push(sessionSnapshot)
+      return self.savedSessions[length - 1]
     },
-    setSession(snapshot) {
-      self.session = snapshot
+    removeSavedSession(sessionSnapshot) {
+      self.savedSessions.remove(sessionSnapshot)
     },
-    setEmptySession() {
-      self.setSession({
-        name: `Unnamed Session ${shortid.generate()}`,
-        menuBars: [{ type: 'MainMenuBar' }],
-      })
-    },
-    activateSession(name) {
-      const newSessionSnapshot = self.sessionSnapshots.find(
-        sessionSnap => sessionSnap.name === name,
+    replaceSavedSession(oldName, snapshot) {
+      const savedSessionIndex = self.savedSessions.findIndex(
+        savedSession => savedSession.name === oldName,
       )
-      if (!newSessionSnapshot)
-        throw new Error(
-          `Can't activate session ${name}, it is not in the sessionSnapshots`,
-        )
-      self.setSession(newSessionSnapshot)
+      self.savedSessions[savedSessionIndex] = snapshot
+    },
+    updateSavedSession(sessionSnapshot) {
+      const sessionIndex = self.savedSessions.findIndex(
+        savedSession => savedSession.name === sessionSnapshot.name,
+      )
+      if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
+      else self.savedSessions[sessionIndex] = sessionSnapshot
     },
     addDataset(datasetConf) {
       const length = self.datasets.push(datasetConf)
@@ -102,168 +103,13 @@ const JBrowseWeb = types
     },
   }))
   .views(self => ({
-    get sessionNames() {
-      return self.sessionSnapshots.map(sessionSnap => sessionSnap.name)
+    get savedSessionNames() {
+      return self.savedSessions.map(sessionSnap => sessionSnap.name)
     },
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for
   // code organization
-  .extend(self => ({
-    views: {
-      get assemblyData() {
-        const assemblyData = new Map()
-        for (const datasetConfig of self.datasets) {
-          const assemblyConfig = datasetConfig.assembly
-          const assemblyName = readConfObject(assemblyConfig, 'name')
-          const assemblyInfo = {}
-          if (assemblyConfig.sequence)
-            assemblyInfo.sequence = assemblyConfig.sequence
-          const refNameAliasesConf = readConfObject(
-            assemblyConfig,
-            'refNameAliases',
-          )
-          if (refNameAliasesConf)
-            assemblyInfo.refNameAliases = refNameAliasesConf
-          const aliases = readConfObject(assemblyConfig, 'aliases')
-          assemblyInfo.aliases = aliases
-          assemblyData.set(assemblyName, assemblyInfo)
-          aliases.forEach((assemblyAlias, idx) => {
-            const newAliases = [
-              ...aliases.slice(0, idx),
-              ...aliases.slice(idx + 1),
-              assemblyName,
-            ]
-            assemblyData.set(assemblyAlias, {
-              ...assemblyInfo,
-              aliases: newAliases,
-            })
-          })
-        }
-        for (const assemblyName of self.session.connections.keys()) {
-          const connectionConfs = self.session.connections.get(assemblyName)
-          // eslint-disable-next-line no-loop-func
-          connectionConfs.forEach(connectionConf => {
-            if (!assemblyData.has(assemblyName)) {
-              const assemblyInfo = {}
-              assemblyInfo.sequence = connectionConf.sequence
-              assemblyInfo.refNameAliases = connectionConf.refNameAliases
-              assemblyData.set(assemblyName, assemblyInfo)
-            } else {
-              if (
-                !assemblyData.get(assemblyName).refNameAliases &&
-                connectionConf.refNameAliases
-              ) {
-                assemblyData.get(assemblyName).refNameAliases = readConfObject(
-                  connectionConf.refNameAliases,
-                )
-                assemblyData.get(assemblyName).aliases.forEach(alias => {
-                  assemblyData.get(alias).refNameAliases = readConfObject(
-                    connectionConf.refNameAliases,
-                  )
-                })
-              }
-              if (
-                (!assemblyData.get(assemblyName).sequence &&
-                  connectionConf.sequence) ||
-                connectionConf.defaultSequence
-              ) {
-                assemblyData.get(assemblyName).sequence =
-                  connectionConf.sequence
-                assemblyData.get(assemblyName).aliases.forEach(alias => {
-                  assemblyData.get(alias).sequence = connectionConf.sequence
-                })
-              }
-            }
-          })
-        }
-        return assemblyData
-      },
-    },
-    actions: {
-      getRefNameAliases: flow(function* getRefNameAliases(
-        assemblyName,
-        opts = {},
-      ) {
-        const refNameAliases = {}
-        const assemblyConfig = self.assemblyData.get(assemblyName)
-        if (assemblyConfig.refNameAliases) {
-          const adapterRefNameAliases = yield self.rpcManager.call(
-            assemblyConfig.refNameAliases.adapter.configId,
-            'getRefNameAliases',
-            {
-              sessionId: assemblyName,
-              adapterType: assemblyConfig.refNameAliases.adapter.type,
-              adapterConfig: assemblyConfig.refNameAliases.adapter,
-              signal: opts.signal,
-            },
-            { timeout: 1000000 },
-          )
-          adapterRefNameAliases.forEach(alias => {
-            refNameAliases[alias.refName] = alias.aliases
-          })
-        }
-        return refNameAliases
-      }),
-
-      addRefNameMapForAdapter: flow(function* addRefNameMapForAdapter(
-        adapterConf,
-        assemblyName,
-        opts = {},
-      ) {
-        const adapterConfigId = readConfObject(adapterConf, 'configId')
-        if (!self.refNameMaps.has(adapterConfigId))
-          self.refNameMaps.set(adapterConfigId, new Map())
-        const refNameMap = self.refNameMaps.get(adapterConfigId)
-
-        const refNameAliases = yield self.getRefNameAliases(assemblyName, opts)
-
-        const refNames = yield self.rpcManager.call(
-          readConfObject(adapterConf, 'configId'),
-          'getRefNames',
-          {
-            sessionId: assemblyName,
-            adapterType: readConfObject(adapterConf, 'type'),
-            adapterConfig: adapterConf,
-            signal: opts.signal,
-          },
-          { timeout: 1000000 },
-        )
-        refNames.forEach(refName => {
-          if (refNameAliases[refName])
-            refNameAliases[refName].forEach(refNameAlias => {
-              refNameMap.set(refNameAlias, refName)
-            })
-          else
-            Object.keys(refNameAliases).forEach(configRefName => {
-              if (refNameAliases[configRefName].includes(refName)) {
-                refNameMap.set(configRefName, refName)
-                refNameAliases[configRefName].forEach(refNameAlias => {
-                  if (refNameAlias !== refName)
-                    refNameMap.set(refNameAlias, refName)
-                })
-              }
-            })
-        })
-        return refNameMap
-      }),
-
-      getRefNameMapForAdapter: flow(function* getRefNameMapForAdapter(
-        adapterConf,
-        assemblyName,
-        opts = {},
-      ) {
-        const configId = readConfObject(adapterConf, 'configId')
-        if (!self.refNameMaps.has(configId)) {
-          return yield self.addRefNameMapForAdapter(
-            adapterConf,
-            assemblyName,
-            opts,
-          )
-        }
-        return self.refNameMaps.get(configId)
-      }),
-    },
-  }))
+  .extend(assemblyManager)
   .volatile(self => ({
     rpcManager: new RpcManager(
       pluginManager,
@@ -276,17 +122,5 @@ const JBrowseWeb = types
     ),
     refNameMaps: new Map(),
   }))
-
-export function createTestSession(snapshot = {}) {
-  const jbrowseState = JBrowseWeb.create({
-    configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
-  })
-  jbrowseState.setSession({
-    name: 'testSession',
-    menuBars: [{ type: 'MainMenuBar' }],
-    ...snapshot,
-  })
-  return jbrowseState.session
-}
 
 export default JBrowseWeb

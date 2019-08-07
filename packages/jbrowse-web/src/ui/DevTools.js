@@ -2,6 +2,8 @@ import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { withStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'
+import Button from '@material-ui/core/Button'
+import Icon from '@material-ui/core/Icon'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
@@ -27,7 +29,7 @@ function addView(session, type) {
   }
 }
 
-function DeveloperTools({ classes, session, sessionNames, activateSession }) {
+function DeveloperTools({ classes, session }) {
   return (
     <div className={classes.developer}>
       <h3>Developer tools</h3>
@@ -47,16 +49,21 @@ function DeveloperTools({ classes, session, sessionNames, activateSession }) {
       >
         Add circular view
       </button>
-      <select
-        onChange={event => activateSession(event.target.value)}
-        value={session.name}
+
+      <Button
+        disabled={!session.history.canUndo}
+        onClick={() => session.history.undo()}
       >
-        {sessionNames.map(name => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
+        undo
+        <Icon>undo</Icon>
+      </Button>
+      <Button
+        disabled={!session.history.canRedo}
+        onClick={() => session.history.redo()}
+      >
+        <Icon>redo</Icon>
+        redo
+      </Button>
     </div>
   )
 }
@@ -64,8 +71,6 @@ function DeveloperTools({ classes, session, sessionNames, activateSession }) {
 DeveloperTools.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   session: PropTypes.observableObject.isRequired,
-  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withStyles(styles)(observer(DeveloperTools))

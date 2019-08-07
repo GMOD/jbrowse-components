@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, cleanup } from 'react-testing-library'
 import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import ConfirmTrack from './ConfirmTrack'
 
 describe('<ConfirmTrack />', () => {

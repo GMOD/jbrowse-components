@@ -71,10 +71,14 @@ export const MenuItemModel = types
     },
   }))
 
+export const MenuDividerModel = types.model('MenuDividerModel', {
+  name: types.literal('divider'),
+})
+
 const MenuModel = types
   .model('MenuModel', {
     name: types.string,
-    menuItems: types.array(MenuItemModel),
+    menuItems: types.array(types.union(MenuItemModel, MenuDividerModel)),
   })
   .actions(self => ({
     addMenuItem({ name, icon = undefined, callback = undefined }) {
@@ -98,11 +102,36 @@ export default types
             { name: 'Help', icon: 'help', callback: 'openHelp' },
           ],
         })
+      if (!self.menus.find(menu => menu.name === 'File'))
+        self.unshiftMenu({
+          name: 'File',
+          menuItems: [
+            {
+              name: 'New Session',
+              icon: 'add',
+              callback: 'function(session) {session.setDefaultSession();}',
+            },
+            { name: 'divider' },
+            {
+              name: 'Open Session...',
+              icon: 'folder_open',
+              callback:
+                "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}",
+            },
+            { name: 'divider' },
+            {
+              name: 'Duplicate Session',
+              icon: 'file_copy',
+              callback:
+                'function(session) {session.duplicateCurrentSession();}',
+            },
+          ],
+        })
     },
     unshiftMenu({ name, menuItems = [] }) {
-      self.menus.unshift(MenuModel.create({ name, menuItems }))
+      self.menus.unshift({ name, menuItems })
     },
     pushMenu({ name, menuItems = [] }) {
-      self.menus.push(MenuModel.create({ name, menuItems }))
+      self.menus.push({ name, menuItems })
     },
   }))

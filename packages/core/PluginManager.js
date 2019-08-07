@@ -167,16 +167,12 @@ export default class PluginManager {
         !element.AdapterClass.capabilities.length
       ) {
         throw new Error(
-          `Adapter ${
-            element.AdapterClass.name
-          } must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
+          `Adapter ${element.AdapterClass.name} must provide a static property "capabilities" that has at least one entry. See BaseAdapter for an example.`,
         )
       }
       if (this.elementTypes[groupName][element.name]) {
         throw new Error(
-          `${groupName} ${
-            element.name
-          } already registered, cannot register it again`,
+          `${groupName} ${element.name} already registered, cannot register it again`,
         )
       }
 

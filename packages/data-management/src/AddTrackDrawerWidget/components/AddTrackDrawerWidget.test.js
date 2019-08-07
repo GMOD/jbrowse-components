@@ -5,7 +5,7 @@ import {
   fireEvent,
   waitForElement,
 } from 'react-testing-library'
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
 describe('<AddTrackDrawerWidget />', () => {

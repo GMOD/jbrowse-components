@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
+import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import React from 'react'
 import { cleanup, fireEvent, render } from 'react-testing-library'
 import DropDownMenu from './DropDownMenu'

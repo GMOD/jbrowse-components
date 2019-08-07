@@ -82,57 +82,55 @@ function parse(text: string, url: string): Config {
     }
   }
 
-  text.split('\n').forEach(
-    (textLine, i): void => {
-      lineNumber = i + 1
-      const line = textLine.replace(/^\s*#.+/, '')
+  text.split('\n').forEach((textLine, i): void => {
+    lineNumber = i + 1
+    const line = textLine.replace(/^\s*#.+/, '')
 
+    // new section
+    let match: RegExpMatchArray | null
+    if ((match = line.match(/^\s*\[([^\]]+)/))) {
       // new section
-      let match: RegExpMatchArray | null
-      if ((match = line.match(/^\s*\[([^\]]+)/))) {
-        // new section
-        recordVal()
-        keyPath = undefined
-        value = undefined
-        section = match[1].trim().split(/\s*\.\s*/)
-        if (section.length === 1 && section[0].toLowerCase() === 'general')
-          section = []
-      }
-      // new value
-      else if (
-        (match = line.match(
-          value === undefined ? /^([^+=]+)(\+?=)(.*)/ : /^(\S[^+=]+)(\+?=)(.*)/,
-        ))
-      ) {
-        recordVal()
-        keyPath = match[1].trim().split(/\s*\.\s*/)
-        ;[, , operation] = match
-        if (isAlwaysArray(section.concat(keyPath).join('.'))) {
-          operation = '+='
-        }
-        value = match[3].trim()
-      }
-      // add to existing array value
-      else if (
-        keyPath !== undefined &&
-        (match = line.match(/^\s{0,4}\+\s*(.+)/))
-      ) {
-        recordVal()
+      recordVal()
+      keyPath = undefined
+      value = undefined
+      section = match[1].trim().split(/\s*\.\s*/)
+      if (section.length === 1 && section[0].toLowerCase() === 'general')
+        section = []
+    }
+    // new value
+    else if (
+      (match = line.match(
+        value === undefined ? /^([^+=]+)(\+?=)(.*)/ : /^(\S[^+=]+)(\+?=)(.*)/,
+      ))
+    ) {
+      recordVal()
+      keyPath = match[1].trim().split(/\s*\.\s*/)
+      ;[, , operation] = match
+      if (isAlwaysArray(section.concat(keyPath).join('.'))) {
         operation = '+='
-        value = match[1].trim()
       }
-      // add to existing value
-      else if (value !== undefined && (match = line.match(/^\s+(\S.*)/))) {
-        value += value.length ? ` ${match[1].trim()}` : match[1].trim()
-      }
-      // done with last value
-      else {
-        recordVal()
-        keyPath = undefined
-        value = undefined
-      }
-    },
-  )
+      value = match[3].trim()
+    }
+    // add to existing array value
+    else if (
+      keyPath !== undefined &&
+      (match = line.match(/^\s{0,4}\+\s*(.+)/))
+    ) {
+      recordVal()
+      operation = '+='
+      value = match[1].trim()
+    }
+    // add to existing value
+    else if (value !== undefined && (match = line.match(/^\s+(\S.*)/))) {
+      value += value.length ? ` ${match[1].trim()}` : match[1].trim()
+    }
+    // done with last value
+    else {
+      recordVal()
+      keyPath = undefined
+      value = undefined
+    }
+  })
 
   recordVal()
 
@@ -208,11 +206,9 @@ export function regularizeConf(conf: Config, url: string): Config {
     if (conf.stores) addBase.push(...Object.values(conf.stores))
     if (conf.names) addBase.push(conf.names)
 
-    addBase.forEach(
-      (t): void => {
-        if (!t.baseUrl) t.baseUrl = conf.baseUrl || '/'
-      },
-    )
+    addBase.forEach((t): void => {
+      if (!t.baseUrl) t.baseUrl = conf.baseUrl || '/'
+    })
 
     // resolve the refSeqs and nameUrl if present
     if (conf.refSeqs && typeof conf.refSeqs === 'string')
@@ -221,42 +217,40 @@ export function regularizeConf(conf: Config, url: string): Config {
   }
 
   conf.stores = conf.stores || {}
-  ;(conf.tracks || []).forEach(
-    (trackConfig: Track): void => {
-      // if there is a `config` subpart, just copy its keys in to the top-level
-      // config
-      if (trackConfig.config) {
-        const c = trackConfig.config
-        delete trackConfig.config
-        trackConfig = { ...c, ...trackConfig }
-      }
+  ;(conf.tracks || []).forEach((trackConfig: Track): void => {
+    // if there is a `config` subpart, just copy its keys in to the top-level
+    // config
+    if (trackConfig.config) {
+      const c = trackConfig.config
+      delete trackConfig.config
+      trackConfig = { ...c, ...trackConfig }
+    }
 
-      // skip if it's a new-style track def
-      if (trackConfig.store) return
+    // skip if it's a new-style track def
+    if (trackConfig.store) return
 
-      let trackClassName: string
-      if (trackConfig.type === 'FeatureTrack')
-        trackClassName = 'JBrowse/View/Track/HTMLFeatures'
-      else if (trackConfig.type === 'ImageTrack')
-        trackClassName = 'JBrowse/View/Track/FixedImage'
-      else if (trackConfig.type === 'ImageTrack.Wiggle')
-        trackClassName = 'JBrowse/View/Track/FixedImage/Wiggle'
-      else if (trackConfig.type === 'SequenceTrack')
-        trackClassName = 'JBrowse/View/Track/Sequence'
-      else
-        trackClassName = regularizeClass('JBrowse/View/Track', trackConfig.type)
+    let trackClassName: string
+    if (trackConfig.type === 'FeatureTrack')
+      trackClassName = 'JBrowse/View/Track/HTMLFeatures'
+    else if (trackConfig.type === 'ImageTrack')
+      trackClassName = 'JBrowse/View/Track/FixedImage'
+    else if (trackConfig.type === 'ImageTrack.Wiggle')
+      trackClassName = 'JBrowse/View/Track/FixedImage/Wiggle'
+    else if (trackConfig.type === 'SequenceTrack')
+      trackClassName = 'JBrowse/View/Track/Sequence'
+    else
+      trackClassName = regularizeClass('JBrowse/View/Track', trackConfig.type)
 
-      trackConfig.type = trackClassName
+    trackConfig.type = trackClassName
 
-      synthesizeTrackStoreConfig(conf, trackConfig)
+    synthesizeTrackStoreConfig(conf, trackConfig)
 
-      if (trackConfig.histograms) {
-        if (!trackConfig.histograms.baseUrl)
-          trackConfig.histograms.baseUrl = trackConfig.baseUrl
-        synthesizeTrackStoreConfig(conf, trackConfig.histograms)
-      }
-    },
-  )
+    if (trackConfig.histograms) {
+      if (!trackConfig.histograms.baseUrl)
+        trackConfig.histograms.baseUrl = trackConfig.baseUrl
+      synthesizeTrackStoreConfig(conf, trackConfig.histograms)
+    }
+  })
 
   return conf
 }
@@ -323,9 +317,7 @@ function synthesizeTrackStoreConfig(
 
   if (!storeClass) {
     console.warn(
-      `Unable to determine an appropriate data store to use with track '${
-        trackConfig.label
-      }', please explicitly specify a storeClass in the configuration.`,
+      `Unable to determine an appropriate data store to use with track '${trackConfig.label}', please explicitly specify a storeClass in the configuration.`,
     )
     return
   }

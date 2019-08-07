@@ -7,10 +7,10 @@ import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
-import { PropTypes } from 'mobx-react'
-import { observer } from 'mobx-react-lite'
+import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
+import { clamp } from '@gmod/jbrowse-core/util'
 
 import { withSize } from 'react-sizeme'
 
@@ -58,16 +58,10 @@ const styles = theme => ({
 })
 
 function App(props) {
-  const {
-    classes,
-    session,
-    size,
-    sessionNames,
-    addSessionSnapshot,
-    activateSession,
-  } = props
+  const { classes, size, session } = props
 
   const { pluginManager } = session
+  const [scrollTop, setScrollTop] = useState(0)
 
   useEffect(() => {
     session.updateWidth(size.width)
@@ -116,21 +110,39 @@ function App(props) {
               />
             }
           >
-            <LazyReactComponent
-              model={visibleDrawerWidget}
-              session={session}
-              addSessionSnapshot={addSessionSnapshot}
-              setActiveSession={activateSession}
-            />
+            <LazyReactComponent model={visibleDrawerWidget} session={session} />
           </React.Suspense>
         </div>
       </Slide>
     )
   }
+  const nameRef = useRef()
+
+  if (nameRef.current) {
+    nameRef.current.scrollTop = scrollTop
+  }
 
   return (
     <div className={classes.root}>
-      <div className={classes.menuBarsAndComponents}>
+      <div
+        className={classes.menuBarsAndComponents}
+        ref={nameRef}
+        onWheel={event => {
+          if (
+            !session.shouldntScroll &&
+            nameRef.current.scrollHeight > nameRef.current.clientHeight &&
+            Math.abs(event.deltaY) > 2 * Math.abs(event.deltaX)
+          ) {
+            setScrollTop(
+              clamp(
+                scrollTop + event.deltaY,
+                0,
+                nameRef.current.scrollHeight - nameRef.current.clientHeight,
+              ),
+            )
+          }
+        }}
+      >
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
             const { LazyReactComponent } = pluginManager.getMenuBarType(
@@ -162,11 +174,7 @@ function App(props) {
               />
             )
           })}
-          <DevTools
-            session={session}
-            sessionNames={sessionNames}
-            activateSession={activateSession}
-          />
+          <DevTools session={session} />
         </div>
       </div>
       <Drawer
@@ -183,9 +191,6 @@ App.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   session: PropTypes.observableObject.isRequired,
-  sessionNames: ReactPropTypes.arrayOf(ReactPropTypes.string).isRequired,
-  addSessionSnapshot: ReactPropTypes.func.isRequired,
-  activateSession: ReactPropTypes.func.isRequired,
 }
 
 export default withSize()(withStyles(styles)(observer(App)))

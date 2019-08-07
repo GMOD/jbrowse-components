@@ -2,21 +2,40 @@
 
 exports[`<MainMenuBar /> renders 1`] = `
 <header
-  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic MainMenuBar-root-1 MuiAppBar-colorPrimary"
+  class="MuiPaper-root MuiPaper-elevation4 MuiAppBar-root MuiAppBar-positionStatic makeStyles-root-1 MuiAppBar-colorPrimary"
 >
   <div
     class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
   >
-    <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
+    <div
+      class="DropDownMenu-root-45"
     >
-      JBrowse
-    </h6>
+      <button
+        aria-haspopup="true"
+        aria-owns="menu-list-grow"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
+        data-testid="dropDownMenuButton"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          File
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            arrow_drop_down
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
     <div
-      class="MainMenuBar-grow-2"
-    />
-    <div
-      class="DropDownMenu-root-73"
+      class="DropDownMenu-root-45"
     >
       <button
         aria-haspopup="true"
@@ -42,6 +61,43 @@ exports[`<MainMenuBar /> renders 1`] = `
         />
       </button>
     </div>
+    <div
+      class="makeStyles-grow-2"
+    />
+    <p
+      class="MuiTypography-root MuiTypography-body1"
+    >
+      testSession
+    </p>
+    <div
+      class="makeStyles-grow-2"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-icon-4"
+          >
+            edit
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+       
+    </div>
+    <h6
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
+    >
+      JBrowse
+    </h6>
   </div>
 </header>
 `;

@@ -40,8 +40,8 @@ test('can push menus', () => {
     ],
   })
 
-  expect(menubar.menus.length).toBe(2)
-  expect(menubar.menus.map(m => m.name)).toEqual(['Help', 'Admin'])
+  expect(menubar.menus.length).toBe(3)
+  expect(menubar.menus.map(m => m.name)).toEqual(['File', 'Help', 'Admin'])
 })
 
 test('can unshift menus', () => {
@@ -57,6 +57,6 @@ test('can unshift menus', () => {
     ],
   })
 
-  expect(menubar.menus.length).toBe(2)
-  expect(menubar.menus.map(m => m.name)).toEqual(['Admin', 'Help'])
+  expect(menubar.menus.length).toBe(3)
+  expect(menubar.menus.map(m => m.name)).toEqual(['Admin', 'File', 'Help'])
 })

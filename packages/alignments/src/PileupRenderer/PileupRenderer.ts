@@ -159,7 +159,7 @@ export default class extends BoxRendererType {
             ctx.fillStyle =
               colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
-              ]
+              ] || '#888'
             ctx.fillRect(leftPx, topPx, widthPx, heightPx)
 
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
