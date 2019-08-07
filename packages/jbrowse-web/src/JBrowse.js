@@ -10,7 +10,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
+import { applyPatch, onPatch, onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
@@ -36,14 +36,16 @@ export default observer(({ config, initialState }) => {
         if (initialState) r = initialState
         else {
           let configSnapshot = config || {}
-          const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-          if (localStorageConfig)
-            configSnapshot = JSON.parse(localStorageConfig)
           if (configSnapshot.uri || configSnapshot.localPath) {
             const configText = await openLocation(config).readFile('utf8')
             configSnapshot = JSON.parse(configText)
           }
           r = rootModel.create({ jbrowse: configSnapshot })
+          const localStorageConfigPatches = JSON.parse(
+            localStorage.getItem('jbrowse-web-data') || 'null',
+          )
+          if (localStorageConfigPatches)
+            applyPatch(r.jbrowse, localStorageConfigPatches)
         }
         const params = new URL(document.location).searchParams
         const urlSession = params.get('session')
@@ -111,8 +113,12 @@ export default observer(({ config, initialState }) => {
       localStorageSessionDisposer = onSnapshot(root.session, snapshot => {
         localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
       })
-      localStorageDataDisposer = onSnapshot(root.jbrowse, snapshot => {
-        localStorage.setItem('jbrowse-web-data', JSON.stringify(snapshot))
+      localStorageDataDisposer = onPatch(root.jbrowse, patch => {
+        const data = JSON.parse(
+          localStorage.getItem('jbrowse-web-data') || '[]',
+        )
+        data.push(patch)
+        localStorage.setItem('jbrowse-web-data', JSON.stringify(data))
       })
     }
 
