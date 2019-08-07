@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point

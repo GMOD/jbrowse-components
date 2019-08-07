@@ -4,7 +4,7 @@ import {
   cleanup,
   fireEvent,
   waitForElement,
-} from 'react-testing-library'
+} from '@testing-library/react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
@@ -105,13 +105,17 @@ describe('<AddTrackDrawerWidget />', () => {
   })
 
   it('adds a track', async () => {
-    const { container, getByTestId, getByText, getAllByRole } = render(
-      <AddTrackDrawerWidget model={model} />,
-    )
+    const {
+      container,
+      getByTestId,
+      getAllByTestId,
+      getByText,
+      getAllByRole,
+    } = render(<AddTrackDrawerWidget model={model} />)
     expect(session.datasets[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
-    fireEvent.change(getByTestId('trackNameInput'), {
+    fireEvent.change(getAllByTestId('trackNameInput')[1], {
       target: { value: 'Test track name' },
     })
     fireEvent.click(getAllByRole('button')[0])
@@ -120,7 +124,7 @@ describe('<AddTrackDrawerWidget />', () => {
     fireEvent.click(getAllByRole('button')[1])
     await waitForElement(() => getByText('volvox'), { container })
     fireEvent.click(getByText('volvox'))
-    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.click(getAllByTestId('addTrackNextButton')[1])
     expect(session.datasets[0].tracks.length).toBe(2)
   })
 })

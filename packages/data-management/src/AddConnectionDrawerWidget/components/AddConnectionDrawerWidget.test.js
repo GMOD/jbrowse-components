@@ -3,7 +3,7 @@ import {
   cleanup,
   fireEvent,
   waitForElement,
-} from 'react-testing-library'
+} from '@testing-library/react'
 import React from 'react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
@@ -80,10 +80,11 @@ type bigWig
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       getByTestId,
+      getAllByTestId,
       container,
       getAllByRole,
       getByText,
-      getByValue,
+      getAllByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
     expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
@@ -93,13 +94,16 @@ type bigWig
     await waitForElement(() => getByText('UCSC Track Hub'), { container })
     fireEvent.click(getByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getByValue('nameOfUCSCTrackHubConnection'), {
+    fireEvent.change(getAllByDisplayValue('nameOfUCSCTrackHubConnection')[1], {
       target: { value: 'Test UCSC connection name' },
     })
-    fireEvent.change(getByValue('http://mysite.com/path/to/hub.txt'), {
-      target: { value: 'http://test.com/hub.txt' },
-    })
-    fireEvent.click(getByTestId('addConnectionNext'))
+    fireEvent.change(
+      getAllByDisplayValue('http://mysite.com/path/to/hub.txt')[1],
+      {
+        target: { value: 'http://test.com/hub.txt' },
+      },
+    )
+    fireEvent.click(getAllByTestId('addConnectionNext')[1])
     expect(session.datasets[0].connections.length).toBe(1)
   })
 
@@ -114,10 +118,11 @@ type bigWig
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       getByTestId,
+      getAllByTestId,
       container,
       getAllByRole,
       getByText,
-      getByValue,
+      getAllByDisplayValue,
     } = render(<AddConnectionDrawerWidget model={model} />)
     expect(session.datasets[0].connections.length).toBe(0)
     fireEvent.click(getAllByRole('button')[0])
@@ -127,13 +132,16 @@ type bigWig
     await waitForElement(() => getByText('JBrowse 1 Data'), { container })
     fireEvent.click(getByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
-    fireEvent.change(getByValue('nameOfJBrowse1Connection'), {
+    fireEvent.change(getAllByDisplayValue('nameOfJBrowse1Connection')[1], {
       target: { value: 'Test JBrowse 1 connection name' },
     })
-    fireEvent.change(getByValue('http://mysite.com/jbrowse/data/'), {
-      target: { value: 'http://test.com/jbrowse/data/' },
-    })
-    fireEvent.click(getByTestId('addConnectionNext'))
+    fireEvent.change(
+      getAllByDisplayValue('http://mysite.com/jbrowse/data/')[1],
+      {
+        target: { value: 'http://test.com/jbrowse/data/' },
+      },
+    )
+    fireEvent.click(getAllByTestId('addConnectionNext')[1])
     expect(session.datasets[0].connections.length).toBe(1)
   })
 })
