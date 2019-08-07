@@ -1,6 +1,6 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/jbrowseModel'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import MainMenuBar from './MainMenuBar'
 
 describe('<MainMenuBar />', () => {

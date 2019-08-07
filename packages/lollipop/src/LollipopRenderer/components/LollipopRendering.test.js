@@ -1,6 +1,6 @@
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import ConfigSchema from '../configSchema'
 import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
 import Rendering from './LollipopRendering'
