@@ -5,6 +5,7 @@ import {
   wait,
   waitForElement,
 } from 'react-testing-library'
+import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -273,7 +274,7 @@ describe('test configuration editor', () => {
       getByDisplayValue,
     } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('JBrowse'))
-    state.session.views[0].setNewView(0.05, 5000)
+    state.session.views[0].setNewView(0.05, 798844)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
     )
@@ -283,12 +284,12 @@ describe('test configuration editor', () => {
     ).resolves.toBeTruthy()
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
+    const rect1 = await waitForElement(() => byId('vcf-6266'))
+    const rect2 = await waitForElement(() => byId('vcf-6370'))
+    fireEvent.click(rect1)
+    fireEvent.click(rect2)
     await wait(() => {
-      expect(
-        Array.from(byId('vcf-2560').attributes).find(
-          attr => attr.name === 'style',
-        ).value,
-      ).toBe('fill:green')
+      expect(rect1).toHaveStyle('fill:green')
     })
   }, 10000)
 })
