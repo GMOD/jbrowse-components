@@ -1,5 +1,3 @@
-import { trace } from 'mobx'
-
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { reaction } = jbrequire('mobx')

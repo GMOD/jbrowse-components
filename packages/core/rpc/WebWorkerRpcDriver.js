@@ -1,7 +1,7 @@
 import Rpc from '@librpc/web'
 
-import { isStateTreeNode, isAlive } from 'mobx-state-tree';
-import { objectFromEntries, checkAbortSignal } from '../util'
+import { isStateTreeNode, isAlive } from 'mobx-state-tree'
+import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {

@@ -1,11 +1,9 @@
 export default ({ jbrequire }) => {
   const { isAlive, getParent } = jbrequire('mobx-state-tree')
-  const { assembleLocString, checkAbortSignal, isAbortException } = jbrequire(
+  const { checkAbortSignal, isAbortException } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
-  const { readConfObject, getConf } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { getContainingView, getTrackAssemblyName } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
@@ -92,9 +90,7 @@ export default ({ jbrequire }) => {
       // check renderertype compatibility
       if (!self.isCompatibleWithRenderer(rendererType))
         throw new Error(
-          `renderer ${
-            rendererType.name
-          } is not compatible with this track type`,
+          `renderer ${rendererType.name} is not compatible with this track type`,
         )
 
       const { html, ...data } = await rendererType.renderInClient(

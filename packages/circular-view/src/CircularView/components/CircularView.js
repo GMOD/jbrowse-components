@@ -1,5 +1,3 @@
-import { getConf } from '@gmod/jbrowse-core/configuration';
-
 const dragHandleHeight = 3
 
 export default pluginManager => {

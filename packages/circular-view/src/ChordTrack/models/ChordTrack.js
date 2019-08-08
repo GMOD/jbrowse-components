@@ -105,9 +105,7 @@ export default pluginManager => {
           throw new Error(`renderer "${track.rendererTypeName}" not found`)
         if (!RendererType.ReactComponent)
           throw new Error(
-            `renderer ${
-              track.rendererTypeName
-            } has no ReactComponent, it may not be completely implemented yet`,
+            `renderer ${track.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
           )
         return RendererType
       },
