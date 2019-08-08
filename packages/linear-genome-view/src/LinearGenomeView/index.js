@@ -293,8 +293,8 @@ export function stateModelFactory(pluginManager) {
         } else {
           const s = self.displayedRegions[start.index]
           bpSoFar += s.end - start.offset
-          if (end.index - start.index > 2) {
-            for (let i = start.index + 1; i < end.index - 1; i += 1) {
+          if (end.index - start.index >= 2) {
+            for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
                 self.displayedRegions[i].end - self.displayedRegions[i].start
             }
