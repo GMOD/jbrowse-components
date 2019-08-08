@@ -138,6 +138,29 @@ describe('valid file tests', () => {
     expect(end - start).toEqual(150)
   })
 
+  it('click and drag to rubberband', async () => {
+    const state = rootModel.create({ jbrowse: config })
+    const { getByTestId } = render(<JBrowse initialState={state} />)
+    const track = await waitForElement(() =>
+      getByTestId('rubberband_container'),
+    )
+
+    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
+    expect(state.session.views[0].bpPerPx).toEqual(0.03125)
+  })
+
+  it('click and zoom in and back out', async () => {
+    const state = rootModel.create({ jbrowse: config })
+    const { getByTestId: byId } = render(<JBrowse initialState={state} />)
+    const before = state.session.views[0].bpPerPx
+    fireEvent.click(await waitForElement(() => byId('zoom_in')))
+    fireEvent.click(await waitForElement(() => byId('zoom_out')))
+    expect(state.session.views[0].bpPerPx).toEqual(before)
+  })
+
   it('opens track selector', async () => {
     const state = rootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)

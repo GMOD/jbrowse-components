@@ -137,6 +137,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_out"
           tabindex="0"
           type="button"
         >
@@ -180,6 +181,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_in"
           tabindex="0"
           type="button"
         >
@@ -208,6 +210,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     />
     <div
       class="Rubberband-rubberBandContainer-165"
+      data-testid="rubberband_container"
       role="presentation"
     >
       <div
@@ -432,6 +435,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_out"
           tabindex="0"
           type="button"
         >
@@ -475,6 +479,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_in"
           tabindex="0"
           type="button"
         >
@@ -503,6 +508,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     />
     <div
       class="Rubberband-rubberBandContainer-165"
+      data-testid="rubberband_container"
       role="presentation"
     >
       <div
@@ -929,6 +935,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_out"
           tabindex="0"
           type="button"
         >
@@ -972,6 +979,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         </span>
         <button
           class="MuiButtonBase-root MuiIconButton-root"
+          data-testid="zoom_in"
           tabindex="0"
           type="button"
         >
@@ -1000,6 +1008,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     />
     <div
       class="Rubberband-rubberBandContainer-165"
+      data-testid="rubberband_container"
       role="presentation"
     >
       <div

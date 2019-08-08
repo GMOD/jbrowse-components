@@ -22,6 +22,7 @@ function ZoomControls(props) {
   return (
     <div className={classes.container}>
       <IconButton
+        data-testid="zoom_out"
         onClick={() => {
           model.zoomTo(model.bpPerPx * 2)
         }}
@@ -36,6 +37,7 @@ function ZoomControls(props) {
         onChange={(event, value) => model.zoomTo(2 ** -value)}
       />
       <IconButton
+        data-testid="zoom_in"
         onClick={() => {
           model.zoomTo(model.bpPerPx / 2)
         }}

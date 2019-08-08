@@ -108,6 +108,7 @@ class Rubberband extends Component {
     }
     return (
       <div
+        data-testid="rubberband_container"
         className={classes.rubberBandContainer}
         onMouseDown={this.onMouseDown}
         role="presentation"
