@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
-function Box(props) {
+function Chevron(props) {
   function onFeatureMouseDown(event) {
     const { onFeatureMouseDown: handler, feature } = props
     if (!handler) return undefined
@@ -113,7 +113,7 @@ function Box(props) {
   )
 }
 
-Box.propTypes = {
+Chevron.propTypes = {
   feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
     .isRequired,
   // horizontallyFlipped: ReactPropTypes.bool,
@@ -143,7 +143,7 @@ Box.propTypes = {
   onFeatureClick: ReactPropTypes.func,
 }
 
-Box.defaultProps = {
+Chevron.defaultProps = {
   // horizontallyFlipped: false,
 
   selected: false,
@@ -159,4 +159,4 @@ Box.defaultProps = {
   onFeatureClick: undefined,
 }
 
-export default observer(Box)
+export default observer(Chevron)
