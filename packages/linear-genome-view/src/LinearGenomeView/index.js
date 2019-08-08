@@ -135,7 +135,7 @@ export function stateModelFactory(pluginManager) {
 
       horizontallyFlip() {
         self.reversed = !self.reversed
-        self.displayedRegions = self.displayedRegions.reverse()
+        self.displayedRegions = self.displayedRegions.slice().reverse()
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
