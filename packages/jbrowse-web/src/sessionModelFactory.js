@@ -233,7 +233,11 @@ export default pluginManager => {
       },
 
       addLinearGenomeViewOfDataset(datasetName, initialState = {}) {
-        return self.addViewOfDataset('LinearGenomeView', datasetName, initialState)
+        return self.addViewOfDataset(
+          'LinearGenomeView',
+          datasetName,
+          initialState,
+        )
       },
 
       addViewOfDataset(viewType, datasetName, initialState = {}) {

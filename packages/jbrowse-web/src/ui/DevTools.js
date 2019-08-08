@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer, PropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import { withStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
@@ -63,6 +64,11 @@ function DeveloperTools({ classes, session }) {
       >
         <Icon>redo</Icon>
         redo
+      </Button>
+
+      <Button onClick={() => getRoot(session).setDefaultSession()}>
+        <Icon>clear</Icon>
+        clear session
       </Button>
     </div>
   )
