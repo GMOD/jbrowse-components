@@ -123,15 +123,12 @@ export function parseLocString(
   let refName
   let assemblyName
   let rest
-  if (ret.length == 3) {
-    assemblyName = ret[0]
-    refName = ret[1]
-    rest = ret[2]
-  } else if (ret.length == 2) {
-    refName = ret[0]
-    rest = ret[1]
-  } else if (ret.length == 1) {
-    rest = ret[0]
+  if (ret.length === 3) {
+    ;[assemblyName, refName, rest] = ret
+  } else if (ret.length === 2) {
+    ;[refName, rest] = ret
+  } else if (ret.length === 1) {
+    ;[rest] = ret
   }
   if (rest) {
     const [start, end] = rest.split('..')

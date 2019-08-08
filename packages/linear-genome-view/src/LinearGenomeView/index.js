@@ -246,7 +246,7 @@ export function stateModelFactory(pluginManager) {
         let s = start
         let e = end
         const index = self.displayedRegions.findIndex(r => {
-          if (refName == r.refName) {
+          if (refName === r.refName) {
             if (s === undefined) {
               s = r.start
             }
@@ -259,7 +259,6 @@ export function stateModelFactory(pluginManager) {
           }
           return false
         })
-        console.log('here', index)
         const f = self.displayedRegions[index]
         if (index !== -1) {
           self.moveTo(

@@ -308,7 +308,8 @@ function RefSeqDropdown({ model, onSubmit }) {
   )
 }
 
-Header.propTypes = {
+RefSeqDropdown.propTypes = {
+  onSubmit: ReactPropTypes.func.isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
