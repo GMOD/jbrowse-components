@@ -15,32 +15,11 @@ export default ({ jbrequire }) => {
     const { rendererType, renderProps } = track
     const { rpcManager } = getSession(view)
 
-    // const trackConf = track.configuration
-    // let trackConfParent = getParent(trackConf)
-    // if (!trackConfParent.assemblyName)
-    //   trackConfParent = getParent(trackConfParent)
-
-    //   const trackAssemblyName = readConfObject(trackConfParent, 'assemblyName')
-    // const trackAssemblyData =
-    //   assemblyManager.assemblyData.get(trackAssemblyName) || {}
-
-    // const trackAssemblyAliases = trackAssemblyData.aliases || []
-    // let cannotBeRenderedReason
-    // if (
-    //   !(
-    //     trackAssemblyName === self.region.assemblyName ||
-    //     trackAssemblyAliases.includes(self.region.assemblyName)
-    //   )
-    // )
-    //   cannotBeRenderedReason = 'region assembly does not match track assembly'
-    // else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-
     const assemblyName = getTrackAssemblyName(track)
     const data = {
       rendererType,
       rpcManager,
       renderProps,
-      // cannotBeRenderedReason,
       renderArgs: {
         assemblyName,
         adapterType: track.adapterType.name,
@@ -68,7 +47,6 @@ export default ({ jbrequire }) => {
       cannotBeRenderedReason,
       renderArgs,
     } = props
-    // console.log(getContainingView(self).rendererType)
     if (!isAlive(self)) return
 
     if (cannotBeRenderedReason) {
@@ -82,10 +60,6 @@ export default ({ jbrequire }) => {
 
     try {
       renderArgs.signal = aborter.signal
-      // const callId = [
-      //   assembleLocString(renderArgs.region),
-      //   renderArgs.rendererType,
-      // ]
 
       // check renderertype compatibility
       if (!self.isCompatibleWithRenderer(rendererType))
@@ -97,9 +71,6 @@ export default ({ jbrequire }) => {
         rpcManager,
         renderArgs,
       )
-      // if (aborter.signal.aborted) {
-      //   console.log(...callId, 'request to abort render was ignored', html, data)
-      // }
       checkAbortSignal(aborter.signal)
       self.setRendered(data, html, rendererType.ReactComponent)
     } catch (error) {
