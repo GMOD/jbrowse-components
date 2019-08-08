@@ -242,6 +242,14 @@ export function stateModelFactory(pluginManager) {
         }
       },
 
+      /*
+       * navTo navigates to a simple refName:start..end type object as input
+       * can handle if there are multiple displayedRegions from same chr
+       * only navigates to a locstring if it is entirely within a displayedRegion
+       *
+       * @param {refName,start,end} is a proposed location to navigate to
+       * returns true if navigation was successful, false if not
+       */
       navTo({ refName, start, end }) {
         let s = start
         let e = end
@@ -265,7 +273,9 @@ export function stateModelFactory(pluginManager) {
             { index, offset: s - f.start },
             { index, offset: e - f.start },
           )
+          return true
         }
+        return false
       },
 
       /**

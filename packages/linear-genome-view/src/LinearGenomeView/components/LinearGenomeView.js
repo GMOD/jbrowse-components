@@ -84,6 +84,12 @@ const useStyles = makeStyles(theme => ({
   hovered: {
     border: '1px solid grey',
   },
+  input: {
+    width: 300,
+    error: {
+      backgroundColor: 'red',
+    },
+  },
   ...buttonStyles(theme),
 }))
 
@@ -255,10 +261,10 @@ TextFieldOrTypography.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
-function Search(props) {
-  const { onSubmit } = props
+function Search({ onSubmit, error }) {
   const [value, setValue] = useState(null)
   const classes = useStyles()
+  const placeholder = 'Enter location (e.g. chr1:1000..5000)'
 
   return (
     <Paper className={classes.searchRoot}>
@@ -270,10 +276,15 @@ function Search(props) {
       >
         <InputBase
           className={classes.input}
+          error={!!error}
           onChange={event => setValue(event.target.value)}
-          placeholder="Enter locstring"
+          placeholder={placeholder}
         />
-        <IconButton className={classes.iconButton} aria-label="search">
+        <IconButton
+          onClick={() => onSubmit(value)}
+          className={classes.iconButton}
+          aria-label="search"
+        >
           <Icon>search</Icon>
         </IconButton>
       </form>
@@ -282,6 +293,7 @@ function Search(props) {
 }
 Search.propTypes = {
   onSubmit: ReactPropTypes.func.isRequired,
+  error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
 function RefSeqDropdown({ model, onSubmit }) {
@@ -315,8 +327,11 @@ RefSeqDropdown.propTypes = {
 
 function Header({ model, header, setHeader }) {
   const classes = useStyles()
+  const [error, setError] = useState()
   const navTo = locstring => {
-    model.navTo(parseLocString(locstring))
+    if (!model.navTo(parseLocString(locstring))) {
+      setError(`Unable to find ${locstring}`)
+    }
   }
   return (
     <div className={classes.headerBar}>
@@ -326,7 +341,7 @@ function Header({ model, header, setHeader }) {
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
-      <Search onSubmit={navTo} />
+      <Search onSubmit={navTo} error={error} />
       <RefSeqDropdown onSubmit={navTo} model={model} />
 
       <ZoomControls model={model} />

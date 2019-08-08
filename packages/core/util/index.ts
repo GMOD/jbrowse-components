@@ -128,7 +128,7 @@ export function parseLocString(
   } else if (ret.length === 2) {
     ;[refName, rest] = ret
   } else if (ret.length === 1) {
-    ;[rest] = ret
+    ;[refName] = ret
   }
   if (rest) {
     const [start, end] = rest.split('..')
