@@ -19,6 +19,9 @@ exports[`one feature 1`] = `
   <g
     transform="translate(0.3 0)"
   >
+    <title>
+      one
+    </title>
     <rect
       data-testid="one"
       fill="goldenrod"

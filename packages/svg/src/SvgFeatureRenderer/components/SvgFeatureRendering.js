@@ -11,9 +11,7 @@ import FeatureLabel from './FeatureLabel'
 
 const fontWidthScaleFactor = 0.55
 
-function layOut(args) {
-  const { feature, bpPerPx, region, layout, horizontallyFlipped } = args
-
+function layOut({ feature, region, bpPerPx, horizontallyFlipped, config }) {
   const [startPx, endPx] = featureSpanPx(
     feature,
     region,
@@ -21,81 +19,10 @@ function layOut(args) {
     horizontallyFlipped,
   )
   const rootLayout = new SceneGraph('root', startPx, 0, 0, 0)
-  const featureHeight = readConfObject(args.config, 'height', [feature])
+  const featureHeight = readConfObject(config, 'height', [feature])
   const featureWidth = endPx - startPx
   rootLayout.addChild('feature', 0, 0, featureWidth, featureHeight)
-
-  const name = readConfObject(args.config, ['labels', 'name'], [feature]) || ''
-  const description =
-    readConfObject(args.config, ['labels', 'description'], [feature]) || ''
-  const fontHeight = readConfObject(
-    args.config,
-    ['labels', 'fontSize'],
-    ['feature'],
-  )
-  const fontWidth = fontHeight * fontWidthScaleFactor
-  const shouldShowName = /\S/.test(name)
-  const shouldShowDescription = /\S/.test(description)
-  const textVerticalPadding = 2
-  let labelWidth
-  let descriptionWidth
-  const maxFeatureGlyphExpansion = readConfObject(
-    args.config,
-    'maxFeatureGlyphExpansion',
-  )
-  if (shouldShowName) {
-    labelWidth = Math.round(
-      Math.min(
-        name.length * fontWidth,
-        featureWidth + maxFeatureGlyphExpansion,
-      ),
-    )
-
-    rootLayout.addChild(
-      'nameLabel',
-      0,
-      rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
-      labelWidth,
-      fontHeight,
-    )
-  }
-  if (shouldShowDescription) {
-    descriptionWidth = Math.round(
-      Math.min(
-        description.length * fontWidth,
-        featureWidth + maxFeatureGlyphExpansion,
-      ),
-    )
-    rootLayout.addChild(
-      'descriptionLabel',
-      0,
-      rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature').bottom +
-        textVerticalPadding,
-      descriptionWidth,
-      fontHeight,
-    )
-  }
-
-  const start = feature.get('start')
-  const topPx = layout.addRect(
-    feature.id(),
-    start,
-    start + rootLayout.width * bpPerPx,
-    rootLayout.height,
-  )
-
-  rootLayout.move(0, topPx)
-
-  return {
-    rootLayout,
-    name,
-    description,
-    shouldShowDescription,
-    shouldShowName,
-    fontHeight,
-    labelWidth,
-    descriptionWidth,
-  }
+  return rootLayout
 }
 
 function SvgFeatureRendering(props) {
@@ -160,62 +87,111 @@ function SvgFeatureRendering(props) {
   const featuresRendered = []
   for (const feature of features.values()) {
     const GlyphComponent = chooseGlyphComponent(feature)
-    const layoutRecord = (GlyphComponent.layOut || layOut)({
+    const rootLayout = (GlyphComponent.layOut || layOut)({
       feature,
       horizontallyFlipped,
       bpPerPx,
       region,
       config,
-      layout,
     })
-    const {
-      rootLayout,
-      name,
-      description,
-      shouldShowDescription,
-      shouldShowName,
-      fontHeight,
-    } = layoutRecord
-    const exp = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-
     const featureLayout = rootLayout.getSubRecord('feature')
+
+    const glyphComponents = [
+      <title key={`glyph-title-${feature.id()}`}>{feature.id()}</title>,
+      <GlyphComponent
+        key={`glyph-${feature.id()}`}
+        {...props}
+        feature={feature}
+        featureLayout={featureLayout}
+        selected={String(selectedFeatureId) === String(feature.id())}
+      />,
+    ]
+
+    const fontHeight = readConfObject(
+      config,
+      ['labels', 'fontSize'],
+      ['feature'],
+    )
+    const fontWidth = fontHeight * fontWidthScaleFactor
+    const exp = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    const textVerticalPadding = 2
+
+    const name = readConfObject(config, ['labels', 'name'], [feature]) || ''
+    const shouldShowName = /\S/.test(name)
+    if (shouldShowName) {
+      const nameWidth = Math.round(
+        Math.min(name.length * fontWidth, featureLayout.width + exp),
+      )
+      rootLayout.addChild(
+        'nameLabel',
+        0,
+        rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
+        nameWidth,
+        fontHeight,
+      )
+      glyphComponents.push(
+        <FeatureLabel
+          key={`glyph-name-${feature.id()}`}
+          text={name}
+          x={rootLayout.getSubRecord('nameLabel').left}
+          y={rootLayout.getSubRecord('nameLabel').top}
+          color={readConfObject(config, ['labels', 'nameColor'], [feature])}
+          fontHeight={fontHeight}
+          featureWidth={featureLayout.width}
+          allowedWidthExpansion={exp}
+        />,
+      )
+    }
+
+    const description =
+      readConfObject(config, ['labels', 'description'], [feature]) || ''
+    const shouldShowDescription = /\S/.test(description)
+    if (shouldShowDescription) {
+      const descriptionWidth = Math.round(
+        Math.min(description.length * fontWidth, featureLayout.width + exp),
+      )
+      rootLayout.addChild(
+        'descriptionLabel',
+        0,
+        rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature')
+          .bottom + textVerticalPadding,
+        descriptionWidth,
+        fontHeight,
+      )
+      glyphComponents.push(
+        <FeatureLabel
+          key={`glyph-description-${feature.id()}`}
+          text={description}
+          x={rootLayout.getSubRecord('descriptionLabel').left}
+          y={rootLayout.getSubRecord('descriptionLabel').top}
+          color={readConfObject(
+            config,
+            ['labels', 'descriptionColor'],
+            [feature],
+          )}
+          fontHeight={fontHeight}
+          featureWidth={featureLayout.width}
+          allowedWidthExpansion={exp}
+        />,
+      )
+    }
+
+    const start = feature.get('start')
+    const topPx = layout.addRect(
+      feature.id(),
+      start,
+      start + rootLayout.width * bpPerPx,
+      rootLayout.height,
+    )
+
+    rootLayout.move(0, topPx)
+
     featuresRendered.push(
       <g
         transform={`translate(${rootLayout.left} ${rootLayout.top})`}
-        key={feature.id()}
+        key={`svg-feature-${feature.id()}`}
       >
-        <GlyphComponent
-          {...props}
-          feature={feature}
-          featureLayout={featureLayout}
-          selected={String(selectedFeatureId) === String(feature.id())}
-        />
-        {!shouldShowName ? null : (
-          <FeatureLabel
-            text={name}
-            x={rootLayout.getSubRecord('nameLabel').left}
-            y={rootLayout.getSubRecord('nameLabel').top}
-            color={readConfObject(config, ['labels', 'nameColor'], [feature])}
-            fontHeight={fontHeight}
-            featureWidth={featureLayout.width}
-            allowedWidthExpansion={exp}
-          />
-        )}
-        {!shouldShowDescription ? null : (
-          <FeatureLabel
-            text={description}
-            x={rootLayout.getSubRecord('descriptionLabel').left}
-            y={rootLayout.getSubRecord('descriptionLabel').top}
-            color={readConfObject(
-              config,
-              ['labels', 'descriptionColor'],
-              [feature],
-            )}
-            fontHeight={fontHeight}
-            featureWidth={featureLayout.width}
-            allowedWidthExpansion={exp}
-          />
-        )}
+        {glyphComponents}
       </g>,
     )
   }
