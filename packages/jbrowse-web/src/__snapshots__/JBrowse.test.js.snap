@@ -3,8 +3,8 @@
 exports[`test configuration editor change color on track 1`] = `
 <rect
   data-testid="vcf-2560"
+  fill="green"
   height="10"
-  style="fill:green"
   title="vcf-2560"
   width="20"
   x="0"

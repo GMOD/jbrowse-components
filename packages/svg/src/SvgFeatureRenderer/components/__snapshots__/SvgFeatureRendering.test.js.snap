@@ -21,8 +21,8 @@ exports[`one feature 1`] = `
   >
     <rect
       data-testid="one"
+      fill="goldenrod"
       height="10"
-      style="fill: goldenrod;"
       title="one"
       width="1"
       x="0"

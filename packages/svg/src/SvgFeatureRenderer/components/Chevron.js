@@ -1,5 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { emphasize } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -76,11 +77,19 @@ function Box(props) {
       ? `rotate(180,${left + width / 2},${top + height / 2})`
       : undefined,
   }
+  const color1 = readConfObject(config, 'color1', [feature])
+  let emphasizedColor1
+  try {
+    emphasizedColor1 = emphasize(color1, 0.3)
+  } catch (error) {
+    emphasizedColor1 = color1
+  }
 
   return width > height / 2 ? (
     <polygon
       {...shapeProps}
-      fill={selected ? 'red' : readConfObject(config, 'color1', [feature])}
+      stroke={selected ? 'black' : undefined}
+      fill={selected ? emphasizedColor1 : color1}
       points={[
         [left, top],
         [left + width - height / 2, top],
@@ -98,7 +107,7 @@ function Box(props) {
         [left + width, top + height / 2],
         [left, top + height],
       ]}
-      stroke={selected ? 'red' : readConfObject(config, 'color1', [feature])}
+      stroke={selected ? emphasizedColor1 : color1}
       fill="none"
     />
   )

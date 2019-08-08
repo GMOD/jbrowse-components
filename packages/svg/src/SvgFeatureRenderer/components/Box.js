@@ -1,5 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { emphasize } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -56,8 +57,13 @@ function Box(props) {
 
   const { feature, config, featureLayout, selected } = props
 
-  const style = { fill: readConfObject(config, 'color1', [feature]) }
-  if (selected) style.fill = 'red'
+  const color1 = readConfObject(config, 'color1', [feature])
+  let emphasizedColor1
+  try {
+    emphasizedColor1 = emphasize(color1, 0.3)
+  } catch (error) {
+    emphasizedColor1 = color1
+  }
 
   return (
     <rect
@@ -67,7 +73,8 @@ function Box(props) {
       y={featureLayout.top}
       width={Math.max(featureLayout.width, 1)}
       height={featureLayout.height}
-      style={style}
+      fill={selected ? emphasizedColor1 : color1}
+      stroke={selected ? 'black' : undefined}
       onMouseDown={onFeatureMouseDown}
       onMouseEnter={onFeatureMouseEnter}
       onMouseOut={onFeatureMouseOut}
