@@ -213,4 +213,13 @@ test('can instantiate a model that >2 regions', () => {
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   expect(model.bpPerPx).toEqual(12.5)
+  model.setNewView(1, 0)
+
+  // extending in the minus gives us first displayed region
+  expect(model.pxToBp(-5000).refName).toEqual('ctgA')
+  expect(model.pxToBp(5000).refName).toEqual('ctgA')
+  expect(model.pxToBp(15000).refName).toEqual('ctgB')
+  expect(model.pxToBp(25000).refName).toEqual('ctgC')
+  // extending past gives us the last displayed region
+  expect(model.pxToBp(35000).refName).toEqual('ctgC')
 })
