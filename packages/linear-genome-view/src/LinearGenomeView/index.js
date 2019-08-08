@@ -242,11 +242,11 @@ export function stateModelFactory(pluginManager) {
         }
       },
 
-      navTo({ refSeq, start, end }) {
+      navTo({ refName, start, end }) {
         let s = start
         let e = end
         const index = self.displayedRegions.findIndex(r => {
-          if (refSeq == r.refName) {
+          if (refName == r.refName) {
             if (s === undefined) {
               s = r.start
             }
@@ -260,8 +260,12 @@ export function stateModelFactory(pluginManager) {
           return false
         })
         console.log('here', index)
+        const f = self.displayedRegions[index]
         if (index !== -1) {
-          self.moveTo({ index, offset: s }, { index, offset: e })
+          self.moveTo(
+            { index, offset: s - f.start },
+            { index, offset: e - f.start },
+          )
         }
       },
 

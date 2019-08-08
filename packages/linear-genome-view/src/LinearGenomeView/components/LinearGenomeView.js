@@ -10,7 +10,12 @@ import {
   MenuItem,
   makeStyles,
 } from '@material-ui/core'
-import { clamp, getSession, generateLocString } from '@gmod/jbrowse-core/util'
+import {
+  clamp,
+  getSession,
+  parseLocString,
+  generateLocString,
+} from '@gmod/jbrowse-core/util'
 
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
@@ -279,53 +284,49 @@ Search.propTypes = {
   onSubmit: ReactPropTypes.func.isRequired,
 }
 
+function RefSeqDropdown({ model, onSubmit }) {
+  const tied = !!model.displayRegionsFromAssemblyName
+  return (
+    <Select
+      value="Select refSeq"
+      name="refseq"
+      onChange={event => {
+        if (event.target.value !== '') {
+          onSubmit(event.target.value)
+        }
+      }}
+    >
+      {model.displayedRegions.map(r => {
+        const l = generateLocString(r, tied)
+        return (
+          <MenuItem key={l} value={l}>
+            {l}
+          </MenuItem>
+        )
+      })}
+    </Select>
+  )
+}
+
+Header.propTypes = {
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
 function Header({ model, header, setHeader }) {
   const classes = useStyles()
   const navTo = locstring => {
-    const [refSeq, rest = ''] = locstring.split(':')
-    const [start, end] = rest.split('..')
-    if (refSeq !== undefined) {
-      if (start !== undefined && end !== undefined) {
-        model.navTo({ refSeq, start: +start, end: +end })
-      } else if (start !== undefined) {
-        model.navTo({ refSeq, start: +start })
-      } else {
-        model.navTo({ refSeq })
-      }
-    }
+    model.navTo(parseLocString(locstring))
   }
   return (
     <div className={classes.headerBar}>
       {model.hideControls ? null : (
         <Controls header={header} setHeader={setHeader} model={model} />
       )}
-      <TextFieldOrTypography
-        model={model}
-        onChange={name => {
-          console.log('TODO: update session with new name', name)
-        }}
-      />
+      <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
       <Search onSubmit={navTo} />
-      <Select
-        value="Select refSeq"
-        name="refseq"
-        onChange={event => {
-          console.log(event.target.value)
-          if (event.target.value !== '')
-            model.navTo({ refSeq: event.target.value })
-        }}
-      >
-        {model.displayedRegions.map(r => {
-          const l = generateLocString(r, !!model.displayRegionsFromAssemblyName)
-          return (
-            <MenuItem key={l} value={l}>
-              {l}
-            </MenuItem>
-          )
-        })}
-      </Select>
+      <RefSeqDropdown onSubmit={navTo} model={model} />
 
       <ZoomControls model={model} />
       <div className={classes.spacer} />
