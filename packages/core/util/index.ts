@@ -111,6 +111,37 @@ export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   return `${refName}:${start + 1}-${end}`
 }
 
+export function parseLocString(
+  locstring: string,
+): {
+  assemblyName?: string
+  refName?: string
+  start?: number
+  end?: number
+} {
+  const ret = locstring.split(':')
+  let refName
+  let assemblyName
+  let rest
+  if (ret.length === 3) {
+    ;[assemblyName, refName, rest] = ret
+  } else if (ret.length === 2) {
+    ;[refName, rest] = ret
+  } else if (ret.length === 1) {
+    ;[refName] = ret
+  }
+  if (rest) {
+    const [start, end] = rest.split('..')
+    if (start !== undefined && end !== undefined) {
+      return { assemblyName, refName, start: +start, end: +end }
+    }
+    if (start !== undefined) {
+      return { assemblyName, refName, start: +start }
+    }
+  }
+  return { assemblyName, refName }
+}
+
 /**
  * Ensure that a number is at least min and at most max.
  *
@@ -174,6 +205,21 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
+}
+
+export function generateLocString(
+  r: IRegion,
+  tied: boolean,
+  includeAssemblyName: boolean,
+): string {
+  if (tied) {
+    return r.refName
+  }
+  let s = ''
+  if (includeAssemblyName && r.assemblyName) {
+    s = `${r.assemblyName}:`
+  }
+  return `${s}${r.refName}:${r.start}..${r.end}`
 }
 
 /**

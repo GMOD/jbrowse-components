@@ -1,19 +1,33 @@
-import { Icon, IconButton, makeStyles } from '@material-ui/core'
-import { clamp, getSession } from '@gmod/jbrowse-core/util'
-import ToggleButton from '@material-ui/lab/ToggleButton'
+import {
+  Icon,
+  Select,
+  IconButton,
+  InputBase,
+  Typography,
+  TextField,
+  Paper,
+  Menu,
+  MenuItem,
+  makeStyles,
+} from '@material-ui/core'
+import {
+  clamp,
+  getSession,
+  parseLocString,
+  generateLocString,
+} from '@gmod/jbrowse-core/util'
+
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
-import ScaleBar from './ScaleBar'
-import Rubberband from './Rubberband'
-import TrackRenderingContainer from './TrackRenderingContainer'
-import TrackResizeHandle from './TrackResizeHandle'
-
-import ZoomControls from './ZoomControls'
-
 import buttonStyles from './buttonStyles'
+import ZoomControls from './ZoomControls'
+import TrackResizeHandle from './TrackResizeHandle'
+import TrackRenderingContainer from './TrackRenderingContainer'
+import Rubberband from './Rubberband'
+import ScaleBar from './ScaleBar'
 
 const dragHandleHeight = 3
 
@@ -42,11 +56,40 @@ const useStyles = makeStyles(theme => ({
   trackControls: {
     whiteSpace: 'normal',
   },
+  headerBar: {
+    gridArea: '1/1/auto/span 2',
+    display: 'flex',
+  },
+  spacer: {
+    flexGrow: 1,
+  },
+  navbox: {
+    margin: theme.spacing(1),
+  },
+  emphasis: {
+    background: '#dddd',
+    padding: theme.spacing(1),
+  },
+  searchRoot: {
+    margin: theme.spacing(1),
+    alignItems: 'center',
+  },
+  viewName: {
+    margin: theme.spacing(0.25),
+  },
   zoomControls: {
     position: 'absolute',
-    top: '0px',
+    top: 0,
   },
-
+  hovered: {
+    border: '1px solid grey',
+  },
+  input: {
+    width: 300,
+    error: {
+      backgroundColor: 'red',
+    },
+  },
   ...buttonStyles(theme),
 }))
 
@@ -101,18 +144,272 @@ const TrackContainer = observer(({ model, track }) => {
     </>
   )
 })
-
 TrackContainer.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
   track: ReactPropTypes.shape({}).isRequired,
 }
 
+const ITEM_HEIGHT = 48
+
+function LongMenu(props) {
+  const { className } = props
+  const [anchorEl, setAnchorEl] = React.useState(null)
+  const open = Boolean(anchorEl)
+
+  const { options } = props
+
+  function handleClick(event) {
+    setAnchorEl(event.currentTarget)
+  }
+
+  function handleClose() {
+    setAnchorEl(null)
+  }
+
+  return (
+    <>
+      <IconButton
+        aria-label="more"
+        aria-controls="long-menu"
+        aria-haspopup="true"
+        className={className}
+        onClick={handleClick}
+      >
+        <Icon>more_vert</Icon>
+      </IconButton>
+      <Menu
+        id="long-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          style: {
+            maxHeight: ITEM_HEIGHT * 8,
+          },
+        }}
+      >
+        {options.map(option => (
+          <MenuItem
+            key={option.key}
+            onClick={() => {
+              option.callback()
+              handleClose()
+            }}
+          >
+            {option.title}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  )
+}
+
+LongMenu.propTypes = {
+  className: ReactPropTypes.string.isRequired,
+  options: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      key: ReactPropTypes.string.isRequired,
+      callback: ReactPropTypes.func.isRequired,
+      title: ReactPropTypes.string.isRequired,
+    }),
+  ).isRequired,
+}
+
+function TextFieldOrTypography({ model }) {
+  const classes = useStyles()
+  const [name, setName] = useState(
+    model.displayName || model.displayRegionsFromAssemblyName,
+  )
+  const [edit, setEdit] = useState(false)
+  const [hover, setHover] = useState(false)
+  return edit ? (
+    <form
+      onSubmit={event => {
+        setEdit(false)
+        model.setDisplayName(name)
+        event.preventDefault()
+      }}
+    >
+      <TextField
+        value={name}
+        onChange={event => {
+          setName(event.target.value)
+        }}
+        onBlur={() => {
+          setEdit(false)
+          model.setDisplayName(name)
+        }}
+      />
+    </form>
+  ) : (
+    <div
+      className={classnames(classes.emphasis, hover ? classes.hovered : null)}
+    >
+      <Typography
+        className={classes.viewName}
+        onClick={() => setEdit(true)}
+        onMouseOver={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        {name}
+      </Typography>
+    </div>
+  )
+}
+TextFieldOrTypography.propTypes = {
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
+function Search({ onSubmit, error }) {
+  const [value, setValue] = useState(null)
+  const classes = useStyles()
+  const placeholder = 'Enter location (e.g. chr1:1000..5000)'
+
+  return (
+    <Paper className={classes.searchRoot}>
+      <form
+        onSubmit={event => {
+          onSubmit(value)
+          event.preventDefault()
+        }}
+      >
+        <InputBase
+          className={classes.input}
+          error={!!error}
+          onChange={event => setValue(event.target.value)}
+          placeholder={placeholder}
+        />
+        <IconButton
+          onClick={() => onSubmit(value)}
+          className={classes.iconButton}
+          aria-label="search"
+        >
+          <Icon>search</Icon>
+        </IconButton>
+      </form>
+    </Paper>
+  )
+}
+Search.propTypes = {
+  onSubmit: ReactPropTypes.func.isRequired,
+  error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
+}
+
+function RefSeqDropdown({ model, onSubmit }) {
+  const tied = !!model.displayRegionsFromAssemblyName
+  return (
+    <Select
+      value="Select refSeq"
+      name="refseq"
+      onChange={event => {
+        if (event.target.value !== '') {
+          onSubmit(event.target.value)
+        }
+      }}
+    >
+      {model.displayedRegions.map(r => {
+        const l = generateLocString(r, tied)
+        return (
+          <MenuItem key={l} value={l}>
+            {l}
+          </MenuItem>
+        )
+      })}
+    </Select>
+  )
+}
+
+RefSeqDropdown.propTypes = {
+  onSubmit: ReactPropTypes.func.isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
+function Header({ model, header, setHeader }) {
+  const classes = useStyles()
+  const [error, setError] = useState()
+  const navTo = locstring => {
+    if (!model.navTo(parseLocString(locstring))) {
+      setError(`Unable to find ${locstring}`)
+    }
+  }
+  return (
+    <div className={classes.headerBar}>
+      {model.hideControls ? null : (
+        <Controls header={header} setHeader={setHeader} model={model} />
+      )}
+      <TextFieldOrTypography model={model} />
+      <div className={classes.spacer} />
+
+      <Search onSubmit={navTo} error={error} />
+      <RefSeqDropdown onSubmit={navTo} model={model} />
+
+      <ZoomControls model={model} />
+      <div className={classes.spacer} />
+    </div>
+  )
+}
+
+Header.propTypes = {
+  setHeader: ReactPropTypes.func.isRequired,
+  header: ReactPropTypes.bool.isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
+function Controls({ model, header, setHeader }) {
+  const classes = useStyles()
+  return (
+    <>
+      <IconButton
+        onClick={model.closeView}
+        className={classes.iconButton}
+        title="close this view"
+      >
+        <Icon fontSize="small">close</Icon>
+      </IconButton>
+      <LongMenu
+        className={classes.iconButton}
+        options={[
+          {
+            title: 'Show track selector',
+            key: 'track_selector',
+            callback: model.activateTrackSelector,
+          },
+          {
+            title: 'Horizontal flip',
+            key: 'flip',
+            callback: model.horizontallyFlip,
+          },
+          {
+            title: 'Show all regions',
+            key: 'showall',
+            callback: model.showAllRegions,
+          },
+          {
+            title: header ? 'Hide header' : 'Show header',
+            key: 'hide_header',
+            callback: () => {
+              setHeader(!header)
+            },
+          },
+        ]}
+      />
+    </>
+  )
+}
+
+Controls.propTypes = {
+  setHeader: ReactPropTypes.func.isRequired,
+  header: ReactPropTypes.bool.isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
+}
+
 function LinearGenomeView(props) {
   const { model } = props
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
-  const scaleBarHeight = 32
-  const session = getSession(model)
   const classes = useStyles()
+  const [header, setHeader] = useState(true)
+
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
@@ -120,7 +417,9 @@ function LinearGenomeView(props) {
   const style = {
     display: 'grid',
     position: 'relative',
-    gridTemplateRows: `[scale-bar] auto ${tracks
+    gridTemplateRows: `${
+      header ? '[header] auto ' : ''
+    } [scale-bar] auto ${tracks
       .map(
         t =>
           `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -128,6 +427,7 @@ function LinearGenomeView(props) {
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
   }
+
   return (
     <div className={classes.root}>
       <div
@@ -135,35 +435,15 @@ function LinearGenomeView(props) {
         key={`view-${id}`}
         style={style}
       >
+        {header ? (
+          <Header header={header} setHeader={setHeader} model={model} />
+        ) : null}
         <div
           className={classnames(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          {model.hideControls ? null : (
-            <>
-              <IconButton
-                onClick={model.closeView}
-                className={classes.iconButton}
-                title="close this view"
-              >
-                <Icon fontSize="small">close</Icon>
-              </IconButton>
-              <ToggleButton
-                onClick={model.activateTrackSelector}
-                title="select tracks"
-                className={classes.toggleButton}
-                selected={
-                  session.visibleDrawerWidget &&
-                  session.visibleDrawerWidget.id ===
-                    'hierarchicalTrackSelector' &&
-                  session.visibleDrawerWidget.view.id === model.id
-                }
-                value="track_select"
-                data_testid="track_select"
-              >
-                <Icon fontSize="small">line_style</Icon>
-              </ToggleButton>
-            </>
+          {model.hideControls || header ? null : (
+            <Controls header={header} setHeader={setHeader} model={model} />
           )}
         </div>
 
@@ -178,7 +458,11 @@ function LinearGenomeView(props) {
           model={model}
         >
           <ScaleBar
-            height={scaleBarHeight}
+            style={{
+              gridColumn: 'blocks',
+              gridRow: 'scale-bar',
+            }}
+            height={32}
             bpPerPx={bpPerPx}
             blocks={staticBlocks}
             offsetPx={offsetPx}
@@ -186,15 +470,17 @@ function LinearGenomeView(props) {
           />
         </Rubberband>
 
-        <div
-          className={classes.zoomControls}
-          style={{
-            right: 4,
-            zIndex: 1000,
-          }}
-        >
-          <ZoomControls model={model} controlsHeight={scaleBarHeight} />
-        </div>
+        {!header ? (
+          <div
+            className={classes.zoomControls}
+            style={{
+              right: 4,
+              zIndex: 1000,
+            }}
+          >
+            <ZoomControls model={model} />
+          </div>
+        ) : null}
         {tracks.map(track => (
           <TrackContainer key={track.id} model={model} track={track} />
         ))}

@@ -144,6 +144,43 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.bpPerPx).toEqual(2.5)
 })
 
+test('can instantiate a model that tests navTo/moveTo', () => {
+  const name = types
+    .model({
+      name: 'testSession',
+      view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
+    })
+    .actions(self => ({
+      setView(view) {
+        self.view = view
+        return view
+      },
+    }))
+    .create({
+      config: {},
+    })
+
+  const model = name.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
+      controlsWidth: 0,
+      configuration: {},
+    }),
+  )
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
+  ])
+  expect(model.maxBpPerPx).toEqual(20)
+
+  model.navTo({ refName: 'ctgA', start: 0, end: 100 })
+  expect(model.bpPerPx).toEqual(100 / 800)
+  model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
+  expect(model.bpPerPx).toEqual(100 / 800) // did nothing
+})
+
 test('can instantiate a model that >2 regions', () => {
   const name = types
     .model({

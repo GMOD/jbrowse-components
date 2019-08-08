@@ -33,6 +33,10 @@ const validBpPerPx = [
   100000,
   200000,
   500000,
+  1000000,
+  2000000,
+  5000000,
+  10000000,
 ]
 
 function constrainBpPerPx(newBpPerPx) {
@@ -52,6 +56,7 @@ export function stateModelFactory(pluginManager) {
       bpPerPx: 1,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
+      displayName: types.maybe(types.string),
       reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
@@ -72,14 +77,19 @@ export function stateModelFactory(pluginManager) {
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
       },
-      get maxBpPerPx() {
-        const displayWidth = self.viewingRegionWidth
+
+      get totalBp() {
         let totalbp = 0
         self.displayedRegions.forEach(region => {
           totalbp += region.end - region.start
         })
-        return constrainBpPerPx(totalbp / displayWidth)
+        return totalbp
       },
+
+      get maxBpPerPx() {
+        return constrainBpPerPx(self.totalBp / self.viewingRegionWidth)
+      },
+
       get minBpPerPx() {
         return constrainBpPerPx(0)
       },
@@ -119,8 +129,14 @@ export function stateModelFactory(pluginManager) {
         self.width = newWidth
       },
 
+      setDisplayName(name) {
+        self.displayName = name
+      },
+
       horizontallyFlip() {
         self.reversed = !self.reversed
+        self.displayedRegions = self.displayedRegions.slice().reverse()
+        self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
       showTrack(configuration, initialSnapshot = {}) {
@@ -226,6 +242,42 @@ export function stateModelFactory(pluginManager) {
         }
       },
 
+      /*
+       * navTo navigates to a simple refName:start..end type object as input
+       * can handle if there are multiple displayedRegions from same chr
+       * only navigates to a locstring if it is entirely within a displayedRegion
+       *
+       * @param {refName,start,end} is a proposed location to navigate to
+       * returns true if navigation was successful, false if not
+       */
+      navTo({ refName, start, end }) {
+        let s = start
+        let e = end
+        const index = self.displayedRegions.findIndex(r => {
+          if (refName === r.refName) {
+            if (s === undefined) {
+              s = r.start
+            }
+            if (e === undefined) {
+              e = r.end
+            }
+            if (s >= r.start && e <= r.end) {
+              return true
+            }
+          }
+          return false
+        })
+        const f = self.displayedRegions[index]
+        if (index !== -1) {
+          self.moveTo(
+            { index, offset: s - f.start },
+            { index, offset: e - f.start },
+          )
+          return true
+        }
+        return false
+      },
+
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
@@ -296,6 +348,11 @@ export function stateModelFactory(pluginManager) {
       setNewView(bpPerPx, offsetPx) {
         self.bpPerPx = bpPerPx
         self.offsetPx = offsetPx
+      },
+
+      showAllRegions() {
+        self.bpPerPx = self.totalBp / self.viewingRegionWidth
+        self.offsetPx = 0
       },
     }))
 }
