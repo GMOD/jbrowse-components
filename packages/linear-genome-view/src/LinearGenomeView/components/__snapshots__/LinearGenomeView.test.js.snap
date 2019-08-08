@@ -34,7 +34,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
-        data_testid="track_select"
+        data-testid="track_select"
         tabindex="0"
         title="select tracks"
         type="button"
@@ -250,7 +250,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
-        data_testid="track_select"
+        data-testid="track_select"
         tabindex="0"
         title="select tracks"
         type="button"
@@ -668,7 +668,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-8"
-        data_testid="track_select"
+        data-testid="track_select"
         tabindex="0"
         title="select tracks"
         type="button"

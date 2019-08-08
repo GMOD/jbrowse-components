@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`one slice 1`] = `
-Slice {
+Object {
   "bpPerRadian": 1591.5494309189535,
   "endRadians": 6.283185307179586,
   "flipped": false,
@@ -20,7 +20,7 @@ Slice {
 
 exports[`two slices 1`] = `
 Array [
-  Slice {
+  Object {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 3.141592653589793,
     "flipped": false,
@@ -35,7 +35,7 @@ Array [
     },
     "startRadians": 0,
   },
-  Slice {
+  Object {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 6.288185307179586,
     "flipped": false,
@@ -55,7 +55,7 @@ Array [
 
 exports[`volvox 1`] = `
 Array [
-  Slice {
+  Object {
     "bpPerRadian": 8925.40920859349,
     "endRadians": 5.602096086738348,
     "flipped": false,
@@ -71,7 +71,7 @@ Array [
     },
     "startRadians": 0,
   },
-  Slice {
+  Object {
     "bpPerRadian": 8925.40920859349,
     "endRadians": 6.288185307179587,
     "flipped": false,
