@@ -46,6 +46,25 @@
       },
       "tracks": [
         {
+          "configId": "volvox_chord_test",
+          "type": "StructuralVariantChordTrack",
+          "name": "volvox chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/volvox.dup.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/volvox.dup.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "configId": "volvox_alignments",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (ctgA)",

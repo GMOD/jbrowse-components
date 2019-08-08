@@ -1,3 +1,5 @@
+import { getConf } from '@gmod/jbrowse-core/configuration';
+
 const dragHandleHeight = 3
 
 export default pluginManager => {
@@ -112,6 +114,7 @@ export default pluginManager => {
             onClick={model.closeView}
             className={classes.iconButton}
             title="close this view"
+            data-testid="circular_view_close"
           >
             <Icon fontSize="small">close</Icon>
           </IconButton>
@@ -158,7 +161,7 @@ export default pluginManager => {
               rootModel.visibleDrawerWidget.view.id === model.id
             }
             value="track_select"
-            data_testid="track_select"
+            data-testid="circular_track_select"
           >
             <Icon fontSize="small">line_style</Icon>
           </ToggleButton>
@@ -171,7 +174,7 @@ export default pluginManager => {
     const { classes, model } = props
 
     return (
-      <div className={classes.root}>
+      <div className={classes.root} data-testid={model.configuration.configId}>
         <div
           className={classes.scroller}
           style={{

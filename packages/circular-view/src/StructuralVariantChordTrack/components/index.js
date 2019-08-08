@@ -3,7 +3,9 @@ export default ({ jbrequire }) => {
   const { observer } = jbrequire('mobx-react')
 
   const Loading = jbrequire(require('../../ChordTrack/components/Loading'))
-  const TrackError = jbrequire(require('../../ChordTrack/components/TrackError'))
+  const TrackError = jbrequire(
+    require('../../ChordTrack/components/TrackError'),
+  )
   const RpcRenderedSvgGroup = jbrequire(require('./RpcRenderedSvgGroup'))
 
   function StructuralVariantChordTrack({ track, view }) {

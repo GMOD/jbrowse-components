@@ -110,10 +110,11 @@ export default class extends BaseAdapter {
       async (observer: Observer<Feature>): Promise<void> => {
         const bytes = await this.bytesForRegions(regions)
         const stat = await this.vcf.filehandle.stat()
-        const pct = Math.round((bytes / stat.size) * 100)
-        if (bytes / stat.size > 60) {
+        let pct = Math.round((bytes / stat.size) * 100)
+        if (pct > 100) pct = 100 // 💩
+        if (pct > 60) {
           console.warn(
-            `getFeaturesInMultipleRegions fetching ${pct} of VCF file, but whole-file streaming not yet implemented`,
+            `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
           )
         }
         super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)

@@ -1,7 +1,7 @@
 import { thetaRangesOverlap } from './viewportVisibleRegion'
 
 export default ({ jbrequire }) => {
-  const { polarToCartesian, assembleLocString } = jbrequire(
+  const { polarToCartesian, assembleLocString, objectFromEntries } = jbrequire(
     '@gmod/jbrowse-core/util',
   )
 
@@ -32,6 +32,10 @@ export default ({ jbrequire }) => {
       }
       const totalRadians = offsetBp / this.bpPerRadian + this.offsetRadians
       return polarToCartesian(radiusPx, totalRadians)
+    }
+
+    toJSON() {
+      return objectFromEntries(Object.entries(this))
     }
   }
 

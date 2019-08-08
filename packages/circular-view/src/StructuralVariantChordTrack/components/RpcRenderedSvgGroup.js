@@ -17,7 +17,7 @@ export default ({ jbrequire }) => {
           domNode.style.display = 'none'
           requestIdleCallback(() => unmountComponentAtNode(domNode.firstChild))
         }
-        domNode.innerHTML = `<g className="ssr-container-inner"></g>`
+        domNode.innerHTML = `<g data-testid="rpc-rendered-circular-chord-track" className="ssr-container-inner"></g>`
         if (filled) {
           domNode.style.display = 'inline'
           domNode.firstChild.innerHTML = html

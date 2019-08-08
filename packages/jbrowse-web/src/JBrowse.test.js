@@ -336,3 +336,37 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
 })
+
+describe('circular views', () => {
+  it('open a circular view', async () => {
+    const state = rootModel.create({ jbrowse: config })
+    const { getByTestId, getByText, getAllByTestId } = render(
+      <JBrowse initialState={state} />,
+    )
+    // wait for the UI to be loaded
+    await waitForElement(() => getByText('JBrowse'))
+
+    // open a new circular view on the same dataset as the test linear view
+    state.session.addViewFromAnotherView('CircularView', state.session.views[0])
+
+    // open a track selector for the circular view
+    const trackSelectButtons = await waitForElement(() =>
+      getAllByTestId('circular_track_select'),
+    )
+    expect(trackSelectButtons.length).toBe(1)
+    fireEvent.click(trackSelectButtons[0])
+
+    // wait for the track selector to open and then click the
+    // checkbox for the chord test track to toggle it on
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_chord_test'),
+      ),
+    )
+
+    // expect the chord track to render eventually
+    await expect(
+      waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
+    ).resolves.toBeTruthy()
+  })
+})

@@ -52,6 +52,25 @@
       },
       "tracks": [
         {
+          "configId": "QGoUN4vNq",
+          "type": "StructuralVariantChordTrack",
+          "name": "chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "/test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "/test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "configId": "FDN0zpD_B6",
           "type": "DynamicTrack",
           "name": "Lollipop track",
