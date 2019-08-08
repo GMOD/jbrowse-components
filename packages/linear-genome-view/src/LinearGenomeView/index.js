@@ -107,10 +107,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       get displayedRegionsTotalPx() {
-        return self.displayedRegions.reduce(
-          (a, b) => a + (b.end - b.start) / self.bpPerPx,
-          0,
-        )
+        return self.totalBp / self.bpPerPx
       },
       get renderProps() {
         return {

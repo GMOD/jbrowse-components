@@ -212,7 +212,7 @@ test('can instantiate a model that >2 regions', () => {
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgC' },
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   expect(model.bpPerPx).toEqual(20000 / 800)
@@ -222,9 +222,9 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.pxToBp(-5000).refName).toEqual('ctgA')
   expect(model.pxToBp(5000).refName).toEqual('ctgA')
   expect(model.pxToBp(15000).refName).toEqual('ctgB')
-  expect(model.pxToBp(25000).refName).toEqual('ctgA')
+  expect(model.pxToBp(25000).refName).toEqual('ctgC')
   // extending past gives us the last displayed region
-  expect(model.pxToBp(35000).refName).toEqual('ctgA')
+  expect(model.pxToBp(35000).refName).toEqual('ctgC')
 
   model.setDisplayName('Volvox view')
   expect(model.displayName).toBe('Volvox view')
@@ -233,4 +233,14 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
   expect(model.bpPerPx).toEqual(20000 / 800)
+  model.moveTo(
+    { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
+    { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
+  )
+  expect(model.bpPerPx).toEqual(10000 / 800)
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
+  expect(model.displayedRegionsTotalPx).toEqual(2400)
+  model.showAllRegions()
+  expect(model.bpPerPx).toEqual(30000 / 800)
+  expect(model.offsetPx).toEqual(0)
 })
