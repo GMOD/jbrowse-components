@@ -291,9 +291,6 @@ describe('test configuration editor', () => {
     // Note: a series of like 5 or 6 waitForDomChange calls
     // on container also works instead of timeout
     await timeout(1000)
-    setTimeout(() => {
-      throw new Error('crazy')
-    }, 100)
     const ret = await waitForElement(() => byId('vcf-2560'))
     expect(ret).toMatchSnapshot()
   })
