@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.17",
+    "@gmod/bam": "^1.0.21",
     "generic-filehandle": "^2.0.0",
     "react-style-proptype": "^3.2.2"
   },

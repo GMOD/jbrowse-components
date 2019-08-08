@@ -1178,10 +1178,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.7.2.tgz#53211e564604beb9befa7a4400ebf8147473eeef"
   integrity sha512-RMtr1i6E8MXaBWwhXL3yeOU8JXRnz8GNxHvaUfVvwxokvayUY0zoBeWbKw1S9XkufmGEEdQd228pSZXFkAln8Q==
 
-"@gmod/bam@^1.0.17":
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.20.tgz#484cd6b79a817b21991a7b2e0eecd56e42c43653"
-  integrity sha512-Cv08tX3EMK9HclKRFUva7Vd78rZOscJ5c9EuR8etD5eAG7kyj2GRgZGWLdvX6cIt80u4INT3NDHJkRql5ALzeQ==
+"@gmod/bam@^1.0.21":
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.21.tgz#602180b5fc869b513cd66f2c2332d2a5db4777e4"
+  integrity sha512-ztBVSPIY8zEhdzIILZ+13hmxPfqv0DldB1XujCgtWdLnEcKhDjZwsoimsWAqdPbNBPCaGkXSaSNIvUbWyaCwCw==
   dependencies:
     "@babel/runtime" "^7.4.3"
     abortable-promise-cache "^1.0.1"
