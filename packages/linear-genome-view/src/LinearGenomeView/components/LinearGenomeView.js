@@ -10,7 +10,7 @@ import {
   MenuItem,
   makeStyles,
 } from '@material-ui/core'
-import { clamp, getSession } from '@gmod/jbrowse-core/util'
+import { clamp, getSession, generateLocString } from '@gmod/jbrowse-core/util'
 
 import classnames from 'classnames'
 import { observer, PropTypes } from 'mobx-react'
@@ -75,6 +75,9 @@ const useStyles = makeStyles(theme => ({
   zoomControls: {
     position: 'absolute',
     top: 0,
+  },
+  hovered: {
+    border: '1px solid grey',
   },
   ...buttonStyles(theme),
 }))
@@ -202,32 +205,49 @@ LongMenu.propTypes = {
   ).isRequired,
 }
 
-function TextFieldOrTypography({ onChange, value = '' }) {
+function TextFieldOrTypography({ model }) {
   const classes = useStyles()
-  const [name, setName] = useState(value)
+  const [name, setName] = useState(
+    model.displayName || model.displayRegionsFromAssemblyName,
+  )
   const [edit, setEdit] = useState(false)
-  const submit = event => {
-    setEdit(false)
-    onChange(name)
-    event.preventDefault()
-  }
+  const [hover, setHover] = useState(false)
   return edit ? (
-    <form onSubmit={submit}>
+    <form
+      onSubmit={event => {
+        setEdit(false)
+        model.setDisplayName(name)
+        event.preventDefault()
+      }}
+    >
       <TextField
         value={name}
-        onChange={event => setName(event.target.value)}
-        onBlur={submit}
+        onChange={event => {
+          setName(event.target.value)
+        }}
+        onBlur={() => {
+          setEdit(false)
+          model.setDisplayName(name)
+        }}
       />
     </form>
   ) : (
-    <Typography className={classes.viewName} onClick={() => setEdit(true)}>
-      {name}
-    </Typography>
+    <div
+      className={classnames(classes.emphasis, hover ? classes.hovered : null)}
+    >
+      <Typography
+        className={classes.viewName}
+        onClick={() => setEdit(true)}
+        onMouseOver={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        {name}
+      </Typography>
+    </div>
   )
 }
 TextFieldOrTypography.propTypes = {
-  onChange: ReactPropTypes.func.isRequired,
-  value: ReactPropTypes.string, // eslint-disable-line react/require-default-props
+  model: PropTypes.objectOrObservableObject.isRequired,
 }
 
 function Search(props) {
@@ -279,14 +299,12 @@ function Header({ model, header, setHeader }) {
       {model.hideControls ? null : (
         <Controls header={header} setHeader={setHeader} model={model} />
       )}
-      <div className={classes.emphasis}>
-        <TextFieldOrTypography
-          value={model.displayRegionsFromAssemblyName}
-          onChange={name => {
-            console.log('TODO: update session with new name', name)
-          }}
-        />
-      </div>
+      <TextFieldOrTypography
+        model={model}
+        onChange={name => {
+          console.log('TODO: update session with new name', name)
+        }}
+      />
       <div className={classes.spacer} />
 
       <Search onSubmit={navTo} />
@@ -294,15 +312,19 @@ function Header({ model, header, setHeader }) {
         value="Select refSeq"
         name="refseq"
         onChange={event => {
+          console.log(event.target.value)
           if (event.target.value !== '')
             model.navTo({ refSeq: event.target.value })
         }}
       >
-        {model.displayedRegions.map(r => (
-          <MenuItem key={r.refName} value={r.refName}>
-            {r.refName}
-          </MenuItem>
-        ))}
+        {model.displayedRegions.map(r => {
+          const l = generateLocString(r, !!model.displayRegionsFromAssemblyName)
+          return (
+            <MenuItem key={l} value={l}>
+              {l}
+            </MenuItem>
+          )
+        })}
       </Select>
 
       <ZoomControls model={model} />

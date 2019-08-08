@@ -176,6 +176,20 @@ export function iterMap<T, U>(
   return results
 }
 
+export function generateLocString(
+  r: {
+    refName: string
+    start: number
+    end: number
+  },
+  tied: boolean,
+): string {
+  if (tied) {
+    return r.refName
+  }
+  return `${r.refName}:${r.start}..${r.end}`
+}
+
 /**
  * properly check if the given AbortSignal is aborted.
  * per the standard, if the signal reads as aborted,

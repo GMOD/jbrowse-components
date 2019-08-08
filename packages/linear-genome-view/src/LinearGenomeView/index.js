@@ -56,6 +56,7 @@ export function stateModelFactory(pluginManager) {
       bpPerPx: 1,
       displayedRegions: types.array(Region),
       displayRegionsFromAssemblyName: types.maybe(types.string),
+      displayName: types.maybe(types.string),
       reversed: false,
       // we use an array for the tracks because the tracks are displayed in a specific
       // order that we need to keep.
@@ -122,13 +123,14 @@ export function stateModelFactory(pluginManager) {
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },
-      getIndex(refSeq) {
-        return self.displayedRegions.findIndex(r => r.refName === refSeq)
-      },
     }))
     .actions(self => ({
       setWidth(newWidth) {
         self.width = newWidth
+      },
+
+      setDisplayName(name) {
+        self.displayName = name
       },
 
       horizontallyFlip() {
@@ -241,15 +243,25 @@ export function stateModelFactory(pluginManager) {
       },
 
       navTo({ refSeq, start, end }) {
-        const index = self.getIndex(refSeq)
+        let s = start
+        let e = end
+        const index = self.displayedRegions.findIndex(r => {
+          if (refSeq == r.refName) {
+            if (s === undefined) {
+              s = r.start
+            }
+            if (e === undefined) {
+              e = r.end
+            }
+            if (s >= r.start && e <= r.end) {
+              return true
+            }
+          }
+          return false
+        })
+        console.log('here', index)
         if (index !== -1) {
-          if (start === undefined) {
-            start = self.displayedRegions[index].start // eslint-disable-line
-          }
-          if (end === undefined) {
-            end = self.displayedRegions[index].end //eslint-disable-line
-          }
-          self.moveTo({ index, offset: start }, { index, offset: end })
+          self.moveTo({ index, offset: s }, { index, offset: e })
         }
       },
 
