@@ -40,14 +40,21 @@ ScoreText.propTypes = {
     y: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     height: ReactPropTypes.number.isRequired,
+    data: ReactPropTypes.shape({
+      anchorX: ReactPropTypes.number.isRequired,
+      radiusPx: ReactPropTypes.number.isRequired,
+      score: ReactPropTypes.number.isRequired,
+    }).isRequired,
   }).isRequired,
   config: CommonPropTypes.ConfigSchema.isRequired,
 }
 
 class Lollipop extends Component {
   static propTypes = {
-    feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
-      .isRequired,
+    feature: ReactPropTypes.shape({
+      id: ReactPropTypes.func.isRequired,
+      get: ReactPropTypes.func.isRequired,
+    }).isRequired,
     // horizontallyFlipped: ReactPropTypes.bool,
     // bpPerPx: ReactPropTypes.number.isRequired,
     // region: CommonPropTypes.Region.isRequired,
@@ -55,6 +62,12 @@ class Lollipop extends Component {
     layoutRecord: ReactPropTypes.shape({
       x: ReactPropTypes.number.isRequired,
       y: ReactPropTypes.number.isRequired,
+      anchorLocation: ReactPropTypes.number.isRequired,
+      data: ReactPropTypes.shape({
+        anchorX: ReactPropTypes.number.isRequired,
+        radiusPx: ReactPropTypes.number.isRequired,
+        score: ReactPropTypes.number.isRequired,
+      }),
       width: ReactPropTypes.number.isRequired,
       height: ReactPropTypes.number.isRequired,
     }).isRequired,

@@ -3,14 +3,14 @@ import React from 'react'
 import { PropTypes, observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 
-import { withStyles, IconButton, Icon, Typography } from '@material-ui/core'
+import { makeStyles, IconButton, Icon, Typography } from '@material-ui/core'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import buttonStyles from '../../LinearGenomeView/components/buttonStyles'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   trackName: {
     margin: '0 auto',
     width: '90%',
@@ -25,9 +25,10 @@ const styles = theme => ({
   },
 
   ...buttonStyles(theme),
-})
+}))
 
-function TrackControls({ track, view, classes, onConfigureClick }) {
+function TrackControls({ track, view, onConfigureClick }) {
+  const classes = useStyles()
   let trackName = getConf(track, 'name') || track.id
   const session = getSession(track)
   if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
@@ -84,11 +85,9 @@ TrackControls.propTypes = {
   track: PropTypes.objectOrObservableObject.isRequired,
   view: PropTypes.objectOrObservableObject.isRequired,
   onConfigureClick: ReactPropTypes.func,
-  classes: ReactPropTypes.shape({ trackName: ReactPropTypes.string.isRequired })
-    .isRequired,
 }
 TrackControls.defaultProps = {
   onConfigureClick: undefined,
 }
 
-export default withStyles(styles)(observer(TrackControls))
+export default observer(TrackControls)
