@@ -22,10 +22,6 @@ class Stick extends Component {
       anchorLocation: ReactPropTypes.number.isRequired,
       data: ReactPropTypes.shape({ radiusPx: ReactPropTypes.number.isRequired })
         .isRequired,
-      rootLayout: ReactPropTypes.shape({
-        getSubRecord: ReactPropTypes.func.isRequired,
-        top: ReactPropTypes.number.isRequired,
-      }).isRequired,
     }).isRequired,
 
     selectedFeatureId: ReactPropTypes.string,

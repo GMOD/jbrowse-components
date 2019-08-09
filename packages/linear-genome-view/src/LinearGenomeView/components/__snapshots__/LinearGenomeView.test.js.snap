@@ -104,8 +104,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         class="MuiInputBase-root MuiInput-root MuiInput-underline"
       >
         <div
-          aria-haspopup="true"
-          aria-pressed="false"
+          aria-haspopup="listbox"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
           id="select-refseq"
           role="button"
@@ -133,7 +132,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         </svg>
       </div>
       <div
-        class="ZoomControls-container-143"
+        class="ZoomControls-container-144"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -156,7 +155,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-144"
+          class="MuiSlider-root ZoomControls-slider-145"
         >
           <span
             class="MuiSlider-rail"
@@ -209,12 +208,13 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-165"
+      class="Rubberband-rubberBandContainer-166"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-166"
+        class="ScaleBar-scaleBar-167"
+        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       />
     </div>
     <div
@@ -222,7 +222,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-199"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-200"
         tabindex="0"
         title="close this track"
         type="button"
@@ -242,7 +242,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-200 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-201 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -264,32 +264,32 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <p
-        class="MuiTypography-root TrackControls-trackName-197 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-198 MuiTypography-body1"
       >
         Foo Track
       </p>
       <span
-        class="MuiTypography-root TrackControls-trackDescription-198 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-199 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-207"
+      class="TrackRenderingContainer-trackRenderingContainer-208"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="Track-track-208"
+        class="Track-track-209"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-209"
+          class="TrackBlocks-trackBlocks-210"
           data-testid="Block"
         />
       </div>
     </div>
     <div
-      class="ResizeHandleHorizontal-dragHandle-212"
+      class="TrackResizeHandle-dragHandle-213"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -401,8 +401,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         class="MuiInputBase-root MuiInput-root MuiInput-underline"
       >
         <div
-          aria-haspopup="true"
-          aria-pressed="false"
+          aria-haspopup="listbox"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
           id="select-refseq"
           role="button"
@@ -430,7 +429,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         </svg>
       </div>
       <div
-        class="ZoomControls-container-143"
+        class="ZoomControls-container-144"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -453,7 +452,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-144"
+          class="MuiSlider-root ZoomControls-slider-145"
         >
           <span
             class="MuiSlider-rail"
@@ -506,15 +505,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-165"
+      class="Rubberband-rubberBandContainer-166"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-166"
+        class="ScaleBar-scaleBar-167"
+        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       >
         <div
-          class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
+          class="Block-block-214 Block-leftBorder-215 Block-rightBorder-216"
           style="left: 0px; width: 100px;"
         >
           <svg
@@ -522,7 +522,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             width="100"
           >
             <line
-              class="makeStyles-majorTick-217"
+              class="Ruler-majorTick-218"
               data-bp="-1"
               stroke="#555"
               stroke-width="1"
@@ -532,7 +532,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="makeStyles-minorTick-218"
+              class="Ruler-minorTick-219"
               data-bp="19"
               stroke="#999"
               stroke-width="1"
@@ -542,7 +542,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-218"
+              class="Ruler-minorTick-219"
               data-bp="39"
               stroke="#999"
               stroke-width="1"
@@ -552,7 +552,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-218"
+              class="Ruler-minorTick-219"
               data-bp="59"
               stroke="#999"
               stroke-width="1"
@@ -562,7 +562,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-218"
+              class="Ruler-minorTick-219"
               data-bp="79"
               stroke="#999"
               stroke-width="1"
@@ -572,7 +572,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-majorTick-217"
+              class="Ruler-majorTick-218"
               data-bp="99"
               stroke="#555"
               stroke-width="1"
@@ -582,7 +582,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="makeStyles-minorTick-218"
+              class="Ruler-minorTick-219"
               data-bp="119"
               stroke="#999"
               stroke-width="1"
@@ -592,7 +592,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <text
-              class="makeStyles-majorTickLabel-216"
+              class="Ruler-majorTickLabel-217"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="-4"
@@ -601,7 +601,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               0
             </text>
             <text
-              class="makeStyles-majorTickLabel-216"
+              class="Ruler-majorTickLabel-217"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="96"
@@ -612,7 +612,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </svg>
         </div>
         <div
-          class="ScaleBar-refLabel-167"
+          class="ScaleBar-refLabel-168"
         >
           ctgA
         </div>
@@ -623,7 +623,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-199"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-200"
         tabindex="0"
         title="close this track"
         type="button"
@@ -643,7 +643,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-200 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-201 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -665,34 +665,34 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <p
-        class="MuiTypography-root TrackControls-trackName-197 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-198 MuiTypography-body1"
       >
         Foo Track
       </p>
       <span
-        class="MuiTypography-root TrackControls-trackDescription-198 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-199 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-207"
+      class="TrackRenderingContainer-trackRenderingContainer-208"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="Track-track-208"
+        class="Track-track-209"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-209"
+          class="TrackBlocks-trackBlocks-210"
           data-testid="Block"
         >
           <div
-            class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
+            class="Block-block-214 Block-leftBorder-215 Block-rightBorder-216"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-223"
+              class="Component-blockMessage-224"
             >
               region assembly does not match track assembly
             </div>
@@ -701,7 +701,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="ResizeHandleHorizontal-dragHandle-212"
+      class="TrackResizeHandle-dragHandle-213"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -710,7 +710,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root TrackControls-iconButton-199"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-200"
         tabindex="0"
         title="close this track"
         type="button"
@@ -730,7 +730,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root TrackControls-toggleButton-200 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-201 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -752,34 +752,34 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <p
-        class="MuiTypography-root TrackControls-trackName-197 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-198 MuiTypography-body1"
       >
         Bar Track
       </p>
       <span
-        class="MuiTypography-root TrackControls-trackDescription-198 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-199 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-207"
+      class="TrackRenderingContainer-trackRenderingContainer-208"
       role="presentation"
       style="grid-row: track-bar; grid-column: blocks;"
     >
       <div
-        class="Track-track-208"
+        class="Track-track-209"
         data-testid="track-testConfig2"
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-209"
+          class="TrackBlocks-trackBlocks-210"
           data-testid="Block"
         >
           <div
-            class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
+            class="Block-block-214 Block-leftBorder-215 Block-rightBorder-216"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-223"
+              class="Component-blockMessage-224"
             >
               region assembly does not match track assembly
             </div>
@@ -788,7 +788,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="ResizeHandleHorizontal-dragHandle-212"
+      class="TrackResizeHandle-dragHandle-213"
       role="presentation"
       style="grid-row: resize-bar; grid-column: span 2;"
     />
@@ -900,8 +900,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         class="MuiInputBase-root MuiInput-root MuiInput-underline"
       >
         <div
-          aria-haspopup="true"
-          aria-pressed="false"
+          aria-haspopup="listbox"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
           id="select-refseq"
           role="button"
@@ -929,7 +928,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         </svg>
       </div>
       <div
-        class="ZoomControls-container-143"
+        class="ZoomControls-container-144"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -952,7 +951,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-144"
+          class="MuiSlider-root ZoomControls-slider-145"
         >
           <span
             class="MuiSlider-rail"
@@ -1005,12 +1004,13 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-165"
+      class="Rubberband-rubberBandContainer-166"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-166"
+        class="ScaleBar-scaleBar-167"
+        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       />
     </div>
   </div>
