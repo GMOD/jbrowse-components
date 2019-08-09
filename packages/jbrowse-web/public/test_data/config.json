@@ -54,7 +54,7 @@
         {
           "configId": "QGoUN4vNq",
           "type": "StructuralVariantChordTrack",
-          "name": "chord test",
+          "name": "volvox chord test",
           "adapter": {
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
@@ -849,6 +849,25 @@
         }
       },
       "tracks": [
+        {
+          "configId": "human_chord_test",
+          "type": "StructuralVariantChordTrack",
+          "name": "human chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
         {
           "configId": "XWkHTtv9ui5",
           "type": "AlignmentsTrack",
