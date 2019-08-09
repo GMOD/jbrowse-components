@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup } from 'react-testing-library'
+import { render, cleanup } from '@testing-library/react'
 import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import ConfirmTrack from './ConfirmTrack'

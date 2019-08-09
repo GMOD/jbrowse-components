@@ -1,6 +1,6 @@
 import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
 import React from 'react'
-import { render } from 'react-testing-library'
+import { render } from '@testing-library/react'
 import PileupRendering from './PileupRendering'
 
 // these tests do very little, let's try to expand them at some point

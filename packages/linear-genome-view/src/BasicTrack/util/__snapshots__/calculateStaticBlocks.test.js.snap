@@ -311,38 +311,40 @@ Array [
 `;
 
 exports[`reverse block calculation 1 1`] = `
-Array [
-  Object {
-    "assemblyName": undefined,
-    "end": 10000,
-    "isLeftEndOfDisplayedRegion": true,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:9201-10000",
-    "offsetPx": 0,
-    "parentRegion": Object {
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": undefined,
       "end": 10000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:9201-10000",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
-      "start": 0,
+      "start": 9200,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 9200,
-    "widthPx": 800,
-  },
-  Object {
-    "assemblyName": undefined,
-    "end": 9200,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "ctgA:8401-9200",
-    "offsetPx": 800,
-    "parentRegion": Object {
-      "end": 10000,
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 9200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:8401-9200",
+      "offsetPx": 800,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
       "refName": "ctgA",
-      "start": 0,
+      "start": 8400,
+      "widthPx": 800,
     },
-    "refName": "ctgA",
-    "start": 8400,
-    "widthPx": 800,
-  },
-]
+  ],
+}
 `;
