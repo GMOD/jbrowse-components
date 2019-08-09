@@ -165,8 +165,10 @@ function Rendering(props) {
 Rendering.propTypes = {
   config: CommonPropTypes.ConfigSchema.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
-  region: ReactPropTypes.shape({ end: ReactPropTypes.number.isRequired })
-    .isRequired,
+  region: ReactPropTypes.shape({
+    end: ReactPropTypes.number.isRequired,
+    start: ReactPropTypes.number.isRequired,
+  }).isRequired,
   features: ReactPropTypes.instanceOf(Map).isRequired,
 }
 
