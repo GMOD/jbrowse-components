@@ -16,7 +16,7 @@
             "configId": "Rzzq0j7cBQ",
             "type": "TwoBitAdapter",
             "twoBitLocation": {
-              "uri": "/test_data/volvox.2bit"
+              "uri": "test_data/volvox.2bit"
             }
           },
           "rendering": {
@@ -135,12 +135,12 @@
             "configId": "_m5epcAGu6",
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "/test_data/volvox-long-reads.fastq.sorted.bam"
+              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
             "index": {
               "configId": "-bETsJYDd9",
               "location": {
-                "uri": "/test_data/volvox-long-reads.fastq.sorted.bam.bai"
+                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
           },
@@ -170,12 +170,12 @@
             "configId": "PphRAaR1y4_",
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "/test_data/volvox-sorted.bam"
+              "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
               "configId": "PB2zR_KB-RN",
               "location": {
-                "uri": "/test_data/volvox-sorted.bam.bai"
+                "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
           },
@@ -205,12 +205,12 @@
             "configId": "bzyhJPlur4p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "/test_data/volvox.filtered.vcf.gz"
+              "uri": "test_data/volvox.filtered.vcf.gz"
             },
             "index": {
               "configId": "5c3arnyCBht",
               "location": {
-                "uri": "/test_data/volvox.filtered.vcf.gz.tbi"
+                "uri": "test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
           },
@@ -240,7 +240,7 @@
             "configId": "JxEowEEheuJ",
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "/test_data/volvox.bb"
+              "uri": "test_data/volvox.bb"
             }
           },
           "renderer": {
@@ -323,7 +323,7 @@
           "adapter": {
             "configId": "nm8UCY3U92c",
             "type": "NCListAdapter",
-            "rootUrlTemplate": "/test_data/volvox_genes_nclist/{refseq}/trackData.json"
+            "rootUrlTemplate": "test_data/volvox_genes_nclist/{refseq}/trackData.json"
           },
           "renderer": {
             "configId": "HuIa2_kFIDY",
@@ -345,7 +345,7 @@
             "configId": "DB-sDX31tgH",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "line",
@@ -377,7 +377,7 @@
             "configId": "ex8Em3Ozuno",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "density",
@@ -409,7 +409,7 @@
             "configId": "26uNqVISq5X",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "renderers": {
@@ -440,7 +440,7 @@
             "configId": "M_yb4o2pnJQ",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_negative.bw"
+              "uri": "test_data/volvox_microarray_negative.bw"
             }
           },
           "defaultRendering": "density",
@@ -472,7 +472,7 @@
             "configId": "mvznsyIjAbx",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_negative.bw"
+              "uri": "test_data/volvox_microarray_negative.bw"
             }
           },
           "renderers": {
@@ -503,7 +503,7 @@
             "configId": "deTs4XSQOI6",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_posneg.bw"
+              "uri": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "defaultRendering": "line",
@@ -535,7 +535,7 @@
             "configId": "cRHHbdsiAPC",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox_microarray_posneg.bw"
+              "uri": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "renderers": {
@@ -566,7 +566,7 @@
             "configId": "tti4u-USnnP",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+              "uri": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "defaultRendering": "line",
@@ -597,7 +597,7 @@
             "configId": "LqumLPc7aJg",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "/test_data/volvox-sorted.bam.coverage.bw"
+              "uri": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "renderers": {
