@@ -1,5 +1,395 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<AddTrackDrawerWidget /> adds a track 1`] = `
+<div>
+  <div
+    class="AddTrackDrawerWidget-root-230"
+  >
+    <div
+      class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddTrackDrawerWidget-stepper-231"
+    >
+      <div
+        class="MuiStep-root MuiStep-vertical MuiStep-completed"
+      >
+        <span
+          class="MuiStepLabel-root MuiStepLabel-vertical"
+        >
+          <span
+            class="MuiStepLabel-iconContainer"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-completed"
+              focusable="false"
+              role="presentation"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 0a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm-2 17l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiStepLabel-labelContainer"
+          >
+            <span
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-completed MuiTypography-body2 MuiTypography-displayBlock"
+            >
+              Enter track data
+            </span>
+          </span>
+        </span>
+        <div
+          class="MuiStepContent-root"
+          icon="1"
+        >
+          <div
+            class="MuiCollapse-container MuiStepContent-transition"
+            style="min-height: 0px; height: 0px; transition-duration: 0ms;"
+          >
+            <div
+              class="MuiCollapse-wrapper"
+            >
+              <div
+                class="MuiCollapse-wrapperInner"
+              >
+                <p
+                  class="MuiTypography-root ConfirmTrack-spacing-468 MuiTypography-body1"
+                >
+                  Please enter a track type and track name.
+                </p>
+                <div
+                  class="MuiFormControl-root MuiTextField-root ConfirmTrack-spacing-468 MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                    data-shrink="true"
+                  >
+                    trackName
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiInput-input"
+                      data-testid="trackNameInput"
+                      type="text"
+                      value="Test track name"
+                    />
+                  </div>
+                  <p
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+                  >
+                    A name for this track
+                  </p>
+                </div>
+                <select
+                  data-testid="select"
+                >
+                  <option
+                    value="AlignmentsTrack"
+                  >
+                    AlignmentsTrack
+                  </option>
+                  <option
+                    value="FilteringTrack"
+                  >
+                    FilteringTrack
+                  </option>
+                  <option
+                    value="BasicTrack"
+                  >
+                    BasicTrack
+                  </option>
+                  <option
+                    value="DynamicTrack"
+                  >
+                    DynamicTrack
+                  </option>
+                  <option
+                    value="SequenceTrack"
+                  >
+                    SequenceTrack
+                  </option>
+                  <option
+                    value="ReferenceSequenceTrack"
+                  >
+                    ReferenceSequenceTrack
+                  </option>
+                  <option
+                    value="VariantTrack"
+                  >
+                    VariantTrack
+                  </option>
+                  <option
+                    value="WiggleTrack"
+                  >
+                    WiggleTrack
+                  </option>
+                </select>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    datasetName
+                  </label>
+                  <select
+                    data-testid="select"
+                  >
+                    <option
+                      value="volvox"
+                    >
+                      volvox
+                    </option>
+                  </select>
+                  <p
+                    class="MuiFormHelperText-root"
+                  >
+                    Dataset to which the track will be added
+                  </p>
+                </div>
+                <div
+                  class="AddTrackDrawerWidget-actionsContainer-233"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-232 MuiButton-text"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      Back
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <button
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-232 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
+                    data-testid="addTrackNextButton"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      Add
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiStepConnector-root MuiStepConnector-vertical MuiStepConnector-active"
+      >
+        <span
+          class="MuiStepConnector-line MuiStepConnector-lineVertical"
+        />
+      </div>
+      <div
+        class="MuiStep-root MuiStep-vertical"
+      >
+        <span
+          class="MuiStepLabel-root MuiStepLabel-vertical"
+        >
+          <span
+            class="MuiStepLabel-iconContainer"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiStepIcon-root MuiStepIcon-active"
+              focusable="false"
+              role="presentation"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="12"
+              />
+              <text
+                class="MuiStepIcon-text"
+                text-anchor="middle"
+                x="12"
+                y="16"
+              >
+                2
+              </text>
+            </svg>
+          </span>
+          <span
+            class="MuiStepLabel-labelContainer"
+          >
+            <span
+              class="MuiTypography-root MuiStepLabel-label MuiStepLabel-active MuiTypography-body2 MuiTypography-displayBlock"
+            >
+              Confirm track type
+            </span>
+          </span>
+        </span>
+        <div
+          class="MuiStepContent-root MuiStepContent-last"
+          icon="2"
+        >
+          <div
+            class="MuiCollapse-container MuiStepContent-transition"
+            style="min-height: 0px; height: 0px; transition-duration: 0ms;"
+          >
+            <div
+              class="MuiCollapse-wrapper"
+            >
+              <div
+                class="MuiCollapse-wrapperInner"
+              >
+                <p
+                  class="MuiTypography-root ConfirmTrack-spacing-468 MuiTypography-body1"
+                >
+                  Please enter a track type and track name.
+                </p>
+                <div
+                  class="MuiFormControl-root MuiTextField-root ConfirmTrack-spacing-468 MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                    data-shrink="true"
+                  >
+                    trackName
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiInput-input"
+                      data-testid="trackNameInput"
+                      type="text"
+                      value="Test track name"
+                    />
+                  </div>
+                  <p
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+                  >
+                    A name for this track
+                  </p>
+                </div>
+                <select
+                  data-testid="select"
+                >
+                  <option
+                    value="AlignmentsTrack"
+                  >
+                    AlignmentsTrack
+                  </option>
+                  <option
+                    value="FilteringTrack"
+                  >
+                    FilteringTrack
+                  </option>
+                  <option
+                    value="BasicTrack"
+                  >
+                    BasicTrack
+                  </option>
+                  <option
+                    value="DynamicTrack"
+                  >
+                    DynamicTrack
+                  </option>
+                  <option
+                    value="SequenceTrack"
+                  >
+                    SequenceTrack
+                  </option>
+                  <option
+                    value="ReferenceSequenceTrack"
+                  >
+                    ReferenceSequenceTrack
+                  </option>
+                  <option
+                    value="VariantTrack"
+                  >
+                    VariantTrack
+                  </option>
+                  <option
+                    value="WiggleTrack"
+                  >
+                    WiggleTrack
+                  </option>
+                </select>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
+                    data-shrink="false"
+                  >
+                    datasetName
+                  </label>
+                  <select
+                    data-testid="select"
+                  >
+                    <option
+                      value="volvox"
+                    >
+                      volvox
+                    </option>
+                  </select>
+                  <p
+                    class="MuiFormHelperText-root"
+                  >
+                    Dataset to which the track will be added
+                  </p>
+                </div>
+                <div
+                  class="AddTrackDrawerWidget-actionsContainer-233"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-232 MuiButton-text"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      Back
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <button
+                    class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-232 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
+                    data-testid="addTrackNextButton"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      Add
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`<AddTrackDrawerWidget /> renders 1`] = `
 <div
   class="AddTrackDrawerWidget-root-1"

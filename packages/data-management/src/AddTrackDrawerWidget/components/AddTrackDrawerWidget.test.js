@@ -8,6 +8,18 @@ import {
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddTrackDrawerWidget from './AddTrackDrawerWidget'
 
+jest.mock('@material-ui/core/Select', () => ({ children, onChange }) => {
+  return (
+    <select data-testid="select" onChange={onChange}>
+      {children}
+    </select>
+  )
+})
+
+jest.mock('@material-ui/core/MenuItem', () => ({ value, children }) => {
+  return <option value={value}>{children}</option>
+})
+
 describe('<AddTrackDrawerWidget />', () => {
   let session
   let model
@@ -107,6 +119,7 @@ describe('<AddTrackDrawerWidget />', () => {
   it('adds a track', async () => {
     const {
       container,
+      debug,
       getByTestId,
       getAllByTestId,
       getByText,
@@ -115,16 +128,25 @@ describe('<AddTrackDrawerWidget />', () => {
     expect(session.datasets[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
+    console.log(getAllByTestId('trackNameInput'))
     fireEvent.change(getAllByTestId('trackNameInput')[1], {
       target: { value: 'Test track name' },
     })
-    fireEvent.click(getAllByRole('button')[0])
-    await waitForElement(() => getByText('BasicTrack'), { container })
-    fireEvent.click(getByText('BasicTrack'))
-    fireEvent.click(getAllByRole('button')[1])
-    await waitForElement(() => getByText('volvox'), { container })
-    fireEvent.click(getByText('volvox'))
-    fireEvent.click(getAllByTestId('addTrackNextButton')[1])
+    // fireEvent.click(getAllByRole('button')[0])
+    expect(container).toMatchSnapshot()
+    const e = await waitForElement(() => getAllByTestId('select'))
+    fireEvent.change(e[2], {
+      target: { value: 'AlignmentsTrack' },
+    })
+    fireEvent.change(e[3], {
+      target: { value: 'volvox' },
+    })
+    expect(session.datasets[0].tracks.length).toBe(1)
+
+    console.log(getAllByTestId('addTrackNextButton').length)
+
+    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
+
     expect(session.datasets[0].tracks.length).toBe(2)
   })
 })

@@ -1,8 +1,6 @@
-import { withStyles } from '@material-ui/core'
-import Link from '@material-ui/core/Link'
+import { withStyles, TextField, Typography, Link } from '@material-ui/core'
+import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
@@ -104,15 +102,16 @@ function ConfirmTrack(props) {
           onChange={event => setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
-        <TextField
+        <Select
           className={classes.spacing}
           value={trackType}
           label="trackType"
           helperText="A track type"
-          select
           fullWidth
-          onChange={event => setTrackType(event.target.value)}
-          inputProps={{ 'data-testid': 'trackTypeSelect' }}
+          onChange={event => {
+            setTrackType(event.target.value)
+          }}
+          SelectProps={{ 'data-testid': 'trackTypeSelect' }}
         >
           {session.pluginManager
             .getElementTypesInGroup('track')
@@ -124,7 +123,7 @@ function ConfirmTrack(props) {
                 {installedTrackType.name}
               </MenuItem>
             ))}
-        </TextField>
+        </Select>
         <TextField
           value={datasetName}
           label="datasetName"

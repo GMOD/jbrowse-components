@@ -109,6 +109,7 @@ function AddTrackDrawerWidget(props) {
         return true
     }
   }
+  console.log(steps)
 
   return (
     <div className={classes.root}>
