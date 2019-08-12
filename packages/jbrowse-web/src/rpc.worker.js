@@ -6,7 +6,7 @@ import { useStaticRendering } from 'mobx-react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
-import * as renderFuncs from '@gmod/jbrowse-core/rpcMethods'
+import * as rpcMethods from '@gmod/jbrowse-core/rpc/rpcMethods'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
@@ -64,8 +64,8 @@ function wrapForRpc(func) {
 
 const rpcConfig = {}
 
-Object.keys(renderFuncs).forEach(key => {
-  rpcConfig[key] = wrapForRpc(renderFuncs[key])
+Object.keys(rpcMethods).forEach(key => {
+  rpcConfig[key] = wrapForRpc(rpcMethods[key])
 })
 
 // eslint-disable-next-line no-restricted-globals
