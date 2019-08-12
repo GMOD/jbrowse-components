@@ -76,5 +76,9 @@ export default types.compose(
       deleteBlock(key) {
         self.blockState.delete(key)
       },
-    })),
+    }))
+    .postProcessSnapshot(self => {
+      const { blockState, ...rest } = self
+      return rest
+    }),
 )
