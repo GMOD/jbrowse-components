@@ -128,8 +128,6 @@ export default class extends BaseAdapter {
    * @param regions list of query regions
    */
   private async bytesForRegions(regions: IRegion[]): Promise<number> {
-    // are the list of regions covering more than half of the file?
-    // if so just parse the whole file
     const blockResults = await Promise.all(
       regions.map(region =>
         this.vcf.index.blocksForRange(region.refName, region.start, region.end),
@@ -166,17 +164,6 @@ export default class extends BaseAdapter {
       })
     })
 
-    // const seen = {}
-    // blockResults.flat().forEach(block => {
-    //   seen[block.minv.blockPosition] = 1
-    //   seen[block.maxv.blockPosition] = 1
-    // })
-    // console.log(
-    //   Object.keys(seen)
-    //     .map(k => parseInt(k, 10))
-    //     .sort(),
-    // )
-    // debugger
     return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
   }
 

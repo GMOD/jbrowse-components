@@ -9,7 +9,7 @@ export default ({ jbrequire }) => {
    * on the model for each stage of execution, and to abort the reaction function when the
    * model is destroyed.
    *
-   * Will call flowNameStarted(signal), lowNameSuccess(result), and
+   * Will call flowNameStarted(signal), flowNameSuccess(result), and
    * flowNameError(error) actions on the given state tree model when the
    * async reaction function starts, completes, and errors respectively.
    *
