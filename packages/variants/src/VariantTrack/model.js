@@ -2,7 +2,6 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {
@@ -113,18 +112,6 @@ export default configSchema =>
         },
         get ControlsComponent() {
           return TrackControls
-        },
-        /**
-         * a CompositeMap of featureId -> feature obj that
-         * just looks in all the block data for that feature
-         */
-        get features() {
-          const featureMaps = []
-          for (const block of self.blockState.values()) {
-            if (block.data && block.data.features)
-              featureMaps.push(block.data.features)
-          }
-          return new CompositeMap(featureMaps)
         },
       })),
   )
