@@ -18,6 +18,7 @@ import Protein from '@gmod/jbrowse-plugin-protein'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
+import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
@@ -39,6 +40,7 @@ export class Viewer {
     this.model = types
       .model({
         view: LinearGenomeViewType.stateModel,
+        assembly: types.frozen(),
         configuration: ConfigurationSchema('ProteinViewer', {
           rpc: RpcManager.configSchema,
           sequenceTrack: BasicTrackType.configSchema,
@@ -57,13 +59,16 @@ export class Viewer {
           width: widgetWidth,
           bpPerPx: 1 / 20,
         },
+        assembly: {
+          name: 'protein',
+        },
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           sequenceTrack: {
             name: 'Sequence',
             description:
               'Amino acid sequence, and the underlying DNA sequence if available',
-            renderer: { type: 'ProteinReferenceSequenceRenderer' },
+            renderer: { type: 'ProteinReferenceSequenceTrackRenderer' },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },
           domainsTrack: {
@@ -93,9 +98,10 @@ function(feature) {
         },
       })
 
-    this.rpcManager = new RpcManager(
+    this.model.rpcManager = new RpcManager(
       this.pluginManager,
       this.model.configuration.rpc,
+      { MainThreadRpcDriver: { rpcFuncs } },
     )
 
     this.update(initialState)
@@ -140,7 +146,7 @@ function(feature) {
         start: 0,
         end: dnaSequence.length / 3, // we are doing things in aa seq coordinates
         seq: dnaSequence,
-        seq_id: name,
+        refName: name,
         type: 'dna',
       })
     if (aaSequence) {
@@ -149,7 +155,7 @@ function(feature) {
         start: 0,
         end: aaSequence.length,
         seq: aaSequence,
-        seq_id: name,
+        refName: name,
         type: 'protein',
       })
     } else if (dnaSequence) {
