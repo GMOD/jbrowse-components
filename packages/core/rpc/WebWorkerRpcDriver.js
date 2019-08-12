@@ -10,7 +10,7 @@ function isClonable(thing) {
   return true
 }
 
-const WORKER_MAX_PING_TIME = 30000 * 1000 // 30 secs
+const WORKER_MAX_PING_TIME = 30 * 1000 // 30 secs
 
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
