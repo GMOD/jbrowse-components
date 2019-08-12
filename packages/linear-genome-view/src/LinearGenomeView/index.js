@@ -213,6 +213,10 @@ export function stateModelFactory(pluginManager) {
         self.tracks.push(track)
       },
 
+      toggleHeader() {
+        self.hideHeader = !self.hideHeader
+      },
+
       hideTrack(configuration) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(

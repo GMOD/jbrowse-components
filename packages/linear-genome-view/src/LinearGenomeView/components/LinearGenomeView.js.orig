@@ -30,6 +30,7 @@ const dragHandleHeight = 3
 const useStyles = makeStyles(theme => ({
   root: {
     position: 'relative',
+    marginBottom: theme.spacing(1),
     overflow: 'hidden',
   },
   linearGenomeView: {
@@ -153,6 +154,11 @@ TrackContainer.propTypes = {
 const LongMenu = observer(props => {
   const { model, className } = props
 
+<<<<<<< HEAD
+=======
+const LongMenu = observer(props => {
+  const { className } = props
+>>>>>>> Make LGV subcomponents observables
   const [anchorEl, setAnchorEl] = React.useState(null)
   const open = Boolean(anchorEl)
 
@@ -348,7 +354,35 @@ const Controls = observer(({ model }) => {
       >
         <Icon fontSize="small">close</Icon>
       </IconButton>
+<<<<<<< HEAD
       <LongMenu className={classes.iconButton} model={model} />
+=======
+      <LongMenu
+        className={classes.iconButton}
+        options={[
+          {
+            title: 'Show track selector',
+            key: 'track_selector',
+            callback: model.activateTrackSelector,
+          },
+          {
+            title: 'Horizontal flip',
+            key: 'flip',
+            callback: model.horizontallyFlip,
+          },
+          {
+            title: 'Show all regions',
+            key: 'showall',
+            callback: model.showAllRegions,
+          },
+          {
+            title: !model.hideHeader ? 'Hide header' : 'Show header',
+            key: 'hide_header',
+            callback: model.toggleHeader,
+          },
+        ]}
+      />
+>>>>>>> Make LGV subcomponents observables
     </>
   )
 })
@@ -366,6 +400,7 @@ function LinearGenomeView(props) {
    * NOTE: offsetPx is the total offset in px of the viewing window into the
    * whole set of concatenated regions. this number is often quite large.
    */
+  console.log(model.hideHeader)
   const style = {
     display: 'grid',
     position: 'relative',

@@ -1,0 +1,28 @@
+{
+  "name": "@gmod/jbrowse-plugin-alignment-view",
+  "version": "2.0.0",
+  "description": "JBrowse 2 alignment view",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/alignment-view"
+  },
+  "author": "Colin Diesh",
+  "license": "MIT",
+  "dependencies": {
+    "@material-ui/icons": "^4.2.1",
+    "classnames": "^2.2.6"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
+    "@material-ui/core": "^4.0.0",
+    "@material-ui/lab": "^4.0.0-alpha.20",
+    "@material-ui/styles": "^4.0.0",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.10.2",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
+  }
+}
