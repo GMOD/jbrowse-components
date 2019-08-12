@@ -5,8 +5,8 @@ import { useStaticRendering } from 'mobx-react'
 
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import * as renderFuncs from '@gmod/jbrowse-core/rpc/rpcMethods'
 import { isAbortException } from '@gmod/jbrowse-core/util'
+import * as renderFuncs from '@gmod/jbrowse-core/rpcMethods'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
@@ -53,10 +53,10 @@ function wrapForRpc(func) {
       })
 
     // uncomment below to log returns
-    retP.then(
-      result => logBuffer.push(['rpc-return', myId, func.name, result]),
-      err => {},
-    )
+    // retP.then(
+    //   result => logBuffer.push(['rpc-return', myId, func.name, result]),
+    //   err => {},
+    // )
 
     return retP
   }
