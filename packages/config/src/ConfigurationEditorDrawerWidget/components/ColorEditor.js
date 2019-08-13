@@ -15,7 +15,7 @@ function serializeColor(color) {
 }
 
 export const ColorPicker = props => {
-  const { value, TextFieldProps, onChange } = props
+  const { value, label, TextFieldProps, onChange } = props
   const [color, setColor] = useState(value)
   const [displayed, setDisplayed] = useState(false)
 
@@ -27,6 +27,7 @@ export const ColorPicker = props => {
     <>
       <TextField
         value={c}
+        label={label}
         InputProps={{
           style: {
             color: c,
@@ -54,6 +55,7 @@ export const ColorPicker = props => {
 }
 ColorPicker.propTypes = {
   onChange: ReactPropTypes.func.isRequired,
+  label: ReactPropTypes.string.isRequired,
   TextFieldProps: ReactPropTypes.shape({}),
   value: ReactPropTypes.string,
 }
