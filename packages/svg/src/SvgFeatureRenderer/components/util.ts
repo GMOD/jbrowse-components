@@ -4,10 +4,13 @@ import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Box from './Box'
 import Chevron from './Chevron'
+import Segments from './Segments'
 
 export function chooseGlyphComponent(
   feature: Feature,
 ): React.FunctionComponent {
+  const subfeatures = feature.get('subfeatures')
+  if (subfeatures) return Segments
   const strand = feature.get('strand')
   if ([1, -1, '+', '-'].includes(strand)) return Chevron
   return Box
