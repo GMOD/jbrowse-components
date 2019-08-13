@@ -25,11 +25,12 @@ function Chevron(props) {
   } catch (error) {
     emphasizedColor1 = color1
   }
+  const color2 = readConfObject(config, 'color2', [feature])
 
   return width > height / 2 ? (
     <polygon
       {...shapeProps}
-      stroke={selected ? 'black' : undefined}
+      stroke={selected ? color2 : undefined}
       fill={selected ? emphasizedColor1 : color1}
       points={[
         [left, top],

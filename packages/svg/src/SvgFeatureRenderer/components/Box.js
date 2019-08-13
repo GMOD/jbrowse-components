@@ -15,6 +15,7 @@ function Box(props) {
   } catch (error) {
     emphasizedColor1 = color1
   }
+  const color2 = readConfObject(config, 'color2', [feature])
 
   return (
     <rect
@@ -25,7 +26,7 @@ function Box(props) {
       width={Math.max(featureLayout.width, 1)}
       height={featureLayout.height}
       fill={selected ? emphasizedColor1 : color1}
-      stroke={selected ? 'black' : undefined}
+      stroke={selected ? color2 : undefined}
     />
   )
 }
