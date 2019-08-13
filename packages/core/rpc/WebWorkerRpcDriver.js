@@ -110,7 +110,7 @@ export default class WebWorkerRpcDriver {
       }
 
       if (isStateTreeNode(thing) && !isAlive(thing))
-        throw new Error('dead state tree node')
+        throw new Error('dead state tree node passed to RPC call')
       const newobj = objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))

@@ -91,7 +91,7 @@ class RpcManager {
   }
 
   async call(stateGroupName, functionName, ...args) {
-    const { assemblyName, signal, region, regions, adapterConfig } = args[0]
+    const { assemblyName, signal, regions, adapterConfig } = args[0]
 
     // TODO: this renaming stuff should probably be moved to the session model
     // when we have a session model

@@ -28,9 +28,6 @@ export default class ServerSideRenderer extends RendererType {
         ...args.renderProps,
         trackModel: {
           selectedFeatureId: trackModel.selectedFeatureId,
-          // refNameMap:
-          //   trackModel.refNameMap &&
-          //   objectFromEntries(trackModel.refNameMap.entries()),
         },
       }
     }

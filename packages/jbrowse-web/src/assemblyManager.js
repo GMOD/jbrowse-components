@@ -100,6 +100,10 @@ export default self => ({
       })
     },
 
+    /**
+     * gets the list of reference sequence names from the adapter in question, and
+     * uses those to build a Map of adapter_ref_name -> canonical_ref_name
+     */
     addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       return self.getRefNameAliases(assemblyName, opts).then(refNameAliases => {
         const adapterConfigId = readConfObject(adapterConf, 'configId')
