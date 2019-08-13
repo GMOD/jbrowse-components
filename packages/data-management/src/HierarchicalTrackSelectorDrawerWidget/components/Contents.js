@@ -85,9 +85,16 @@ function Contents(props) {
   const thisAssemblyData = assemblyData && assemblyData.get(assemblyName)
   const doneLoading =
     categories.length + trackConfigurations.length === hierarchy.size
+
+  const showRefSeqTrack =
+    top &&
+    thisAssemblyData &&
+    !connection &&
+    model.view.type === thisAssemblyData.sequence.viewType
+
   return (
     <>
-      {top && thisAssemblyData && !connection ? (
+      {showRefSeqTrack ? (
         <>
           <FormGroup>
             <TrackEntry
