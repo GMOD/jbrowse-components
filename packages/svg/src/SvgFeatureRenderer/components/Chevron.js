@@ -8,8 +8,8 @@ import React from 'react'
 function Chevron(props) {
   const { feature, config, featureLayout, selected } = props
 
-  const width = Math.max(featureLayout.width, 1)
-  const { top, left, height } = featureLayout
+  const width = Math.max(featureLayout.absolute.width, 1)
+  const { left, top, height } = featureLayout.absolute
 
   const shapeProps = {
     title: feature.id(),

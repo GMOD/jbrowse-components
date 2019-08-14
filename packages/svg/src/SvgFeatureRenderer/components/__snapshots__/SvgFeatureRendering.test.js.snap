@@ -16,9 +16,7 @@ exports[`one feature 1`] = `
   style="position: relative;"
   width="333.3333333333333px"
 >
-  <g
-    transform="translate(0.3 0)"
-  >
+  <g>
     <title>
       one
     </title>
@@ -28,13 +26,13 @@ exports[`one feature 1`] = `
       height="10"
       title="one"
       width="1"
-      x="0"
+      x="0.3"
       y="0"
     />
     <text
       dominant-baseline="hanging"
       style="font-size: 13px; fill: black;"
-      x="0"
+      x="0.3"
       y="12"
     >
       one

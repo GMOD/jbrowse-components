@@ -1,5 +1,7 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -62,16 +64,23 @@ function SvgFeatureRendering(props) {
   }
 
   function createFeatureGlyphComponent(feature) {
-    const GlyphComponent = chooseGlyphComponent(feature)
-    const featureHeight = readConfObject(config, 'height', [feature])
-    const rootLayout = (GlyphComponent.layOut || layOut)({
+    const [startPx] = featureSpanPx(
       feature,
-      horizontallyFlipped,
-      bpPerPx,
       region,
-      featureHeight,
+      bpPerPx,
+      horizontallyFlipped,
+    )
+    const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
+    const GlyphComponent = chooseGlyphComponent(feature)
+    const featureLayout = (GlyphComponent.layOut || layOut)({
+      layout: rootLayout,
+      feature,
+      region,
+      bpPerPx,
+      horizontallyFlipped,
+      config,
     })
-    const featureLayout = rootLayout.getSubRecord('feature')
+
     const fontHeight = readConfObject(
       config,
       ['labels', 'fontSize'],
@@ -86,12 +95,12 @@ function SvgFeatureRendering(props) {
     let nameWidth = 0
     if (shouldShowName) {
       nameWidth = Math.round(
-        Math.min(name.length * fontWidth, featureLayout.width + exp),
+        Math.min(name.length * fontWidth, rootLayout.width + exp),
       )
       rootLayout.addChild(
         'nameLabel',
         0,
-        rootLayout.getSubRecord('feature').bottom + textVerticalPadding,
+        featureLayout.bottom + textVerticalPadding,
         nameWidth,
         fontHeight,
       )
@@ -103,7 +112,7 @@ function SvgFeatureRendering(props) {
     let descriptionWidth = 0
     if (shouldShowDescription) {
       descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, featureLayout.width + exp),
+        Math.min(description.length * fontWidth, rootLayout.width + exp),
       )
       rootLayout.addChild(
         'descriptionLabel',
@@ -123,7 +132,7 @@ function SvgFeatureRendering(props) {
       rootLayout.height,
     )
 
-    rootLayout.move(0, topPx)
+    rootLayout.move(startPx, topPx)
 
     return (
       <FeatureGlyph
@@ -131,8 +140,6 @@ function SvgFeatureRendering(props) {
         feature={feature}
         layout={layout}
         rootLayout={rootLayout}
-        featureLayout={featureLayout}
-        GlyphComponent={GlyphComponent}
         bpPerPx={bpPerPx}
         selected={String(selectedFeatureId) === String(feature.id())}
         config={config}

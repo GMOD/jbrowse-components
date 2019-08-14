@@ -17,14 +17,16 @@ function Box(props) {
   }
   const color2 = readConfObject(config, 'color2', [feature])
 
+  const { left, top, width, height } = featureLayout.absolute
+
   return (
     <rect
       title={feature.id()}
       data-testid={feature.id()}
-      x={featureLayout.left}
-      y={featureLayout.top}
-      width={Math.max(featureLayout.width, 1)}
-      height={featureLayout.height}
+      x={left}
+      y={top}
+      width={Math.max(width, 1)}
+      height={height}
       fill={selected ? emphasizedColor1 : color1}
       stroke={selected ? color2 : undefined}
     />

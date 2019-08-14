@@ -9,8 +9,6 @@ function FeatureGlyph(props) {
   const {
     feature,
     rootLayout,
-    featureLayout,
-    GlyphComponent,
     selected,
     config,
     name,
@@ -70,6 +68,9 @@ function FeatureGlyph(props) {
     return handler(event, feature.id())
   }
 
+  const featureLayout = rootLayout.getSubRecord(String(feature.id()))
+  const { GlyphComponent } = featureLayout.data
+
   const glyphComponents = [
     <title key={`glyph-title-${feature.id()}`}>{feature.id()}</title>,
     <GlyphComponent
@@ -86,8 +87,8 @@ function FeatureGlyph(props) {
       <FeatureLabel
         key={`glyph-name-${feature.id()}`}
         text={name}
-        x={rootLayout.getSubRecord('nameLabel').left}
-        y={rootLayout.getSubRecord('nameLabel').top}
+        x={rootLayout.getSubRecord('nameLabel').absolute.left}
+        y={rootLayout.getSubRecord('nameLabel').absolute.top}
         color={readConfObject(config, ['labels', 'nameColor'], [feature])}
         fontHeight={fontHeight}
         featureWidth={featureLayout.width}
@@ -101,8 +102,8 @@ function FeatureGlyph(props) {
       <FeatureLabel
         key={`glyph-description-${feature.id()}`}
         text={description}
-        x={rootLayout.getSubRecord('descriptionLabel').left}
-        y={rootLayout.getSubRecord('descriptionLabel').top}
+        x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
+        y={rootLayout.getSubRecord('descriptionLabel').absolute.top}
         color={readConfObject(
           config,
           ['labels', 'descriptionColor'],
@@ -117,7 +118,6 @@ function FeatureGlyph(props) {
 
   return (
     <g
-      transform={`translate(${rootLayout.left} ${rootLayout.top})`}
       onMouseDown={onFeatureMouseDown}
       onMouseEnter={onFeatureMouseEnter}
       onMouseOut={onFeatureMouseOut}
@@ -144,11 +144,6 @@ FeatureGlyph.propTypes = {
     addChild: PropTypes.func.isRequired,
     getSubRecord: PropTypes.func.isRequired,
   }).isRequired,
-  featureLayout: PropTypes.shape({
-    addChild: PropTypes.func.isRequired,
-    getSubRecord: PropTypes.func.isRequired,
-  }).isRequired,
-  GlyphComponent: PropTypes.elementType.isRequired,
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: PropTypes.number.isRequired,
   horizontallyFlipped: PropTypes.bool,
