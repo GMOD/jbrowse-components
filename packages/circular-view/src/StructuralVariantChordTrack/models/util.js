@@ -2,7 +2,9 @@ export default ({ jbrequire }) => {
   const { reaction } = jbrequire('mobx')
 
   const { addDisposer, isAlive } = jbrequire('mobx-state-tree')
-  const { isAbortException } = jbrequire('@gmod/jbrowse-core/util')
+  const { isAbortException, checkAbortSignal } = jbrequire(
+    '@gmod/jbrowse-core/util',
+  )
 
   /**
    * makes a mobx reaction with the given functions, that calls actions
@@ -27,24 +29,40 @@ export default ({ jbrequire }) => {
     reactionOptions,
   ) {
     let inProgress
+
+    function handleError(error) {
+      if (!isAbortException(error)) {
+        if (isAlive(self)) self[`${flowName}Error`](error)
+        else console.error(error)
+      }
+    }
+
     const reactionDisposer = reaction(
-      dataFunction,
+      () => {
+        try {
+          return dataFunction(self, flowName)
+        } catch (error) {
+          handleError(error)
+          return {}
+        }
+      },
       data => {
         if (inProgress && !inProgress.signal.aborted) inProgress.abort()
         if (!isAlive(self)) return
         inProgress = new AbortController()
-        self[`${flowName}Started`](inProgress)
+
+        const thisInProgress = inProgress
+        self[`${flowName}Started`](thisInProgress)
         Promise.resolve()
-          .then(() => asyncReactionFunction(data, inProgress.signal))
+          .then(() => asyncReactionFunction(data, thisInProgress.signal, self))
           .then(result => {
+            checkAbortSignal(thisInProgress.signal)
             if (isAlive(self)) self[`${flowName}Success`](result)
           })
           .catch(error => {
-            if (inProgress && !inProgress.signal.aborted) inProgress.abort()
-            if (!isAbortException(error)) {
-              if (isAlive(self)) self[`${flowName}Error`](error)
-              else console.error(error)
-            }
+            if (thisInProgress && !thisInProgress.signal.aborted)
+              thisInProgress.abort()
+            handleError(error)
           })
       },
       reactionOptions,

@@ -30,6 +30,8 @@ export default pluginManager => {
     { baseConfiguration: ChordTrackConfigSchema, explicitlyTyped: true },
   )
 
+  const { makeAbortableReaction } = jbrequire(require('./util'))
+
   const stateModel = types
     .compose(
       'StructuralVariantChordTrack',
@@ -75,57 +77,45 @@ export default pluginManager => {
     }))
     .actions(self => ({
       afterAttach() {
-        const renderDisposer = reaction(
-          () => renderReactionData(self),
-          data => {
-            renderReactionEffect(self, data)
-          },
+        makeAbortableReaction(
+          self,
+          'render',
+          renderReactionData,
+          renderReactionEffect,
           {
             name: `${self.type} ${self.id} rendering`,
             // delay: self.renderDelay || 300,
-            fireImmediately: true,
+            // fireImmediately: true,
           },
         )
-        addDisposer(self, renderDisposer)
       },
-
-      setLoading(abortController) {
-        if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
-          self.renderInProgress.abort()
-        }
+      renderStarted() {
         self.filled = false
         self.message = undefined
         self.html = ''
         self.data = undefined
         self.error = undefined
         self.renderingComponent = undefined
-        self.renderInProgress = abortController
       },
-      setMessage(messageText) {
-        if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
-          self.renderInProgress.abort()
+      renderSuccess({ message, data, html, renderingComponent }) {
+        if (message) {
+          self.filled = false
+          self.message = message
+          self.html = ''
+          self.data = undefined
+          self.error = undefined
+          self.renderingComponent = undefined
+        } else {
+          self.filled = true
+          self.message = undefined
+          self.html = html
+          self.data = data
+          self.error = undefined
+          self.renderingComponent = renderingComponent
         }
-        self.filled = false
-        self.message = messageText
-        self.html = ''
-        self.data = undefined
-        self.error = undefined
-        self.renderingComponent = undefined
-        self.renderInProgress = undefined
       },
-      setRendered(data, html, renderingComponent) {
-        self.filled = true
-        self.message = undefined
-        self.html = html
-        self.data = data
-        self.error = undefined
-        self.renderingComponent = renderingComponent
-        self.renderInProgress = undefined
-      },
-      setError(error) {
-        if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
-          self.renderInProgress.abort()
-        }
+      renderError(error) {
+        console.error(error)
         // the rendering failed for some reason
         self.filled = false
         self.message = undefined
@@ -133,12 +123,6 @@ export default pluginManager => {
         self.data = undefined
         self.error = error
         self.renderingComponent = undefined
-        self.renderInProgress = undefined
-      },
-      beforeDestroy() {
-        if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
-          self.renderInProgress.abort()
-        }
       },
     }))
 

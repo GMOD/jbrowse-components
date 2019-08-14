@@ -1,8 +1,4 @@
 export default ({ jbrequire }) => {
-  const { isAlive, getParent } = jbrequire('mobx-state-tree')
-  const { checkAbortSignal, isAbortException } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { getContainingView, getTrackAssemblyName } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
@@ -35,60 +31,40 @@ export default ({ jbrequire }) => {
     return data
   }
 
-  async function renderReactionEffect(self, props, allowRefetch = true) {
+  async function renderReactionEffect(
+    props,
+    signal,
+    self,
+    allowRefetch = true,
+  ) {
     if (!props) {
-      return
+      throw new Error('cannot render with no props')
     }
 
     const {
       rendererType,
-      renderProps,
+      // renderProps,
       rpcManager,
       cannotBeRenderedReason,
       renderArgs,
     } = props
-    if (!isAlive(self)) return
 
     if (cannotBeRenderedReason) {
-      self.setMessage(cannotBeRenderedReason)
-      return
+      return { message: cannotBeRenderedReason }
     }
 
-    const aborter = new AbortController()
-    self.setLoading(aborter)
-    if (renderProps.notReady) return
-
-    try {
-      renderArgs.signal = aborter.signal
-
-      // check renderertype compatibility
-      if (!self.isCompatibleWithRenderer(rendererType))
-        throw new Error(
-          `renderer ${rendererType.name} is not compatible with this track type`,
-        )
-
-      const { html, ...data } = await rendererType.renderInClient(
-        rpcManager,
-        renderArgs,
+    // check renderertype compatibility
+    if (!self.isCompatibleWithRenderer(rendererType))
+      throw new Error(
+        `renderer ${rendererType.name} is not compatible with this track type`,
       )
-      checkAbortSignal(aborter.signal)
-      self.setRendered(data, html, rendererType.ReactComponent)
-    } catch (error) {
-      if (!isAbortException(error)) console.error(error)
-      if (isAbortException(error) && !aborter.signal.aborted) {
-        // there is a bug in the underlying code and something is caching aborts. try to refetch once
-        const track = getParent(self, 2)
-        if (allowRefetch) {
-          console.warn(`cached abort detected, refetching "${track.name}"`)
-          renderReactionEffect(self, props, false)
-          return
-        }
-        console.warn(`cached abort detected, failed to recover "${track.name}"`)
-      }
-      if (isAlive(self) && !isAbortException(error)) {
-        self.setError(error)
-      }
-    }
+
+    const { html, ...data } = await rendererType.renderInClient(rpcManager, {
+      ...renderArgs,
+      signal,
+    })
+
+    return { html, data, renderingComponent: rendererType.ReactComponent }
   }
 
   return { renderReactionData, renderReactionEffect }

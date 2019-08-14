@@ -1,11 +1,10 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types } = jbrequire('mobx-state-tree')
+  const { types, getRoot } = jbrequire('mobx-state-tree')
 
   const { makeAbortableReaction } = jbrequire(require('./util'))
 
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getTrackAssemblyName } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -20,11 +19,10 @@ export default pluginManager => {
           self,
           'loadAssemblyRefNameMap',
           () => ({
-            session: getSession(self),
             assemblyName: getTrackAssemblyName(self),
           }),
-          ({ session, assemblyName }, signal) => {
-            return session.rpcManager.getRefNameMapForAdapter(
+          ({ assemblyName }, signal) => {
+            return getRoot(self).jbrowse.getRefNameMapForAdapter(
               getConf(self, 'adapter'),
               assemblyName,
               { signal },
