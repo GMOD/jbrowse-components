@@ -11,7 +11,7 @@ export default ({ jbrequire }) => {
       strokeColor: {
         type: 'color',
         description: 'the line color of each arc',
-        defaultValue: 'red',
+        defaultValue: 'rgba(255,133,0,0.32)',
         functionSignature: ['feature'],
       },
     },
