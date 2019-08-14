@@ -120,7 +120,8 @@ export default observer(({ config, initialState }) => {
       localStorageSessionDisposer()
       localStorageDataDisposer()
     }
-  }, [root, status])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [root && root.session && root.session.name, status])
 
   const { session, jbrowse } = root || {}
   const { configuration } = jbrowse || {}
