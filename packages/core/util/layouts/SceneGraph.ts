@@ -13,13 +13,13 @@ interface AbsoluteCache {
 export default class SceneGraph {
   private name: string
 
-  private left: number
+  public left: number
 
-  private top: number
+  public top: number
 
-  private width: number
+  public width: number
 
-  private height: number
+  public height: number
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data?: Record<string, any>
@@ -28,7 +28,7 @@ export default class SceneGraph {
 
   private absoluteCache: AbsoluteCache
 
-  private parent?: SceneGraph
+  public parent?: SceneGraph
 
   /**
    * note: all coordinates are inter-base or inter-pixel coordinates
@@ -75,7 +75,7 @@ export default class SceneGraph {
     height: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: Record<string, any>,
-  ): void {
+  ): SceneGraph {
     let child: SceneGraph
     if (nameOrSceneGraph instanceof SceneGraph) child = nameOrSceneGraph
     else
@@ -107,6 +107,7 @@ export default class SceneGraph {
       this.expand(childLeft, childRight, childTop, childBottom)
       this.children.set(child.name, child)
     }
+    return child
   }
 
   getSubRecord(name: string): SceneGraph | undefined {
@@ -200,5 +201,14 @@ export default class SceneGraph {
     this.walkChildren((c: SceneGraph) => {
       c.absoluteCache.dirty = true
     })
+    const { left, right, top, bottom } = this.absolute
+    if (
+      left !== undefined &&
+      right !== undefined &&
+      top !== undefined &&
+      bottom !== undefined
+    ) {
+      this.expand(left, right, top, bottom)
+    }
   }
 }
