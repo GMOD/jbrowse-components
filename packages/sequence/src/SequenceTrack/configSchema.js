@@ -7,6 +7,7 @@ export default (pluginManager, trackType) => {
     return ConfigurationSchema(
       'SequenceTrack',
       {
+        viewType: 'LinearGenomeView',
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         rendering: DivSequenceRendererConfigurationSchema,
       },
@@ -19,6 +20,7 @@ export default (pluginManager, trackType) => {
     return ConfigurationSchema(
       'ReferenceSequenceTrack',
       {
+        viewType: 'LinearGenomeView',
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         rendering: DivSequenceRendererConfigurationSchema,
       },

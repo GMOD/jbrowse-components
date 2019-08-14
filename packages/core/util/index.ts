@@ -1,10 +1,12 @@
 import { toByteArray, fromByteArray } from 'base64-js'
 import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
+import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
 import { useEffect, useState } from 'react'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
+import { ObservableCreate } from './rxjs'
 
 // @ts-ignore
 if (!Object.fromEntries) {
@@ -178,6 +180,33 @@ export function bpToPx(
   return roundToNearestPointOne((bp - region.start) / bpPerPx)
 }
 
+const oneEightyOverPi = 180.0 / Math.PI
+const piOverOneEighty = Math.PI / 180.0
+export function radToDeg(radians: number): number {
+  return (radians * oneEightyOverPi) % 360
+}
+export function degToRad(degrees: number): number {
+  return (degrees * piOverOneEighty) % (2 * Math.PI)
+}
+
+/**
+ * @returns [x, y]
+ */
+export function polarToCartesian(rho: number, theta: number): [number, number] {
+  return [rho * Math.cos(theta), rho * Math.sin(theta)]
+}
+
+/**
+ * @param x the x
+ * @param y the y
+ * @returns [rho, theta]
+ */
+export function cartesianToPolar(x: number, y: number): [number, number] {
+  const rho = Math.sqrt(x * x + y * y)
+  const theta = Math.atan(y / x)
+  return [rho, theta]
+}
+
 export function featureSpanPx(
   feature: Feature,
   region: IRegion,
@@ -252,6 +281,11 @@ export function checkAbortSignal(signal?: AbortSignal): void {
   }
 }
 
+export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
+  if (!signal) return Observable.create()
+  return fromEvent(signal, 'abort')
+}
+
 /**
  * check if the given exception was caused by an operation being intentionally aborted
  * @param {Error} exception
@@ -272,3 +306,8 @@ export function isAbortException(exception: Error): boolean {
     !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
+
+// export function getSnapshotIfNode(thing: Node): Record<string, any> {
+//   if (isStateTreeNode(thing)) return getSnapshot(thing)
+//   return thing
+// }

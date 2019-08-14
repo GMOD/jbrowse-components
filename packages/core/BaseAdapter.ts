@@ -1,7 +1,8 @@
-import { Observer, Observable } from 'rxjs'
+import { Observer, Observable, merge } from 'rxjs'
+import { tap, takeUntil } from 'rxjs/operators'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
-import { checkAbortSignal } from './util'
+import { checkAbortSignal, observeAbortSignal } from './util'
 import { Feature } from './util/simpleFeature'
 
 export interface BaseOptions {
@@ -82,11 +83,38 @@ export default abstract class BaseAdapter {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
+        // console.warn(`no data for ${region.refName}`)
         observer.complete()
       } else {
-        this.getFeatures(region, opts).subscribe(observer)
+        this.getFeatures(region, opts)
+          .pipe(takeUntil(observeAbortSignal(opts.signal)))
+          .subscribe(observer)
       }
     })
+  }
+
+  /**
+   * Checks if the store has data for the given assembly and reference
+   * sequence, and then gets the features in the region if it does.
+   *
+   * Currently this just calls getFeatureInRegion for each region. Adapters
+   * that are frequently called on multiple regions simultaneously may
+   * want to implement a more efficient custom version of this method.
+   *
+   * @param {[Region]} regions see getFeatures()
+   * @param {AbortSignal} [signal] optional AbortSignal for aborting the request
+   * @returns {Observable[Feature]} see getFeatures()
+   */
+  public getFeaturesInMultipleRegions(
+    regions: Region[],
+    opts: BaseOptions = {},
+  ): Observable<Feature> {
+    const obs = merge(
+      ...regions.map(region => this.getFeaturesInRegion(region, opts)),
+    )
+
+    if (opts.signal) return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
+    return obs
   }
 
   /**

@@ -1,6 +1,4 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import AppBar from '@material-ui/core/AppBar'
-import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -15,7 +13,9 @@ import React, { useRef, useState, useEffect } from 'react'
 import { clamp } from '@gmod/jbrowse-core/util'
 
 import { withSize } from 'react-sizeme'
+
 import Drawer from './Drawer'
+import DevTools from './DevTools'
 
 const styles = theme => ({
   '@global': {
@@ -54,10 +54,6 @@ const styles = theme => ({
   },
   drawerLoading: {
     margin: theme.spacing(2),
-  },
-  developer: {
-    background: 'white',
-    display: 'block',
   },
 })
 
@@ -178,35 +174,7 @@ function App(props) {
               />
             )
           })}
-          <div className={classes.developer}>
-            <h3>Developer tools</h3>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                if (!session.datasets.length)
-                  throw new Error(`Must add a dataset before adding a view`)
-                session.addLinearGenomeViewOfDataset(
-                  readConfObject(session.datasets[0], 'name'),
-                )
-              }}
-            >
-              Add linear view
-            </Button>
-            <Button
-              disabled={!session.history.canUndo}
-              onClick={() => session.history.undo()}
-            >
-              undo
-              <Icon>undo</Icon>
-            </Button>
-            <Button
-              disabled={!session.history.canRedo}
-              onClick={() => session.history.redo()}
-            >
-              <Icon>redo</Icon>
-              redo
-            </Button>
-          </div>
+          <DevTools session={session} />
         </div>
       </div>
       <Drawer

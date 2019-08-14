@@ -1,6 +1,7 @@
 import Rpc from '@librpc/web'
 
-import { objectFromEntries, checkAbortSignal } from '../util'
+import { isStateTreeNode, isAlive } from 'mobx-state-tree'
+import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 
 function isClonable(thing) {
@@ -108,6 +109,8 @@ export default class WebWorkerRpcDriver {
         )
       }
 
+      if (isStateTreeNode(thing) && !isAlive(thing))
+        throw new Error('dead state tree node passed to RPC call')
       const newobj = objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
@@ -139,7 +142,6 @@ export default class WebWorkerRpcDriver {
   }
 
   call(pluginManager, stateGroupName, functionName, args, options = {}) {
-    checkAbortSignal(options.signal)
     if (stateGroupName === undefined) {
       throw new TypeError('stateGroupName is required')
     }

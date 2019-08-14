@@ -1,5 +1,6 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
@@ -21,14 +22,19 @@ export default class ServerSideRenderer extends RendererType {
    * @returns {object} the same object
    */
   serializeArgsInClient(args) {
-    if (args.renderProps.trackModel) {
+    const { trackModel } = args.renderProps
+    if (trackModel) {
       args.renderProps = {
         ...args.renderProps,
         trackModel: {
-          selectedFeatureId: args.renderProps.trackModel.selectedFeatureId,
+          selectedFeatureId: trackModel.selectedFeatureId,
         },
       }
     }
+    if (args.regions) {
+      args.regions = [...args.regions]
+    }
+    if (args.region) args.region = { ...args.region }
     return args
   }
 
@@ -68,7 +74,7 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    * Render method called on the client. Serializes args, then
-   * calls `renderRegion` with the RPC manager.
+   * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager, args) {
     const serializedArgs = this.serializeArgsInClient(args)
@@ -76,7 +82,7 @@ export default class ServerSideRenderer extends RendererType {
     const stateGroupName = args.sessionId
     const result = await rpcManager.call(
       stateGroupName,
-      'renderRegion',
+      'render',
       serializedArgs,
     )
     // const result = await renderRegionWithWorker(session, serializedArgs)
@@ -85,10 +91,14 @@ export default class ServerSideRenderer extends RendererType {
     return result
   }
 
-  getExpandedGlyphRegion(renderArgs) {
-    const { region, bpPerPx, config } = renderArgs
-    const maxFeatureGlyphExpansion =
-      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+  getExpandedGlyphRegion(region, renderArgs) {
+    if (!region) return region
+    const { bpPerPx, config } = renderArgs
+    const maxFeatureGlyphExpansion = readConfObject(
+      config,
+      'maxFeatureGlyphExpansion',
+    )
+    if (!maxFeatureGlyphExpansion) return region
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
       ...region,
@@ -105,12 +115,45 @@ export default class ServerSideRenderer extends RendererType {
    */
   async getFeatures(renderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
+    let { regions } = renderArgs
     const features = new Map()
-    await dataAdapter
-      .getFeaturesInRegion(this.getExpandedGlyphRegion(renderArgs), {
-        signal,
-        bpPerPx,
-      })
+    let featureObservable
+
+    if (!regions && renderArgs.region) {
+      regions = [renderArgs.region]
+    }
+
+    if (!regions || regions.length === 0) return features
+
+    const requestRegions = regions.map(region => {
+      // make sure the requested region's start and end are integers, if
+      // there is a region specification.
+      const requestRegion = { ...region }
+      if (requestRegion.start)
+        requestRegion.start = Math.floor(requestRegion.start)
+      if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+      return requestRegion
+    })
+
+    if (requestRegions.length === 1) {
+      featureObservable = dataAdapter.getFeaturesInRegion(
+        this.getExpandedGlyphRegion(requestRegions[0], renderArgs),
+        {
+          signal,
+          bpPerPx,
+        },
+      )
+    } else {
+      featureObservable = dataAdapter.getFeaturesInMultipleRegions(
+        requestRegions,
+        {
+          signal,
+          bpPerPx,
+        },
+      )
+    }
+
+    await featureObservable
       .pipe(
         tap(() => checkAbortSignal(signal)),
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
@@ -122,6 +165,7 @@ export default class ServerSideRenderer extends RendererType {
         ignoreElements(),
       )
       .toPromise()
+
     return features
   }
 
@@ -139,20 +183,18 @@ export default class ServerSideRenderer extends RendererType {
 
   // render method called on the worker
   async renderInWorker(args) {
+    checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
 
+    const features = await this.getFeatures(args)
     checkAbortSignal(args.signal)
 
-    const features = await this.getFeatures(args)
     const renderProps = { ...args, features }
 
-    checkAbortSignal(args.signal)
-
     const results = await this.render({ ...renderProps, signal: args.signal })
+    checkAbortSignal(args.signal)
     results.html = renderToString(results.element)
     delete results.element
-
-    checkAbortSignal(args.signal)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out

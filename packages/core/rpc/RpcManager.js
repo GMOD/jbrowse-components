@@ -1,5 +1,5 @@
 import { decorate, observable } from 'mobx'
-import { isStateTreeNode, isAlive } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode, isAlive } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 import rpcConfigSchema from './configSchema'
@@ -36,6 +36,11 @@ class RpcManager {
     }
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
+    // try {
+    //   this.getDriverForCall()
+    // } catch(e) {
+    //   debugger
+    // }
     this.backendConfigurations = backendConfigurations
     this.getRefNameMapForAdapter = getRefNameMapForAdapter
   }
@@ -71,22 +76,38 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
+  renameRegionIfNeeded(refNameMap, container, keyForRegion) {
+    let region = container[keyForRegion]
+    if (isStateTreeNode(region) && !isAlive(region)) return
+    if (region && refNameMap.has(region.refName)) {
+      // clone the region so we don't modify it
+      if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
+      else region = { ...region }
+
+      // modify it directly in the container
+      region.refName = refNameMap.get(region.refName)
+      container[keyForRegion] = region
+    }
+  }
+
   async call(stateGroupName, functionName, ...args) {
-    const { assemblyName, signal } = args[0]
+    const { assemblyName, signal, regions, adapterConfig } = args[0]
+
+    // TODO: this renaming stuff should probably be moved to the session model
+    // when we have a session model
     if (assemblyName) {
-      const { region } = args[0]
-      const { refName } = region
       const refNameMap = await this.getRefNameMapForAdapter(
-        args[0].adapterConfig,
+        adapterConfig,
         assemblyName,
         { signal },
       )
-      if (refNameMap && refNameMap.has(refName)) {
-        if (isStateTreeNode(region)) {
-          if (isAlive(region)) region.setRefName(refNameMap.get(refName))
-        } else {
-          args[0].region.refName = refNameMap.get(refName)
-        }
+
+      this.renameRegionIfNeeded(refNameMap, args[0], 'region')
+
+      if (regions) {
+        regions.forEach((r, index) => {
+          this.renameRegionIfNeeded(refNameMap, regions, index)
+        })
       }
     }
     return this.getDriverForCall(stateGroupName, functionName, args).call(
@@ -98,10 +119,5 @@ class RpcManager {
     )
   }
 }
-
-decorate(RpcManager, {
-  mainConfiguration: observable,
-  backendConfigurations: observable,
-})
 
 export default RpcManager

@@ -89,7 +89,7 @@ export default class extends ServerSideRendererType {
   serializeResultsInWorker(results, features, args) {
     super.serializeResultsInWorker(results, features)
     results.layout = args.layout.serializeRegion(
-      this.getExpandedGlyphRegion(args),
+      this.getExpandedGlyphRegion(args.region, args),
     )
   }
 }

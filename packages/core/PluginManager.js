@@ -1,5 +1,4 @@
-import React from 'react'
-import * as mst from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
@@ -10,6 +9,8 @@ import MenuBarType from './pluggableElementTypes/MenuBarType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 
 import { ConfigurationSchema } from './configuration'
+
+import ReExports from './ReExports'
 
 // little helper class that keeps groups of callbacks that are
 // then run in a specified order by group
@@ -62,8 +63,6 @@ export default class PluginManager {
     'menu bar': MenuBarType,
   }
 
-  static lib = { 'mobx-state-tree': mst, React }
-
   constructor(initialPlugins = []) {
     this.lib = PluginManager.lib
 
@@ -88,6 +87,32 @@ export default class PluginManager {
     })
   }
 
+  /**
+   * Get the re-exported version of the given package name.
+   * Throws an error if the package is not re-exported by the plugin manager.
+   *
+   * @param {Array[string]} packageNames
+   * @returns {any} the library's default export
+   */
+  jbrequire = lib => {
+    if (typeof lib === 'string') {
+      const pack = ReExports[lib]
+      if (!pack)
+        throw new Error(
+          `No jbrequire re-export defined for package '${lib}'. Either import it normally, or add it to jbrowse-core ReExports`,
+        )
+      return pack
+    }
+    if (typeof lib === 'function') {
+      return lib(this)
+    }
+    if (lib.default) return this.jbrequire(lib.default)
+
+    throw new TypeError(
+      'lib passed to jbrequire must be either a string or a function',
+    )
+  }
+
   addPlugin(plugin) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
@@ -102,15 +127,16 @@ export default class PluginManager {
   }
 
   /** get a MST type for the union of all specified pluggable MST types */
-  pluggableMstType(
-    typeGroup,
-    fieldName,
-    fallback = mst.types.maybe(mst.types.null),
-  ) {
+  pluggableMstType(typeGroup, fieldName, fallback = types.maybe(types.null)) {
     const pluggableTypes = this.getElementTypeMembers(typeGroup, fieldName)
     // try to smooth over the case when no types are registered, mostly encountered in tests
-    if (pluggableTypes.length === 0) return fallback
-    return mst.types.union(...pluggableTypes)
+    if (pluggableTypes.length === 0) {
+      console.warn(
+        `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}'), returning null type`,
+      )
+      return fallback
+    }
+    return types.union(...pluggableTypes)
   }
 
   /** get a MST type for the union of all specified pluggable config schemas */
@@ -124,7 +150,9 @@ export default class PluginManager {
 
   addElementType(groupName, creationCallback) {
     if (typeof creationCallback !== 'function') {
-      throw new Error('must provide a callback function')
+      throw new Error(
+        'must provide a callback function that returns the new type object',
+      )
     }
     const typeBaseClass = this.typeBaseClasses[groupName]
     if (!typeBaseClass) {

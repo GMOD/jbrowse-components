@@ -11,7 +11,10 @@ import {
   isAbortException,
   getSession,
 } from '@gmod/jbrowse-core/util'
-import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import {
+  getContainingView,
+  getTrackAssemblyName,
+} from '@gmod/jbrowse-core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
@@ -22,18 +25,9 @@ function renderBlockData(self) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
   const { rpcManager } = getSession(view)
-  const trackConf = track.configuration
-  let trackConfParent = trackConf
-  do {
-    trackConfParent = getParent(trackConfParent)
-  } while (!(trackConfParent.assembly || 'defaultSequence' in trackConfParent))
-  if ('defaultSequence' in trackConfParent) {
-    trackConfParent = trackConfParent.configuration
-    do {
-      trackConfParent = getParent(trackConfParent)
-    } while (!trackConfParent.assembly)
-  }
-  const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
+
+  const assemblyName = getTrackAssemblyName(track)
+
   const { assemblyData } = getSession(self)
   const trackAssemblyData =
     (assemblyData && assemblyData.get(assemblyName)) || {}

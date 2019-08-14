@@ -232,19 +232,38 @@ export default pluginManager => {
         return getParent(self).jbrowse.addDataset(datasetConf)
       },
 
-      addLinearGenomeViewOfDataset(datsetName, initialState = {}) {
+      addLinearGenomeViewOfDataset(datasetName, initialState = {}) {
+        return self.addViewOfDataset(
+          'LinearGenomeView',
+          datasetName,
+          initialState,
+        )
+      },
+
+      addViewOfDataset(viewType, datasetName, initialState = {}) {
         const dataset = self.datasets.find(
-          s => readConfObject(s.name) === datsetName,
+          s => readConfObject(s.name) === datasetName,
         )
         if (!dataset)
           throw new Error(
-            `Could not add view of dataset "${datsetName}", dataset name not found`,
+            `Could not add view of dataset "${datasetName}", dataset name not found`,
           )
         initialState.displayRegionsFromAssemblyName = readConfObject(
           dataset.assembly,
           'name',
         )
-        return self.addView('LinearGenomeView', initialState)
+        return self.addView(viewType, initialState)
+      },
+
+      addViewFromAnotherView(viewType, otherView, initialState = {}) {
+        const state = { ...initialState }
+        if (otherView.displayRegionsFromAssemblyName) {
+          state.displayRegionsFromAssemblyName =
+            otherView.displayRegionsFromAssemblyName
+        } else {
+          state.displayedRegions = otherView.displayedRegions
+        }
+        return self.addView(viewType, state)
       },
 
       addDrawerWidget(

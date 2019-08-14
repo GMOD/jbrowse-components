@@ -52,6 +52,25 @@
       },
       "tracks": [
         {
+          "configId": "QGoUN4vNq",
+          "type": "StructuralVariantChordTrack",
+          "name": "volvox chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/volvox.dup.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox.dup.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "configId": "FDN0zpD_B6",
           "type": "DynamicTrack",
           "name": "Lollipop track",
@@ -830,6 +849,25 @@
         }
       },
       "tracks": [
+        {
+          "configId": "human_chord_test",
+          "type": "StructuralVariantChordTrack",
+          "name": "human chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
         {
           "configId": "XWkHTtv9ui5",
           "type": "AlignmentsTrack",

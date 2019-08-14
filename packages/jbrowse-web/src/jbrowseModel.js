@@ -17,7 +17,7 @@ const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
   pluginManager,
 )
 
-const Dataset = ConfigurationSchema(
+const DatasetConfigSchema = ConfigurationSchema(
   'Dataset',
   {
     name: {
@@ -62,7 +62,7 @@ const JBrowseWeb = types
       menuBars: [{ type: 'MainMenuBar' }],
     }),
     savedSessions: types.array(types.frozen(Session)),
-    datasets: types.array(Dataset),
+    datasets: types.array(DatasetConfigSchema),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
       // possibly consider this for global config editor

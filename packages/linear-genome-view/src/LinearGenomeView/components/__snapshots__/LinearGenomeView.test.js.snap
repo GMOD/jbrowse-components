@@ -290,7 +290,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-212"
+      class="ResizeHandleHorizontal-dragHandle-212"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -703,7 +703,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-212"
+      class="ResizeHandleHorizontal-dragHandle-212"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2;"
     />
@@ -790,7 +790,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="TrackResizeHandle-dragHandle-212"
+      class="ResizeHandleHorizontal-dragHandle-212"
       role="presentation"
       style="grid-row: resize-bar; grid-column: span 2;"
     />

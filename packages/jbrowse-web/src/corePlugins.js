@@ -1,5 +1,6 @@
 import Alignments from '@gmod/jbrowse-plugin-alignments'
 import Bed from '@gmod/jbrowse-plugin-bed'
+import CircularViewPlugin from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import DataManagement from '@gmod/jbrowse-plugin-data-management'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
@@ -16,6 +17,7 @@ import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 export default [
   Alignments,
   Bed,
+  CircularViewPlugin,
   Config,
   DataManagement,
   Filtering,
