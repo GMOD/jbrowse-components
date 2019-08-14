@@ -15,6 +15,7 @@ const styles = {
 class ResizeHandleHorizontal extends Component {
   static propTypes = {
     classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
+    style: ReactPropTypes.shape().isRequired,
     objectId: ReactPropTypes.string.isRequired,
     onVerticalDrag: ReactPropTypes.func.isRequired,
   }

@@ -177,7 +177,7 @@ export function viewportVisibleSection(viewSides, circleCenter, circleRadius) {
     vertices.push([0, viewB])
   }
 
-  const verticesOriginal = vertices.map(([x, y]) => [x + cx, y + cy])
+  // const verticesOriginal = vertices.map(([x, y]) => [x + cx, y + cy])
 
   // now convert them all to polar and take the max and min of rho and theta
 

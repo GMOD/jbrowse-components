@@ -1,8 +1,12 @@
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
-  const { observer } = jbrequire('mobx-react')
+  const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { PropTypes: CommonPropTypes } = jbrequire(
+    '@gmod/jbrowse-core/mst-types',
+  )
+  const PropTypes = jbrequire('prop-types')
 
   function bpToRadians(block, pos) {
     const blockStart = block.region.elided ? 0 : block.region.start
@@ -92,6 +96,20 @@ export default ({ jbrequire }) => {
       )
     }
     return <>{chords}</>
+  }
+
+  StructuralVariantChords.propTypes = {
+    features: PropTypes.instanceOf(Map).isRequired,
+    config: CommonPropTypes.ConfigSchema.isRequired,
+    trackModel: MobxPropTypes.objectOrObservableObject,
+    blockDefinitions: PropTypes.arrayOf(MobxPropTypes.objectOrObservableObject)
+      .isRequired,
+    radius: PropTypes.number.isRequired,
+    bezierRadius: PropTypes.number.isRequired,
+  }
+
+  StructuralVariantChords.defaultProps = {
+    trackModel: undefined,
   }
 
   return observer(StructuralVariantChords)

@@ -6,7 +6,6 @@ import fromEntries from 'object.fromentries'
 import { useEffect, useState } from 'react'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
-import { ObservableCreate } from './rxjs'
 
 // @ts-ignore
 if (!Object.fromEntries) {

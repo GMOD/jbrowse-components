@@ -1,4 +1,3 @@
-import { decorate, observable } from 'mobx'
 import { getSnapshot, isStateTreeNode, isAlive } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
