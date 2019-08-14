@@ -55,11 +55,12 @@ export const ColorPicker = props => {
 }
 ColorPicker.propTypes = {
   onChange: ReactPropTypes.func.isRequired,
-  label: ReactPropTypes.string.isRequired,
+  label: ReactPropTypes.string,
   TextFieldProps: ReactPropTypes.shape({}),
   value: ReactPropTypes.string,
 }
 ColorPicker.defaultProps = {
+  label: '',
   value: '#000',
   TextFieldProps: {},
 }
