@@ -1,12 +1,5 @@
 # Concepts
 
-## coordinate system
-
-The circular view primarily uses polar coordinates, with a few different coordinate systems in use:
-
-  * the "figure" coordinate system: polar, origin is the center of the whole figure, distances in pixels
-  * the "slice" coordinate systemL polar, origin is at the tip of the current slice. distances in pixels
-
 ## slices
 
 A slice is a range in angle (theta) space.  Start radians, end radians.  The start is always less than or equal to the end. If the slice goes through the origin, the end coordinate may be greater than 2π.
@@ -18,12 +11,3 @@ Tracks that draw "around the circle" will want to use these slices to draw, whil
 ## sections
 
 A section is a range in both angle (theta) and radius (rho) space.  Start and end in theta have the same rules as slices.
-
-### Drawing subtleties
-
-* Arcs drawn in a slice should be drawn centered on the figure origin, but the endpoints should be in the slice coordinate system.
-
-
-## Plan
-
-*
