@@ -4,12 +4,20 @@ import { emphasize } from '@gmod/jbrowse-core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
+import { isUTR } from './util'
+
+const utrHeightFraction = 0.65
 
 function Chevron(props) {
   const { feature, config, featureLayout, selected } = props
 
   const width = Math.max(featureLayout.absolute.width, 1)
-  const { left, top, height } = featureLayout.absolute
+  const { left } = featureLayout.absolute
+  let { top, height } = featureLayout.absolute
+  if (isUTR(feature)) {
+    top += ((1 - utrHeightFraction) / 2) * height
+    height *= utrHeightFraction
+  }
 
   const shapeProps = {
     title: feature.id(),
@@ -18,12 +26,15 @@ function Chevron(props) {
       ? `rotate(180,${left + width / 2},${top + height / 2})`
       : undefined,
   }
-  const color1 = readConfObject(config, 'color1', [feature])
-  let emphasizedColor1
+
+  const color = isUTR(feature)
+    ? readConfObject(config, 'color3', [feature])
+    : readConfObject(config, 'color1', [feature])
+  let emphasizedColor
   try {
-    emphasizedColor1 = emphasize(color1, 0.3)
+    emphasizedColor = emphasize(color, 0.3)
   } catch (error) {
-    emphasizedColor1 = color1
+    emphasizedColor = color
   }
   const color2 = readConfObject(config, 'color2', [feature])
 
@@ -31,7 +42,7 @@ function Chevron(props) {
     <polygon
       {...shapeProps}
       stroke={selected ? color2 : undefined}
-      fill={selected ? emphasizedColor1 : color1}
+      fill={selected ? emphasizedColor : color}
       points={[
         [left, top],
         [left + width - height / 2, top],
@@ -49,7 +60,7 @@ function Chevron(props) {
         [left + width, top + height / 2],
         [left, top + height],
       ]}
-      stroke={selected ? emphasizedColor1 : color1}
+      stroke={selected ? emphasizedColor : color}
       fill="none"
     />
   )

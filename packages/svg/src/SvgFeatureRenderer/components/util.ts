@@ -1,11 +1,12 @@
+/* eslint-disable import/no-cycle */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Box from './Box'
 import Chevron from './Chevron'
+import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
-// eslint-disable-next-line import/no-cycle
 import Subfeatures from './Subfeatures'
 
 interface Glyph extends React.FunctionComponent {
@@ -20,6 +21,8 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
       if (subfeature.get('subfeatures')) hasSubSub = true
     })
     if (hasSubSub) return Subfeatures
+    const type = feature.get('type')
+    if (['mRNA', 'transcript'].includes(type)) return ProcessedTranscript
     return Segments
   }
   const strand = feature.get('strand')
@@ -27,16 +30,46 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
   return Box
 }
 
-export function layOut(args: {
+interface BaseLayOutArgs {
   layout: SceneGraph
-  feature: Feature
   region: IRegion
   bpPerPx: number
   horizontallyFlipped: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
-}): SceneGraph {
+}
+
+interface FeatureLayOutArgs extends BaseLayOutArgs {
+  feature: Feature
+}
+
+interface SubfeatureLayOutArgs extends BaseLayOutArgs {
+  subfeatures: Feature[]
+}
+
+export function layOut(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, region, bpPerPx, horizontallyFlipped, config } = args
+  const subLayout = layOutFeatures({
+    layout,
+    feature,
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    config,
+  })
+  layOutSubfeatures({
+    layout: subLayout,
+    subfeatures: feature.get('subfeatures') || [],
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    config,
+  })
+  return subLayout
+}
+
+export function layOutFeatures(args: FeatureLayOutArgs): SceneGraph {
+  const { layout, feature, bpPerPx, config } = args
   const GlyphComponent = chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
   const x = parentFeature
@@ -54,8 +87,18 @@ export function layOut(args: {
     height,
     { GlyphComponent },
   )
+  return subLayout
+}
 
-  const subfeatures = feature.get('subfeatures') || []
+export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
+  const {
+    layout: subLayout,
+    subfeatures,
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    config,
+  } = args
   subfeatures.forEach((subfeature: Feature) => {
     const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
     ;(SubfeatureGlyphComponent.layOut || layOut)({
@@ -67,5 +110,10 @@ export function layOut(args: {
       config,
     })
   })
-  return subLayout
+}
+
+export function isUTR(feature: Feature): boolean {
+  return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
+    feature.get('type') || '',
+  )
 }

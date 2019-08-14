@@ -2,7 +2,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { chooseGlyphComponent, layOut } from './util'
+import { chooseGlyphComponent, layOut, layOutFeatures } from './util'
 
 function Subfeatures(props) {
   const { feature, featureLayout, selected } = props
@@ -51,23 +51,14 @@ Subfeatures.layOut = ({
   horizontallyFlipped,
   config,
 }) => {
-  const GlyphComponent = chooseGlyphComponent(feature)
-  const parentFeature = feature.parent()
-  const x = parentFeature
-    ? (feature.get('start') - parentFeature.get('start')) / bpPerPx
-    : 0
-  const height = readConfObject(config, 'height', [feature])
-  const width = (feature.get('end') - feature.get('start')) / bpPerPx
-  const layoutParent = layout.parent
-  const top = layoutParent ? layoutParent.top : 0
-  const subLayout = layout.addChild(
-    String(feature.id()),
-    x,
-    top,
-    width,
-    height,
-    { GlyphComponent },
-  )
+  const subLayout = layOutFeatures({
+    layout,
+    feature,
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    config,
+  })
   const subfeatures = feature.get('subfeatures') || []
   let topOffset = 0
   subfeatures.forEach(subfeature => {
