@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 import React from 'react'
 import Segments from './Segments'
-import { layOutFeatures, layOutSubfeatures } from './util'
+import { layOutFeature, layOutSubfeatures } from './util'
 
 function ProcessedTranscript(props) {
   return <Segments {...props} />
@@ -15,7 +15,7 @@ ProcessedTranscript.layOut = ({
   horizontallyFlipped,
   config,
 }) => {
-  const subLayout = layOutFeatures({
+  const subLayout = layOutFeature({
     layout,
     feature,
     region,

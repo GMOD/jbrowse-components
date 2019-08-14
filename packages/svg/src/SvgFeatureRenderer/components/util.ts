@@ -49,7 +49,7 @@ interface SubfeatureLayOutArgs extends BaseLayOutArgs {
 
 export function layOut(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, region, bpPerPx, horizontallyFlipped, config } = args
-  const subLayout = layOutFeatures({
+  const subLayout = layOutFeature({
     layout,
     feature,
     region,
@@ -68,7 +68,7 @@ export function layOut(args: FeatureLayOutArgs): SceneGraph {
   return subLayout
 }
 
-export function layOutFeatures(args: FeatureLayOutArgs): SceneGraph {
+export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, config } = args
   const GlyphComponent = chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
