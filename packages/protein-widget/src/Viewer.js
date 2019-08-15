@@ -11,7 +11,6 @@ import '@gmod/jbrowse-core/fonts/material-icons.css'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import * as rpcFuncs from '@gmod/jbrowse-core/rpc/rpcMethods'
 
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
@@ -19,6 +18,7 @@ import Protein from '@gmod/jbrowse-plugin-protein'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
+import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 

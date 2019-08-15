@@ -1,139 +1,19 @@
+import { checkAbortSignal } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
 } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import {
-  isRemoteAbortSignal,
   deserializeAbortSignal,
+  isRemoteAbortSignal,
 } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-
-export async function getGlobalStats(
-  pluginManager,
-  { adapterType, adapterConfig, signal, sessionId },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getGlobalStats({ signal })
-}
-
-export async function getRegionStats(
-  pluginManager,
-  { region, adapterType, adapterConfig, signal, bpPerPx, sessionId },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getRegionStats(region, { signal, bpPerPx })
-}
-
-export async function getMultiRegionStats(
-  pluginManager,
-  { regions, adapterType, adapterConfig, signal, bpPerPx, sessionId },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
-}
-
-export async function getRegions(
-  pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getRegions({ signal })
-}
-
-export async function getRefNames(
-  pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getRefNames({ signal })
-}
-
-export async function getRefNameAliases(
-  pluginManager,
-  { sessionId, adapterType, signal, adapterConfig },
-) {
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    sessionId,
-    adapterType,
-    adapterConfig,
-  )
-  return dataAdapter.getRefNameAliases({ signal })
-}
 
 /**
- * free up any resources (e.g. cached adapter objects)
- * that are only associated with the given track ID.
- *
- * returns number of objects deleted
- */
-export function freeResources(pluginManager, specification) {
-  let deleteCount = 0
-
-  deleteCount += freeAdapterResources(specification)
-
-  // pass the freeResources hint along to all the renderers as well
-  pluginManager.getElementTypesInGroup('renderer').forEach(renderer => {
-    const count = renderer.freeResourcesInWorker(specification)
-    if (count) deleteCount += count
-  })
-
-  return deleteCount
-}
-
-/**
- * render a single region
+ * call a renderer with the given args
+ * s
  * @param {PluginManager} pluginManager
  * @param {object} args
- * @param {object} args.region
+ * @param {object} args.regions - array of regions to render. some renderers (such as circular chord tracks) accept multiple at a time
  * @param {string} args.sessionId
  * @param {string} args.adapterType
  * @param {object} args.adapterConfig
@@ -141,9 +21,10 @@ export function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {AbortSignal} [args.signal]
  */
-export async function renderRegion(
+export async function render(
   pluginManager,
   {
+    regions,
     region,
     sessionId,
     adapterType,
@@ -154,6 +35,7 @@ export async function renderRegion(
   },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
+  console.log('here')
 
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
@@ -178,9 +60,14 @@ export async function renderRegion(
     ...renderProps,
     sessionId,
     dataAdapter,
+    regions,
     region,
     signal,
   })
   checkAbortSignal(signal)
   return result
+}
+
+export function freeResources() {
+  /* empty func */
 }
