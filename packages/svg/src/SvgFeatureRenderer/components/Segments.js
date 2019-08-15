@@ -15,17 +15,27 @@ function Segments(props) {
   } catch (error) {
     emphasizedColor2 = color2
   }
-
   const { left, top, width, height } = featureLayout.absolute
+  const points = [[left, top + height / 2], [left + width, top + height / 2]]
+  const strand = feature.get('strand')
+  if (strand)
+    points.push(
+      [left + width - height / 4, top + height / 4],
+      [left + width - height / 4, top + 3 * (height / 4)],
+      [left + width, top + height / 2],
+    )
+
   return (
     <>
-      <line
+      <polyline
         title={feature.id()}
         data-testid={feature.id()}
-        x1={left}
-        y1={top + height / 2}
-        x2={left + width}
-        y2={top + height / 2}
+        transform={
+          strand && strand < 0
+            ? `rotate(180,${left + width / 2},${top + height / 2})`
+            : undefined
+        }
+        points={points}
         stroke={selected ? emphasizedColor2 : color2}
       />
       {feature.get('subfeatures').map(subfeature => {
