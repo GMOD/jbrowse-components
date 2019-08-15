@@ -1,6 +1,5 @@
 /* eslint-disable import/no-cycle */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Box from './Box'
@@ -32,7 +31,6 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
 
 interface BaseLayOutArgs {
   layout: SceneGraph
-  region: IRegion
   bpPerPx: number
   horizontallyFlipped: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,11 +46,10 @@ interface SubfeatureLayOutArgs extends BaseLayOutArgs {
 }
 
 export function layOut(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, region, bpPerPx, horizontallyFlipped, config } = args
+  const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
   const subLayout = layOutFeature({
     layout,
     feature,
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,
@@ -60,7 +57,6 @@ export function layOut(args: FeatureLayOutArgs): SceneGraph {
   layOutSubfeatures({
     layout: subLayout,
     subfeatures: feature.get('subfeatures') || [],
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,
@@ -69,12 +65,14 @@ export function layOut(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, config } = args
+  const { layout, feature, bpPerPx, horizontallyFlipped, config } = args
   const GlyphComponent = chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
-  const x = parentFeature
-    ? (feature.get('start') - parentFeature.get('start')) / bpPerPx
-    : 0
+  let x = 0
+  if (parentFeature)
+    x = horizontallyFlipped
+      ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
+      : (feature.get('start') - parentFeature.get('start')) / bpPerPx
   const height = readConfObject(config, 'height', [feature])
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
@@ -94,7 +92,6 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
   const {
     layout: subLayout,
     subfeatures,
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,
@@ -104,7 +101,6 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
     ;(SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,
       feature: subfeature,
-      region,
       bpPerPx,
       horizontallyFlipped,
       config,

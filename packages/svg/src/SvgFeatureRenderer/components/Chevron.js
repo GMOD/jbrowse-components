@@ -9,7 +9,13 @@ import { isUTR } from './util'
 const utrHeightFraction = 0.65
 
 function Chevron(props) {
-  const { feature, config, featureLayout, selected } = props
+  const {
+    feature,
+    config,
+    featureLayout,
+    selected,
+    horizontallyFlipped,
+  } = props
 
   const width = Math.max(featureLayout.absolute.width, 1)
   const { left } = featureLayout.absolute
@@ -19,12 +25,16 @@ function Chevron(props) {
     height *= utrHeightFraction
   }
 
+  const strand = [-1, '-'].includes(feature.get('strand')) ? -1 : 1
+  const direction = strand * (horizontallyFlipped ? -1 : 1)
+
   const shapeProps = {
     title: feature.id(),
     'data-testid': feature.id(),
-    transform: [-1, '-'].includes(feature.get('strand'))
-      ? `rotate(180,${left + width / 2},${top + height / 2})`
-      : undefined,
+    transform:
+      direction < 0
+        ? `rotate(180,${left + width / 2},${top + height / 2})`
+        : undefined,
   }
 
   const color = isUTR(feature)
@@ -77,10 +87,12 @@ Chevron.propTypes = {
   }).isRequired,
   selected: ReactPropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,
+  horizontallyFlipped: ReactPropTypes.bool,
 }
 
 Chevron.defaultProps = {
   selected: false,
+  horizontallyFlipped: false,
 }
 
 export default observer(Chevron)

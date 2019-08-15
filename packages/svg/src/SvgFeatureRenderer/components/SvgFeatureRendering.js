@@ -1,6 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import { bpToPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -64,18 +64,13 @@ function SvgFeatureRendering(props) {
   }
 
   function createFeatureGlyphComponent(feature) {
-    const [startPx] = featureSpanPx(
-      feature,
-      region,
-      bpPerPx,
-      horizontallyFlipped,
-    )
+    const start = feature.get(horizontallyFlipped ? 'end' : 'start')
+    const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
     const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
     const GlyphComponent = chooseGlyphComponent(feature)
     const featureLayout = (GlyphComponent.layOut || layOut)({
       layout: rootLayout,
       feature,
-      region,
       bpPerPx,
       horizontallyFlipped,
       config,
@@ -124,7 +119,6 @@ function SvgFeatureRendering(props) {
       )
     }
 
-    const start = feature.get('start')
     const topPx = layout.addRect(
       feature.id(),
       start,

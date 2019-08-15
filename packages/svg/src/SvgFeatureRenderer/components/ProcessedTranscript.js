@@ -10,7 +10,6 @@ function ProcessedTranscript(props) {
 ProcessedTranscript.layOut = ({
   layout,
   feature,
-  region,
   bpPerPx,
   horizontallyFlipped,
   config,
@@ -18,7 +17,6 @@ ProcessedTranscript.layOut = ({
   const subLayout = layOutFeature({
     layout,
     feature,
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,
@@ -31,7 +29,6 @@ ProcessedTranscript.layOut = ({
   layOutSubfeatures({
     layout: subLayout,
     subfeatures,
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,

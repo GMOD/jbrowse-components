@@ -46,7 +46,6 @@ Subfeatures.defaultProps = {
 Subfeatures.layOut = ({
   layout,
   feature,
-  region,
   bpPerPx,
   horizontallyFlipped,
   config,
@@ -54,7 +53,6 @@ Subfeatures.layOut = ({
   const subLayout = layOutFeature({
     layout,
     feature,
-    region,
     bpPerPx,
     horizontallyFlipped,
     config,
@@ -67,7 +65,6 @@ Subfeatures.layOut = ({
     const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,
       feature: subfeature,
-      region,
       bpPerPx,
       horizontallyFlipped,
       config,
