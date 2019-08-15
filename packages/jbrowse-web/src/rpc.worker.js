@@ -6,7 +6,7 @@ import { useStaticRendering } from 'mobx-react'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
 import { isAbortException } from '@gmod/jbrowse-core/util'
-import * as rpcMethods from '@gmod/jbrowse-core/rpc/rpcMethods'
+import * as rpcMethods from './rpcMethods'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
