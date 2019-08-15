@@ -25,7 +25,7 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
     return Segments
   }
   const strand = feature.get('strand')
-  if ([1, -1, '+', '-'].includes(strand)) return Chevron
+  if ([1, -1].includes(strand)) return Chevron
   return Box
 }
 

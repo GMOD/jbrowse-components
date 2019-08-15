@@ -8,7 +8,7 @@ export default ConfigurationSchema(
       description: 'the color of each feature in a pileup alignment',
       defaultValue: `function(feature) {
   var s = feature.get('strand');
-  return s === '-' || s === -1 ? '#8F8FD8': '#EC8B8B'
+  return s === -1 ? '#8F8FD8': '#EC8B8B'
 }`,
       functionSignature: ['feature'],
     },

@@ -25,7 +25,7 @@ function Chevron(props) {
     height *= utrHeightFraction
   }
 
-  const strand = [-1, '-'].includes(feature.get('strand')) ? -1 : 1
+  const strand = feature.get('strand')
   const direction = strand * (horizontallyFlipped ? -1 : 1)
 
   const shapeProps = {

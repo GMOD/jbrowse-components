@@ -1729,7 +1729,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     function(feature) {
   var s = feature.get('strand');
-  return s === '-' || s === -1 ? '#8F8FD8': '#EC8B8B'
+  return s === -1 ? '#8F8FD8': '#EC8B8B'
 }
                   </textarea>
                   <pre
@@ -1812,24 +1812,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       class="token keyword"
                     >
                       return
-                    </span>
-                     s 
-                    <span
-                      class="token operator"
-                    >
-                      ===
-                    </span>
-                     
-                    <span
-                      class="token string"
-                    >
-                      '-'
-                    </span>
-                     
-                    <span
-                      class="token operator"
-                    >
-                      ||
                     </span>
                      s 
                     <span
