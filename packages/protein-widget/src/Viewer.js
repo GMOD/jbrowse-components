@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { toArray } from 'rxjs/operators'
 import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
@@ -21,6 +22,10 @@ import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayo
 import Rendering from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/components/SvgFeatureRendering'
 import SvgRendererConfigSchema from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/configSchema'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import {
+  AdapterClass,
+  configSchema as ConfigSchema,
+} from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
@@ -212,7 +217,7 @@ FeatureRendering.propTypes = {
   height: PropTypes.number.isRequired,
 }
 
-export function ProteinFeatureRendering(domElement) {
+export function ExampleFeatureRendering(domElement) {
   const region = {
     refName: 'chr1',
     start: 1,
@@ -236,9 +241,34 @@ export function ProteinFeatureRendering(domElement) {
       end: 95,
     },
   })
+  const x = new Map()
+
   ReactDOM.render(
     <FeatureRendering
       features={[feat1, feat2]}
+      width={800}
+      height={200}
+      region={region}
+    />,
+    domElement,
+  )
+}
+
+export async function NclistFeatureRendering(domElement) {
+  const region = {
+    refName: 'chr17',
+    start: 41190000,
+    end: 41280000,
+  }
+  const adapter = new AdapterClass({
+    rootUrlTemplate: '../test_data/brca_nclist/{refseq}/trackData.json',
+  })
+  const ret = adapter.getFeatures(region)
+  const feats = await ret.pipe(toArray()).toPromise()
+
+  ReactDOM.render(
+    <FeatureRendering
+      features={feats}
       width={800}
       height={200}
       region={region}
