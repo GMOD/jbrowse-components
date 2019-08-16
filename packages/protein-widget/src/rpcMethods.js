@@ -1,8 +1,5 @@
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import {
-  freeAdapterResources,
-  getAdapter,
-} from '@gmod/jbrowse-core/util/dataAdapterCache'
+import { getAdapter } from '@gmod/jbrowse-core/util/dataAdapterCache'
 import {
   deserializeAbortSignal,
   isRemoteAbortSignal,
@@ -35,7 +32,6 @@ export async function render(
   },
 ) {
   if (!sessionId) throw new Error('must pass a unique session id')
-  console.log('here')
 
   if (isRemoteAbortSignal(signal)) {
     signal = deserializeAbortSignal(signal)
