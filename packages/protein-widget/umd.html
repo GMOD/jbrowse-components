@@ -26,9 +26,10 @@
     <div id="protein-viewer"></div>
     <script type="text/javascript">
       // data comes from mydata.js, uses script tag instead of ajax for file:/// compatibility
-      new JBrowseProteinViewer.Viewer(
+      const widget = new JBrowseProteinViewer.ProteinWidget(data)
+      JBrowseProteinViewer.ProteinViewerRender(
         document.getElementById('protein-viewer'),
-        data,
+        widget
       );
     </script>
   </body>

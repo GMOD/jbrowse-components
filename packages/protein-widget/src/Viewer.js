@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
-/* eslint-disable monorepo/no-relative-import */
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { transaction } from 'mobx'
@@ -12,9 +10,9 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 
-import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Config from '@gmod/jbrowse-plugin-config'
 import Protein from '@gmod/jbrowse-plugin-protein'
+import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
@@ -24,8 +22,8 @@ const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
 
 // want a lineargenomeview with a sequence track
 // and a variants track
-export class Viewer {
-  constructor(domElement, initialState = {}) {
+export class ProteinWidget {
+  constructor(initialState = {}) {
     this.pluginManager = new PluginManager(
       plugins.map(P => new P()),
     ).configure()
@@ -37,6 +35,7 @@ export class Viewer {
     const FilteringTrackType = this.pluginManager.getTrackType('FilteringTrack')
 
     const widgetWidth = 800
+    this.ReactComponent = LinearGenomeViewType.ReactComponent
     this.model = types
       .model({
         view: LinearGenomeViewType.stateModel,
@@ -52,7 +51,6 @@ export class Viewer {
       })
       .volatile(self => ({
         pluginManager: this.pluginManager,
-        app: this,
         rpcManager: new RpcManager(this.pluginManager, self.configuration.rpc, {
           MainThreadRpcDriver: { rpcFuncs },
         }),
@@ -109,13 +107,6 @@ function(feature) {
     this.model.view.showTrack(this.model.configuration.variantTrack, {
       height: 300,
     })
-
-    ReactDOM.render(
-      <Provider session={this.model}>
-        <LinearGenomeViewType.ReactComponent model={this.model.view} />
-      </Provider>,
-      domElement,
-    )
   }
 
   update({ width, protein, domains, variants }) {
@@ -180,4 +171,16 @@ function(feature) {
   updateDomains(domains) {
     this.model.configuration.domainsTrack.adapter.features.set(domains || [])
   }
+}
+
+export function ProteinViewer({ widget }) {
+  return (
+    <Provider session={widget.model}>
+      <widget.ReactComponent model={widget.model.view} />
+    </Provider>
+  )
+}
+
+export function ProteinViewerRender(domElement, widget) {
+  ReactDOM.render(<ProteinViewer widget={widget} />, domElement)
 }
