@@ -196,7 +196,7 @@ export const variants = arrayOfThings
     uniqueId: f.attributes.ID[0],
     start: f.start,
     end: f.end + 1,
-    seq_id: 'KRAS 2A',
+    refName: 'KRAS 2A',
     note: f.attributes.Note[0],
     score: scoreTestPattern.shift(),
   }))
@@ -208,7 +208,7 @@ export const domains = arrayOfThings
     uniqueId: f.attributes.ID ? f.attributes.ID[0] : `${f.type}-${idCounter++}`, // eslint-disable-line no-plusplus
     start: f.start,
     end: f.end + 1,
-    seq_id: 'KRAS 2A',
+    refName: 'KRAS 2A',
     type: f.type,
     note: f.attributes.Note && f.attributes.Note[0],
     score: scoreTestPattern.shift(),
