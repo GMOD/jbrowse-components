@@ -188,7 +188,10 @@ SvgFeatureRendering.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   horizontallyFlipped: ReactPropTypes.bool,
-  features: ReactPropTypes.instanceOf(Map),
+  features: ReactPropTypes.oneOfType([
+    ReactPropTypes.instanceOf(Map),
+    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
+  ]),
   config: CommonPropTypes.ConfigSchema.isRequired,
   trackModel: ReactPropTypes.shape({
     /** id of the currently selected feature, if any */

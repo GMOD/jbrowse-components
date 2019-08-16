@@ -78,7 +78,7 @@ class RpcManager {
   renameRegionIfNeeded(refNameMap, container, keyForRegion) {
     let region = container[keyForRegion]
     if (isStateTreeNode(region) && !isAlive(region)) return
-    if (region && refNameMap.has(region.refName)) {
+    if (region && refNameMap && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
       if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
       else region = { ...region }

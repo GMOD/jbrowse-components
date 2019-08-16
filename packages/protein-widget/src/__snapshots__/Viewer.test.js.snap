@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`basic protein widget rendering 1`] = `
+<rect
+  data-testid="IPR005225_1_159"
+  height="10"
+  style="fill:black"
+  title="IPR005225_1_159"
+  width="3160"
+  x="0"
+  y="0"
+/>
+`;

@@ -8,7 +8,7 @@
         background: #dbd2fc;
         padding: 50px;
       }
-      #protein-viewer {
+      #protein-viewer,#feature-viewer,#nclist-feature-viewer {
         border: 1px solid black;
       	margin: 100px auto;
         width: 800px;
@@ -21,14 +21,26 @@
   </head>
   <body>
     <h1>Protein Widget Demo Page</h1>
-    <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data.</tt></p>
+    <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data. It also directly calls an SVG feature renderer with hand-inputted data and nclist-adapter retrieved data</tt></p>
 
+    <h1>Manually supplying JSON to full LinearGenomeView</h1>
     <div id="protein-viewer"></div>
+    <h1>Manually supplying JSON to SvgFeatureRendering</h1>
+    <div id="feature-viewer"></div>
+    <h1>NCList adapter to SvgFeatureRendering (requires http server instead of file:///)</h1>
+    <div id="nclist-feature-viewer"></div>
     <script type="text/javascript">
       // data comes from mydata.js, uses script tag instead of ajax for file:/// compatibility
-      new JBrowseProteinViewer.Viewer(
+      const widget = new JBrowseProteinViewer.ProteinWidget(data)
+      JBrowseProteinViewer.ProteinViewerRender(
         document.getElementById('protein-viewer'),
-        data,
+        widget
+      );
+      JBrowseProteinViewer.ExampleFeatureRendering(
+        document.getElementById('feature-viewer'),
+      );
+      JBrowseProteinViewer.NclistFeatureRendering(
+        document.getElementById('nclist-feature-viewer'),
       );
     </script>
   </body>

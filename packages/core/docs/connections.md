@@ -67,7 +67,7 @@ import {
   readConfObject,
 } from '@gmod/jbrowse-core/configuration'
 import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
-import { flow, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'
 
@@ -77,24 +77,24 @@ function modelFactory(pluginManager) {
     connectionModelFactory(pluginManager),
     types.model().actions(self => ({
       // `connectionConf` contains the configuration defined for this connection
-      connect: flow(function* connect(connectionConf) {
+      connect(connectionConf) {
         // Here is an example of how to read data from a configuration
         const dataLocation = readConfObject(connectionConf, 'dataLocation')
-        // Now fetch the data. Use `yield` as you would `await` in normal
-        // asynchronous code
-        const data = yield fetchData(dataLocation)
-        // Now do something with the data to convert it to JBrowse tracks
-        const tracks = transformData(data)
-        // All tracks must be added under an assembly. This assembly might be
-        // configured by the user or might be determined by the nature of the
-        // connection
-        setTrackConfs(tracks)
+        // Now fetch the data.
+        fetchData(dataLocation).then(data => {
+          // Now do something with the data to convert it to JBrowse tracks
+          const tracks = transformData(data)
+          // All tracks must be added under an assembly. This assembly might be
+          // configured by the user or might be determined by the nature of the
+          // connection
+          setTrackConfs(tracks)
 
-        // If necessary, the tracks can be added incrementally
-        tracks.forEach(track => {
-          addTrackConf(track)
+          // If necessary, the tracks can be added incrementally
+          tracks.forEach(track => {
+            addTrackConf(track)
+          })
         })
-      }),
+      },
     })),
   )
 }

@@ -104,10 +104,14 @@ export default observer(({ config, initialState }) => {
     return disposer
   }, [root])
 
+  const { session, jbrowse } = root || {}
+  const useLocalStorage = jbrowse
+    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
+    : false
   useEffect(() => {
     let localStorageSessionDisposer = () => {}
     let localStorageDataDisposer = () => {}
-    if (status === 'loaded') {
+    if (useLocalStorage && status === 'loaded') {
       localStorageSessionDisposer = onSnapshot(root.session, snapshot => {
         localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
       })
@@ -121,14 +125,14 @@ export default observer(({ config, initialState }) => {
       localStorageDataDisposer()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [root && root.session && root.session.name, status])
+  }, [root && root.session && root.session.name, status, useLocalStorage])
 
-  const { session, jbrowse } = root || {}
-  const { configuration } = jbrowse || {}
+  const updateUrl = jbrowse
+    ? readConfObject(jbrowse.configuration, 'updateUrl')
+    : false
   useEffect(() => {
-    let urlDisposer
+    let urlDisposer = () => {}
     if (session) {
-      const updateUrl = readConfObject(configuration, 'updateUrl')
       if (updateUrl)
         urlDisposer = onSnapshot(session, snapshot => {
           const l = document.location
@@ -140,7 +144,7 @@ export default observer(({ config, initialState }) => {
     }
 
     return urlDisposer
-  }, [configuration, session])
+  }, [updateUrl, session])
 
   let DisplayComponent = (
     <CircularProgress

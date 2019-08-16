@@ -2,11 +2,11 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
+import * as rpcFuncs from './rpcMethods'
 import assemblyManager from './assemblyManager'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import RenderWorker from './rpc.worker'
-import * as rpcFuncs from './rpcMethods'
 import sessionModelFactory from './sessionModelFactory'
 
 const pluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -73,6 +73,10 @@ const JBrowseWeb = types
       updateUrl: {
         type: 'boolean',
         defaultValue: true,
+      },
+      useLocalStorage: {
+        type: 'boolean',
+        defaultValue: false,
       },
     }),
   })
