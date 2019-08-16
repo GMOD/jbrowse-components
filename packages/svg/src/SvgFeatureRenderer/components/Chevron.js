@@ -48,6 +48,8 @@ function Chevron(props) {
   }
   const color2 = readConfObject(config, 'color2', [feature])
 
+  // To restore indents on back of Chevron: un-comment the last point in the
+  // first polygon and replace the second polygon with the commented-out polyline
   return width > height / 2 ? (
     <polygon
       {...shapeProps}
@@ -59,20 +61,30 @@ function Chevron(props) {
         [left + width, top + height / 2],
         [left + width - height / 2, top + height],
         [left, top + height],
-        [left + height / 2, top + height / 2],
+        // [left + height / 2, top + height / 2],
       ]}
     />
   ) : (
-    <polyline
+    <polygon
       {...shapeProps}
+      fill={selected ? emphasizedColor : color}
       points={[
         [left, top],
         [left + width, top + height / 2],
         [left, top + height],
       ]}
       stroke={selected ? emphasizedColor : color}
-      fill="none"
     />
+    // <polyline
+    //   {...shapeProps}
+    //   points={[
+    //     [left, top],
+    //     [left + width, top + height / 2],
+    //     [left, top + height],
+    //   ]}
+    //   stroke={selected ? emphasizedColor : color}
+    //   fill="none"
+    // />
   )
 }
 
