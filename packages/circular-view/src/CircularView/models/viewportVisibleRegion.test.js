@@ -94,7 +94,7 @@ describe('viewportVisibleSection', () => {
   test('viewport on upper center 2', () => {
     // [180.48708681644143, 359.3411680673888] [4.6042679453532855, 541.6042679453533]
     // see '~/Desktop/Screen Shot 2019-06-28 at 3.01.22 PM.png'
-    const { theta, rho } = viewportVisibleSection(
+    const { theta } = viewportVisibleSection(
       [0, 962, 157, 557],
       [561.6042679453533, 561.6042679453533],
       541.6042679453533,

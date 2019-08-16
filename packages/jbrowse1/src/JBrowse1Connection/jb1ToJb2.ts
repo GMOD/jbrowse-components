@@ -95,7 +95,8 @@ export function convertTrackConfig(
       jb2TrackConfig.defaultRendering = 'xyplot'
     else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density'))
       jb2TrackConfig.defaultRendering = 'density'
-  }
+  } else if (jb2TrackConfig.type === 'BasicTrack')
+    jb2TrackConfig.renderer = { type: 'SvgFeatureRenderer' }
 
   return jb2TrackConfig
 }

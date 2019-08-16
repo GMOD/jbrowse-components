@@ -69,7 +69,7 @@ module.exports = {
       {
         oneOf: [
           {
-            test: /\.m?[tj]s$/,
+            test: /\.m?[tj]sx?$/,
             exclude: /(node_modules|bower_components)/,
             use: {
               loader: 'babel-loader',

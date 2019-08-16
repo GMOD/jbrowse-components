@@ -124,7 +124,8 @@ export default observer(({ config, initialState }) => {
       localStorageSessionDisposer()
       localStorageDataDisposer()
     }
-  }, [root, status, useLocalStorage])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [root && root.session && root.session.name, status, useLocalStorage])
 
   const updateUrl = jbrowse
     ? readConfObject(jbrowse.configuration, 'updateUrl')

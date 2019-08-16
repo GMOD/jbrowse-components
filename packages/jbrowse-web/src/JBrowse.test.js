@@ -2,8 +2,10 @@ import {
   cleanup,
   fireEvent,
   render,
+  wait,
   waitForElement,
 } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
@@ -14,9 +16,6 @@ import config from '../test_data/config_integration_test.json'
 import rootModel from './rootModel'
 
 fetchMock.config.sendAsJson = false
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.TextEncoder = TextEncoder
@@ -310,13 +309,13 @@ describe('test configuration editor', () => {
     ).resolves.toBeTruthy()
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
-    // TODO: remove timeout which waits for SSR re-render
-    // Note: a series of like 5 or 6 waitForDomChange calls
-    // on container also works instead of timeout
-    await timeout(1000)
-    const ret = await waitForElement(() => byId('vcf-2560'))
-    expect(ret).toMatchSnapshot()
-  })
+    await wait(async () => {
+      expect(await waitForElement(() => byId('vcf-2560'))).toHaveAttribute(
+        'fill',
+        'green',
+      )
+    })
+  }, 10000)
 })
 
 describe('bigwig', () => {

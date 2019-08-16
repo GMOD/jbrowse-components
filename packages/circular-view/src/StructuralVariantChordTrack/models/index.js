@@ -1,8 +1,7 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { reaction } = jbrequire('mobx')
 
-  const { types, addDisposer } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
   const { ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )

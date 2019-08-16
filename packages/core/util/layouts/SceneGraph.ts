@@ -1,10 +1,47 @@
 import { inDevelopment } from '..'
 
+interface AbsoluteCache {
+  dirty: boolean
+  left?: number
+  right?: number
+  top?: number
+  bottom?: number
+  width?: number
+  height?: number
+}
+
 export default class SceneGraph {
+  private name: string
+
+  public left: number
+
+  public top: number
+
+  public width: number
+
+  public height: number
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public data?: Record<string, any>
+
+  private children: Map<string, SceneGraph>
+
+  private absoluteCache: AbsoluteCache
+
+  public parent?: SceneGraph
+
   /**
    * note: all coordinates are inter-base or inter-pixel coordinates
    */
-  constructor(name, left, top, width, height, data) {
+  constructor(
+    name: string,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: Record<string, any>,
+  ) {
     if (
       inDevelopment &&
       (typeof name !== 'string' ||
@@ -30,10 +67,19 @@ export default class SceneGraph {
     this.absoluteCache = { dirty: true }
   }
 
-  addChild(...args) {
-    let child
-    if (args.length === 1) [child] = args
-    else child = new SceneGraph(...args)
+  addChild(
+    nameOrSceneGraph: string | SceneGraph,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: Record<string, any>,
+  ): SceneGraph {
+    let child: SceneGraph
+    if (nameOrSceneGraph instanceof SceneGraph) child = nameOrSceneGraph
+    else
+      child = new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
 
     if (!(child instanceof SceneGraph)) {
       throw new TypeError(
@@ -46,12 +92,25 @@ export default class SceneGraph {
 
     // update the bounds to match the child
     child.parent = this
-    const { left, right, top, bottom } = child.absolute
-    this.expand(left, right, top, bottom)
-    this.children.set(child.name, child)
+    const {
+      left: childLeft,
+      right: childRight,
+      top: childTop,
+      bottom: childBottom,
+    } = child.absolute
+    if (
+      childLeft !== undefined &&
+      childRight !== undefined &&
+      childTop !== undefined &&
+      childBottom !== undefined
+    ) {
+      this.expand(childLeft, childRight, childTop, childBottom)
+      this.children.set(child.name, child)
+    }
+    return child
   }
 
-  getSubRecord(name) {
+  getSubRecord(name: string): SceneGraph | undefined {
     return this.children.get(name)
   }
 
@@ -64,55 +123,60 @@ export default class SceneGraph {
    * @param {number} top
    * @param {number} bottom
    */
-  expand(newLeft, newRight, newTop, newBottom) {
+  expand(
+    newLeft: number,
+    newRight: number,
+    newTop: number,
+    newBottom: number,
+  ): void {
     const { left, right, top, bottom } = this.absolute
-    if (newLeft < left) {
+    if (left !== undefined && newLeft < left) {
       const diff = left - newLeft
       this.width += diff
       this.left -= diff
     }
-    if (newRight > right) {
+    if (right !== undefined && newRight > right) {
       this.width += newRight - right
     }
-    if (newTop < top) {
+    if (top !== undefined && newTop < top) {
       const diff = top - newTop
       this.height += diff
       this.top -= diff
     }
-    if (newBottom > bottom) {
+    if (bottom !== undefined && newBottom > bottom) {
       this.height += newBottom - bottom
     }
     if (this.parent) this.parent.expand(newLeft, newRight, newTop, newBottom)
     this.absoluteCache.dirty = true
   }
 
-  get bottom() {
+  get bottom(): number {
     return this.top + this.height
   }
 
-  get right() {
+  get right(): number {
     return this.left + this.width
   }
 
-  walkParents(callback) {
+  walkParents(callback: Function): void {
     if (this.parent) {
       callback(this.parent)
       this.parent.walkParents(callback)
     }
   }
 
-  walkChildren(callback) {
+  walkChildren(callback: Function): void {
     for (const sub of this.children.values()) {
       callback(sub)
       sub.walkChildren(callback)
     }
   }
 
-  get absolute() {
+  get absolute(): AbsoluteCache {
     if (this.absoluteCache.dirty) {
       let xOffset = 0
       let yOffset = 0
-      this.walkParents(node => {
+      this.walkParents((node: SceneGraph) => {
         xOffset += node.left
         yOffset += node.top
       })
@@ -129,13 +193,22 @@ export default class SceneGraph {
     return this.absoluteCache
   }
 
-  move(x, y) {
+  move(x: number, y: number): void {
     this.left += x
     this.top += y
 
     this.absoluteCache.dirty = true
-    this.walkChildren(c => {
+    this.walkChildren((c: SceneGraph) => {
       c.absoluteCache.dirty = true
     })
+    const { left, right, top, bottom } = this.absolute
+    if (
+      left !== undefined &&
+      right !== undefined &&
+      top !== undefined &&
+      bottom !== undefined
+    ) {
+      this.expand(left, right, top, bottom)
+    }
   }
 }

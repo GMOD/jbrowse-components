@@ -1,7 +1,7 @@
 import { types, getParent, isAlive, addDisposer } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 
 import { Region } from '@gmod/jbrowse-core/mst-types'
 

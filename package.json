@@ -6,7 +6,7 @@
     ],
     "scripts": {
         "build": "NODE_ENV=production lerna run build",
-        "lint": "eslint --ext .js,.ts,.jsx,.tsx .",
+        "lint": "eslint --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
         "test-ci": "jest --ci --coverage",
         "built-test-ci": "jest --ci packages/integration-tests",
         "test": "jest"
@@ -25,6 +25,7 @@
         "@material-ui/core": "^4.0.0",
         "@material-ui/styles": "^4.0.0",
         "@svgr/webpack": "^4.1.0",
+        "@testing-library/jest-dom": "^4.0.0",
         "@types/base64-js": "^1.2.5",
         "@testing-library/react": "^8.0.8",
         "@types/get-value": "^3.0.1",

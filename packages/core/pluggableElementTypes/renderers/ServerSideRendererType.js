@@ -1,6 +1,5 @@
 import { renderToString } from 'react-dom/server'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject } from '../../configuration'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'

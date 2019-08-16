@@ -1,5 +1,5 @@
 import { Observer, Observable, merge } from 'rxjs'
-import { tap, takeUntil } from 'rxjs/operators'
+import { takeUntil } from 'rxjs/operators'
 import { IRegion as Region } from './mst-types'
 import { ObservableCreate } from './util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from './util'

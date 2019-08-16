@@ -3,10 +3,11 @@ export default ({ jbrequire }) => {
   const { isAlive } = jbrequire('mobx-state-tree')
   const { useEffect, useRef } = React
   const { observer } = jbrequire('mobx-react-lite')
+  const { PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { unmountComponentAtNode, hydrate } = jbrequire('react-dom')
 
   function RpcRenderedSvgGroup({ model }) {
-    const { id, data, html, filled, renderProps, renderingComponent } = model
+    const { data, html, filled, renderProps, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
 
@@ -44,6 +45,10 @@ export default ({ jbrequire }) => {
     })
 
     return <g ref={ssrContainerNode} />
+  }
+
+  RpcRenderedSvgGroup.propTypes = {
+    model: MobxPropTypes.observableObject.isRequired,
   }
 
   return observer(RpcRenderedSvgGroup)
