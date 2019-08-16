@@ -5,3 +5,4 @@ yarn-error.log
 *.swp
 .DS_Store
 lint.log
+.eslintcache
