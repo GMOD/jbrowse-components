@@ -1,6 +1,6 @@
 import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
-import { clamp, getSession } from '@gmod/jbrowse-core/util'
+import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, types } from 'mobx-state-tree'
@@ -67,6 +67,7 @@ export function stateModelFactory(pluginManager) {
       width: 800,
       // set this to true to hide the close, config, and tracksel buttons
       hideControls: false,
+      hideHeader: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),
         'hierarchical',
@@ -76,6 +77,30 @@ export function stateModelFactory(pluginManager) {
     .views(self => ({
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
+      },
+      get menuOptions() {
+        return [
+          {
+            title: 'Show track selector',
+            key: 'track_selector',
+            callback: self.activateTrackSelector,
+          },
+          {
+            title: 'Horizontal flip',
+            key: 'flip',
+            callback: self.horizontallyFlip,
+          },
+          {
+            title: 'Show all regions',
+            key: 'showall',
+            callback: self.showAllRegions,
+          },
+          {
+            title: self.hideHeader ? 'Hide header' : 'Show header',
+            key: 'hide_header',
+            callback: self.toggleHeader,
+          },
+        ]
       },
 
       get totalBp() {
@@ -128,6 +153,10 @@ export function stateModelFactory(pluginManager) {
 
       setDisplayName(name) {
         self.displayName = name
+      },
+
+      toggleHeader() {
+        self.hideHeader = !self.hideHeader
       },
 
       horizontallyFlip() {
@@ -237,6 +266,10 @@ export function stateModelFactory(pluginManager) {
           offset: Math.round(bp - bpSoFar),
           index: self.displayedRegions.length - 1,
         }
+      },
+
+      navToLocstring(locstring) {
+        self.navTo(parseLocString(locstring))
       },
 
       /*

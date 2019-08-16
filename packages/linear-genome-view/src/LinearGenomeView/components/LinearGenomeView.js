@@ -30,6 +30,7 @@ import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 
 const dragHandleHeight = 3
+const itemHeight = 48
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -90,6 +91,15 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'red',
     },
   },
+  paperProps: {
+    style: {
+      maxHeight: itemHeight * 8,
+    },
+  },
+  rubberbandBar: {
+    gridColumn: 'blocks',
+    gridRow: 'scale-bar',
+  },
   ...buttonStyles(theme),
 }))
 
@@ -149,14 +159,11 @@ TrackContainer.propTypes = {
   track: ReactPropTypes.shape({}).isRequired,
 }
 
-const ITEM_HEIGHT = 48
+const LongMenu = observer(props => {
+  const { model, className } = props
 
-function LongMenu(props) {
-  const { className } = props
   const [anchorEl, setAnchorEl] = React.useState(null)
   const open = Boolean(anchorEl)
-
-  const { options } = props
 
   function handleClick(event) {
     setAnchorEl(event.currentTarget)
@@ -183,13 +190,8 @@ function LongMenu(props) {
         keepMounted
         open={open}
         onClose={handleClose}
-        PaperProps={{
-          style: {
-            maxHeight: ITEM_HEIGHT * 8,
-          },
-        }}
       >
-        {options.map(option => (
+        {model.menuOptions.map(option => (
           <MenuItem
             key={option.key}
             onClick={() => {
@@ -203,17 +205,11 @@ function LongMenu(props) {
       </Menu>
     </>
   )
-}
+})
 
 LongMenu.propTypes = {
   className: ReactPropTypes.string.isRequired,
-  options: ReactPropTypes.arrayOf(
-    ReactPropTypes.shape({
-      key: ReactPropTypes.string.isRequired,
-      callback: ReactPropTypes.func.isRequired,
-      title: ReactPropTypes.string.isRequired,
-    }),
-  ).isRequired,
+  model: PropTypes.objectOrObservableObject.isRequired,
 }
 
 function TextFieldOrTypography({ model }) {
@@ -296,7 +292,7 @@ Search.propTypes = {
   error: ReactPropTypes.string, // eslint-disable-line react/require-default-props
 }
 
-function RefSeqDropdown({ model, onSubmit }) {
+const RefSeqDropdown = observer(({ model, onSubmit }) => {
   const tied = !!model.displayRegionsFromAssemblyName
   return (
     <Select
@@ -318,14 +314,14 @@ function RefSeqDropdown({ model, onSubmit }) {
       })}
     </Select>
   )
-}
+})
 
 RefSeqDropdown.propTypes = {
   onSubmit: ReactPropTypes.func.isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
-function Header({ model, header, setHeader }) {
+const Header = observer(({ model }) => {
   const classes = useStyles()
   const [error, setError] = useState()
   const navTo = locstring => {
@@ -335,9 +331,7 @@ function Header({ model, header, setHeader }) {
   }
   return (
     <div className={classes.headerBar}>
-      {model.hideControls ? null : (
-        <Controls header={header} setHeader={setHeader} model={model} />
-      )}
+      {model.hideControls ? null : <Controls model={model} />}
       <TextFieldOrTypography model={model} />
       <div className={classes.spacer} />
 
@@ -348,15 +342,13 @@ function Header({ model, header, setHeader }) {
       <div className={classes.spacer} />
     </div>
   )
-}
+})
 
 Header.propTypes = {
-  setHeader: ReactPropTypes.func.isRequired,
-  header: ReactPropTypes.bool.isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
-function Controls({ model, header, setHeader }) {
+const Controls = observer(({ model }) => {
   const classes = useStyles()
   return (
     <>
@@ -367,40 +359,12 @@ function Controls({ model, header, setHeader }) {
       >
         <Icon fontSize="small">close</Icon>
       </IconButton>
-      <LongMenu
-        className={classes.iconButton}
-        options={[
-          {
-            title: 'Show track selector',
-            key: 'track_selector',
-            callback: model.activateTrackSelector,
-          },
-          {
-            title: 'Horizontal flip',
-            key: 'flip',
-            callback: model.horizontallyFlip,
-          },
-          {
-            title: 'Show all regions',
-            key: 'showall',
-            callback: model.showAllRegions,
-          },
-          {
-            title: header ? 'Hide header' : 'Show header',
-            key: 'hide_header',
-            callback: () => {
-              setHeader(!header)
-            },
-          },
-        ]}
-      />
+      <LongMenu className={classes.iconButton} model={model} />
     </>
   )
-}
+})
 
 Controls.propTypes = {
-  setHeader: ReactPropTypes.func.isRequired,
-  header: ReactPropTypes.bool.isRequired,
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
@@ -408,7 +372,6 @@ function LinearGenomeView(props) {
   const { model } = props
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
   const classes = useStyles()
-  const [header, setHeader] = useState(true)
 
   /*
    * NOTE: offsetPx is the total offset in px of the viewing window into the
@@ -418,7 +381,7 @@ function LinearGenomeView(props) {
     display: 'grid',
     position: 'relative',
     gridTemplateRows: `${
-      header ? '[header] auto ' : ''
+      !model.hideHeader ? '[header] auto ' : ''
     } [scale-bar] auto ${tracks
       .map(
         t =>
@@ -435,15 +398,13 @@ function LinearGenomeView(props) {
         key={`view-${id}`}
         style={style}
       >
-        {header ? (
-          <Header header={header} setHeader={setHeader} model={model} />
-        ) : null}
+        {!model.hideHeader ? <Header model={model} /> : null}
         <div
           className={classnames(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          {model.hideControls || header ? null : (
-            <Controls header={header} setHeader={setHeader} model={model} />
+          {model.hideControls || !model.hideHeader ? null : (
+            <Controls model={model} />
           )}
         </div>
 
@@ -470,7 +431,7 @@ function LinearGenomeView(props) {
           />
         </Rubberband>
 
-        {!header ? (
+        {model.hideHeader ? (
           <div
             className={classes.zoomControls}
             style={{
