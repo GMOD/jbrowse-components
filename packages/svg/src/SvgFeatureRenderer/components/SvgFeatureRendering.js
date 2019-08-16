@@ -106,14 +106,16 @@ function SvgFeatureRendering(props) {
     const shouldShowDescription = /\S/.test(description)
     let descriptionWidth = 0
     if (shouldShowDescription) {
+      const aboveLayout = shouldShowName
+        ? rootLayout.getSubRecord('nameLabel')
+        : featureLayout
       descriptionWidth = Math.round(
         Math.min(description.length * fontWidth, rootLayout.width + exp),
       )
       rootLayout.addChild(
         'descriptionLabel',
         0,
-        rootLayout.getSubRecord(shouldShowName ? 'nameLabel' : 'feature')
-          .bottom + textVerticalPadding,
+        aboveLayout.bottom + textVerticalPadding,
         descriptionWidth,
         fontHeight,
       )
