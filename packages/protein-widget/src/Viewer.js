@@ -26,6 +26,7 @@ import {
   AdapterClass,
   configSchema as ConfigSchema,
 } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
+import Ruler from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/Ruler'
 import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
@@ -265,14 +266,20 @@ export async function NclistFeatureRendering(domElement) {
   })
   const ret = adapter.getFeatures(region)
   const feats = await ret.pipe(toArray()).toPromise()
+  const width = 800
 
   ReactDOM.render(
-    <FeatureRendering
-      features={feats}
-      width={800}
-      height={200}
-      region={region}
-    />,
+    <>
+      <svg width={width} height={30}>
+        <Ruler region={region} bpPerPx={(region.end - region.start) / width} />
+      </svg>
+      <FeatureRendering
+        features={feats}
+        width={width}
+        height={200}
+        region={region}
+      />
+    </>,
     domElement,
   )
 }
