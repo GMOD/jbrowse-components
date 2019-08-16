@@ -74,6 +74,10 @@ const JBrowseWeb = types
         type: 'boolean',
         defaultValue: true,
       },
+      useLocalStorage: {
+        type: 'boolean',
+        defaultValue: false,
+      },
     }),
   })
   .actions(self => ({

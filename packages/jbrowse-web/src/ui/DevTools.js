@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { withStyles } from '@material-ui/core/styles'
 import ReactPropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
@@ -31,25 +34,49 @@ function addView(session, type) {
 }
 
 function DeveloperTools({ classes, session }) {
+  const [anchorEl, setAnchorEl] = useState(null)
+  function handleSessionMenuClick(event) {
+    setAnchorEl(event.currentTarget)
+  }
+  function handleSessionMenuClose() {
+    setAnchorEl(null)
+  }
+  function clearSession() {
+    localStorage.removeItem('jbrowse-web-data')
+    localStorage.removeItem('jbrowse-web-session')
+    window.location = window.location.origin
+  }
+  function toggleUpdateUrl() {
+    const updateUrl = readConfObject(rootConfig, 'updateUrl')
+    if (updateUrl) window.history.replaceState({}, '', window.location.origin)
+    rootConfig.updateUrl.set(!updateUrl)
+    handleSessionMenuClose()
+  }
+  function toggleUseLocalStorage() {
+    const useLocalStorage = readConfObject(rootConfig, 'useLocalStorage')
+    rootConfig.useLocalStorage.set(!useLocalStorage)
+    handleSessionMenuClose()
+  }
+  const rootConfig = getRoot(session).jbrowse.configuration
   return (
     <div className={classes.developer}>
       <h3>Developer tools</h3>
-      <button
-        type="button"
+      <Button
         onClick={() => {
           addView(session, 'LinearGenomeView')
         }}
+        variant="outlined"
       >
         Add linear view
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
         onClick={() => {
           addView(session, 'CircularView')
         }}
+        variant="outlined"
       >
         Add circular view
-      </button>
+      </Button>
 
       <Button
         disabled={!session.history.canUndo}
@@ -66,10 +93,43 @@ function DeveloperTools({ classes, session }) {
         redo
       </Button>
 
-      <Button onClick={() => getRoot(session).setDefaultSession()}>
-        <Icon>clear</Icon>
-        clear session
+      <Button aria-haspopup="true" onClick={handleSessionMenuClick}>
+        Session
+        <Icon>more_vert</Icon>
       </Button>
+      <Menu
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleSessionMenuClose}
+      >
+        <MenuItem onClick={clearSession}>
+          <ListItemIcon>
+            <Icon>clear</Icon>
+          </ListItemIcon>
+          Clear session
+        </MenuItem>
+        <MenuItem onClick={toggleUpdateUrl}>
+          <ListItemIcon>
+            <Icon>
+              {readConfObject(rootConfig, 'updateUrl')
+                ? 'check_box'
+                : 'check_box_outline_blank'}
+            </Icon>
+          </ListItemIcon>
+          Update URL
+        </MenuItem>
+        <MenuItem onClick={toggleUseLocalStorage}>
+          <ListItemIcon>
+            <Icon>
+              {readConfObject(rootConfig, 'useLocalStorage')
+                ? 'check_box'
+                : 'check_box_outline_blank'}
+            </Icon>
+          </ListItemIcon>
+          Use localStorage
+        </MenuItem>
+      </Menu>
     </div>
   )
 }

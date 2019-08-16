@@ -37,8 +37,8 @@ export default pluginManager => {
       setDefaultSequence(isDefault) {
         self.defaultSequence = isDefault
       },
-      // connect: flow(function* connect(connectionConf) {
+      // connect(connectionConf) {
       //   // Add assemblies and tracks here
-      // }),
+      // },
     }))
 }
