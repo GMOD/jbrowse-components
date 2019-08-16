@@ -17,6 +17,10 @@ import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import Filtering from '@gmod/jbrowse-plugin-filtering'
+import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
+import Rendering from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/components/SvgFeatureRendering'
+import SvgRendererConfigSchema from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/configSchema'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import * as rpcFuncs from './rpcMethods'
 
 const plugins = [Config, LinearGenomeView, Protein, Lollipop, SVG, Filtering]
@@ -188,4 +192,57 @@ ProteinViewer.propTypes = {
 
 export function ProteinViewerRender(domElement, widget) {
   ReactDOM.render(<ProteinViewer widget={widget} />, domElement)
+}
+
+const FeatureRendering = ({ features, region, width, height }) => (
+  <Rendering
+    width={width}
+    height={height}
+    region={region}
+    layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+    features={features}
+    config={SvgRendererConfigSchema.create({})}
+    bpPerPx={(region.end - region.start) / width}
+  />
+)
+FeatureRendering.propTypes = {
+  features: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  region: PropTypes.shape().isRequired,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+}
+
+export function ProteinFeatureRendering(domElement) {
+  const region = {
+    refName: 'chr1',
+    start: 1,
+    end: 100,
+  }
+  const feat1 = new SimpleFeature({
+    id: 'feat1',
+    data: {
+      refName: 'chr1',
+      name: 'BRCA1',
+      start: 5,
+      end: 90,
+    },
+  })
+  const feat2 = new SimpleFeature({
+    id: 'feat2',
+    data: {
+      refName: 'chr1',
+      name: 'BRCA2',
+      start: 30,
+      end: 95,
+    },
+  })
+  ReactDOM.render(
+    <FeatureRendering
+      features={[feat1, feat2]}
+      width={800}
+      height={200}
+      region={region}
+    />,
+    domElement,
+  )
 }

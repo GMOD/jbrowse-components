@@ -3996,4 +3996,6 @@ const data = {
   ]
 }
 
-module.exports = data
+if(typeof module !== 'undefined') {
+  module.exports = data
+}

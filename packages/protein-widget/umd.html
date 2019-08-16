@@ -8,7 +8,7 @@
         background: #dbd2fc;
         padding: 50px;
       }
-      #protein-viewer {
+      #protein-viewer,#feature-viewer {
         border: 1px solid black;
       	margin: 100px auto;
         width: 800px;
@@ -24,12 +24,16 @@
     <p>This is a hand-written little html page. All it does is include the <tt>jbrowse-protein-viewer.js</tt> bundle with a script tag, and then call <tt>new JBrowseProteinViewer.Viewer</tt> with a JSON object of data.</tt></p>
 
     <div id="protein-viewer"></div>
+    <div id="feature-viewer"></div>
     <script type="text/javascript">
       // data comes from mydata.js, uses script tag instead of ajax for file:/// compatibility
       const widget = new JBrowseProteinViewer.ProteinWidget(data)
       JBrowseProteinViewer.ProteinViewerRender(
         document.getElementById('protein-viewer'),
         widget
+      );
+      JBrowseProteinViewer.ProteinFeatureRendering(
+        document.getElementById('feature-viewer'),
       );
     </script>
   </body>
