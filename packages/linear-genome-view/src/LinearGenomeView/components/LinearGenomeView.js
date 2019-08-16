@@ -30,7 +30,6 @@ import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 
 const dragHandleHeight = 3
-const itemHeight = 48
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -90,15 +89,6 @@ const useStyles = makeStyles(theme => ({
     error: {
       backgroundColor: 'red',
     },
-  },
-  paperProps: {
-    style: {
-      maxHeight: itemHeight * 8,
-    },
-  },
-  rubberbandBar: {
-    gridColumn: 'blocks',
-    gridRow: 'scale-bar',
   },
   ...buttonStyles(theme),
 }))
