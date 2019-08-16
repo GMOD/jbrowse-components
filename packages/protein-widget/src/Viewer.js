@@ -22,10 +22,7 @@ import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayo
 import Rendering from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/components/SvgFeatureRendering'
 import SvgRendererConfigSchema from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer/configSchema'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import {
-  AdapterClass,
-  configSchema as ConfigSchema,
-} from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
+import { AdapterClass } from '@gmod/jbrowse-plugin-jbrowse1/src/NCListAdapter'
 import Ruler from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView/components/Ruler'
 import * as rpcFuncs from './rpcMethods'
 
@@ -242,7 +239,6 @@ export function ExampleFeatureRendering(domElement) {
       end: 95,
     },
   })
-  const x = new Map()
 
   ReactDOM.render(
     <FeatureRendering
