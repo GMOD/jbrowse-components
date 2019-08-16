@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
+import PropTypes from 'prop-types'
 import 'typeface-roboto'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
 
@@ -179,6 +180,10 @@ export function ProteinViewer({ widget }) {
       <widget.ReactComponent model={widget.model.view} />
     </Provider>
   )
+}
+
+ProteinViewer.propTypes = {
+  widget: PropTypes.instanceOf(ProteinWidget).isRequired,
 }
 
 export function ProteinViewerRender(domElement, widget) {
