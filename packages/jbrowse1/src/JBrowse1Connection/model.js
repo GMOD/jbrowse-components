@@ -21,18 +21,22 @@ export default function(pluginManager) {
             self.configuration,
             'dataDirLocation',
           )
-          fetchJb1(dataDirLocation).then(config =>
-            createRefSeqsAdapter(config.refSeqs).then(adapter => {
-              const jb2Tracks = config.tracks.map(track =>
-                convertTrackConfig(track, config.dataRoot),
-              )
-              self.setSequence({
-                type: 'ReferenceSequenceTrack',
-                adapter,
-              })
-              self.setTrackConfs(jb2Tracks)
-            }),
-          )
+          fetchJb1(dataDirLocation)
+            .then(config =>
+              createRefSeqsAdapter(config.refSeqs).then(adapter => {
+                const jb2Tracks = config.tracks.map(track =>
+                  convertTrackConfig(track, config.dataRoot),
+                )
+                self.setSequence({
+                  type: 'ReferenceSequenceTrack',
+                  adapter,
+                })
+                self.setTrackConfs(jb2Tracks)
+              }),
+            )
+            .catch(error => {
+              console.error(error)
+            })
         },
       })),
   )

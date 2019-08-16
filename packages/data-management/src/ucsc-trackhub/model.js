@@ -26,15 +26,22 @@ export default function(pluginManager) {
             self.configuration,
             'hubTxtLocation',
           )
-          fetchHubFile(hubFileLocation).then(hubFile => {
-            let genomesFileLocation
-            if (hubFileLocation.uri)
-              genomesFileLocation = {
-                uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
-                  .href,
-              }
-            else genomesFileLocation = { localPath: hubFile.get('genomesFile') }
-            fetchGenomesFile(genomesFileLocation).then(genomesFile => {
+          fetchHubFile(hubFileLocation)
+            .then(hubFile => {
+              let genomesFileLocation
+              if (hubFileLocation.uri)
+                genomesFileLocation = {
+                  uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
+                    .href,
+                }
+              else
+                genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+              return Promise.all([
+                hubFile,
+                fetchGenomesFile(genomesFileLocation),
+              ])
+            })
+            .then(([hubFile, genomesFile]) => {
               const assemblyName = readConfObject(self.assemblyConf, 'name')
               if (!genomesFile.has(assemblyName))
                 throw new Error(
@@ -84,13 +91,20 @@ export default function(pluginManager) {
                 trackDbFileLocation = {
                   localPath: genomesFile.get(assemblyName).get('trackDb'),
                 }
-              fetchTrackDbFile(trackDbFileLocation).then(trackDbFile => {
-                const tracks = generateTracks(trackDbFile, trackDbFileLocation)
-                self.setSequence(sequence)
-                self.setTrackConfs(tracks)
-              })
+              return Promise.all([
+                trackDbFileLocation,
+                fetchTrackDbFile(trackDbFileLocation),
+                sequence,
+              ])
             })
-          })
+            .then(([trackDbFileLocation, trackDbFile, sequence]) => {
+              const tracks = generateTracks(trackDbFile, trackDbFileLocation)
+              self.setSequence(sequence)
+              self.setTrackConfs(tracks)
+            })
+            .catch(error => {
+              console.error(error)
+            })
         },
       })),
   )
