@@ -1,6 +1,8 @@
-import { withStyles, TextField, Typography, Link } from '@material-ui/core'
-import Select from '@material-ui/core/Select'
+import { withStyles } from '@material-ui/core'
+import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
@@ -102,16 +104,17 @@ function ConfirmTrack(props) {
           onChange={event => setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
-        <Select
+        <TextField
           className={classes.spacing}
           value={trackType}
           label="trackType"
           helperText="A track type"
+          select
           fullWidth
-          onChange={event => {
-            setTrackType(event.target.value)
+          onChange={event => setTrackType(event.target.value)}
+          SelectProps={{
+            SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
-          SelectProps={{ 'data-testid': 'trackTypeSelect' }}
         >
           {session.pluginManager
             .getElementTypesInGroup('track')
@@ -123,7 +126,7 @@ function ConfirmTrack(props) {
                 {installedTrackType.name}
               </MenuItem>
             ))}
-        </Select>
+        </TextField>
         <TextField
           value={datasetName}
           label="datasetName"
@@ -131,7 +134,9 @@ function ConfirmTrack(props) {
           select
           fullWidth
           onChange={event => setDatasetName(event.target.value)}
-          inputProps={{ 'data-testid': 'datasetNameSelect' }}
+          SelectProps={{
+            SelectDisplayProps: { 'data-testid': 'datasetNameSelect' },
+          }}
         >
           {session.datasets.map(dataset => {
             const newDatasetName = readConfObject(dataset, 'name')
