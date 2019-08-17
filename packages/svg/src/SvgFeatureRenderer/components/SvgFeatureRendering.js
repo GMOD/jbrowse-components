@@ -123,8 +123,8 @@ function SvgFeatureRendering(props) {
 
     const topPx = layout.addRect(
       feature.id(),
-      start,
-      start + rootLayout.width * bpPerPx,
+      feature.get('start'),
+      feature.get('start') + rootLayout.width * bpPerPx,
       rootLayout.height,
     )
 
