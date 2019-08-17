@@ -258,7 +258,7 @@ export async function NclistFeatureRendering(domElement) {
     end: 41280000,
   }
   const adapter = new AdapterClass({
-    rootUrlTemplate: '../test_data/brca_nclist/{refseq}/trackData.json',
+    rootUrlTemplate: 'test_data/brca_nclist/{refseq}/trackData.json',
   })
   const ret = adapter.getFeatures(region)
   const feats = await ret.pipe(toArray()).toPromise()
