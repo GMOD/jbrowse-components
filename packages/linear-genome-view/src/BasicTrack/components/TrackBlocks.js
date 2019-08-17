@@ -49,7 +49,7 @@ const ElidedBlockMarker = withStyles(styles)(function ElidedBlockMarker({
   )
 })
 
-function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
+function TrackBlocks({ classes, model, viewModel, blockState }) {
   const { blockDefinitions } = model
   return (
     <div data-testid="Block" className={classes.trackBlocks}>
@@ -57,17 +57,7 @@ function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
-            <Block
-              leftBorder={block.isLeftEndOfDisplayedRegion}
-              rightBorder={block.isRightEndOfDisplayedRegion}
-              start={block.start}
-              end={block.end}
-              refName={block.refName}
-              width={block.widthPx}
-              key={block.key}
-              offset={block.offsetPx - offsetPx}
-              bpPerPx={bpPerPx}
-            >
+            <Block key={block.offsetPx} block={block} model={viewModel}>
               {state && state.reactComponent ? (
                 <state.reactComponent model={state} />
               ) : null}
@@ -90,7 +80,7 @@ function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
             <ElidedBlockMarker
               key={block.key}
               width={block.widthPx}
-              offset={block.offsetPx - offsetPx}
+              offset={block.offsetPx - viewModel.offsetPx}
             />
           )
         }
@@ -102,10 +92,9 @@ function TrackBlocks({ classes, model, offsetPx, bpPerPx, blockState }) {
 
 TrackBlocks.propTypes = {
   classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  offsetPx: ReactPropTypes.number.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
   blockState: PropTypes.observableMap.isRequired,
   model: PropTypes.observableObject.isRequired,
+  viewModel: PropTypes.observableObject.isRequired,
 }
 
 export default withStyles(styles)(observer(TrackBlocks))

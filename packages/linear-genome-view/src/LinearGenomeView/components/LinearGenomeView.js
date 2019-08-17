@@ -408,17 +408,7 @@ function LinearGenomeView(props) {
           bpPerPx={bpPerPx}
           model={model}
         >
-          <ScaleBar
-            style={{
-              gridColumn: 'blocks',
-              gridRow: 'scale-bar',
-            }}
-            height={32}
-            bpPerPx={bpPerPx}
-            blocks={staticBlocks}
-            offsetPx={offsetPx}
-            horizontallyFlipped={model.horizontallyFlipped}
-          />
+          <ScaleBar model={model} height={32} />
         </Rubberband>
 
         {model.hideHeader ? (

@@ -1,5 +1,6 @@
 import { withStyles } from '@material-ui/core'
 import React from 'react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import Block from '../../BasicTrack/components/Block'
 
@@ -14,7 +15,7 @@ const styles = (/* theme */) => ({
     background: '#555',
     // background: theme.palette.background.default,
     overflow: 'hidden',
-    height: '100%',
+    height: 32,
   },
   refLabel: {
     fontSize: '16px',
@@ -37,39 +38,17 @@ function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   return undefined
 }
 
-function ScaleBar({
-  classes,
-  style,
-  height,
-  blocks,
-  offsetPx,
-  bpPerPx,
-  horizontallyFlipped,
-}) {
-  const finalStyle = Object.assign({}, style, {
-    height: `${height}px`,
-  })
-
+function ScaleBar({ classes, model, height }) {
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
-    offsetPx,
-    blocks,
+    model.offsetPx,
+    model.staticBlocks,
   )
 
   return (
-    <div style={finalStyle} className={classes.scaleBar}>
-      {blocks.map(block => {
+    <div className={classes.scaleBar}>
+      {model.staticBlocks.map(block => {
         return (
-          <Block
-            leftBorder={block.isLeftEndOfDisplayedRegion}
-            rightBorder={block.isRightEndOfDisplayedRegion}
-            refName={block.refName}
-            start={block.start}
-            end={block.end}
-            width={block.widthPx}
-            key={block.key}
-            offset={block.offsetPx - offsetPx}
-            bpPerPx={bpPerPx}
-          >
+          <Block key={block.offsetPx} block={block} model={model}>
             <svg height={height} width={block.widthPx}>
               <Ruler
                 region={block}
@@ -77,8 +56,8 @@ function ScaleBar({
                   !!block.isLeftEndOfDisplayedRegion &&
                   block !== blockContainingLeftEndOfView
                 }
-                bpPerPx={bpPerPx}
-                flipped={horizontallyFlipped}
+                bpPerPx={model.bpPerPx}
+                flipped={model.horizontallyFlipped}
               />
             </svg>
           </Block>
@@ -95,20 +74,11 @@ function ScaleBar({
 }
 ScaleBar.defaultProps = {
   style: {},
-  blocks: [],
-  horizontallyFlipped: false,
 }
 ScaleBar.propTypes = {
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
   classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  style: PropTypes.objectOf(PropTypes.any),
   height: PropTypes.number.isRequired,
-  blocks: PropTypes.shape({
-    map: PropTypes.func.isRequired,
-    getBlocks: PropTypes.func.isRequired,
-  }),
-  bpPerPx: PropTypes.number.isRequired,
-  offsetPx: PropTypes.number.isRequired,
-  horizontallyFlipped: PropTypes.bool,
 }
 
-export default withStyles(styles)(ScaleBar)
+export default withStyles(styles)(observer(ScaleBar))
