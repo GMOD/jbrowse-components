@@ -1,4 +1,5 @@
-import { withStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles'
+import { observer } from 'mobx-react'
 import React, { Fragment } from 'react'
 import ReactPropTypes from 'prop-types'
 import { PropTypes } from '@gmod/jbrowse-core/mst-types'
@@ -77,7 +78,7 @@ export function* makeTicks(
   }
 }
 
-const styles = (/* theme */) => ({
+const useStyles = makeStyles((/* theme */) => ({
   majorTickLabel: {
     fontSize: '11px',
     // fill: theme.palette.text.primary,
@@ -103,18 +104,11 @@ const styles = (/* theme */) => ({
     fillOpacity: 0.75,
     filter: 'url(#dilate)',
   },
-})
+}))
 
 function Ruler(props) {
-  const {
-    region,
-    bpPerPx,
-    flipped,
-    major,
-    minor,
-    showRefNameLabel,
-    classes,
-  } = props
+  const { region, bpPerPx, flipped, major, minor, showRefNameLabel } = props
+  const classes = useStyles()
   const ticks = []
   const labels = []
   for (const tick of makeTicks(region, bpPerPx, major, minor)) {
@@ -189,7 +183,6 @@ function Ruler(props) {
 }
 
 Ruler.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   region: PropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   flipped: ReactPropTypes.bool,
@@ -203,4 +196,4 @@ Ruler.defaultProps = {
   minor: true,
 }
 
-export default withStyles(styles)(Ruler)
+export default observer(Ruler)

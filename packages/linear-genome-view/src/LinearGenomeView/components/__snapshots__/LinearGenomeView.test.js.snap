@@ -215,7 +215,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     >
       <div
         class="ScaleBar-scaleBar-166"
-        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       />
     </div>
     <div
@@ -513,10 +512,9 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       <div
         class="ScaleBar-scaleBar-166"
-        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       >
         <div
-          class="Block-block-213 Block-leftBorder-214 Block-rightBorder-215"
+          class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
           style="left: 0px; width: 100px;"
         >
           <svg
@@ -524,7 +522,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             width="100"
           >
             <line
-              class="Ruler-majorTick-217"
+              class="makeStyles-majorTick-217"
               data-bp="-1"
               stroke="#555"
               stroke-width="1"
@@ -534,7 +532,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="Ruler-minorTick-218"
+              class="makeStyles-minorTick-218"
               data-bp="19"
               stroke="#999"
               stroke-width="1"
@@ -544,7 +542,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="Ruler-minorTick-218"
+              class="makeStyles-minorTick-218"
               data-bp="39"
               stroke="#999"
               stroke-width="1"
@@ -554,7 +552,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="Ruler-minorTick-218"
+              class="makeStyles-minorTick-218"
               data-bp="59"
               stroke="#999"
               stroke-width="1"
@@ -564,7 +562,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="Ruler-minorTick-218"
+              class="makeStyles-minorTick-218"
               data-bp="79"
               stroke="#999"
               stroke-width="1"
@@ -574,7 +572,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="Ruler-majorTick-217"
+              class="makeStyles-majorTick-217"
               data-bp="99"
               stroke="#555"
               stroke-width="1"
@@ -584,7 +582,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="Ruler-minorTick-218"
+              class="makeStyles-minorTick-218"
               data-bp="119"
               stroke="#999"
               stroke-width="1"
@@ -594,7 +592,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <text
-              class="Ruler-majorTickLabel-216"
+              class="makeStyles-majorTickLabel-216"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="-4"
@@ -603,7 +601,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               0
             </text>
             <text
-              class="Ruler-majorTickLabel-216"
+              class="makeStyles-majorTickLabel-216"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="96"
@@ -690,7 +688,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           data-testid="Block"
         >
           <div
-            class="Block-block-213 Block-leftBorder-214 Block-rightBorder-215"
+            class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
             style="left: 0px; width: 100px;"
           >
             <div
@@ -777,7 +775,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           data-testid="Block"
         >
           <div
-            class="Block-block-213 Block-leftBorder-214 Block-rightBorder-215"
+            class="makeStyles-block-213 makeStyles-leftBorder-214 makeStyles-rightBorder-215"
             style="left: 0px; width: 100px;"
           >
             <div
@@ -1013,7 +1011,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     >
       <div
         class="ScaleBar-scaleBar-166"
-        style="grid-column: blocks; grid-row: scale-bar; height: 32px;"
       />
     </div>
   </div>

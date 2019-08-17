@@ -1,9 +1,10 @@
-import { withStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/styles'
 import classnames from 'classnames'
+import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const styles = (/* theme */) => ({
+const useStyles = makeStyles((/* theme */) => ({
   block: {
     position: 'absolute',
     minHeight: '100%',
@@ -20,15 +21,19 @@ const styles = (/* theme */) => ({
     borderRight: `2px solid #333`,
     // borderRight: `2px solid ${theme.palette.divider}`,
   },
-})
+}))
 
-function Block({ classes, offset, children, width, leftBorder, rightBorder }) {
+function Block({ block, model, children }) {
+  const classes = useStyles()
   return (
     <div
-      style={{ left: `${offset}px`, width: `${width}px` }}
+      style={{
+        left: `${block.offsetPx - model.offsetPx}px`,
+        width: `${block.widthPx}px`,
+      }}
       className={classnames(classes.block, {
-        [classes.leftBorder]: leftBorder,
-        [classes.rightBorder]: rightBorder,
+        [classes.leftBorder]: block.isLeftEndOfDisplayedRegion,
+        [classes.rightBorder]: block.isRightEndOfDisplayedRegion,
       })}
     >
       {children}
@@ -38,19 +43,14 @@ function Block({ classes, offset, children, width, leftBorder, rightBorder }) {
 
 Block.defaultProps = {
   children: undefined,
-  leftBorder: false,
-  rightBorder: false,
 }
 Block.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
-  offset: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
+  model: PropTypes.shape().isRequired,
+  block: PropTypes.shape().isRequired,
   children: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.arrayOf(PropTypes.node),
   ]),
-  leftBorder: PropTypes.bool,
-  rightBorder: PropTypes.bool,
 }
 
-export default withStyles(styles)(Block)
+export default observer(Block)

@@ -120,7 +120,11 @@ export function stateModelFactory(pluginManager) {
       },
 
       get staticBlocks() {
-        return calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+        const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+        if (JSON.stringify(ret) !== JSON.stringify(self.currentStaticBlocks)) {
+          self.currentStaticBlocks = ret
+        }
+        return self.currentStaticBlocks
       },
 
       get dynamicBlocks() {
