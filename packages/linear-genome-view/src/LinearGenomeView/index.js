@@ -265,10 +265,10 @@ export function stateModelFactory(pluginManager) {
           }
           bpSoFar += r.end - r.start
         }
+
         return {
-          ...self.displayedRegions[self.displayedRegions.length - 1],
           offset: Math.round(bp - bpSoFar),
-          index: self.displayedRegions.length - 1,
+          index: self.displayedRegions.length,
         }
       },
 
