@@ -34,13 +34,17 @@ function Box(props) {
 }
 
 Box.propTypes = {
-  feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
-    .isRequired,
+  feature: ReactPropTypes.shape({
+    get: ReactPropTypes.func.isRequired,
+    id: ReactPropTypes.func.isRequired,
+  }).isRequired,
   featureLayout: ReactPropTypes.shape({
-    top: ReactPropTypes.number.isRequired,
-    left: ReactPropTypes.number.isRequired,
-    width: ReactPropTypes.number.isRequired,
-    height: ReactPropTypes.number.isRequired,
+    absolute: ReactPropTypes.shape({
+      top: ReactPropTypes.number.isRequired,
+      left: ReactPropTypes.number.isRequired,
+      width: ReactPropTypes.number.isRequired,
+      height: ReactPropTypes.number.isRequired,
+    }),
   }).isRequired,
   selected: ReactPropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,

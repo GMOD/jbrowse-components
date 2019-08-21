@@ -135,7 +135,10 @@ function FeatureGlyph(props) {
 }
 
 FeatureGlyph.propTypes = {
-  feature: PropTypes.shape({ get: PropTypes.func.isRequired }).isRequired,
+  feature: PropTypes.shape({
+    id: PropTypes.func.isRequired,
+    get: PropTypes.func.isRequired,
+  }).isRequired,
   layout: PropTypes.shape({
     addRect: PropTypes.func.isRequired,
     getTotalHeight: PropTypes.func.isRequired,
