@@ -125,6 +125,25 @@
           }
         },
         {
+          "configId": "volvox_rnaseq",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long rna-seq",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/accepted_hits.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/accepted_hits.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "OOv_Iwf5no",
           "type": "AlignmentsTrack",
           "name": "volvox-long reads",
