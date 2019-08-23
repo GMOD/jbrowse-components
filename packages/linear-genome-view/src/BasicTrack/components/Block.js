@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles'
-import classnames from 'classnames'
+import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
@@ -31,7 +31,7 @@ function Block({ block, model, children }) {
         left: `${block.offsetPx - model.offsetPx}px`,
         width: `${block.widthPx}px`,
       }}
-      className={classnames(classes.block, {
+      className={clsx(classes.block, {
         [classes.leftBorder]: block.isLeftEndOfDisplayedRegion,
         [classes.rightBorder]: block.isRightEndOfDisplayedRegion,
       })}

@@ -1,6 +1,6 @@
 import { withStyles } from '@material-ui/styles'
 import PropTypes from 'prop-types'
-import classNames from 'classnames'
+import clsx from 'clsx'
 import React from 'react'
 
 const styles = {
@@ -69,7 +69,7 @@ class DrawerResizeHandle extends React.Component {
         onMouseLeave={this.mouseLeave}
         onMouseUp={this.mouseUp}
         role="presentation"
-        className={classNames(className, classes.root)}
+        className={clsx(className, classes.root)}
       />
     )
   }

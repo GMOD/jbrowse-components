@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@material-ui/icons": "^4.2.1",
-    "classnames": "^2.2.6"
+    "clsx": "^1.0.4"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

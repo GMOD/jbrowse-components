@@ -17,7 +17,7 @@ import {
   generateLocString,
 } from '@gmod/jbrowse-core/util'
 
-import classnames from 'classnames'
+import clsx from 'clsx'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
@@ -101,7 +101,7 @@ const TrackContainer = observer(({ model, track }) => {
   return (
     <>
       <div
-        className={classnames(classes.controls, classes.trackControls)}
+        className={clsx(classes.controls, classes.trackControls)}
         key={`controls:${track.id}`}
         style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
       >
@@ -229,9 +229,7 @@ function TextFieldOrTypography({ model }) {
       />
     </form>
   ) : (
-    <div
-      className={classnames(classes.emphasis, hover ? classes.hovered : null)}
-    >
+    <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
       <Typography
         className={classes.viewName}
         onClick={() => setEdit(true)}
@@ -390,7 +388,7 @@ function LinearGenomeView(props) {
       >
         {!model.hideHeader ? <Header model={model} /> : null}
         <div
-          className={classnames(classes.controls, classes.viewControls)}
+          className={clsx(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
           {model.hideControls || !model.hideHeader ? null : (
