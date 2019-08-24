@@ -1,9 +1,9 @@
-import { withStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-const styles = {
+const useStyles = makeStyles({
   track: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -12,74 +12,76 @@ const styles = {
     background: '#555',
     minHeight: '100%',
   },
-}
+})
 
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
 
-class Track extends Component {
-  static propTypes = {
-    classes: PropTypes.objectOf(PropTypes.string).isRequired,
-    trackId: PropTypes.string.isRequired,
-    children: PropTypes.node,
-    onHorizontalScroll: PropTypes.func.isRequired,
-  }
+function Track({ children, onHorizontalScroll, trackId }) {
+  const [mouseDragging, setMouseDragging] = useState(false)
+  const prevX = useRef()
+  const classes = useStyles()
+  const mainNode = useRef()
 
-  static defaultProps = { children: null }
+  useEffect(() => {
+    let cleanup = () => {}
 
-  constructor(props) {
-    super(props)
-    this.state = { mouseDragging: false }
-    this.mainNode = React.createRef()
-
-    this.mouseUp = this.mouseUp.bind(this)
-    this.mouseDown = this.mouseDown.bind(this)
-    this.mouseMove = this.mouseMove.bind(this)
-    this.mouseLeave = this.mouseLeave.bind(this)
-  }
-
-  mouseDown(event) {
-    this.setState({ mouseDragging: true, previousMouseX: event.clientX })
-  }
-
-  mouseMove(event) {
-    const { onHorizontalScroll } = this.props
-    const { mouseDragging, previousMouseX } = this.state
-    if (mouseDragging && previousMouseX !== undefined) {
-      const distance = event.clientX - previousMouseX
-      if (distance) onHorizontalScroll(-distance)
+    function mouseMove(event) {
+      event.preventDefault()
+      const distance = event.clientX - prevX.current
+      if (distance) {
+        const actualDistance = onHorizontalScroll(-distance)
+        prevX.current -= actualDistance
+      }
     }
-    this.setState({ previousMouseX: event.clientX })
-  }
 
-  mouseLeave(event) {
+    function mouseUp() {
+      prevX.current = undefined
+      setMouseDragging(false)
+    }
+
+    if (mouseDragging) {
+      window.addEventListener('mousemove', mouseMove, true)
+      window.addEventListener('mouseup', mouseUp, true)
+      cleanup = () => {
+        window.removeEventListener('mousemove', mouseMove, true)
+        window.removeEventListener('mouseup', mouseUp, true)
+      }
+    }
+    return cleanup
+  }, [mouseDragging, onHorizontalScroll])
+
+  function mouseDown(event) {
     event.preventDefault()
-
-    this.setState({ mouseDragging: false })
+    prevX.current = event.clientX
+    setMouseDragging(true)
   }
 
-  mouseUp() {
-    this.setState({ mouseDragging: false })
+  function mouseLeave(event) {
+    event.preventDefault()
   }
 
-  render() {
-    const { classes, children, trackId } = this.props
-    return (
-      <div
-        data-testid={`track-${trackId}`}
-        className={classes.track}
-        onMouseDown={this.mouseDown}
-        onMouseMove={this.mouseMove}
-        onMouseLeave={this.mouseLeave}
-        onMouseUp={this.mouseUp}
-        ref={this.mainNode}
-        role="presentation"
-      >
-        {children}
-      </div>
-    )
-  }
+  return (
+    <div
+      data-testid={`track-${trackId}`}
+      className={classes.track}
+      onMouseDown={mouseDown}
+      onMouseLeave={mouseLeave}
+      ref={mainNode}
+      role="presentation"
+    >
+      {children}
+    </div>
+  )
 }
 
-export default withStyles(styles)(observer(Track))
+Track.propTypes = {
+  trackId: PropTypes.string.isRequired,
+  children: PropTypes.node,
+  onHorizontalScroll: PropTypes.func.isRequired,
+}
+
+Track.defaultProps = { children: null }
+
+export default observer(Track)

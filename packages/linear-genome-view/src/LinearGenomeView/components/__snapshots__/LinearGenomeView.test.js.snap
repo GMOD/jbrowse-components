@@ -277,7 +277,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="Track-track-377"
+        class="makeStyles-track-377"
         data-testid="track-testConfig"
         role="presentation"
       >
@@ -677,7 +677,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="Track-track-599"
+        class="makeStyles-track-599"
         data-testid="track-testConfig"
         role="presentation"
       >
@@ -764,7 +764,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-bar; grid-column: blocks;"
     >
       <div
-        class="Track-track-599"
+        class="makeStyles-track-599"
         data-testid="track-testConfig2"
         role="presentation"
       >
