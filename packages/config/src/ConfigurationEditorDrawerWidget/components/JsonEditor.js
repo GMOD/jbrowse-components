@@ -1,20 +1,19 @@
+import { useDebounce } from '@gmod/jbrowse-core/util'
 import {
   FormControl,
   FormHelperText,
   InputLabel,
-  withStyles,
+  makeStyles,
 } from '@material-ui/core'
-import debounce from 'debounce'
 import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
-import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
+import React, { useEffect, useState } from 'react'
+import Editor from 'react-simple-code-editor'
 
-const styles = {
+const useStyles = makeStyles({
   callbackEditor: {
     // Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
     fontFamily:
@@ -24,56 +23,47 @@ const styles = {
     marginTop: '16px',
     borderBottom: '1px solid rgba(0,0,0,0.42)',
   },
+})
+
+function JsonEditor({ slot }) {
+  const classes = useStyles()
+  const [json, setJson] = useState(JSON.stringify(slot.value, null, '  '))
+  const [error, setError] = useState(false)
+  const debouncedJson = useDebounce(json, 400)
+
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(debouncedJson)
+      slot.set(parsed)
+      setError(false)
+    } catch (e) {
+      setError(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedJson])
+
+  return (
+    <FormControl error={error}>
+      <InputLabel shrink htmlFor="callback-editor">
+        {`${slot.name}${error ? ' (invalid JSON)' : ''}`}
+      </InputLabel>
+      <Editor
+        className={classes.callbackEditor}
+        value={json}
+        onValueChange={setJson}
+        highlight={newCode =>
+          highlight(newCode, languages.javascript, 'javascript')
+        }
+        padding={10}
+        style={{}}
+      />
+      <FormHelperText>{slot.description}</FormHelperText>
+    </FormControl>
+  )
 }
 
-class JsonEditor extends Component {
-  static propTypes = {
-    slot: PropTypes.objectOrObservableObject.isRequired,
-    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-  }
-
-  constructor(props) {
-    super(props)
-    const { slot } = props
-    this.state = { code: JSON.stringify(slot.value, null, '  '), error: false }
-
-    this.updateSlot = debounce(code => {
-      try {
-        slot.set(JSON.parse(code))
-        this.setState({ error: false })
-      } catch (error) {
-        this.setState({ error: true })
-      }
-    }, 400)
-  }
-
-  onValueChange = newCode => {
-    this.setState({ code: newCode })
-    this.updateSlot(newCode)
-  }
-
-  render() {
-    const { slot, classes } = this.props
-    const { code, error } = this.state
-    return (
-      <FormControl error={error}>
-        <InputLabel shrink htmlFor="callback-editor">
-          {`${slot.name}${error ? ' (invalid JSON)' : ''}`}
-        </InputLabel>
-        <Editor
-          className={classes.callbackEditor}
-          value={code}
-          onValueChange={this.onValueChange}
-          highlight={newCode =>
-            highlight(newCode, languages.javascript, 'javascript')
-          }
-          padding={10}
-          style={{}}
-        />
-        <FormHelperText>{slot.description}</FormHelperText>
-      </FormControl>
-    )
-  }
+JsonEditor.propTypes = {
+  slot: PropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(JsonEditor))
+export default observer(JsonEditor)
