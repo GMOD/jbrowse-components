@@ -9,9 +9,7 @@ export default pluginManager => {
   const { Icon, IconButton } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-  const ResizeHandleHorizontal = jbrequire(
-    '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
-  )
+  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
   const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   const Ruler = jbrequire(require('./Ruler'))
@@ -202,14 +200,17 @@ export default pluginManager => {
 
         <Controls model={model} />
 
-        <ResizeHandleHorizontal
-          onVerticalDrag={model.resizeHeight}
+        <ResizeHandle
+          onDrag={model.resizeHeight}
           objectId={model.id}
           style={{
             height: dragHandleHeight,
             position: 'absolute',
             bottom: 0,
             left: 0,
+            background: '#ccc',
+            boxSizing: 'border-box',
+            borderTop: '1px solid #fafafa',
           }}
         />
       </div>

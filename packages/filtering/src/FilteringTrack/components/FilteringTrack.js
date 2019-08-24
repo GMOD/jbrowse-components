@@ -1,9 +1,9 @@
+import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { makeStyles } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
 import FilterControls from './FilterControls'
-import FilterControlResizeHandle from './FilterControlsResizeHandle'
 
 const useStyles = makeStyles(theme => ({
   track: {
@@ -23,17 +23,22 @@ const useStyles = makeStyles(theme => ({
 function FilteringTrack(props) {
   const { model } = props
   const classes = useStyles()
-  const { innerTrackHeight, filterControlHeight, dragHandleHeight } = model
+  const { innerTrackHeight, filterControlsHeight, dragHandleHeight } = model
   return (
     <div className={classes.track}>
       <div className={classes.innerTrack} style={{ height: innerTrackHeight }}>
         <BlockBasedTrack {...props} />
       </div>
-      <FilterControlResizeHandle
-        onVerticalDrag={model.resizeFilterControls}
-        style={{ height: dragHandleHeight }}
+      <ResizeHandle
+        onDrag={model.resizeFilterControls}
+        style={{
+          height: dragHandleHeight,
+          background: '#ccc',
+          boxSizing: 'border-box',
+          borderTop: '1px solid #fafafa',
+        }}
       />
-      <FilterControls style={{ height: filterControlHeight }} {...props} />
+      <FilterControls style={{ height: filterControlsHeight }} {...props} />
     </div>
   )
 }

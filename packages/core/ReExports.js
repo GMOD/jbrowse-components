@@ -25,7 +25,7 @@ import * as trackUtils from './util/tracks'
 
 import * as mstTypes from './mst-types'
 
-import ResizeHandleHorizontal from './components/ResizeHandleHorizontal'
+import ResizeHandle from './components/ResizeHandle'
 
 export default {
   mobx,
@@ -50,5 +50,5 @@ export default {
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
-  '@gmod/jbrowse-core/components/ResizeHandleHorizontal': ResizeHandleHorizontal,
+  '@gmod/jbrowse-core/components/ResizeHandle': ResizeHandle,
 }

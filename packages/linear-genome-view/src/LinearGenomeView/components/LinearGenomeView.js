@@ -1,33 +1,31 @@
-import {
-  Icon,
-  Select,
-  IconButton,
-  InputBase,
-  Typography,
-  TextField,
-  Paper,
-  Menu,
-  MenuItem,
-  makeStyles,
-} from '@material-ui/core'
+import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import {
   clamp,
+  generateLocString,
   getSession,
   parseLocString,
-  generateLocString,
 } from '@gmod/jbrowse-core/util'
-
+import {
+  Icon,
+  IconButton,
+  InputBase,
+  makeStyles,
+  Menu,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+} from '@material-ui/core'
 import clsx from 'clsx'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
-
 import buttonStyles from './buttonStyles'
-import ZoomControls from './ZoomControls'
-import TrackResizeHandle from './TrackResizeHandle'
-import TrackRenderingContainer from './TrackRenderingContainer'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
+import TrackRenderingContainer from './TrackRenderingContainer'
+import ZoomControls from './ZoomControls'
 
 const dragHandleHeight = 3
 
@@ -136,10 +134,16 @@ const TrackContainer = observer(({ model, track }) => {
           onHorizontalScroll={model.horizontalScroll}
         />
       </TrackRenderingContainer>
-      <TrackResizeHandle
+      <ResizeHandle
         key={`handle:${track.id}`}
-        trackId={track.id}
-        onVerticalDrag={model.resizeTrack}
+        onDrag={track.resizeHeight}
+        style={{
+          gridRow: `resize-${track.id}`,
+          gridColumn: 'span 2',
+          background: '#ccc',
+          boxSizing: 'border-box',
+          borderTop: '1px solid #fafafa',
+        }}
       />
     </>
   )

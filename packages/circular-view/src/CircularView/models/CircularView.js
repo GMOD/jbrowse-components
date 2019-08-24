@@ -20,6 +20,8 @@ export default pluginManager => {
     { explicitlyTyped: true },
   )
 
+  const minHeight = 40
+  const defaultHeight = 400
   const stateModel = types
     .model('CircularView', {
       id: ElementId,
@@ -30,7 +32,10 @@ export default pluginManager => {
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
       width: 800,
-      height: 400,
+      height: types.optional(
+        types.refinement('trackHeight', types.number, n => n >= minHeight),
+        defaultHeight,
+      ),
       minimumRadiusPx: 25,
       configuration: configSchema,
       spacingPx: 10,
@@ -148,8 +153,15 @@ export default pluginManager => {
       setWidth(newWidth) {
         self.width = newWidth
       },
-      resizeHeight(myId, distance) {
-        self.height += distance
+      setHeight(newHeight) {
+        if (newHeight > minHeight) self.height = newHeight
+        else self.height = minHeight
+        return self.height
+      },
+      resizeHeight(distance) {
+        const oldHeight = self.height
+        const newHeight = self.setHeight(self.height + distance)
+        return newHeight - oldHeight
       },
 
       rotateClockwiseButton() {

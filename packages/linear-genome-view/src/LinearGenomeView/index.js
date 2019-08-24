@@ -1,4 +1,4 @@
-import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
 import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
@@ -351,10 +351,6 @@ export function stateModelFactory(pluginManager) {
           self.maxBpPerPx,
         )
         self.offsetPx = bpToStart / self.bpPerPx
-      },
-      resizeTrack(trackId, distance) {
-        const track = self.tracks.find(t => t.id === trackId)
-        if (track) track.setHeight(track.height + distance)
       },
 
       horizontalScroll(distance) {
