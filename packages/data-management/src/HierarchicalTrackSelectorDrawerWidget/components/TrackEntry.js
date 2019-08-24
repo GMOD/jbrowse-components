@@ -1,18 +1,18 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { makeStyles } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
-import { withStyles } from '@material-ui/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   formControlLabel: {
     marginLeft: 0,
     '&:hover': {
@@ -38,10 +38,10 @@ const styles = theme => ({
   configureButton: {
     padding: 2,
   },
-})
+}))
 
-function TrackEntry(props) {
-  const { model, disabled, trackConf, assemblyName, classes } = props
+function TrackEntry({ model, disabled, trackConf, assemblyName }) {
+  const classes = useStyles()
   const session = getSession(model)
   const titleText = assemblyName
     ? `The reference sequence for ${assemblyName}`
@@ -89,7 +89,6 @@ TrackEntry.propTypes = {
   disabled: propTypes.bool,
   trackConf: MobxPropTypes.objectOrObservableObject.isRequired,
   assemblyName: propTypes.string,
-  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
 TrackEntry.defaultProps = {
@@ -97,4 +96,4 @@ TrackEntry.defaultProps = {
   assemblyName: null,
 }
 
-export default withStyles(styles)(observer(TrackEntry))
+export default observer(TrackEntry)

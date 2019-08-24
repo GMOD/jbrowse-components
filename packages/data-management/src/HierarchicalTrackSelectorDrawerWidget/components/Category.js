@@ -1,8 +1,8 @@
+import { makeStyles } from '@material-ui/core'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import Icon from '@material-ui/core/Icon'
-import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
@@ -10,7 +10,7 @@ import React from 'react'
 // eslint-disable-next-line import/no-cycle
 import Contents from './Contents'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -35,18 +35,17 @@ const styles = theme => ({
   expanded: {
     // empty block needed to keep small
   },
-})
+}))
 
-function Category(props) {
-  const {
-    model,
-    path,
-    filterPredicate,
-    disabled,
-    connection,
-    classes,
-    assemblyName,
-  } = props
+function Category({
+  model,
+  path,
+  filterPredicate,
+  disabled,
+  connection,
+  assemblyName,
+}) {
+  const classes = useStyles()
   const pathName = path.join('|')
   const name = path[path.length - 1]
 
@@ -91,7 +90,6 @@ Category.propTypes = {
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
   connection: MobxPropTypes.observableObject,
-  classes: propTypes.objectOf(propTypes.string).isRequired,
 }
 
 Category.defaultProps = {
@@ -102,4 +100,4 @@ Category.defaultProps = {
   connection: undefined,
 }
 
-export default withStyles(styles)(observer(Category))
+export default observer(Category)

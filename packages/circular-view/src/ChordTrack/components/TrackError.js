@@ -1,17 +1,23 @@
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
-  const { withStyles } = jbrequire('@material-ui/core')
+  const { makeStyles } = jbrequire('@material-ui/core')
   const { observer } = jbrequire('mobx-react')
 
-  const styles = theme => ({
+  const useStyles = makeStyles({
     errorMessage: {},
     errorBackground: {},
     errorText: {},
   })
 
   // 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-  const TrackError = withStyles(styles)(
-    observer(({ classes, model: { renderProps: { radius }, error } }) => {
+  const TrackError = observer(
+    ({
+      model: {
+        renderProps: { radius },
+        error,
+      },
+    }) => {
+      const classes = useStyles()
       return (
         <g className={classes.errorMessage}>
           <defs>
@@ -57,7 +63,7 @@ export default ({ jbrequire }) => {
           </text>
         </g>
       )
-    }),
+    },
   )
 
   return TrackError

@@ -132,7 +132,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         </svg>
       </div>
       <div
-        class="ZoomControls-container-341"
+        class="makeStyles-container-341"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -155,7 +155,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-342"
+          class="MuiSlider-root makeStyles-slider-342"
         >
           <span
             class="MuiSlider-rail"
@@ -213,7 +213,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-364"
+        class="makeStyles-scaleBar-364"
       />
     </div>
     <div
@@ -282,7 +282,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-378"
+          class="makeStyles-trackBlocks-378"
           data-testid="Block"
         />
       </div>
@@ -428,7 +428,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         </svg>
       </div>
       <div
-        class="ZoomControls-container-554"
+        class="makeStyles-container-554"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -451,7 +451,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-555"
+          class="MuiSlider-root makeStyles-slider-555"
         >
           <span
             class="MuiSlider-rail"
@@ -509,7 +509,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-577"
+        class="makeStyles-scaleBar-577"
       >
         <div
           class="makeStyles-block-579 makeStyles-leftBorder-580 makeStyles-rightBorder-581"
@@ -610,7 +610,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </svg>
         </div>
         <div
-          class="ScaleBar-refLabel-578"
+          class="makeStyles-refLabel-578"
         >
           ctgA
         </div>
@@ -682,7 +682,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-599"
+          class="makeStyles-trackBlocks-599"
           data-testid="Block"
         >
           <div
@@ -690,7 +690,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-604"
+              class="makeStyles-blockMessage-604"
             >
               region assembly does not match track assembly
             </div>
@@ -769,7 +769,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         role="presentation"
       >
         <div
-          class="TrackBlocks-trackBlocks-599"
+          class="makeStyles-trackBlocks-599"
           data-testid="Block"
         >
           <div
@@ -777,7 +777,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             style="left: 0px; width: 100px;"
           >
             <div
-              class="Component-blockMessage-604"
+              class="makeStyles-blockMessage-604"
             >
               region assembly does not match track assembly
             </div>
@@ -926,7 +926,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         </svg>
       </div>
       <div
-        class="ZoomControls-container-144"
+        class="makeStyles-container-144"
       >
         <button
           class="MuiButtonBase-root MuiIconButton-root"
@@ -949,7 +949,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           />
         </button>
         <span
-          class="MuiSlider-root ZoomControls-slider-145"
+          class="MuiSlider-root makeStyles-slider-145"
         >
           <span
             class="MuiSlider-rail"
@@ -1007,7 +1007,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       role="presentation"
     >
       <div
-        class="ScaleBar-scaleBar-167"
+        class="makeStyles-scaleBar-167"
       />
     </div>
   </div>

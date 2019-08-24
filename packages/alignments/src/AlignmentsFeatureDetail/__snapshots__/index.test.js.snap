@@ -2,20 +2,20 @@
 
 exports[`open up a drawer widget 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation1 AlignmentFeatureDetails-root-1 MuiPaper-rounded"
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root-1 MuiPaper-rounded"
   data-testid="alignment-side-drawer"
 >
   <div
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+      class="MuiCardHeader-root makeStyles-header-5"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
           Primary data
         </span>
@@ -26,48 +26,48 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           Position
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           ctgA:3..102
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           Name
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           ctgA_3_555_0:0:0_2:0:0_102d
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           Length
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           100
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           Type
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           match
         </div>
@@ -81,13 +81,13 @@ exports[`open up a drawer widget 1`] = `
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+      class="MuiCardHeader-root makeStyles-header-5"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
           Attributes
         </span>
@@ -98,96 +98,96 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           seq
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           score
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           37
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           qual
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           MQ
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           37
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           CIGAR
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           100M
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           length_on_ref
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           100
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           template_length
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           0
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           seq_length
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           100
         </div>
@@ -201,13 +201,13 @@ exports[`open up a drawer widget 1`] = `
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root AlignmentFeatureDetails-header-5"
+      class="MuiCardHeader-root makeStyles-header-5"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title AlignmentFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
           Flags
         </span>
@@ -218,60 +218,60 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           unmapped
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           qc_failed
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           duplicate
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           secondary_alignment
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="AlignmentFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           supplementary_alignment
         </div>
         <div
-          class="AlignmentFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           false
         </div>

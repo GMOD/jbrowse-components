@@ -1,9 +1,9 @@
+import { makeStyles } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -13,7 +13,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   table: {
     padding: 0,
   },
@@ -45,7 +45,7 @@ const styles = theme => ({
   valbox: {
     border: '1px solid #bbb',
   },
-})
+}))
 
 const coreRenderedDetails = [
   'Position',
@@ -55,8 +55,8 @@ const coreRenderedDetails = [
   'Type',
 ]
 
-const VariantCard = props => {
-  const { children, classes, title } = props
+function VariantCard({ children, title }) {
+  const classes = useStyles()
   return (
     <Card>
       <CardHeader
@@ -70,13 +70,13 @@ const VariantCard = props => {
 }
 
 VariantCard.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   children: PropTypes.node.isRequired,
   title: PropTypes.string.isRequired,
 }
 
-const VariantCoreDetails = props => {
-  const { feature, classes } = props
+function VariantCoreDetails(props) {
+  const classes = useStyles()
+  const { feature } = props
   const { refName, start, end } = feature
   feature.length = end - start
   feature.position = `${refName}:${start + 1}..${end}`
@@ -99,11 +99,11 @@ const VariantCoreDetails = props => {
 
 VariantCoreDetails.propTypes = {
   feature: PropTypes.shape().isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-const VariantAttributes = props => {
-  const { feature, classes } = props
+function VariantAttributes(props) {
+  const classes = useStyles()
+  const { feature } = props
 
   // get everything in INFO plus the REF, ALT, and QUAL fields
   const attributes = Object.entries(feature.INFO).concat(
@@ -126,11 +126,11 @@ const VariantAttributes = props => {
 
 VariantAttributes.propTypes = {
   feature: PropTypes.shape().isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-const VariantSamples = props => {
-  const { feature, classes } = props
+function VariantSamples(props) {
+  const classes = useStyles()
+  const { feature } = props
   if (!feature.samples) {
     return null
   }
@@ -174,11 +174,11 @@ const VariantSamples = props => {
 
 VariantSamples.propTypes = {
   feature: PropTypes.shape().isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
 function VariantFeatureDetails(props) {
-  const { classes, model } = props
+  const classes = useStyles()
+  const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
@@ -193,7 +193,6 @@ function VariantFeatureDetails(props) {
 
 VariantFeatureDetails.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-export default withStyles(styles)(observer(VariantFeatureDetails))
+export default observer(VariantFeatureDetails)

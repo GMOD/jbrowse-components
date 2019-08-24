@@ -1,3 +1,4 @@
+import { makeStyles } from '@material-ui/core'
 import Button from '@material-ui/core/Button'
 import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import Divider from '@material-ui/core/Divider'
@@ -9,13 +10,12 @@ import MenuItem from '@material-ui/core/MenuItem'
 import MenuList from '@material-ui/core/MenuList'
 import Paper from '@material-ui/core/Paper'
 import Popper from '@material-ui/core/Popper'
-import { withStyles } from '@material-ui/core/styles'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useRef, useState } from 'react'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
   },
@@ -25,13 +25,12 @@ const styles = theme => ({
   grow: {
     transformOrigin: 'left top',
   },
-})
+}))
 
-function DropDownMenu(props) {
+function DropDownMenu({ menuTitle, menuItems, session }) {
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-
-  const { classes, menuTitle, menuItems, session } = props
+  const classes = useStyles()
 
   function handleToggle() {
     setOpen(!open)
@@ -106,10 +105,9 @@ function DropDownMenu(props) {
 }
 
 DropDownMenu.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   menuTitle: PropTypes.string.isRequired,
   menuItems: MobxPropTypes.observableArray.isRequired,
   session: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(DropDownMenu))
+export default observer(DropDownMenu)

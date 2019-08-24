@@ -1,29 +1,28 @@
+import { makeStyles } from '@material-ui/core'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
 import Select from '@material-ui/core/Select'
-import { withStyles } from '@material-ui/styles'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   formControl: {
     minWidth: 192,
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
   },
-})
+}))
 
-function SelectBox(props) {
-  const {
-    classes,
-    selectList,
-    selectedItem,
-    handleSelect,
-    label,
-    helpText,
-  } = props
+function SelectBox({
+  selectList,
+  selectedItem,
+  handleSelect,
+  label,
+  helpText,
+}) {
+  const classes = useStyles()
   return (
     <FormControl className={classes.formControl}>
       <InputLabel>{label}</InputLabel>
@@ -55,7 +54,6 @@ SelectBox.propTypes = {
   handleSelect: PropTypes.func.isRequired,
   label: PropTypes.string.isRequired,
   helpText: PropTypes.string.isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-export default withStyles(styles)(SelectBox)
+export default SelectBox

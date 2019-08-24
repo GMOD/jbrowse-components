@@ -1,53 +1,46 @@
 /* eslint-disable react/prop-types */
+import { makeStyles, Theme } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import {
-  withStyles,
-  createStyles,
-  Theme,
-  WithStyles,
-} from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {},
-    table: {
-      padding: 0,
-    },
-    fieldName: {
-      display: 'inline-block',
-      minWidth: '90px',
-      fontSize: '0.9em',
-      borderBottom: '1px solid #0003',
-      backgroundColor: '#ddd',
-      marginRight: theme.spacing(1),
-      padding: theme.spacing(0.5),
-    },
-    fieldValue: {
-      display: 'inline-block',
-      wordBreak: 'break-word',
-      fontSize: '0.8em',
-      maxHeight: 300,
-      overflow: 'auto',
-    },
-    header: {
-      padding: 0.5 * theme.spacing(1),
-      backgroundColor: '#ddd',
-    },
-    title: {
-      fontSize: '1em',
-    },
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {},
+  table: {
+    padding: 0,
+  },
+  fieldName: {
+    display: 'inline-block',
+    minWidth: '90px',
+    fontSize: '0.9em',
+    borderBottom: '1px solid #0003',
+    backgroundColor: '#ddd',
+    marginRight: theme.spacing(1),
+    padding: theme.spacing(0.5),
+  },
+  fieldValue: {
+    display: 'inline-block',
+    wordBreak: 'break-word',
+    fontSize: '0.8em',
+    maxHeight: 300,
+    overflow: 'auto',
+  },
+  header: {
+    padding: 0.5 * theme.spacing(1),
+    backgroundColor: '#ddd',
+  },
+  title: {
+    fontSize: '1em',
+  },
 
-    valbox: {
-      border: '1px solid #bbb',
-    },
-  })
+  valbox: {
+    border: '1px solid #bbb',
+  },
+}))
 
 const coreRenderedDetails = [
   'Position',
@@ -57,13 +50,13 @@ const coreRenderedDetails = [
   'Type',
 ]
 
-interface AlnCardProps extends WithStyles<typeof styles> {
+interface AlnCardProps {
   title: string
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const AlignmentCard: FunctionComponent<AlnCardProps> = props => {
-  const { children, classes, title } = props
+const AlignmentCard: FunctionComponent<AlnCardProps> = (props): JSX.Element => {
+  const classes = useStyles()
+  const { children, title } = props
   return (
     <Card>
       <CardHeader
@@ -79,9 +72,11 @@ interface AlnProps extends AlnCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const AlignmentCoreDetails: FunctionComponent<AlnProps> = props => {
-  const { feature, classes } = props
+const AlignmentCoreDetails: FunctionComponent<AlnProps> = (
+  props,
+): JSX.Element => {
+  const classes = useStyles()
+  const { feature } = props
   const { refName, start, end } = feature
   feature.length = end - start
   feature.position = `${refName}:${start + 1}..${end}`
@@ -114,9 +109,11 @@ const omit = [
   'position',
 ]
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const AlignmentAttributes: FunctionComponent<AlnProps> = props => {
-  const { feature, classes } = props
+const AlignmentAttributes: FunctionComponent<AlnProps> = (
+  props,
+): JSX.Element => {
+  const classes = useStyles()
+  const { feature } = props
   return (
     <AlignmentCard {...props} title="Attributes">
       {Object.entries(feature)
@@ -141,9 +138,9 @@ const flags = [
   'supplementary_alignment',
 ]
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const AlignmentFlags: FunctionComponent<AlnProps> = props => {
-  const { feature, classes } = props
+const AlignmentFlags: FunctionComponent<AlnProps> = (props): JSX.Element => {
+  const classes = useStyles()
+  const { feature } = props
   return (
     <AlignmentCard {...props} title="Flags">
       {flags.map(key => (
@@ -162,7 +159,8 @@ interface AlnInputProps extends AlnCardProps {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
-  const { classes, model } = props
+  const classes = useStyles()
+  const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.root} data-testid="alignment-side-drawer">
@@ -175,4 +173,4 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
   )
 }
 
-export default withStyles(styles)(observer(AlignmentFeatureDetails))
+export default observer(AlignmentFeatureDetails)

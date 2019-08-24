@@ -1,12 +1,11 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import { makeStyles } from '@material-ui/core'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/core/Slider'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { withStyles } from '@material-ui/core/styles'
+import React from 'react'
 
-const styles = {
+const useStyles = makeStyles({
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -15,10 +14,10 @@ const styles = {
   slider: {
     width: 48,
   },
-}
+})
 
-function ZoomControls(props) {
-  const { classes, model } = props
+function ZoomControls({ model }) {
+  const classes = useStyles()
   return (
     <div className={classes.container}>
       <IconButton
@@ -49,8 +48,7 @@ function ZoomControls(props) {
 }
 
 ZoomControls.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(ZoomControls))
+export default observer(ZoomControls)

@@ -1,9 +1,10 @@
-import { withStyles } from '@material-ui/core'
-import React, { useState, useEffect } from 'react'
-import { observer, PropTypes } from 'mobx-react'
+import { makeStyles } from '@material-ui/core'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
 
-const styles = {
+const useStyles = makeStyles({
   loading: {
     paddingLeft: '0.6em',
     position: 'absolute',
@@ -25,29 +26,35 @@ const styles = {
     background: '#f1f1f1',
     padding: '10px',
   },
-}
+})
 
-const LoadingMessage = withStyles(styles)(({ classes }) => {
+function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
+  const classes = useStyles()
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
   })
 
   return shown ? <div className={classes.loading}>Loading &hellip;</div> : null
-})
-
-const ErrorMessage = withStyles(styles)(({ error, classes }) => (
-  <div className={classes.error}>{error.message}</div>
-))
-ErrorMessage.propTypes = {
-  error: PropTypes.objectOrObservableObject.isRequired,
 }
 
-const BlockMessage = withStyles(styles)(({ messageText, classes }) => (
-  <div className={classes.blockMessage}>{messageText}</div>
-))
+function ErrorMessage({ error }) {
+  const classes = useStyles()
+  return <div className={classes.error}>{error.message}</div>
+}
+ErrorMessage.propTypes = {
+  error: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
+function BlockMessage({ messageText }) {
+  const classes = useStyles()
+  return <div className={classes.blockMessage}>{messageText}</div>
+}
+BlockMessage.propTypes = {
+  messageText: PropTypes.string.isRequired,
+}
 
 const ServerSideRenderedBlockContent = observer(({ model }) => {
   if (model.error) return <ErrorMessage error={model.error} />

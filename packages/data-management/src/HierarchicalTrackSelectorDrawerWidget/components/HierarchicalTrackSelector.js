@@ -1,7 +1,9 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { makeStyles } from '@material-ui/core'
 import Fab from '@material-ui/core/Fab'
-import FormGroup from '@material-ui/core/FormGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
+import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
@@ -11,16 +13,13 @@ import Paper from '@material-ui/core/Paper'
 import Switch from '@material-ui/core/Switch'
 import Tab from '@material-ui/core/Tab'
 import Tabs from '@material-ui/core/Tabs'
-import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import propTypes from 'prop-types'
 import React, { useState } from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Contents from './Contents'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     textAlign: 'left',
     padding: theme.spacing(1),
@@ -42,13 +41,13 @@ const styles = theme => ({
   tabs: {
     marginBottom: theme.spacing(1),
   },
-})
+}))
 
-function HierarchicalTrackSelector(props) {
+function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const classes = useStyles()
 
-  const { model, classes } = props
   const session = getSession(model)
 
   function handleTabChange(event, newIdx) {
@@ -221,8 +220,7 @@ function HierarchicalTrackSelector(props) {
 }
 
 HierarchicalTrackSelector.propTypes = {
-  classes: propTypes.objectOf(propTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(HierarchicalTrackSelector))
+export default observer(HierarchicalTrackSelector)

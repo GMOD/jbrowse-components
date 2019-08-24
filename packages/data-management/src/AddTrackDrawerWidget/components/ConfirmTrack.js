@@ -1,4 +1,10 @@
-import { withStyles } from '@material-ui/core'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import {
+  guessAdapter,
+  guessTrackType,
+  UNSUPPORTED,
+} from '@gmod/jbrowse-core/util/tracks'
+import { makeStyles } from '@material-ui/core'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
@@ -6,33 +12,26 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import {
-  guessAdapter,
-  guessTrackType,
-  UNSUPPORTED,
-} from '@gmod/jbrowse-core/util/tracks'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },
-})
+}))
 
-function ConfirmTrack(props) {
-  const {
-    classes,
-    trackData,
-    trackName,
-    setTrackAdapter,
-    setTrackName,
-    trackType,
-    setTrackType,
-    trackAdapter,
-    datasetName,
-    setDatasetName,
-    session,
-  } = props
+function ConfirmTrack({
+  trackData,
+  trackName,
+  setTrackAdapter,
+  setTrackName,
+  trackType,
+  setTrackType,
+  trackAdapter,
+  datasetName,
+  setDatasetName,
+  session,
+}) {
+  const classes = useStyles()
 
   useEffect(() => {
     if (trackData.uri) {
@@ -154,7 +153,6 @@ function ConfirmTrack(props) {
 }
 
 ConfirmTrack.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   datasetName: PropTypes.string.isRequired,
   setDatasetName: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
@@ -177,4 +175,4 @@ ConfirmTrack.defaultProps = {
   trackType: '',
 }
 
-export default withStyles(styles)(observer(ConfirmTrack))
+export default observer(ConfirmTrack)

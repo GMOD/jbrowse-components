@@ -1,11 +1,11 @@
-import { withStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 import { ContentBlock, ElidedBlock } from '../util/blockTypes'
 import Block from './Block'
 
-const styles = {
+const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
@@ -34,22 +34,24 @@ const styles = {
     zIndex: 2000,
     boxSizing: 'border-box',
   },
-}
+})
 
-const ElidedBlockMarker = withStyles(styles)(function ElidedBlockMarker({
-  classes,
-  width,
-  offset,
-}) {
+const ElidedBlockMarker = ({ width, offset }) => {
+  const classes = useStyles()
   return (
     <div
       className={classes.elidedBlock}
       style={{ left: `${offset}px`, width: `${width}px` }}
     />
   )
-})
+}
+ElidedBlockMarker.propTypes = {
+  width: ReactPropTypes.number.isRequired,
+  offset: ReactPropTypes.number.isRequired,
+}
 
-function TrackBlocks({ classes, model, viewModel, blockState }) {
+function TrackBlocks({ model, viewModel, blockState }) {
+  const classes = useStyles()
   const { blockDefinitions } = model
   return (
     <div data-testid="Block" className={classes.trackBlocks}>
@@ -91,10 +93,9 @@ function TrackBlocks({ classes, model, viewModel, blockState }) {
 }
 
 TrackBlocks.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   blockState: PropTypes.observableMap.isRequired,
   model: PropTypes.observableObject.isRequired,
   viewModel: PropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(TrackBlocks))
+export default observer(TrackBlocks)

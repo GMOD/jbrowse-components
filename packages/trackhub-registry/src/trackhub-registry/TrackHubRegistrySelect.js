@@ -1,10 +1,10 @@
+import { makeStyles } from '@material-ui/core'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormLabel from '@material-ui/core/FormLabel'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
-import { withStyles } from '@material-ui/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
@@ -34,7 +34,7 @@ function Wire({ children, ...props }) {
   return children(props)
 }
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   hubList: {
     maxHeight: 400,
     overflowY: 'auto',
@@ -42,9 +42,9 @@ const styles = theme => ({
   genomeSelector: {
     marginTop: theme.spacing(1),
   },
-})
+}))
 
-function TrackHubRegistrySelect(props) {
+function TrackHubRegistrySelect({ model }) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [assemblies, setAssemblies] = useState(null)
   const [selectedSpecies, setSelectedSpecies] = useState('')
@@ -52,8 +52,7 @@ function TrackHubRegistrySelect(props) {
   const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
-
-  const { classes, model } = props
+  const classes = useStyles()
 
   useEffect(() => {
     async function getAssemblies() {
@@ -322,8 +321,7 @@ function TrackHubRegistrySelect(props) {
 }
 
 TrackHubRegistrySelect.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export default withStyles(styles)(TrackHubRegistrySelect)
+export default TrackHubRegistrySelect

@@ -35,7 +35,7 @@ exports[`<DropDownMenu /> opens a menu and selects a menu item 1`] = `
 
 exports[`<DropDownMenu /> renders 1`] = `
 <div
-  class="DropDownMenu-root-1"
+  class="makeStyles-root-1"
 >
   <button
     aria-haspopup="true"
