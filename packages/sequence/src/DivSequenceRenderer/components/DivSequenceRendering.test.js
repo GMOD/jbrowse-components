@@ -50,14 +50,18 @@ class ErrorCatcher extends React.Component {
 }
 
 describe('<DivSequenceRendering />', () => {
-  // this is just a little hack to silence a warning that we'll get until react
-  // fixes this: https://github.com/facebook/react/pull/14853
+  // This just keeps our testing logs clean by not displaying `console.error`s
+  // from errors we intentionally throw in our tests. Hopefully React will
+  // someday provide a way for error boundaries to prevent error logging so we
+  // won't have to do this: https://github.com/facebook/react/issues/15069
   const originalError = console.error
   beforeAll(() => {
     console.error = (...args) => {
-      if (/feature one did not contain a valid `seq` attribute/.test(args[0])) {
+      if (
+        /feature one did not contain a valid `seq` attribute/.test(args[0]) ||
+        /The above error occurred in the <SequenceDivs> component/.test(args[0])
+      )
         return
-      }
       originalError.call(console, ...args)
     }
   })

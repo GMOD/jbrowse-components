@@ -6,8 +6,10 @@ import React, { Component } from 'react'
 
 class Stick extends Component {
   static propTypes = {
-    feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
-      .isRequired,
+    feature: ReactPropTypes.shape({
+      id: ReactPropTypes.func.isRequired,
+      get: ReactPropTypes.func.isRequired,
+    }).isRequired,
     // horizontallyFlipped: ReactPropTypes.bool,
     // bpPerPx: ReactPropTypes.number.isRequired,
     // region: CommonPropTypes.Region.isRequired,
@@ -17,6 +19,9 @@ class Stick extends Component {
       y: ReactPropTypes.number.isRequired,
       width: ReactPropTypes.number.isRequired,
       height: ReactPropTypes.number.isRequired,
+      anchorLocation: ReactPropTypes.number.isRequired,
+      data: ReactPropTypes.shape({ radiusPx: ReactPropTypes.number.isRequired })
+        .isRequired,
     }).isRequired,
 
     selectedFeatureId: ReactPropTypes.string,

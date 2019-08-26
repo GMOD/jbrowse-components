@@ -47,8 +47,8 @@ function AddTrackDrawerWidget(props) {
 
   const session = getSession(model)
 
-  function getStepContent() {
-    switch (activeStep) {
+  function getStepContent(step) {
+    switch (step) {
       case 0:
         return (
           <TrackSourceSelect
@@ -117,11 +117,11 @@ function AddTrackDrawerWidget(props) {
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map(label => (
+        {steps.map((label, idx) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
             <StepContent>
-              {getStepContent()}
+              {getStepContent(idx)}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}

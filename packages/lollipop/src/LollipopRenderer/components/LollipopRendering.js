@@ -13,6 +13,7 @@ const styles = (/* theme */) => ({})
 class LollipopRendering extends Component {
   static propTypes = {
     layout: ReactPropTypes.shape({
+      getLayout: ReactPropTypes.func.isRequired,
       add: ReactPropTypes.func.isRequired,
       getTotalHeight: ReactPropTypes.func.isRequired,
     }).isRequired,

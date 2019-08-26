@@ -3,8 +3,6 @@ import { types, SnapshotOut } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
-import { assembleLocString } from './util'
-
 export const ElementId = types.optional(types.identifier, shortid.generate)
 
 // PropTypes that are useful when working with instances of these in react components
@@ -27,18 +25,14 @@ export const NoAssemblyRegion = types
     start: types.number,
     end: types.number,
   })
-  .views(self => ({
-    get locString() {
-      return assembleLocString(self)
-    },
-  }))
   .actions(self => ({
     setRefName(newRefName: string) {
       self.refName = newRefName
     },
   }))
 
-export type INoAssemblyRegion = SnapshotOut<typeof NoAssemblyRegion>
+type TNoAssemblyRegion = SnapshotOut<typeof NoAssemblyRegion>
+export type INoAssemblyRegion = TNoAssemblyRegion
 
 export const Region = types.compose(
   NoAssemblyRegion,

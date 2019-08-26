@@ -84,6 +84,8 @@ function ColorEditor(props) {
 }
 ColorEditor.propTypes = {
   slot: ReactPropTypes.shape({
+    name: ReactPropTypes.string.isRequired,
+    description: ReactPropTypes.string,
     value: ReactPropTypes.string.isRequired,
     set: ReactPropTypes.func.isRequired,
   }).isRequired,

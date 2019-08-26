@@ -59,12 +59,18 @@ function Segments(props) {
 }
 
 Segments.propTypes = {
-  feature: PropTypes.shape({ get: PropTypes.func.isRequired }).isRequired,
+  feature: PropTypes.shape({
+    id: PropTypes.func.isRequired,
+    get: PropTypes.func.isRequired,
+  }).isRequired,
   featureLayout: PropTypes.shape({
-    top: PropTypes.number.isRequired,
-    left: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number.isRequired,
+    absolute: PropTypes.shape({
+      top: PropTypes.number.isRequired,
+      left: PropTypes.number.isRequired,
+      width: PropTypes.number.isRequired,
+      height: PropTypes.number.isRequired,
+    }),
+    getSubRecord: PropTypes.func.isRequired,
   }).isRequired,
   selected: PropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,

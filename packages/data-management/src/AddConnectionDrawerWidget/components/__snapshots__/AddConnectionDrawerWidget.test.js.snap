@@ -78,8 +78,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
-                      aria-haspopup="true"
-                      aria-pressed="false"
+                      aria-haspopup="listbox"
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                       role="button"
                       tabindex="0"
@@ -124,8 +123,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <div
-                      aria-haspopup="true"
-                      aria-pressed="false"
+                      aria-haspopup="listbox"
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                       role="button"
                       tabindex="0"

@@ -112,7 +112,9 @@ function ConfirmTrack(props) {
           select
           fullWidth
           onChange={event => setTrackType(event.target.value)}
-          inputProps={{ 'data-testid': 'trackTypeSelect' }}
+          SelectProps={{
+            SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+          }}
         >
           {session.pluginManager
             .getElementTypesInGroup('track')
@@ -132,7 +134,9 @@ function ConfirmTrack(props) {
           select
           fullWidth
           onChange={event => setDatasetName(event.target.value)}
-          inputProps={{ 'data-testid': 'datasetNameSelect' }}
+          SelectProps={{
+            SelectDisplayProps: { 'data-testid': 'datasetNameSelect' },
+          }}
         >
           {session.datasets.map(dataset => {
             const newDatasetName = readConfObject(dataset, 'name')

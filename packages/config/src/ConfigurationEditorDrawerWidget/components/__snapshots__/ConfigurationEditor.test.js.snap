@@ -2,14 +2,14 @@
 
 exports[`ConfigurationEditor drawer widget renders all the different types of built-in slots 1`] = `
 <div
-  class="ConfigurationEditor-root-1"
+  class="ConfigurationEditor-root-118"
   data-testid="configEditor"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -38,7 +38,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -63,10 +63,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <fieldset
         class="MuiFormControl-root"
@@ -80,13 +80,13 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
           >
             <span
               aria-disabled="false"
-              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-139 Mui-checked MuiIconButton-colorSecondary"
+              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-246 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-247 Mui-checked MuiIconButton-colorSecondary"
             >
               <span
                 class="MuiIconButton-label"
               >
                 <div
-                  class="PrivateRadioButtonIcon-root-142 PrivateRadioButtonIcon-checked-144"
+                  class="PrivateRadioButtonIcon-root-250 PrivateRadioButtonIcon-checked-252"
                 >
                   <svg
                     aria-hidden="true"
@@ -101,7 +101,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   </svg>
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-251"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -113,7 +113,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 </div>
                 <input
                   checked=""
-                  class="PrivateSwitchBase-input-141"
+                  class="PrivateSwitchBase-input-249"
                   type="radio"
                   value="uri"
                 />
@@ -133,14 +133,14 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
           >
             <span
               aria-disabled="true"
-              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-140 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+              class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-246 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-248 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
               tabindex="-1"
             >
               <span
                 class="MuiIconButton-label"
               >
                 <div
-                  class="PrivateRadioButtonIcon-root-142"
+                  class="PrivateRadioButtonIcon-root-250"
                 >
                   <svg
                     aria-hidden="true"
@@ -155,7 +155,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   </svg>
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                    class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-251"
                     focusable="false"
                     role="presentation"
                     viewBox="0 0 24 24"
@@ -166,7 +166,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   </svg>
                 </div>
                 <input
-                  class="PrivateSwitchBase-input-141"
+                  class="PrivateSwitchBase-input-249"
                   disabled=""
                   type="radio"
                   value="localPath"
@@ -208,7 +208,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -233,10 +233,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated"
@@ -376,7 +376,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </p>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -401,10 +401,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated"
@@ -412,7 +412,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         stringArrayMapTest
       </label>
       <div
-        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card-204 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card-314 MuiPaper-rounded"
       >
         <div
           class="MuiCardHeader-root"
@@ -587,7 +587,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card-204 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation8 MuiCard-root makeStyles-card-314 MuiPaper-rounded"
       >
         <div
           class="MuiCardHeader-root"
@@ -641,7 +641,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </p>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -666,10 +666,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <div
         class="MuiFormControl-root MuiTextField-root"
@@ -698,7 +698,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -723,10 +723,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <div
         class="MuiFormControl-root MuiTextField-root"
@@ -755,7 +755,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -780,10 +780,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -813,7 +813,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -838,10 +838,10 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-120 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-121"
     >
       <div
         class="MuiFormControl-root"
@@ -851,7 +851,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-disabled="false"
-            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiCheckbox-root MuiCheckbox-colorSecondary PrivateSwitchBase-checked-139 Mui-checked MuiIconButton-colorSecondary"
+            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-246 MuiCheckbox-root MuiCheckbox-colorSecondary PrivateSwitchBase-checked-247 Mui-checked MuiIconButton-colorSecondary"
           >
             <span
               class="MuiIconButton-label"
@@ -869,7 +869,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               </svg>
               <input
                 checked=""
-                class="PrivateSwitchBase-input-141"
+                class="PrivateSwitchBase-input-249"
                 data-indeterminate="false"
                 type="checkbox"
                 value=""
@@ -893,7 +893,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-122"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -922,14 +922,14 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
 
 exports[`ConfigurationEditor drawer widget renders with defaults of the AlignmentsTrack schema 1`] = `
 <div
-  class="ConfigurationEditor-root-1"
+  class="ConfigurationEditor-root-339"
   data-testid="configEditor"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-342"
     >
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -958,7 +958,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-343"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -983,10 +983,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-342"
     >
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -1015,7 +1015,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-343"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -1040,10 +1040,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-342"
     >
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated"
@@ -1101,7 +1101,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </p>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-343"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -1131,13 +1131,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     adapter
   </label>
   <div
-    class="makeStyles-subSchemaContainer-2"
+    class="makeStyles-subSchemaContainer-340"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-219 MuiPaper-rounded"
+      class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-476 MuiPaper-rounded"
     >
       <div
-        class="makeStyles-paperContent-220"
+        class="makeStyles-paperContent-477"
       >
         <div
           class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -1152,8 +1152,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
           >
             <div
-              aria-haspopup="true"
-              aria-pressed="false"
+              aria-haspopup="listbox"
               class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
               role="button"
               tabindex="0"
@@ -1188,10 +1187,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="MuiFormGroup-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
       >
         <div
-          class="makeStyles-paperContent-4"
+          class="makeStyles-paperContent-342"
         >
           <fieldset
             class="MuiFormControl-root"
@@ -1205,13 +1204,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <span
                   aria-disabled="false"
-                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-139 Mui-checked MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-512 Mui-checked MuiIconButton-colorSecondary"
                 >
                   <span
                     class="MuiIconButton-label"
                   >
                     <div
-                      class="PrivateRadioButtonIcon-root-142 PrivateRadioButtonIcon-checked-144"
+                      class="PrivateRadioButtonIcon-root-515 PrivateRadioButtonIcon-checked-517"
                     >
                       <svg
                         aria-hidden="true"
@@ -1226,7 +1225,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
                         focusable="false"
                         role="presentation"
                         viewBox="0 0 24 24"
@@ -1238,7 +1237,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     </div>
                     <input
                       checked=""
-                      class="PrivateSwitchBase-input-141"
+                      class="PrivateSwitchBase-input-514"
                       type="radio"
                       value="uri"
                     />
@@ -1258,14 +1257,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <span
                   aria-disabled="true"
-                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-140 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-513 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
                   tabindex="-1"
                 >
                   <span
                     class="MuiIconButton-label"
                   >
                     <div
-                      class="PrivateRadioButtonIcon-root-142"
+                      class="PrivateRadioButtonIcon-root-515"
                     >
                       <svg
                         aria-hidden="true"
@@ -1280,7 +1279,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
                         focusable="false"
                         role="presentation"
                         viewBox="0 0 24 24"
@@ -1291,7 +1290,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                     </div>
                     <input
-                      class="PrivateSwitchBase-input-141"
+                      class="PrivateSwitchBase-input-514"
                       disabled=""
                       type="radio"
                       value="localPath"
@@ -1329,7 +1328,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           </div>
         </div>
         <div
-          class="makeStyles-slotModeSwitch-5"
+          class="makeStyles-slotModeSwitch-343"
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root"
@@ -1359,16 +1358,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         index
       </label>
       <div
-        class="makeStyles-subSchemaContainer-2"
+        class="makeStyles-subSchemaContainer-340"
       >
         <div
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -1383,8 +1382,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                 >
                   <div
-                    aria-haspopup="true"
-                    aria-pressed="false"
+                    aria-haspopup="listbox"
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                     role="button"
                     tabindex="0"
@@ -1411,7 +1409,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -1436,10 +1434,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <fieldset
                 class="MuiFormControl-root"
@@ -1453,13 +1451,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-disabled="false"
-                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-139 Mui-checked MuiIconButton-colorSecondary"
+                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-512 Mui-checked MuiIconButton-colorSecondary"
                     >
                       <span
                         class="MuiIconButton-label"
                       >
                         <div
-                          class="PrivateRadioButtonIcon-root-142 PrivateRadioButtonIcon-checked-144"
+                          class="PrivateRadioButtonIcon-root-515 PrivateRadioButtonIcon-checked-517"
                         >
                           <svg
                             aria-hidden="true"
@@ -1474,7 +1472,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                           <svg
                             aria-hidden="true"
-                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
                             focusable="false"
                             role="presentation"
                             viewBox="0 0 24 24"
@@ -1486,7 +1484,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         </div>
                         <input
                           checked=""
-                          class="PrivateSwitchBase-input-141"
+                          class="PrivateSwitchBase-input-514"
                           type="radio"
                           value="uri"
                         />
@@ -1506,14 +1504,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-disabled="true"
-                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-138 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-140 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-513 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
                       tabindex="-1"
                     >
                       <span
                         class="MuiIconButton-label"
                       >
                         <div
-                          class="PrivateRadioButtonIcon-root-142"
+                          class="PrivateRadioButtonIcon-root-515"
                         >
                           <svg
                             aria-hidden="true"
@@ -1528,7 +1526,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                           <svg
                             aria-hidden="true"
-                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-143"
+                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
                             focusable="false"
                             role="presentation"
                             viewBox="0 0 24 24"
@@ -1539,7 +1537,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                         </div>
                         <input
-                          class="PrivateSwitchBase-input-141"
+                          class="PrivateSwitchBase-input-514"
                           disabled=""
                           type="radio"
                           value="localPath"
@@ -1577,7 +1575,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -1606,10 +1604,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
   >
     <div
-      class="makeStyles-paperContent-4"
+      class="makeStyles-paperContent-342"
     >
       <div
         class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -1624,8 +1622,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
         >
           <div
-            aria-haspopup="true"
-            aria-pressed="false"
+            aria-haspopup="listbox"
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
             role="button"
             tabindex="0"
@@ -1652,7 +1649,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       </div>
     </div>
     <div
-      class="makeStyles-slotModeSwitch-5"
+      class="makeStyles-slotModeSwitch-343"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root"
@@ -1682,7 +1679,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     renderers
   </label>
   <div
-    class="makeStyles-subSchemaContainer-2"
+    class="makeStyles-subSchemaContainer-340"
   >
     <div
       class="MuiFormGroup-root"
@@ -1693,16 +1690,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         PileupRenderer
       </label>
       <div
-        class="makeStyles-subSchemaContainer-2"
+        class="makeStyles-subSchemaContainer-340"
       >
         <div
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root"
@@ -1715,7 +1712,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   alignmentColor
                 </label>
                 <div
-                  class="CallbackEditor-callbackEditor-232"
+                  class="CallbackEditor-callbackEditor-548"
                   style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                 >
                   <textarea
@@ -1902,7 +1899,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -1932,10 +1929,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -1964,7 +1961,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -1989,10 +1986,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -2021,7 +2018,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -2053,16 +2050,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         SvgFeatureRenderer
       </label>
       <div
-        class="makeStyles-subSchemaContainer-2"
+        class="makeStyles-subSchemaContainer-340"
       >
         <div
           class="MuiFormGroup-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -2092,7 +2089,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -2117,10 +2114,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -2150,7 +2147,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -2175,10 +2172,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -2208,7 +2205,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -2233,10 +2230,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -2265,7 +2262,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"
@@ -2295,16 +2292,16 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             labels
           </label>
           <div
-            class="makeStyles-subSchemaContainer-2"
+            class="makeStyles-subSchemaContainer-340"
           >
             <div
               class="MuiFormGroup-root"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
               >
                 <div
-                  class="makeStyles-paperContent-4"
+                  class="makeStyles-paperContent-342"
                 >
                   <div
                     class="MuiFormControl-root"
@@ -2317,7 +2314,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       name
                     </label>
                     <div
-                      class="CallbackEditor-callbackEditor-232"
+                      class="CallbackEditor-callbackEditor-548"
                       style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                     >
                       <textarea
@@ -2473,7 +2470,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  class="makeStyles-slotModeSwitch-5"
+                  class="makeStyles-slotModeSwitch-343"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root"
@@ -2503,10 +2500,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
               >
                 <div
-                  class="makeStyles-paperContent-4"
+                  class="makeStyles-paperContent-342"
                 >
                   <div
                     class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -2536,7 +2533,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  class="makeStyles-slotModeSwitch-5"
+                  class="makeStyles-slotModeSwitch-343"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root"
@@ -2561,10 +2558,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
               >
                 <div
-                  class="makeStyles-paperContent-4"
+                  class="makeStyles-paperContent-342"
                 >
                   <div
                     class="MuiFormControl-root"
@@ -2577,7 +2574,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       description
                     </label>
                     <div
-                      class="CallbackEditor-callbackEditor-232"
+                      class="CallbackEditor-callbackEditor-548"
                       style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                     >
                       <textarea
@@ -2701,7 +2698,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  class="makeStyles-slotModeSwitch-5"
+                  class="makeStyles-slotModeSwitch-343"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root"
@@ -2731,10 +2728,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
               >
                 <div
-                  class="makeStyles-paperContent-4"
+                  class="makeStyles-paperContent-342"
                 >
                   <div
                     class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -2764,7 +2761,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  class="makeStyles-slotModeSwitch-5"
+                  class="makeStyles-slotModeSwitch-343"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root"
@@ -2789,10 +2786,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+                class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
               >
                 <div
-                  class="makeStyles-paperContent-4"
+                  class="makeStyles-paperContent-342"
                 >
                   <div
                     class="MuiFormControl-root MuiTextField-root"
@@ -2821,7 +2818,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   </div>
                 </div>
                 <div
-                  class="makeStyles-slotModeSwitch-5"
+                  class="makeStyles-slotModeSwitch-343"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root"
@@ -2848,10 +2845,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             </div>
           </div>
           <div
-            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-3 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
           >
             <div
-              class="makeStyles-paperContent-4"
+              class="makeStyles-paperContent-342"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -2880,7 +2877,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </div>
             </div>
             <div
-              class="makeStyles-slotModeSwitch-5"
+              class="makeStyles-slotModeSwitch-343"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root"

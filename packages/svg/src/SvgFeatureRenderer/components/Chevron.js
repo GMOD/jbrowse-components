@@ -89,13 +89,17 @@ function Chevron(props) {
 }
 
 Chevron.propTypes = {
-  feature: ReactPropTypes.shape({ get: ReactPropTypes.func.isRequired })
-    .isRequired,
+  feature: ReactPropTypes.shape({
+    id: ReactPropTypes.func.isRequired,
+    get: ReactPropTypes.func.isRequired,
+  }).isRequired,
   featureLayout: ReactPropTypes.shape({
-    top: ReactPropTypes.number.isRequired,
-    left: ReactPropTypes.number.isRequired,
-    width: ReactPropTypes.number.isRequired,
-    height: ReactPropTypes.number.isRequired,
+    absolute: ReactPropTypes.shape({
+      top: ReactPropTypes.number.isRequired,
+      left: ReactPropTypes.number.isRequired,
+      width: ReactPropTypes.number.isRequired,
+      height: ReactPropTypes.number.isRequired,
+    }),
   }).isRequired,
   selected: ReactPropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,

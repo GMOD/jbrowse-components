@@ -90,7 +90,11 @@ AttributeFilter.propTypes = {
 
 class FilterControls extends Component {
   static propTypes = {
-    classes: ReactPropTypes.shape({ root: ReactPropTypes.string }).isRequired,
+    classes: ReactPropTypes.shape({
+      root: ReactPropTypes.string,
+      header: ReactPropTypes.string,
+      title: ReactPropTypes.string,
+    }).isRequired,
     style: ReactPropTypes.shape({ height: ReactPropTypes.any }),
     model: MxPropTypes.objectOrObservableObject.isRequired,
   }

@@ -105,26 +105,24 @@ describe('<AddTrackDrawerWidget />', () => {
   })
 
   it('adds a track', async () => {
-    const {
-      container,
-      getByTestId,
-      getAllByTestId,
-      getByText,
-      getAllByRole,
-    } = render(<AddTrackDrawerWidget model={model} />)
+    const { getByTestId, getByText } = render(
+      <AddTrackDrawerWidget model={model} />,
+    )
     expect(session.datasets[0].tracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
-    fireEvent.change(getAllByTestId('trackNameInput')[1], {
+    fireEvent.change(getByTestId('trackNameInput'), {
       target: { value: 'Test track name' },
     })
-    fireEvent.click(getAllByRole('button')[0])
-    await waitForElement(() => getByText('BasicTrack'), { container })
-    fireEvent.click(getByText('BasicTrack'))
-    fireEvent.click(getAllByRole('button')[1])
-    await waitForElement(() => getByText('volvox'), { container })
-    fireEvent.click(getByText('volvox'))
-    fireEvent.click(getAllByTestId('addTrackNextButton')[1])
+    const trackTypeSelect = getByTestId('trackTypeSelect')
+    fireEvent.click(trackTypeSelect)
+    const basicTrack = await waitForElement(() => getByText('BasicTrack'))
+    fireEvent.click(basicTrack)
+    const datasetNameSelect = getByTestId('datasetNameSelect')
+    fireEvent.click(datasetNameSelect)
+    const volvox = await waitForElement(() => getByText('volvox'))
+    fireEvent.click(volvox)
+    fireEvent.click(getByTestId('addTrackNextButton'))
     expect(session.datasets[0].tracks.length).toBe(2)
   })
 })
