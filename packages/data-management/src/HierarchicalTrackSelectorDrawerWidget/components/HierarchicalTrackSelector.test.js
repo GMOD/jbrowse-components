@@ -1,8 +1,8 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
-import { createMuiTheme } from '@material-ui/core'
+import { createMuiTheme } from '@material-ui/core/styles'
 import { ThemeProvider } from '@material-ui/styles'
-import React from 'react'
 import { cleanup, render, waitForElement } from '@testing-library/react'
+import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 window.requestIdleCallback = cb => cb()

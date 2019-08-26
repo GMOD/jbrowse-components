@@ -4,9 +4,9 @@ import {
   guessTrackType,
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
-import { makeStyles } from '@material-ui/core'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
+import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'

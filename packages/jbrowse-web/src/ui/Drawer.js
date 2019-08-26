@@ -1,7 +1,7 @@
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
-import { makeStyles } from '@material-ui/core'
 import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'

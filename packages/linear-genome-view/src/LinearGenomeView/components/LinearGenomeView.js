@@ -5,18 +5,16 @@ import {
   getSession,
   parseLocString,
 } from '@gmod/jbrowse-core/util'
-import {
-  Icon,
-  IconButton,
-  InputBase,
-  makeStyles,
-  Menu,
-  MenuItem,
-  Paper,
-  Select,
-  TextField,
-  Typography,
-} from '@material-ui/core'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
+import InputBase from '@material-ui/core/InputBase'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import Select from '@material-ui/core/Select'
+import { makeStyles } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'

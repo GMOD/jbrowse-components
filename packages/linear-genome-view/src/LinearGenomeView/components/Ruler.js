@@ -1,5 +1,5 @@
 import { PropTypes } from '@gmod/jbrowse-core/mst-types'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Fragment } from 'react'

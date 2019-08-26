@@ -2,7 +2,7 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react-lite')
   const React = jbrequire('react')
-  const { makeStyles } = jbrequire('@material-ui/core')
+  const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { polarToCartesian, radToDeg, assembleLocString } = jbrequire(
     '@gmod/jbrowse-core/util',
   )

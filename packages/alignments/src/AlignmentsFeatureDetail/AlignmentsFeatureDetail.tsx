@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
-import { makeStyles, Theme } from '@material-ui/core'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
+import { makeStyles, Theme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 

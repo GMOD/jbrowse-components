@@ -4,9 +4,9 @@ import {
   isConfigurationSlotType,
 } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { iterMap } from '@gmod/jbrowse-core/util'
-import { makeStyles } from '@material-ui/core'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormLabel from '@material-ui/core/FormLabel'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'

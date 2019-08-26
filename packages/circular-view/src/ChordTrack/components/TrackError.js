@@ -1,6 +1,6 @@
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
-  const { makeStyles } = jbrequire('@material-ui/core')
+  const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { observer } = jbrequire('mobx-react')
 
   const useStyles = makeStyles({

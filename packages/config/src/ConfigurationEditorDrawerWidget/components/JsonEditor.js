@@ -1,10 +1,8 @@
 import { useDebounce } from '@gmod/jbrowse-core/util'
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  makeStyles,
-} from '@material-ui/core'
+import FormControl from '@material-ui/core/FormControl'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import InputLabel from '@material-ui/core/InputLabel'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'

@@ -1,4 +1,6 @@
-import { MenuItem, Paper, TextField } from '@material-ui/core'
+import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import TextField from '@material-ui/core/TextField'
 import { observer } from 'mobx-react'
 import React from 'react'
 import { useSlotEditorStyles } from './SlotEditor'
