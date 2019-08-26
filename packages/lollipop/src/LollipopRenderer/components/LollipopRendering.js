@@ -1,14 +1,11 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { bpToPx } from '@gmod/jbrowse-core/util'
-import { withStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import Lollipop from './Lollipop'
 import Stick from './Stick'
-
-const styles = (/* theme */) => ({})
 
 class LollipopRendering extends Component {
   static propTypes = {
@@ -193,4 +190,4 @@ class LollipopRendering extends Component {
     )
   }
 }
-export default withStyles(styles)(observer(LollipopRendering))
+export default observer(LollipopRendering)
