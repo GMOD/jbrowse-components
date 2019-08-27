@@ -1,23 +1,20 @@
+import { clamp } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useState, useEffect } from 'react'
-import { clamp } from '@gmod/jbrowse-core/util'
-
+import React, { useEffect, useRef, useState } from 'react'
 import { withSize } from 'react-sizeme'
-
-import Drawer from './Drawer'
 import DevTools from './DevTools'
+import Drawer from './Drawer'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   '@global': {
     html: {
       'font-family': 'Roboto',
@@ -55,10 +52,10 @@ const styles = theme => ({
   drawerLoading: {
     margin: theme.spacing(2),
   },
-})
+}))
 
-function App(props) {
-  const { classes, size, session } = props
+function App({ size, session }) {
+  const classes = useStyles()
 
   const { pluginManager } = session
   const [scrollTop, setScrollTop] = useState(0)
@@ -188,9 +185,8 @@ function App(props) {
 }
 
 App.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   session: PropTypes.observableObject.isRequired,
 }
 
-export default withSize()(withStyles(styles)(observer(App)))
+export default withSize()(observer(App))

@@ -1,12 +1,11 @@
+import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { withStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
 import React from 'react'
 import FilterControls from './FilterControls'
-import FilterControlResizeHandle from './FilterControlsResizeHandle'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   track: {
     background: 'white',
     height: '100%',
@@ -19,28 +18,33 @@ const styles = theme => ({
   filterControls: {
     background: theme.palette.background.default,
   },
-})
+}))
 
-function FilteringTrack({ classes, ...otherProps }) {
-  const { model } = otherProps
-  const { innerTrackHeight, filterControlHeight, dragHandleHeight } = model
+function FilteringTrack(props) {
+  const { model } = props
+  const classes = useStyles()
+  const { innerTrackHeight, filterControlsHeight, dragHandleHeight } = model
   return (
     <div className={classes.track}>
       <div className={classes.innerTrack} style={{ height: innerTrackHeight }}>
-        <BlockBasedTrack {...otherProps} />
+        <BlockBasedTrack {...props} />
       </div>
-      <FilterControlResizeHandle
-        onVerticalDrag={model.resizeFilterControls}
-        style={{ height: dragHandleHeight }}
+      <ResizeHandle
+        onDrag={model.resizeFilterControls}
+        style={{
+          height: dragHandleHeight,
+          background: '#ccc',
+          boxSizing: 'border-box',
+          borderTop: '1px solid #fafafa',
+        }}
       />
-      <FilterControls style={{ height: filterControlHeight }} {...otherProps} />
+      <FilterControls style={{ height: filterControlsHeight }} {...props} />
     </div>
   )
 }
 
 FilteringTrack.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   model: PropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(FilteringTrack))
+export default observer(FilteringTrack)

@@ -1,22 +1,20 @@
-import React, { useState } from 'react'
-import { observer, PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
-import { withStyles } from '@material-ui/core/styles'
-import ReactPropTypes from 'prop-types'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import { makeStyles } from '@material-ui/core/styles'
+import { observer, PropTypes } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
+import React, { useState } from 'react'
 
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   developer: {
     background: 'white',
     display: 'block',
   },
-})
+}))
 
 function addView(session, type) {
   // clone the last view if there is one
@@ -33,7 +31,8 @@ function addView(session, type) {
   }
 }
 
-function DeveloperTools({ classes, session }) {
+function DeveloperTools({ session }) {
+  const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(null)
   function handleSessionMenuClick(event) {
     setAnchorEl(event.currentTarget)
@@ -135,8 +134,7 @@ function DeveloperTools({ classes, session }) {
 }
 
 DeveloperTools.propTypes = {
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
   session: PropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(DeveloperTools))
+export default observer(DeveloperTools)

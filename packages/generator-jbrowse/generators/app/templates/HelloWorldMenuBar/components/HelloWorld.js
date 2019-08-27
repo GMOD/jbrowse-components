@@ -1,22 +1,21 @@
 import AppBar from '@material-ui/core/AppBar'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React from 'react'
 
-const styles = {
+const useStyles = makeStyles({
   root: {
     flexGrow: 1,
   },
   grow: {
     flexGrow: 1,
   },
-}
+})
 
-function HelloWorld(props) {
-  const { classes, model } = props
+function HelloWorld({ model }) {
+  const classes = useStyles()
 
   return (
     <AppBar className={classes.root} position="static">
@@ -34,11 +33,7 @@ function HelloWorld(props) {
 }
 
 HelloWorld.propTypes = {
-  classes: PropTypes.shape({
-    grow: PropTypes.shape.isRequired,
-    root: PropTypes.shape.isRequired,
-  }).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(HelloWorld))
+export default observer(HelloWorld)

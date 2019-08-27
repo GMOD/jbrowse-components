@@ -1,13 +1,13 @@
-import { Paper } from '@material-ui/core'
+import { FileLocationEditor, JsonEditor } from '@gmod/jbrowse-plugin-config'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Paper from '@material-ui/core/Paper'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { JsonEditor, FileLocationEditor } from '@gmod/jbrowse-plugin-config'
 
 const fromConfigDefault = [
   {
@@ -38,7 +38,7 @@ const fromConfigDefault = [
 
 const fromFileDefault = { uri: '' }
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -46,7 +46,7 @@ const styles = theme => ({
   paper: {
     padding: theme.spacing(1),
   },
-})
+}))
 
 function getInputComponent(trackSource, trackData, setTrackData) {
   // mock the slots so we can use the slotEditor components here
@@ -92,14 +92,13 @@ function handleChange(event, setTrackSource, setTrackData) {
   }
 }
 
-function TrackSourceSelect(props) {
-  const {
-    trackSource,
-    setTrackSource,
-    trackData,
-    setTrackData,
-    classes,
-  } = props
+function TrackSourceSelect({
+  trackSource,
+  setTrackSource,
+  trackData,
+  setTrackData,
+}) {
+  const classes = useStyles()
   return (
     <div className={classes.root}>
       <FormControl component="fieldset">
@@ -138,7 +137,6 @@ TrackSourceSelect.propTypes = {
   setTrackSource: PropTypes.func.isRequired,
   trackData: PropTypes.objectOf(PropTypes.any).isRequired,
   setTrackData: PropTypes.func.isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
 }
 
-export default withStyles(styles)(TrackSourceSelect)
+export default TrackSourceSelect

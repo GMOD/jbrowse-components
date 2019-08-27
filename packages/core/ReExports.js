@@ -4,7 +4,6 @@ import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
-import * as mxreactlite from 'mobx-react-lite'
 import PropTypes from 'prop-types'
 
 import * as MUICore from '@material-ui/core'
@@ -25,7 +24,7 @@ import * as trackUtils from './util/tracks'
 
 import * as mstTypes from './mst-types'
 
-import ResizeHandleHorizontal from './components/ResizeHandleHorizontal'
+import ResizeHandle from './components/ResizeHandle'
 
 export default {
   mobx,
@@ -33,7 +32,6 @@ export default {
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
-  'mobx-react-lite': mxreactlite,
   'prop-types': PropTypes,
   '@material-ui/core': MUICore,
   '@material-ui/core/styles': MUIStyles,
@@ -50,5 +48,5 @@ export default {
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
-  '@gmod/jbrowse-core/components/ResizeHandleHorizontal': ResizeHandleHorizontal,
+  '@gmod/jbrowse-core/components/ResizeHandle': ResizeHandle,
 }

@@ -9,13 +9,13 @@ exports[`VariantTrack drawer widget renders with just the required model element
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root VariantFeatureDetails-header-5"
+      class="MuiCardHeader-root makeStyles-header-5"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
           Primary data
         </span>
@@ -26,12 +26,12 @@ exports[`VariantTrack drawer widget renders with just the required model element
     >
       <div>
         <div
-          class="VariantFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           Position
         </div>
         <div
-          class="VariantFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           ctgA:NaN..undefined
         </div>
@@ -46,13 +46,13 @@ exports[`VariantTrack drawer widget renders with just the required model element
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root VariantFeatureDetails-header-5"
+      class="MuiCardHeader-root makeStyles-header-5"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title VariantFeatureDetails-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
         >
           Attributes
         </span>
@@ -63,48 +63,48 @@ exports[`VariantTrack drawer widget renders with just the required model element
     >
       <div>
         <div
-          class="VariantFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           MQ
         </div>
         <div
-          class="VariantFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           5
         </div>
       </div>
       <div>
         <div
-          class="VariantFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           REF
         </div>
         <div
-          class="VariantFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           A
         </div>
       </div>
       <div>
         <div
-          class="VariantFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           ALT
         </div>
         <div
-          class="VariantFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           C
         </div>
       </div>
       <div>
         <div
-          class="VariantFeatureDetails-fieldName-3"
+          class="makeStyles-fieldName-3"
         >
           QUAL
         </div>
         <div
-          class="VariantFeatureDetails-fieldValue-4"
+          class="makeStyles-fieldValue-4"
         >
           10.4
         </div>

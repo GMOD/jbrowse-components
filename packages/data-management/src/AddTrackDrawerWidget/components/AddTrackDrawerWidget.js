@@ -1,19 +1,18 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
 import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import propTypes from 'prop-types'
 import React, { useState } from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -30,11 +29,11 @@ const styles = theme => ({
   stepContent: {
     margin: theme.spacing(1),
   },
-})
+}))
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackDrawerWidget(props) {
+function AddTrackDrawerWidget({ model }) {
   const [activeStep, setActiveStep] = useState(0)
   const [trackSource, setTrackSource] = useState('fromFile')
   const [trackData, setTrackData] = useState({ uri: '' })
@@ -42,8 +41,7 @@ function AddTrackDrawerWidget(props) {
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
   const [datasetName, setDatasetName] = useState('')
-
-  const { classes, model } = props
+  const classes = useStyles()
 
   const session = getSession(model)
 
@@ -150,8 +148,7 @@ function AddTrackDrawerWidget(props) {
 }
 
 AddTrackDrawerWidget.propTypes = {
-  classes: propTypes.objectOf(propTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(AddTrackDrawerWidget))
+export default observer(AddTrackDrawerWidget)

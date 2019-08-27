@@ -5,15 +5,14 @@ import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
 import StepLabel from '@material-ui/core/StepLabel'
 import Stepper from '@material-ui/core/Stepper'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import propTypes from 'prop-types'
 import React, { useState } from 'react'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -27,18 +26,17 @@ const styles = theme => ({
   actionsContainer: {
     marginBottom: theme.spacing(2),
   },
-})
+}))
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
-function AddConnectionDrawerWidget(props) {
+function AddConnectionDrawerWidget({ model }) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
   const [datasetName, setDatasetName] = useState('')
-
   const [activeStep, setActiveStep] = useState(0)
+  const classes = useStyles()
 
-  const { classes, model } = props
   const session = getSession(model)
 
   const { pluginManager } = session
@@ -143,8 +141,7 @@ function AddConnectionDrawerWidget(props) {
 }
 
 AddConnectionDrawerWidget.propTypes = {
-  classes: propTypes.objectOf(propTypes.string).isRequired,
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default withStyles(styles)(observer(AddConnectionDrawerWidget))
+export default observer(AddConnectionDrawerWidget)

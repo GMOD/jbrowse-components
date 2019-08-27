@@ -1,12 +1,11 @@
 import { getSession } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
-import { makeStyles } from '@material-ui/styles'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Input from '@material-ui/core/Input'
+import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'

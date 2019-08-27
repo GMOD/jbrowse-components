@@ -2,10 +2,10 @@
 
 exports[`<AddTrackDrawerWidget /> renders 1`] = `
 <div
-  class="AddTrackDrawerWidget-root-1"
+  class="makeStyles-root-1"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical AddTrackDrawerWidget-stepper-2"
+    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical makeStyles-stepper-2"
   >
     <div
       class="MuiStep-root MuiStep-vertical"
@@ -63,7 +63,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
               class="MuiCollapse-wrapperInner"
             >
               <div
-                class="TrackSourceSelect-root-105"
+                class="makeStyles-root-105"
               >
                 <fieldset
                   class="MuiFormControl-root"
@@ -183,7 +183,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                   </div>
                 </fieldset>
                 <div
-                  class="MuiPaper-root MuiPaper-elevation1 TrackSourceSelect-paper-106 MuiPaper-rounded"
+                  class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-106 MuiPaper-rounded"
                 >
                   <fieldset
                     class="MuiFormControl-root"
@@ -322,10 +322,10 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                 </div>
               </div>
               <div
-                class="AddTrackDrawerWidget-actionsContainer-4"
+                class="makeStyles-actionsContainer-4"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-3 MuiButton-text Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root makeStyles-button-3 MuiButton-text Mui-disabled Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -337,7 +337,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root AddTrackDrawerWidget-button-3 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root makeStyles-button-3 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
                   data-testid="addTrackNextButton"
                   disabled=""
                   tabindex="-1"

@@ -3,21 +3,17 @@ const dragHandleHeight = 3
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { getRoot } = jbrequire('mobx-state-tree')
-  const { PropTypes } = jbrequire('mobx-react')
-  const { observer } = jbrequire('mobx-react-lite')
-  const ReactPropTypes = jbrequire('prop-types')
+  const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { Icon, IconButton } = jbrequire('@material-ui/core')
-  const { withStyles } = jbrequire('@material-ui/core/styles')
+  const { makeStyles } = jbrequire('@material-ui/core/styles')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-  const ResizeHandleHorizontal = jbrequire(
-    '@gmod/jbrowse-core/components/ResizeHandleHorizontal',
-  )
+  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
   const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   const Ruler = jbrequire(require('./Ruler'))
 
-  const styles = theme => {
+  const useStyles = makeStyles(theme => {
     return {
       root: {
         position: 'relative',
@@ -65,111 +61,105 @@ export default pluginManager => {
       //   padding: theme.spacing.unit / 2,
       // },
     }
-  }
+  })
 
-  const Slices = withStyles(styles)(
-    observer(({ classes, model }) => {
-      return (
+  const Slices = observer(({ model }) => {
+    return (
+      <>
         <>
-          <>
-            {model.staticSlices.map(slice => {
-              return (
-                <Ruler
-                  key={assembleLocString(
-                    slice.region.elided
-                      ? slice.region.regions[0]
-                      : slice.region,
-                  )}
-                  model={model}
-                  slice={slice}
-                />
-              )
-            })}
-          </>
-          <>
-            {model.tracks.map(track => {
-              return (
-                <track.RenderingComponent
-                  key={track.id}
-                  track={track}
-                  view={model}
-                />
-              )
-            })}
-          </>
+          {model.staticSlices.map(slice => {
+            return (
+              <Ruler
+                key={assembleLocString(
+                  slice.region.elided ? slice.region.regions[0] : slice.region,
+                )}
+                model={model}
+                slice={slice}
+              />
+            )
+          })}
         </>
-      )
-    }),
-  )
+        <>
+          {model.tracks.map(track => {
+            return (
+              <track.RenderingComponent
+                key={track.id}
+                track={track}
+                view={model}
+              />
+            )
+          })}
+        </>
+      </>
+    )
+  })
 
-  const Controls = withStyles(styles)(
-    observer(function Controls({ classes, model }) {
-      const rootModel = getRoot(model)
+  const Controls = observer(({ model }) => {
+    const classes = useStyles()
+    const rootModel = getRoot(model)
 
-      return (
-        <div className={classes.controls}>
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-            data-testid="circular_view_close"
-          >
-            <Icon fontSize="small">close</Icon>
-          </IconButton>
+    return (
+      <div className={classes.controls}>
+        <IconButton
+          onClick={model.closeView}
+          className={classes.iconButton}
+          title="close this view"
+          data-testid="circular_view_close"
+        >
+          <Icon fontSize="small">close</Icon>
+        </IconButton>
 
-          <IconButton
-            onClick={model.zoomOutButton}
-            className={classes.iconButton}
-            title="zoom out"
-          >
-            <Icon fontSize="small">zoom_out</Icon>
-          </IconButton>
+        <IconButton
+          onClick={model.zoomOutButton}
+          className={classes.iconButton}
+          title="zoom out"
+        >
+          <Icon fontSize="small">zoom_out</Icon>
+        </IconButton>
 
-          <IconButton
-            onClick={model.zoomInButton}
-            className={classes.iconButton}
-            title="zoom in"
-          >
-            <Icon fontSize="small">zoom_in</Icon>
-          </IconButton>
+        <IconButton
+          onClick={model.zoomInButton}
+          className={classes.iconButton}
+          title="zoom in"
+        >
+          <Icon fontSize="small">zoom_in</Icon>
+        </IconButton>
 
-          <IconButton
-            onClick={model.rotateCounterClockwiseButton}
-            className={classes.iconButton}
-            title="rotate counter-clockwise"
-          >
-            <Icon fontSize="small">rotate_left</Icon>
-          </IconButton>
+        <IconButton
+          onClick={model.rotateCounterClockwiseButton}
+          className={classes.iconButton}
+          title="rotate counter-clockwise"
+        >
+          <Icon fontSize="small">rotate_left</Icon>
+        </IconButton>
 
-          <IconButton
-            onClick={model.rotateClockwiseButton}
-            className={classes.iconButton}
-            title="rotate clockwise"
-          >
-            <Icon fontSize="small">rotate_right</Icon>
-          </IconButton>
+        <IconButton
+          onClick={model.rotateClockwiseButton}
+          className={classes.iconButton}
+          title="rotate clockwise"
+        >
+          <Icon fontSize="small">rotate_right</Icon>
+        </IconButton>
 
-          <ToggleButton
-            onClick={model.activateTrackSelector}
-            title="select tracks"
-            selected={
-              rootModel.visibleDrawerWidget &&
-              rootModel.visibleDrawerWidget.id ===
-                'hierarchicalTrackSelector' &&
-              rootModel.visibleDrawerWidget.view.id === model.id
-            }
-            value="track_select"
-            data-testid="circular_track_select"
-          >
-            <Icon fontSize="small">line_style</Icon>
-          </ToggleButton>
-        </div>
-      )
-    }),
-  )
+        <ToggleButton
+          onClick={model.activateTrackSelector}
+          title="select tracks"
+          selected={
+            rootModel.visibleDrawerWidget &&
+            rootModel.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+            rootModel.visibleDrawerWidget.view.id === model.id
+          }
+          value="track_select"
+          data-testid="circular_track_select"
+        >
+          <Icon fontSize="small">line_style</Icon>
+        </ToggleButton>
+      </div>
+    )
+  })
 
-  function CircularView(props) {
-    const { classes, model } = props
+  function CircularView({ model }) {
+    const classes = useStyles()
 
     return (
       <div className={classes.root} data-testid={model.configuration.configId}>
@@ -209,22 +199,24 @@ export default pluginManager => {
 
         <Controls model={model} />
 
-        <ResizeHandleHorizontal
-          onVerticalDrag={model.resizeHeight}
+        <ResizeHandle
+          onDrag={model.resizeHeight}
           objectId={model.id}
           style={{
             height: dragHandleHeight,
             position: 'absolute',
             bottom: 0,
             left: 0,
+            background: '#ccc',
+            boxSizing: 'border-box',
+            borderTop: '1px solid #fafafa',
           }}
         />
       </div>
     )
   }
   CircularView.propTypes = {
-    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  return withStyles(styles)(observer(CircularView))
+  return observer(CircularView)
 }

@@ -1,33 +1,29 @@
-import {
-  Icon,
-  Select,
-  IconButton,
-  InputBase,
-  Typography,
-  TextField,
-  Paper,
-  Menu,
-  MenuItem,
-  makeStyles,
-} from '@material-ui/core'
+import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import {
   clamp,
+  generateLocString,
   getSession,
   parseLocString,
-  generateLocString,
 } from '@gmod/jbrowse-core/util'
-
-import classnames from 'classnames'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
+import InputBase from '@material-ui/core/InputBase'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import Select from '@material-ui/core/Select'
+import { makeStyles } from '@material-ui/core/styles'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
+import clsx from 'clsx'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
-
 import buttonStyles from './buttonStyles'
-import ZoomControls from './ZoomControls'
-import TrackResizeHandle from './TrackResizeHandle'
-import TrackRenderingContainer from './TrackRenderingContainer'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
+import TrackRenderingContainer from './TrackRenderingContainer'
+import ZoomControls from './ZoomControls'
 
 const dragHandleHeight = 3
 
@@ -101,7 +97,7 @@ const TrackContainer = observer(({ model, track }) => {
   return (
     <>
       <div
-        className={classnames(classes.controls, classes.trackControls)}
+        className={clsx(classes.controls, classes.trackControls)}
         key={`controls:${track.id}`}
         style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
       >
@@ -136,10 +132,16 @@ const TrackContainer = observer(({ model, track }) => {
           onHorizontalScroll={model.horizontalScroll}
         />
       </TrackRenderingContainer>
-      <TrackResizeHandle
+      <ResizeHandle
         key={`handle:${track.id}`}
-        trackId={track.id}
-        onVerticalDrag={model.resizeTrack}
+        onDrag={track.resizeHeight}
+        style={{
+          gridRow: `resize-${track.id}`,
+          gridColumn: 'span 2',
+          background: '#ccc',
+          boxSizing: 'border-box',
+          borderTop: '1px solid #fafafa',
+        }}
       />
     </>
   )
@@ -229,9 +231,7 @@ function TextFieldOrTypography({ model }) {
       />
     </form>
   ) : (
-    <div
-      className={classnames(classes.emphasis, hover ? classes.hovered : null)}
-    >
+    <div className={clsx(classes.emphasis, hover ? classes.hovered : null)}>
       <Typography
         className={classes.viewName}
         onClick={() => setEdit(true)}
@@ -390,7 +390,7 @@ function LinearGenomeView(props) {
       >
         {!model.hideHeader ? <Header model={model} /> : null}
         <div
-          className={classnames(classes.controls, classes.viewControls)}
+          className={clsx(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
           {model.hideControls || !model.hideHeader ? null : (

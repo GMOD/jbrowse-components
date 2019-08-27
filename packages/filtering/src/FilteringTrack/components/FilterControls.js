@@ -1,14 +1,12 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  FormHelperText,
-  FormLabel,
-  Typography,
-  withStyles,
-} from '@material-ui/core'
+import Checkbox from '@material-ui/core/Checkbox'
+import FormControl from '@material-ui/core/FormControl'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import FormLabel from '@material-ui/core/FormLabel'
+import { withStyles } from '@material-ui/core/styles'
+import Typography from '@material-ui/core/Typography'
 import { reaction } from 'mobx'
 import { observer, PropTypes as MxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'

@@ -1,13 +1,13 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import React from 'react'
-import { PropTypes, observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-
-import { makeStyles, IconButton, Icon, Typography } from '@material-ui/core'
-import ToggleButton from '@material-ui/lab/ToggleButton'
-
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-
+import { getSession } from '@gmod/jbrowse-core/util'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
+import { makeStyles } from '@material-ui/core/styles'
+import Typography from '@material-ui/core/Typography'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+import { observer, PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React from 'react'
 import buttonStyles from '../../LinearGenomeView/components/buttonStyles'
 
 const useStyles = makeStyles(theme => ({

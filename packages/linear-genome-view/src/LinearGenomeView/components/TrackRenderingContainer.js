@@ -1,8 +1,8 @@
 /* eslint-disable react/require-default-props */
-import React, { Component } from 'react'
+import { withStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import { withStyles } from '@material-ui/core'
+import React, { Component } from 'react'
 
 const styles = {
   trackRenderingContainer: {

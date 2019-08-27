@@ -2,7 +2,7 @@
 
 exports[`ConfigurationEditor drawer widget renders all the different types of built-in slots 1`] = `
 <div
-  class="ConfigurationEditor-root-118"
+  class="makeStyles-root-118"
   data-testid="configEditor"
 >
   <div
@@ -922,7 +922,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
 
 exports[`ConfigurationEditor drawer widget renders with defaults of the AlignmentsTrack schema 1`] = `
 <div
-  class="ConfigurationEditor-root-339"
+  class="makeStyles-root-339"
   data-testid="configEditor"
 >
   <div
@@ -1134,10 +1134,10 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
     class="makeStyles-subSchemaContainer-340"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-476 MuiPaper-rounded"
+      class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
     >
       <div
-        class="makeStyles-paperContent-477"
+        class="makeStyles-paperContent-342"
       >
         <div
           class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
@@ -1204,13 +1204,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <span
                   aria-disabled="false"
-                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-512 Mui-checked MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-508 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-509 Mui-checked MuiIconButton-colorSecondary"
                 >
                   <span
                     class="MuiIconButton-label"
                   >
                     <div
-                      class="PrivateRadioButtonIcon-root-515 PrivateRadioButtonIcon-checked-517"
+                      class="PrivateRadioButtonIcon-root-512 PrivateRadioButtonIcon-checked-514"
                     >
                       <svg
                         aria-hidden="true"
@@ -1225,7 +1225,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
+                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-513"
                         focusable="false"
                         role="presentation"
                         viewBox="0 0 24 24"
@@ -1237,7 +1237,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     </div>
                     <input
                       checked=""
-                      class="PrivateSwitchBase-input-514"
+                      class="PrivateSwitchBase-input-511"
                       type="radio"
                       value="uri"
                     />
@@ -1257,14 +1257,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               >
                 <span
                   aria-disabled="true"
-                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-513 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-508 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-510 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
                   tabindex="-1"
                 >
                   <span
                     class="MuiIconButton-label"
                   >
                     <div
-                      class="PrivateRadioButtonIcon-root-515"
+                      class="PrivateRadioButtonIcon-root-512"
                     >
                       <svg
                         aria-hidden="true"
@@ -1279,7 +1279,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
+                        class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-513"
                         focusable="false"
                         role="presentation"
                         viewBox="0 0 24 24"
@@ -1290,7 +1290,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       </svg>
                     </div>
                     <input
-                      class="PrivateSwitchBase-input-514"
+                      class="PrivateSwitchBase-input-511"
                       disabled=""
                       type="radio"
                       value="localPath"
@@ -1451,13 +1451,13 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-disabled="false"
-                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-512 Mui-checked MuiIconButton-colorSecondary"
+                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-508 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-509 Mui-checked MuiIconButton-colorSecondary"
                     >
                       <span
                         class="MuiIconButton-label"
                       >
                         <div
-                          class="PrivateRadioButtonIcon-root-515 PrivateRadioButtonIcon-checked-517"
+                          class="PrivateRadioButtonIcon-root-512 PrivateRadioButtonIcon-checked-514"
                         >
                           <svg
                             aria-hidden="true"
@@ -1472,7 +1472,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                           <svg
                             aria-hidden="true"
-                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
+                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-513"
                             focusable="false"
                             role="presentation"
                             viewBox="0 0 24 24"
@@ -1484,7 +1484,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         </div>
                         <input
                           checked=""
-                          class="PrivateSwitchBase-input-514"
+                          class="PrivateSwitchBase-input-511"
                           type="radio"
                           value="uri"
                         />
@@ -1504,14 +1504,14 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-disabled="true"
-                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-511 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-513 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                      class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-508 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-510 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
                       tabindex="-1"
                     >
                       <span
                         class="MuiIconButton-label"
                       >
                         <div
-                          class="PrivateRadioButtonIcon-root-515"
+                          class="PrivateRadioButtonIcon-root-512"
                         >
                           <svg
                             aria-hidden="true"
@@ -1526,7 +1526,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                           <svg
                             aria-hidden="true"
-                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-516"
+                            class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-513"
                             focusable="false"
                             role="presentation"
                             viewBox="0 0 24 24"
@@ -1537,7 +1537,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                           </svg>
                         </div>
                         <input
-                          class="PrivateSwitchBase-input-514"
+                          class="PrivateSwitchBase-input-511"
                           disabled=""
                           type="radio"
                           value="localPath"
@@ -1712,7 +1712,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   alignmentColor
                 </label>
                 <div
-                  class="CallbackEditor-callbackEditor-548"
+                  class="makeStyles-callbackEditor-545"
                   style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                 >
                   <textarea
@@ -2314,7 +2314,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       name
                     </label>
                     <div
-                      class="CallbackEditor-callbackEditor-548"
+                      class="makeStyles-callbackEditor-545"
                       style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                     >
                       <textarea
@@ -2574,7 +2574,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       description
                     </label>
                     <div
-                      class="CallbackEditor-callbackEditor-548"
+                      class="makeStyles-callbackEditor-545"
                       style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                     >
                       <textarea
@@ -2910,7 +2910,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
 
 exports[`ConfigurationEditor drawer widget renders with just the required model elements 1`] = `
 <div
-  class="ConfigurationEditor-root-1"
+  class="makeStyles-root-1"
   data-testid="configEditor"
 >
   <div

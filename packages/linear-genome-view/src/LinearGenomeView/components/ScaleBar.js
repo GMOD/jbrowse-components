@@ -1,12 +1,11 @@
-import { withStyles } from '@material-ui/core'
-import React from 'react'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
+import React from 'react'
 import Block from '../../BasicTrack/components/Block'
-
 import Ruler from './Ruler'
 
-const styles = (/* theme */) => ({
+const useStyles = makeStyles((/* theme */) => ({
   scaleBar: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
@@ -26,7 +25,7 @@ const styles = (/* theme */) => ({
     background: 'white',
     // color: theme.palette.text.primary,
   },
-})
+}))
 
 function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   const blocks = blockSet.getBlocks()
@@ -38,7 +37,8 @@ function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   return undefined
 }
 
-function ScaleBar({ classes, model, height }) {
+function ScaleBar({ model, height }) {
+  const classes = useStyles()
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
     model.offsetPx,
     model.staticBlocks,
@@ -77,8 +77,7 @@ ScaleBar.defaultProps = {
 }
 ScaleBar.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
-  classes: PropTypes.objectOf(PropTypes.string).isRequired,
   height: PropTypes.number.isRequired,
 }
 
-export default withStyles(styles)(observer(ScaleBar))
+export default observer(ScaleBar)

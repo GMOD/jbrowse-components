@@ -35,7 +35,6 @@
   ],
   "dependencies": {
     "@librpc/web": "git+https://github.com/rbuels/librpc-web.git",
-    "@material-ui/core": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.20",
     "base64-js": "^1.3.0",
     "canvas": "^2.5.0",
@@ -43,10 +42,6 @@
     "generic-filehandle": "^2.0.0",
     "http-range-fetcher": "^1.2.2",
     "json-stable-stringify": "^1.0.1",
-    "mobx": "^5.9.4",
-    "mobx-react": "^5.3.6",
-    "mobx-react-lite": "^1.1.0",
-    "mobx-state-tree": "3.10.2",
     "object.fromentries": "^2.0.0",
     "pako": "^1.0.10",
     "shortid": "^2.2.13",

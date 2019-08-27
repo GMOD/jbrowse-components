@@ -2,7 +2,7 @@ import { getSession } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import propTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
@@ -10,24 +10,23 @@ import React, { useEffect, useState } from 'react'
 import Category from './Category'
 import TrackEntry from './TrackEntry'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   divider: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
-})
+}))
 
-function Contents(props) {
-  const {
-    model,
-    path,
-    filterPredicate,
-    disabled,
-    connection,
-    top,
-    classes,
-    assemblyName,
-  } = props
+function Contents({
+  model,
+  path,
+  filterPredicate,
+  disabled,
+  connection,
+  top,
+  assemblyName,
+}) {
+  const classes = useStyles()
 
   let hierarchy = connection
     ? model.connectionHierarchy(connection, assemblyName)
@@ -141,7 +140,6 @@ Contents.propTypes = {
   filterPredicate: propTypes.func,
   disabled: propTypes.bool,
   connection: MobxPropTypes.observableObject,
-  classes: propTypes.objectOf(propTypes.string).isRequired,
   top: propTypes.bool,
 }
 
@@ -154,4 +152,4 @@ Contents.defaultProps = {
   top: false,
 }
 
-export default withStyles(styles)(observer(Contents))
+export default observer(Contents)

@@ -1,25 +1,23 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Icon,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  List,
-  ListItem,
-  MenuItem,
-  Paper,
-  Radio,
-  RadioGroup,
-  SvgIcon,
-  TextField,
-  withStyles,
-} from '@material-ui/core'
+import Card from '@material-ui/core/Card'
+import CardContent from '@material-ui/core/CardContent'
+import CardHeader from '@material-ui/core/CardHeader'
+import Checkbox from '@material-ui/core/Checkbox'
+import FormControl from '@material-ui/core/FormControl'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import InputLabel from '@material-ui/core/InputLabel'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import MenuItem from '@material-ui/core/MenuItem'
+import Paper from '@material-ui/core/Paper'
+import Radio from '@material-ui/core/Radio'
+import RadioGroup from '@material-ui/core/RadioGroup'
+import { makeStyles } from '@material-ui/core/styles'
+import SvgIcon from '@material-ui/core/SvgIcon'
+import TextField from '@material-ui/core/TextField'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
@@ -45,8 +43,7 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const StringArrayEditor = observer(props => {
-  const { slot } = props
+const StringArrayEditor = observer(({ slot }) => {
   const [value, setValue] = useState('')
   return (
     <>
@@ -101,150 +98,146 @@ const StringArrayEditor = observer(props => {
   )
 })
 
-const mapEditorStyles = theme => ({
+const useMapEditorStyles = makeStyles(theme => ({
   card: {
     marginTop: theme.spacing(1),
   },
+}))
+
+const StringArrayMapEditor = observer(({ slot }) => {
+  const classes = useMapEditorStyles()
+  const [value, setValue] = useState('')
+  return (
+    <>
+      <InputLabel>{slot.name}</InputLabel>
+      {Array.from(slot.value, ([key, val]) => (
+        <Card
+          raised
+          key={key} // eslint-disable-line react/no-array-index-key
+          className={classes.card}
+        >
+          <CardHeader
+            title={key}
+            action={
+              <IconButton onClick={() => slot.remove(key)}>
+                <Icon>delete</Icon>
+              </IconButton>
+            }
+          />
+          <CardContent>
+            <StringArrayEditor
+              slot={{
+                value: val,
+                description: `Values associated with entry ${key}`,
+                setAtIndex: (idx, strValue) => {
+                  slot.setAtKeyIndex(key, idx, strValue)
+                },
+                removeAtIndex: idx => {
+                  slot.removeAtKeyIndex(key, idx)
+                },
+                add: strValue => {
+                  slot.addToKey(key, strValue)
+                },
+              }}
+            />
+          </CardContent>
+        </Card>
+      ))}
+      <Card raised className={classes.card}>
+        <CardHeader
+          disableTypography
+          title={
+            <TextField
+              fullWidth
+              value={value}
+              placeholder="add new"
+              onChange={event => setValue(event.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment>
+                    <IconButton
+                      disabled={value === ''}
+                      onClick={() => {
+                        slot.add(value, [])
+                        setValue('')
+                      }}
+                    >
+                      <Icon>add</Icon>
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          }
+        />
+      </Card>
+      <FormHelperText>{slot.description}</FormHelperText>
+    </>
+  )
 })
 
-const StringArrayMapEditor = withStyles(mapEditorStyles)(
-  observer(props => {
-    const { slot, classes } = props
-    const [value, setValue] = useState('')
-    return (
-      <>
-        <InputLabel>{slot.name}</InputLabel>
-        {Array.from(slot.value, ([key, val]) => (
-          <Card
-            raised
-            key={key} // eslint-disable-line react/no-array-index-key
-            className={classes.card}
-          >
-            <CardHeader
-              title={key}
-              action={
-                <IconButton onClick={() => slot.remove(key)}>
-                  <Icon>delete</Icon>
-                </IconButton>
-              }
-            />
-            <CardContent>
-              <StringArrayEditor
-                slot={{
-                  value: val,
-                  description: `Values associated with entry ${key}`,
-                  setAtIndex: (idx, strValue) => {
-                    slot.setAtKeyIndex(key, idx, strValue)
-                  },
-                  removeAtIndex: idx => {
-                    slot.removeAtKeyIndex(key, idx)
-                  },
-                  add: strValue => {
-                    slot.addToKey(key, strValue)
-                  },
-                }}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Card raised className={classes.card}>
+const NumberMapEditor = observer(({ slot }) => {
+  const classes = useMapEditorStyles()
+  const [value, setValue] = useState('')
+  return (
+    <>
+      <InputLabel>{slot.name}</InputLabel>
+      {Array.from(slot.value, ([key, val]) => (
+        <Card
+          raised
+          key={key} // eslint-disable-line react/no-array-index-key
+          className={classes.card}
+        >
           <CardHeader
-            disableTypography
-            title={
-              <TextField
-                fullWidth
-                value={value}
-                placeholder="add new"
-                onChange={event => setValue(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment>
-                      <IconButton
-                        disabled={value === ''}
-                        onClick={() => {
-                          slot.add(value, [])
-                          setValue('')
-                        }}
-                      >
-                        <Icon>add</Icon>
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+            title={key}
+            action={
+              <IconButton onClick={() => slot.remove(key)}>
+                <Icon>delete</Icon>
+              </IconButton>
             }
           />
-        </Card>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  }),
-)
-
-const NumberMapEditor = withStyles(mapEditorStyles)(
-  observer(props => {
-    const { slot, classes } = props
-    const [value, setValue] = useState('')
-    return (
-      <>
-        <InputLabel>{slot.name}</InputLabel>
-        {Array.from(slot.value, ([key, val]) => (
-          <Card
-            raised
-            key={key} // eslint-disable-line react/no-array-index-key
-            className={classes.card}
-          >
-            <CardHeader
-              title={key}
-              action={
-                <IconButton onClick={() => slot.remove(key)}>
-                  <Icon>delete</Icon>
-                </IconButton>
-              }
+          <CardContent>
+            <NumberEditor
+              slot={{
+                value: val,
+                set: numValue => slot.add(key, numValue),
+              }}
             />
-            <CardContent>
-              <NumberEditor
-                slot={{
-                  value: val,
-                  set: numValue => slot.add(key, numValue),
-                }}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Card raised className={classes.card}>
-          <CardHeader
-            disableTypography
-            title={
-              <TextField
-                fullWidth
-                value={value}
-                placeholder="add new"
-                onChange={event => setValue(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment>
-                      <IconButton
-                        disabled={value === ''}
-                        onClick={() => {
-                          slot.add(value, 0)
-                          setValue('')
-                        }}
-                      >
-                        <Icon>add</Icon>
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            }
-          />
+          </CardContent>
         </Card>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  }),
-)
+      ))}
+      <Card raised className={classes.card}>
+        <CardHeader
+          disableTypography
+          title={
+            <TextField
+              fullWidth
+              value={value}
+              placeholder="add new"
+              onChange={event => setValue(event.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment>
+                    <IconButton
+                      disabled={value === ''}
+                      onClick={() => {
+                        slot.add(value, 0)
+                        setValue('')
+                      }}
+                    >
+                      <Icon>add</Icon>
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          }
+        />
+      </Card>
+      <FormHelperText>{slot.description}</FormHelperText>
+    </>
+  )
+})
 
 const NumberEditor = observer(({ slot }) => {
   const [val, setVal] = useState(slot.value)
@@ -371,7 +364,7 @@ const valueComponents = {
   frozen: JsonEditor,
 }
 
-export const slotEditorStyles = theme => ({
+export const useSlotEditorStyles = makeStyles(theme => ({
   paper: {
     display: 'flex',
     marginBottom: theme.spacing(2),
@@ -390,45 +383,40 @@ export const slotEditorStyles = theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-})
+}))
 
-const SlotEditor = withStyles(slotEditorStyles)(
-  observer(({ slot, slotSchema, classes }) => {
-    const { type } = slot
-    let ValueComponent = slot.isCallback
-      ? CallbackEditor
-      : valueComponents[type]
-    if (!ValueComponent) {
-      console.warn(`no slot editor defined for ${type}, editing as string`)
-      ValueComponent = StringEditor
-    }
-    if (!(type in valueComponents))
-      console.warn(`SlotEditor needs to implement ${type}`)
-    return (
-      <Paper className={classes.paper}>
-        <div className={classes.paperContent}>
-          <ValueComponent slot={slot} slotSchema={slotSchema} />
-        </div>
-        <div className={classes.slotModeSwitch}>
-          <IconButton
-            className={classes.slotModeIcon}
-            onClick={() =>
-              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
-            }
-            title={`convert to ${
-              slot.isCallback ? 'regular value' : 'callback'
-            }`}
-          >
-            {!slot.isCallback ? (
-              <Icon>radio_button_unchecked</Icon>
-            ) : (
-              <SvgCheckbox />
-            )}
-          </IconButton>
-        </div>
-      </Paper>
-    )
-  }),
-)
+const SlotEditor = observer(({ slot, slotSchema }) => {
+  const classes = useSlotEditorStyles()
+  const { type } = slot
+  let ValueComponent = slot.isCallback ? CallbackEditor : valueComponents[type]
+  if (!ValueComponent) {
+    console.warn(`no slot editor defined for ${type}, editing as string`)
+    ValueComponent = StringEditor
+  }
+  if (!(type in valueComponents))
+    console.warn(`SlotEditor needs to implement ${type}`)
+  return (
+    <Paper className={classes.paper}>
+      <div className={classes.paperContent}>
+        <ValueComponent slot={slot} slotSchema={slotSchema} />
+      </div>
+      <div className={classes.slotModeSwitch}>
+        <IconButton
+          className={classes.slotModeIcon}
+          onClick={() =>
+            slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+          }
+          title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
+        >
+          {!slot.isCallback ? (
+            <Icon>radio_button_unchecked</Icon>
+          ) : (
+            <SvgCheckbox />
+          )}
+        </IconButton>
+      </div>
+    </Paper>
+  )
+})
 
 export default SlotEditor

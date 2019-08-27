@@ -8,7 +8,7 @@ exports[`<MainMenuBar /> renders 1`] = `
     class="MuiToolbar-root MuiToolbar-dense MuiToolbar-gutters"
   >
     <div
-      class="DropDownMenu-root-45"
+      class="makeStyles-root-45"
     >
       <button
         aria-haspopup="true"
@@ -35,7 +35,7 @@ exports[`<MainMenuBar /> renders 1`] = `
       </button>
     </div>
     <div
-      class="DropDownMenu-root-45"
+      class="makeStyles-root-45"
     >
       <button
         aria-haspopup="true"

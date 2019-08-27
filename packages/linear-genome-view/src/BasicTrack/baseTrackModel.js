@@ -4,11 +4,11 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
+import { getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
   getParentRenderProps,
 } from '@gmod/jbrowse-core/util/tracks'
-import { getSession } from '@gmod/jbrowse-core/util'
 import { types } from 'mobx-state-tree'
 import React from 'react'
 import TrackControls from './components/TrackControls'
@@ -138,7 +138,14 @@ export default types
   }))
   .actions(self => ({
     setHeight(trackHeight) {
-      if (trackHeight >= minTrackHeight) self.height = trackHeight
+      if (trackHeight > minTrackHeight) self.height = trackHeight
+      else self.height = minTrackHeight
+      return self.height
+    },
+    resizeHeight(distance) {
+      const oldHeight = self.height
+      const newHeight = self.setHeight(self.height + distance)
+      return newHeight - oldHeight
     },
     setError(e) {
       self.ready = true

@@ -1,8 +1,8 @@
-import { makeStyles } from '@material-ui/styles'
-import { observer } from 'mobx-react'
-import React, { Fragment } from 'react'
-import ReactPropTypes from 'prop-types'
 import { PropTypes } from '@gmod/jbrowse-core/mst-types'
+import { makeStyles } from '@material-ui/core/styles'
+import { observer } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
+import React, { Fragment } from 'react'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major

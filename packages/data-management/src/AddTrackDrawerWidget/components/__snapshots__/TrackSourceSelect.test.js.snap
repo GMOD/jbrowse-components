@@ -2,7 +2,7 @@
 
 exports[`<TrackSourceSelect /> renders 1`] = `
 <div
-  class="TrackSourceSelect-root-1"
+  class="makeStyles-root-1"
 >
   <fieldset
     class="MuiFormControl-root"
@@ -122,7 +122,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
     </div>
   </fieldset>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 TrackSourceSelect-paper-2 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-2 MuiPaper-rounded"
   >
     <fieldset
       class="MuiFormControl-root"

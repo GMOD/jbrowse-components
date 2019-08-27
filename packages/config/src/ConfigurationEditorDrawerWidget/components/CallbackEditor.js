@@ -1,21 +1,18 @@
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  withStyles,
-} from '@material-ui/core'
+import { useDebounce } from '@gmod/jbrowse-core/util'
+import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+import FormControl from '@material-ui/core/FormControl'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import InputLabel from '@material-ui/core/InputLabel'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-import React, { useState, useEffect } from 'react'
-import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-javascript'
 import 'prismjs/themes/prism.css'
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+import React, { useEffect, useState } from 'react'
+import Editor from 'react-simple-code-editor'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -24,10 +21,10 @@ const styles = theme => ({
       'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace',
     fontSize: '90%',
   },
-})
+}))
 
-function CallbackEditor(props) {
-  const { slot, classes } = props
+function CallbackEditor({ slot }) {
+  const classes = useStyles()
 
   const [code, setCode] = useState(slot.value)
   const [error, setCodeError] = useState()
@@ -66,6 +63,5 @@ function CallbackEditor(props) {
 }
 CallbackEditor.propTypes = {
   slot: PropTypes.objectOrObservableObject.isRequired,
-  classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
 }
-export default withStyles(styles)(observer(CallbackEditor))
+export default observer(CallbackEditor)

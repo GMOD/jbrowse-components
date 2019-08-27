@@ -31,7 +31,7 @@ export default configSchema => {
         configuration: ConfigurationReference(configSchema),
         hideExpressions: types.optional(types.array(types.string), () => []),
         height: 193,
-        filterControlHeight: 70,
+        filterControlsHeight: 70,
         dragHandleHeight: 3,
         filterOut: types.map(types.map(types.boolean)), // model[attrName][value] = true if filtering out
       })
@@ -46,12 +46,30 @@ export default configSchema => {
           }
         },
         get innerTrackHeight() {
-          return self.height - self.dragHandleHeight - self.filterControlHeight
+          return self.height - self.dragHandleHeight - self.filterControlsHeight
+        },
+        get filterControlsMinHeight() {
+          return Math.min(self.filterControlsMaxHeight, 40)
+        },
+        get filterControlsMaxHeight() {
+          return Math.max(self.height - 20, 0)
         },
       }))
       .actions(self => ({
+        setFilterControlsHeight(newHeight) {
+          if (newHeight > self.filterControlsMinHeight) {
+            if (newHeight < self.filterControlsMaxHeight)
+              self.filterControlsHeight = newHeight
+            else self.filterControlsHeight = self.filterControlsMaxHeight
+          } else self.filterControlsHeight = self.filterControlsMinHeight
+          return self.filterControlsHeight
+        },
         resizeFilterControls(distance) {
-          self.filterControlHeight -= distance
+          const oldHeight = self.filterControlsHeight
+          const newHeight = self.setFilterControlsHeight(
+            self.filterControlsHeight - distance,
+          )
+          return oldHeight - newHeight
         },
         toggleFilter(attrName, value, checked) {
           if (!self.filterOut.has(attrName)) self.filterOut.set(attrName, {})

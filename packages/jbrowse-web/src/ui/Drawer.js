@@ -1,12 +1,12 @@
+import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import Paper from '@material-ui/core/Paper'
 import Slide from '@material-ui/core/Slide'
-import { withStyles } from '@material-ui/styles'
+import { makeStyles } from '@material-ui/core/styles'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import DrawerResizeHandle from './DrawerResizeHandle'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   paper: {
     overflowY: 'auto',
     display: 'flex',
@@ -20,48 +20,42 @@ const styles = theme => ({
     right: 0,
     background: theme.palette.background.default,
   },
-  resizer: {
-    zIndex: theme.zIndex.drawer + 1,
-  },
-})
+}))
 
-class Drawer extends React.Component {
-  static propTypes = {
-    classes: PropTypes.objectOf(PropTypes.string).isRequired,
-    children: PropTypes.node,
-    open: PropTypes.bool.isRequired,
-    session: MobxPropTypes.observableObject.isRequired,
-  }
+function Drawer({ children, open, session }) {
+  const classes = useStyles()
 
-  static defaultProps = {
-    children: <></>,
-  }
-
-  mounted = false
-
-  componentDidMount() {
-    this.mounted = true
-  }
-
-  render() {
-    const { classes, children, open, session } = this.props
-    return (
-      <Slide in={open} direction="left" appear={this.mounted}>
-        <Paper
-          style={{ width: open ? session.drawerWidth : 0 }}
-          className={classes.paper}
-          elevation={16}
-          square
-        >
-          <DrawerResizeHandle
-            className={classes.resizer}
-            onHorizontalDrag={distance => session.resizeDrawer(distance)}
-          />
-          {children}
-        </Paper>
-      </Slide>
-    )
-  }
+  return (
+    <Slide in={open} direction="left">
+      <Paper
+        style={{ width: open ? session.drawerWidth : 0 }}
+        className={classes.paper}
+        elevation={16}
+        square
+      >
+        <ResizeHandle
+          onDrag={session.resizeDrawer}
+          style={{
+            width: 4,
+            position: 'fixed',
+            top: 0,
+          }}
+          vertical
+        />
+        {children}
+      </Paper>
+    </Slide>
+  )
 }
 
-export default withStyles(styles)(observer(Drawer))
+Drawer.propTypes = {
+  children: PropTypes.node,
+  open: PropTypes.bool.isRequired,
+  session: MobxPropTypes.observableObject.isRequired,
+}
+
+Drawer.defaultProps = {
+  children: null,
+}
+
+export default observer(Drawer)

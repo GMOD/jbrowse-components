@@ -1,43 +1,38 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
+import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 const useStyles = makeStyles({
-  track: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    textAlign: 'left',
+  horizontalHandle: {
+    cursor: 'row-resize',
     width: '100%',
-    background: '#555',
-    minHeight: '100%',
+  },
+  verticalHandle: {
+    cursor: 'col-resize',
+    height: '100%',
   },
 })
 
-/**
- * mostly does UI gestures: drag scrolling, etc
- */
-
-function Track({ children, onHorizontalScroll, trackId }) {
+function ResizeHandle({ style, onDrag, vertical }) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevX = useRef()
+  const prevPos = useRef()
   const classes = useStyles()
-  const mainNode = useRef()
 
   useEffect(() => {
     let cleanup = () => {}
 
     function mouseMove(event) {
       event.preventDefault()
-      const distance = event.clientX - prevX.current
+      const pos = event[vertical ? 'clientX' : 'clientY']
+      const distance = pos - prevPos.current
       if (distance) {
-        const actualDistance = onHorizontalScroll(-distance)
-        prevX.current -= actualDistance
+        const actualDistance = onDrag(distance)
+        prevPos.current += actualDistance
       }
     }
 
     function mouseUp() {
-      prevX.current = undefined
+      prevPos.current = undefined
       setMouseDragging(false)
     }
 
@@ -50,11 +45,12 @@ function Track({ children, onHorizontalScroll, trackId }) {
       }
     }
     return cleanup
-  }, [mouseDragging, onHorizontalScroll])
+  }, [mouseDragging, onDrag, vertical])
 
   function mouseDown(event) {
     event.preventDefault()
-    prevX.current = event.clientX
+    const pos = event[vertical ? 'clientX' : 'clientY']
+    prevPos.current = pos
     setMouseDragging(true)
   }
 
@@ -64,24 +60,21 @@ function Track({ children, onHorizontalScroll, trackId }) {
 
   return (
     <div
-      data-testid={`track-${trackId}`}
-      className={classes.track}
       onMouseDown={mouseDown}
       onMouseLeave={mouseLeave}
-      ref={mainNode}
       role="presentation"
-    >
-      {children}
-    </div>
+      className={classes[vertical ? 'verticalHandle' : 'horizontalHandle']}
+      style={style}
+    />
   )
 }
 
-Track.propTypes = {
-  trackId: PropTypes.string.isRequired,
-  children: PropTypes.node,
-  onHorizontalScroll: PropTypes.func.isRequired,
+ResizeHandle.propTypes = {
+  style: ReactPropTypes.shape(),
+  onDrag: ReactPropTypes.func.isRequired,
+  vertical: ReactPropTypes.bool,
 }
 
-Track.defaultProps = { children: null }
+ResizeHandle.defaultProps = { style: {}, vertical: false }
 
-export default observer(Track)
+export default ResizeHandle
