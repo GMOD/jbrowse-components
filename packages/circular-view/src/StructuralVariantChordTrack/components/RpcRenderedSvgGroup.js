@@ -2,8 +2,7 @@ export default ({ jbrequire }) => {
   const React = jbrequire('react')
   const { isAlive } = jbrequire('mobx-state-tree')
   const { useEffect, useRef } = React
-  const { observer } = jbrequire('mobx-react-lite')
-  const { PropTypes: MobxPropTypes } = jbrequire('mobx-react')
+  const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { unmountComponentAtNode, hydrate } = jbrequire('react-dom')
 
   function RpcRenderedSvgGroup({ model }) {

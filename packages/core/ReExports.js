@@ -4,7 +4,6 @@ import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
-import * as mxreactlite from 'mobx-react-lite'
 import PropTypes from 'prop-types'
 
 import * as MUICore from '@material-ui/core'
@@ -33,7 +32,6 @@ export default {
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
-  'mobx-react-lite': mxreactlite,
   'prop-types': PropTypes,
   '@material-ui/core': MUICore,
   '@material-ui/core/styles': MUIStyles,

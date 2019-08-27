@@ -9,7 +9,6 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "@material-ui/icons": "^4.2.1",
     "clsx": "^1.0.4"
   },
   "peerDependencies": {
