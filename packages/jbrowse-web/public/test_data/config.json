@@ -669,12 +669,15 @@
           "type": "ReferenceSequenceTrack",
           "adapter": {
             "configId": "YK3RiyLKJq4",
-            "type": "IndexedFastaAdapter",
+            "type": "BgzipFastaAdapter",
             "fastaLocation": {
-              "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz"
             },
             "faiLocation": {
-              "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.gzi"
             }
           },
           "rendering": {
