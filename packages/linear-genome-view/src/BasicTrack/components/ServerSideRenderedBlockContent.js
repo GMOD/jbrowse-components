@@ -1,8 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
+import BlockError from '../../LinearGenomeView/components/BlockError'
 
 const useStyles = makeStyles({
   loading: {
@@ -40,14 +41,6 @@ function LoadingMessage() {
   return shown ? <div className={classes.loading}>Loading &hellip;</div> : null
 }
 
-function ErrorMessage({ error }) {
-  const classes = useStyles()
-  return <div className={classes.error}>{error.message}</div>
-}
-ErrorMessage.propTypes = {
-  error: MobxPropTypes.objectOrObservableObject.isRequired,
-}
-
 function BlockMessage({ messageText }) {
   const classes = useStyles()
   return <div className={classes.blockMessage}>{messageText}</div>
@@ -57,7 +50,7 @@ BlockMessage.propTypes = {
 }
 
 const ServerSideRenderedBlockContent = observer(({ model }) => {
-  if (model.error) return <ErrorMessage error={model.error} />
+  if (model.error) return <BlockError error={model.error} />
   if (model.message) return <BlockMessage messageText={model.message} />
   if (!model.filled) return <LoadingMessage />
   return <ServerSideRenderedContent model={model} />
