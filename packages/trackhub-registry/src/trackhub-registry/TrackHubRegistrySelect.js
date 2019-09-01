@@ -267,7 +267,6 @@ function TrackHubRegistrySelect({ model }) {
                   const cleanShortLabel = (
                     <div
                       // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                      // eslint-disable-next-line react/no-danger
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
                       }}
@@ -276,7 +275,6 @@ function TrackHubRegistrySelect({ model }) {
                   const cleanLongLabel = (
                     <div
                       // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                      // eslint-disable-next-line react/no-danger
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
                       }}

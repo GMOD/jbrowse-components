@@ -85,7 +85,6 @@ function HubDetails(props) {
         <CardContent>
           <div
             // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-            // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(longLabel, allowedHtml),
             }}

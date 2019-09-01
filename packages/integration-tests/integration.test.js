@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable global-require */
 const fs = require('fs')
 
 if (process.env.BUILT_TESTS) {

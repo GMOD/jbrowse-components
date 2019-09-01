@@ -205,7 +205,7 @@ let idCounter = 0
 export const domains = arrayOfThings
   .filter(([f]) => f.type !== 'Natural variant')
   .map(([f]) => ({
-    uniqueId: f.attributes.ID ? f.attributes.ID[0] : `${f.type}-${idCounter++}`, // eslint-disable-line no-plusplus
+    uniqueId: f.attributes.ID ? f.attributes.ID[0] : `${f.type}-${idCounter++}`,
     start: f.start,
     end: f.end + 1,
     refName: 'KRAS 2A',

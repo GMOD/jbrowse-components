@@ -35,7 +35,6 @@ export default self => ({
         const connectionConfs = getParent(self).session.connections.get(
           assemblyName,
         )
-        // eslint-disable-next-line no-loop-func
         connectionConfs.forEach(connectionConf => {
           if (!assemblyData.has(assemblyName)) {
             const assemblyInfo = {}

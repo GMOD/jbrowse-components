@@ -56,7 +56,6 @@ function SequenceDivs({ features, region, bpPerPx, horizontallyFlipped }) {
     <div style={{ display: 'flex' }}>
       {s.map((letter, iter) => (
         <div
-          /* eslint-disable-next-line */
           key={`${region.start}-${iter}`}
           className={`base base-${letter.toLowerCase()} ${
             bpPerPx < 0.1 ? 'border' : ''

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   isOptionalType,
   isUnionType,
@@ -15,8 +14,10 @@ import {
 export function getSubType(type) {
   let t
   if (isOptionalType(type)) {
+    // eslint-disable-next-line no-underscore-dangle
     t = type._subtype || type.type
   } else if (isArrayType(type) || isMapType(type)) {
+    // eslint-disable-next-line no-underscore-dangle
     t = type._subtype || type._subType || type.subType
   } else {
     throw new TypeError('unsupported mst type')
