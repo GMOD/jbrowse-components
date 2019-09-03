@@ -181,7 +181,7 @@ class PileupRendering extends Component {
 
   findFeatureIdUnderMouse(event) {
     const { offsetX, offsetY } = event.nativeEvent
-    if (!(offsetX >= 0))
+    if (typeof offsetX !== 'number')
       throw new Error(
         `invalid offsetX, does this browser provide offsetX and offsetY on mouse events? ${offsetX} ${String(
           event,
