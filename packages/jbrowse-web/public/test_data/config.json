@@ -922,6 +922,7 @@
         {
           "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
+          "configId": "na12878_exome",
           "category": [
             "1000 genomes"
           ],
@@ -976,6 +977,7 @@
         {
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
+          "configId": "hg00096_highcov",
           "category": [
             "1000 genomes"
           ],
@@ -1180,6 +1182,7 @@
         {
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
+          "configId": "sequelII_variants",
           "category": [
             "PacBio",
             "VCF"
@@ -1207,6 +1210,7 @@
         },
         {
           "type": "VariantTrack",
+          "configId": "chm_variants",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
             "PacBio",
