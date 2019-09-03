@@ -1,0 +1,18 @@
+{
+    "name": "@gmod/jbrowse-plugin-rdf",
+    "version": "2.0.0",
+    "description": "JBrowse 2 RDF resources",
+    "main": "src/index.js",
+    "scripts": {
+      "test": "cd ../..; jest packages/rdf"
+    },
+    "author": "Garrett Stevens",
+    "license": "MIT",
+    "dependencies": {
+      "string-template": "^1.0.0"
+    },
+    "peerDependencies": {
+      "@gmod/jbrowse-core": "^2.0.0",
+      "rxjs": "^6.0.0"
+    }
+  }

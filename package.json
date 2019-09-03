@@ -34,6 +34,7 @@
         "@types/pako": "^1.0.1",
         "@types/set-value": "^2.0.0",
         "@types/shortid": "^0.0.29",
+        "@types/string-template": "^1.0.2",
         "@typescript-eslint/eslint-plugin": "^1.7.0",
         "@typescript-eslint/parser": "^1.7.0",
         "babel-eslint": "^10.0.1",
