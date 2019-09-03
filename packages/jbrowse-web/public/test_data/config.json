@@ -56,17 +56,20 @@
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
           "adapter": {
+            "configId": "R1d4tYPHY",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
+              "configId": "O9B8_NQzdk",
               "location": {
                 "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
+            "configId": "K3veZfJTYV",
             "type": "StructuralVariantChordRenderer"
           }
         },
@@ -132,13 +135,29 @@
             "Alignments"
           ],
           "adapter": {
+            "configId": "IMYaKGvwli",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/accepted_hits.bam"
             },
             "index": {
+              "configId": "LDb_RSItVX",
               "location": {
                 "uri": "test_data/accepted_hits.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "7_zjRk-pvt",
+            "PileupRenderer": {
+              "configId": "WGF_O65hYA",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "KrqpkQtXJY",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "FMC1s_dKqU"
               }
             }
           }
@@ -876,17 +895,20 @@
           "type": "StructuralVariantChordTrack",
           "name": "human chord test",
           "adapter": {
+            "configId": "JjSnfYk0a",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
+              "configId": "WGiJIFVWgx",
               "location": {
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
+            "configId": "cnlG3T7NSc",
             "type": "StructuralVariantChordRenderer"
           }
         },
@@ -899,27 +921,35 @@
             "BAM"
           ],
           "adapter": {
+            "configId": "yqdN4rtSSS",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
             },
             "index": {
+              "configId": "z0jYC37_2h",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
               }
             }
           },
           "renderers": {
+            "configId": "XKcazRjYUO",
             "PileupRenderer": {
+              "configId": "G71Pm63GoW",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "r7zVi_Jgrt",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "tVwnQLG0u4"
+              }
             }
           }
         },
         {
+          "configId": "CxXwB_DMrU",
           "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
           "category": [
@@ -954,26 +984,43 @@
           }
         },
         {
-          "type": "AlignmentsTrack",
           "configId": "chm1_pacbio",
+          "type": "AlignmentsTrack",
+          "name": "CHM1 pacbio",
           "category": [
             "PacBio",
             "BAM"
           ],
-          "name": "CHM1 pacbio",
           "adapter": {
+            "configId": "fA7-Knm3_z",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
             },
             "index": {
+              "configId": "mOiFQ3uzLT",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "UuqCkHFZ5t",
+            "PileupRenderer": {
+              "configId": "8macjrkylb",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "-Yj1bHW27k",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "Bt9BQUTZ4J"
               }
             }
           }
         },
         {
+          "configId": "wKQ_PofPYX5",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
           "category": [
@@ -1178,6 +1225,7 @@
           }
         },
         {
+          "configId": "aK7IyEj3xZ6",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
           "category": [
@@ -1185,27 +1233,35 @@
             "VCF"
           ],
           "adapter": {
+            "configId": "ZPtZB7IrE2p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
+              "configId": "SCRNxKd1jEj",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
+            "configId": "c199JG88ZZy",
             "PileupRenderer": {
+              "configId": "c67OtxkO-Li",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "dgD7muCI2fV",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "94VLL8-n2Qi"
+              }
             }
           }
         },
         {
+          "configId": "3Ejl89-eq9A",
           "type": "VariantTrack",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
@@ -1213,23 +1269,30 @@
             "VCF"
           ],
           "adapter": {
+            "configId": "Wd1VtBmf9Ms",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
             },
             "index": {
+              "configId": "9Z6Sihn9Hwx",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
+            "configId": "FO6_S_9drFE",
             "PileupRenderer": {
+              "configId": "Q3Ifv1cyr_D",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "PcBP8ovMTvd",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "n7DxUtPx9mz"
+              }
             }
           }
         }
@@ -1241,6 +1304,14 @@
     "rpc": {
       "configId": "A8raoinDhoH"
     }
+  },
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
   },
   "savedSessions": [
     {
@@ -1274,130 +1345,26 @@
               "id": "X6rIl1kHuP",
               "type": "ReferenceSequenceTrack",
               "height": 80,
-              "configuration": "volvox_refseq_track",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "volvox_refseq_track"
             },
             {
               "id": "Uz2i0KbGEL",
               "type": "AlignmentsTrack",
               "height": 200,
               "configuration": "volvox_bam",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
               "id": "07cHDos6N9",
               "type": "BasicTrack",
               "height": 80,
-              "configuration": "bigbed_genes",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "bigbed_genes"
             }
           ],
           "controlsWidth": 120,
           "width": 808,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -1438,7 +1405,9 @@
                   "callback": "function(session) {session.duplicateCurrentSession();}"
                 },
                 {
-                  "name": "divider"
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
                 },
                 {
                   "name": "Export configuration",
@@ -2050,41 +2019,6 @@
               "type": "WiggleTrack",
               "height": 100,
               "configuration": "wiggle_global_autoscale",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
@@ -2092,88 +2026,19 @@
               "type": "WiggleTrack",
               "height": 100,
               "configuration": "wiggle_local_autoscale",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
               "id": "co9dWzCnSq",
               "type": "BasicTrack",
               "height": 100,
-              "configuration": "bigbed_peaks",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "bigbed_peaks"
             }
           ],
           "controlsWidth": 120,
           "width": 1192,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -2193,6 +2058,36 @@
           "id": "aU_iMpOUx4",
           "type": "MainMenuBar",
           "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
             {
               "name": "Admin",
               "menuItems": [
