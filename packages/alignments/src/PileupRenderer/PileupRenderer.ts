@@ -152,47 +152,56 @@ export default class extends BoxRendererType {
           const mismatch = mismatches[i]
           const start = feature.get('start') + mismatch.start
           const end = start + mismatch.length
-          const leftPx = getCoord(start)
-          const widthPx = getCoord(end) - leftPx
+          const mismatchStartPx = getCoord(start)
+          const mismatchEndPx = getCoord(end)
+          const widthPx = Math.abs(mismatchStartPx - mismatchEndPx)
 
           if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
             ctx.fillStyle =
               colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ] || '#888'
-            ctx.fillRect(leftPx, topPx, widthPx, heightPx)
+            ctx.fillRect(mismatchStartPx, topPx, widthPx, heightPx)
 
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
               ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
               ctx.fillText(
                 mismatch.base,
-                leftPx + (widthPx - charSize.width) / 2 + 1,
+                mismatchStartPx + (widthPx - charSize.width) / 2 + 1,
                 topPx + heightPx,
               )
             }
           } else if (mismatch.type === 'insertion') {
             ctx.fillStyle = 'purple'
-            ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
-            ctx.fillRect(leftPx - 2, topPx, 4, 1)
-            ctx.fillRect(leftPx - 2, topPx + heightPx - 1, 4, 1)
+            ctx.fillRect(mismatchStartPx - 1, topPx + 1, 2, heightPx - 2)
+            ctx.fillRect(mismatchStartPx - 2, topPx, 4, 1)
+            ctx.fillRect(mismatchStartPx - 2, topPx + heightPx - 1, 4, 1)
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
-              ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+              ctx.fillText(
+                `(${mismatch.base})`,
+                mismatchStartPx + 2,
+                topPx + heightPx,
+              )
             }
           } else if (
             mismatch.type === 'hardclip' ||
             mismatch.type === 'softclip'
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
-            ctx.fillRect(leftPx - 1, topPx + 1, 2, heightPx - 2)
-            ctx.fillRect(leftPx - 2, topPx, 4, 1)
-            ctx.fillRect(leftPx - 2, topPx + heightPx - 1, 4, 1)
+            ctx.fillRect(mismatchStartPx - 1, topPx + 1, 2, heightPx - 2)
+            ctx.fillRect(mismatchStartPx - 2, topPx, 4, 1)
+            ctx.fillRect(mismatchStartPx - 2, topPx + heightPx - 1, 4, 1)
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
-              ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+              ctx.fillText(
+                `(${mismatch.base})`,
+                mismatchStartPx + 2,
+                topPx + heightPx,
+              )
             }
           } else if (mismatch.type === 'skip') {
-            ctx.clearRect(leftPx, topPx, widthPx, heightPx)
+            ctx.clearRect(mismatchStartPx, topPx, widthPx, heightPx)
             ctx.fillStyle = '#333'
-            ctx.fillRect(leftPx, topPx + heightPx / 2, widthPx, 2)
+            ctx.fillRect(mismatchStartPx, topPx + heightPx / 2, widthPx, 2)
           }
         }
       }
