@@ -123,6 +123,7 @@ export default class extends BaseAdapter {
       delete rawData.uniqueID
       seenFeatures[id] = {
         data: {
+          ...rawData,
           refName,
           start: parseInt(rawData.start, 10),
           end: parseInt(rawData.end, 10),
