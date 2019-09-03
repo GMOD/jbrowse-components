@@ -149,6 +149,35 @@ export function stateModelFactory(pluginManager) {
           horizontallyFlipped: self.horizontallyFlipped,
         }
       },
+
+      /**
+       *
+       * @param {number} px px in the view area, return value is the displayed regions
+       * @returns {Array} of the displayed region that it lands in
+       */
+      pxToBp(px) {
+        const bp = (self.offsetPx + px) * self.bpPerPx + 1
+        let bpSoFar = 0
+        if (bp < 0) {
+          return {
+            ...self.displayedRegions[0],
+            offset: Math.round(bp),
+            index: 0,
+          }
+        }
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          const r = self.displayedRegions[index]
+          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...r, offset: Math.round(bp - bpSoFar), index }
+          }
+          bpSoFar += r.end - r.start
+        }
+
+        return {
+          offset: Math.round(bp - bpSoFar),
+          index: self.displayedRegions.length,
+        }
+      },
     }))
     .actions(self => ({
       setWidth(newWidth) {
@@ -241,35 +270,6 @@ export function stateModelFactory(pluginManager) {
           ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
             viewWidth / 2,
         )
-      },
-
-      /**
-       *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {Array} of the displayed region that it lands in
-       */
-      pxToBp(px) {
-        const bp = (self.offsetPx + px) * self.bpPerPx + 1
-        let bpSoFar = 0
-        if (bp < 0) {
-          return {
-            ...self.displayedRegions[0],
-            offset: Math.round(bp),
-            index: 0,
-          }
-        }
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          const r = self.displayedRegions[index]
-          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...r, offset: Math.round(bp - bpSoFar), index }
-          }
-          bpSoFar += r.end - r.start
-        }
-
-        return {
-          offset: Math.round(bp - bpSoFar),
-          index: self.displayedRegions.length,
-        }
       },
 
       navToLocstring(locstring) {
