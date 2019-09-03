@@ -237,6 +237,8 @@ export function stateModelFactory(pluginManager) {
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
+        if (self.reversed)
+          self.displayedRegions = self.displayedRegions.slice().reverse()
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
