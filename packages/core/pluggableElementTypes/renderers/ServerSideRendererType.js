@@ -26,6 +26,7 @@ export default class ServerSideRenderer extends RendererType {
       args.renderProps = {
         ...args.renderProps,
         trackModel: {
+          id: trackModel.id,
           selectedFeatureId: trackModel.selectedFeatureId,
         },
       }

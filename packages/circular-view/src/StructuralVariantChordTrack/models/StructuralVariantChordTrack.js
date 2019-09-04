@@ -6,6 +6,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/configuration',
   )
 
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
@@ -122,6 +123,12 @@ export default pluginManager => {
         self.data = undefined
         self.error = error
         self.renderingComponent = undefined
+      },
+
+      onChordClick(feature, event) {
+        const session = getSession(self)
+        session.setSelection(feature)
+        console.log('clicked chord', feature)
       },
     }))
 

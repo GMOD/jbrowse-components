@@ -3,6 +3,7 @@ export default ({ jbrequire }) => {
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+
   const { PropTypes: CommonPropTypes } = jbrequire(
     '@gmod/jbrowse-core/mst-types',
   )
@@ -23,6 +24,8 @@ export default ({ jbrequire }) => {
     radius,
     config,
     bezierRadius,
+    selected,
+    onClick,
   }) {
     // find the blocks that our start and end points belong to
     const startBlock = blocksForRefs[feature.get('refName')]
@@ -46,12 +49,26 @@ export default ({ jbrequire }) => {
           (endRadians + startRadians) / 2,
         )
 
-        const strokeColor = readConfObject(config, 'strokeColor', [feature])
+        let strokeColor
+        if (selected) {
+          strokeColor = readConfObject(config, 'strokeColorSelected', [feature])
+        } else {
+          strokeColor = readConfObject(config, 'strokeColor', [feature])
+        }
+        const hoverStrokeColor = readConfObject(config, 'strokeColorHover', [
+          feature,
+        ])
         return (
           <path
             d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-            stroke={strokeColor}
-            fill="transparent"
+            style={{ stroke: strokeColor }}
+            onClick={evt => onClick(feature, evt)}
+            onMouseOver={evt => {
+              if (!selected) evt.target.style.stroke = hoverStrokeColor
+            }}
+            onMouseOut={evt => {
+              if (!selected) evt.target.style.stroke = strokeColor
+            }}
           />
         )
       }
@@ -61,7 +78,6 @@ export default ({ jbrequire }) => {
   })
 
   function StructuralVariantChords(props) {
-    // console.log(props)
     const {
       features,
       config,
@@ -69,6 +85,9 @@ export default ({ jbrequire }) => {
       blockDefinitions,
       radius,
       bezierRadius,
+      trackModel: { selectedFeatureId },
+
+      onChordClick,
     } = props
     // make a map of refName -> blockDefinition
     const blocksForRefs = {}
@@ -83,6 +102,7 @@ export default ({ jbrequire }) => {
     // console.log(blocksForRefs)
     const chords = []
     for (const [id, feature] of features) {
+      const selected = String(selectedFeatureId) === String(feature.id())
       chords.push(
         <Chord
           key={id}
@@ -92,10 +112,27 @@ export default ({ jbrequire }) => {
           radius={radius}
           bezierRadius={bezierRadius}
           blocksForRefs={blocksForRefs}
+          selected={selected}
+          onClick={onChordClick}
         />,
       )
     }
-    return <>{chords}</>
+    const trackStyleId = `chords-${trackModel.id}`
+    return (
+      <g id={trackStyleId}>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          #${trackStyleId} > path {
+            cursor: crosshair;
+            fill: none;
+          }
+`,
+          }}
+        />
+        {chords}
+      </g>
+    )
   }
 
   StructuralVariantChords.propTypes = {
@@ -106,10 +143,12 @@ export default ({ jbrequire }) => {
       .isRequired,
     radius: PropTypes.number.isRequired,
     bezierRadius: PropTypes.number.isRequired,
+    selectedFeatureId: PropTypes.string,
   }
 
   StructuralVariantChords.defaultProps = {
     trackModel: undefined,
+    selectedFeatureId: '',
   }
 
   return observer(StructuralVariantChords)

@@ -4,7 +4,9 @@ export default ({ jbrequire }) => {
   )
 
   const ReactComponent = jbrequire(require('./components'))
-  const { stateModel, configSchema } = jbrequire(require('./models'))
+  const { stateModel, configSchema } = jbrequire(
+    require('./models/StructuralVariantChordTrack'),
+  )
 
   return new TrackType({
     name: 'StructuralVariantChordTrack',

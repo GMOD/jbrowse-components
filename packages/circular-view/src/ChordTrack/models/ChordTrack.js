@@ -11,6 +11,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
 
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getParentRenderProps, getContainingView } = jbrequire(
     '@gmod/jbrowse-core/util/tracks',
   )
@@ -72,6 +73,8 @@ export default pluginManager => {
           radius: view.radiusPx,
           config: self.configuration.renderer,
           blockDefinitions: self.blockDefinitions,
+
+          onChordClick: self.onChordClick,
         }
       },
 
@@ -112,6 +115,26 @@ export default pluginManager => {
 
       isCompatibleWithRenderer(renderer) {
         return !!(renderer instanceof CircularChordRendererType)
+      },
+
+      /**
+       * returns a string feature ID if the globally-selected object
+       * is probably a feature
+       */
+      get selectedFeatureId() {
+        const session = getSession(self)
+        if (!session) return undefined
+        const { selection } = session
+        // does it quack like a feature?
+        if (
+          selection &&
+          typeof selection.get === 'function' &&
+          typeof selection.id === 'function'
+        ) {
+          // probably is a feature
+          return selection.id()
+        }
+        return undefined
       },
     }))
 
