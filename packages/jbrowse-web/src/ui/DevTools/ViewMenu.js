@@ -5,7 +5,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { PropTypes } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import React, { useState } from 'react'
 
 function ViewMenu({ session }) {
