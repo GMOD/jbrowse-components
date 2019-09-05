@@ -7,6 +7,9 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { PropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 
+/**
+ * Button-menu for opening different types of new top-level views
+ */
 function ViewMenu({ session }) {
   const [anchorEl, setAnchorEl] = useState(null)
 

@@ -128,7 +128,10 @@ export default pluginManager => {
       onChordClick(feature, event) {
         const session = getSession(self)
         session.setSelection(feature)
-        console.log('clicked chord', feature)
+        console.log('selected BND', feature)
+
+        // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
+        session.addView('BreakpointSplitView', {})
       },
     }))
 
