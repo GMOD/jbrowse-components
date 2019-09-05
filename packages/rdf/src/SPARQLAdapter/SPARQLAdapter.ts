@@ -112,6 +112,7 @@ export default class extends BaseAdapter {
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length)

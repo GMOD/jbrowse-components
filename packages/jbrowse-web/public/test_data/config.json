@@ -1338,168 +1338,192 @@
                 "refName": "1",
                 "uniqueId": "hg19_alias1",
                 "aliases": [
-                  "chr1"
+                  "chr1",
+                  "NC_000001.11"
                 ]
               },
               {
                 "refName": "2",
                 "uniqueId": "hg19_alias2",
                 "aliases": [
-                  "chr2"
+                  "chr2",
+                  "NC_000002.12"
                 ]
               },
               {
                 "refName": "3",
                 "uniqueId": "hg19_alias3",
                 "aliases": [
-                  "chr3"
+                  "chr3",
+                  "NC_000003.12"
                 ]
               },
               {
                 "refName": "4",
                 "uniqueId": "hg19_alias4",
                 "aliases": [
-                  "chr4"
+                  "chr4",
+                  "NC_000004.12"
                 ]
               },
               {
                 "refName": "5",
                 "uniqueId": "hg19_alias5",
                 "aliases": [
-                  "chr5"
+                  "chr5",
+                  "NC_000005.10"
                 ]
               },
               {
                 "refName": "6",
                 "uniqueId": "hg19_alias6",
                 "aliases": [
-                  "chr6"
+                  "chr6",
+                  "NC_000006.12"
                 ]
               },
               {
                 "refName": "7",
                 "uniqueId": "hg19_alias7",
                 "aliases": [
-                  "chr7"
+                  "chr7",
+                  "NC_000007.14"
                 ]
               },
               {
                 "refName": "8",
                 "uniqueId": "hg19_alias8",
                 "aliases": [
-                  "chr8"
+                  "chr8",
+                  "NC_000008.11"
                 ]
               },
               {
                 "refName": "9",
                 "uniqueId": "hg19_alias9",
                 "aliases": [
-                  "chr9"
+                  "chr9",
+                  "NC_000009.12"
                 ]
               },
               {
                 "refName": "10",
                 "uniqueId": "hg19_alias10",
                 "aliases": [
-                  "chr10"
+                  "chr10",
+                  "NC_000010.11"
                 ]
               },
               {
                 "refName": "11",
                 "uniqueId": "hg19_alias11",
                 "aliases": [
-                  "chr11"
+                  "chr11",
+                  "NC_000011.10"
                 ]
               },
               {
                 "refName": "12",
                 "uniqueId": "hg19_alias12",
                 "aliases": [
-                  "chr12"
+                  "chr12",
+                  "NC_000012.12"
                 ]
               },
               {
                 "refName": "13",
                 "uniqueId": "hg19_alias13",
                 "aliases": [
-                  "chr13"
+                  "chr13",
+                  "NC_000013.11"
                 ]
               },
               {
                 "refName": "14",
                 "uniqueId": "hg19_alias14",
                 "aliases": [
-                  "chr14"
+                  "chr14",
+                  "NC_000014.9"
                 ]
               },
               {
                 "refName": "15",
                 "uniqueId": "hg19_alias15",
                 "aliases": [
-                  "chr15"
+                  "chr15",
+                  "NC_000015.10"
                 ]
               },
               {
                 "refName": "16",
                 "uniqueId": "hg19_alias16",
                 "aliases": [
-                  "chr16"
+                  "chr16",
+                  "NC_000016.10"
                 ]
               },
               {
                 "refName": "17",
                 "uniqueId": "hg19_alias17",
                 "aliases": [
-                  "chr17"
+                  "chr17",
+                  "NC_000017.11"
                 ]
               },
               {
                 "refName": "18",
                 "uniqueId": "hg19_alias18",
                 "aliases": [
-                  "chr18"
+                  "chr18",
+                  "NC_000018.10"
                 ]
               },
               {
                 "refName": "19",
                 "uniqueId": "hg19_alias19",
                 "aliases": [
-                  "chr19"
+                  "chr19",
+                  "NC_000019.10"
                 ]
               },
               {
                 "refName": "20",
                 "uniqueId": "hg19_alias20",
                 "aliases": [
-                  "chr20"
+                  "chr20",
+                  "NC_000020.11"
                 ]
               },
               {
                 "refName": "21",
                 "uniqueId": "hg19_alias21",
                 "aliases": [
-                  "chr21"
+                  "chr21",
+                  "NC_000021.9"
                 ]
               },
               {
                 "refName": "22",
                 "uniqueId": "hg19_alias22",
                 "aliases": [
-                  "chr22"
+                  "chr22",
+                  "NC_000022.11"
                 ]
               },
               {
                 "refName": "X",
                 "uniqueId": "hg19_aliasX",
                 "aliases": [
-                  "chrX"
+                  "chrX",
+                  "NC_000023.11"
                 ]
               },
               {
                 "refName": "Y",
                 "uniqueId": "hg19_aliasY",
                 "aliases": [
-                  "chrY"
+                  "chrY",
+                  "NC_000024.10"
                 ]
               },
               {
@@ -1515,7 +1539,7 @@
       },
       "tracks": [
         {
-          "configId": "sparql_example",
+          "configId": "sparql_ensembl",
           "type": "BasicTrack",
           "name": "SPARQL",
           "adapter": {
@@ -1524,7 +1548,7 @@
             "endpoint": {
               "uri": "https://www.ebi.ac.uk/rdf/services/sparql"
             },
-            "queryTemplate": "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  owl:  <http://www.w3.org/2002/07/owl#>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX  dcterms: <http://purl.org/dc/terms/>\nPREFIX  skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  dbpedia: <http://dbpedia.org/>\nPREFIX  dbpedia2: <http://dbpedia.org/property/>\nPREFIX  foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nSELECT DISTINCT  ?gene (?id as ?uniqueID) (?label as ?name) (?desc as ?note) (if(( ?location_type = faldo:ForwardStrandPosition ), 1, if(( ?location_type = faldo:ReverseStrandPosition ), -1, 0)) AS ?strand) (if(( ?strand = -1), ?faldo_end, ?faldo_begin) as ?start) (if(( ?strand = -1), ?faldo_begin, ?faldo_end) as ?end)\nWHERE\n  { VALUES ?location_type { faldo:ForwardStrandPosition faldo:ReverseStrandPosition faldo:BothStrandsPosition }\n    ?location  faldo:begin     _:b0 .\n    _:b0      rdf:type         ?location_type ;\n              faldo:position   ?faldo_begin .\n    ?location  faldo:end       _:b1 .\n    _:b1      rdf:type         ?location_type ;\n              faldo:position   ?faldo_end .\n    ?location  faldo:reference  <http://rdf.ebi.ac.uk/resource/ensembl/92/homo_sapiens/GRCh38/{refName}> .\n    ?gene     rdf:type         ?type ;\n              rdfs:label       ?label ;\n              dc:description   ?desc ;\n              dc:identifier    ?id ;\n              faldo:location   ?location\n    FILTER ( ( ?faldo_begin >= {start} ) && ( ?faldo_end <= {end} ) )\n  }",
+            "queryTemplate": "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  owl:  <http://www.w3.org/2002/07/owl#>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX  dcterms: <http://purl.org/dc/terms/>\nPREFIX  skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  dbpedia: <http://dbpedia.org/>\nPREFIX  dbpedia2: <http://dbpedia.org/property/>\nPREFIX  foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nSELECT DISTINCT  ?gene (?id as ?uniqueId) (?label as ?name) (?desc as ?note) (if(( ?location_type = faldo:ForwardStrandPosition ), 1, if(( ?location_type = faldo:ReverseStrandPosition ), -1, 0)) AS ?strand) (if(( ?strand = -1), ?faldo_end, ?faldo_begin) as ?start) (if(( ?strand = -1), ?faldo_begin, ?faldo_end) as ?end)\nWHERE\n  { VALUES ?location_type { faldo:ForwardStrandPosition faldo:ReverseStrandPosition faldo:BothStrandsPosition }\n    ?location  faldo:begin     _:b0 .\n    _:b0      rdf:type         ?location_type ;\n              faldo:position   ?faldo_begin .\n    ?location  faldo:end       _:b1 .\n    _:b1      rdf:type         ?location_type ;\n              faldo:position   ?faldo_end .\n    ?location  faldo:reference  <http://rdf.ebi.ac.uk/resource/ensembl/92/homo_sapiens/GRCh38/{refName}> .\n    ?gene     rdf:type         ?type ;\n              rdfs:label       ?label ;\n              dc:description   ?desc ;\n              dc:identifier    ?id ;\n              faldo:location   ?location\n    FILTER ( ( ?faldo_begin >= {start} ) && ( ?faldo_end <= {end} ) )\n  }",
             "additionalQueryParams": [
               "format=JSON"
             ]
@@ -1536,6 +1560,30 @@
               "configId": "t43o3wEqG9"
             }
           }
+        },
+        {
+          "configId": "sparql_togo",
+          "type": "BasicTrack",
+          "name": "SPARQL TogoGenome",
+          "adapter": {
+            "configId": "DOaFDTivy3",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "http://togogenome.org/sparql-app"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX  sio:  <http://semanticscience.org/resource/>\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\n\nSELECT DISTINCT ?uniqueId (\"gene\" AS ?type) ?start ?end ?sub_uniqueId (\"mRNA\" AS ?sub_type) ?sub_start ?sub_end ?sub_sub_uniqueId (\"CDS\" AS ?sub_sub_type) ?sub_sub_start ?sub_sub_end ?faldo_type ?strand (?strand AS ?sub_strand) (?strand AS ?sub_sub_strand) ?name ?description ?sub_name ?sub_description ?sub_class\nFROM <http://togogenome.org/graph/refseq>\nFROM <http://togogenome.org/graph/so>\nFROM <http://togogenome.org/graph/faldo>\nWHERE\n  { VALUES ?sub_class { obo:SO_0000316 obo:SO_0000253 obo:SO_0000252 }\n    ?refseq_id  insdc:sequence_version  \"{refName}\" ;\n              insdc:sequence        ?seq_id .\n    ?uniqueId  obo:so_part_of        ?seq_id ;\n              rdfs:subClassOf       obo:SO_0000704 ;\n              faldo:location        ?loc .\n    ?loc  faldo:begin          ?begin .\n    ?begin    faldo:position        ?start_pos .\n    ?loc faldo:end/faldo:position ?end_pos\n      { BIND(faldo:ForwardStrandPosition AS ?faldo_type)\n        BIND(1 AS ?strand)\n        ?begin  rdf:type  faldo:ForwardStrandPosition\n      }\n    UNION\n      { BIND(faldo:ReverseStrandPosition AS ?faldo_type)\n        BIND(-1 AS ?strand)\n        ?begin  rdf:type  faldo:ReverseStrandPosition\n      }\n    UNION\n      { BIND(faldo:BothStrandPosition AS ?faldo_type)\n        BIND(0 AS ?strand)\n        ?begin  rdf:type  faldo:BothStrandPosition\n      }\n    FILTER ( ! ( ( ?start_pos > {end} ) || ( ?end_pos < {start} ) ) )\n    ?sub_uniqueId  obo:so_part_of   ?uniqueId ;\n              rdfs:subClassOf  ?sub_class ;\n              faldo:location   ?sub_loc .\n    ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n    ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n    ?sub_uniqueId  obo:so_has_part  ?sub_sub_uri ;\n              sio:SIO_000974   ?uuid .\n    ?uuid     sio:SIO_000628   ?sub_sub_uri .\n    ?sub_sub_uri  rdfs:subClassOf  obo:SO_0000147 ;\n              faldo:location   ?sub_sub_loc .\n    ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n    ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos\n    OPTIONAL\n      { ?uniqueId  rdfs:label  ?name }\n    OPTIONAL\n      { ?uniqueId  insdc:product  ?product }\n    OPTIONAL\n      { ?uniqueId  insdc:note  ?note }\n    OPTIONAL\n      { ?sub_uniqueId  rdfs:label  ?sub_name }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:product  ?sub_product }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:note  ?sub_note }\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_start_pos, ?sub_sub_end_pos) AS ?sub_sub_end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?end_pos, ?start_pos) AS ?start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?start_pos, ?end_pos) AS ?end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_start_pos, ?sub_end_pos) AS ?sub_end)\n    BIND(iri(concat(str(?sub_sub_uri), \"-\", str(?uuid))) AS ?sub_sub_uniqueId)\n    BIND(coalesce(?product, ?note, \"\") AS ?description)\n    BIND(coalesce(?sub_product, ?sub_note, \"\") AS ?sub_description)\n  }",
+            "refNamesQueryTemplate": "PREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\n\nSELECT DISTINCT  ?refName\nWHERE\n  { ?refseq_id  insdc:sequence_version  ?refName }",
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "eIylp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "b43o3wEqG4"
+            }
+          }
         }
       ]
     }
@@ -1544,7 +1592,8 @@
     "configId": "WBBdhiJUQdj",
     "rpc": {
       "configId": "A8raoinDhoH"
-    }
+    },
+    "updateUrl": false
   },
   "defaultSession": {
     "name": "New Session",
@@ -2372,8 +2421,8 @@
         {
           "id": "Cma34s8JJ",
           "type": "LinearGenomeView",
-          "offsetPx": 835,
-          "bpPerPx": 50,
+          "offsetPx": 69300,
+          "bpPerPx": 150,
           "displayedRegions": [
             {
               "refName": "1",
@@ -5938,10 +5987,16 @@
           "reversed": false,
           "tracks": [
             {
-              "id": "twPzCDvp1",
+              "id": "xwPzCDv22",
+              "type": "BasicTrack",
+              "height": 400,
+              "configuration": "sparql_togo"
+            },
+            {
+              "id": "alksdAD23",
               "type": "BasicTrack",
               "height": 100,
-              "configuration": "sparql_example"
+              "configuration": "sparql_ensembl"
             }
           ],
           "controlsWidth": 120,
@@ -6024,5 +6079,6 @@
       ],
       "connections": {}
     }
+
   ]
 }
