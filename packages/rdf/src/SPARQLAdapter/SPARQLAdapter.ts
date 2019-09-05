@@ -117,7 +117,7 @@ export default class extends BaseAdapter {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length)
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
-    const { signal } = opts || {}
+    const signal = opts && opts.signal
     const response = await fetch(
       `${this.endpoint}?query=${query}${additionalQueryParams}`,
       {
