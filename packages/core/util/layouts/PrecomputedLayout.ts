@@ -1,33 +1,40 @@
-import { objectFromEntries } from '../index'
+import { objectFromEntries } from '..'
+import { RectTuple } from './BaseLayout'
 
 export default class PrecomputedLayout {
+  private rectangles: Map<string, RectTuple>
+
+  private totalHeight: number
+
   constructor({ rectangles = {}, totalHeight = 0 }) {
     this.rectangles = new Map(Object.entries(rectangles))
     // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
   }
 
-  addRect(id) {
-    if (!this.rectangles.has(id)) {
-      // debugger
+  addRect(id: string): number {
+    const rect = this.rectangles.get(id)
+    if (!rect) {
+      // console.trace(this.rectangles)
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom
-    return this.rectangles.get(id)[1]
+    return rect[1]
   }
 
   /**
    * returns a Map of feature id -> rectangle
    */
-  getRectangles() {
+  getRectangles(): Map<string, RectTuple> {
     return this.rectangles
   }
 
-  getTotalHeight() {
+  getTotalHeight(): number {
     return this.totalHeight
   }
 
-  toJSON() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toJSON(): { rectangles: Record<string, any>; totalHeight: number } {
     return {
       rectangles: objectFromEntries(this.rectangles),
       totalHeight: this.totalHeight,
