@@ -47,26 +47,45 @@ export default class extends BaseAdapter {
 
   private queryTemplate: string
 
+  private refNamesQueryTemplate: string
+
   private additionalQueryParams: string[]
 
-  public static capabilities = ['getFeatures']
+  private refNames: string[] | undefined
+
+  public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
     endpoint: IFileLocation
     queryTemplate: string
+    refNamesQueryTemplate: string
     additionalQueryParams: string[]
   }) {
     super()
-    const { endpoint, queryTemplate, additionalQueryParams } = config
+    const {
+      endpoint,
+      queryTemplate,
+      refNamesQueryTemplate,
+      additionalQueryParams,
+    } = config
 
     // @ts-ignore
     this.endpoint = endpoint.uri
     this.queryTemplate = queryTemplate
     this.additionalQueryParams = additionalQueryParams
+    this.refNamesQueryTemplate = refNamesQueryTemplate
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
-    return []
+    if (this.refNames) return this.refNames
+    let refNames = [] as string[]
+    if (this.refNamesQueryTemplate) {
+      const queryTemplate = encodeURIComponent(this.refNamesQueryTemplate)
+      const results = await this.querySparql(queryTemplate, opts)
+      refNames = this.resultsToRefNames(results)
+    }
+    this.refNames = refNames
+    return refNames
   }
 
   /**
@@ -84,24 +103,37 @@ export default class extends BaseAdapter {
           format(this.queryTemplate, query),
         )
         const { refName } = query
-        let additionalQueryParams = ''
-        if (this.additionalQueryParams.length)
-          additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
-        const response = await fetch(
-          `${this.endpoint}?query=${filledTemplate}${additionalQueryParams}`,
-          {
-            headers: {
-              accept: 'application/json,application/sparql-results+json',
-            },
-          },
-        )
-        const results = await response.json()
+        const results = await this.querySparql(filledTemplate, opts)
         this.resultsToFeatures(results, refName).forEach(feature => {
           observer.next(feature)
         })
         observer.complete()
       },
     )
+  }
+
+  private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
+    let additionalQueryParams = ''
+    if (this.additionalQueryParams.length)
+      additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
+    const { signal } = opts || {}
+    const response = await fetch(
+      `${this.endpoint}?query=${query}${additionalQueryParams}`,
+      {
+        headers: { accept: 'application/json,application/sparql-results+json' },
+        signal,
+      },
+    )
+    return response.json()
+  }
+
+  private resultsToRefNames(response: SPARQLResponse): string[] {
+    const rows = ((response || {}).results || {}).bindings || []
+    if (!rows.length) return []
+    const fields = response.head.vars
+    if (!fields.includes('refName'))
+      throw new Error('"refName" not found in refNamesQueryTemplate response')
+    return rows.map(row => row.refName.value)
   }
 
   private resultsToFeatures(
@@ -199,7 +231,12 @@ export default class extends BaseAdapter {
     )
   }
 
-  public async hasDataForRefName(): Promise<boolean> {
+  public async hasDataForRefName(
+    refName: string,
+    opts: BaseOptions = {},
+  ): Promise<boolean> {
+    const refNames = await this.getRefNames(opts)
+    if (refNames.length && !refNames.includes(refName)) return false
     return true
   }
 

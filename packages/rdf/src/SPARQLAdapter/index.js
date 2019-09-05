@@ -16,6 +16,12 @@ export const configSchema = ConfigurationSchema(
       desicription:
         'SPARQL query where {start} {end} and {refName} will get replaced for each call',
     },
+    refNamesQueryTemplate: {
+      type: 'text',
+      defaultValue: '',
+      desicription:
+        'SPARQL query that returns the possible refNames in a ?refName variable',
+    },
     additionalQueryParams: {
       type: 'stringArray',
       defaultValue: [],
