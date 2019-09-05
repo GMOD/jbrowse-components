@@ -32,12 +32,14 @@ interface SPARQLFeatureData {
   start: number
   end: number
   strand: number
-  [propName: string]: string | number
+  subfeatures?: SPARQLFeatureData[]
+  uniqueId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [propName: string]: any
 }
 
 interface SPARQLFeature {
   data: SPARQLFeatureData
-  subfeatures?: SPARQLFeature[]
 }
 
 export default class extends BaseAdapter {
@@ -87,7 +89,11 @@ export default class extends BaseAdapter {
           additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
         const response = await fetch(
           `${this.endpoint}?query=${filledTemplate}${additionalQueryParams}`,
-          { headers: { accept: 'application/json' } },
+          {
+            headers: {
+              accept: 'application/json,application/sparql-results+json',
+            },
+          },
         )
         const results = await response.json()
         this.resultsToFeatures(results, refName).forEach(feature => {
@@ -105,7 +111,7 @@ export default class extends BaseAdapter {
     const rows = ((results || {}).results || {}).bindings || []
     if (!rows.length) return []
     const fields = results.head.vars
-    const requiredFields = ['start', 'end', 'strand', 'uniqueID']
+    const requiredFields = ['start', 'end', 'uniqueId']
     requiredFields.forEach(requiredField => {
       if (!fields.includes(requiredField))
         console.error(
@@ -114,35 +120,69 @@ export default class extends BaseAdapter {
     })
     const seenFeatures: Record<string, SPARQLFeature> = {}
     rows.forEach(row => {
-      const rawData: Record<string, string> = {}
+      const rawData: Record<string, string>[] = [{}]
       fields.forEach(field => {
-        if (field in row) rawData[field] = row[field].value
+        if (field in row) {
+          const { value } = row[field]
+          let idx = 0
+          while (field.startsWith('sub_')) {
+            field = field.slice(4)
+            idx += 1
+          }
+          while (idx > rawData.length - 1) rawData.push({})
+          rawData[idx][field] = value
+        }
       })
 
-      const id = rawData.uniqueID
-      delete rawData.uniqueID
-      seenFeatures[id] = {
-        data: {
-          ...rawData,
-          refName,
-          start: parseInt(rawData.start, 10),
-          end: parseInt(rawData.end, 10),
-          strand: parseInt(rawData.strand, 10),
-        },
-      }
+      rawData.forEach((rd, idx) => {
+        const { uniqueId } = rd
+        if (idx < rawData.length - 1) rawData[idx + 1].parentUniqueId = uniqueId
+        seenFeatures[uniqueId] = {
+          data: {
+            ...rd,
+            uniqueId,
+            refName,
+            start: parseInt(rd.start, 10),
+            end: parseInt(rd.end, 10),
+            strand: parseInt(rd.strand, 10) || 0,
+          },
+        }
+      })
     })
 
     // resolve subfeatures, keeping only top-level features in seenFeatures
-    for (const id of Object.keys(seenFeatures)) {
-      const f = seenFeatures[id]
-      const pid = f.data.parentUniqueID
-      delete f.data.parentUniqueID
+    for (const [uniqueId, f] of Object.entries(seenFeatures)) {
+      const pid = f.data.parentUniqueId
+      delete f.data.parentUniqueId
       if (pid) {
         const p = seenFeatures[pid]
         if (p) {
-          if (!p.subfeatures) p.subfeatures = []
-          p.subfeatures.push(f)
-          delete seenFeatures[id]
+          if (!p.data.subfeatures) p.data.subfeatures = []
+          p.data.subfeatures.push({
+            ...f.data,
+            uniqueId,
+          })
+          delete seenFeatures[uniqueId]
+        } else {
+          const subfeatures = Object.values(seenFeatures)
+            .map(sf => sf.data.subfeatures)
+            .flat()
+            .filter(sf => !!sf)
+          let found = false
+          for (const subfeature of subfeatures) {
+            if (subfeature.uniqueId === pid) {
+              if (!subfeature.subfeatures) subfeature.subfeatures = []
+              subfeature.subfeatures.push({
+                ...f.data,
+                uniqueId,
+              })
+              delete seenFeatures[uniqueId]
+              found = true
+              break
+            } else if (subfeature.subfeatures)
+              subfeatures.push(subfeature.subfeatures)
+          }
+          if (!found) console.error(`Could not find parentID ${pid}`)
         }
       }
     }
@@ -150,10 +190,10 @@ export default class extends BaseAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          id: seenFeature,
           data: {
+            uniqeId: seenFeature,
             ...seenFeatures[seenFeature].data,
-            subfeatures: seenFeatures[seenFeature].subfeatures,
+            subfeatures: seenFeatures[seenFeature].data.subfeatures,
           },
         }),
     )
