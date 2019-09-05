@@ -125,25 +125,6 @@
           }
         },
         {
-          "configId": "volvox_rnaseq",
-          "type": "AlignmentsTrack",
-          "name": "volvox-long rna-seq",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/accepted_hits.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/accepted_hits.bam.bai"
-              }
-            }
-          }
-        },
-        {
           "configId": "OOv_Iwf5no",
           "type": "AlignmentsTrack",
           "name": "volvox-long reads",
@@ -174,6 +155,44 @@
               "type": "SvgFeatureRenderer",
               "labels": {
                 "configId": "JbwBsHdbnP"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_samspec",
+          "type": "AlignmentsTrack",
+          "name": "volvox-samspec",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-samspec.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-samspec.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_sv",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sv",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-sv.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-sv.bam.bai"
               }
             }
           }
