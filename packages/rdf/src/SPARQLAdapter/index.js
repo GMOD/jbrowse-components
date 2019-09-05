@@ -11,7 +11,7 @@ export const configSchema = ConfigurationSchema(
       description: 'URL of the SPARQL endpoint',
     },
     queryTemplate: {
-      type: 'string',
+      type: 'text',
       defaultValue: '',
       desicription:
         'SPARQL query where {start} {end} and {refName} will get replaced for each call',

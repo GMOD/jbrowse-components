@@ -16,6 +16,7 @@ const typeModels = {
   integer: types.integer,
   number: types.number,
   string: types.string,
+  text: types.string,
   fileLocation: FileLocation,
   frozen: types.frozen(),
 }
@@ -30,6 +31,7 @@ const fallbackDefaults = {
   integer: 1,
   number: 1,
   string: '',
+  text: '',
   fileLocation: { uri: '/path/to/resource.txt' },
   frozen: {},
 }
