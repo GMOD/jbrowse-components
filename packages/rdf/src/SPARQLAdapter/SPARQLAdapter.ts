@@ -199,8 +199,8 @@ export default class extends BaseAdapter {
         } else {
           const subfeatures = Object.values(seenFeatures)
             .map(sf => sf.data.subfeatures)
-            .flat()
             .filter(sf => !!sf)
+            .flat()
           let found = false
           for (const subfeature of subfeatures) {
             if (subfeature.uniqueId === pid) {

@@ -1,0 +1,3834 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "uniqueId",
+      "type",
+      "start",
+      "end",
+      "sub_uniqueId",
+      "sub_type",
+      "sub_start",
+      "sub_end",
+      "sub_sub_uniqueId",
+      "sub_sub_type",
+      "sub_sub_start",
+      "sub_sub_end",
+      "faldo_type",
+      "strand",
+      "sub_strand",
+      "sub_sub_strand",
+      "name",
+      "description",
+      "sub_name",
+      "sub_description",
+      "sub_class"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8318186:1:exon-urn:uuid:5f183854-6d7d-4481-a380-2f7589d95350"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318186"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8324306-8324726:1:exon-urn:uuid:7c2b06d1-c04d-495f-ae34-4a7d6514b0de"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324306"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324726"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325298-8325390:1:exon-urn:uuid:db09fb23-4a13-45e2-8efe-046836811046"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325298"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325390"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325818-8326042:1:exon-urn:uuid:fa0bfc05-f7b9-4780-99e3-fbdd9309d7ff"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325818"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8326042"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8330209-8330936:1:exon-urn:uuid:39c5e70a-3f63-4fb2-beb3-391e69ac568f"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330209"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330936"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8335437-8335614:1:exon-urn:uuid:41f103d9-ed77-41de-b99c-4198bd33bf24"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335437"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335614"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8337816-8337992:1:exon-urn:uuid:63e3e11d-33a0-4000-97d6-fe7ad0aef31c"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337816"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337992"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8339493-8339698:1:exon-urn:uuid:013977d3-aa64-4369-a10b-00c4c96a364b"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339493"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339698"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8343747-8344013:1:exon-urn:uuid:8d04079b-e892-4a7d-bea0-d32f9f111a3a"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8343747"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X1"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8318186:1:exon-urn:uuid:ac0240bc-d0bd-42c5-80b1-ce74ced7d0d3"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318186"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8324306-8324726:1:exon-urn:uuid:e319de85-763c-41b9-886b-825c5802003b"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324306"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324726"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325298-8325390:1:exon-urn:uuid:8bc73805-a57b-4f97-989b-ec23381a3eef"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325298"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325390"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325818-8326042:1:exon-urn:uuid:ffd39d23-26ae-48a8-8a87-8a35b1659ded"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325818"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8326042"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8330209-8330936:1:exon-urn:uuid:66ee77ce-d711-4dcb-ab0c-78f236f787c8"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330209"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330936"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8335437-8335590:1:exon-urn:uuid:7d3cd756-748b-48da-9684-b705b86fb523"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335437"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335590"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8337816-8337992:1:exon-urn:uuid:baad05a5-dfb9-47d8-a2aa-e1a42a12770c"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337816"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337992"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8339493-8339698:1:exon-urn:uuid:fb70eb86-e029-4900-9e99-75147688b037"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339493"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339698"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8343747-8344013:1:exon-urn:uuid:cf8be8e0-cea6-45a6-8d73-fe3603e53980"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8343747"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8318186:1:exon-urn:uuid:8bf75796-5115-46fd-a7b7-bd12daea442b"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318186"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8324306-8324726:1:exon-urn:uuid:39fb38ac-4d54-40d8-890f-fd758e04a354"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324306"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324726"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325818-8326042:1:exon-urn:uuid:ef001640-da32-4380-b873-1c118c061098"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325818"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8326042"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8330209-8330936:1:exon-urn:uuid:4e8926b2-6e26-49e4-9ad8-1dfa8ddbedbe"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330209"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330936"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8335437-8335614:1:exon-urn:uuid:201f46b2-7520-4142-b38f-22af9a5ef78e"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335437"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335614"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8337816-8337992:1:exon-urn:uuid:b2cd73a4-70ef-4304-af6a-aac90d361263"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337816"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337992"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8339493-8339698:1:exon-urn:uuid:effe65be-ae31-4907-9c4f-2760450947fa"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339493"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339698"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8343747-8344013:1:exon-urn:uuid:13868dc4-2041-4444-81ac-e8e1bbbca898"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8343747"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X2"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8318186:1:exon-urn:uuid:0aa03467-9a14-4076-a4cd-a419d3bb212e"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318186"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8324306-8324726:1:exon-urn:uuid:80706a2c-dad3-4add-8edd-e55832cbabd6"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324306"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8324726"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325818-8326042:1:exon-urn:uuid:aca48294-72a7-4d72-bea9-cc6d6bb49d7b"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325818"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8326042"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8330209-8330936:1:exon-urn:uuid:279e0669-870b-4fe5-86a6-b838bb3ebaa1"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330209"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330936"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8335437-8335590:1:exon-urn:uuid:912a99dc-da26-4706-90ce-ca96eeb21c27"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335437"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335590"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8337816-8337992:1:exon-urn:uuid:3f7db5ba-57ef-4e05-a661-a93e1f434230"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337816"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337992"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8339493-8339698:1:exon-urn:uuid:a03af8c7-31f3-42d9-8101-d72d1b13d114"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339493"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339698"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318109"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8343747-8344013:1:exon-urn:uuid:b34637d9-77ed-4c06-a08b-03acb99a5ae4"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8343747"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X3"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8326042:1:exon-urn:uuid:7626ebaf-dd9d-4f7b-8ca6-7e8bfcc7c5cf"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8326042"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8330209-8330936:1:exon-urn:uuid:50112b56-90e8-432b-8075-e47920945781"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330209"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8330936"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8335437-8335614:1:exon-urn:uuid:ca019537-cdb1-42f4-ad71-79d089b0af0c"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335437"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8335614"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8337816-8337992:1:exon-urn:uuid:ca3a384c-0b5f-4e69-b89c-d34e179feba3"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337816"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8337992"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8339493-8339698:1:exon-urn:uuid:81b25241-d953-41c7-a1c0-5303d8dc9618"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339493"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8339698"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      },
+      {
+        "uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266"
+        },
+        "type": {
+          "type": "literal",
+          "value": "gene"
+        },
+        "start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8318085"
+        },
+        "end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344167"
+        },
+        "sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707"
+        },
+        "sub_type": {
+          "type": "literal",
+          "value": "mRNA"
+        },
+        "sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8325934"
+        },
+        "sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "sub_sub_uniqueId": {
+          "type": "uri",
+          "value": "http://identifiers.org/refseq/NC_000001.11#feature:8343747-8344013:1:exon-urn:uuid:429b344f-c6bd-4a6f-8a35-8b5164bdf252"
+        },
+        "sub_sub_type": {
+          "type": "literal",
+          "value": "CDS"
+        },
+        "sub_sub_start": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8343747"
+        },
+        "sub_sub_end": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "8344013"
+        },
+        "faldo_type": {
+          "type": "uri",
+          "value": "http://biohackathon.org/resource/faldo#ForwardStrandPosition"
+        },
+        "strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "sub_sub_strand": {
+          "type": "typed-literal",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer",
+          "value": "1"
+        },
+        "name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "description": {
+          "type": "literal",
+          "value": "solute carrier family 45 member 1; Derived by automated computational analysis using gene prediction method: BestRefSeq,Gnomon."
+        },
+        "sub_name": {
+          "type": "literal",
+          "value": "SLC45A1"
+        },
+        "sub_description": {
+          "type": "literal",
+          "value": "proton-associated sugar transporter A isoform X4"
+        },
+        "sub_class": {
+          "type": "uri",
+          "value": "http://purl.obolibrary.org/obo/SO_0000316"
+        }
+      }
+    ]
+  }
+}

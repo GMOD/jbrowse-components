@@ -112,6 +112,7 @@
         "webpack-cli": "^3.2.3",
         "webpack-dev-server": "^3.1.14",
         "webpack-manifest-plugin": "^2.0.4",
+        "whatwg-fetch": "^3.0.0",
         "workbox-webpack-plugin": "^4.0.0",
         "worker-loader": "^2.0.0",
         "yeoman-test": "^1.9.1"
