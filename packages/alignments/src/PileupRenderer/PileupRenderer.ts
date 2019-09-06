@@ -234,7 +234,14 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
-    // @ts-ignore seems to think imageData is optional in some context?
-    return { element, imageData, height, width, maxHeightReached }
+    return {
+      // @ts-ignore seems to think imageData is optional in some context?
+      element,
+      imageData,
+      height,
+      width,
+      maxHeightReached,
+      layout: renderProps.layout,
+    }
   }
 }

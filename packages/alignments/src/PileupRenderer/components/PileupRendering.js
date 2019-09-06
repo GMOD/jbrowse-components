@@ -231,6 +231,7 @@ class PileupRendering extends Component {
   render() {
     const { width, height } = this.props
     const canvasWidth = Math.ceil(width)
+
     // need to call this in render so we get the right observer behavior
     this.updateSelectionHighlight()
     return (

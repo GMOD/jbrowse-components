@@ -9,6 +9,7 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import TrackControls from '../components/TrackControls'
 
 // using a map because it preserves order
@@ -117,6 +118,24 @@ export default (pluginManager, configSchema) =>
               self.clearFeatureSelection()
             },
           }
+        },
+
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
+        get layoutFeatures() {
+          const layoutMaps = []
+          for (const block of self.blockState.values()) {
+            if (
+              block.data &&
+              block.data.layout &&
+              block.data.layout.rectangles
+            ) {
+              layoutMaps.push(block.data.layout.rectangles)
+            }
+          }
+          return new CompositeMap(layoutMaps)
         },
       })),
   )
