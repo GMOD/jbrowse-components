@@ -910,7 +910,7 @@
           }
         },
         {
-          "configId": "XWkHTtv9ui5",
+          "configId": "pacbio_hg002",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.11kb",
           "category": [
@@ -959,17 +959,11 @@
             }
           },
           "renderers": {
-            "configId": "YiOyYnupJa8",
             "PileupRenderer": {
-              "configId": "Lhb2lIWJnTd",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "s8YU2XWWehv",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "743qj43cJrD"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
@@ -1029,7 +1023,7 @@
           }
         },
         {
-          "configId": "rJxR1X2T0yu",
+          "configId": "hg00096_lowcov",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina low coverage",
           "category": [
@@ -1267,41 +1261,35 @@
   },
   "savedSessions": [
     {
-      "name": "Volvox Alignment View",
-      "width": 1192,
+      "name": "Human Alignment View",
+      "width": 1366,
       "drawerWidth": 384,
       "views": [
         {
-          "id": "volvox_alignment_view",
+          "id": "human_alignment_view",
           "type": "AlignmentView",
           "views": [
             {
-              "id": "volvox_example1",
+              "id": "human_example1",
               "type": "LinearGenomeView",
-              "offsetPx": 2000,
-              "bpPerPx": 0.05,
+              "offsetPx": 10,
+              "bpPerPx": 10,
+              "displayRegionsFromAssemblyName": "hg19",
+              "reversed": false,
               "displayedRegions": [
                 {
-                  "refName": "ctgA",
+                  "refName": "chr1",
                   "start": 0,
-                  "end": 50001,
-                  "assemblyName": "volvox"
-                },
-                {
-                  "refName": "ctgB",
-                  "start": 0,
-                  "end": 6079,
-                  "assemblyName": "volvox"
+                  "end": 100000000,
+                  "assemblyName": "hg19"
                 }
               ],
-              "displayRegionsFromAssemblyName": "volvox",
-              "reversed": false,
               "tracks": [
                 {
-                  "id": "X6rIl1kHuP",
-                  "type": "ReferenceSequenceTrack",
-                  "height": 80,
-                  "configuration": "volvox_refseq_track"
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "hg00096_lowcov",
+                  "selectedRendering": ""
                 }
               ],
               "controlsWidth": 120,
@@ -1312,32 +1300,26 @@
               "minimumBlockWidth": 20
             },
             {
-              "id": "volvox_example2",
+              "id": "human_example2",
               "type": "LinearGenomeView",
-              "offsetPx": 2000,
-              "bpPerPx": 0.05,
+              "offsetPx": 22,
+              "bpPerPx": 10,
+              "displayRegionsFromAssemblyName": "hg19",
+              "reversed": false,
               "displayedRegions": [
                 {
-                  "refName": "ctgA",
+                  "refName": "chr1",
                   "start": 0,
-                  "end": 50001,
-                  "assemblyName": "volvox"
-                },
-                {
-                  "refName": "ctgB",
-                  "start": 0,
-                  "end": 6079,
-                  "assemblyName": "volvox"
+                  "end": 100000001,
+                  "assemblyName": "hg19"
                 }
               ],
-              "displayRegionsFromAssemblyName": "volvox",
-              "reversed": false,
               "tracks": [
                 {
-                  "id": "X6rIl1kHuP",
-                  "type": "ReferenceSequenceTrack",
-                  "height": 80,
-                  "configuration": "volvox_refseq_track"
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "hg00096_lowcov",
+                  "selectedRendering": ""
                 }
               ],
               "controlsWidth": 120,
@@ -1348,11 +1330,8 @@
               "minimumBlockWidth": 20
             }
           ],
-          "controlsWidth": 120,
-          "width": 808,
-          "hideControls": false,
-          "trackSelectorType": "hierarchical",
-          "minimumBlockWidth": 20
+          "reversed": false,
+          "hideControls": false
         }
       ],
       "drawerWidgets": {
@@ -1361,9 +1340,10 @@
           "type": "HierarchicalTrackSelectorDrawerWidget",
           "collapsed": {},
           "filterText": "",
-          "view": "volvox_example1"
+          "view": "human_example1"
         }
       },
+      "activeDrawerWidgets": {},
       "menuBars": [
         {
           "id": "83YVdWHrWt",
@@ -1388,7 +1368,167 @@
                   "callback": "function(session) {session.duplicateCurrentSession();}"
                 },
                 {
-                  "name": "divider"
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    },
+    {
+      "name": "Volvox Alignment View",
+      "width": 1366,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "volvox_alignment_view",
+          "type": "AlignmentView",
+          "views": [
+            {
+              "id": "volvox_example1",
+              "type": "LinearGenomeView",
+              "offsetPx": 3233,
+              "bpPerPx": 10,
+              "displayedRegions": [
+                {
+                  "refName": "ctgA",
+                  "start": 0,
+                  "end": 50001,
+                  "assemblyName": "volvox"
+                },
+                {
+                  "refName": "ctgB",
+                  "start": 0,
+                  "end": 6079,
+                  "assemblyName": "volvox"
+                }
+              ],
+              "displayRegionsFromAssemblyName": "volvox",
+              "reversed": false,
+              "tracks": [
+                {
+                  "id": "RGJz4OTuX",
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "volvox_sv",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 808,
+              "hideControls": false,
+              "hideHeader": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "id": "volvox_example2",
+              "type": "LinearGenomeView",
+              "offsetPx": 22,
+              "bpPerPx": 20,
+              "displayedRegions": [
+                {
+                  "refName": "ctgA",
+                  "start": 0,
+                  "end": 50001,
+                  "assemblyName": "volvox"
+                },
+                {
+                  "refName": "ctgB",
+                  "start": 0,
+                  "end": 6079,
+                  "assemblyName": "volvox"
+                }
+              ],
+              "displayRegionsFromAssemblyName": "volvox",
+              "reversed": false,
+              "tracks": [
+                {
+                  "id": "EAQxNjfdk",
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "volvox_sv",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 808,
+              "hideControls": false,
+              "hideHeader": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ],
+          "reversed": false,
+          "hideControls": false
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "volvox_example1"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "83YVdWHrWt",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
                 },
                 {
                   "name": "Export configuration",

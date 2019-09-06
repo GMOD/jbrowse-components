@@ -51,7 +51,7 @@ function findMatches(features1, features2) {
     if (
       candidates[name] &&
       candidates[name].id() !== id &&
-      candidates[name].get('start') - f.get('start') > 1000
+      Math.abs(candidates[name].get('start') - f.get('start')) > 300
     ) {
       matches[name] = [candidates[name], f]
     }
@@ -73,15 +73,10 @@ function AlignmentView(props) {
   const layoutFeats2 = views[1].tracks[0].layoutFeatures
   const matches = findMatches(features1, features2)
   const layoutMatches = new Map()
-  try {
-    for (const [key, elt] of Object.entries(matches)) {
-      const t1 = layoutFeats1.get(elt[0].id())
-      const t2 = layoutFeats2.get(elt[1].id())
-      layoutMatches[key] = [t1, t2]
-    }
-    console.log('layout', layoutMatches)
-  } catch (e) {
-    console.error(e)
+  for (const [key, elt] of Object.entries(matches)) {
+    const t1 = layoutFeats1.get(elt[0].id())
+    const t2 = layoutFeats2.get(elt[1].id())
+    layoutMatches[key] = [t1, t2]
   }
 
   return (
