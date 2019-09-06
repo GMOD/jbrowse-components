@@ -8,36 +8,49 @@ const useStyles = makeStyles(theme => ({
   root: {},
 }))
 function transform(view, coord) {
-  return coord / view.bpPerPx - view.offsetPx
+  return coord / view.bpPerPx - view.offsetPx + 120
 }
-const AlignmentInfo = observer(({ model, alignmentChunks, height }) => {
-  const { views } = model
-  return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ height, width: 130 }} />
-      <svg height={height} width="100%">
-        {Object.values(alignmentChunks).map(chunk => {
-          const [c1, c2] = chunk
-          const f1 = transform(views[0], c1[0])
-          const f2 = transform(views[0], c1[2])
-          const f3 = transform(views[1], c2[0])
-          const f4 = transform(views[1], c2[2])
-          return (
-            <polygon
-              key={JSON.stringify(chunk)}
-              points={`${f1},0 ${f2},0 ${f3},${height} ${f4},${height}`}
-              style={{
-                fill: '#f00',
-                stroke: 'black',
-                strokeWidth: 1,
-              }}
-            />
-          )
-        })}
-      </svg>
-    </div>
-  )
-})
+const AlignmentInfo = observer(
+  ({ model, alignmentChunks, height, children }) => {
+    const { views } = model
+    return (
+      <div style={{ position: 'relative' }}>
+        {children}
+        <svg
+          height="100%"
+          width="100%"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1000,
+            pointerEvents: 'none',
+          }}
+        >
+          {Object.values(alignmentChunks).map(chunk => {
+            const [c1, c2] = chunk
+            const f1 = transform(views[0], c1[0])
+            const f2 = transform(views[0], c1[2])
+            const f3 = transform(views[1], c2[0])
+            const f4 = transform(views[1], c2[2])
+
+            const h1 = c1[3] + 32
+            const h2 = 100 + 69 + c2[1]
+            return (
+              <polygon
+                key={JSON.stringify(chunk)}
+                points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
+                style={{
+                  fill: 'rgba(255,0,0,0.5)',
+                }}
+              />
+            )
+          })}
+        </svg>
+      </div>
+    )
+  },
+)
 
 function findMatches(features1, features2) {
   const candidates = {}
@@ -51,7 +64,7 @@ function findMatches(features1, features2) {
     if (
       candidates[name] &&
       candidates[name].id() !== id &&
-      Math.abs(candidates[name].get('start') - f.get('start')) > 300
+      Math.abs(candidates[name].get('start') - f.get('start')) > 1000
     ) {
       matches[name] = [candidates[name], f]
     }
@@ -81,13 +94,10 @@ function AlignmentView(props) {
 
   return (
     <div className={classes.root}>
-      <LinearGenomeView model={views[0]} />
-      <AlignmentInfo
-        model={model}
-        alignmentChunks={layoutMatches}
-        height={100}
-      />
-      <LinearGenomeView model={views[1]} />
+      <AlignmentInfo model={model} alignmentChunks={layoutMatches} height={100}>
+        <LinearGenomeView model={views[0]} />
+        <LinearGenomeView model={views[1]} />
+      </AlignmentInfo>
     </div>
   )
 }
