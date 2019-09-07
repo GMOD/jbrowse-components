@@ -51,6 +51,8 @@ export default class extends BaseAdapter {
 
   private additionalQueryParams: string[]
 
+  private configRefNames: string[]
+
   private refNames: string[] | undefined
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -60,6 +62,7 @@ export default class extends BaseAdapter {
     queryTemplate: string
     refNamesQueryTemplate: string
     additionalQueryParams: string[]
+    refNames: string[]
   }) {
     super()
     const {
@@ -67,6 +70,7 @@ export default class extends BaseAdapter {
       queryTemplate,
       refNamesQueryTemplate,
       additionalQueryParams,
+      refNames,
     } = config
 
     // @ts-ignore
@@ -74,6 +78,7 @@ export default class extends BaseAdapter {
     this.queryTemplate = queryTemplate
     this.additionalQueryParams = additionalQueryParams
     this.refNamesQueryTemplate = refNamesQueryTemplate
+    this.configRefNames = refNames
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
@@ -83,6 +88,8 @@ export default class extends BaseAdapter {
       const queryTemplate = encodeURIComponent(this.refNamesQueryTemplate)
       const results = await this.querySparql(queryTemplate, opts)
       refNames = this.resultsToRefNames(results)
+    } else if (this.configRefNames) {
+      refNames = this.configRefNames
     }
     this.refNames = refNames
     return refNames

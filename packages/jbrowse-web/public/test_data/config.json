@@ -1295,6 +1295,114 @@
               }
             }
           }
+        },
+        {
+          "configId": "sparql_togogenome",
+          "type": "BasicTrack",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "ALCFDT789I",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\n\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nPREFIX obo: <http://purl.obolibrary.org/obo/>\nPREFIX sio: <http://semanticscience.org/resource/>\nPREFIX faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX so: <http://purl.obolibrary.org/obo/so#>\n\nSELECT DISTINCT ?uniqueId ?type ?start ?end ?sub_uniqueId ?sub_type ?sub_start ?sub_end ?sub_sub_uniqueId ?sub_sub_type ?sub_sub_start ?sub_sub_end ?strand ?name ?description ?sub_name ?sub_description ?sub_class ?sub_sub_name\nFROM <http://togovar.biosciencedbc.jp/graph/ensembl37>\nWHERE {\n  VALUES ?region_start { {start} }\n  VALUES ?region_end { {end} }\n  VALUES ?chr_id { <http://identifiers.org/hco/{refName}#GRCh37> }\n\n  # gene\n  BIND (\"gene\" AS ?type)\n  ?uniqueId so:part_of ?chr_id .\n  ?uniqueId faldo:location ?loc .\n  ?loc faldo:begin/rdf:type ?faldo_type .\n  ?loc faldo:begin/faldo:position ?start_pos .\n  ?loc faldo:end/faldo:position ?end_pos .\n\n  FILTER (?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition))\n  BIND (IF (?faldo_type = faldo:ForwardStrandPosition, 1, IF (?faldo_type = faldo:ReverseStrandPosition, -1, 0)) AS ?strand)\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?end_pos, ?start_pos) AS ?start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?end_pos, ?start_pos) AS ?end)\n\n  FILTER (!(?start > ?region_end || ?end < ?region_start))\n\n  # transcript\n  BIND (\"mRNA\" AS ?sub_type)\n  ?sub_uniqueId so:part_of ?uniqueId .\n  ?sub_uniqueId rdf:type ?sub_class_orig .\n  FILTER (!strstarts(str(?sub_class_orig), \"http://rdf.ebi.ac.uk/terms/ensembl/\"))\n  BIND (IF (?sub_class_orig = obo:SO_0001217, obo:SO_0000316, ?sub_class_orig) AS ?sub_class)\n\n  ?sub_uniqueId faldo:location ?sub_loc .\n  ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n  ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_end_pos, ?sub_start_pos) AS ?sub_end)\n\n  # sub_sub_\n  BIND (\"CDS\" AS ?sub_sub_type)\n  ?sub_uniqueId so:has_part ?sub_sub_uniqueId .\n\n  ?sub_sub_uniqueId faldo:location ?sub_sub_loc .\n  ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n  ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_end)\n\n  OPTIONAL { ?uniqueId dct:identifier ?name . }\n  OPTIONAL { ?uniqueId rdfs:label ?description . }\n  OPTIONAL { ?sub_uniqueId dct:identifier ?sub_name . }\n  OPTIONAL { ?sub_uniqueId so:translates_to/dct:identifier ?sub_description . }\n  OPTIONAL { ?sub_sub_uniqueId dct:identifier ?sub_sub_name . }\n}",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "lu4lp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "9m6o3wEqAf"
+            }
+          }
+        },
+        {
+          "configId": "sparql_togovar",
+          "type": "BasicTrack",
+          "name": "TogoVar SPARQL Variants",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "configId": "JOaFDT74Jk",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  m2r:  <http://med2rdf.org/ontology/med2rdf#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\nPREFIX  dct: <http://purl.org/dc/terms/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nSELECT DISTINCT  (?variant as ?uniqueId) ?hgvs ?name ?variant_type ?so_type ?start ?stop ?end ?ref ?alt\nFROM <http://togovar.biosciencedbc.jp/graph/variant>\nFROM <http://togovar.biosciencedbc.jp/graph/so>\nWHERE\n  { ?variant  a                     ?_vt ;\n              rdfs:label            ?hgvs ;\n              faldo:location        ?_loc ;\n              dct:identifier        ?name\n    VALUES ?_vt { obo:SO_0001483 obo:SO_0000667 obo:SO_0000159 obo:SO_1000032 obo:SO_1000002 }\n    ?_vt  rdfs:label  ?variant_type\n      { ?_loc_begin  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n                  faldo:position   ?start .\n        ?_loc     faldo:begin      ?_loc_begin .\n        ?_loc faldo:end/faldo:position ?stop .\n      }\n    UNION\n      { ?_loc  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n               faldo:position   ?start\n      }\n    FILTER ( ( ( ?start > {start} ) && ( ?start < {end} ) ) )\n    OPTIONAL\n      { ?variant  m2r:reference_allele  ?ref }\n    OPTIONAL\n      { ?variant  m2r:alternative_allele  ?alt }\n    BIND(replace(str(?_vt), \".*/\", \"\") AS ?so_type)\n    BIND(IF(?stop, ?stop, ?start + 1) AS ?end)\n  }",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "ad4lp9S_S0",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "4g3o3wEqAl"
+            }
+          }
         }
       ]
     },
@@ -1541,7 +1649,10 @@
         {
           "configId": "sparql_ensembl",
           "type": "BasicTrack",
-          "name": "SPARQL",
+          "name": "Ensembl SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
           "adapter": {
             "configId": "AOaFDTivyl",
             "type": "SPARQLAdapter",
@@ -1564,7 +1675,10 @@
         {
           "configId": "sparql_togo",
           "type": "BasicTrack",
-          "name": "SPARQL TogoGenome",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
           "adapter": {
             "configId": "DOaFDTivy3",
             "type": "SPARQLAdapter",
@@ -6078,6 +6192,5 @@
       ],
       "connections": {}
     }
-
   ]
 }

@@ -25,6 +25,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
     refNamesQueryTemplate: 'fakeRefNamesQuery',
     additionalQueryParams: ['format=json'],
+    refNames: [],
   })
 
   const refNames = await adapter.getRefNames()
