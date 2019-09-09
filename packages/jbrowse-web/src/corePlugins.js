@@ -1,5 +1,4 @@
 import Alignments from '@gmod/jbrowse-plugin-alignments'
-import AlignmentView from '@gmod/jbrowse-plugin-alignment-view'
 import Bed from '@gmod/jbrowse-plugin-bed'
 import CircularView from '@gmod/jbrowse-plugin-circular-view'
 import Config from '@gmod/jbrowse-plugin-config'
@@ -20,7 +19,6 @@ export default [
   Alignments,
   Bed,
   CircularView,
-  BreakpointSplitView,
   Config,
   DataManagement,
   Filtering,
@@ -33,5 +31,5 @@ export default [
   TrackHubRegistry,
   Variants,
   Wiggle,
-  AlignmentView,
+  BreakpointSplitView,
 ]

@@ -62,7 +62,9 @@ export default ({ jbrequire }) => {
           <path
             d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
             style={{ stroke: strokeColor }}
-            onClick={evt => onClick(feature, evt)}
+            onClick={evt =>
+              onClick(feature, startBlock.region, endBlock.region, evt)
+            }
             onMouseOver={evt => {
               if (!selected) evt.target.style.stroke = hoverStrokeColor
             }}
@@ -144,11 +146,13 @@ export default ({ jbrequire }) => {
     radius: PropTypes.number.isRequired,
     bezierRadius: PropTypes.number.isRequired,
     selectedFeatureId: PropTypes.string,
+    onChordClick: PropTypes.func,
   }
 
   StructuralVariantChords.defaultProps = {
     trackModel: undefined,
     selectedFeatureId: '',
+    onChordClick: undefined,
   }
 
   return observer(StructuralVariantChords)

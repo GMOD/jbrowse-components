@@ -125,13 +125,22 @@ export default pluginManager => {
         self.renderingComponent = undefined
       },
 
-      onChordClick(feature, event) {
+      onChordClick(feature, startRegion, endRegion, event) {
         const session = getSession(self)
         session.setSelection(feature)
         console.log('selected BND', feature)
 
         // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
-        session.addView('BreakpointSplitView', {})
+        try {
+          session.addView(
+            'BreakpointSplitView',
+            pluginManager
+              .getViewType('BreakpointSplitView')
+              .snapshotFromBreakendFeature(feature, startRegion, endRegion),
+          )
+        } catch (e) {
+          console.error(e)
+        }
       },
     }))
 
