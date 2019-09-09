@@ -48,9 +48,21 @@ export default class extends WiggleBaseRenderer {
 
       ctx.strokeStyle = c
       ctx.beginPath()
-      ctx.moveTo(leftPx, toY(typeof lastVal !== 'undefined' ? lastVal : score))
-      ctx.lineTo(leftPx, toY(score))
-      ctx.lineTo(rightPx, toY(score))
+      if (!horizontallyFlipped) {
+        ctx.moveTo(
+          leftPx,
+          toY(typeof lastVal !== 'undefined' ? lastVal : score),
+        )
+        ctx.lineTo(leftPx, toY(score))
+        ctx.lineTo(rightPx, toY(score))
+      } else {
+        ctx.moveTo(
+          rightPx,
+          toY(typeof lastVal !== 'undefined' ? lastVal : score),
+        )
+        ctx.lineTo(rightPx, toY(score))
+        ctx.lineTo(leftPx, toY(score))
+      }
       ctx.stroke()
       lastVal = score
 
