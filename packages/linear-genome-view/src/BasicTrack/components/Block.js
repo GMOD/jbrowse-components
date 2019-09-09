@@ -14,11 +14,11 @@ const useStyles = makeStyles((/* theme */) => ({
     whiteSpace: 'nowrap',
   },
   leftBorder: {
-    borderLeft: `2px solid #333`,
+    // borderLeft: `1px solid #333`,
     // borderLeft: `2px solid ${theme.palette.divider}`,
   },
   rightBorder: {
-    borderRight: `2px solid #333`,
+    borderRight: `1px solid #333`,
     // borderRight: `2px solid ${theme.palette.divider}`,
   },
 }))
