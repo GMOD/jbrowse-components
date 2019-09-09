@@ -1,15 +1,10 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { transaction } = jbrequire('mobx')
   const { types, getParent, getRoot, addDisposer, onAction } = jbrequire(
     'mobx-state-tree',
   )
-  const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema, readConfObject } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
-  const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
-
+  const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const configSchema = ConfigurationSchema(
     'BreakpointSplitView',
     {},

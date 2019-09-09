@@ -205,10 +205,6 @@ export function stateModelFactory(pluginManager) {
         self.displayName = name
       },
 
-      toggleHeader() {
-        self.hideHeader = !self.hideHeader
-      },
-
       horizontallyFlip() {
         self.reversed = !self.reversed
         self.displayedRegions = self.displayedRegions.slice().reverse()

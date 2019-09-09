@@ -2,20 +2,14 @@ import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
 
 export default ({ jbrequire }) => {
-  const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = React
-  const ReactPropTypes = jbrequire('prop-types')
-  const { Icon, IconButton, TextField, Typography, Menu, MenuItem } = jbrequire(
+  const { Icon, IconButton, TextField, Typography } = jbrequire(
     '@material-ui/core',
   )
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
-  const { assembleLocString, parseLocString } = jbrequire(
-    '@gmod/jbrowse-core/util',
-  )
+  const { parseLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   const useStyles = makeStyles(theme => ({
     headerBar: {
@@ -35,27 +29,27 @@ export default ({ jbrequire }) => {
     },
   }))
 
-  const LongMenu = observer(props => {
-    const { model, className } = props
+  //   const LongMenu = observer(props => {
+  //     const { model, className } = props
 
-    const [anchorEl, setAnchorEl] = React.useState(null)
-    const open = Boolean(anchorEl)
+  //     const [anchorEl, setAnchorEl] = React.useState(null)
+  //     const open = Boolean(anchorEl)
 
-    function handleClick(event) {
-      setAnchorEl(event.currentTarget)
-    }
+  //     function handleClick(event) {
+  //       setAnchorEl(event.currentTarget)
+  //     }
 
-    function handleClose() {
-      setAnchorEl(null)
-    }
+  //     function handleClose() {
+  //       setAnchorEl(null)
+  //     }
 
-    return <></>
-  })
+  //     return <></>
+  //   })
 
-  LongMenu.propTypes = {
-    className: ReactPropTypes.string,
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
+  //   LongMenu.propTypes = {
+  //     className: ReactPropTypes.string,
+  //     model: PropTypes.objectOrObservableObject.isRequired,
+  //   }
 
   const Controls = observer(({ model }) => {
     const classes = useStyles()
@@ -68,7 +62,6 @@ export default ({ jbrequire }) => {
         >
           <Icon fontSize="small">close</Icon>
         </IconButton>
-        <LongMenu model={model} />
       </>
     )
   })

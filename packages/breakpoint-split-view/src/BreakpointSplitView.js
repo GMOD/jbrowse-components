@@ -13,8 +13,7 @@ export default ({ jbrequire }) => {
       const breakendSpecification = (feature.get('ALT') || [])[0]
       const matePosition = breakendSpecification.MatePosition.split(':')
       matePosition[1] = parseInt(matePosition[1], 10) - 1 // convert to interbase coord
-      const [endRef, endPos] = matePosition
-      const startRef = feature.get('refName')
+      const [, endPos] = matePosition
       const startPos = feature.get('start')
 
       const bpPerPx = 0.2

@@ -1,5 +1,3 @@
-const dragHandleHeight = 3
-
 const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
 
 function findMatches(features1, features2) {
