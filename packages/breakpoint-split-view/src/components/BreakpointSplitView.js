@@ -1,5 +1,7 @@
 const dragHandleHeight = 3
 
+const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
+
 function findMatches(features1, features2) {
   const candidates = {}
   const matches = {}
@@ -75,15 +77,18 @@ export default pluginManager => {
             >
               {Object.values(alignmentChunks).map(chunk => {
                 const [c1, c2] = chunk
-                const f1 = transform(topLGV, c1[0])
-                const f2 = transform(topLGV, c1[2])
-                const f3 = transform(bottomLGV, c2[0])
-                const f4 = transform(bottomLGV, c2[2])
+                const f1 = transform(topLGV, c1[LEFT])
+                const f2 = transform(topLGV, c1[RIGHT])
+                const f3 = transform(bottomLGV, c2[LEFT])
+                const f4 = transform(bottomLGV, c2[RIGHT])
 
-                let h1 = c1[3]
-                let h2 = topLGV.height + bottomLGV.headerHeight + 32 + c2[1] + 3
-                h1 += model.headerHeight + topLGV.headerHeight + 32
-                h2 += model.headerHeight + topLGV.headerHeight + 32
+                let h1 =
+                  c1[BOTTOM] + topLGV.headerHeight + topLGV.scaleBarHeight
+                let h2 =
+                  c2[TOP] + bottomLGV.headerHeight + bottomLGV.scaleBarHeight
+                h1 += model.headerHeight
+                h2 += model.headerHeight
+                h2 += topLGV.height
                 return (
                   <polygon
                     key={JSON.stringify(chunk)}

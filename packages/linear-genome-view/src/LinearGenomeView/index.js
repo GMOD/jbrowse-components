@@ -80,6 +80,11 @@ export function stateModelFactory(pluginManager) {
         return self.width - self.controlsWidth
       },
 
+      get scaleBarHeight() {
+        // 32px plus 1px pad
+        return 33
+      },
+
       get menuOptions() {
         return [
           {
@@ -116,8 +121,10 @@ export function stateModelFactory(pluginManager) {
       get height() {
         return (
           self.tracks.map(t => t.height).reduce((a, b) => a + b) +
-          self.tracks.length * 2 +
-          2
+          self.tracks.length * 2 + // trackresizehandles
+          self.headerHeight +
+          self.scaleBarHeight +
+          1 // bottom padding
         )
       },
 
