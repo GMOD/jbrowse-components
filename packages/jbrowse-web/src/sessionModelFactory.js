@@ -90,34 +90,32 @@ export default pluginManager => {
     }))
     .actions(self => ({
       afterCreate() {
-        const disposer = autorun(function setWidthAutoRun() {
-          // self.views.forEach(view => {
-          //   view.setWidth(self.viewsWidth)
-          // })
+        const disposer = autorun(() => {
+          self.views.forEach(view => {
+            view.setWidth(self.viewsWidth)
+          })
         })
         addDisposer(self, disposer)
 
-        const displayedRegionsDisposer = autorun(
-          async function displayedRegionsUpdater() {
-            for (const view of self.views) {
-              const assemblyName = view.displayRegionsFromAssemblyName
-              if (
-                assemblyName &&
-                self.assemblyData.get(assemblyName) &&
-                self.assemblyData.get(assemblyName).sequence
-              ) {
-                // eslint-disable-next-line no-await-in-loop
-                const displayedRegions = await self.getRegionsForAssembly(
-                  assemblyName,
-                  self.assemblyData,
-                )
-                getParent(self).history.withoutUndo(() =>
-                  view.setDisplayedRegions(displayedRegions, true),
-                )
-              }
+        const displayedRegionsDisposer = autorun(async () => {
+          for (const view of self.views) {
+            const assemblyName = view.displayRegionsFromAssemblyName
+            if (
+              assemblyName &&
+              self.assemblyData.get(assemblyName) &&
+              self.assemblyData.get(assemblyName).sequence
+            ) {
+              // eslint-disable-next-line no-await-in-loop
+              const displayedRegions = await self.getRegionsForAssembly(
+                assemblyName,
+                self.assemblyData,
+              )
+              getParent(self).history.withoutUndo(() =>
+                view.setDisplayedRegions(displayedRegions, true),
+              )
             }
-          },
-        )
+          }
+        })
         addDisposer(self, displayedRegionsDisposer)
       },
 
