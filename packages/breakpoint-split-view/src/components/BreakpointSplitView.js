@@ -66,7 +66,7 @@ export default pluginManager => {
             {children}
             <svg
               height="100%"
-              width="100%"
+              width={model.widthPx} // if 100% this goes causes overflowX to scroll
               style={{
                 position: 'absolute',
                 top: 0,

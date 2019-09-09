@@ -2,226 +2,34 @@
 
 exports[`LinearGenomeView genome view component renders one track, no blocks 1`] = `
 <div
-  class="makeStyles-root-198"
+  class="makeStyles-root-21"
 >
   <div
-    class="makeStyles-linearGenomeView-199"
+    class="makeStyles-linearGenomeView-22"
     style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="makeStyles-headerBar-203"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-212"
-        tabindex="0"
-        title="close this view"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            close
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        aria-label="more"
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-212"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root"
-          >
-            more_vert
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <div
-        class="makeStyles-emphasis-206"
-      >
-        <p
-          class="MuiTypography-root makeStyles-viewName-208 MuiTypography-body1"
-        />
-      </div>
-      <div
-        class="makeStyles-spacer-204"
-      />
-      <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-searchRoot-207 MuiPaper-rounded"
-      >
-        <form>
-          <div
-            class="MuiInputBase-root makeStyles-input-211"
-          >
-            <input
-              aria-invalid="false"
-              class="MuiInputBase-input"
-              placeholder="Enter location (e.g. chr1:1000..5000)"
-              type="text"
-              value=""
-            />
-          </div>
-          <button
-            aria-label="search"
-            class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-212"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root"
-              >
-                search
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </form>
-      </div>
-      <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline"
-      >
-        <div
-          aria-haspopup="listbox"
-          class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
-          role="button"
-          tabindex="0"
-        >
-          <span>
-            ​
-          </span>
-        </div>
-        <input
-          name="refseq"
-          type="hidden"
-          value="Select refSeq"
-        />
-        <svg
-          aria-hidden="true"
-          class="MuiSvgIcon-root MuiSelect-icon"
-          focusable="false"
-          role="presentation"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M7 10l5 5 5-5z"
-          />
-        </svg>
-      </div>
-      <div
-        class="makeStyles-container-341"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_out"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_out
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiSlider-root makeStyles-slider-342"
-        >
-          <span
-            class="MuiSlider-rail"
-          />
-          <span
-            class="MuiSlider-track"
-          />
-          <input
-            type="hidden"
-            value="5.643856189774724"
-          />
-          <span
-            aria-orientation="horizontal"
-            aria-valuemax="5.643856189774724"
-            aria-valuemin="5.643856189774724"
-            aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
-            data-index="0"
-            role="slider"
-            tabindex="0"
-          />
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_in"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_in
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-spacer-204"
-      />
-    </div>
+      style="width: 100%; height: 100%;"
+    />
     <div
-      class="makeStyles-controls-200 makeStyles-viewControls-201"
+      class="makeStyles-controls-23 makeStyles-viewControls-24"
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-363"
+      class="Rubberband-rubberBandContainer-38"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar-364"
+        class="makeStyles-scaleBar-39"
       />
     </div>
     <div
-      class="makeStyles-controls-200 makeStyles-trackControls-202"
+      class="makeStyles-controls-23 makeStyles-trackControls-25"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-368"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-43"
         tabindex="0"
         title="close this track"
         type="button"
@@ -241,7 +49,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-369 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-44 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -263,32 +71,32 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <p
-        class="MuiTypography-root makeStyles-trackName-366 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-41 MuiTypography-body1"
       >
         Foo Track
       </p>
       <span
-        class="MuiTypography-root makeStyles-trackDescription-367 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-42 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-376"
+      class="TrackRenderingContainer-trackRenderingContainer-102"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="makeStyles-track-377"
+        class="makeStyles-track-103"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="makeStyles-trackBlocks-378"
+          class="makeStyles-trackBlocks-104"
           data-testid="Block"
         />
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle-381"
+      class="makeStyles-horizontalHandle-107"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
@@ -298,221 +106,29 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 
 exports[`LinearGenomeView genome view component renders two tracks, two regions 1`] = `
 <div
-  class="makeStyles-root-412"
+  class="makeStyles-root-235"
 >
   <div
-    class="makeStyles-linearGenomeView-413"
+    class="makeStyles-linearGenomeView-236"
     style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="makeStyles-headerBar-417"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-426"
-        tabindex="0"
-        title="close this view"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            close
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        aria-label="more"
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-426"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root"
-          >
-            more_vert
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <div
-        class="makeStyles-emphasis-420"
-      >
-        <p
-          class="MuiTypography-root makeStyles-viewName-422 MuiTypography-body1"
-        />
-      </div>
-      <div
-        class="makeStyles-spacer-418"
-      />
-      <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-searchRoot-421 MuiPaper-rounded"
-      >
-        <form>
-          <div
-            class="MuiInputBase-root makeStyles-input-425"
-          >
-            <input
-              aria-invalid="false"
-              class="MuiInputBase-input"
-              placeholder="Enter location (e.g. chr1:1000..5000)"
-              type="text"
-              value=""
-            />
-          </div>
-          <button
-            aria-label="search"
-            class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-426"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root"
-              >
-                search
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </form>
-      </div>
-      <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline"
-      >
-        <div
-          aria-haspopup="listbox"
-          class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
-          role="button"
-          tabindex="0"
-        >
-          <span>
-            ​
-          </span>
-        </div>
-        <input
-          name="refseq"
-          type="hidden"
-          value="Select refSeq"
-        />
-        <svg
-          aria-hidden="true"
-          class="MuiSvgIcon-root MuiSelect-icon"
-          focusable="false"
-          role="presentation"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M7 10l5 5 5-5z"
-          />
-        </svg>
-      </div>
-      <div
-        class="makeStyles-container-555"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_out"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_out
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiSlider-root makeStyles-slider-556"
-        >
-          <span
-            class="MuiSlider-rail"
-          />
-          <span
-            class="MuiSlider-track"
-          />
-          <input
-            type="hidden"
-            value="5.643856189774724"
-          />
-          <span
-            aria-orientation="horizontal"
-            aria-valuemax="5.643856189774724"
-            aria-valuemin="5.643856189774724"
-            aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
-            data-index="0"
-            role="slider"
-            tabindex="0"
-          />
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_in"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_in
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-spacer-418"
-      />
-    </div>
+      style="width: 100%; height: 100%;"
+    />
     <div
-      class="makeStyles-controls-414 makeStyles-viewControls-415"
+      class="makeStyles-controls-237 makeStyles-viewControls-238"
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-577"
+      class="Rubberband-rubberBandContainer-252"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar-578"
+        class="makeStyles-scaleBar-253"
       >
         <div
-          class="makeStyles-block-580 makeStyles-leftBorder-581 makeStyles-rightBorder-582"
+          class="makeStyles-block-255 makeStyles-leftBorder-256 makeStyles-rightBorder-257"
           style="left: 0px; width: 100px;"
         >
           <svg
@@ -520,7 +136,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             width="100"
           >
             <line
-              class="makeStyles-majorTick-584"
+              class="makeStyles-majorTick-259"
               data-bp="-1"
               stroke="#555"
               stroke-width="1"
@@ -530,7 +146,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="makeStyles-minorTick-585"
+              class="makeStyles-minorTick-260"
               data-bp="19"
               stroke="#999"
               stroke-width="1"
@@ -540,7 +156,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-585"
+              class="makeStyles-minorTick-260"
               data-bp="39"
               stroke="#999"
               stroke-width="1"
@@ -550,7 +166,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-585"
+              class="makeStyles-minorTick-260"
               data-bp="59"
               stroke="#999"
               stroke-width="1"
@@ -560,7 +176,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-minorTick-585"
+              class="makeStyles-minorTick-260"
               data-bp="79"
               stroke="#999"
               stroke-width="1"
@@ -570,7 +186,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <line
-              class="makeStyles-majorTick-584"
+              class="makeStyles-majorTick-259"
               data-bp="99"
               stroke="#555"
               stroke-width="1"
@@ -580,7 +196,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="6"
             />
             <line
-              class="makeStyles-minorTick-585"
+              class="makeStyles-minorTick-260"
               data-bp="119"
               stroke="#999"
               stroke-width="1"
@@ -590,7 +206,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               y2="4"
             />
             <text
-              class="makeStyles-majorTickLabel-583"
+              class="makeStyles-majorTickLabel-258"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="-4"
@@ -599,7 +215,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
               0
             </text>
             <text
-              class="makeStyles-majorTickLabel-583"
+              class="makeStyles-majorTickLabel-258"
               dominant-baseline="hanging"
               style="font-size: 11px;"
               x="96"
@@ -610,18 +226,18 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </svg>
         </div>
         <div
-          class="makeStyles-refLabel-579"
+          class="makeStyles-refLabel-254"
         >
           ctgA
         </div>
       </div>
     </div>
     <div
-      class="makeStyles-controls-414 makeStyles-trackControls-416"
+      class="makeStyles-controls-237 makeStyles-trackControls-239"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-590"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-265"
         tabindex="0"
         title="close this track"
         type="button"
@@ -641,7 +257,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-591 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-266 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -663,34 +279,34 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <p
-        class="MuiTypography-root makeStyles-trackName-588 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-263 MuiTypography-body1"
       >
         Foo Track
       </p>
       <span
-        class="MuiTypography-root makeStyles-trackDescription-589 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-264 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-598"
+      class="TrackRenderingContainer-trackRenderingContainer-324"
       role="presentation"
       style="grid-row: track-foo; grid-column: blocks;"
     >
       <div
-        class="makeStyles-track-599"
+        class="makeStyles-track-325"
         data-testid="track-testConfig"
         role="presentation"
       >
         <div
-          class="makeStyles-trackBlocks-600"
+          class="makeStyles-trackBlocks-326"
           data-testid="Block"
         >
           <div
-            class="makeStyles-block-580 makeStyles-leftBorder-581 makeStyles-rightBorder-582"
+            class="makeStyles-block-255 makeStyles-leftBorder-256 makeStyles-rightBorder-257"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="makeStyles-blockMessage-605"
+              class="makeStyles-blockMessage-331"
             >
               region assembly does not match track assembly
             </div>
@@ -699,16 +315,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle-606"
+      class="makeStyles-horizontalHandle-332"
       role="presentation"
       style="grid-row: resize-foo; grid-column: span 2; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
     <div
-      class="makeStyles-controls-414 makeStyles-trackControls-416"
+      class="makeStyles-controls-237 makeStyles-trackControls-239"
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-590"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-265"
         tabindex="0"
         title="close this track"
         type="button"
@@ -728,7 +344,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-591 MuiToggleButton-sizeSmall"
+        class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton-266 MuiToggleButton-sizeSmall"
         style="min-width: 0;"
         tabindex="0"
         title="configure track"
@@ -750,34 +366,34 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <p
-        class="MuiTypography-root makeStyles-trackName-588 MuiTypography-body1"
+        class="MuiTypography-root makeStyles-trackName-263 MuiTypography-body1"
       >
         Bar Track
       </p>
       <span
-        class="MuiTypography-root makeStyles-trackDescription-589 MuiTypography-caption MuiTypography-colorTextSecondary"
+        class="MuiTypography-root makeStyles-trackDescription-264 MuiTypography-caption MuiTypography-colorTextSecondary"
       />
     </div>
     <div
-      class="TrackRenderingContainer-trackRenderingContainer-598"
+      class="TrackRenderingContainer-trackRenderingContainer-324"
       role="presentation"
       style="grid-row: track-bar; grid-column: blocks;"
     >
       <div
-        class="makeStyles-track-599"
+        class="makeStyles-track-325"
         data-testid="track-testConfig2"
         role="presentation"
       >
         <div
-          class="makeStyles-trackBlocks-600"
+          class="makeStyles-trackBlocks-326"
           data-testid="Block"
         >
           <div
-            class="makeStyles-block-580 makeStyles-leftBorder-581 makeStyles-rightBorder-582"
+            class="makeStyles-block-255 makeStyles-leftBorder-256 makeStyles-rightBorder-257"
             style="left: 0px; width: 100px;"
           >
             <div
-              class="makeStyles-blockMessage-605"
+              class="makeStyles-blockMessage-331"
             >
               region assembly does not match track assembly
             </div>
@@ -786,7 +402,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </div>
     </div>
     <div
-      class="makeStyles-horizontalHandle-606"
+      class="makeStyles-horizontalHandle-332"
       role="presentation"
       style="grid-row: resize-bar; grid-column: span 2; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
     />
@@ -803,211 +419,19 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
-      class="makeStyles-headerBar-6"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-15"
-        tabindex="0"
-        title="close this view"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            close
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        aria-label="more"
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-15"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root"
-          >
-            more_vert
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <div
-        class="makeStyles-emphasis-9"
-      >
-        <p
-          class="MuiTypography-root makeStyles-viewName-11 MuiTypography-body1"
-        />
-      </div>
-      <div
-        class="makeStyles-spacer-7"
-      />
-      <div
-        class="MuiPaper-root MuiPaper-elevation1 makeStyles-searchRoot-10 MuiPaper-rounded"
-      >
-        <form>
-          <div
-            class="MuiInputBase-root makeStyles-input-14"
-          >
-            <input
-              aria-invalid="false"
-              class="MuiInputBase-input"
-              placeholder="Enter location (e.g. chr1:1000..5000)"
-              type="text"
-              value=""
-            />
-          </div>
-          <button
-            aria-label="search"
-            class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton-15"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <span
-                aria-hidden="true"
-                class="material-icons MuiIcon-root"
-              >
-                search
-              </span>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </form>
-      </div>
-      <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline"
-      >
-        <div
-          aria-haspopup="listbox"
-          class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
-          role="button"
-          tabindex="0"
-        >
-          <span>
-            ​
-          </span>
-        </div>
-        <input
-          name="refseq"
-          type="hidden"
-          value="Select refSeq"
-        />
-        <svg
-          aria-hidden="true"
-          class="MuiSvgIcon-root MuiSelect-icon"
-          focusable="false"
-          role="presentation"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M7 10l5 5 5-5z"
-          />
-        </svg>
-      </div>
-      <div
-        class="makeStyles-container-144"
-      >
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_out"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_out
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <span
-          class="MuiSlider-root makeStyles-slider-145"
-        >
-          <span
-            class="MuiSlider-rail"
-          />
-          <span
-            class="MuiSlider-track"
-          />
-          <input
-            type="hidden"
-            value="5.643856189774724"
-          />
-          <span
-            aria-orientation="horizontal"
-            aria-valuemax="5.643856189774724"
-            aria-valuemin="5.643856189774724"
-            aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
-            data-index="0"
-            role="slider"
-            tabindex="0"
-          />
-        </span>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          data-testid="zoom_in"
-          tabindex="0"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
-          >
-            <span
-              aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-            >
-              zoom_in
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-      </div>
-      <div
-        class="makeStyles-spacer-7"
-      />
-    </div>
+      style="width: 100%; height: 100%;"
+    />
     <div
       class="makeStyles-controls-3 makeStyles-viewControls-4"
       style="grid-row: scale-bar;"
     />
     <div
-      class="Rubberband-rubberBandContainer-166"
+      class="Rubberband-rubberBandContainer-18"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar-167"
+        class="makeStyles-scaleBar-19"
       />
     </div>
   </div>
