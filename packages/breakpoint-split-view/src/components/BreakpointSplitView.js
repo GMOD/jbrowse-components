@@ -51,42 +51,49 @@ export default pluginManager => {
   const AlignmentInfo = observer(
     ({ model, alignmentChunks, height, children }) => {
       const { topLGV, bottomLGV } = model
-      return (
-        <div style={{ position: 'relative' }}>
-          {children}
-          <svg
-            height="100%"
-            width="100%"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              zIndex: 1000,
-              pointerEvents: 'none',
-            }}
-          >
-            {Object.values(alignmentChunks).map(chunk => {
-              const [c1, c2] = chunk
-              const f1 = transform(topLGV, c1[0])
-              const f2 = transform(topLGV, c1[2])
-              const f3 = transform(bottomLGV, c2[0])
-              const f4 = transform(bottomLGV, c2[2])
+      try {
+        return (
+          <div style={{ position: 'relative' }}>
+            {children}
+            <svg
+              height="100%"
+              width="100%"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 1000,
+                pointerEvents: 'none',
+              }}
+            >
+              {Object.values(alignmentChunks).map(chunk => {
+                const [c1, c2] = chunk
+                const f1 = transform(topLGV, c1[0])
+                const f2 = transform(topLGV, c1[2])
+                const f3 = transform(bottomLGV, c2[0])
+                const f4 = transform(bottomLGV, c2[2])
 
-              const h1 = c1[3] + topLGV.headerSize
-              const h2 = topLGV.height + bottomLGV.headerSize + c2[1]
-              return (
-                <polygon
-                  key={JSON.stringify(chunk)}
-                  points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
-                  style={{
-                    fill: 'rgba(255,0,0,0.5)',
-                  }}
-                />
-              )
-            })}
-          </svg>
-        </div>
-      )
+                let h1 = c1[3]
+                let h2 = topLGV.height + bottomLGV.headerHeight + 32 + c2[1] + 3
+                h1 += model.headerHeight + topLGV.headerHeight + 32
+                h2 += model.headerHeight + topLGV.headerHeight + 32
+                return (
+                  <polygon
+                    key={JSON.stringify(chunk)}
+                    points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
+                    style={{
+                      fill: 'rgba(255,0,0,0.5)',
+                    }}
+                  />
+                )
+              })}
+            </svg>
+          </div>
+        )
+      } catch (e) {
+        console.error('wtf', e)
+        return <h1>another error</h1>
+      }
     },
   )
 
@@ -101,26 +108,30 @@ export default pluginManager => {
     const layoutFeats1 = t1.layoutFeatures || []
     const layoutFeats2 = t2.layoutFeatures || []
     const matches = findMatches(features1, features2)
-    console.log(t1, t2, features1, features2, matches)
     const layoutMatches = new Map()
     for (const [key, elt] of Object.entries(matches)) {
       const f1 = layoutFeats1.get(elt[0].id())
       const f2 = layoutFeats2.get(elt[1].id())
       layoutMatches[key] = [f1, f2]
     }
-
-    return (
-      <AlignmentInfo
-        model={model}
-        alignmentChunks={layoutMatches}
-        className={classes.root}
-        data-testid={model.configuration.configId}
-      >
-        <Header model={model} />
-        <LinearGenomeView model={topLGV} />
-        <LinearGenomeView model={bottomLGV} />
-      </AlignmentInfo>
-    )
+    console.log(layoutMatches)
+    try {
+      return (
+        <AlignmentInfo
+          model={model}
+          alignmentChunks={layoutMatches}
+          className={classes.root}
+          data-testid={model.configuration.configId}
+        >
+          <Header model={model} />
+          <LinearGenomeView model={topLGV} />
+          <LinearGenomeView model={bottomLGV} />
+        </AlignmentInfo>
+      )
+    } catch (e) {
+      console.error(e)
+      return <h1>error</h1>
+    }
   }
   BreakpointSplitView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,

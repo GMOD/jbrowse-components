@@ -25,6 +25,7 @@ export default pluginManager => {
       offsetPx: 0,
       bpPerPx: 2000000,
       width: 800,
+      headerHeight: 0,
       height: types.optional(
         types.refinement('viewHeight', types.number, n => n >= minHeight),
         defaultHeight,
@@ -126,6 +127,10 @@ export default pluginManager => {
 
       closeView() {
         getParent(self, 2).removeView(self)
+      },
+
+      setHeaderHeight(height) {
+        self.headerHeight = height
       },
 
       activateConfigurationUI() {

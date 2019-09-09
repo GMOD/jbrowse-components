@@ -66,6 +66,7 @@ export function stateModelFactory(pluginManager) {
       controlsWidth: 120,
       width: 800,
       // set this to true to hide the close, config, and tracksel buttons
+      headerHeight: 0,
       hideControls: false,
       hideHeader: false,
       trackSelectorType: types.optional(
@@ -78,6 +79,7 @@ export function stateModelFactory(pluginManager) {
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
       },
+
       get menuOptions() {
         return [
           {
@@ -109,6 +111,18 @@ export function stateModelFactory(pluginManager) {
           totalbp += region.end - region.start
         })
         return totalbp
+      },
+
+      get headerHeight() {
+        return self.hideHeader ? 0 : 50
+      },
+
+      get height() {
+        return (
+          self.tracks.map(t => t.height).reduce((a, b) => a + b) +
+          self.tracks.length * 2 +
+          2
+        )
       },
 
       get maxBpPerPx() {
@@ -386,6 +400,10 @@ export function stateModelFactory(pluginManager) {
 
       activateConfigurationUI() {
         getSession(self).editConfiguration(self.configuration)
+      },
+
+      setHeaderHeight(height) {
+        self.headerHeight = height
       },
 
       setNewView(bpPerPx, offsetPx) {

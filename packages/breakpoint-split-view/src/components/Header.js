@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { withSize } from 'react-sizeme'
 
 export default ({ jbrequire }) => {
   const { getRoot } = jbrequire('mobx-state-tree')
@@ -119,7 +120,7 @@ export default ({ jbrequire }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  const Header = observer(({ model }) => {
+  const Header = observer(({ model, size }) => {
     const classes = useStyles()
     const [error, setError] = useState()
     const navTo = locstring => {
@@ -127,6 +128,8 @@ export default ({ jbrequire }) => {
         setError(`Unable to find ${locstring}`)
       }
     }
+
+    model.setHeaderHeight(size.height)
     return (
       <div className={classes.headerBar}>
         {model.hideControls ? null : <Controls model={model} />}
@@ -142,5 +145,5 @@ export default ({ jbrequire }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  return Header
+  return withSize({ monitorHeight: true })(Header)
 }

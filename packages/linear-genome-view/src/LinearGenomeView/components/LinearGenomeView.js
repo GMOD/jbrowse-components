@@ -1,3 +1,4 @@
+import { withSize } from 'react-sizeme'
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import {
   clamp,
@@ -310,28 +311,31 @@ RefSeqDropdown.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
 }
 
-const Header = observer(({ model }) => {
-  const classes = useStyles()
-  const [error, setError] = useState()
-  const navTo = locstring => {
-    if (!model.navTo(parseLocString(locstring))) {
-      setError(`Unable to find ${locstring}`)
+const Header = withSize({ monitorHeight: true })(
+  observer(({ model, size }) => {
+    const classes = useStyles()
+    const [error, setError] = useState()
+    const navTo = locstring => {
+      if (!model.navTo(parseLocString(locstring))) {
+        setError(`Unable to find ${locstring}`)
+      }
     }
-  }
-  return (
-    <div className={classes.headerBar}>
-      {model.hideControls ? null : <Controls model={model} />}
-      <TextFieldOrTypography model={model} />
-      <div className={classes.spacer} />
+    model.setHeaderSize(size.height)
+    return (
+      <div className={classes.headerBar}>
+        {model.hideControls ? null : <Controls model={model} />}
+        <TextFieldOrTypography model={model} />
+        <div className={classes.spacer} />
 
-      <Search onSubmit={navTo} error={error} />
-      <RefSeqDropdown onSubmit={navTo} model={model} />
+        <Search onSubmit={navTo} error={error} />
+        <RefSeqDropdown onSubmit={navTo} model={model} />
 
-      <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
-  )
-})
+        <ZoomControls model={model} />
+        <div className={classes.spacer} />
+      </div>
+    )
+  }),
+)
 
 Header.propTypes = {
   model: PropTypes.objectOrObservableObject.isRequired,
