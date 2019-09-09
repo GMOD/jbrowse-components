@@ -54,11 +54,11 @@ export default pluginManager => {
           //   key: 'showall',
           //   callback: self.showAllRegions,
           // },
-          {
-            title: self.hideHeader ? 'Show header' : 'Hide header',
-            key: 'hide_header',
-            callback: self.toggleHeader,
-          },
+          // {
+          //   title: self.hideHeader ? 'Show header' : 'Hide header',
+          //   key: 'hide_header',
+          //   callback: self.toggleHeader,
+          // },
         ]
       },
     }))

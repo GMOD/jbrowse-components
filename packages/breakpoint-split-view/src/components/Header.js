@@ -48,38 +48,7 @@ export default ({ jbrequire }) => {
       setAnchorEl(null)
     }
 
-    return (
-      <>
-        <IconButton
-          aria-label="more"
-          aria-controls="long-menu"
-          aria-haspopup="true"
-          className={className}
-          onClick={handleClick}
-        >
-          <Icon>more_vert</Icon>
-        </IconButton>
-        <Menu
-          id="long-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={open}
-          onClose={handleClose}
-        >
-          {model.menuOptions.map(option => (
-            <MenuItem
-              key={option.key}
-              onClick={() => {
-                option.callback()
-                handleClose()
-              }}
-            >
-              {option.title}
-            </MenuItem>
-          ))}
-        </Menu>
-      </>
-    )
+    return <></>
   })
 
   LongMenu.propTypes = {
