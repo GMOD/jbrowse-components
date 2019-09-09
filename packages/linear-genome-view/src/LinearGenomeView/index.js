@@ -394,4 +394,11 @@ export function stateModelFactory(pluginManager) {
         self.offsetPx = 0
       },
     }))
+    .postProcessSnapshot(self => {
+      if (self.displayRegionsFromAssemblyName) {
+        const { displayedRegions, ...rest } = self
+        return rest
+      }
+      return self
+    })
 }
