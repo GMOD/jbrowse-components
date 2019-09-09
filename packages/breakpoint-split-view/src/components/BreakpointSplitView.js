@@ -23,14 +23,9 @@ function findMatches(features1, features2) {
 }
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { Icon, IconButton } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
-  const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   const Header = jbrequire(require('./Header'))
 
@@ -60,52 +55,51 @@ export default pluginManager => {
   const AlignmentInfo = observer(
     ({ model, alignmentChunks, height, children }) => {
       const { topLGV, bottomLGV } = model
-      try {
-        return (
-          <div style={{ position: 'relative' }}>
-            {children}
-            <svg
-              height="100%"
-              width={model.widthPx} // if 100% this goes causes overflowX to scroll
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 120,
-                zIndex: 1000,
-                pointerEvents: 'none',
-              }}
-            >
-              {Object.values(alignmentChunks).map(chunk => {
-                const [c1, c2] = chunk
-                const f1 = transform(topLGV, c1[LEFT])
-                const f2 = transform(topLGV, c1[RIGHT])
-                const f3 = transform(bottomLGV, c2[LEFT])
-                const f4 = transform(bottomLGV, c2[RIGHT])
+      return (
+        <div style={{ position: 'relative' }}>
+          {children}
+          <svg
+            height="100%"
+            width="100%" // if 100% this goes causes overflowX to scroll
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 120,
+              zIndex: 1000,
+              pointerEvents: 'none',
+            }}
+          >
+            {Object.values(alignmentChunks).map(chunk => {
+              const [c1, c2] = chunk
+              const f1 = transform(topLGV, c1[LEFT])
+              const f2 = transform(topLGV, c1[RIGHT])
+              const f3 = transform(bottomLGV, c2[LEFT])
+              const f4 = transform(bottomLGV, c2[RIGHT])
 
-                let h1 =
-                  c1[BOTTOM] + topLGV.headerHeight + topLGV.scaleBarHeight
-                let h2 =
-                  c2[TOP] + bottomLGV.headerHeight + bottomLGV.scaleBarHeight
-                h1 += model.headerHeight
-                h2 += model.headerHeight
-                h2 += topLGV.height
-                return (
-                  <polygon
-                    key={JSON.stringify(chunk)}
-                    points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
-                    style={{
-                      fill: 'rgba(255,0,0,0.5)',
-                    }}
-                  />
-                )
-              })}
-            </svg>
-          </div>
-        )
-      } catch (e) {
-        console.error('wtf', e)
-        return <h1>another error</h1>
-      }
+              const h1 =
+                c1[BOTTOM] +
+                topLGV.headerHeight +
+                topLGV.scaleBarHeight +
+                model.headerHeight
+              const h2 =
+                c2[TOP] +
+                topLGV.height +
+                bottomLGV.headerHeight +
+                bottomLGV.scaleBarHeight +
+                model.headerHeight
+              return (
+                <polygon
+                  key={JSON.stringify(chunk)}
+                  points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
+                  style={{
+                    fill: 'rgba(255,0,0,0.5)',
+                  }}
+                />
+              )
+            })}
+          </svg>
+        </div>
+      )
     },
   )
 
@@ -122,12 +116,11 @@ export default pluginManager => {
     return <div className={classes.breakpointMarker} style={{ left }} />
   })
 
-  function BreakpointSplitView({ model }) {
+  const BreakpointSplitView = observer(({ model }) => {
     const classes = useStyles()
     const { topLGV, bottomLGV } = model
-
-    const t1 = topLGV.tracks[0] || {}
-    const t2 = bottomLGV.tracks[0] || {}
+    const t1 = topLGV.tracks.length > 0 ? topLGV.tracks[0] : {}
+    const t2 = bottomLGV.tracks.length > 0 ? bottomLGV.tracks[0] : {}
     const features1 = t1.features || []
     const features2 = t2.features || []
     const layoutFeats1 = t1.layoutFeatures || []
@@ -152,9 +145,9 @@ export default pluginManager => {
         <BreakpointMarker model={model} />
       </AlignmentInfo>
     )
-  }
+  })
   BreakpointSplitView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  return observer(BreakpointSplitView)
+  return BreakpointSplitView
 }

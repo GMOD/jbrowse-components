@@ -22,7 +22,6 @@ export default pluginManager => {
     .model('BreakpointSplitView', {
       id: ElementId,
       type: types.literal('BreakpointSplitView'),
-      width: 800,
       headerHeight: 0,
       height: types.optional(
         types.refinement('viewHeight', types.number, n => n >= minHeight),
@@ -36,6 +35,9 @@ export default pluginManager => {
       bottomLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
     })
     .views(self => ({
+      get widthPx() {
+        return self.topLGV.viewingRegionWidth
+      },
       get menuOptions() {
         return [
           // {
@@ -102,12 +104,6 @@ export default pluginManager => {
         return self.displayName
       },
 
-      setWidth(newWidth) {
-        self.width = newWidth
-        self.topLGV.setWidth(newWidth)
-        self.bottomLGV.setWidth(newWidth)
-        return self.width
-      },
       setHeight(newHeight) {
         if (newHeight > minHeight) self.height = newHeight
         else self.height = minHeight
