@@ -13,19 +13,23 @@ export default pluginManager => {
 
   const Header = jbrequire(require('./Header'))
 
+  const LinearGenomeView = pluginManager.getViewType('LinearGenomeView')
+    .ReactComponent
+
   const useStyles = makeStyles(theme => {
     return {
       root: {
         position: 'relative',
         marginBottom: theme.spacing(1),
         overflow: 'hidden',
-        background: 'white',
+        background: '#e8e8e8',
       },
     }
   })
 
   function BreakpointSplitView({ model }) {
     const classes = useStyles()
+    const { topLGV, bottomLGV } = model
 
     return (
       <div
@@ -34,7 +38,8 @@ export default pluginManager => {
         data-testid={model.configuration.configId}
       >
         <Header model={model} />
-        <b>Hi breakend viewer</b>
+        <LinearGenomeView model={topLGV} />
+        <LinearGenomeView model={bottomLGV} />
         <ResizeHandle
           onDrag={model.resizeHeight}
           objectId={model.id}

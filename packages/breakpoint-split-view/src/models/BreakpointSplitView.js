@@ -1,7 +1,9 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { transaction } = jbrequire('mobx')
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { types, getParent, getRoot, addDisposer, onAction } = jbrequire(
+    'mobx-state-tree',
+  )
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
@@ -30,27 +32,30 @@ export default pluginManager => {
       displayName: 'breakpoint detail',
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
+
+      topLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
+      bottomLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
     })
     .views(self => ({
       get menuOptions() {
         return [
+          // {
+          //   title: 'Show track selector',
+          //   key: 'track_selector',
+          //   callback: self.activateTrackSelector,
+          // },
+          // {
+          //   title: 'Horizontal flip',
+          //   key: 'flip',
+          //   callback: self.horizontallyFlip,
+          // },
+          // {
+          //   title: 'Show all regions',
+          //   key: 'showall',
+          //   callback: self.showAllRegions,
+          // },
           {
-            title: 'Show track selector',
-            key: 'track_selector',
-            callback: self.activateTrackSelector,
-          },
-          {
-            title: 'Horizontal flip',
-            key: 'flip',
-            callback: self.horizontallyFlip,
-          },
-          {
-            title: 'Show all regions',
-            key: 'showall',
-            callback: self.showAllRegions,
-          },
-          {
-            title: self.hideHeader ? 'Hide header' : 'Show header',
+            title: self.hideHeader ? 'Show header' : 'Hide header',
             key: 'hide_header',
             callback: self.toggleHeader,
           },
@@ -58,6 +63,41 @@ export default pluginManager => {
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        // add an onAction listener to listen to actions being taken on the sub-views
+        // and dispatch our own actions to keep the views in sync
+        addDisposer(
+          self,
+          onAction(self, ({ name, path, args }) => {
+            if (name === 'horizontalScroll') {
+              // console.log(path, args)
+              self.onSubviewHorizontalScroll(path, args)
+            } else if (name === 'zoomTo') {
+              // console.log(path, args)
+              self.onSubviewZoom(path, args)
+            }
+          }),
+        )
+      },
+
+      // binds the horizontal scrolling of the two LGVs together
+      onSubviewHorizontalScroll(path, args) {
+        if (path === '/topLGV') {
+          self.bottomLGV.horizontalScroll(args[0])
+        } else if (path === '/bottomLGV') {
+          self.topLGV.horizontalScroll(args[0])
+        }
+      },
+
+      // binds the zooming of the two LGVs together
+      onSubviewZoom(path, args) {
+        if (path === '/topLGV') {
+          self.bottomLGV.zoomTo(args[0])
+        } else if (path === '/bottomLGV') {
+          self.topLGV.zoomTo(args[0])
+        }
+      },
+
       setDisplayName(name) {
         self.displayName = name
         return self.displayName
@@ -65,6 +105,8 @@ export default pluginManager => {
 
       setWidth(newWidth) {
         self.width = newWidth
+        self.topLGV.setWidth(newWidth)
+        self.bottomLGV.setWidth(newWidth)
         return self.width
       },
       setHeight(newHeight) {
@@ -78,9 +120,9 @@ export default pluginManager => {
         return newHeight - oldHeight
       },
 
-      setBpPerPx(newVal) {
-        self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
-      },
+      //   setBpPerPx(newVal) {
+      //     self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
+      //   },
 
       closeView() {
         getParent(self, 2).removeView(self)
