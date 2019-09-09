@@ -46,7 +46,7 @@ export default pluginManager => {
     }
   })
   function transform(view, coord) {
-    return coord / view.bpPerPx - view.offsetPx + 120
+    return coord / view.bpPerPx - view.offsetPx
   }
   const AlignmentInfo = observer(
     ({ model, alignmentChunks, height, children }) => {
@@ -61,7 +61,7 @@ export default pluginManager => {
               style={{
                 position: 'absolute',
                 top: 0,
-                left: 0,
+                left: 120,
                 zIndex: 1000,
                 pointerEvents: 'none',
               }}

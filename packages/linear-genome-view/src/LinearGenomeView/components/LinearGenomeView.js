@@ -320,7 +320,7 @@ const Header = withSize({ monitorHeight: true })(
         setError(`Unable to find ${locstring}`)
       }
     }
-    model.setHeaderSize(size.height)
+    model.setHeaderHeight(size.height)
     return (
       <div className={classes.headerBar}>
         {model.hideControls ? null : <Controls model={model} />}

@@ -113,10 +113,6 @@ export function stateModelFactory(pluginManager) {
         return totalbp
       },
 
-      get headerHeight() {
-        return self.hideHeader ? 0 : 50
-      },
-
       get height() {
         return (
           self.tracks.map(t => t.height).reduce((a, b) => a + b) +
