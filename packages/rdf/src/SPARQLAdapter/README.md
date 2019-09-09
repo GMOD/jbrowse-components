@@ -75,10 +75,10 @@ also works for deeper nested features, too, by using "sub_sub_", etc. Parent
 features that are duplicated across lines will be resolved into a single
 feature. For example, take the following SPARQL query result lines:
 
-uniqueId | type | start | end | sub_uniqueId | sub_type | sub_start | sub_end | sub_sub_uniqueId | sub_sub_type | sub_sub_start | sub_sub_end |
-| - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
-geneId0001 | gene | 10430102 | 10452003 | transcriptId0001 | transcript | 10430518 | 10442405 | exonId0001 | exon | 10430518 | 10430568 |
-geneId0001 | gene | 10430102 | 10452003 | transcriptId0001 | transcript | 10430518 | 10442405 | exonId0002 | exon | 10433842 | 10433965 |
+| uniqueId | type | start | end | sub_uniqueId | sub_type | sub_start | sub_end | sub_sub_uniqueId | sub_sub_type | sub_sub_start | sub_sub_end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| geneId0001 | gene | 10430102 | 10452003 | transcriptId0001 | transcript | 10430518 | 10442405 | exonId0001 | exon | 10430518 | 10430568 |
+| geneId0001 | gene | 10430102 | 10452003 | transcriptId0001 | transcript | 10430518 | 10442405 | exonId0002 | exon | 10432568 | 10433965 |
 
 These two lines will resolve into a singe feature "geneId0001" with one child
 feature "transcriptId0001", which will then itself have two child features
