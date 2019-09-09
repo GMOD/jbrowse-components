@@ -14027,6 +14027,11 @@ svg-parser@^2.0.0:
   resolved "https://registry.yarnpkg.com/svg-parser/-/svg-parser-2.0.2.tgz#d134cc396fa2681dc64f518330784e98bd801ec8"
   integrity sha512-1gtApepKFweigFZj3sGO8KT8LvVZK8io146EzXrpVuWCDAbISz/yMucco3hWTkpZNoPabM+dnMOpy6Swue68Zg==
 
+svg-path-generator@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/svg-path-generator/-/svg-path-generator-1.1.0.tgz#058ad4a095eabbc5e2e91b66299e5063e4ac9afb"
+  integrity sha1-BYrUoJXqu8Xi6RtmKZ5QY+Ssmvs=
+
 svgo@^1.0.0, svgo@^1.2.2:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/svgo/-/svgo-1.3.0.tgz#bae51ba95ded9a33a36b7c46ce9c359ae9154313"
