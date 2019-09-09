@@ -2,6 +2,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import {
   guessAdapter,
   guessTrackType,
+  UNKNOWN,
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
 import Link from '@material-ui/core/Link'
@@ -50,7 +51,7 @@ function ConfirmTrack({
   if (trackAdapter.type === UNSUPPORTED)
     return (
       <Typography className={classes.spacing}>
-        This version of JBrowse cannot display files of this type. It is
+        This version of JBrowse cannot display data of this type. It is
         possible, however, that there is a newer version that can display them.
         You can{' '}
         <Link
@@ -68,13 +69,64 @@ function ConfirmTrack({
         >
           file an issue
         </Link>{' '}
-        requesting support for this file type.
+        and add a feature request for this data type.
       </Typography>
+    )
+  if (trackAdapter.type === UNKNOWN)
+    return (
+      <>
+        <Typography className={classes.spacing}>
+          Was not able to guess the adapter type for this data, but it may be in
+          the list below. If not, you can{' '}
+          <Link
+            href="https://github.com/GMOD/jbrowse-components/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            check for new releases
+          </Link>{' '}
+          of JBrowse to see if they support this data type or{' '}
+          <Link
+            href="https://github.com/GMOD/jbrowse-components/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            file an issue
+          </Link>{' '}
+          and add a feature request for this data type.
+        </Typography>
+        <TextField
+          className={classes.spacing}
+          value={trackAdapter}
+          label="adapterType"
+          helperText="An adapter type"
+          select
+          fullWidth
+          onChange={event => {
+            setTrackAdapter({ type: event.target.value })
+            setTrackType(guessTrackType(event.target.value))
+          }}
+          SelectProps={{
+            SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+          }}
+        >
+          {session.pluginManager
+            .getElementTypesInGroup('adapter')
+            .map(installedAdapterType => (
+              <MenuItem
+                key={installedAdapterType.name}
+                value={installedAdapterType.name}
+              >
+                {installedAdapterType.name}
+              </MenuItem>
+            ))}
+        </TextField>
+      </>
     )
   if (!trackAdapter.type)
     // TODO: if file type is unrecognized, provide some way of specifying
     // adapter and guessing reasonable default for it.
-    return <Typography>Could not recognize this file type.</Typography>
+    return <Typography>Could not recognize this data type.</Typography>
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
     if (trackData.uri || trackData.localPath)
