@@ -179,6 +179,25 @@
           }
         },
         {
+          "configId": "volvox_long_reads_sv",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long-reads-sv",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-long-reads-sv.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-long-reads-sv.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "volvox_sv",
           "type": "AlignmentsTrack",
           "name": "volvox-sv",
