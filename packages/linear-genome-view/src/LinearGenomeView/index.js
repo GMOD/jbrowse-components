@@ -96,7 +96,7 @@ export function stateModelFactory(pluginManager) {
             callback: self.showAllRegions,
           },
           {
-            title: self.hideHeader ? 'Hide header' : 'Show header',
+            title: self.hideHeader ? 'Show header' : 'Hide header',
             key: 'hide_header',
             callback: self.toggleHeader,
           },
