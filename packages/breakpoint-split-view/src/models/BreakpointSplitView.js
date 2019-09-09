@@ -22,8 +22,6 @@ export default pluginManager => {
     .model('BreakpointSplitView', {
       id: ElementId,
       type: types.literal('BreakpointSplitView'),
-      offsetPx: 0,
-      bpPerPx: 2000000,
       width: 800,
       headerHeight: 0,
       height: types.optional(

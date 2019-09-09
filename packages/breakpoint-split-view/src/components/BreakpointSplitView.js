@@ -43,6 +43,13 @@ export default pluginManager => {
         overflow: 'hidden',
         background: '#e8e8e8',
       },
+      breakpointMarker: {
+        position: 'absolute',
+        top: 0,
+        height: '100%',
+        width: '3px',
+        background: 'magenta',
+      },
     }
   })
   function transform(view, coord) {
@@ -97,6 +104,19 @@ export default pluginManager => {
     },
   )
 
+  const BreakpointMarker = observer(function BreakpointMarker({ model }) {
+    const classes = useStyles()
+
+    const leftRegion = model.topLGV.displayedRegions[0]
+    const leftWidthPx =
+      (leftRegion.end - leftRegion.start) / model.topLGV.bpPerPx
+    const offset =
+      leftWidthPx - model.topLGV.offsetPx + model.topLGV.controlsWidth - 2
+    const left = `${offset}px`
+    // TODO: draw little feet on the top and bottom of the marker line to show directionality
+    return <div className={classes.breakpointMarker} style={{ left }} />
+  })
+
   function BreakpointSplitView({ model }) {
     const classes = useStyles()
     const { topLGV, bottomLGV } = model
@@ -114,24 +134,19 @@ export default pluginManager => {
       const f2 = layoutFeats2.get(elt[1].id())
       layoutMatches[key] = [f1, f2]
     }
-    console.log(layoutMatches)
-    try {
-      return (
-        <AlignmentInfo
-          model={model}
-          alignmentChunks={layoutMatches}
-          className={classes.root}
-          data-testid={model.configuration.configId}
-        >
-          <Header model={model} />
-          <LinearGenomeView model={topLGV} />
-          <LinearGenomeView model={bottomLGV} />
-        </AlignmentInfo>
-      )
-    } catch (e) {
-      console.error(e)
-      return <h1>error</h1>
-    }
+    return (
+      <AlignmentInfo
+        model={model}
+        alignmentChunks={layoutMatches}
+        className={classes.root}
+        data-testid={model.configuration.configId}
+      >
+        <Header model={model} />
+        <LinearGenomeView model={topLGV} />
+        <LinearGenomeView model={bottomLGV} />
+        <BreakpointMarker model={model} />
+      </AlignmentInfo>
+    )
   }
   BreakpointSplitView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
