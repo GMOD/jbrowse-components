@@ -1,3 +1,8 @@
+import {
+  getPropertyType,
+  getSubType,
+  getUnionSubTypes,
+} from '@gmod/jbrowse-core/util/mst-reflection'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
@@ -328,8 +333,10 @@ const booleanEditor = observer(({ slot }) => (
 ))
 
 const stringEnumEditor = observer(({ slot, slotSchema }) => {
-  const p = getPropertyMembers(slotSchema.type)
-  const choices = p.properties.value.type.types[1].types.map(t => t.value)
+  const p = getPropertyMembers(getSubType(slotSchema))
+  const choices = getUnionSubTypes(
+    getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
+  ).map(t => t.value)
 
   return (
     <TextField
