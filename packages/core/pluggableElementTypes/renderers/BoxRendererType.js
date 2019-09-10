@@ -90,8 +90,8 @@ export default class extends ServerSideRendererType {
     results.layout = args.layout.serializeRegion(
       this.getExpandedGlyphRegion(args.region, args),
     )
-    for (const [k, v] of features) {
-      if (!results.layout.rectangles[k]) {
+    for (const [k] of features) {
+      if (results.layout.rectangles && !results.layout.rectangles[k]) {
         features.delete(k)
       }
     }
