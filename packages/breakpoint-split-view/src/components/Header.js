@@ -9,7 +9,6 @@ export default ({ jbrequire }) => {
     '@material-ui/core',
   )
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const { parseLocString } = jbrequire('@gmod/jbrowse-core/util')
 
   const useStyles = makeStyles(theme => ({
     headerBar: {
@@ -115,12 +114,6 @@ export default ({ jbrequire }) => {
 
   const Header = observer(({ model, size }) => {
     const classes = useStyles()
-    const [error, setError] = useState()
-    const navTo = locstring => {
-      if (!model.navTo(parseLocString(locstring))) {
-        setError(`Unable to find ${locstring}`)
-      }
-    }
 
     model.setHeaderHeight(size.height)
     return (

@@ -129,7 +129,6 @@ export default pluginManager => {
         const session = getSession(self)
         session.setSelection(feature)
         const view = getContainingView(self)
-        console.log('selected BND', feature)
 
         // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
         try {
