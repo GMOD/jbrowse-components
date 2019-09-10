@@ -221,6 +221,7 @@ export default pluginManager => {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
             id === 'hierarchicalTrackSelector' &&
+            drawerWidget.view &&
             drawerWidget.view.id === view.id
           )
             self.hideDrawerWidget(drawerWidget)

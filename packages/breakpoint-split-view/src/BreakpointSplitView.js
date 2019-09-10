@@ -40,6 +40,7 @@ export default ({ jbrequire }) => {
         topLGV: {
           type: 'LinearGenomeView',
           displayedRegions: topRegions,
+          hideCloseButton: true,
           hideHeader: true,
           bpPerPx,
           offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx - 100,
@@ -48,13 +49,14 @@ export default ({ jbrequire }) => {
           type: 'LinearGenomeView',
           displayedRegions: bottomRegions,
           hideHeader: true,
+          hideCloseButton: true,
           bpPerPx,
           offsetPx:
             (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx - 100,
         },
         displayName: `${feature.get('name') ||
           feature.get('id') ||
-          'breakend'} detail`,
+          'breakend'} split detail`,
       }
       return snapshot
     }

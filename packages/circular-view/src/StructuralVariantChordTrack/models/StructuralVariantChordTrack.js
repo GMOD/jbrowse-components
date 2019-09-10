@@ -132,12 +132,29 @@ export default pluginManager => {
 
         // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
         try {
-          session.addView(
-            'BreakpointSplitView',
-            pluginManager
-              .getViewType('BreakpointSplitView')
-              .snapshotFromBreakendFeature(feature, startRegion, endRegion),
-          )
+          const viewSnapshot = pluginManager
+            .getViewType('BreakpointSplitView')
+            .snapshotFromBreakendFeature(feature, startRegion, endRegion)
+
+          // add the specific evidence tracks to the LGVs in the split view
+          viewSnapshot.topLGV.tracks = [
+            {
+              type: 'AlignmentsTrack',
+              height: 100,
+              configuration: 'pacbio_hg002',
+              selectedRendering: '',
+            },
+          ]
+          viewSnapshot.bottomLGV.tracks = [
+            {
+              type: 'AlignmentsTrack',
+              height: 100,
+              configuration: 'pacbio_hg002',
+              selectedRendering: '',
+            },
+          ]
+
+          session.addView('BreakpointSplitView', viewSnapshot)
         } catch (e) {
           console.error(e)
         }

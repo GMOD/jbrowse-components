@@ -345,13 +345,15 @@ const Controls = observer(({ model }) => {
   const classes = useStyles()
   return (
     <>
-      <IconButton
-        onClick={model.closeView}
-        className={classes.iconButton}
-        title="close this view"
-      >
-        <Icon fontSize="small">close</Icon>
-      </IconButton>
+      {model.hideCloseButton ? null : (
+        <IconButton
+          onClick={model.closeView}
+          className={classes.iconButton}
+          title="close this view"
+        >
+          <Icon fontSize="small">close</Icon>
+        </IconButton>
+      )}
       <LongMenu className={classes.iconButton} model={model} />
     </>
   )

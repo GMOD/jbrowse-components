@@ -1,30 +1,10 @@
-const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
-
-function findMatches(features1, features2) {
-  const candidates = {}
-  const matches = {}
-  for (const f of features1.values()) {
-    candidates[f.get('name')] = f
-  }
-  for (const f of features2.values()) {
-    const name = f.get('name')
-    const id = f.id()
-    if (
-      candidates[name] &&
-      candidates[name].id() !== id &&
-      Math.abs(candidates[name].get('start') - f.get('start')) > 1000
-    ) {
-      matches[name] = [candidates[name], f]
-    }
-  }
-  return matches
-}
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
+  const AlignmentPolygons = jbrequire(require('./AlignmentPolygons'))
   const Header = jbrequire(require('./Header'))
 
   const LinearGenomeView = pluginManager.getViewType('LinearGenomeView')
@@ -45,61 +25,11 @@ export default pluginManager => {
         width: '3px',
         background: 'magenta',
       },
+      viewContainer: {
+        marginTop: '3px',
+      },
     }
   })
-  function transform(view, coord) {
-    return coord / view.bpPerPx - view.offsetPx
-  }
-  const AlignmentInfo = observer(
-    ({ model, alignmentChunks, height, children }) => {
-      const { topLGV, bottomLGV } = model
-      return (
-        <div style={{ position: 'relative' }}>
-          {children}
-          <svg
-            height="100%"
-            width="100%" // if 100% this goes causes overflowX to scroll
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 120,
-              zIndex: 1000,
-              pointerEvents: 'none',
-            }}
-          >
-            {Object.values(alignmentChunks).map(chunk => {
-              const [c1, c2] = chunk
-              const f1 = transform(topLGV, c1[LEFT])
-              const f2 = transform(topLGV, c1[RIGHT])
-              const f3 = transform(bottomLGV, c2[LEFT])
-              const f4 = transform(bottomLGV, c2[RIGHT])
-
-              const h1 =
-                c1[BOTTOM] +
-                topLGV.headerHeight +
-                topLGV.scaleBarHeight +
-                model.headerHeight
-              const h2 =
-                c2[TOP] +
-                topLGV.height +
-                bottomLGV.headerHeight +
-                bottomLGV.scaleBarHeight +
-                model.headerHeight
-              return (
-                <polygon
-                  key={JSON.stringify(chunk)}
-                  points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
-                  style={{
-                    fill: 'rgba(255,0,0,0.5)',
-                  }}
-                />
-              )
-            })}
-          </svg>
-        </div>
-      )
-    },
-  )
 
   const BreakpointMarker = observer(function BreakpointMarker({ model }) {
     const classes = useStyles()
@@ -113,6 +43,26 @@ export default pluginManager => {
     // TODO: draw little feet on the top and bottom of the marker line to show directionality
     return <div className={classes.breakpointMarker} style={{ left }} />
   })
+
+  function findMatches(features1, features2) {
+    const candidates = {}
+    const matches = {}
+    for (const f of features1.values()) {
+      candidates[f.get('name')] = f
+    }
+    for (const f of features2.values()) {
+      const name = f.get('name')
+      const id = f.id()
+      if (
+        candidates[name] &&
+        candidates[name].id() !== id &&
+        Math.abs(candidates[name].get('start') - f.get('start')) > 1000
+      ) {
+        matches[name] = [candidates[name], f]
+      }
+    }
+    return matches
+  }
 
   const BreakpointSplitView = observer(({ model }) => {
     const classes = useStyles()
@@ -131,17 +81,21 @@ export default pluginManager => {
       layoutMatches[key] = [f1, f2]
     }
     return (
-      <AlignmentInfo
+      <AlignmentPolygons
         model={model}
         alignmentChunks={layoutMatches}
         className={classes.root}
         data-testid={model.configuration.configId}
       >
         <Header model={model} />
-        <LinearGenomeView model={topLGV} />
-        <LinearGenomeView model={bottomLGV} />
+        <div className={classes.viewContainer}>
+          <LinearGenomeView model={topLGV} />
+        </div>
+        <div className={classes.viewContainer}>
+          <LinearGenomeView model={bottomLGV} />
+        </div>
         <BreakpointMarker model={model} />
-      </AlignmentInfo>
+      </AlignmentPolygons>
     )
   })
   BreakpointSplitView.propTypes = {

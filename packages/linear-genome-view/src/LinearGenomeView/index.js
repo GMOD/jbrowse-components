@@ -69,6 +69,7 @@ export function stateModelFactory(pluginManager) {
       headerHeight: 0,
       hideControls: false,
       hideHeader: false,
+      hideCloseButton: false,
       trackSelectorType: types.optional(
         types.enumeration(['hierarchical']),
         'hierarchical',
