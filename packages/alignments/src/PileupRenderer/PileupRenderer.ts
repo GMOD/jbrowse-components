@@ -129,11 +129,9 @@ export default class extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charSize = ctx.measureText('A')
     charSize.height = 7
-    let maxHeightReached = false
 
     layoutRecords.forEach(feat => {
       if (feat === null) {
-        maxHeightReached = true
         return
       }
       const { feature, startPx, endPx, topPx, heightPx } = feat
@@ -208,7 +206,12 @@ export default class extends BoxRendererType {
     })
 
     const imageData = await createImageBitmap(canvas)
-    return { imageData, height, width, maxHeightReached }
+    return {
+      imageData,
+      height,
+      width,
+      maxHeightReached: layout.maxHeightReached,
+    }
   }
 
   async render(

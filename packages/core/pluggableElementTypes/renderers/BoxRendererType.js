@@ -87,9 +87,15 @@ export default class extends ServerSideRendererType {
   }
 
   serializeResultsInWorker(results, features, args) {
-    super.serializeResultsInWorker(results, features)
     results.layout = args.layout.serializeRegion(
       this.getExpandedGlyphRegion(args.region, args),
     )
+    for (const [k, v] of features) {
+      if (!results.layout.rectangles[k]) {
+        features.delete(k)
+      }
+    }
+    super.serializeResultsInWorker(results, features)
+    results.maxHeightReached = results.layout.maxHeightReached
   }
 }

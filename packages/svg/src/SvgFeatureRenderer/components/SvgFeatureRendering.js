@@ -127,6 +127,9 @@ function SvgFeatureRendering(props) {
       feature.get('start') + rootLayout.width * bpPerPx,
       rootLayout.height,
     )
+    if (topPx === null) {
+      return null
+    }
 
     rootLayout.move(startPx, topPx)
 
@@ -152,7 +155,8 @@ function SvgFeatureRendering(props) {
 
   const featuresRendered = []
   for (const feature of features.values()) {
-    featuresRendered.push(createFeatureGlyphComponent(feature))
+    const ret = createFeatureGlyphComponent(feature)
+    if (ret) featuresRendered.push(ret)
   }
 
   const width = (region.end - region.start) / bpPerPx
