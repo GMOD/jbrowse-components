@@ -305,6 +305,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private rectangles: Record<string, Rectangle<T>>
 
+  private maxHeightReached: boolean
+
   private maxHeight: number
 
   private pTotalHeight: number
@@ -319,10 +321,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
     this.hardRowLimit = 3000
+    this.maxHeightReached = false
 
     this.bitmap = []
     this.rectangles = {}
-    this.maxHeight = Math.ceil((args.maxHeight || Infinity) / this.pitchY)
+    this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
 
@@ -371,7 +374,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     if (top > maxTop) {
+      rectangle.top = null
       this.rectangles[id] = rectangle
+      this.maxHeightReached = true
       return null
     }
     rectangle.top = top
@@ -489,32 +494,43 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
         return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
-        // count += 1
       }),
     )
   }
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
     const regionRectangles: { [key: string]: RectTuple } = {}
+    let maxHeightReached = false
     for (const iter of Object.entries(this.rectangles)) {
       const [id, rect] = iter
       const { l, r, originalHeight, top } = rect
-      const t = (top || 0) * this.pitchY
-      const b = t + originalHeight
-      const y1 = l * this.pitchX
-      const y2 = r * this.pitchX
-      const x1 = region.start
-      const x2 = region.end
-      if (segmentsIntersect(x1, x2, y1, y2)) {
-        regionRectangles[id] = [y1, t, y2, b]
+      if (rect.top === null) {
+        maxHeightReached = true
+      } else {
+        const t = (top || 0) * this.pitchY
+        const b = t + originalHeight
+        const y1 = l * this.pitchX
+        const y2 = r * this.pitchX
+        const x1 = region.start
+        const x2 = region.end
+        if (segmentsIntersect(x1, x2, y1, y2)) {
+          regionRectangles[id] = [y1, t, y2, b]
+        }
       }
     }
-    return { rectangles: regionRectangles, totalHeight: this.getTotalHeight() }
+    return {
+      rectangles: regionRectangles,
+      totalHeight: this.getTotalHeight(),
+      maxHeightReached,
+    }
   }
 
   toJSON(): SerializedLayout {
     const rectangles = objectFromEntries(this.getRectangles())
-    // console.log(`${this.id} toJSON - ${count}`)
-    return { rectangles, totalHeight: this.getTotalHeight() }
+    return {
+      rectangles,
+      totalHeight: this.getTotalHeight(),
+      maxHeightReached: this.maxHeightReached,
+    }
   }
 }

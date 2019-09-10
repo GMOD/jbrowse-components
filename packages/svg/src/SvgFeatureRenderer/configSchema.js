@@ -29,6 +29,7 @@ export default ConfigurationSchema(
       defaultValue: 10,
       functionSignature: ['feature'],
     },
+
     labels: ConfigurationSchema('SvgFeatureLabels', {
       name: {
         type: 'string',
@@ -69,6 +70,11 @@ export default ConfigurationSchema(
       description:
         "maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use",
       defaultValue: 500,
+    },
+    maxHeight: {
+      type: 'integer',
+      description: 'the maximum height to be used in a svg rendering',
+      defaultValue: 600,
     },
   },
   { explicitlyTyped: true },

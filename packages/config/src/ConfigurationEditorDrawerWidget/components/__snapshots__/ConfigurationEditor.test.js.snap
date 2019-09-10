@@ -2901,6 +2901,63 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               </button>
             </div>
           </div>
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-341 MuiPaper-rounded"
+          >
+            <div
+              class="makeStyles-paperContent-342"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root"
+              >
+                <label
+                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                  data-shrink="true"
+                >
+                  maxHeight
+                </label>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input"
+                    type="number"
+                    value="600"
+                  />
+                </div>
+                <p
+                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+                >
+                  the maximum height to be used in a svg rendering
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-slotModeSwitch-343"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                tabindex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    radio_button_unchecked
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

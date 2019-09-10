@@ -9,7 +9,6 @@ export default class PrecomputedLayout {
 
   addRect(id) {
     if (!this.rectangles.has(id)) {
-      // debugger
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom
