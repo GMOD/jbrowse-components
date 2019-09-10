@@ -16,7 +16,7 @@ export default ({ jbrequire }) => {
       const [, endPos] = matePosition
       const startPos = feature.get('start')
 
-      const bpPerPx = 0.2
+      const bpPerPx = 10
 
       const topRegions = [{ ...startRegion }, { ...startRegion }]
       if (breakendSpecification.Join === 'left') {
@@ -43,7 +43,7 @@ export default ({ jbrequire }) => {
           hideCloseButton: true,
           hideHeader: true,
           bpPerPx,
-          offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx - 100,
+          offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx,
         },
         bottomLGV: {
           type: 'LinearGenomeView',
@@ -51,8 +51,7 @@ export default ({ jbrequire }) => {
           hideHeader: true,
           hideCloseButton: true,
           bpPerPx,
-          offsetPx:
-            (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx - 100,
+          offsetPx: (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx,
         },
         displayName: `${feature.get('name') ||
           feature.get('id') ||

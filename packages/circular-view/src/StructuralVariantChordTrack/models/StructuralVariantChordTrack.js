@@ -128,6 +128,7 @@ export default pluginManager => {
       onChordClick(feature, startRegion, endRegion, event) {
         const session = getSession(self)
         session.setSelection(feature)
+        const view = getContainingView(self)
         console.log('selected BND', feature)
 
         // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
@@ -153,6 +154,10 @@ export default pluginManager => {
               selectedRendering: '',
             },
           ]
+
+          // try to center the offsetPx
+          viewSnapshot.topLGV.offsetPx -= view.width / 2 + 100
+          viewSnapshot.bottomLGV.offsetPx -= view.width / 2 + 100
 
           session.addView('BreakpointSplitView', viewSnapshot)
         } catch (e) {
