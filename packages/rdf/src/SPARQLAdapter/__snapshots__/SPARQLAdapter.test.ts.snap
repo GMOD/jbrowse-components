@@ -443,7 +443,6 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqeId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
     "uniqueId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
   },
 ]

@@ -231,7 +231,7 @@ export default class extends BaseAdapter {
       seenFeature =>
         new SimpleFeature({
           data: {
-            uniqeId: seenFeature,
+            uniqueId: seenFeature,
             ...seenFeatures[seenFeature].data,
             subfeatures: seenFeatures[seenFeature].data.subfeatures,
           },

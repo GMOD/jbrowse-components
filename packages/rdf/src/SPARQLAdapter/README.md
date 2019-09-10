@@ -7,7 +7,7 @@ JBrowse can display genomic information stored in RDF data stores by accessing t
 The most basic configuration starts with a SPARQL query that returns features
 in a genomic range, i.e. on a particular chromosome/contig and between a start
 and end position. In such a query, replace the chromosome/contig name with
-`{refname}` and the start and end with `{start}` and `{end}`. For example
+`{refName}` and the start and end with `{start}` and `{end}`. For example
 
 ```sparql
 PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -51,7 +51,7 @@ above example.)
 
 You will then be able to choose a track name and type as well as the dataset to
 which the track should be added. BasicTrack is suggested for most
-configurations, and using other track types is covered below. Clcik the "Add"
+configurations, and using other track types is covered below. Click the "Add"
 button to add the track.
 
 Next, in the track selector click the settings icon next to the track which was
@@ -65,7 +65,7 @@ category, etc.
 
 There are two ways to provide subfeature information. The first is to include a
 `?parentUniqueId` variable with a feature. It will be created as a subfeature of
-the feature with a matching `?uniqeId`.
+the feature with a matching `?uniqueId`.
 
 The second way is useful if a single query response line contains information
 for more than one feature, e.g. gene, transcript, and exon information on a

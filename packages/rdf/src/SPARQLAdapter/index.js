@@ -26,7 +26,7 @@ export const configSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Possible refNaes used by the SPARQL endpoint (ignored if "refNamesQueryTemplate" is provided)',
+        'Possible refNames used by the SPARQL endpoint (ignored if "refNamesQueryTemplate" is provided)',
     },
     additionalQueryParams: {
       type: 'stringArray',
