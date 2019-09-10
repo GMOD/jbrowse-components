@@ -31,6 +31,10 @@ export default pluginManager => {
       bottomLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
     })
     .views(self => ({
+      get viewingRegionWidth() {
+        return self.width - self.topLGV.controlsWidth
+      },
+
       get menuOptions() {
         return [
           // {

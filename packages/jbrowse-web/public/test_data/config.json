@@ -912,7 +912,7 @@
         {
           "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
-          "name": "human chord test",
+          "name": "HG002-PacBio vcf breakends",
           "adapter": {
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
@@ -926,6 +926,31 @@
           },
           "renderer": {
             "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "configId": "novobam_hg002",
+          "type": "AlignmentsTrack",
+          "name": "HG002.illumina.PE",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
+            },
+            "index": {
+              "location": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
           }
         },
         {
