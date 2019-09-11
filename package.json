@@ -78,7 +78,7 @@
         "mini-css-extract-plugin": "^0.5.0",
         "mobx": "^5.0.0",
         "mobx-react": "^6.0.0",
-        "mobx-state-tree": "3.10.2",
+        "mobx-state-tree": "3.14.1",
         "node-sass": "^4.9.3",
         "open-cli": "^5.0.0",
         "optimize-css-assets-webpack-plugin": "^5.0.1",

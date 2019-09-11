@@ -96,7 +96,7 @@ export function stateModelFactory(pluginManager) {
             callback: self.showAllRegions,
           },
           {
-            title: self.hideHeader ? 'Hide header' : 'Show header',
+            title: self.hideHeader ? 'Show header' : 'Hide header',
             key: 'hide_header',
             callback: self.toggleHeader,
           },
@@ -147,6 +147,35 @@ export function stateModelFactory(pluginManager) {
             'highResolutionScaling',
           ),
           horizontallyFlipped: self.horizontallyFlipped,
+        }
+      },
+
+      /**
+       *
+       * @param {number} px px in the view area, return value is the displayed regions
+       * @returns {Array} of the displayed region that it lands in
+       */
+      pxToBp(px) {
+        const bp = (self.offsetPx + px) * self.bpPerPx + 1
+        let bpSoFar = 0
+        if (bp < 0) {
+          return {
+            ...self.displayedRegions[0],
+            offset: Math.round(bp),
+            index: 0,
+          }
+        }
+        for (let index = 0; index < self.displayedRegions.length; index += 1) {
+          const r = self.displayedRegions[index]
+          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
+            return { ...r, offset: Math.round(bp - bpSoFar), index }
+          }
+          bpSoFar += r.end - r.start
+        }
+
+        return {
+          offset: Math.round(bp - bpSoFar),
+          index: self.displayedRegions.length,
         }
       },
     }))
@@ -208,6 +237,8 @@ export function stateModelFactory(pluginManager) {
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
+        if (self.reversed)
+          self.displayedRegions = self.displayedRegions.slice().reverse()
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
@@ -241,35 +272,6 @@ export function stateModelFactory(pluginManager) {
           ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / bpPerPx -
             viewWidth / 2,
         )
-      },
-
-      /**
-       *
-       * @param {number} px px in the view area, return value is the displayed regions
-       * @returns {Array} of the displayed region that it lands in
-       */
-      pxToBp(px) {
-        const bp = (self.offsetPx + px) * self.bpPerPx + 1
-        let bpSoFar = 0
-        if (bp < 0) {
-          return {
-            ...self.displayedRegions[0],
-            offset: Math.round(bp),
-            index: 0,
-          }
-        }
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          const r = self.displayedRegions[index]
-          if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-            return { ...r, offset: Math.round(bp - bpSoFar), index }
-          }
-          bpSoFar += r.end - r.start
-        }
-
-        return {
-          offset: Math.round(bp - bpSoFar),
-          index: self.displayedRegions.length,
-        }
       },
 
       navToLocstring(locstring) {
@@ -392,4 +394,11 @@ export function stateModelFactory(pluginManager) {
         self.offsetPx = 0
       },
     }))
+    .postProcessSnapshot(self => {
+      if (self.displayRegionsFromAssemblyName) {
+        const { displayedRegions, ...rest } = self
+        return rest
+      }
+      return self
+    })
 }

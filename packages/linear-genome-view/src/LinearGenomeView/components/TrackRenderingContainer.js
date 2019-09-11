@@ -31,29 +31,13 @@ class TrackRenderingContainer extends Component {
   }
 
   wheel(event) {
-    const { onHorizontalScroll, onVerticalScroll } = this.props
-    if (Math.abs(event.deltaY) > 2 * Math.abs(event.deltaX)) {
-      if (
-        this.mainNode.current.scrollHeight > this.mainNode.current.clientHeight
-      ) {
-        onVerticalScroll(
-          event.deltaY,
-          this.mainNode.current.scrollHeight -
-            this.mainNode.current.clientHeight,
-        )
-      }
-    } else if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-      onHorizontalScroll(event.deltaX)
-    }
-    event.preventDefault()
+    const { onHorizontalScroll } = this.props
+    onHorizontalScroll(event.deltaX)
   }
 
   render() {
-    const { trackId, children, classes, scrollTop = 0 } = this.props
+    const { trackId, children, classes } = this.props
 
-    if (this.mainNode.current) {
-      this.mainNode.current.scrollTop = scrollTop
-    }
     return (
       <div
         className={classes.trackRenderingContainer}
@@ -70,12 +54,10 @@ class TrackRenderingContainer extends Component {
   }
 
   static propTypes = {
-    scrollTop: PropTypes.number,
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
     trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
     onHorizontalScroll: PropTypes.func.isRequired,
-    onVerticalScroll: PropTypes.func.isRequired,
   }
 }
 

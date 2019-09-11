@@ -169,7 +169,6 @@ export default pluginManager => {
             width: '100%',
             height: `${model.height}px`,
           }}
-          onScroll={model.onScroll}
         >
           <div
             className={classes.rotator}

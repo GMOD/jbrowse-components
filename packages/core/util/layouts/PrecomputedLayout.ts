@@ -15,7 +15,6 @@ export default class PrecomputedLayout {
   addRect(id: string): number {
     const rect = this.rectangles.get(id)
     if (!rect) {
-      // console.trace(this.rectangles)
       throw new Error(`id ${id} not found in precomputed feature layout`)
     }
     // left, top, right, bottom
