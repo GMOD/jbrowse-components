@@ -54,7 +54,6 @@ class TrackRenderingContainer extends Component {
   }
 
   static propTypes = {
-    scrollTop: PropTypes.number,
     classes: PropTypes.objectOf(PropTypes.string).isRequired,
     trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
