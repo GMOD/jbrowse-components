@@ -192,8 +192,6 @@ export default pluginManager => {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
       onWheel(event) {
-        console.log(event.currentTarget)
-
         const n = self.scrollY + event.deltaY
         const session = getSession(self)
         if (n > 0 && n < self.height) {
@@ -203,10 +201,7 @@ export default pluginManager => {
         }
       },
       onScroll(event) {
-        const {
-          scrollLeft,
-          scrollTop,
-        } = event.currentTarget
+        const { scrollLeft, scrollTop } = event.currentTarget
 
         self.scrollX = scrollLeft
         self.scrollY = scrollTop
