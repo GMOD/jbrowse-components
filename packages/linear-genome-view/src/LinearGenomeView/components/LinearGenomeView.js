@@ -1,10 +1,5 @@
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
-import {
-  clamp,
-  generateLocString,
-  getSession,
-  parseLocString,
-} from '@gmod/jbrowse-core/util'
+import { generateLocString, parseLocString } from '@gmod/jbrowse-core/util'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
@@ -92,8 +87,6 @@ const useStyles = makeStyles(theme => ({
 const TrackContainer = observer(({ model, track }) => {
   const classes = useStyles()
   const { bpPerPx, offsetPx } = model
-  const [scrollTop, setScrollTop] = useState(0)
-  const session = getSession(model)
   return (
     <>
       <div
@@ -112,17 +105,7 @@ const TrackContainer = observer(({ model, track }) => {
         key={`track-rendering:${track.id}`}
         trackId={track.id}
         height={track.height}
-        scrollTop={scrollTop}
         onHorizontalScroll={model.horizontalScroll}
-        onVerticalScroll={(value, max) => {
-          const n = scrollTop + value
-          if (n > 0 && n < max) {
-            session.shouldntScroll = true
-          } else {
-            session.shouldntScroll = false
-          }
-          setScrollTop(clamp(n, 0, max))
-        }}
       >
         <track.RenderingComponent
           model={track}
