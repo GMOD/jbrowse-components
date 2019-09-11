@@ -114,15 +114,6 @@ const TrackContainer = observer(({ model, track }) => {
         height={track.height}
         scrollTop={scrollTop}
         onHorizontalScroll={model.horizontalScroll}
-        onVerticalScroll={(value, max) => {
-          const n = scrollTop + value
-          if (n > 0 && n < max) {
-            session.shouldntScroll = true
-          } else {
-            session.shouldntScroll = false
-          }
-          setScrollTop(clamp(n, 0, max))
-        }}
       >
         <track.RenderingComponent
           model={track}
