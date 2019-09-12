@@ -1,5 +1,5 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
+import { getParent, isAlive, IAnyStateTreeNode } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -90,7 +90,7 @@ export function useDebounce(value: any, delay: number): any {
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
   let currentNode = node
   // @ts-ignore
-  while (currentNode.pluginManager === undefined)
+  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
     currentNode = getParent(currentNode)
   return currentNode
 }

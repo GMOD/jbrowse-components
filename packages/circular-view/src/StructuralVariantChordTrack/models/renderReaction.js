@@ -35,6 +35,7 @@ export default ({ jbrequire }) => {
     props,
     signal,
     self,
+    mobxReactionHandle,
     allowRefetch = true,
   ) {
     if (!props) {
