@@ -63,7 +63,7 @@ export default class SimpleFeature implements Feature {
   /**
    * @param args.data {Object} key-value data, must include 'start' and 'end'
    * @param args.parent {Feature} optional parent feature
-   * @param args.id {String} unique identifier.  can also be in data.uniqueID.
+   * @param args.id {String} unique identifier.  can also be in data.uniqueId.
    * @param args.data.uniqueId {String} alternate location of the unique identifier
    *
    * Note: args.data.subfeatures can be an array of these same args,
@@ -158,10 +158,11 @@ export default class SimpleFeature implements Feature {
   public toJSON(): Record<string, any> {
     const d = { ...this.data, uniqueId: this.id() }
     const p = this.parent()
-    if (p) {
-      // @ts-ignore doesn't need to have parentId in it if there is none
-      d.parentId = p.id()
-    }
+    // @ts-ignore doesn't need to have parentId in it if there is none
+    if (p) d.parentId = p.id()
+    const c = this.children()
+    // @ts-ignore
+    if (c) d.subfeatures = c.map(child => child.toJSON())
     return d
   }
 

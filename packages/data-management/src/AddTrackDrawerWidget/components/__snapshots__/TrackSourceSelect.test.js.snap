@@ -63,7 +63,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
         <span
           class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
         >
-          From file
+          Enter data source
         </span>
       </label>
       <label
@@ -116,7 +116,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
         <span
           class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
         >
-          From configuration
+          Enter data manually
         </span>
       </label>
     </div>
@@ -244,7 +244,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
         data-shrink="false"
       >
-        fileLocation
+        dataSourceLocation
       </label>
       <div
         class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"

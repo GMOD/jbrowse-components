@@ -67,7 +67,7 @@ module.exports = {
       rules: { 'no-restricted-globals': 'off' },
     },
     {
-      files: ['**/*.test.js'],
+      files: ['**/*.test.[t,j]s'],
       env: { jest: true },
       globals: {
         document: true,
