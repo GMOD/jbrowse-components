@@ -238,7 +238,7 @@ export function iterMap<T, U>(
 export function generateLocString(
   r: IRegion,
   tied: boolean,
-  includeAssemblyName: boolean,
+  includeAssemblyName: boolean = true,
 ): string {
   if (tied) {
     return r.refName

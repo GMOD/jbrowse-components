@@ -1,10 +1,5 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import {
-  ElementId,
-  Region,
-  IMSTRegion,
-  IRegion,
-} from '@gmod/jbrowse-core/mst-types'
+import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
@@ -13,7 +8,11 @@ import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
-
+export interface LGVMenuOption {
+  title: string
+  key: string
+  callback: Function
+}
 interface BpOffset {
   index: number
   offset: number
@@ -58,7 +57,8 @@ function constrainBpPerPx(newBpPerPx: number): number {
   )[0]
 }
 
-export function stateModelFactory(pluginManager: any): any {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function stateModelFactory(pluginManager: any) {
   return types
     .model('LinearGenomeView', {
       id: ElementId,
@@ -252,7 +252,7 @@ export function stateModelFactory(pluginManager: any): any {
       },
 
       navToLocstring(locstring: string) {
-        this.navTo(parseLocString(locstring) as IRegion)
+        return this.navTo(parseLocString(locstring) as IRegion)
       },
 
       /*
@@ -373,7 +373,7 @@ export function stateModelFactory(pluginManager: any): any {
       },
     }))
     .views(self => ({
-      get menuOptions(): { title: string; key: string; callback: Function }[] {
+      get menuOptions(): LGVMenuOption[] {
         return [
           {
             title: 'Show track selector',
@@ -418,3 +418,4 @@ export function stateModelFactory(pluginManager: any): any {
       return self
     })
 }
+export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

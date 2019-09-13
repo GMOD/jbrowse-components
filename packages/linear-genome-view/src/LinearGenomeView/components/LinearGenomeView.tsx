@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { generateLocString, parseLocString } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
@@ -12,13 +14,15 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
 import { observer, PropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, CSSProperties } from 'react'
 import buttonStyles from './buttonStyles'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
+import { LinearGenomeViewStateModel, LGVMenuOption } from '..'
 
 const dragHandleHeight = 3
 
@@ -84,63 +88,69 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 
-const TrackContainer = observer(({ model, track }) => {
-  const classes = useStyles()
-  const { bpPerPx, offsetPx } = model
-  return (
-    <>
-      <div
-        className={clsx(classes.controls, classes.trackControls)}
-        key={`controls:${track.id}`}
-        style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-      >
-        <track.ControlsComponent
-          track={track}
-          key={track.id}
-          view={model}
-          onConfigureClick={track.activateConfigurationUI}
-        />
-      </div>
-      <TrackRenderingContainer
-        key={`track-rendering:${track.id}`}
-        trackId={track.id}
-        height={track.height}
-        onHorizontalScroll={model.horizontalScroll}
-      >
-        <track.RenderingComponent
-          model={track}
-          offsetPx={offsetPx}
-          bpPerPx={bpPerPx}
-          blockState={{}}
+const TrackContainer = observer(
+  ({
+    model,
+    track,
+  }: {
+    model: Instance<LinearGenomeViewStateModel>
+    track: any
+  }) => {
+    const classes = useStyles()
+    const { bpPerPx, offsetPx } = model
+    return (
+      <>
+        <div
+          className={clsx(classes.controls, classes.trackControls)}
+          key={`controls:${track.id}`}
+          style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
+        >
+          <track.ControlsComponent
+            track={track}
+            key={track.id}
+            view={model}
+            onConfigureClick={track.activateConfigurationUI}
+          />
+        </div>
+        <TrackRenderingContainer
+          key={`track-rendering:${track.id}`}
+          trackId={track.id}
+          height={track.height}
           onHorizontalScroll={model.horizontalScroll}
+        >
+          <track.RenderingComponent
+            model={track}
+            offsetPx={offsetPx}
+            bpPerPx={bpPerPx}
+            blockState={{}}
+            onHorizontalScroll={model.horizontalScroll}
+          />
+        </TrackRenderingContainer>
+        <ResizeHandle
+          key={`handle:${track.id}`}
+          onDrag={track.resizeHeight}
+          style={{
+            gridRow: `resize-${track.id}`,
+            gridColumn: 'span 2',
+            background: '#ccc',
+            boxSizing: 'border-box',
+            borderTop: '1px solid #fafafa',
+          }}
         />
-      </TrackRenderingContainer>
-      <ResizeHandle
-        key={`handle:${track.id}`}
-        onDrag={track.resizeHeight}
-        style={{
-          gridRow: `resize-${track.id}`,
-          gridColumn: 'span 2',
-          background: '#ccc',
-          boxSizing: 'border-box',
-          borderTop: '1px solid #fafafa',
-        }}
-      />
-    </>
-  )
-})
-TrackContainer.propTypes = {
-  model: PropTypes.objectOrObservableObject.isRequired,
-  track: ReactPropTypes.shape({}).isRequired,
-}
+      </>
+    )
+  },
+)
 
-const LongMenu = observer(props => {
+const LongMenu = observer(function LongMenuM(props: {
+  model: Instance<LinearGenomeViewStateModel>
+  className: string
+}) {
   const { model, className } = props
-
-  const [anchorEl, setAnchorEl] = React.useState(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
-  function handleClick(event) {
+  function handleClick(event: React.MouseEvent<HTMLElement>) {
     setAnchorEl(event.currentTarget)
   }
 
@@ -166,7 +176,7 @@ const LongMenu = observer(props => {
         open={open}
         onClose={handleClose}
       >
-        {model.menuOptions.map(option => (
+        {model.menuOptions.map((option: LGVMenuOption) => (
           <MenuItem
             key={option.key}
             onClick={() => {
@@ -182,12 +192,11 @@ const LongMenu = observer(props => {
   )
 })
 
-LongMenu.propTypes = {
-  className: ReactPropTypes.string.isRequired,
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
-
-function TextFieldOrTypography({ model }) {
+function TextFieldOrTypography({
+  model,
+}: {
+  model: Instance<LinearGenomeViewStateModel>
+}) {
   const classes = useStyles()
   const [name, setName] = useState(
     model.displayName || model.displayRegionsFromAssemblyName,
@@ -198,7 +207,7 @@ function TextFieldOrTypography({ model }) {
     <form
       onSubmit={event => {
         setEdit(false)
-        model.setDisplayName(name)
+        model.setDisplayName(name || '')
         event.preventDefault()
       }}
     >
@@ -209,7 +218,7 @@ function TextFieldOrTypography({ model }) {
         }}
         onBlur={() => {
           setEdit(false)
-          model.setDisplayName(name)
+          model.setDisplayName(name || '')
         }}
       />
     </form>
@@ -226,12 +235,15 @@ function TextFieldOrTypography({ model }) {
     </div>
   )
 }
-TextFieldOrTypography.propTypes = {
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
 
-function Search({ onSubmit, error }) {
-  const [value, setValue] = useState(null)
+function Search({
+  onSubmit,
+  error,
+}: {
+  onSubmit: Function
+  error: string | undefined
+}) {
+  const [value, setValue] = useState<string | undefined>()
   const classes = useStyles()
   const placeholder = 'Enter location (e.g. chr1:1000..5000)'
 
@@ -277,7 +289,7 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
         }
       }}
     >
-      {model.displayedRegions.map(r => {
+      {model.displayedRegions.map((r: IRegion) => {
         const l = generateLocString(r, tied)
         return (
           <MenuItem key={l} value={l}>
@@ -289,37 +301,32 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
   )
 })
 
-RefSeqDropdown.propTypes = {
-  onSubmit: ReactPropTypes.func.isRequired,
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
-
-const Header = observer(({ model }) => {
-  const classes = useStyles()
-  const [error, setError] = useState()
-  const navTo = locstring => {
-    if (!model.navTo(parseLocString(locstring))) {
-      setError(`Unable to find ${locstring}`)
+const Header = observer(
+  ({ model }: { model: Instance<LinearGenomeViewStateModel> }) => {
+    const classes = useStyles()
+    const [error, setError] = useState<string | undefined>()
+    const navTo = (locstring: string) => {
+      if (!model.navToLocstring(locstring)) {
+        setError(`Unable to navigate to ${locstring}`)
+      } else {
+        setError(undefined)
+      }
     }
-  }
-  return (
-    <div className={classes.headerBar}>
-      {model.hideControls ? null : <Controls model={model} />}
-      <TextFieldOrTypography model={model} />
-      <div className={classes.spacer} />
+    return (
+      <div className={classes.headerBar}>
+        {model.hideControls ? null : <Controls model={model} />}
+        <TextFieldOrTypography model={model} />
+        <div className={classes.spacer} />
 
-      <Search onSubmit={navTo} error={error} />
-      <RefSeqDropdown onSubmit={navTo} model={model} />
+        <Search onSubmit={navTo} error={error} />
+        <RefSeqDropdown onSubmit={navTo} model={model} />
 
-      <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
-  )
-})
-
-Header.propTypes = {
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
+        <ZoomControls model={model} />
+        <div className={classes.spacer} />
+      </div>
+    )
+  },
+)
 
 const Controls = observer(({ model }) => {
   const classes = useStyles()
@@ -337,12 +344,11 @@ const Controls = observer(({ model }) => {
   )
 })
 
-Controls.propTypes = {
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
-
-function LinearGenomeView(props) {
-  const { model } = props
+function LinearGenomeView({
+  model,
+}: {
+  model: Instance<LinearGenomeViewStateModel>
+}) {
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
   const classes = useStyles()
 
@@ -362,7 +368,7 @@ function LinearGenomeView(props) {
       )
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-  }
+  } as React.CSSProperties
 
   return (
     <div className={classes.root}>
@@ -412,8 +418,4 @@ function LinearGenomeView(props) {
     </div>
   )
 }
-LinearGenomeView.propTypes = {
-  model: PropTypes.objectOrObservableObject.isRequired,
-}
-
 export default observer(LinearGenomeView)
