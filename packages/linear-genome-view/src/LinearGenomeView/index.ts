@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'

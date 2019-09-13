@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ConfigurationReference,
   ConfigurationSchema,
@@ -64,7 +65,13 @@ const BaseTrack = types
       return TrackControls
     },
 
-    get RenderingComponent() {
+    get RenderingComponent(): React.FC<{
+      model: self
+      offsetPx: number
+      bpPerPx: number
+      onHorizontalScroll: Function
+      blockState: Record<string, any>
+    }> {
       return (
         self.reactComponent ||
         (() => (
@@ -167,4 +174,4 @@ const BaseTrack = types
 
 export default BaseTrack
 
-export type IBaseTrack = typeof BaseTrack
+export type BaseTrackStateModel = typeof BaseTrack

@@ -23,6 +23,7 @@ import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
 import { LinearGenomeViewStateModel, LGVMenuOption } from '..'
+import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const dragHandleHeight = 3
 
@@ -90,9 +91,10 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 const TrackContainer = observer(
-  ({ model, track }: { model: LGV; track: any }) => {
+  ({ model, track }: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
+    const { RenderingComponent } = track
     return (
       <>
         <div
@@ -113,7 +115,7 @@ const TrackContainer = observer(
           height={track.height}
           onHorizontalScroll={model.horizontalScroll}
         >
-          <track.RenderingComponent
+          <RenderingComponent
             model={track}
             offsetPx={offsetPx}
             bpPerPx={bpPerPx}
