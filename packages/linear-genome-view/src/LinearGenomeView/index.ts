@@ -84,7 +84,6 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
-      currentStaticBlocks: types.frozen(),
       configuration: types.frozen(),
     })
     .views(self => ({
@@ -372,44 +371,50 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = 0
       },
     }))
-    .views(self => ({
-      get menuOptions(): LGVMenuOption[] {
-        return [
-          {
-            title: 'Show track selector',
-            key: 'track_selector',
-            callback: self.activateTrackSelector,
-          },
-          {
-            title: 'Horizontal flip',
-            key: 'flip',
-            callback: self.horizontallyFlip,
-          },
-          {
-            title: 'Show all regions',
-            key: 'showall',
-            callback: self.showAllRegions,
-          },
-          {
-            title: self.hideHeader ? 'Show header' : 'Hide header',
-            key: 'hide_header',
-            callback: self.toggleHeader,
-          },
-        ]
-      },
+    .views(self => {
+      let currentlyCalculatedStaticBlocks: {}
+      let stringifiedCurrentlyCalculatedStaticBlocks: {}
+      return {
+        get menuOptions(): LGVMenuOption[] {
+          return [
+            {
+              title: 'Show track selector',
+              key: 'track_selector',
+              callback: self.activateTrackSelector,
+            },
+            {
+              title: 'Horizontal flip',
+              key: 'flip',
+              callback: self.horizontallyFlip,
+            },
+            {
+              title: 'Show all regions',
+              key: 'showall',
+              callback: self.showAllRegions,
+            },
+            {
+              title: self.hideHeader ? 'Show header' : 'Hide header',
+              key: 'hide_header',
+              callback: self.toggleHeader,
+            },
+          ]
+        },
 
-      get staticBlocks() {
-        const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
-        if (JSON.stringify(ret) !== JSON.stringify(self.currentStaticBlocks)) {
-          self.currentStaticBlocks = ret
-        }
-        return self.currentStaticBlocks
-      },
+        get staticBlocks() {
+          const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+          const sret = JSON.stringify(ret)
+          if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
+            currentlyCalculatedStaticBlocks = ret
+            stringifiedCurrentlyCalculatedStaticBlocks = sret
+          }
+          return currentlyCalculatedStaticBlocks
+        },
 
-      get dynamicBlocks(): any {
-        return calculateDynamicBlocks(self, self.horizontallyFlipped)
-      },
-    }))
+        get dynamicBlocks(): any {
+          return calculateDynamicBlocks(self, self.horizontallyFlipped)
+        },
+      }
+    })
     .postProcessSnapshot(self => {
       if (self.displayRegionsFromAssemblyName) {
         const { displayedRegions, ...rest } = self
