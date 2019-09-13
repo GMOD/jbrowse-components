@@ -1,9 +1,14 @@
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
+import {
+  ElementId,
+  Region,
+  IMSTRegion,
+  IRegion,
+} from '@gmod/jbrowse-core/mst-types'
 import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types, cast } from 'mobx-state-tree'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
@@ -103,24 +108,11 @@ export function stateModelFactory(pluginManager: any): any {
         return constrainBpPerPx(0)
       },
 
-      get staticBlocks() {
-        const ret = calculateStaticBlocks(self, this.horizontallyFlipped, 1)
-        if (JSON.stringify(ret) !== JSON.stringify(self.currentStaticBlocks)) {
-          self.currentStaticBlocks = ret
-        }
-        return self.currentStaticBlocks
-      },
-
-      get dynamicBlocks(): any {
-        // @ts-ignore
-        return calculateDynamicBlocks(self, this.horizontallyFlipped)
-      },
-
-      get horizontallyFlipped(): boolean {
+      get horizontallyFlipped() {
         return self.reversed
       },
 
-      get displayedRegionsTotalPx(): number {
+      get displayedRegionsTotalPx() {
         return this.totalBp / self.bpPerPx
       },
       get renderProps() {
@@ -179,8 +171,7 @@ export function stateModelFactory(pluginManager: any): any {
 
       horizontallyFlip() {
         self.reversed = !self.reversed
-        // @ts-ignore
-        self.displayedRegions = self.displayedRegions.slice().reverse()
+        this.setDisplayedRegions(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -220,13 +211,11 @@ export function stateModelFactory(pluginManager: any): any {
       },
 
       setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
-        // @ts-ignore
-        self.displayedRegions = regions
+        self.displayedRegions = cast(regions)
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
         if (self.reversed)
-          // @ts-ignore
-          self.displayedRegions = self.displayedRegions.slice().reverse()
+          self.displayedRegions = cast(self.displayedRegions.slice().reverse())
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
@@ -407,6 +396,18 @@ export function stateModelFactory(pluginManager: any): any {
             callback: self.toggleHeader,
           },
         ]
+      },
+
+      get staticBlocks() {
+        const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+        if (JSON.stringify(ret) !== JSON.stringify(self.currentStaticBlocks)) {
+          self.currentStaticBlocks = ret
+        }
+        return self.currentStaticBlocks
+      },
+
+      get dynamicBlocks(): any {
+        return calculateDynamicBlocks(self, self.horizontallyFlipped)
       },
     }))
     .postProcessSnapshot(self => {
