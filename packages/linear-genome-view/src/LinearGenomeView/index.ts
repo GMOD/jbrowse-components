@@ -1,14 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { ElementId, Region } from '@gmod/jbrowse-core/mst-types'
+import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types, cast } from 'mobx-state-tree'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
-
+export interface LGVMenuOption {
+  title: string
+  key: string
+  callback: Function
+}
+interface BpOffset {
+  index: number
+  offset: number
+  start?: number
+  end?: number
+}
 const validBpPerPx = [
   1 / 50,
   1 / 20,
@@ -39,7 +50,7 @@ const validBpPerPx = [
   10000000,
 ]
 
-function constrainBpPerPx(newBpPerPx) {
+function constrainBpPerPx(newBpPerPx: number): number {
   // find the closest valid zoom level and return it
   // might consider reimplementing this later using a more efficient algorithm
   return validBpPerPx.sort(
@@ -47,7 +58,8 @@ function constrainBpPerPx(newBpPerPx) {
   )[0]
 }
 
-export function stateModelFactory(pluginManager) {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function stateModelFactory(pluginManager: any) {
   return types
     .model('LinearGenomeView', {
       id: ElementId,
@@ -73,34 +85,11 @@ export function stateModelFactory(pluginManager) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      configuration: types.frozen(),
     })
     .views(self => ({
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
-      },
-      get menuOptions() {
-        return [
-          {
-            title: 'Show track selector',
-            key: 'track_selector',
-            callback: self.activateTrackSelector,
-          },
-          {
-            title: 'Horizontal flip',
-            key: 'flip',
-            callback: self.horizontallyFlip,
-          },
-          {
-            title: 'Show all regions',
-            key: 'showall',
-            callback: self.showAllRegions,
-          },
-          {
-            title: self.hideHeader ? 'Show header' : 'Hide header',
-            key: 'hide_header',
-            callback: self.toggleHeader,
-          },
-        ]
       },
 
       get totalBp() {
@@ -112,23 +101,11 @@ export function stateModelFactory(pluginManager) {
       },
 
       get maxBpPerPx() {
-        return constrainBpPerPx(self.totalBp / self.viewingRegionWidth)
+        return constrainBpPerPx(this.totalBp / this.viewingRegionWidth)
       },
 
       get minBpPerPx() {
         return constrainBpPerPx(0)
-      },
-
-      get staticBlocks() {
-        const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
-        if (JSON.stringify(ret) !== JSON.stringify(self.currentStaticBlocks)) {
-          self.currentStaticBlocks = ret
-        }
-        return self.currentStaticBlocks
-      },
-
-      get dynamicBlocks() {
-        return calculateDynamicBlocks(self, self.horizontallyFlipped)
       },
 
       get horizontallyFlipped() {
@@ -136,7 +113,7 @@ export function stateModelFactory(pluginManager) {
       },
 
       get displayedRegionsTotalPx() {
-        return self.totalBp / self.bpPerPx
+        return this.totalBp / self.bpPerPx
       },
       get renderProps() {
         return {
@@ -146,7 +123,7 @@ export function stateModelFactory(pluginManager) {
             getSession(self),
             'highResolutionScaling',
           ),
-          horizontallyFlipped: self.horizontallyFlipped,
+          horizontallyFlipped: this.horizontallyFlipped,
         }
       },
 
@@ -155,7 +132,7 @@ export function stateModelFactory(pluginManager) {
        * @param {number} px px in the view area, return value is the displayed regions
        * @returns {Array} of the displayed region that it lands in
        */
-      pxToBp(px) {
+      pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
         if (bp < 0) {
@@ -180,11 +157,11 @@ export function stateModelFactory(pluginManager) {
       },
     }))
     .actions(self => ({
-      setWidth(newWidth) {
+      setWidth(newWidth: number) {
         self.width = newWidth
       },
 
-      setDisplayName(name) {
+      setDisplayName(name: string) {
         self.displayName = name
       },
 
@@ -194,11 +171,11 @@ export function stateModelFactory(pluginManager) {
 
       horizontallyFlip() {
         self.reversed = !self.reversed
-        self.displayedRegions = self.displayedRegions.slice().reverse()
+        this.setDisplayedRegions(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
-      showTrack(configuration, initialSnapshot = {}) {
+      showTrack(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -213,7 +190,7 @@ export function stateModelFactory(pluginManager) {
         self.tracks.push(track)
       },
 
-      hideTrack(configuration) {
+      hideTrack(configuration: any) {
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -226,28 +203,28 @@ export function stateModelFactory(pluginManager) {
         getParent(self, 2).removeView(self)
       },
 
-      toggleTrack(configuration) {
+      toggleTrack(configuration: any) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(configuration)
+        const hiddenCount = this.hideTrack(configuration)
         // if none had that configuration, turn one on
-        if (!hiddenCount) self.showTrack(configuration)
+        if (!hiddenCount) this.showTrack(configuration)
       },
 
-      setDisplayedRegions(regions, isFromAssemblyName = false) {
-        self.displayedRegions = regions
+      setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
+        self.displayedRegions = cast(regions)
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
         if (self.reversed)
-          self.displayedRegions = self.displayedRegions.slice().reverse()
+          self.displayedRegions = cast(self.displayedRegions.slice().reverse())
       },
 
-      setDisplayedRegionsFromAssemblyName(assemblyName) {
+      setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
         self.displayRegionsFromAssemblyName = assemblyName
       },
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
+          const session: any = getSession(self)
           const selector = session.addDrawerWidget(
             'HierarchicalTrackSelectorDrawerWidget',
             'hierarchicalTrackSelector',
@@ -259,7 +236,7 @@ export function stateModelFactory(pluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      zoomTo(newBpPerPx) {
+      zoomTo(newBpPerPx: number) {
         let bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
         bpPerPx = constrainBpPerPx(newBpPerPx)
         if (bpPerPx === self.bpPerPx) return
@@ -274,8 +251,8 @@ export function stateModelFactory(pluginManager) {
         )
       },
 
-      navToLocstring(locstring) {
-        self.navTo(parseLocString(locstring))
+      navToLocstring(locstring: string) {
+        return this.navTo(parseLocString(locstring) as IRegion)
       },
 
       /*
@@ -286,7 +263,7 @@ export function stateModelFactory(pluginManager) {
        * @param {refName,start,end} is a proposed location to navigate to
        * returns true if navigation was successful, false if not
        */
-      navTo({ refName, start, end }) {
+      navTo({ refName, start, end }: IRegion) {
         let s = start
         let e = end
         const index = self.displayedRegions.findIndex(r => {
@@ -305,7 +282,7 @@ export function stateModelFactory(pluginManager) {
         })
         const f = self.displayedRegions[index]
         if (index !== -1) {
-          self.moveTo(
+          this.moveTo(
             { index, offset: s - f.start },
             { index, offset: e - f.start },
           )
@@ -321,7 +298,7 @@ export function stateModelFactory(pluginManager) {
        * @param {object} start object as {start, end, offset, index}
        * @param {object} end object as {start, end, offset, index}
        */
-      moveTo(start, end) {
+      moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
         let bpSoFar = 0
         if (start.index === end.index) {
@@ -355,11 +332,11 @@ export function stateModelFactory(pluginManager) {
         self.offsetPx = bpToStart / self.bpPerPx
       },
 
-      horizontalScroll(distance) {
+      horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
         const leftPadding = 10
         const rightPadding = 10
-        const maxOffset = self.displayRegionsTotalPx - leftPadding
+        const maxOffset = self.displayedRegionsTotalPx - leftPadding
         const minOffset = -self.viewingRegionWidth + rightPadding
         const newOffsetPx = clamp(
           self.offsetPx + distance,
@@ -381,10 +358,11 @@ export function stateModelFactory(pluginManager) {
       },
 
       activateConfigurationUI() {
-        getSession(self).editConfiguration(self.configuration)
+        const session: any = getSession(self)
+        session.editConfiguration(self.configuration)
       },
 
-      setNewView(bpPerPx, offsetPx) {
+      setNewView(bpPerPx: number, offsetPx: number) {
         self.bpPerPx = bpPerPx
         self.offsetPx = offsetPx
       },
@@ -394,6 +372,50 @@ export function stateModelFactory(pluginManager) {
         self.offsetPx = 0
       },
     }))
+    .views(self => {
+      let currentlyCalculatedStaticBlocks: {}
+      let stringifiedCurrentlyCalculatedStaticBlocks: {}
+      return {
+        get menuOptions(): LGVMenuOption[] {
+          return [
+            {
+              title: 'Show track selector',
+              key: 'track_selector',
+              callback: self.activateTrackSelector,
+            },
+            {
+              title: 'Horizontal flip',
+              key: 'flip',
+              callback: self.horizontallyFlip,
+            },
+            {
+              title: 'Show all regions',
+              key: 'showall',
+              callback: self.showAllRegions,
+            },
+            {
+              title: self.hideHeader ? 'Show header' : 'Hide header',
+              key: 'hide_header',
+              callback: self.toggleHeader,
+            },
+          ]
+        },
+
+        get staticBlocks() {
+          const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+          const sret = JSON.stringify(ret)
+          if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
+            currentlyCalculatedStaticBlocks = ret
+            stringifiedCurrentlyCalculatedStaticBlocks = sret
+          }
+          return currentlyCalculatedStaticBlocks
+        },
+
+        get dynamicBlocks(): any {
+          return calculateDynamicBlocks(self, self.horizontallyFlipped)
+        },
+      }
+    })
     .postProcessSnapshot(self => {
       if (self.displayRegionsFromAssemblyName) {
         const { displayedRegions, ...rest } = self
@@ -402,3 +424,4 @@ export function stateModelFactory(pluginManager) {
       return self
     })
 }
+export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
