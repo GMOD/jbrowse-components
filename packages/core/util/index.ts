@@ -171,7 +171,7 @@ export function bpToPx(
   bp: number,
   region: IRegion,
   bpPerPx: number,
-  flipped: boolean = false,
+  flipped = false,
 ): number {
   if (flipped) {
     return roundToNearestPointOne((region.end - bp) / bpPerPx)
@@ -210,7 +210,7 @@ export function featureSpanPx(
   feature: Feature,
   region: IRegion,
   bpPerPx: number,
-  flipped: boolean = false,
+  flipped = false,
 ): [number, number] {
   const start = bpToPx(feature.get('start'), region, bpPerPx, flipped)
   const end = bpToPx(feature.get('end'), region, bpPerPx, flipped)
@@ -238,7 +238,7 @@ export function iterMap<T, U>(
 export function generateLocString(
   r: IRegion,
   tied: boolean,
-  includeAssemblyName: boolean = true,
+  includeAssemblyName = true,
 ): string {
   if (tied) {
     return r.refName

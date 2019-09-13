@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
-import { generateLocString, parseLocString } from '@gmod/jbrowse-core/util'
+import { generateLocString } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -13,7 +13,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
-import { observer, PropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState, CSSProperties } from 'react'
@@ -25,6 +25,8 @@ import ZoomControls from './ZoomControls'
 import { LinearGenomeViewStateModel, LGVMenuOption } from '..'
 
 const dragHandleHeight = 3
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -87,15 +89,8 @@ const useStyles = makeStyles(theme => ({
   },
   ...buttonStyles(theme),
 }))
-
 const TrackContainer = observer(
-  ({
-    model,
-    track,
-  }: {
-    model: Instance<LinearGenomeViewStateModel>
-    track: any
-  }) => {
+  ({ model, track }: { model: LGV; track: any }) => {
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
     return (
@@ -142,61 +137,55 @@ const TrackContainer = observer(
   },
 )
 
-const LongMenu = observer(function LongMenuM(props: {
-  model: Instance<LinearGenomeViewStateModel>
-  className: string
-}) {
-  const { model, className } = props
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
+const LongMenu = observer(
+  ({ model, className }: { model: LGV; className: string }) => {
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+    const open = Boolean(anchorEl)
 
-  function handleClick(event: React.MouseEvent<HTMLElement>) {
-    setAnchorEl(event.currentTarget)
-  }
+    function handleClick(event: React.MouseEvent<HTMLElement>) {
+      setAnchorEl(event.currentTarget)
+    }
 
-  function handleClose() {
-    setAnchorEl(null)
-  }
+    function handleClose() {
+      setAnchorEl(null)
+    }
 
-  return (
-    <>
-      <IconButton
-        aria-label="more"
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        className={className}
-        onClick={handleClick}
-      >
-        <Icon>more_vert</Icon>
-      </IconButton>
-      <Menu
-        id="long-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={open}
-        onClose={handleClose}
-      >
-        {model.menuOptions.map((option: LGVMenuOption) => (
-          <MenuItem
-            key={option.key}
-            onClick={() => {
-              option.callback()
-              handleClose()
-            }}
-          >
-            {option.title}
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
-  )
-})
+    return (
+      <>
+        <IconButton
+          aria-label="more"
+          aria-controls="long-menu"
+          aria-haspopup="true"
+          className={className}
+          onClick={handleClick}
+        >
+          <Icon>more_vert</Icon>
+        </IconButton>
+        <Menu
+          id="long-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={open}
+          onClose={handleClose}
+        >
+          {model.menuOptions.map((option: LGVMenuOption) => (
+            <MenuItem
+              key={option.key}
+              onClick={() => {
+                option.callback()
+                handleClose()
+              }}
+            >
+              {option.title}
+            </MenuItem>
+          ))}
+        </Menu>
+      </>
+    )
+  },
+)
 
-function TextFieldOrTypography({
-  model,
-}: {
-  model: Instance<LinearGenomeViewStateModel>
-}) {
+function TextFieldOrTypography({ model }: { model: LGV }) {
   const classes = useStyles()
   const [name, setName] = useState(
     model.displayName || model.displayRegionsFromAssemblyName,
@@ -301,32 +290,30 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
   )
 })
 
-const Header = observer(
-  ({ model }: { model: Instance<LinearGenomeViewStateModel> }) => {
-    const classes = useStyles()
-    const [error, setError] = useState<string | undefined>()
-    const navTo = (locstring: string) => {
-      if (!model.navToLocstring(locstring)) {
-        setError(`Unable to navigate to ${locstring}`)
-      } else {
-        setError(undefined)
-      }
+const Header = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const [error, setError] = useState<string | undefined>()
+  const navTo = (locstring: string) => {
+    if (!model.navToLocstring(locstring)) {
+      setError(`Unable to navigate to ${locstring}`)
+    } else {
+      setError(undefined)
     }
-    return (
-      <div className={classes.headerBar}>
-        {model.hideControls ? null : <Controls model={model} />}
-        <TextFieldOrTypography model={model} />
-        <div className={classes.spacer} />
+  }
+  return (
+    <div className={classes.headerBar}>
+      {model.hideControls ? null : <Controls model={model} />}
+      <TextFieldOrTypography model={model} />
+      <div className={classes.spacer} />
 
-        <Search onSubmit={navTo} error={error} />
-        <RefSeqDropdown onSubmit={navTo} model={model} />
+      <Search onSubmit={navTo} error={error} />
+      <RefSeqDropdown onSubmit={navTo} model={model} />
 
-        <ZoomControls model={model} />
-        <div className={classes.spacer} />
-      </div>
-    )
-  },
-)
+      <ZoomControls model={model} />
+      <div className={classes.spacer} />
+    </div>
+  )
+})
 
 const Controls = observer(({ model }) => {
   const classes = useStyles()
@@ -344,11 +331,7 @@ const Controls = observer(({ model }) => {
   )
 })
 
-function LinearGenomeView({
-  model,
-}: {
-  model: Instance<LinearGenomeViewStateModel>
-}) {
+function LinearGenomeView({ model }: { model: LGV }) {
   const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
   const classes = useStyles()
 

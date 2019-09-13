@@ -40,7 +40,7 @@ export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
 const defaultTrackHeight = 100
-export default types
+const BaseTrack = types
   .model('BaseTrack', {
     id: ElementId,
     type: types.string,
@@ -50,6 +50,12 @@ export default types
     ),
     configuration: ConfigurationReference(BaseTrackConfig),
   })
+  .volatile(() => ({
+    reactComponent: undefined,
+    rendererTypeName: undefined,
+    ready: false,
+    error: '',
+  }))
   .views(self => ({
     get name() {
       return getConf(self, 'name')
@@ -86,7 +92,7 @@ export default types
      */
     get rendererType() {
       const track = getContainingView(self)
-      const session = getSession(self)
+      const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
@@ -104,7 +110,7 @@ export default types
      */
     get adapterType() {
       const adapterConfig = getConf(self, 'adapter')
-      const session = getSession(self)
+      const session: any = getSession(self)
       if (!adapterConfig)
         throw new Error(`no adapter configuration provided for ${self.type}`)
       const adapterType = session.pluginManager.getAdapterType(
@@ -116,7 +122,8 @@ export default types
     },
 
     get showConfigurationButton() {
-      return !!getSession(self).editConfiguration
+      const session: any = getSession(self)
+      return !!session.editConfiguration
     },
 
     /**
@@ -132,27 +139,32 @@ export default types
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a string of text saying why the region can't be rendered.
      */
-    regionCannotBeRendered(region) {
+    regionCannotBeRendered() {
       return undefined
     },
   }))
   .actions(self => ({
-    setHeight(trackHeight) {
+    setHeight(trackHeight: number) {
       if (trackHeight > minTrackHeight) self.height = trackHeight
       else self.height = minTrackHeight
       return self.height
     },
-    resizeHeight(distance) {
+    resizeHeight(distance: number) {
       const oldHeight = self.height
-      const newHeight = self.setHeight(self.height + distance)
+      const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
-    setError(e) {
+    setError(e: string) {
       self.ready = true
       self.error = e
     },
 
     activateConfigurationUI() {
-      getSession(self).editConfiguration(self.configuration)
+      const session: any = getSession(self)
+      session.editConfiguration(self.configuration)
     },
   }))
+
+export default BaseTrack
+
+export type IBaseTrack = typeof BaseTrack
