@@ -929,6 +929,25 @@
           }
         },
         {
+          "configId": "human_chord_test_with_events",
+          "type": "StructuralVariantChordTrack",
+          "name": "HG002-LongRanger (aka NA24385)",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA24385_LongRanger_large_svs.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA24385_LongRanger_large_svs.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "configId": "novobam_hg002",
           "type": "AlignmentsTrack",
           "name": "HG002.illumina.PE",
@@ -939,7 +958,7 @@
             },
             "index": {
               "location": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
               }
             }
           },
