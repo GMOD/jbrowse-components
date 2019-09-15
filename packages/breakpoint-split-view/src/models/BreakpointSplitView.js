@@ -32,7 +32,10 @@ export default pluginManager => {
     })
     .views(self => ({
       get viewingRegionWidth() {
-        return self.width - self.topLGV.controlsWidth
+        return self.width - this.controlsWidth
+      },
+      get controlsWidth() {
+        return self.topLGV.controlsWidth
       },
 
       get menuOptions() {

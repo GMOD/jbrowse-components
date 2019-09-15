@@ -28,6 +28,15 @@ export default pluginManager => {
       viewContainer: {
         marginTop: '3px',
       },
+      container: {
+        display: 'grid',
+      },
+      overlay: {
+        gridArea: '1/1',
+      },
+      content: {
+        gridArea: '1/1',
+      },
     }
   })
 
@@ -81,21 +90,28 @@ export default pluginManager => {
       layoutMatches[key] = [f1, f2]
     }
     return (
-      <AlignmentPolygons
-        model={model}
-        alignmentChunks={layoutMatches}
-        className={classes.root}
-        data-testid={model.configuration.configId}
-      >
-        <Header model={model} />
-        <div className={classes.viewContainer}>
-          <LinearGenomeView model={topLGV} />
+      <div className={classes.container}>
+        <div className={classes.content}>
+          <Header model={model} />
+          <div style={{ position: 'relative' }}>
+            <div className={classes.viewContainer}>
+              <LinearGenomeView model={topLGV} />
+            </div>
+            <div className={classes.viewContainer}>
+              <LinearGenomeView model={bottomLGV} />
+            </div>
+            <BreakpointMarker model={model} />
+          </div>
         </div>
-        <div className={classes.viewContainer}>
-          <LinearGenomeView model={bottomLGV} />
+        <div className={classes.overlay}>
+          <AlignmentPolygons
+            model={model}
+            alignmentChunks={layoutMatches}
+            className={classes.root}
+            data-testid={model.configuration.configId}
+          />
         </div>
-        <BreakpointMarker model={model} />
-      </AlignmentPolygons>
+      </div>
     )
   })
   BreakpointSplitView.propTypes = {

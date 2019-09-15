@@ -10,21 +10,11 @@ export default pluginManager => {
   }
   const AlignmentInfo = observer(
     ({ model, alignmentChunks, height, children }) => {
-      const { topLGV, bottomLGV } = model
+      const { topLGV, bottomLGV, controlsWidth } = model
       return (
-        <div style={{ position: 'relative' }}>
-          {children}
-          <svg
-            height="100%"
-            width="100%" // if 100% this goes causes overflowX to scroll
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 120,
-              zIndex: 1000,
-              pointerEvents: 'none',
-            }}
-          >
+        <div style={{ display: 'flex', height: '100%' }}>
+          <div style={{ width: controlsWidth }} />
+          <svg style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}>
             {Object.values(alignmentChunks).map(chunk => {
               const [c1, c2] = chunk
               const f1 = transform(topLGV, c1[LEFT])
