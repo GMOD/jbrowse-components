@@ -8,6 +8,7 @@ import JBrowse1 from '@gmod/jbrowse-plugin-jbrowse1'
 import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
 import Lollipop from '@gmod/jbrowse-plugin-lollipop'
 import Menus from '@gmod/jbrowse-plugin-menus'
+import RDF from '@gmod/jbrowse-plugin-rdf'
 import Sequence from '@gmod/jbrowse-plugin-sequence'
 import SVG from '@gmod/jbrowse-plugin-svg'
 import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
@@ -26,6 +27,7 @@ export default [
   LinearGenomeView,
   Lollipop,
   Menus,
+  RDF,
   Sequence,
   SVG,
   TrackHubRegistry,

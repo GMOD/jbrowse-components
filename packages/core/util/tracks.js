@@ -47,6 +47,7 @@ export function getParentRenderProps(node) {
   return {}
 }
 
+export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
 export function guessAdapter(fileName, protocol) {
@@ -217,22 +218,28 @@ export function guessAdapter(fileName, protocol) {
       rootUrlTemplate: fileName,
     }
 
+  if (/\/sparql$/i.test(fileName))
+    return {
+      type: 'SPARQLAdapter',
+      endpoint: fileName,
+    }
+
   return {
-    type: UNSUPPORTED,
+    type: UNKNOWN,
   }
 }
 
 export function guessTrackType(adapterType) {
-  return {
-    BamAdapter: 'AlignmentsTrack',
-    BgzipFastaAdapter: 'SequenceTrack',
-    BigBedAdapter: 'BasicTrack',
-    BigWigAdapter: 'WiggleTrack',
-    IndexedFastaAdapter: 'SequenceTrack',
-    NCListAdapter: 'BasicTrack',
-    TwoBitAdapter: 'SequenceTrack',
-    VcfTabixAdapter: 'VariantTrack',
-  }[adapterType]
+  return (
+    {
+      BamAdapter: 'AlignmentsTrack',
+      BgzipFastaAdapter: 'SequenceTrack',
+      BigWigAdapter: 'WiggleTrack',
+      IndexedFastaAdapter: 'SequenceTrack',
+      TwoBitAdapter: 'SequenceTrack',
+      VcfTabixAdapter: 'VariantTrack',
+    }[adapterType] || 'BasicTrack'
+  )
 }
 
 export function generateUnsupportedTrackConf(trackName, trackUrl, categories) {

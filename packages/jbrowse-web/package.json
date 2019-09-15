@@ -27,6 +27,7 @@
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
     "@gmod/jbrowse-plugin-menus": "^2.0.0",
+    "@gmod/jbrowse-plugin-rdf": "^2.0.0",
     "@gmod/jbrowse-plugin-sequence": "^2.0.0",
     "@gmod/jbrowse-plugin-svg": "^2.0.0",
     "@gmod/jbrowse-plugin-trackhub-registry": "^2.0.0",

@@ -1,4 +1,3 @@
-import { clamp } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
@@ -9,7 +8,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect } from 'react'
 import { withSize } from 'react-sizeme'
 import DevTools from './DevTools'
 import Drawer from './Drawer'
@@ -58,7 +57,6 @@ function App({ size, session }) {
   const classes = useStyles()
 
   const { pluginManager } = session
-  const [scrollTop, setScrollTop] = useState(0)
 
   useEffect(() => {
     session.updateWidth(size.width)
@@ -113,33 +111,10 @@ function App({ size, session }) {
       </Slide>
     )
   }
-  const nameRef = useRef()
-
-  if (nameRef.current) {
-    nameRef.current.scrollTop = scrollTop
-  }
 
   return (
     <div className={classes.root}>
-      <div
-        className={classes.menuBarsAndComponents}
-        ref={nameRef}
-        onWheel={event => {
-          if (
-            !session.shouldntScroll &&
-            nameRef.current.scrollHeight > nameRef.current.clientHeight &&
-            Math.abs(event.deltaY) > 2 * Math.abs(event.deltaX)
-          ) {
-            setScrollTop(
-              clamp(
-                scrollTop + event.deltaY,
-                0,
-                nameRef.current.scrollHeight - nameRef.current.clientHeight,
-              ),
-            )
-          }
-        }}
-      >
+      <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
             const { LazyReactComponent } = pluginManager.getMenuBarType(

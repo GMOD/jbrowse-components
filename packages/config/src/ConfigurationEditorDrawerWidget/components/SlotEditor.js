@@ -41,6 +41,17 @@ const StringEditor = observer(({ slot }) => (
   />
 ))
 
+const TextEditor = observer(({ slot }) => (
+  <TextField
+    label={slot.name}
+    helperText={slot.description}
+    fullWidth
+    multiline
+    value={slot.value}
+    onChange={evt => slot.set(evt.target.value)}
+  />
+))
+
 // checked checkbox, looks like a styled (x)
 const SvgCheckbox = () => (
   <SvgIcon>
@@ -359,6 +370,7 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
 
 const valueComponents = {
   string: StringEditor,
+  text: TextEditor,
   fileLocation: FileLocationEditor,
   stringArray: StringArrayEditor,
   stringArrayMap: StringArrayMapEditor,

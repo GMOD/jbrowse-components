@@ -191,21 +191,6 @@ export default pluginManager => {
       setBpPerPx(newVal) {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
-      onWheel(event) {
-        const n = self.scrollY + event.deltaY
-        const session = getSession(self)
-        if (n > 0 && n < self.height) {
-          session.shouldntScroll = true
-        } else {
-          session.shouldntScroll = false
-        }
-      },
-      onScroll(event) {
-        const { scrollLeft, scrollTop } = event.currentTarget
-
-        self.scrollX = scrollLeft
-        self.scrollY = scrollTop
-      },
 
       closeView() {
         getParent(self, 2).removeView(self)

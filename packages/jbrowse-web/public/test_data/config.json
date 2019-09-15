@@ -125,37 +125,29 @@
           }
         },
         {
-          "configId": "OOv_Iwf5no",
+          "configId": "volvox-long reads",
           "type": "AlignmentsTrack",
           "name": "volvox-long reads",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "_m5epcAGu6",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
             "index": {
-              "configId": "-bETsJYDd9",
               "location": {
                 "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "cfV-sEuwTS",
             "PileupRenderer": {
-              "configId": "Syc-_K0qM5",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "Ain_GttdTR",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "JbwBsHdbnP"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
@@ -198,9 +190,9 @@
           }
         },
         {
-          "configId": "volvox_sv",
+          "configId": "volvox_paired_read_sv",
           "type": "AlignmentsTrack",
-          "name": "volvox-sv",
+          "name": "volvox-paired-read-sv",
           "category": [
             "Alignments"
           ],
@@ -1318,9 +1310,18 @@
   ],
   "configuration": {
     "configId": "WBBdhiJUQdj",
+    "updateUrl": false,
     "rpc": {
       "configId": "A8raoinDhoH"
     }
+  },
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
   },
   "savedSessions": [
     {
@@ -1373,6 +1374,7 @@
           "controlsWidth": 120,
           "width": 808,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -1484,6 +1486,7 @@
           "controlsWidth": 120,
           "width": 1192,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -1503,6 +1506,3702 @@
           "id": "aU_iMpOUx4",
           "type": "MainMenuBar",
           "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    },
+    {
+      "name": "Human Example (GRCh38)",
+      "width": 1260,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "Cma34s8JJ",
+          "type": "LinearGenomeView",
+          "offsetPx": 69300,
+          "bpPerPx": 150,
+          "displayedRegions": [
+            {
+              "refName": "1",
+              "start": 0,
+              "end": 248956422,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "2",
+              "start": 0,
+              "end": 242193529,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "3",
+              "start": 0,
+              "end": 198295559,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "4",
+              "start": 0,
+              "end": 190214555,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "5",
+              "start": 0,
+              "end": 181538259,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "6",
+              "start": 0,
+              "end": 170805979,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "7",
+              "start": 0,
+              "end": 159345973,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "8",
+              "start": 0,
+              "end": 145138636,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "9",
+              "start": 0,
+              "end": 138394717,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "10",
+              "start": 0,
+              "end": 133797422,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "11",
+              "start": 0,
+              "end": 135086622,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "12",
+              "start": 0,
+              "end": 133275309,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "13",
+              "start": 0,
+              "end": 114364328,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "14",
+              "start": 0,
+              "end": 107043718,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "15",
+              "start": 0,
+              "end": 101991189,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "16",
+              "start": 0,
+              "end": 90338345,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "17",
+              "start": 0,
+              "end": 83257441,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "18",
+              "start": 0,
+              "end": 80373285,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "19",
+              "start": 0,
+              "end": 58617616,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "20",
+              "start": 0,
+              "end": 64444167,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "21",
+              "start": 0,
+              "end": 46709983,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "22",
+              "start": 0,
+              "end": 50818468,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "X",
+              "start": 0,
+              "end": 156040895,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "Y",
+              "start": 0,
+              "end": 57227415,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "MT",
+              "start": 0,
+              "end": 16569,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG76_PATCH",
+              "start": 0,
+              "end": 144938989,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_4_CTG8",
+              "start": 0,
+              "end": 102071387,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_SSTO_CTG1",
+              "start": 0,
+              "end": 170946136,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_MCF_CTG1",
+              "start": 0,
+              "end": 170976334,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_COX_CTG1",
+              "start": 0,
+              "end": 170727598,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_MANN_CTG1",
+              "start": 0,
+              "end": 170959829,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_APD_CTG1",
+              "start": 0,
+              "end": 170845044,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_QBL_CTG1",
+              "start": 0,
+              "end": 170734801,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_MHC_DBB_CTG1",
+              "start": 0,
+              "end": 170783898,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_7_CTG4",
+              "start": 0,
+              "end": 83058228,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_1_CTG1",
+              "start": 0,
+              "end": 90426449,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_6_CTG8",
+              "start": 0,
+              "end": 101521929,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG926_PATCH",
+              "start": 0,
+              "end": 90680781,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_1_CTG5",
+              "start": 0,
+              "end": 83552665,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_2_CTG1_1",
+              "start": 0,
+              "end": 180753562,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR14_7_CTG1",
+              "start": 0,
+              "end": 107045728,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_2_CTG5",
+              "start": 0,
+              "end": 83086355,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR14_3_CTG1",
+              "start": 0,
+              "end": 107067894,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_1_CTG1_1",
+              "start": 0,
+              "end": 180863570,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_2_CTG6",
+              "start": 0,
+              "end": 159407160,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_LRC_J_CTG3_1",
+              "start": 0,
+              "end": 58650772,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_4_CTG3_1",
+              "start": 0,
+              "end": 58625731,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_LRC_S_CTG3_1",
+              "start": 0,
+              "end": 58625321,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_LRC_I_CTG3_1",
+              "start": 0,
+              "end": 58623235,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1815_PATCH",
+              "start": 0,
+              "end": 133281281,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_LRC_T_CTG3_1",
+              "start": 0,
+              "end": 58561614,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_COX1_CTG3_1",
+              "start": 0,
+              "end": 58546647,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_PGF1_CTG3_1",
+              "start": 0,
+              "end": 58546031,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_8_CTG1",
+              "start": 0,
+              "end": 145123326,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_3_CTG32_1",
+              "start": 0,
+              "end": 248960761,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG8",
+              "start": 0,
+              "end": 170810115,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_PGF2_CTG3_1",
+              "start": 0,
+              "end": 58355410,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19LRC_COX2_CTG3_1",
+              "start": 0,
+              "end": 58288451,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1_PATCH",
+              "start": 0,
+              "end": 107043717,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_3_CTG4_4",
+              "start": 0,
+              "end": 159441130,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG30_PATCH",
+              "start": 0,
+              "end": 181539112,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_9_CTG1",
+              "start": 0,
+              "end": 144983589,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG708_PATCH",
+              "start": 0,
+              "end": 159270839,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_1_CTG9",
+              "start": 0,
+              "end": 190096932,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_3_CTG2",
+              "start": 0,
+              "end": 133271566,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_7_CTG12",
+              "start": 0,
+              "end": 190225141,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_6_CTG3",
+              "start": 0,
+              "end": 248955842,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1362_PATCH",
+              "start": 0,
+              "end": 133275314,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_6_CTG7_2",
+              "start": 0,
+              "end": 242198149,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2290_PATCH",
+              "start": 0,
+              "end": 242235269,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2263_PATCH",
+              "start": 0,
+              "end": 90338583,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_1_CTG1",
+              "start": 0,
+              "end": 101998275,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2266_PATCH",
+              "start": 0,
+              "end": 159346106,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1342_HG2282_PATCH",
+              "start": 0,
+              "end": 248929249,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1832_PATCH",
+              "start": 0,
+              "end": 248959779,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2066_PATCH",
+              "start": 0,
+              "end": 198295555,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG5",
+              "start": 0,
+              "end": 138404305,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_5_CTG8",
+              "start": 0,
+              "end": 102070278,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_1_CTG32_1",
+              "start": 0,
+              "end": 248960143,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_12_CTG12",
+              "start": 0,
+              "end": 190221648,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2244_HG2245_PATCH",
+              "start": 0,
+              "end": 133797425,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG126_PATCH",
+              "start": 0,
+              "end": 198295908,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2236_PATCH",
+              "start": 0,
+              "end": 198295537,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_2_CTG2",
+              "start": 0,
+              "end": 133307257,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2213_PATCH",
+              "start": 0,
+              "end": 80377536,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG26_PATCH",
+              "start": 0,
+              "end": 58617652,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_2_CTG2",
+              "start": 0,
+              "end": 83160220,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_2_CTG8",
+              "start": 0,
+              "end": 102003326,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_1_CTG2",
+              "start": 0,
+              "end": 58624032,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_6_CTG12",
+              "start": 0,
+              "end": 190218533,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_1_CTG6",
+              "start": 0,
+              "end": 190224838,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_1_CTG1",
+              "start": 0,
+              "end": 83290495,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_1_CTG7",
+              "start": 0,
+              "end": 145142033,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2235_PATCH",
+              "start": 0,
+              "end": 198295655,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2021_PATCH",
+              "start": 0,
+              "end": 58632883,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_3_CTG31",
+              "start": 0,
+              "end": 248967909,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2232_PATCH",
+              "start": 0,
+              "end": 242193529,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_8_CTG1",
+              "start": 0,
+              "end": 181668817,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2291_PATCH",
+              "start": 0,
+              "end": 114534236,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_1_CTG3",
+              "start": 0,
+              "end": 248968406,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_4_CTG3",
+              "start": 0,
+              "end": 248963886,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2030_PATCH",
+              "start": 0,
+              "end": 138394865,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2002_PATCH",
+              "start": 0,
+              "end": 248942227,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_1_CTG3",
+              "start": 0,
+              "end": 101994657,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_10_CTG4",
+              "start": 0,
+              "end": 83359087,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR14_1_CTG1",
+              "start": 0,
+              "end": 107047377,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1651_PATCH",
+              "start": 0,
+              "end": 170779650,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_5_CTG1",
+              "start": 0,
+              "end": 145137619,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2063_PATCH",
+              "start": 0,
+              "end": 133275140,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR10_1_CTG2",
+              "start": 0,
+              "end": 133813485,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG1",
+              "start": 0,
+              "end": 114348172,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2022_PATCH",
+              "start": 0,
+              "end": 198295941,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_3_CTG7",
+              "start": 0,
+              "end": 145125643,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2095_PATCH",
+              "start": 0,
+              "end": 248959131,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2060_PATCH",
+              "start": 0,
+              "end": 135086593,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG7",
+              "start": 0,
+              "end": 50872732,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_9_CTG2_1",
+              "start": 0,
+              "end": 198302489,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_2_CTG8",
+              "start": 0,
+              "end": 135117433,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_3_CTG1",
+              "start": 0,
+              "end": 145130612,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG7",
+              "start": 0,
+              "end": 135085484,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_1_CTG8",
+              "start": 0,
+              "end": 102002809,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_CA01-TB04_CTG3_1",
+              "start": 0,
+              "end": 58750420,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_1_CTG1",
+              "start": 0,
+              "end": 145124952,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_1_CTG1_1",
+              "start": 0,
+              "end": 80380517,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHRX_1_CTG3",
+              "start": 0,
+              "end": 156043585,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_2_CTG1",
+              "start": 0,
+              "end": 145141567,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH05_B_HAP_CTG3_1",
+              "start": 0,
+              "end": 58689016,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2285_HG106_HG2252_PATCH",
+              "start": 0,
+              "end": 83219555,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2114_PATCH",
+              "start": 0,
+              "end": 135091163,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_5_CTG3",
+              "start": 0,
+              "end": 248926662,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_4_CTG4",
+              "start": 0,
+              "end": 83257896,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2191_PATCH",
+              "start": 0,
+              "end": 133799479,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_3_CTG1",
+              "start": 0,
+              "end": 83267046,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHRX_2_CTG3",
+              "start": 0,
+              "end": 156039875,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG5",
+              "start": 0,
+              "end": 170815302,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_3_CTG6",
+              "start": 0,
+              "end": 159344441,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2128_PATCH",
+              "start": 0,
+              "end": 170811684,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_4_CTG3_1",
+              "start": 0,
+              "end": 90343133,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2068_PATCH",
+              "start": 0,
+              "end": 145140411,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2334_PATCH",
+              "start": 0,
+              "end": 133797389,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG4",
+              "start": 0,
+              "end": 50824699,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_3_CTG3",
+              "start": 0,
+              "end": 101993763,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG3",
+              "start": 0,
+              "end": 50827573,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_2_CTG3",
+              "start": 0,
+              "end": 248975002,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH15_B_HAP_CTG3_1",
+              "start": 0,
+              "end": 58689284,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_3_CTG2_1",
+              "start": 0,
+              "end": 198300421,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_11_CTG4",
+              "start": 0,
+              "end": 83264946,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2072_PATCH",
+              "start": 0,
+              "end": 170816182,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_3_CTG8",
+              "start": 0,
+              "end": 101999716,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_3_CTG12",
+              "start": 0,
+              "end": 190218028,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2057_PATCH",
+              "start": 0,
+              "end": 170805979,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_CA01-TB01_CTG3_1",
+              "start": 0,
+              "end": 58645065,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_4_CTG2",
+              "start": 0,
+              "end": 133277582,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_9_CTG12",
+              "start": 0,
+              "end": 190219005,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_8_CTG4",
+              "start": 0,
+              "end": 83258474,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_3_CTG3_1",
+              "start": 0,
+              "end": 58625958,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_3_CTG1",
+              "start": 0,
+              "end": 90340304,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2412_PATCH",
+              "start": 0,
+              "end": 80373284,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2023_PATCH",
+              "start": 0,
+              "end": 190147504,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_7_CTG1",
+              "start": 0,
+              "end": 145138198,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_2_CTG1",
+              "start": 0,
+              "end": 181547139,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_4_CTG2_1",
+              "start": 0,
+              "end": 198301383,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_2_CTG4",
+              "start": 0,
+              "end": 83263494,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_4_CTG1",
+              "start": 0,
+              "end": 242191076,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_0019-4656-B_CTG3_1",
+              "start": 0,
+              "end": 58675214,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_1_CTG4",
+              "start": 0,
+              "end": 190221757,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_3_CTG1",
+              "start": 0,
+              "end": 135092180,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH13_BA2_HAP_CTG3_1",
+              "start": 0,
+              "end": 58662330,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_2_CTG1_1",
+              "start": 0,
+              "end": 135083841,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_2_CTG7",
+              "start": 0,
+              "end": 242223512,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_5_CTG32_1",
+              "start": 0,
+              "end": 248960213,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG23_PATCH",
+              "start": 0,
+              "end": 133275184,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG8",
+              "start": 0,
+              "end": 135088433,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_1_CTG7",
+              "start": 0,
+              "end": 159346281,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1535_PATCH",
+              "start": 0,
+              "end": 57187419,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_2_CTG4_4",
+              "start": 0,
+              "end": 159333789,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_GRC212_AB_HAP_CTG3_1",
+              "start": 0,
+              "end": 58644315,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2233_PATCH",
+              "start": 0,
+              "end": 242193535,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2288_HG2289_PATCH",
+              "start": 0,
+              "end": 114360394,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_5_CTG12",
+              "start": 0,
+              "end": 190219562,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_11_CTG12",
+              "start": 0,
+              "end": 190233769,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_1_CTG3",
+              "start": 0,
+              "end": 198302882,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_RSH_BA2_HAP_CTG3_1",
+              "start": 0,
+              "end": 58662237,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_5_CTG1_1",
+              "start": 0,
+              "end": 80378965,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_G248_BA2_HAP_CTG3_1",
+              "start": 0,
+              "end": 58661364,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG5",
+              "start": 0,
+              "end": 135097255,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG1_2",
+              "start": 0,
+              "end": 135096748,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_2_CTG1_1",
+              "start": 0,
+              "end": 46716685,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG142_HG150_NOVEL_TEST",
+              "start": 0,
+              "end": 135094228,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH08_BAX_HAP_CTG3_1",
+              "start": 0,
+              "end": 58647709,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_2_CTG2",
+              "start": 0,
+              "end": 80442734,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH05_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58616795,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_8_CTG2_1",
+              "start": 0,
+              "end": 198302280,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG4",
+              "start": 0,
+              "end": 170808607,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_6_CTG3",
+              "start": 0,
+              "end": 198294921,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG107_PATCH",
+              "start": 0,
+              "end": 135088590,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_1_CTG2",
+              "start": 0,
+              "end": 83256362,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR15_2_CTG3",
+              "start": 0,
+              "end": 101995966,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_3_CTG1",
+              "start": 0,
+              "end": 181542495,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_6_CTG2_1",
+              "start": 0,
+              "end": 198305007,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_1_CTG3_1",
+              "start": 0,
+              "end": 90335239,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG3",
+              "start": 0,
+              "end": 114370226,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG151_NOVEL_TEST",
+              "start": 0,
+              "end": 135097696,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_ABC08_A1_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617625,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_2_CTG1",
+              "start": 0,
+              "end": 159348294,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH06_BA1_HAP_CTG3_1",
+              "start": 0,
+              "end": 58603994,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR10_1_CTG4",
+              "start": 0,
+              "end": 133815819,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_3_CTG2",
+              "start": 0,
+              "end": 58625823,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHRX_3_CTG7",
+              "start": 0,
+              "end": 156050387,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH06_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617587,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG986_PATCH",
+              "start": 0,
+              "end": 248956639,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG6",
+              "start": 0,
+              "end": 50842710,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH08_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617658,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG2",
+              "start": 0,
+              "end": 135083598,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG3",
+              "start": 0,
+              "end": 170836231,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR10_1_CTG6",
+              "start": 0,
+              "end": 133801239,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_4_CTG31",
+              "start": 0,
+              "end": 248955631,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_T7526_BDEL_HAP_CTG3_1",
+              "start": 0,
+              "end": 58631206,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_LUCE_BDEL_HAP_CTG3_1",
+              "start": 0,
+              "end": 58631446,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_9_CTG3",
+              "start": 0,
+              "end": 198291952,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_4_CTG2_1",
+              "start": 0,
+              "end": 133281351,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR20_1_CTG3",
+              "start": 0,
+              "end": 64447812,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_1_CTG31",
+              "start": 0,
+              "end": 248973653,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2116_PATCH",
+              "start": 0,
+              "end": 135090698,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_7_CTG7_2",
+              "start": 0,
+              "end": 242202531,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR10_1_CTG3",
+              "start": 0,
+              "end": 133783218,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG3_1",
+              "start": 0,
+              "end": 135090845,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR14_2_CTG1",
+              "start": 0,
+              "end": 107050862,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_1_CTG2_1",
+              "start": 0,
+              "end": 198306097,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG2",
+              "start": 0,
+              "end": 114368315,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2239_PATCH",
+              "start": 0,
+              "end": 159345319,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR10_1_CTG1",
+              "start": 0,
+              "end": 133844722,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_4_CTG1",
+              "start": 0,
+              "end": 181537434,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_1_CTG9",
+              "start": 0,
+              "end": 83255504,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_502960008-2_CTG3_1",
+              "start": 0,
+              "end": 58616590,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_RP5_B_HAP_CTG3_1",
+              "start": 0,
+              "end": 58631402,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG6",
+              "start": 0,
+              "end": 135092332,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_3_CTG1",
+              "start": 0,
+              "end": 50818468,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_4_CTG1",
+              "start": 0,
+              "end": 198310749,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG7",
+              "start": 0,
+              "end": 170812567,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_8_CTG2_1",
+              "start": 0,
+              "end": 133282605,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_7_CTG1",
+              "start": 0,
+              "end": 50845852,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_3_CTG15",
+              "start": 0,
+              "end": 242194292,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_ALT21_CTG2_1",
+              "start": 0,
+              "end": 80376343,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_2_CTG2_1",
+              "start": 0,
+              "end": 198298736,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_1_CTG5",
+              "start": 0,
+              "end": 181543736,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_1_CTG1",
+              "start": 0,
+              "end": 198297480,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_4_CTG1_1",
+              "start": 0,
+              "end": 181546281,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_3_CTG1",
+              "start": 0,
+              "end": 159352526,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR14_8_CTG1",
+              "start": 0,
+              "end": 107050407,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG3",
+              "start": 0,
+              "end": 138400797,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_7191059-2_CTG3_1",
+              "start": 0,
+              "end": 58617604,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_G248_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617652,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_ABC08_AB_HAP_T_P_CTG3_1",
+              "start": 0,
+              "end": 58617636,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_LUCE_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617634,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_RSH_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617616,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_T7526_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617601,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH15_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617473,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_G085_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58617601,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_2_CTG2",
+              "start": 0,
+              "end": 58627095,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_CA01-TA01_1_CTG3_1",
+              "start": 0,
+              "end": 58617632,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_FH13_A_HAP_CTG3_1",
+              "start": 0,
+              "end": 58616725,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_1_CTG2_1",
+              "start": 0,
+              "end": 133284468,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_3_CTG3_1",
+              "start": 0,
+              "end": 90346170,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG4",
+              "start": 0,
+              "end": 114368332,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG7",
+              "start": 0,
+              "end": 114374491,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_CA01-TA01_2_CTG3_1",
+              "start": 0,
+              "end": 58617647,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_3_CTG2_1",
+              "start": 0,
+              "end": 80379039,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_1_CTG2_1",
+              "start": 0,
+              "end": 80382671,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_1_CTG1",
+              "start": 0,
+              "end": 133279324,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_8_CTG1_1",
+              "start": 0,
+              "end": 46713185,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_502960008-1_CTG3_1",
+              "start": 0,
+              "end": 58617609,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_4_CTG3",
+              "start": 0,
+              "end": 198296867,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2058_PATCH",
+              "start": 0,
+              "end": 248956422,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_8_CTG3",
+              "start": 0,
+              "end": 248962151,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_2_CTG32_1",
+              "start": 0,
+              "end": 248962488,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2237_PATCH",
+              "start": 0,
+              "end": 198290329,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_8_CTG3",
+              "start": 0,
+              "end": 198295934,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2419_PATCH",
+              "start": 0,
+              "end": 145138635,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_2_CTG1_1",
+              "start": 0,
+              "end": 80379367,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_6_CTG1",
+              "start": 0,
+              "end": 181540245,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_1_CTG12",
+              "start": 0,
+              "end": 190227204,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_7_CTG3",
+              "start": 0,
+              "end": 198294497,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_7_CTG2_1",
+              "start": 0,
+              "end": 198301024,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_0019-4656-A_CTG3_1",
+              "start": 0,
+              "end": 58617441,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG6",
+              "start": 0,
+              "end": 138399532,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_8_CTG12",
+              "start": 0,
+              "end": 190218480,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_5_CTG3",
+              "start": 0,
+              "end": 198293785,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_1_CTG1",
+              "start": 0,
+              "end": 80395815,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG1",
+              "start": 0,
+              "end": 138409529,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_3_CTG3",
+              "start": 0,
+              "end": 198293223,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG1",
+              "start": 0,
+              "end": 50806372,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_2_CTG3",
+              "start": 0,
+              "end": 198296961,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_ALT2_1_CTG32_1",
+              "start": 0,
+              "end": 248958866,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_1_CTG15",
+              "start": 0,
+              "end": 242198904,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_2_CTG15",
+              "start": 0,
+              "end": 242198544,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_7191059-1_CTG3_1",
+              "start": 0,
+              "end": 58617649,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_2_CTG2_1",
+              "start": 0,
+              "end": 80378720,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_HG2394_CTG3_1",
+              "start": 0,
+              "end": 58617630,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_4_CTG7",
+              "start": 0,
+              "end": 145143933,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_4_CTG12",
+              "start": 0,
+              "end": 190220704,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_1_CTG4_4",
+              "start": 0,
+              "end": 159348604,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_1_CTG1",
+              "start": 0,
+              "end": 159349278,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_ALT2_CTG2_1",
+              "start": 0,
+              "end": 80376883,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_3_CTG2",
+              "start": 0,
+              "end": 83258211,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_G085_BA1_HAP_CTG3_1",
+              "start": 0,
+              "end": 58603800,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2067_PATCH",
+              "start": 0,
+              "end": 145144434,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_HG2393_CTG3_1",
+              "start": 0,
+              "end": 58583172,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_4_CTG1",
+              "start": 0,
+              "end": 50806321,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_6_CTG1",
+              "start": 0,
+              "end": 50815919,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_1_CTG3_1",
+              "start": 0,
+              "end": 58624789,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_GRC212_BA1_HAP_CTG3_1",
+              "start": 0,
+              "end": 58602595,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2046_PATCH",
+              "start": 0,
+              "end": 83257439,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG1_1",
+              "start": 0,
+              "end": 135092355,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_9_CTG2_1",
+              "start": 0,
+              "end": 133289677,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_5_CTG1",
+              "start": 0,
+              "end": 50832153,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_3_CTG2_1",
+              "start": 0,
+              "end": 133281486,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG6",
+              "start": 0,
+              "end": 170818797,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2249_PATCH",
+              "start": 0,
+              "end": 114364211,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_HG2396_CTG3_1",
+              "start": 0,
+              "end": 58603982,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_4_CTG1",
+              "start": 0,
+              "end": 145141010,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_8_CTG1",
+              "start": 0,
+              "end": 50832130,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHRX_2_CTG12",
+              "start": 0,
+              "end": 156053172,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_6_CTG1_1",
+              "start": 0,
+              "end": 46713516,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_1_CTG5",
+              "start": 0,
+              "end": 242199562,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2088_PATCH",
+              "start": 0,
+              "end": 159351667,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_1_CTG6",
+              "start": 0,
+              "end": 145150400,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_3_CTG3",
+              "start": 0,
+              "end": 248961700,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1708_PATCH",
+              "start": 0,
+              "end": 135086620,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_8_CTG7_2",
+              "start": 0,
+              "end": 242199670,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_9_CTG3",
+              "start": 0,
+              "end": 248965380,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_7_CTG1",
+              "start": 0,
+              "end": 181544732,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_2_CTG2_1",
+              "start": 0,
+              "end": 133282358,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_5_CTG7_2",
+              "start": 0,
+              "end": 242199685,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_2_CTG1",
+              "start": 0,
+              "end": 83259496,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_6_CTG1",
+              "start": 0,
+              "end": 145136257,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_2_CTG1",
+              "start": 0,
+              "end": 242198346,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_9_CTG1",
+              "start": 0,
+              "end": 181543440,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_CTG2",
+              "start": 0,
+              "end": 90341867,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG7",
+              "start": 0,
+              "end": 138399111,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_5_CTG7",
+              "start": 0,
+              "end": 145144538,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_1_CTG4",
+              "start": 0,
+              "end": 83264766,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_1_CTG7",
+              "start": 0,
+              "end": 242193540,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_2_CTG7",
+              "start": 0,
+              "end": 145141868,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_2_CTG5",
+              "start": 0,
+              "end": 181542206,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_3_CTG5",
+              "start": 0,
+              "end": 181538569,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR20_1_CTG1",
+              "start": 0,
+              "end": 64450183,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_2_CTG7",
+              "start": 0,
+              "end": 159349352,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_5_CTG1",
+              "start": 0,
+              "end": 181539933,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG2",
+              "start": 0,
+              "end": 170833811,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_1_CTG7_2",
+              "start": 0,
+              "end": 242210518,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG8",
+              "start": 0,
+              "end": 114368996,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_ABC08_AB_HAP_C_P_CTG3_1",
+              "start": 0,
+              "end": 58618008,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2104_PATCH",
+              "start": 0,
+              "end": 248958259,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_1_CTG2",
+              "start": 0,
+              "end": 133281368,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_1_CTG1",
+              "start": 0,
+              "end": 242194896,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_2_CTG12",
+              "start": 0,
+              "end": 190206797,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_6_CTG2_1",
+              "start": 0,
+              "end": 133275361,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR7_1_CTG6",
+              "start": 0,
+              "end": 159351981,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR20_1_CTG2",
+              "start": 0,
+              "end": 64441059,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_12_CTG4",
+              "start": 0,
+              "end": 83271781,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_4_CTG1_1",
+              "start": 0,
+              "end": 46719541,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_5_CTG2_1",
+              "start": 0,
+              "end": 198300594,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_1_CTG8_1",
+              "start": 0,
+              "end": 190218838,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_4_CTG1_1",
+              "start": 0,
+              "end": 80378406,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_4_CTG7_2",
+              "start": 0,
+              "end": 242196589,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_2_CTG31",
+              "start": 0,
+              "end": 248971826,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_3_CTG7_2",
+              "start": 0,
+              "end": 242194557,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_1_CTG11",
+              "start": 0,
+              "end": 248961539,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_2_CTG1",
+              "start": 0,
+              "end": 133282237,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR3_3_CTG1",
+              "start": 0,
+              "end": 198300110,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2217_PATCH",
+              "start": 0,
+              "end": 135086621,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_9_CTG4",
+              "start": 0,
+              "end": 83263791,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_2_CTG1",
+              "start": 0,
+              "end": 135093444,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2133_PATCH",
+              "start": 0,
+              "end": 198299611,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR18_1_CTG2",
+              "start": 0,
+              "end": 80386177,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG6",
+              "start": 0,
+              "end": 114367169,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_7_CTG7",
+              "start": 0,
+              "end": 145147686,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG5",
+              "start": 0,
+              "end": 50821308,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_3_CTG1_1",
+              "start": 0,
+              "end": 181554865,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2062_PATCH",
+              "start": 0,
+              "end": 57262172,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1311_PATCH",
+              "start": 0,
+              "end": 50818486,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_CA04_CTG3_1",
+              "start": 0,
+              "end": 58537114,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19KIR_0010-5217-AB_CTG3_1",
+              "start": 0,
+              "end": 58538377,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_1_CTG2",
+              "start": 0,
+              "end": 50788525,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_2_CTG7_2",
+              "start": 0,
+              "end": 242199609,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2442_PATCH",
+              "start": 0,
+              "end": 80379182,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR4_2_CTG4",
+              "start": 0,
+              "end": 190217898,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_3_CTG4",
+              "start": 0,
+              "end": 83269063,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_2_CTG3_1",
+              "start": 0,
+              "end": 90343477,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_6_CTG4",
+              "start": 0,
+              "end": 83246071,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2247_PATCH",
+              "start": 0,
+              "end": 133274000,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2242_HG2243_PATCH",
+              "start": 0,
+              "end": 133797297,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR5_1_CTG1",
+              "start": 0,
+              "end": 181558402,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_5_CTG2",
+              "start": 0,
+              "end": 46712294,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG10",
+              "start": 0,
+              "end": 170810830,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_5_CTG3_1",
+              "start": 0,
+              "end": 90338377,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_8_CTG1",
+              "start": 0,
+              "end": 170813052,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_5_CTG2_1",
+              "start": 0,
+              "end": 133279478,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR6_1_CTG9",
+              "start": 0,
+              "end": 170815583,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_3_CTG1_1",
+              "start": 0,
+              "end": 46715777,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR22_2_CTG1",
+              "start": 0,
+              "end": 50830603,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG2",
+              "start": 0,
+              "end": 138402913,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR2_3_CTG1",
+              "start": 0,
+              "end": 242195626,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR17_5_CTG4",
+              "start": 0,
+              "end": 83247119,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR11_1_CTG3",
+              "start": 0,
+              "end": 135090275,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2047_PATCH",
+              "start": 0,
+              "end": 133275304,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_4_CTG1",
+              "start": 0,
+              "end": 90340369,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR21_1_CTG1_1",
+              "start": 0,
+              "end": 46722569,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_5_CTG2",
+              "start": 0,
+              "end": 58619095,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR9_1_CTG4",
+              "start": 0,
+              "end": 138405815,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR16_5_CTG1",
+              "start": 0,
+              "end": 90344275,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR20_1_CTG4",
+              "start": 0,
+              "end": 64446453,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_7_CTG2_1",
+              "start": 0,
+              "end": 133289478,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_4_CTG2",
+              "start": 0,
+              "end": 58619803,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR1_4_CTG32_1",
+              "start": 0,
+              "end": 248958766,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG1531_PATCH",
+              "start": 0,
+              "end": 57177176,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG460_PATCH",
+              "start": 0,
+              "end": 248955838,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR19_2_CTG3_1",
+              "start": 0,
+              "end": 58618601,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR12_5_CTG2",
+              "start": 0,
+              "end": 133275237,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR13_1_CTG5",
+              "start": 0,
+              "end": 114365350,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HSCHR8_6_CTG7",
+              "start": 0,
+              "end": 145141837,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2216_PATCH",
+              "start": 0,
+              "end": 114376428,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "CHR_HG2241_PATCH",
+              "start": 0,
+              "end": 133792722,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270728.1",
+              "start": 0,
+              "end": 1872759,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270727.1",
+              "start": 0,
+              "end": 448248,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270442.1",
+              "start": 0,
+              "end": 392061,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270729.1",
+              "start": 0,
+              "end": 280839,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000225.1",
+              "start": 0,
+              "end": 211173,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270743.1",
+              "start": 0,
+              "end": 210658,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000008.2",
+              "start": 0,
+              "end": 209709,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000009.2",
+              "start": 0,
+              "end": 201709,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270747.1",
+              "start": 0,
+              "end": 198735,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270722.1",
+              "start": 0,
+              "end": 194050,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000194.1",
+              "start": 0,
+              "end": 191469,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270742.1",
+              "start": 0,
+              "end": 186739,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000205.2",
+              "start": 0,
+              "end": 185591,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000195.1",
+              "start": 0,
+              "end": 182896,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270736.1",
+              "start": 0,
+              "end": 181920,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270733.1",
+              "start": 0,
+              "end": 179772,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000224.1",
+              "start": 0,
+              "end": 179693,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000219.1",
+              "start": 0,
+              "end": 179198,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270719.1",
+              "start": 0,
+              "end": 176845,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000216.2",
+              "start": 0,
+              "end": 176608,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270712.1",
+              "start": 0,
+              "end": 176043,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270706.1",
+              "start": 0,
+              "end": 175055,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270725.1",
+              "start": 0,
+              "end": 172810,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270744.1",
+              "start": 0,
+              "end": 168472,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270734.1",
+              "start": 0,
+              "end": 165050,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000213.1",
+              "start": 0,
+              "end": 164239,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000220.1",
+              "start": 0,
+              "end": 161802,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270715.1",
+              "start": 0,
+              "end": 161471,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000218.1",
+              "start": 0,
+              "end": 161147,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270749.1",
+              "start": 0,
+              "end": 158759,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270741.1",
+              "start": 0,
+              "end": 157432,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000221.1",
+              "start": 0,
+              "end": 155397,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270716.1",
+              "start": 0,
+              "end": 153799,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270731.1",
+              "start": 0,
+              "end": 150754,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270751.1",
+              "start": 0,
+              "end": 150742,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270750.1",
+              "start": 0,
+              "end": 148850,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270519.1",
+              "start": 0,
+              "end": 138126,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000214.1",
+              "start": 0,
+              "end": 137718,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270708.1",
+              "start": 0,
+              "end": 127682,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270730.1",
+              "start": 0,
+              "end": 112551,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270438.1",
+              "start": 0,
+              "end": 112505,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270737.1",
+              "start": 0,
+              "end": 103838,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270721.1",
+              "start": 0,
+              "end": 100316,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270738.1",
+              "start": 0,
+              "end": 99375,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270748.1",
+              "start": 0,
+              "end": 93321,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270435.1",
+              "start": 0,
+              "end": 92983,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000208.1",
+              "start": 0,
+              "end": 92689,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270538.1",
+              "start": 0,
+              "end": 91309,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270756.1",
+              "start": 0,
+              "end": 79590,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270739.1",
+              "start": 0,
+              "end": 73985,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270757.1",
+              "start": 0,
+              "end": 71251,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270709.1",
+              "start": 0,
+              "end": 66860,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270746.1",
+              "start": 0,
+              "end": 66486,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270753.1",
+              "start": 0,
+              "end": 62944,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270589.1",
+              "start": 0,
+              "end": 44474,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270726.1",
+              "start": 0,
+              "end": 43739,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270735.1",
+              "start": 0,
+              "end": 42811,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270711.1",
+              "start": 0,
+              "end": 42210,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270745.1",
+              "start": 0,
+              "end": 41891,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270714.1",
+              "start": 0,
+              "end": 41717,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270732.1",
+              "start": 0,
+              "end": 41543,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270713.1",
+              "start": 0,
+              "end": 40745,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270754.1",
+              "start": 0,
+              "end": 40191,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270710.1",
+              "start": 0,
+              "end": 40176,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270717.1",
+              "start": 0,
+              "end": 40062,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270724.1",
+              "start": 0,
+              "end": 39555,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270720.1",
+              "start": 0,
+              "end": 39050,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270723.1",
+              "start": 0,
+              "end": 38115,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270718.1",
+              "start": 0,
+              "end": 38054,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270317.1",
+              "start": 0,
+              "end": 37690,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270740.1",
+              "start": 0,
+              "end": 37240,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270755.1",
+              "start": 0,
+              "end": 36723,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270707.1",
+              "start": 0,
+              "end": 32032,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270579.1",
+              "start": 0,
+              "end": 31033,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270752.1",
+              "start": 0,
+              "end": 27745,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270512.1",
+              "start": 0,
+              "end": 22689,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270322.1",
+              "start": 0,
+              "end": 21476,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "GL000226.1",
+              "start": 0,
+              "end": 15008,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270311.1",
+              "start": 0,
+              "end": 12399,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270366.1",
+              "start": 0,
+              "end": 8320,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270511.1",
+              "start": 0,
+              "end": 8127,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270448.1",
+              "start": 0,
+              "end": 7992,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270521.1",
+              "start": 0,
+              "end": 7642,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270581.1",
+              "start": 0,
+              "end": 7046,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270582.1",
+              "start": 0,
+              "end": 6504,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270515.1",
+              "start": 0,
+              "end": 6361,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270588.1",
+              "start": 0,
+              "end": 6158,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270591.1",
+              "start": 0,
+              "end": 5796,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270522.1",
+              "start": 0,
+              "end": 5674,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270507.1",
+              "start": 0,
+              "end": 5353,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270590.1",
+              "start": 0,
+              "end": 4685,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270584.1",
+              "start": 0,
+              "end": 4513,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270320.1",
+              "start": 0,
+              "end": 4416,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270382.1",
+              "start": 0,
+              "end": 4215,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270468.1",
+              "start": 0,
+              "end": 4055,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270467.1",
+              "start": 0,
+              "end": 3920,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270362.1",
+              "start": 0,
+              "end": 3530,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270517.1",
+              "start": 0,
+              "end": 3253,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270593.1",
+              "start": 0,
+              "end": 3041,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270528.1",
+              "start": 0,
+              "end": 2983,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270587.1",
+              "start": 0,
+              "end": 2969,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270364.1",
+              "start": 0,
+              "end": 2855,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270371.1",
+              "start": 0,
+              "end": 2805,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270333.1",
+              "start": 0,
+              "end": 2699,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270374.1",
+              "start": 0,
+              "end": 2656,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270411.1",
+              "start": 0,
+              "end": 2646,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270414.1",
+              "start": 0,
+              "end": 2489,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270510.1",
+              "start": 0,
+              "end": 2415,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270390.1",
+              "start": 0,
+              "end": 2387,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270375.1",
+              "start": 0,
+              "end": 2378,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270420.1",
+              "start": 0,
+              "end": 2321,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270509.1",
+              "start": 0,
+              "end": 2318,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270315.1",
+              "start": 0,
+              "end": 2276,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270302.1",
+              "start": 0,
+              "end": 2274,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270518.1",
+              "start": 0,
+              "end": 2186,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270530.1",
+              "start": 0,
+              "end": 2168,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270304.1",
+              "start": 0,
+              "end": 2165,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270418.1",
+              "start": 0,
+              "end": 2145,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270424.1",
+              "start": 0,
+              "end": 2140,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270417.1",
+              "start": 0,
+              "end": 2043,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270508.1",
+              "start": 0,
+              "end": 1951,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270303.1",
+              "start": 0,
+              "end": 1942,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270381.1",
+              "start": 0,
+              "end": 1930,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270529.1",
+              "start": 0,
+              "end": 1899,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270425.1",
+              "start": 0,
+              "end": 1884,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270396.1",
+              "start": 0,
+              "end": 1880,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270363.1",
+              "start": 0,
+              "end": 1803,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270386.1",
+              "start": 0,
+              "end": 1788,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270465.1",
+              "start": 0,
+              "end": 1774,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270383.1",
+              "start": 0,
+              "end": 1750,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270384.1",
+              "start": 0,
+              "end": 1658,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270330.1",
+              "start": 0,
+              "end": 1652,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270372.1",
+              "start": 0,
+              "end": 1650,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270548.1",
+              "start": 0,
+              "end": 1599,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270580.1",
+              "start": 0,
+              "end": 1553,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270387.1",
+              "start": 0,
+              "end": 1537,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270391.1",
+              "start": 0,
+              "end": 1484,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270305.1",
+              "start": 0,
+              "end": 1472,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270373.1",
+              "start": 0,
+              "end": 1451,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270422.1",
+              "start": 0,
+              "end": 1445,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270316.1",
+              "start": 0,
+              "end": 1444,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270340.1",
+              "start": 0,
+              "end": 1428,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270338.1",
+              "start": 0,
+              "end": 1428,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270583.1",
+              "start": 0,
+              "end": 1400,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270334.1",
+              "start": 0,
+              "end": 1368,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270429.1",
+              "start": 0,
+              "end": 1361,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270393.1",
+              "start": 0,
+              "end": 1308,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270516.1",
+              "start": 0,
+              "end": 1300,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270389.1",
+              "start": 0,
+              "end": 1298,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270466.1",
+              "start": 0,
+              "end": 1233,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270388.1",
+              "start": 0,
+              "end": 1216,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270544.1",
+              "start": 0,
+              "end": 1202,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270310.1",
+              "start": 0,
+              "end": 1201,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270412.1",
+              "start": 0,
+              "end": 1179,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270395.1",
+              "start": 0,
+              "end": 1143,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270376.1",
+              "start": 0,
+              "end": 1136,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270337.1",
+              "start": 0,
+              "end": 1121,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270335.1",
+              "start": 0,
+              "end": 1048,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270378.1",
+              "start": 0,
+              "end": 1048,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270379.1",
+              "start": 0,
+              "end": 1045,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270329.1",
+              "start": 0,
+              "end": 1040,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270419.1",
+              "start": 0,
+              "end": 1029,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270336.1",
+              "start": 0,
+              "end": 1026,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270312.1",
+              "start": 0,
+              "end": 998,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270539.1",
+              "start": 0,
+              "end": 993,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270385.1",
+              "start": 0,
+              "end": 990,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270423.1",
+              "start": 0,
+              "end": 981,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270392.1",
+              "start": 0,
+              "end": 971,
+              "assemblyName": "GRCh38"
+            },
+            {
+              "refName": "KI270394.1",
+              "start": 0,
+              "end": 970,
+              "assemblyName": "GRCh38"
+            }
+          ],
+          "displayRegionsFromAssemblyName": "GRCh38",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "xwPzCDv22",
+              "type": "BasicTrack",
+              "height": 400,
+              "configuration": "sparql_togo"
+            },
+            {
+              "id": "alksdAD23",
+              "type": "BasicTrack",
+              "height": 100,
+              "configuration": "sparql_ensembl"
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 1260,
+          "hideControls": false,
+          "hideHeader": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {},
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
             {
               "name": "Admin",
               "menuItems": [

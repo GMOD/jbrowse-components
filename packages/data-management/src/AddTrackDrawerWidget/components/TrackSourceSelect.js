@@ -55,7 +55,7 @@ function getInputComponent(trackSource, trackData, setTrackData) {
       return (
         <FileLocationEditor
           slot={{
-            name: 'fileLocation',
+            name: 'dataSourceLocation',
             description: '',
             value: trackData,
             set: value => setTrackData(value),
@@ -66,7 +66,7 @@ function getInputComponent(trackSource, trackData, setTrackData) {
       return (
         <JsonEditor
           slot={{
-            name: 'configuration',
+            name: 'track data',
             description: 'A JSON representation of the features in the track',
             value: trackData.config,
             set: value => setTrackData({ config: value }),
@@ -112,7 +112,7 @@ function TrackSourceSelect({
             control={
               <Radio inputProps={{ 'data-testid': 'addTrackFromFileRadio' }} />
             }
-            label="From file"
+            label="Enter data source"
           />
           <FormControlLabel
             value="fromConfig"
@@ -121,7 +121,7 @@ function TrackSourceSelect({
                 inputProps={{ 'data-testid': 'addTrackFromConfigRadio' }}
               />
             }
-            label="From configuration"
+            label="Enter data manually"
           />
         </RadioGroup>
       </FormControl>
