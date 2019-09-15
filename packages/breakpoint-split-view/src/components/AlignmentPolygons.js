@@ -26,13 +26,15 @@ export default pluginManager => {
                 c1[BOTTOM] +
                 topLGV.headerHeight +
                 topLGV.scaleBarHeight +
-                model.headerHeight
+                model.headerHeight +
+                3 // margin
               const h2 =
                 c2[TOP] +
                 topLGV.height +
                 bottomLGV.headerHeight +
                 bottomLGV.scaleBarHeight +
-                model.headerHeight
+                model.headerHeight +
+                6 // margin
               return (
                 <polygon
                   key={JSON.stringify(chunk)}
