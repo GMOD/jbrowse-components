@@ -47,6 +47,7 @@
         "bfj": "^6.1.1",
         "case-sensitive-paths-webpack-plugin": "^2.1.2",
         "chalk": "^2.4.1",
+        "core-js": "^3.2.1",
         "css-loader": "^2.1.0",
         "documentation": "^9.3.1",
         "dotenv": "^6.0.0",
