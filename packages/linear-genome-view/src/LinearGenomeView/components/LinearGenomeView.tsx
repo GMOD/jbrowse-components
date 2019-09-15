@@ -293,31 +293,41 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
   )
 })
 
-const Header = withSize({ monitorHeight: true })(observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const [error, setError] = useState<string | undefined>()
-  const navTo = (locstring: string) => {
-    if (!model.navToLocstring(locstring)) {
-      setError(`Unable to navigate to ${locstring}`)
-    } else {
-      setError(undefined)
-    }
-  }
-  model.setHeaderHeight(size.height)
-  return (
-    <div className={classes.headerBar}>
-      {model.hideControls ? null : <Controls model={model} />}
-      <TextFieldOrTypography model={model} />
-      <div className={classes.spacer} />
+const Header = withSize({ monitorHeight: true })(
+  observer(
+    ({
+      model,
+      size,
+    }: {
+      model: LGV
+      size: { width: number; height: number }
+    }) => {
+      const classes = useStyles()
+      const [error, setError] = useState<string | undefined>()
+      const navTo = (locstring: string) => {
+        if (!model.navToLocstring(locstring)) {
+          setError(`Unable to navigate to ${locstring}`)
+        } else {
+          setError(undefined)
+        }
+      }
+      model.setHeaderHeight(size.height)
+      return (
+        <div className={classes.headerBar}>
+          {model.hideControls ? null : <Controls model={model} />}
+          <TextFieldOrTypography model={model} />
+          <div className={classes.spacer} />
 
-      <Search onSubmit={navTo} error={error} />
-      <RefSeqDropdown onSubmit={navTo} model={model} />
+          <Search onSubmit={navTo} error={error} />
+          <RefSeqDropdown onSubmit={navTo} model={model} />
 
-      <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
-  )
-}))
+          <ZoomControls model={model} />
+          <div className={classes.spacer} />
+        </div>
+      )
+    },
+  ),
+)
 
 const Controls = observer(({ model }) => {
   const classes = useStyles()

@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
+import 'core-js/stable'
 
 let app = <JBrowse config={{ uri: 'test_data/config.json' }} />
 

@@ -171,6 +171,10 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
+      setHeaderHeight(newHeight: number) {
+        self.headerHeight = newHeight
+      },
+
       setWidth(newWidth: number) {
         self.width = newWidth
       },
