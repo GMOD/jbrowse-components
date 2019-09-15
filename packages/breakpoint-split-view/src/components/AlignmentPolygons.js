@@ -13,7 +13,7 @@ export default pluginManager => {
       const { topLGV, bottomLGV, controlsWidth } = model
       return (
         <div style={{ display: 'flex', height: '100%' }}>
-          <div style={{ width: controlsWidth }} />
+          <div style={{ width: controlsWidth, flexShrink: 0 }} />
           <svg style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}>
             {Object.values(alignmentChunks).map(chunk => {
               const [c1, c2] = chunk
