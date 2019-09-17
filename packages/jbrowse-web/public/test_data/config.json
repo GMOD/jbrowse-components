@@ -949,7 +949,6 @@
           }
         },
         {
-          "configId": "CxXwB_DMrU",
           "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
           "configId": "na12878_exome",
@@ -1021,7 +1020,6 @@
           }
         },
         {
-          "configId": "wKQ_PofPYX5",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
           "configId": "hg00096_highcov",
@@ -1227,7 +1225,6 @@
           }
         },
         {
-          "configId": "aK7IyEj3xZ6",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
           "configId": "sequelII_variants",
@@ -1264,7 +1261,6 @@
           }
         },
         {
-          "configId": "3Ejl89-eq9A",
           "type": "VariantTrack",
           "configId": "chm_variants",
           "name": "chm.full.37d5.vcf.gz",
@@ -1708,7 +1704,6 @@
   ],
   "configuration": {
     "configId": "WBBdhiJUQdj",
-    "updateUrl": false,
     "rpc": {
       "configId": "A8raoinDhoH"
     }
