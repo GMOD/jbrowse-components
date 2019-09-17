@@ -1,7 +1,10 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import sizeMe from 'react-sizeme'
 import LinearGenomeView from './LinearGenomeView'
+
+sizeMe.noPlaceholders = true
 
 describe('LinearGenomeView genome view component', () => {
   it('renders with an empty model', () => {
