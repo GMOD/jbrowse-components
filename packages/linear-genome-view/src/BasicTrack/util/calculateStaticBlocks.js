@@ -7,8 +7,8 @@ export function calculateBlocksReversed(self, extra = 0) {
       const { parentRegion } = fwdBlock
       const revBlock = new ContentBlock({
         ...fwdBlock,
-        start: parentRegion.end - fwdBlock.end,
-        end: parentRegion.end - fwdBlock.start,
+        start: parentRegion.start + parentRegion.end - fwdBlock.end,
+        end: parentRegion.start + parentRegion.end - fwdBlock.start,
       })
       revBlock.key = assembleLocString(revBlock)
       return revBlock
