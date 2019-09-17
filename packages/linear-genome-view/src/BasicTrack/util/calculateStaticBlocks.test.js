@@ -1,4 +1,4 @@
-import {
+import calculateBlocks, {
   calculateBlocksForward,
   calculateBlocksReversed,
 } from './calculateStaticBlocks'
@@ -174,7 +174,7 @@ describe('horizontally flipped displayed regions', () => {
 })
 describe('horizontally flipped displayed regions with elided region and extra block', () => {
   test('1', () => {
-    const blocks = calculateBlocksReversed(
+    const blocks = calculateBlocks(
       {
         bpPerPx: 1,
         width: 800,
