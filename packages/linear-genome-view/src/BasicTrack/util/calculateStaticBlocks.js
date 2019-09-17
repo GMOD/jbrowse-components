@@ -17,7 +17,7 @@ export function calculateBlocksReversed(self, extra = 0) {
 }
 
 export function calculateBlocksForward(self, extra = 0) {
-  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
+  const { offsetPx, bpPerPx, width, effectiveRegions, minimumBlockWidth } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
@@ -27,7 +27,7 @@ export function calculateBlocksForward(self, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegions.forEach(region => {
+  effectiveRegions.forEach(region => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const regionBlockCount = Math.ceil(

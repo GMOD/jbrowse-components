@@ -25,7 +25,7 @@ export default function calculateDynamicBlocks(
   {
     offsetPx,
     viewingRegionWidth: width,
-    displayedRegions,
+    effectiveRegions,
     bpPerPx,
     minimumBlockWidth,
   },
@@ -35,8 +35,8 @@ export default function calculateDynamicBlocks(
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  for (let i = 0; i < displayedRegions.length; i += 1) {
-    const parentRegion = displayedRegions[i]
+  for (let i = 0; i < effectiveRegions.length; i += 1) {
+    const parentRegion = effectiveRegions[i]
     const { assemblyName, start, end, refName } = parentRegion
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
