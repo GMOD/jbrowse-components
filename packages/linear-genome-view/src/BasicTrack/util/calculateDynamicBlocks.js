@@ -21,16 +21,14 @@ import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
  *
  * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
-export default function calculateDynamicBlocks(
-  {
+export default function calculateDynamicBlocks(model, horizontallyFlipped) {
+  const {
     offsetPx,
     viewingRegionWidth: width,
     effectiveRegions,
     bpPerPx,
     minimumBlockWidth,
-  },
-  horizontallyFlipped,
-) {
+  } = model
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
