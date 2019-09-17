@@ -1,4 +1,4 @@
-import { StylesProvider, createGenerateClassName } from '@material-ui/styles'
+import { StylesProvider } from '@material-ui/styles'
 import React from 'react'
 
 const react = jest.requireActual('@testing-library/react')
