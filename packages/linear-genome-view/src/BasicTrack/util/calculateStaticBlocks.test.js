@@ -9,7 +9,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      effectiveRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -19,7 +19,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 30,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -32,7 +32,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1000,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -46,7 +46,7 @@ describe('block calculation', () => {
         bpPerPx: 1,
         width: 800,
         offsetPx: -1000,
-        effectiveRegions: [
+        displayedRegionsInOrder: [
           { refName: 'ctgA', start: 0, end: 100 },
           { refName: 'ctgB', start: 100, end: 200 },
         ],
@@ -63,7 +63,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 5000,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 10000 },
         { refName: 'ctgB', start: 100, end: 10000 },
       ],
@@ -76,7 +76,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -90,7 +90,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 801,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -103,7 +103,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1600,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 10000000 },
       ],
@@ -117,7 +117,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1069,
       bpPerPx: 2,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 50000 },
         { refName: 'ctgB', start: 0, end: 300 },
       ],
@@ -131,7 +131,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       bpPerPx: 0.05,
-      effectiveRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 100, end: 200 },
         { refName: 'ctgA', start: 300, end: 400 },
       ],
@@ -149,7 +149,7 @@ describe('reverse block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      effectiveRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -162,7 +162,7 @@ describe('horizontally flipped displayed regions', () => {
         bpPerPx: 1,
         width: 800,
         offsetPx: 0,
-        effectiveRegions: [
+        displayedRegionsInOrder: [
           { refName: 'ctgA', start: 100, end: 200 },
           { refName: 'ctgA', start: 500, end: 600 },
         ],

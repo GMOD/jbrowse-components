@@ -94,7 +94,7 @@ export function stateModelFactory(pluginManager: any) {
 
       get totalBp() {
         let totalbp = 0
-        this.effectiveRegions.forEach(region => {
+        this.displayedRegionsInOrder.forEach(region => {
           totalbp += region.end - region.start
         })
         return totalbp
@@ -112,7 +112,7 @@ export function stateModelFactory(pluginManager: any) {
         return self.reversed
       },
 
-      get effectiveRegions() {
+      get displayedRegionsInOrder() {
         return self.reversed
           ? self.displayedRegions.slice().reverse()
           : self.displayedRegions
@@ -144,13 +144,17 @@ export function stateModelFactory(pluginManager: any) {
         let bpSoFar = 0
         if (bp < 0) {
           return {
-            ...this.effectiveRegions[0],
+            ...this.displayedRegionsInOrder[0],
             offset: Math.round(bp),
             index: 0,
           }
         }
-        for (let index = 0; index < this.effectiveRegions.length; index += 1) {
-          const r = this.effectiveRegions[index]
+        for (
+          let index = 0;
+          index < this.displayedRegionsInOrder.length;
+          index += 1
+        ) {
+          const r = this.displayedRegionsInOrder[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
             return { ...r, offset: Math.round(bp - bpSoFar), index }
           }
@@ -159,7 +163,7 @@ export function stateModelFactory(pluginManager: any) {
 
         return {
           offset: Math.round(bp - bpSoFar),
-          index: this.effectiveRegions.length,
+          index: this.displayedRegionsInOrder.length,
         }
       },
     }))
@@ -270,7 +274,7 @@ export function stateModelFactory(pluginManager: any) {
       navTo({ refName, start, end }: IRegion) {
         let s = start
         let e = end
-        const index = self.effectiveRegions.findIndex(r => {
+        const index = self.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName) {
             if (s === undefined) {
               s = r.start
@@ -284,7 +288,7 @@ export function stateModelFactory(pluginManager: any) {
           }
           return false
         })
-        const f = self.effectiveRegions[index]
+        const f = self.displayedRegionsInOrder[index]
         if (index !== -1) {
           this.moveTo(
             { index, offset: s - f.start },
@@ -308,19 +312,20 @@ export function stateModelFactory(pluginManager: any) {
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          const s = self.effectiveRegions[start.index]
+          const s = self.displayedRegionsInOrder[start.index]
           bpSoFar += s.end - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
-                self.effectiveRegions[i].end - self.effectiveRegions[i].start
+                self.displayedRegionsInOrder[i].end -
+                self.displayedRegionsInOrder[i].start
             }
           }
           bpSoFar += end.offset
         }
         let bpToStart = 0
-        for (let i = 0; i < self.effectiveRegions.length; i += 1) {
-          const region = self.effectiveRegions[i]
+        for (let i = 0; i < self.displayedRegionsInOrder.length; i += 1) {
+          const region = self.displayedRegionsInOrder[i]
           if (start.index === i) {
             bpToStart += start.offset
             break
