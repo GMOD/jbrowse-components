@@ -2,20 +2,20 @@
 
 exports[`open up a drawer widget 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root-1 MuiPaper-rounded"
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root MuiPaper-rounded"
   data-testid="alignment-side-drawer"
 >
   <div
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root makeStyles-header-5"
+      class="MuiCardHeader-root makeStyles-header"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
         >
           Primary data
         </span>
@@ -26,48 +26,48 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           Position
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           ctgA:3..102
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           Name
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           ctgA_3_555_0:0:0_2:0:0_102d
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           Length
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           100
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           Type
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           match
         </div>
@@ -81,13 +81,13 @@ exports[`open up a drawer widget 1`] = `
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root makeStyles-header-5"
+      class="MuiCardHeader-root makeStyles-header"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
         >
           Attributes
         </span>
@@ -98,96 +98,96 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           seq
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           score
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           37
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           qual
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           MQ
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           37
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           CIGAR
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           100M
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           length_on_ref
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           100
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           template_length
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           0
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           seq_length
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           100
         </div>
@@ -201,13 +201,13 @@ exports[`open up a drawer widget 1`] = `
     class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
   >
     <div
-      class="MuiCardHeader-root makeStyles-header-5"
+      class="MuiCardHeader-root makeStyles-header"
     >
       <div
         class="MuiCardHeader-content"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title-6 MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
         >
           Flags
         </span>
@@ -218,60 +218,60 @@ exports[`open up a drawer widget 1`] = `
     >
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           unmapped
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           qc_failed
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           duplicate
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           secondary_alignment
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           false
         </div>
       </div>
       <div>
         <div
-          class="makeStyles-fieldName-3"
+          class="makeStyles-fieldName"
         >
           supplementary_alignment
         </div>
         <div
-          class="makeStyles-fieldValue-4"
+          class="makeStyles-fieldValue"
         >
           false
         </div>

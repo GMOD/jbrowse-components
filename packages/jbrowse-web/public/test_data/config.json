@@ -56,17 +56,20 @@
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
           "adapter": {
+            "configId": "R1d4tYPHY",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
+              "configId": "O9B8_NQzdk",
               "location": {
                 "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
+            "configId": "K3veZfJTYV",
             "type": "StructuralVariantChordRenderer"
           }
         },
