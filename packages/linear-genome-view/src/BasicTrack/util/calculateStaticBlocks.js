@@ -5,11 +5,15 @@ export function calculateBlocksReversed(self, extra = 0) {
   return new BlockSet(
     calculateBlocksForward(self, extra).map(fwdBlock => {
       const { parentRegion } = fwdBlock
-      const revBlock = new ContentBlock({
+      const args = {
         ...fwdBlock,
         start: parentRegion.start + parentRegion.end - fwdBlock.end,
         end: parentRegion.start + parentRegion.end - fwdBlock.start,
-      })
+      }
+      const revBlock =
+        fwdBlock instanceof ElidedBlock
+          ? new ElidedBlock(args)
+          : new ContentBlock(args)
       revBlock.key = assembleLocString(revBlock)
       return revBlock
     }),

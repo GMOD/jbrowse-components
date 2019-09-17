@@ -172,3 +172,22 @@ describe('horizontally flipped displayed regions', () => {
     expect(blocks).toMatchSnapshot()
   })
 })
+describe('horizontally flipped displayed regions with elided region and extra block', () => {
+  test('1', () => {
+    const blocks = calculateBlocksReversed(
+      {
+        bpPerPx: 1,
+        width: 800,
+        offsetPx: 0,
+        minimumBlockWidth: 2,
+        displayedRegionsInOrder: [
+          { refName: 'ctgA', start: 0, end: 1 },
+          { refName: 'ctgA', start: 0, end: 10000 },
+        ],
+      },
+      true,
+      1,
+    )
+    expect(blocks).toMatchSnapshot()
+  })
+})
