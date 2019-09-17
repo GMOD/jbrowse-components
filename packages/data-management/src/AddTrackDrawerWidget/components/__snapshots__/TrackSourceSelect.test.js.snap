@@ -2,7 +2,7 @@
 
 exports[`<TrackSourceSelect /> renders 1`] = `
 <div
-  class="makeStyles-root-1"
+  class="makeStyles-root"
 >
   <fieldset
     class="MuiFormControl-root"
@@ -17,13 +17,13 @@ exports[`<TrackSourceSelect /> renders 1`] = `
       >
         <span
           aria-disabled="false"
-          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-20 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-21 Mui-checked MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked MuiRadio-checked MuiIconButton-colorSecondary"
         >
           <span
             class="MuiIconButton-label"
           >
             <div
-              class="PrivateRadioButtonIcon-root-36 PrivateRadioButtonIcon-checked-38"
+              class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
             >
               <svg
                 aria-hidden="true"
@@ -38,7 +38,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               </svg>
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-37"
+                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -50,7 +50,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
             </div>
             <input
               checked=""
-              class="PrivateSwitchBase-input-23"
+              class="PrivateSwitchBase-input"
               data-testid="addTrackFromFileRadio"
               type="radio"
               value="fromFile"
@@ -71,13 +71,13 @@ exports[`<TrackSourceSelect /> renders 1`] = `
       >
         <span
           aria-disabled="false"
-          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-20 MuiRadio-root MuiRadio-colorSecondary MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary MuiIconButton-colorSecondary"
         >
           <span
             class="MuiIconButton-label"
           >
             <div
-              class="PrivateRadioButtonIcon-root-36"
+              class="PrivateRadioButtonIcon-root"
             >
               <svg
                 aria-hidden="true"
@@ -92,7 +92,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               </svg>
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-37"
+                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                 focusable="false"
                 role="presentation"
                 viewBox="0 0 24 24"
@@ -103,7 +103,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               </svg>
             </div>
             <input
-              class="PrivateSwitchBase-input-23"
+              class="PrivateSwitchBase-input"
               data-testid="addTrackFromConfigRadio"
               type="radio"
               value="fromConfig"
@@ -122,7 +122,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
     </div>
   </fieldset>
   <div
-    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-2 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
   >
     <fieldset
       class="MuiFormControl-root"
@@ -136,13 +136,13 @@ exports[`<TrackSourceSelect /> renders 1`] = `
         >
           <span
             aria-disabled="false"
-            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-20 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-21 Mui-checked MuiIconButton-colorSecondary"
+            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked MuiRadio-checked MuiIconButton-colorSecondary"
           >
             <span
               class="MuiIconButton-label"
             >
               <div
-                class="PrivateRadioButtonIcon-root-36 PrivateRadioButtonIcon-checked-38"
+                class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
               >
                 <svg
                   aria-hidden="true"
@@ -157,7 +157,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 </svg>
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-37"
+                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                   focusable="false"
                   role="presentation"
                   viewBox="0 0 24 24"
@@ -169,7 +169,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
               </div>
               <input
                 checked=""
-                class="PrivateSwitchBase-input-23"
+                class="PrivateSwitchBase-input"
                 type="radio"
                 value="uri"
               />
@@ -185,18 +185,18 @@ exports[`<TrackSourceSelect /> renders 1`] = `
           </span>
         </label>
         <label
-          class="MuiFormControlLabel-root Mui-disabled"
+          class="MuiFormControlLabel-root MuiFormControlLabel-disabled"
         >
           <span
             aria-disabled="true"
-            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-20 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-22 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled MuiRadio-disabled MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
             tabindex="-1"
           >
             <span
               class="MuiIconButton-label"
             >
               <div
-                class="PrivateRadioButtonIcon-root-36"
+                class="PrivateRadioButtonIcon-root"
               >
                 <svg
                   aria-hidden="true"
@@ -211,7 +211,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 </svg>
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-37"
+                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                   focusable="false"
                   role="presentation"
                   viewBox="0 0 24 24"
@@ -222,7 +222,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
                 </svg>
               </div>
               <input
-                class="PrivateSwitchBase-input-23"
+                class="PrivateSwitchBase-input"
                 disabled=""
                 type="radio"
                 value="localPath"
@@ -230,7 +230,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
             </span>
           </span>
           <span
-            class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1"
+            class="MuiTypography-root MuiFormControlLabel-label MuiFormControlLabel-disabled MuiTypography-body1"
           >
             Local File
           </span>

@@ -2,10 +2,10 @@
 
 exports[`<AddTrackDrawerWidget /> renders 1`] = `
 <div
-  class="makeStyles-root-1"
+  class="makeStyles-root"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical makeStyles-stepper-2"
+    class="MuiPaper-root MuiPaper-elevation0 MuiStepper-root MuiStepper-vertical makeStyles-stepper"
   >
     <div
       class="MuiStep-root MuiStep-vertical"
@@ -63,7 +63,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
               class="MuiCollapse-wrapperInner"
             >
               <div
-                class="makeStyles-root-105"
+                class="makeStyles-root"
               >
                 <fieldset
                   class="MuiFormControl-root"
@@ -78,13 +78,13 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                     >
                       <span
                         aria-disabled="false"
-                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-125 Mui-checked MuiIconButton-colorSecondary"
+                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked MuiRadio-checked MuiIconButton-colorSecondary"
                       >
                         <span
                           class="MuiIconButton-label"
                         >
                           <div
-                            class="PrivateRadioButtonIcon-root-140 PrivateRadioButtonIcon-checked-142"
+                            class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                           >
                             <svg
                               aria-hidden="true"
@@ -99,7 +99,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                             </svg>
                             <svg
                               aria-hidden="true"
-                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
                               role="presentation"
                               viewBox="0 0 24 24"
@@ -111,7 +111,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           </div>
                           <input
                             checked=""
-                            class="PrivateSwitchBase-input-127"
+                            class="PrivateSwitchBase-input"
                             data-testid="addTrackFromFileRadio"
                             type="radio"
                             value="fromFile"
@@ -132,13 +132,13 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                     >
                       <span
                         aria-disabled="false"
-                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary MuiIconButton-colorSecondary"
+                        class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary MuiIconButton-colorSecondary"
                       >
                         <span
                           class="MuiIconButton-label"
                         >
                           <div
-                            class="PrivateRadioButtonIcon-root-140"
+                            class="PrivateRadioButtonIcon-root"
                           >
                             <svg
                               aria-hidden="true"
@@ -153,7 +153,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                             </svg>
                             <svg
                               aria-hidden="true"
-                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                              class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                               focusable="false"
                               role="presentation"
                               viewBox="0 0 24 24"
@@ -164,7 +164,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                             </svg>
                           </div>
                           <input
-                            class="PrivateSwitchBase-input-127"
+                            class="PrivateSwitchBase-input"
                             data-testid="addTrackFromConfigRadio"
                             type="radio"
                             value="fromConfig"
@@ -183,7 +183,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                   </div>
                 </fieldset>
                 <div
-                  class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper-106 MuiPaper-rounded"
+                  class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
                 >
                   <fieldset
                     class="MuiFormControl-root"
@@ -197,13 +197,13 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                       >
                         <span
                           aria-disabled="false"
-                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked-125 Mui-checked MuiIconButton-colorSecondary"
+                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked MuiRadio-checked MuiIconButton-colorSecondary"
                         >
                           <span
                             class="MuiIconButton-label"
                           >
                             <div
-                              class="PrivateRadioButtonIcon-root-140 PrivateRadioButtonIcon-checked-142"
+                              class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                             >
                               <svg
                                 aria-hidden="true"
@@ -218,7 +218,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               </svg>
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                                 focusable="false"
                                 role="presentation"
                                 viewBox="0 0 24 24"
@@ -230,7 +230,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                             </div>
                             <input
                               checked=""
-                              class="PrivateSwitchBase-input-127"
+                              class="PrivateSwitchBase-input"
                               type="radio"
                               value="uri"
                             />
@@ -246,18 +246,18 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                         </span>
                       </label>
                       <label
-                        class="MuiFormControlLabel-root Mui-disabled"
+                        class="MuiFormControlLabel-root MuiFormControlLabel-disabled"
                       >
                         <span
                           aria-disabled="true"
-                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-124 MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled-126 Mui-disabled MuiIconButton-colorSecondary Mui-disabled Mui-disabled"
+                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled MuiRadio-disabled MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                           tabindex="-1"
                         >
                           <span
                             class="MuiIconButton-label"
                           >
                             <div
-                              class="PrivateRadioButtonIcon-root-140"
+                              class="PrivateRadioButtonIcon-root"
                             >
                               <svg
                                 aria-hidden="true"
@@ -272,7 +272,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               </svg>
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer-141"
+                                class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
                                 focusable="false"
                                 role="presentation"
                                 viewBox="0 0 24 24"
@@ -283,7 +283,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               </svg>
                             </div>
                             <input
-                              class="PrivateSwitchBase-input-127"
+                              class="PrivateSwitchBase-input"
                               disabled=""
                               type="radio"
                               value="localPath"
@@ -291,7 +291,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           </span>
                         </span>
                         <span
-                          class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1"
+                          class="MuiTypography-root MuiFormControlLabel-label MuiFormControlLabel-disabled MuiTypography-body1"
                         >
                           Local File
                         </span>
@@ -322,10 +322,10 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-actionsContainer-4"
+                class="makeStyles-actionsContainer"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button-3 MuiButton-text Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-text MuiButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -337,7 +337,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button-3 MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-contained MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
                   data-testid="addTrackNextButton"
                   disabled=""
                   tabindex="-1"
@@ -356,7 +356,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
       </div>
     </div>
     <div
-      class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled"
+      class="MuiStepConnector-root MuiStepConnector-vertical MuiStepConnector-disabled"
     >
       <span
         class="MuiStepConnector-line MuiStepConnector-lineVertical"
@@ -366,7 +366,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
       class="MuiStep-root MuiStep-vertical"
     >
       <span
-        class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled"
+        class="MuiStepLabel-root MuiStepLabel-vertical MuiStepLabel-disabled"
       >
         <span
           class="MuiStepLabel-iconContainer"
