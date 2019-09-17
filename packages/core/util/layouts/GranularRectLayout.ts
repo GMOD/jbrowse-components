@@ -31,7 +31,7 @@ interface RowState<T> {
   min: number
   max: number
   offset: number
-  bits: (Record<string, T> | undefined)[]
+  bits: (Record<string, T> | boolean | undefined)[]
 }
 // a single row in the layout
 class LayoutRow<T> {
@@ -39,7 +39,7 @@ class LayoutRow<T> {
 
   private padding: number
 
-  private allFilled?: Record<string, T>
+  private allFilled?: Record<string, T> | boolean
 
   private widthLimit: number
 
@@ -63,11 +63,11 @@ class LayoutRow<T> {
     console.log(`r${this.rowNumber}: ${msg}`)
   }
 
-  setAllFilled(data: Record<string, T>): void {
+  setAllFilled(data: Record<string, T> | boolean): void {
     this.allFilled = data
   }
 
-  getItemAt(x: number): Record<string, T> | undefined {
+  getItemAt(x: number): Record<string, T> | boolean | undefined {
     if (this.allFilled) return this.allFilled
     if (!this.rowState) return undefined
 
@@ -115,7 +115,7 @@ class LayoutRow<T> {
     // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
 
-  addRect(rect: Rectangle<T>, data: Record<string, T>): void {
+  addRect(rect: Rectangle<T>, data: Record<string, T> | boolean): void {
     const left = rect.l
     const right = rect.r + this.padding // only padding on the right
     if (!this.rowState) {
@@ -303,7 +303,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: Record<string, Rectangle<T>>
+  private rectangles: Map<string, Rectangle<T>>
 
   private maxHeightReached: boolean
 
@@ -324,7 +324,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.maxHeightReached = false
 
     this.bitmap = []
-    this.rectangles = {}
+    this.rectangles = new Map()
     this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
@@ -338,17 +338,27 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data: Record<string, T>,
+    data?: Record<string, T>,
   ): number | null {
     // if we have already laid it out, return its layout
     // console.log(`${this.id} add ${id}`)
-    if (id in this.rectangles) {
-      const storedRec = this.rectangles[id]
-      if (storedRec.top === null) return null
+    const storedRec = this.rectangles.get(id)
+    if (storedRec) {
+      if (storedRec.originalHeight !== height) {
+        this.bitmap = []
+        let deleting = false
+        for (const [key, val] of this.rectangles.entries()) {
+          if (id === key) deleting = true
+          if (deleting) this.rectangles.delete(key)
+          else this.addRectToBitmap(val)
+        }
+      } else {
+        if (storedRec.top === null) return null
 
-      // add it to the bitmap again, since that bitmap range may have been discarded
-      this.addRectToBitmap(storedRec, data)
-      return storedRec.top * this.pitchY
+        // add it to the bitmap again, since that bitmap range may have been discarded
+        this.addRectToBitmap(storedRec)
+        return storedRec.top * this.pitchY
+      }
     }
 
     const pLeft = Math.floor(left / this.pitchX)
@@ -364,8 +374,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // mX: midX,
       h: pHeight,
       originalHeight: height,
+      data,
     }
-    if (data) rectangle.data = data
 
     const maxTop = this.maxHeight - pHeight
     let top = 0
@@ -375,13 +385,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     if (top > maxTop) {
       rectangle.top = null
-      this.rectangles[id] = rectangle
+      this.rectangles.set(id, rectangle)
       this.maxHeightReached = true
       return null
     }
     rectangle.top = top
-    this.addRectToBitmap(rectangle, data)
-    this.rectangles[id] = rectangle
+    this.addRectToBitmap(rectangle)
+    this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
     // console.log(`G2 ${data.get('name')} ${top}`)
     return top * this.pitchY
@@ -422,10 +432,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return row
   }
 
-  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
+  addRectToBitmap(rect: Rectangle<T>): void {
     if (rect.top === null) return
 
-    data = data || true
+    const data = rect.data || true
     const { bitmap } = this
     const av = this.autovivifyRow
     const yEnd = rect.top + rect.h
@@ -462,10 +472,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   hasSeen(id: string): boolean {
-    return !!this.rectangles[id]
+    return this.rectangles.has(id)
   }
 
-  getByCoord(x: number, y: number): Record<string, T> | undefined {
+  getByCoord(x: number, y: number): Record<string, T> | boolean | undefined {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) return undefined
@@ -474,7 +484,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getByID(id: string): (Record<string, T> | boolean) | undefined {
-    const r = this.rectangles[id]
+    const r = this.rectangles.get(id)
     if (r) {
       return r.data || true
     }
@@ -489,7 +499,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getRectangles(): Map<string, RectTuple> {
     return new Map(
-      Object.entries(this.rectangles).map(([id, rect]) => {
+      Array.from(this.rectangles.entries()).map(([id, rect]) => {
         const { l, r, originalHeight, top } = rect
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
@@ -501,8 +511,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
     const regionRectangles: { [key: string]: RectTuple } = {}
     let maxHeightReached = false
-    for (const iter of Object.entries(this.rectangles)) {
-      const [id, rect] = iter
+    for (const [id, rect] of this.rectangles.entries()) {
       const { l, r, originalHeight, top } = rect
       if (rect.top === null) {
         maxHeightReached = true

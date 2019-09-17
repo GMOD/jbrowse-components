@@ -43,6 +43,7 @@ function renderBlockData(self) {
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
   const renderProps = { ...track.renderProps }
   const { rendererType } = track
+  renderProps.rendererConfig = getConf(track, 'renderer')
   return {
     rendererType,
     rpcManager,
