@@ -154,3 +154,21 @@ describe('reverse block calculation', () => {
     expect(blocks).toMatchSnapshot()
   })
 })
+
+describe('horizontally flipped displayed regions', () => {
+  test('1', () => {
+    const blocks = calculateBlocksReversed(
+      {
+        bpPerPx: 1,
+        width: 800,
+        offsetPx: 0,
+        effectiveRegions: [
+          { refName: 'ctgA', start: 100, end: 200 },
+          { refName: 'ctgA', start: 500, end: 600 },
+        ],
+      },
+      true,
+    )
+    expect(blocks).toMatchSnapshot()
+  })
+})
