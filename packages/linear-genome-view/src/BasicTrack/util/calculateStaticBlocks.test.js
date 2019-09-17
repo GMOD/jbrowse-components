@@ -5,13 +5,21 @@ import calculateBlocks, {
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {
-    const blocks = calculateBlocksForward({
+    const blocks1 = calculateBlocksForward({
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
       displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
-    expect(blocks).toMatchSnapshot()
+
+    const blocks2 = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 0,
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
+    })
+    expect(blocks1).toMatchSnapshot()
+    expect(blocks1).toEqual(blocks2)
   })
 
   it('can calculate some blocks 2', () => {
@@ -156,7 +164,7 @@ describe('reverse block calculation', () => {
 })
 
 describe('horizontally flipped displayed regions', () => {
-  test('1', () => {
+  test('without elided region', () => {
     const blocks = calculateBlocksReversed(
       {
         bpPerPx: 1,
@@ -171,9 +179,7 @@ describe('horizontally flipped displayed regions', () => {
     )
     expect(blocks).toMatchSnapshot()
   })
-})
-describe('horizontally flipped displayed regions with elided region and extra block', () => {
-  test('1', () => {
+  test('with elided region', () => {
     const blocks = calculateBlocks(
       {
         bpPerPx: 1,

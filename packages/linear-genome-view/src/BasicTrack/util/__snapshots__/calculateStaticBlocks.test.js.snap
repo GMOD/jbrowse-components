@@ -310,46 +310,7 @@ Array [
 ]
 `;
 
-exports[`horizontally flipped displayed regions 1 1`] = `
-BlockSet {
-  "blocks": Array [
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 200,
-      "isLeftEndOfDisplayedRegion": true,
-      "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:101-200",
-      "offsetPx": 0,
-      "parentRegion": Object {
-        "end": 200,
-        "refName": "ctgA",
-        "start": 100,
-      },
-      "refName": "ctgA",
-      "start": 100,
-      "widthPx": 100,
-    },
-    ContentBlock {
-      "assemblyName": undefined,
-      "end": 600,
-      "isLeftEndOfDisplayedRegion": true,
-      "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:501-600",
-      "offsetPx": 100,
-      "parentRegion": Object {
-        "end": 600,
-        "refName": "ctgA",
-        "start": 500,
-      },
-      "refName": "ctgA",
-      "start": 500,
-      "widthPx": 100,
-    },
-  ],
-}
-`;
-
-exports[`horizontally flipped displayed regions with elided region and extra block 1 1`] = `
+exports[`horizontally flipped displayed regions with elided region 1`] = `
 BlockSet {
   "blocks": Array [
     ElidedBlock {
@@ -400,6 +361,45 @@ BlockSet {
       "refName": "ctgA",
       "start": 8400,
       "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`horizontally flipped displayed regions without elided region 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 200,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:101-200",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 200,
+        "refName": "ctgA",
+        "start": 100,
+      },
+      "refName": "ctgA",
+      "start": 100,
+      "widthPx": 100,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 600,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:501-600",
+      "offsetPx": 100,
+      "parentRegion": Object {
+        "end": 600,
+        "refName": "ctgA",
+        "start": 500,
+      },
+      "refName": "ctgA",
+      "start": 500,
+      "widthPx": 100,
     },
   ],
 }
