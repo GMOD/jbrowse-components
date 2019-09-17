@@ -949,10 +949,9 @@
           }
         },
         {
-          "configId": "CxXwB_DMrU",
+          "configId": "na12878_exome",
           "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
-          "configId": "na12878_exome",
           "category": [
             "1000 genomes"
           ],
@@ -1021,10 +1020,9 @@
           }
         },
         {
-          "configId": "wKQ_PofPYX5",
+          "configId": "hg00096_highcov",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
-          "configId": "hg00096_highcov",
           "category": [
             "1000 genomes"
           ],
@@ -1227,10 +1225,9 @@
           }
         },
         {
-          "configId": "aK7IyEj3xZ6",
+          "configId": "sequelII_variants",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
-          "configId": "sequelII_variants",
           "category": [
             "PacBio",
             "VCF"
@@ -1264,9 +1261,8 @@
           }
         },
         {
-          "configId": "3Ejl89-eq9A",
-          "type": "VariantTrack",
           "configId": "chm_variants",
+          "type": "VariantTrack",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
             "PacBio",
