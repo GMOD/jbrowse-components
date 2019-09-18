@@ -1,17 +1,25 @@
-import {
+import calculateBlocks, {
   calculateBlocksForward,
   calculateBlocksReversed,
 } from './calculateStaticBlocks'
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {
-    const blocks = calculateBlocksForward({
+    const blocks1 = calculateBlocksForward({
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
-    expect(blocks).toMatchSnapshot()
+
+    const blocks2 = calculateBlocks({
+      bpPerPx: 1,
+      width: 800,
+      offsetPx: 0,
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
+    })
+    expect(blocks1).toMatchSnapshot()
+    expect(blocks1).toEqual(blocks2)
   })
 
   it('can calculate some blocks 2', () => {
@@ -19,7 +27,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 30,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -32,7 +40,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1000,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 100 },
         { refName: 'ctgB', start: 100, end: 200 },
       ],
@@ -46,7 +54,7 @@ describe('block calculation', () => {
         bpPerPx: 1,
         width: 800,
         offsetPx: -1000,
-        displayedRegions: [
+        displayedRegionsInOrder: [
           { refName: 'ctgA', start: 0, end: 100 },
           { refName: 'ctgB', start: 100, end: 200 },
         ],
@@ -63,7 +71,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 5000,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 10000 },
         { refName: 'ctgB', start: 100, end: 10000 },
       ],
@@ -76,7 +84,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -90,7 +98,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 801,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 1000 },
       ],
@@ -103,7 +111,7 @@ describe('block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 1600,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 200 },
         { refName: 'ctgB', start: 0, end: 10000000 },
       ],
@@ -117,7 +125,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 1069,
       bpPerPx: 2,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 0, end: 50000 },
         { refName: 'ctgB', start: 0, end: 300 },
       ],
@@ -131,7 +139,7 @@ describe('block calculation', () => {
       width: 800,
       offsetPx: 0,
       bpPerPx: 0.05,
-      displayedRegions: [
+      displayedRegionsInOrder: [
         { refName: 'ctgA', start: 100, end: 200 },
         { refName: 'ctgA', start: 300, end: 400 },
       ],
@@ -149,8 +157,43 @@ describe('reverse block calculation', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx: 0,
-      displayedRegions: [{ refName: 'ctgA', start: 0, end: 10000 }],
+      displayedRegionsInOrder: [{ refName: 'ctgA', start: 0, end: 10000 }],
     })
+    expect(blocks).toMatchSnapshot()
+  })
+})
+
+describe('horizontally flipped displayed regions', () => {
+  test('without elided region', () => {
+    const blocks = calculateBlocksReversed(
+      {
+        bpPerPx: 1,
+        width: 800,
+        offsetPx: 0,
+        displayedRegionsInOrder: [
+          { refName: 'ctgA', start: 100, end: 200 },
+          { refName: 'ctgA', start: 500, end: 600 },
+        ],
+      },
+      true,
+    )
+    expect(blocks).toMatchSnapshot()
+  })
+  test('with elided region', () => {
+    const blocks = calculateBlocks(
+      {
+        bpPerPx: 1,
+        width: 800,
+        offsetPx: 0,
+        minimumBlockWidth: 2,
+        displayedRegionsInOrder: [
+          { refName: 'ctgA', start: 0, end: 1 },
+          { refName: 'ctgA', start: 0, end: 10000 },
+        ],
+      },
+      true,
+      1,
+    )
     expect(blocks).toMatchSnapshot()
   })
 })

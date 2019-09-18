@@ -21,22 +21,20 @@ import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
  *
  * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
-export default function calculateDynamicBlocks(
-  {
+export default function calculateDynamicBlocks(model, horizontallyFlipped) {
+  const {
     offsetPx,
     viewingRegionWidth: width,
-    displayedRegions,
+    displayedRegionsInOrder,
     bpPerPx,
     minimumBlockWidth,
-  },
-  horizontallyFlipped,
-) {
+  } = model
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  for (let i = 0; i < displayedRegions.length; i += 1) {
-    const parentRegion = displayedRegions[i]
+  for (let i = 0; i < displayedRegionsInOrder.length; i += 1) {
+    const parentRegion = displayedRegionsInOrder[i]
     const { assemblyName, start, end, refName } = parentRegion
     const displayedRegionRightPx =
       displayedRegionLeftPx + (end - start) / bpPerPx
