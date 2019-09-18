@@ -344,21 +344,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // console.log(`${this.id} add ${id}`)
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
-      if (storedRec.originalHeight !== height) {
-        this.bitmap = []
-        let deleting = false
-        for (const [key, val] of this.rectangles.entries()) {
-          if (id === key) deleting = true
-          if (deleting) this.rectangles.delete(key)
-          else this.addRectToBitmap(val)
-        }
-      } else {
-        if (storedRec.top === null) return null
+      if (storedRec.top === null) return null
 
-        // add it to the bitmap again, since that bitmap range may have been discarded
-        this.addRectToBitmap(storedRec)
-        return storedRec.top * this.pitchY
-      }
+      // add it to the bitmap again, since that bitmap range may have been discarded
+      this.addRectToBitmap(storedRec)
+      return storedRec.top * this.pitchY
     }
 
     const pLeft = Math.floor(left / this.pitchX)
