@@ -78,7 +78,7 @@ export default configSchema => {
         },
       }))
       .volatile(() => ({
-        reactComponent: FilteringTrackComponent,
+        ReactComponent: FilteringTrackComponent,
       })),
   )
 }

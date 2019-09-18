@@ -146,7 +146,7 @@ export default types
     html: '',
     error: undefined,
     maxHeightReached: false,
-    reactComponent: ServerSideRenderedBlockContent,
+    ReactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined,
     renderProps: undefined,
     renderInProgress: undefined,

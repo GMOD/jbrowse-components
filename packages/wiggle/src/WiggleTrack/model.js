@@ -147,7 +147,7 @@ export default configSchema =>
         },
       }))
       .volatile(() => ({
-        reactComponent: WiggleTrackComponent,
+        ReactComponent: WiggleTrackComponent,
         ready: false,
         stats: types
           .model('stats', { min: 0, max: 0, mean: 0 })

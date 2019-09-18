@@ -7,17 +7,17 @@ import {
   modelFactory as ucscModelFactory,
 } from './ucsc-trackhub'
 import {
-  reactComponent as AddTrackReactComponent,
+  ReactComponent as AddTrackReactComponent,
   stateModelFactory as AddTrackStateModelFactory,
   configSchema as AddTrackConfigSchema,
 } from './AddTrackDrawerWidget'
 import {
-  reactComponent as AddConnectionReactComponent,
+  ReactComponent as AddConnectionReactComponent,
   stateModel as AddConnectionStateModel,
   configSchema as AddConnectionConfigSchema,
 } from './AddConnectionDrawerWidget'
 import {
-  reactComponent as HierarchicalTrackSelectorReactComponent,
+  ReactComponent as HierarchicalTrackSelectorReactComponent,
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorDrawerWidget'

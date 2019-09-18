@@ -60,8 +60,8 @@ function TrackBlocks({ model, viewModel, blockState }) {
           const state = blockState.get(block.key)
           return (
             <Block key={block.offsetPx} block={block} model={viewModel}>
-              {state && state.reactComponent ? (
-                <state.reactComponent model={state} />
+              {state && state.ReactComponent ? (
+                <state.ReactComponent model={state} />
               ) : null}
               {state && state.maxHeightReached ? (
                 <div
