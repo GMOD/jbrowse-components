@@ -131,7 +131,7 @@ VariantAttributes.propTypes = {
 function VariantSamples(props) {
   const classes = useStyles()
   const { feature } = props
-  if (!feature.samples) {
+  if (!feature.samples || !feature.samples.length) {
     return null
   }
   const ret = Object.keys(feature.samples)
