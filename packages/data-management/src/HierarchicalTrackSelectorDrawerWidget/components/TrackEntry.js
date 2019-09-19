@@ -48,7 +48,8 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
     : readConfObject(trackConf, 'description')
   const unsupported =
     readConfObject(trackConf, 'name') &&
-    readConfObject(trackConf, 'name').endsWith('(Unsupported)')
+    (readConfObject(trackConf, 'name').endsWith('(Unsupported)') ||
+      readConfObject(trackConf, 'name').endsWith('(Unknown)'))
   return (
     <Fade in>
       <div className={classes.track}>

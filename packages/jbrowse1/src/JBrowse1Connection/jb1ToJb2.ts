@@ -1,8 +1,10 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import {
+  generateUnknownTrackConf,
   generateUnsupportedTrackConf,
   guessAdapter,
   guessTrackType,
+  UNKNOWN,
   UNSUPPORTED,
 } from '@gmod/jbrowse-core/util/tracks'
 
@@ -83,6 +85,12 @@ export function convertTrackConfig(
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED)
     return generateUnsupportedTrackConf(
+      jb2TrackConfig.name,
+      urlTemplate,
+      jb2TrackConfig.category,
+    )
+  if (jb2TrackConfig.adapter.type === UNKNOWN)
+    return generateUnknownTrackConf(
       jb2TrackConfig.name,
       urlTemplate,
       jb2TrackConfig.category,
