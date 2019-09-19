@@ -1704,7 +1704,7 @@
   ],
   "configuration": {
     "configId": "WBBdhiJUQdj",
-    "updateUrl": false,
+    "updateUrl": true,
     "rpc": {
       "configId": "A8raoinDhoH"
     }
