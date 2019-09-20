@@ -246,6 +246,15 @@ export function generateUnsupportedTrackConf(trackName, trackUrl, categories) {
   return {
     type: 'BasicTrack',
     name: `${trackName} (Unsupported)`,
+    description: `Support not yet implemented for "${trackUrl}"`,
+    category: categories,
+  }
+}
+
+export function generateUnknownTrackConf(trackName, trackUrl, categories) {
+  return {
+    type: 'BasicTrack',
+    name: `${trackName} (Unknown)`,
     description: `Could not determine track type for "${trackUrl}"`,
     category: categories,
   }

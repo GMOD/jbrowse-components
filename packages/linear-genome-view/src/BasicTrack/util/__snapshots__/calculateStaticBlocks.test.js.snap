@@ -310,6 +310,101 @@ Array [
 ]
 `;
 
+exports[`horizontally flipped displayed regions with elided region 1`] = `
+BlockSet {
+  "blocks": Array [
+    ElidedBlock {
+      "assemblyName": undefined,
+      "elidedBlockCount": 1,
+      "end": 1,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:1-1",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 1,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 0,
+      "widthPx": 1,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 10000,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:9201-10000",
+      "offsetPx": 1,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 9200,
+      "widthPx": 800,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 9200,
+      "isLeftEndOfDisplayedRegion": false,
+      "isRightEndOfDisplayedRegion": false,
+      "key": "ctgA:8401-9200",
+      "offsetPx": 801,
+      "parentRegion": Object {
+        "end": 10000,
+        "refName": "ctgA",
+        "start": 0,
+      },
+      "refName": "ctgA",
+      "start": 8400,
+      "widthPx": 800,
+    },
+  ],
+}
+`;
+
+exports[`horizontally flipped displayed regions without elided region 1`] = `
+BlockSet {
+  "blocks": Array [
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 200,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:101-200",
+      "offsetPx": 0,
+      "parentRegion": Object {
+        "end": 200,
+        "refName": "ctgA",
+        "start": 100,
+      },
+      "refName": "ctgA",
+      "start": 100,
+      "widthPx": 100,
+    },
+    ContentBlock {
+      "assemblyName": undefined,
+      "end": 600,
+      "isLeftEndOfDisplayedRegion": true,
+      "isRightEndOfDisplayedRegion": true,
+      "key": "ctgA:501-600",
+      "offsetPx": 100,
+      "parentRegion": Object {
+        "end": 600,
+        "refName": "ctgA",
+        "start": 500,
+      },
+      "refName": "ctgA",
+      "start": 500,
+      "widthPx": 100,
+    },
+  ],
+}
+`;
+
 exports[`reverse block calculation 1 1`] = `
 BlockSet {
   "blocks": Array [

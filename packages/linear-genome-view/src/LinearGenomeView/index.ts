@@ -94,7 +94,7 @@ export function stateModelFactory(pluginManager: any) {
 
       get totalBp() {
         let totalbp = 0
-        self.displayedRegions.forEach(region => {
+        this.displayedRegionsInOrder.forEach(region => {
           totalbp += region.end - region.start
         })
         return totalbp
@@ -112,9 +112,16 @@ export function stateModelFactory(pluginManager: any) {
         return self.reversed
       },
 
+      get displayedRegionsInOrder() {
+        return self.reversed
+          ? self.displayedRegions.slice().reverse()
+          : self.displayedRegions
+      },
+
       get displayedRegionsTotalPx() {
         return this.totalBp / self.bpPerPx
       },
+
       get renderProps() {
         return {
           ...getParentRenderProps(self),
@@ -137,13 +144,17 @@ export function stateModelFactory(pluginManager: any) {
         let bpSoFar = 0
         if (bp < 0) {
           return {
-            ...self.displayedRegions[0],
+            ...this.displayedRegionsInOrder[0],
             offset: Math.round(bp),
             index: 0,
           }
         }
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          const r = self.displayedRegions[index]
+        for (
+          let index = 0;
+          index < this.displayedRegionsInOrder.length;
+          index += 1
+        ) {
+          const r = this.displayedRegionsInOrder[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
             return { ...r, offset: Math.round(bp - bpSoFar), index }
           }
@@ -152,7 +163,7 @@ export function stateModelFactory(pluginManager: any) {
 
         return {
           offset: Math.round(bp - bpSoFar),
-          index: self.displayedRegions.length,
+          index: this.displayedRegionsInOrder.length,
         }
       },
     }))
@@ -171,7 +182,6 @@ export function stateModelFactory(pluginManager: any) {
 
       horizontallyFlip() {
         self.reversed = !self.reversed
-        this.setDisplayedRegions(self.displayedRegions.slice().reverse())
         self.offsetPx = self.totalBp / self.bpPerPx - self.offsetPx - self.width
       },
 
@@ -214,8 +224,6 @@ export function stateModelFactory(pluginManager: any) {
         self.displayedRegions = cast(regions)
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
-        if (self.reversed)
-          self.displayedRegions = cast(self.displayedRegions.slice().reverse())
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {
@@ -266,7 +274,7 @@ export function stateModelFactory(pluginManager: any) {
       navTo({ refName, start, end }: IRegion) {
         let s = start
         let e = end
-        const index = self.displayedRegions.findIndex(r => {
+        const index = self.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName) {
             if (s === undefined) {
               s = r.start
@@ -280,7 +288,7 @@ export function stateModelFactory(pluginManager: any) {
           }
           return false
         })
-        const f = self.displayedRegions[index]
+        const f = self.displayedRegionsInOrder[index]
         if (index !== -1) {
           this.moveTo(
             { index, offset: s - f.start },
@@ -304,19 +312,20 @@ export function stateModelFactory(pluginManager: any) {
         if (start.index === end.index) {
           bpSoFar += end.offset - start.offset
         } else {
-          const s = self.displayedRegions[start.index]
+          const s = self.displayedRegionsInOrder[start.index]
           bpSoFar += s.end - start.offset
           if (end.index - start.index >= 2) {
             for (let i = start.index + 1; i < end.index; i += 1) {
               bpSoFar +=
-                self.displayedRegions[i].end - self.displayedRegions[i].start
+                self.displayedRegionsInOrder[i].end -
+                self.displayedRegionsInOrder[i].start
             }
           }
           bpSoFar += end.offset
         }
         let bpToStart = 0
-        for (let i = 0; i < self.displayedRegions.length; i += 1) {
-          const region = self.displayedRegions[i]
+        for (let i = 0; i < self.displayedRegionsInOrder.length; i += 1) {
+          const region = self.displayedRegionsInOrder[i]
           if (start.index === i) {
             bpToStart += start.offset
             break

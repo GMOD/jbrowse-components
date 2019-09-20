@@ -2,7 +2,7 @@
 
 exports[`<SessionManager /> renders 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root-1 MuiPaper-rounded"
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root MuiPaper-rounded"
 >
   <ul
     class="MuiList-root MuiList-padding MuiList-subheader"
@@ -17,7 +17,7 @@ exports[`<SessionManager /> renders 1`] = `
     >
       <div
         aria-disabled="true"
-        class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters Mui-disabled MuiListItem-button MuiListItem-secondaryAction Mui-disabled"
+        class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-disabled MuiListItem-button MuiListItem-secondaryAction MuiButtonBase-disabled"
         role="button"
         tabindex="-1"
       >
@@ -51,7 +51,7 @@ exports[`<SessionManager /> renders 1`] = `
       >
         <button
           aria-label="Delete"
-          class="MuiButtonBase-root MuiIconButton-root Mui-disabled MuiIconButton-edgeEnd Mui-disabled"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-disabled MuiIconButton-edgeEnd MuiButtonBase-disabled"
           disabled=""
           tabindex="-1"
           type="button"

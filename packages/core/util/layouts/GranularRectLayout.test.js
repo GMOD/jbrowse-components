@@ -82,4 +82,15 @@ describe('GranularRectLayout', () => {
     l.discardRange(0, 220000)
     expect(l.bitmap[0].rowState).toBeUndefined()
   })
+
+  // see issue #486
+  it('tests that adding +/- pitchX fixes resolution causing errors', () => {
+    const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
+
+    l.addRect('test', 2581541, 2581542, 1)
+
+    expect(
+      l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
+    ).toBeTruthy()
+  })
 })

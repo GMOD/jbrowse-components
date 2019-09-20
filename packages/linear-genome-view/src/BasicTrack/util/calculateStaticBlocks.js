@@ -5,11 +5,15 @@ export function calculateBlocksReversed(self, extra = 0) {
   return new BlockSet(
     calculateBlocksForward(self, extra).map(fwdBlock => {
       const { parentRegion } = fwdBlock
-      const revBlock = new ContentBlock({
+      const args = {
         ...fwdBlock,
-        start: parentRegion.end - fwdBlock.end,
-        end: parentRegion.end - fwdBlock.start,
-      })
+        start: parentRegion.start + parentRegion.end - fwdBlock.end,
+        end: parentRegion.start + parentRegion.end - fwdBlock.start,
+      }
+      const revBlock =
+        fwdBlock instanceof ElidedBlock
+          ? new ElidedBlock(args)
+          : new ContentBlock(args)
       revBlock.key = assembleLocString(revBlock)
       return revBlock
     }),
@@ -17,7 +21,13 @@ export function calculateBlocksReversed(self, extra = 0) {
 }
 
 export function calculateBlocksForward(self, extra = 0) {
-  const { offsetPx, bpPerPx, width, displayedRegions, minimumBlockWidth } = self
+  const {
+    offsetPx,
+    bpPerPx,
+    width,
+    displayedRegionsInOrder,
+    minimumBlockWidth,
+  } = self
   if (!width)
     throw new Error('view has no width, cannot calculate displayed blocks')
   const windowLeftBp = offsetPx * bpPerPx
@@ -27,7 +37,7 @@ export function calculateBlocksForward(self, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegions.forEach(region => {
+  displayedRegionsInOrder.forEach(region => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const regionBlockCount = Math.ceil(
