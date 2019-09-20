@@ -104,9 +104,12 @@ const DrawerWidget = React.memo(props => {
 
 DrawerWidget.propTypes = {
   session: PropTypes.observableObject.isRequired,
-  LazyReactComponent: ReactPropTypes.node.isRequired,
+  LazyReactComponent: ReactPropTypes.any.isRequired,
   heading: ReactPropTypes.string.isRequired,
-  HeadingComponent: ReactPropTypes.node.isRequired,
+  HeadingComponent: ReactPropTypes.any,
+}
+DrawerWidget.defaultProps = {
+  HeadingComponent: null,
 }
 
 function App({ size, session }) {
@@ -119,11 +122,11 @@ function App({ size, session }) {
   }, [session, size.width])
 
   const { visibleDrawerWidget } = session
-  const {
-    LazyReactComponent,
-    HeadingComponent,
-    heading,
-  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
+  let drawer = {}
+  if (visibleDrawerWidget) {
+    drawer = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
+  }
+  const { LazyReactComponent, HeadingComponent, heading } = drawer
   return (
     <div className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
