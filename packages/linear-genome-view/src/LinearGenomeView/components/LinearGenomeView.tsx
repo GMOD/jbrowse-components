@@ -23,7 +23,12 @@ import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
-import { LinearGenomeViewStateModel, LGVMenuOption } from '..'
+import {
+  LinearGenomeViewStateModel,
+  LGVMenuOption,
+  HEADER_BAR_HEIGHT,
+  SCALE_BAR_HEIGHT,
+} from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const dragHandleHeight = 3
@@ -57,6 +62,7 @@ const useStyles = makeStyles(theme => ({
   },
   headerBar: {
     gridArea: '1/1/auto/span 2',
+    height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
   spacer: {
@@ -293,41 +299,30 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
   )
 })
 
-const Header = withSize({ monitorHeight: true })(
-  observer(
-    ({
-      model,
-      size,
-    }: {
-      model: LGV
-      size: { width: number; height: number }
-    }) => {
-      const classes = useStyles()
-      const [error, setError] = useState<string | undefined>()
-      const navTo = (locstring: string) => {
-        if (!model.navToLocstring(locstring)) {
-          setError(`Unable to navigate to ${locstring}`)
-        } else {
-          setError(undefined)
-        }
-      }
-      model.setHeaderHeight(size.height)
-      return (
-        <div className={classes.headerBar}>
-          {model.hideControls ? null : <Controls model={model} />}
-          <TextFieldOrTypography model={model} />
-          <div className={classes.spacer} />
+const Header = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const [error, setError] = useState<string | undefined>()
+  const navTo = (locstring: string) => {
+    if (!model.navToLocstring(locstring)) {
+      setError(`Unable to navigate to ${locstring}`)
+    } else {
+      setError(undefined)
+    }
+  }
+  return (
+    <div className={classes.headerBar}>
+      {model.hideControls ? null : <Controls model={model} />}
+      <TextFieldOrTypography model={model} />
+      <div className={classes.spacer} />
 
-          <Search onSubmit={navTo} error={error} />
-          <RefSeqDropdown onSubmit={navTo} model={model} />
+      <Search onSubmit={navTo} error={error} />
+      <RefSeqDropdown onSubmit={navTo} model={model} />
 
-          <ZoomControls model={model} />
-          <div className={classes.spacer} />
-        </div>
-      )
-    },
-  ),
-)
+      <ZoomControls model={model} />
+      <div className={classes.spacer} />
+    </div>
+  )
+})
 
 const Controls = observer(({ model }) => {
   const classes = useStyles()
@@ -394,7 +389,7 @@ function LinearGenomeView({ model }: { model: LGV }) {
           bpPerPx={bpPerPx}
           model={model}
         >
-          <ScaleBar model={model} height={32} />
+          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
         </Rubberband>
 
         {model.hideHeader ? (

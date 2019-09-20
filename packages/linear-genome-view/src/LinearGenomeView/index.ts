@@ -50,6 +50,9 @@ const validBpPerPx = [
   10000000,
 ]
 
+export const HEADER_BAR_HEIGHT = 50
+export const SCALE_BAR_HEIGHT = 32
+
 function constrainBpPerPx(newBpPerPx: number): number {
   // find the closest valid zoom level and return it
   // might consider reimplementing this later using a more efficient algorithm
@@ -78,7 +81,6 @@ export function stateModelFactory(pluginManager: any) {
       controlsWidth: 120,
       width: 800,
       // set this to true to hide the close, config, and tracksel buttons
-      headerHeight: 0,
       hideControls: false,
       hideHeader: false,
       hideCloseButton: false,
@@ -101,9 +103,9 @@ export function stateModelFactory(pluginManager: any) {
         return (
           self.tracks.map(t => t.height).reduce((a, b) => a + b) +
           self.tracks.length * 2 + // trackresizehandles
-          self.headerHeight +
-          this.scaleBarHeight +
-          1 // bottom padding
+          HEADER_BAR_HEIGHT +
+          SCALE_BAR_HEIGHT +
+          2 // 1px in scalebar border, 1px in bottom border
         )
       },
       get totalBp() {
@@ -182,10 +184,6 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
-      setHeaderHeight(newHeight: number) {
-        self.headerHeight = newHeight
-      },
-
       setWidth(newWidth: number) {
         self.width = newWidth
       },
