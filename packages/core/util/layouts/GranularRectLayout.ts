@@ -50,11 +50,11 @@ class LayoutRow<T> {
     this.padding = 1
     this.widthLimit = 1000000
 
-    // this.offset is the offset of the bits array relative to the genomic coordinates
+    // this.rowState.offset is the offset of the bits array relative to the genomic coordinates
     //      (modified by pitchX, but we don't know that in this class)
     // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
-    // this.min is the leftmost edge of all the rectangles we have in the layout
-    // this.max is the rightmost edge of all the rectangles we have in the layout
+    // this.rowState.min is the leftmost edge of all the rectangles we have in the layout
+    // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
   }
 
   log(msg: string): void {
@@ -110,7 +110,7 @@ class LayoutRow<T> {
       offset: left - rectWidth,
       min: left,
       max: right,
-      bits: new Array(right - left + 2 * rectWidth),
+      bits: new Array(3 * rectWidth),
     }
     // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
@@ -124,51 +124,50 @@ class LayoutRow<T> {
 
     // or check if we need to expand to the left and/or to the right
 
-    // expand rightward by the feature length + whole current length if necessary
+    let oLeft = left - this.rowState.offset
+    const oRight = right - this.rowState.offset
     const currLength = this.rowState.bits.length
 
-    if (right - this.rowState.offset >= this.rowState.bits.length) {
-      const additionalLength =
-        right -
-        this.rowState.offset -
-        this.rowState.bits.length +
-        1 +
-        this.rowState.bits.length
+    // expand rightward if necessary
+    if (oRight >= this.rowState.bits.length) {
+      // expand to new right + the whole current length
+      // additionalLength = (oRight - currLength) + currentLength
+      const additionalLength = oRight
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
         this.initialize(left, right)
       } else if (additionalLength > 0) {
-        this.rowState.bits = this.rowState.bits.concat(
-          new Array(additionalLength),
-        )
+        this.rowState.bits.push(...new Array(additionalLength))
         // this.log(`expand right (${additionalLength}): ${this.rowState.offset} | ${
         // this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
-    // expand by 2x leftward if necessary
+    // expand leftward if necessary
     if (left < this.rowState.offset) {
-      const additionalLength = this.rowState.offset - left + currLength
+      // expand to new left - the whole current length (or 0)
+      // additionalLength = (offset - left) + currLength = -(left - offset) + currLength
+      const additionalLength = Math.max(
+        currLength - oLeft,
+        this.rowState.offset,
+      )
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
         this.initialize(left, right)
       } else {
-        this.rowState.bits = new Array(additionalLength).concat(
-          this.rowState.bits,
-        )
+        this.rowState.bits.unshift(...new Array(additionalLength))
         this.rowState.offset -= additionalLength
+        oLeft = left - this.rowState.offset
         // this.log(`expand left (${additionalLength}): ${this.rowState.offset} | ${
         //   this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
     // set the bits in the bitmask
-    const oLeft = left - this.rowState.offset
-    const oRight = right - this.rowState.offset
     // if (oLeft < 0) debugger
     // if (oRight < 0) debugger
     // if (oRight <= oLeft) debugger
@@ -293,8 +292,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    * @param args.maxHeight  maximum layout height, default Infinity (no max)
    */
 
-  private id: string
-
   private pitchX: number
 
   private pitchY: number
@@ -316,8 +313,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     pitchY: number | undefined
     maxHeight: number | undefined
   }) {
-    this.id = Math.random().toString(36)
-    // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
     this.hardRowLimit = 3000
@@ -405,9 +400,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   /**
    * make a subarray if it does not exist
-   * @private
    */
-  autovivifyRow = (bitmap: LayoutRow<T>[], y: number) => {
+  private autovivifyRow(bitmap: LayoutRow<T>[], y: number): LayoutRow<T> {
     let row = bitmap[y]
     if (!row) {
       if (y > this.hardRowLimit) {
@@ -427,7 +421,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const data = rect.data || true
     const { bitmap } = this
-    const av = this.autovivifyRow
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
       // the rect is very big in relation to the view size, just
@@ -437,11 +430,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // genome at the same zoom level.  but most users will not
       // do that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
-        av(bitmap, y).setAllFilled(data)
+        this.autovivifyRow(bitmap, y).setAllFilled(data)
       }
     } else {
       for (let y = rect.top; y < yEnd; y += 1) {
-        av(bitmap, y).addRect(rect, data)
+        this.autovivifyRow(bitmap, y).addRect(rect, data)
       }
     }
   }
