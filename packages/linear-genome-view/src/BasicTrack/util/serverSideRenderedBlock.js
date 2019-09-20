@@ -1,7 +1,7 @@
 import { types, getParent, isAlive, addDisposer } from 'mobx-state-tree'
 
 import { reaction } from 'mobx'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 
 import { Region } from '@gmod/jbrowse-core/mst-types'
 
@@ -41,8 +41,12 @@ function renderBlockData(self) {
   )
     cannotBeRenderedReason = 'region assembly does not match track assembly'
   else cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
-  const renderProps = { ...track.renderProps }
+  const { renderProps } = track
   const { rendererType } = track
+  const { config } = renderProps
+  // This line is to trigger the mobx reaction when the config changes
+  // It won't trigger the reaction if it doesn't think we're accessing it
+  readConfObject(config)
   return {
     rendererType,
     rpcManager,
@@ -142,7 +146,7 @@ export default types
     html: '',
     error: undefined,
     maxHeightReached: false,
-    reactComponent: ServerSideRenderedBlockContent,
+    ReactComponent: ServerSideRenderedBlockContent,
     renderingComponent: undefined,
     renderProps: undefined,
     renderInProgress: undefined,

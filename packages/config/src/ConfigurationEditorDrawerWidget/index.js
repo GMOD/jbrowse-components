@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 import { isStateTreeNode, getType } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export const reactComponent = import('./components/ConfigurationEditor')
+export const ReactComponent = import('./components/ConfigurationEditor')
 export { default as stateModelFactory } from './model'
 export const configSchema = ConfigurationSchema(
   'ConfigurationEditorDrawerWidget',

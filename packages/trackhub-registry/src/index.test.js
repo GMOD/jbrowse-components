@@ -1,5 +1,5 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
-import MyPlugin from './index'
+import MyPlugin from '.'
 
 describe('Data management', () => {
   let pluginManager

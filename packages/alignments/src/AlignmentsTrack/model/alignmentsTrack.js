@@ -31,7 +31,7 @@ export default (pluginManager, configSchema) =>
         selectedRendering: types.optional(types.string, ''),
       })
       .volatile(() => ({
-        reactComponent: BlockBasedTrack,
+        ReactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       .actions(self => ({

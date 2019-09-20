@@ -5,7 +5,7 @@ import { lazy } from 'react'
 import {
   configSchema as ConfigurationEditorConfigSchema,
   HeadingComponent as ConfigurationEditorHeadingComponent,
-  reactComponent as ConfigurationEditorReactComponent,
+  ReactComponent as ConfigurationEditorReactComponent,
   stateModelFactory as ConfigurationEditorStateModelFactory,
 } from './ConfigurationEditorDrawerWidget'
 import {
