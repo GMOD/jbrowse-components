@@ -43,7 +43,7 @@ export function stateModelFactory(configSchema) {
         },
       }))
       .volatile(() => ({
-        reactComponent: BlockBasedTrackComponent,
+        ReactComponent: BlockBasedTrackComponent,
       })),
   )
 }

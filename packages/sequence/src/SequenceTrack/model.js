@@ -42,7 +42,7 @@ export default (configSchema, trackType) =>
         },
       }))
       .volatile(() => ({
-        reactComponent: BlockBasedTrack,
+        ReactComponent: BlockBasedTrack,
         rendererTypeName: 'DivSequenceRenderer',
       })),
   )

@@ -4,7 +4,7 @@ import {
   isConfigurationModel,
 } from './configurationSchema'
 
-import { getConf } from './index'
+import { getConf } from '.'
 
 describe('configuration schemas', () => {
   test('can make a schema with a color', () => {

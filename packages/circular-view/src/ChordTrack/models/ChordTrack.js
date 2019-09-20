@@ -55,7 +55,7 @@ export default pluginManager => {
 
       get RenderingComponent() {
         return (
-          self.reactComponent ||
+          self.ReactComponent ||
           (() => (
             <div className="TrackRenderingNotImplemented">
               Rendering not implemented for {self.type} tracks
