@@ -53,24 +53,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App({ size, session }) {
+const DrawerWidget = React.memo(props => {
+  const { session } = props
+  const { visibleDrawerWidget, pluginManager } = session
   const classes = useStyles()
-
-  const { pluginManager } = session
-
-  useEffect(() => {
-    session.updateWidth(size.width)
-  }, [session, size.width])
-
-  const { visibleDrawerWidget } = session
-  let drawerComponent
-  if (visibleDrawerWidget) {
-    const {
-      LazyReactComponent,
-      HeadingComponent,
-      heading,
-    } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
-    drawerComponent = (
+  const {
+    LazyReactComponent,
+    HeadingComponent,
+    heading,
+  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
+  return (
+    <Drawer session={session} open={Boolean(session.activeDrawerWidgets.size)}>
       <Slide direction="left" in>
         <div className={classes.defaultDrawer}>
           <AppBar position="static">
@@ -109,8 +102,24 @@ function App({ size, session }) {
           </React.Suspense>
         </div>
       </Slide>
-    )
-  }
+    </Drawer>
+  )
+})
+
+DrawerWidget.propTypes = {
+  session: PropTypes.observableObject.isRequired,
+}
+
+function App({ size, session }) {
+  const classes = useStyles()
+
+  const { pluginManager } = session
+
+  useEffect(() => {
+    session.updateWidth(size.width)
+  }, [session, size.width])
+
+  const { visibleDrawerWidget } = session
 
   return (
     <div className={classes.root}>
@@ -149,12 +158,8 @@ function App({ size, session }) {
           <DevTools session={session} />
         </div>
       </div>
-      <Drawer
-        session={session}
-        open={Boolean(session.activeDrawerWidgets.size)}
-      >
-        {drawerComponent}
-      </Drawer>
+
+      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
     </div>
   )
 }
