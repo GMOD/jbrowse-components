@@ -45,7 +45,27 @@ ElidedBlockMarker.propTypes = {
   width: ReactPropTypes.number.isRequired,
   offset: ReactPropTypes.number.isRequired,
 }
-
+const RenderedBlock = observer(({ block, viewModel, state }) => {
+  const classes = useStyles()
+  return (
+    <Block key={block.key} block={block} model={viewModel}>
+      {state && state.reactComponent ? (
+        <state.reactComponent model={state} />
+      ) : null}
+      {state && state.maxHeightReached ? (
+        <div
+          className={classes.heightOverflowed}
+          style={{
+            top: state.data.layout.totalHeight - 16,
+            height: 16,
+          }}
+        >
+          Max height reached
+        </div>
+      ) : null}
+    </Block>
+  )
+})
 function TrackBlocks({ model, viewModel, blockState }) {
   const classes = useStyles()
   const { blockDefinitions } = model
@@ -68,22 +88,7 @@ function TrackBlocks({ model, viewModel, blockState }) {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
-            <Block key={block.offsetPx} block={block} model={viewModel}>
-              {state && state.ReactComponent ? (
-                <state.ReactComponent model={state} />
-              ) : null}
-              {state && state.maxHeightReached ? (
-                <div
-                  className={classes.heightOverflowed}
-                  style={{
-                    top: state.data.layout.totalHeight - 16,
-                    height: 16,
-                  }}
-                >
-                  Max height reached
-                </div>
-              ) : null}
-            </Block>
+            <RenderedBlock block={block} viewModel={viewModel} state={state} />
           )
         }
         if (block instanceof ElidedBlock) {

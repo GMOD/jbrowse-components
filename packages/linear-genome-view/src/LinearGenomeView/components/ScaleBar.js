@@ -11,6 +11,7 @@ const useStyles = makeStyles((/* theme */) => ({
     textAlign: 'left',
     width: '100%',
     position: 'relative',
+    display: 'flex',
     background: '#555',
     // background: theme.palette.background.default,
     overflow: 'hidden',
@@ -43,12 +44,22 @@ function ScaleBar({ model, height }) {
     model.offsetPx,
     model.staticBlocks,
   )
+  console.log(model.offsetPx)
+  const offsetBlockPx = model.staticBlocks.length
+    ? model.staticBlocks.getBlocks()[0].offsetPx
+    : 0
+  const width = model.staticBlocks
+    .map(block => block.widthPx)
+    .reduce((a, b) => a + b, 0)
 
   return (
-    <div className={classes.scaleBar}>
+    <div
+      className={classes.scaleBar}
+      style={{ left: offsetBlockPx - model.offsetPx, width }}
+    >
       {model.staticBlocks.map(block => {
         return (
-          <Block key={block.offsetPx} block={block} model={model}>
+          <Block key={block.key} block={block} model={model}>
             <svg height={height} width={block.widthPx}>
               <Ruler
                 region={block}
