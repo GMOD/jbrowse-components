@@ -66,3 +66,13 @@ it('stacks up overlapping features', () => {
 
   expect(() => l.discardRange(0, 20000)).not.toThrow()
 })
+
+it('stacks up overlapping features', () => {
+  const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
+
+  l.addRect('test', 2581541, 2581542, 1)
+
+  expect(
+    l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
+  ).toBeTruthy()
+})
