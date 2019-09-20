@@ -67,7 +67,8 @@ it('stacks up overlapping features', () => {
   expect(() => l.discardRange(0, 20000)).not.toThrow()
 })
 
-it('stacks up overlapping features', () => {
+// see issue #486
+it('tests that adding +/- pitchX fixes resolution causing errors', () => {
   const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
 
   l.addRect('test', 2581541, 2581542, 1)
