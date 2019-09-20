@@ -9,8 +9,9 @@ const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    width: '100%',
     background: '#404040',
+    position: 'absolute',
+    display: 'flex',
     minHeight: '100%',
   },
   elidedBlock: {
@@ -38,12 +39,7 @@ const useStyles = makeStyles({
 
 const ElidedBlockMarker = ({ width, offset }) => {
   const classes = useStyles()
-  return (
-    <div
-      className={classes.elidedBlock}
-      style={{ left: `${offset}px`, width: `${width}px` }}
-    />
-  )
+  return <div className={classes.elidedBlock} style={{ width: `${width}px` }} />
 }
 ElidedBlockMarker.propTypes = {
   width: ReactPropTypes.number.isRequired,
@@ -53,8 +49,21 @@ ElidedBlockMarker.propTypes = {
 function TrackBlocks({ model, viewModel, blockState }) {
   const classes = useStyles()
   const { blockDefinitions } = model
+  const width = blockDefinitions
+    .map(block => block.widthPx)
+    .reduce((a, b) => a + b, 0)
+  const offsetBlockPx = blockDefinitions.length
+    ? blockDefinitions.getBlocks()[0].offsetPx
+    : 0
   return (
-    <div data-testid="Block" className={classes.trackBlocks}>
+    <div
+      data-testid="Block"
+      className={classes.trackBlocks}
+      style={{
+        left: offsetBlockPx - viewModel.offsetPx,
+        width,
+      }}
+    >
       {blockDefinitions.map(block => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)

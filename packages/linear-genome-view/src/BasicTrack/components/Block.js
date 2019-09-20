@@ -6,7 +6,6 @@ import React from 'react'
 
 const useStyles = makeStyles((/* theme */) => ({
   block: {
-    position: 'absolute',
     minHeight: '100%',
     background: 'white',
     // background: theme.palette.background.default,
@@ -28,7 +27,6 @@ function Block({ block, model, children }) {
   return (
     <div
       style={{
-        left: `${block.offsetPx - model.offsetPx}px`,
         width: `${block.widthPx}px`,
       }}
       className={clsx(classes.block, {
