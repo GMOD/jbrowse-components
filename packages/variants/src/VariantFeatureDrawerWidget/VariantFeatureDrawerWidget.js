@@ -135,6 +135,9 @@ function VariantSamples(props) {
     return null
   }
   const ret = Object.keys(feature.samples)
+  if (!ret.length) {
+    return null
+  }
   const infoFields = Object.keys(feature.samples[ret[0]])
 
   return (
