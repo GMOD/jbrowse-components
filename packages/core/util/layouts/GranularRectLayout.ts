@@ -510,11 +510,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
         // use l-1 and r+1 to avoid issue with pitchX resolution causing errors
-        const y1 = (l - 1) * this.pitchX
-        const y2 = (r + 1) * this.pitchX
+        const y1 = l * this.pitchX
+        const y2 = r * this.pitchX
         const x1 = region.start
         const x2 = region.end
-        if (segmentsIntersect(x1, x2, y1, y2)) {
+        if (segmentsIntersect(x1, x2, y1 - this.pitchX, y2 + this.pitchX)) {
           regionRectangles[id] = [y1, t, y2, b]
         }
       }
