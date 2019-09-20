@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { withSize } from 'react-sizeme'
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { generateLocString } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
