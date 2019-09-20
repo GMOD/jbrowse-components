@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { render } from '@testing-library/react'
 import React from 'react'
-import { stateModel } from './index'
+import { stateModel } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a drawer widget', async () => {

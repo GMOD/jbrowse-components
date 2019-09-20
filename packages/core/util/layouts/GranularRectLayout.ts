@@ -31,7 +31,7 @@ interface RowState<T> {
   min: number
   max: number
   offset: number
-  bits: (Record<string, T> | undefined)[]
+  bits: (Record<string, T> | boolean | undefined)[]
 }
 // a single row in the layout
 class LayoutRow<T> {
@@ -39,7 +39,7 @@ class LayoutRow<T> {
 
   private padding: number
 
-  private allFilled?: Record<string, T>
+  private allFilled?: Record<string, T> | boolean
 
   private widthLimit: number
 
@@ -50,11 +50,11 @@ class LayoutRow<T> {
     this.padding = 1
     this.widthLimit = 1000000
 
-    // this.offset is the offset of the bits array relative to the genomic coordinates
+    // this.rowState.offset is the offset of the bits array relative to the genomic coordinates
     //      (modified by pitchX, but we don't know that in this class)
     // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
-    // this.min is the leftmost edge of all the rectangles we have in the layout
-    // this.max is the rightmost edge of all the rectangles we have in the layout
+    // this.rowState.min is the leftmost edge of all the rectangles we have in the layout
+    // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
   }
 
   log(msg: string): void {
@@ -63,11 +63,11 @@ class LayoutRow<T> {
     console.log(`r${this.rowNumber}: ${msg}`)
   }
 
-  setAllFilled(data: Record<string, T>): void {
+  setAllFilled(data: Record<string, T> | boolean): void {
     this.allFilled = data
   }
 
-  getItemAt(x: number): Record<string, T> | undefined {
+  getItemAt(x: number): Record<string, T> | boolean | undefined {
     if (this.allFilled) return this.allFilled
     if (!this.rowState) return undefined
 
@@ -110,12 +110,12 @@ class LayoutRow<T> {
       offset: left - rectWidth,
       min: left,
       max: right,
-      bits: new Array(right - left + 2 * rectWidth),
+      bits: new Array(3 * rectWidth),
     }
     // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
 
-  addRect(rect: Rectangle<T>, data: Record<string, T>): void {
+  addRect(rect: Rectangle<T>, data: Record<string, T> | boolean): void {
     const left = rect.l
     const right = rect.r + this.padding // only padding on the right
     if (!this.rowState) {
@@ -124,51 +124,50 @@ class LayoutRow<T> {
 
     // or check if we need to expand to the left and/or to the right
 
-    // expand rightward by the feature length + whole current length if necessary
+    let oLeft = left - this.rowState.offset
+    const oRight = right - this.rowState.offset
     const currLength = this.rowState.bits.length
 
-    if (right - this.rowState.offset >= this.rowState.bits.length) {
-      const additionalLength =
-        right -
-        this.rowState.offset -
-        this.rowState.bits.length +
-        1 +
-        this.rowState.bits.length
+    // expand rightward if necessary
+    if (oRight >= this.rowState.bits.length) {
+      // expand to new right + the whole current length
+      // additionalLength = (oRight - currLength) + currentLength
+      const additionalLength = oRight
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
         this.initialize(left, right)
       } else if (additionalLength > 0) {
-        this.rowState.bits = this.rowState.bits.concat(
-          new Array(additionalLength),
-        )
+        this.rowState.bits.push(...new Array(additionalLength))
         // this.log(`expand right (${additionalLength}): ${this.rowState.offset} | ${
         // this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
-    // expand by 2x leftward if necessary
+    // expand leftward if necessary
     if (left < this.rowState.offset) {
-      const additionalLength = this.rowState.offset - left + currLength
+      // expand to new left - the whole current length (or 0)
+      // additionalLength = (offset - left) + currLength = -(left - offset) + currLength
+      const additionalLength = Math.max(
+        currLength - oLeft,
+        this.rowState.offset,
+      )
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
         this.initialize(left, right)
       } else {
-        this.rowState.bits = new Array(additionalLength).concat(
-          this.rowState.bits,
-        )
+        this.rowState.bits.unshift(...new Array(additionalLength))
         this.rowState.offset -= additionalLength
+        oLeft = left - this.rowState.offset
         // this.log(`expand left (${additionalLength}): ${this.rowState.offset} | ${
         //   this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
     // set the bits in the bitmask
-    const oLeft = left - this.rowState.offset
-    const oRight = right - this.rowState.offset
     // if (oLeft < 0) debugger
     // if (oRight < 0) debugger
     // if (oRight <= oLeft) debugger
@@ -293,8 +292,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    * @param args.maxHeight  maximum layout height, default Infinity (no max)
    */
 
-  private id: string
-
   private pitchX: number
 
   private pitchY: number
@@ -303,7 +300,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: Record<string, Rectangle<T>>
+  private rectangles: Map<string, Rectangle<T>>
 
   private maxHeightReached: boolean
 
@@ -316,15 +313,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     pitchY: number | undefined
     maxHeight: number | undefined
   }) {
-    this.id = Math.random().toString(36)
-    // console.log(`${this.id} constructed`)
     this.pitchX = args.pitchX || 10
     this.pitchY = args.pitchY || 10
     this.hardRowLimit = 3000
     this.maxHeightReached = false
 
     this.bitmap = []
-    this.rectangles = {}
+    this.rectangles = new Map()
     this.maxHeight = Math.ceil((args.maxHeight || 10000) / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
@@ -338,16 +333,16 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data: Record<string, T>,
+    data?: Record<string, T>,
   ): number | null {
     // if we have already laid it out, return its layout
     // console.log(`${this.id} add ${id}`)
-    if (id in this.rectangles) {
-      const storedRec = this.rectangles[id]
+    const storedRec = this.rectangles.get(id)
+    if (storedRec) {
       if (storedRec.top === null) return null
 
       // add it to the bitmap again, since that bitmap range may have been discarded
-      this.addRectToBitmap(storedRec, data)
+      this.addRectToBitmap(storedRec)
       return storedRec.top * this.pitchY
     }
 
@@ -364,8 +359,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // mX: midX,
       h: pHeight,
       originalHeight: height,
+      data,
     }
-    if (data) rectangle.data = data
 
     const maxTop = this.maxHeight - pHeight
     let top = 0
@@ -375,13 +370,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     if (top > maxTop) {
       rectangle.top = null
-      this.rectangles[id] = rectangle
+      this.rectangles.set(id, rectangle)
       this.maxHeightReached = true
       return null
     }
     rectangle.top = top
-    this.addRectToBitmap(rectangle, data)
-    this.rectangles[id] = rectangle
+    this.addRectToBitmap(rectangle)
+    this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
     // console.log(`G2 ${data.get('name')} ${top}`)
     return top * this.pitchY
@@ -405,9 +400,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   /**
    * make a subarray if it does not exist
-   * @private
    */
-  autovivifyRow = (bitmap: LayoutRow<T>[], y: number) => {
+  private autovivifyRow(bitmap: LayoutRow<T>[], y: number): LayoutRow<T> {
     let row = bitmap[y]
     if (!row) {
       if (y > this.hardRowLimit) {
@@ -422,12 +416,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return row
   }
 
-  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
+  addRectToBitmap(rect: Rectangle<T>): void {
     if (rect.top === null) return
 
-    data = data || true
+    const data = rect.data || true
     const { bitmap } = this
-    const av = this.autovivifyRow
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
       // the rect is very big in relation to the view size, just
@@ -437,11 +430,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // genome at the same zoom level.  but most users will not
       // do that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
-        av(bitmap, y).setAllFilled(data)
+        this.autovivifyRow(bitmap, y).setAllFilled(data)
       }
     } else {
       for (let y = rect.top; y < yEnd; y += 1) {
-        av(bitmap, y).addRect(rect, data)
+        this.autovivifyRow(bitmap, y).addRect(rect, data)
       }
     }
   }
@@ -462,10 +455,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   hasSeen(id: string): boolean {
-    return !!this.rectangles[id]
+    return this.rectangles.has(id)
   }
 
-  getByCoord(x: number, y: number): Record<string, T> | undefined {
+  getByCoord(x: number, y: number): Record<string, T> | boolean | undefined {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) return undefined
@@ -474,7 +467,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getByID(id: string): (Record<string, T> | boolean) | undefined {
-    const r = this.rectangles[id]
+    const r = this.rectangles.get(id)
     if (r) {
       return r.data || true
     }
@@ -489,7 +482,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getRectangles(): Map<string, RectTuple> {
     return new Map(
-      Object.entries(this.rectangles).map(([id, rect]) => {
+      Array.from(this.rectangles.entries()).map(([id, rect]) => {
         const { l, r, originalHeight, top } = rect
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
@@ -501,8 +494,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
     const regionRectangles: { [key: string]: RectTuple } = {}
     let maxHeightReached = false
-    for (const iter of Object.entries(this.rectangles)) {
-      const [id, rect] = iter
+    for (const [id, rect] of this.rectangles.entries()) {
       const { l, r, originalHeight, top } = rect
       if (rect.top === null) {
         maxHeightReached = true

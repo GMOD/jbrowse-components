@@ -1,6 +1,6 @@
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import { getSnapshot } from 'mobx-state-tree'
-import MyPlugin from './index'
+import MyPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {
   const { pluginManager } = createTestSession()

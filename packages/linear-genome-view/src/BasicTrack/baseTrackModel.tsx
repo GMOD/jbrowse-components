@@ -52,7 +52,7 @@ const BaseTrack = types
     configuration: ConfigurationReference(BaseTrackConfig),
   })
   .volatile(() => ({
-    reactComponent: undefined,
+    ReactComponent: undefined,
     rendererTypeName: undefined,
     ready: false,
     error: '',
@@ -73,7 +73,7 @@ const BaseTrack = types
       blockState: Record<string, any>
     }> {
       return (
-        self.reactComponent ||
+        self.ReactComponent ||
         (() => (
           <div className="TrackRenderingNotImplemented">
             Rendering not implemented for {self.type} tracks

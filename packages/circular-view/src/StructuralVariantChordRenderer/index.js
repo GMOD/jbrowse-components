@@ -4,7 +4,7 @@ export default ({ jbrequire }) => {
   )
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const ReactComponent = jbrequire(require('./reactComponent'))
+  const ReactComponent = jbrequire(require('./ReactComponent'))
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordRenderer',
     {

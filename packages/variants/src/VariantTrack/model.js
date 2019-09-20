@@ -32,7 +32,7 @@ export default configSchema =>
         height: types.optional(types.integer, 100),
       })
       .volatile(() => ({
-        reactComponent: BlockBasedTrack,
+        ReactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       .actions(self => ({

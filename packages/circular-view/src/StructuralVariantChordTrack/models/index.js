@@ -42,7 +42,7 @@ export default pluginManager => {
       }),
     )
     .volatile(self => ({
-      reactComponent: mainReactComponent,
+      ReactComponent: mainReactComponent,
 
       // NOTE: all this volatile stuff has to be filled in at once
       // so that it stays consistent

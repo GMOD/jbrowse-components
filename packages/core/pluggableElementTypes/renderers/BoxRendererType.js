@@ -1,3 +1,4 @@
+import deepEqual from 'deep-equal'
 import { readConfObject } from '../../configuration'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
@@ -21,15 +22,22 @@ export class LayoutSession {
    * @param {*} layout
    * @returns {boolean} true if the given layout is a valid one to use for this session
    */
-  layoutIsValid(layout) {
-    return layout && layout.subLayoutConstructorArgs.pitchX === this.bpPerPx
+  cachedLayoutIsValid(cachedLayout) {
+    return (
+      cachedLayout &&
+      cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
+      deepEqual(readConfObject(this.config), cachedLayout.config)
+    )
   }
 
   get layout() {
-    if (!this.cachedLayout || !this.layoutIsValid(this.cachedLayout)) {
-      this.cachedLayout = this.makeLayout()
+    if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
+      this.cachedLayout = {
+        layout: this.makeLayout(),
+        config: readConfObject(this.config),
+      }
     }
-    return this.cachedLayout
+    return this.cachedLayout.layout
   }
 }
 
