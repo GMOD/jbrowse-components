@@ -53,9 +53,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const DrawerWidget = React.memo(props => {
-  const { session, LazyReactComponent, HeadingComponent, heading } = props
-  const { visibleDrawerWidget } = session
+const DrawerWidget = observer(props => {
+  const { session } = props
+  const { visibleDrawerWidget, pluginManager } = session
+  const {
+    LazyReactComponent,
+    HeadingComponent,
+    heading,
+  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
   const classes = useStyles()
 
   return (
@@ -104,12 +109,6 @@ const DrawerWidget = React.memo(props => {
 
 DrawerWidget.propTypes = {
   session: PropTypes.observableObject.isRequired,
-  LazyReactComponent: ReactPropTypes.any.isRequired,
-  heading: ReactPropTypes.string.isRequired,
-  HeadingComponent: ReactPropTypes.any,
-}
-DrawerWidget.defaultProps = {
-  HeadingComponent: null,
 }
 
 function App({ size, session }) {
@@ -122,11 +121,6 @@ function App({ size, session }) {
   }, [session, size.width])
 
   const { visibleDrawerWidget } = session
-  let drawer = {}
-  if (visibleDrawerWidget) {
-    drawer = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
-  }
-  const { LazyReactComponent, HeadingComponent, heading } = drawer
   return (
     <div className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
@@ -165,14 +159,7 @@ function App({ size, session }) {
         </div>
       </div>
 
-      {visibleDrawerWidget ? (
-        <DrawerWidget
-          LazyReactComponent={LazyReactComponent}
-          HeadingComponent={HeadingComponent}
-          heading={heading}
-          session={session}
-        />
-      ) : null}
+      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
     </div>
   )
 }
