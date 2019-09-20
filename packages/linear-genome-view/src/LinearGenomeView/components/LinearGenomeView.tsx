@@ -48,6 +48,8 @@ const useStyles = makeStyles(theme => ({
   },
   viewControls: {
     height: '100%',
+    zIndex: 10,
+    background: '#eee',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
   },
