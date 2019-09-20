@@ -54,14 +54,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const DrawerWidget = React.memo(props => {
-  const { session } = props
+  const { session, LazyReactComponent, HeadingComponent, heading } = props
   const { visibleDrawerWidget, pluginManager } = session
   const classes = useStyles()
-  const {
-    LazyReactComponent,
-    HeadingComponent,
-    heading,
-  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
+
   return (
     <Drawer session={session} open={Boolean(session.activeDrawerWidgets.size)}>
       <Slide direction="left" in>
@@ -120,21 +116,25 @@ function App({ size, session }) {
   }, [session, size.width])
 
   const { visibleDrawerWidget } = session
-
+  const {
+    LazyReactComponent,
+    HeadingComponent,
+    heading,
+  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
   return (
     <div className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
-            const { LazyReactComponent } = pluginManager.getMenuBarType(
-              menuBar.type,
-            )
+            const {
+              LazyReactComponent: MenuBarLazyReactComponent,
+            } = pluginManager.getMenuBarType(menuBar.type)
             return (
               <React.Suspense
                 key={`view-${menuBar.id}`}
                 fallback={<div>Loading...</div>}
               >
-                <LazyReactComponent
+                <MenuBarLazyReactComponent
                   key={`view-${menuBar.id}`}
                   model={menuBar}
                   session={session}
@@ -159,7 +159,14 @@ function App({ size, session }) {
         </div>
       </div>
 
-      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
+      {visibleDrawerWidget ? (
+        <DrawerWidget
+          LazyReactComponent={LazyReactComponent}
+          HeadingComponent={HeadingComponent}
+          heading={heading}
+          session={session}
+        />
+      ) : null}
     </div>
   )
 }
