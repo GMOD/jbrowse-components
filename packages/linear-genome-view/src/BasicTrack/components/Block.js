@@ -22,7 +22,8 @@ const useStyles = makeStyles((/* theme */) => ({
   },
 }))
 
-function Block({ block, model, children }) {
+function Block(props) {
+  const { block, children } = props
   const classes = useStyles()
   return (
     <div
@@ -43,7 +44,6 @@ Block.defaultProps = {
   children: undefined,
 }
 Block.propTypes = {
-  model: PropTypes.shape().isRequired,
   block: PropTypes.shape().isRequired,
   children: PropTypes.oneOfType([
     PropTypes.node,

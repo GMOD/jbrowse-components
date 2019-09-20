@@ -10,7 +10,7 @@ const useStyles = makeStyles((/* theme */) => ({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    position: 'relative',
+    position: 'absolute',
     display: 'flex',
     background: '#555',
     // background: theme.palette.background.default,
@@ -38,13 +38,31 @@ function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   return undefined
 }
 
+const RenderedBlock = observer(
+  ({ block, model, height, blockContainingLeftEndOfView }) => {
+    return (
+      <Block block={block}>
+        <svg height={height} width={block.widthPx}>
+          <Ruler
+            region={block}
+            showRefNameLabel={
+              !!block.isLeftEndOfDisplayedRegion &&
+              block !== blockContainingLeftEndOfView
+            }
+            bpPerPx={model.bpPerPx}
+            flipped={model.horizontallyFlipped}
+          />
+        </svg>
+      </Block>
+    )
+  },
+)
 function ScaleBar({ model, height }) {
   const classes = useStyles()
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
     model.offsetPx,
     model.staticBlocks,
   )
-  console.log(model.offsetPx)
   const offsetBlockPx = model.staticBlocks.length
     ? model.staticBlocks.getBlocks()[0].offsetPx
     : 0
@@ -59,19 +77,13 @@ function ScaleBar({ model, height }) {
     >
       {model.staticBlocks.map(block => {
         return (
-          <Block key={block.key} block={block} model={model}>
-            <svg height={height} width={block.widthPx}>
-              <Ruler
-                region={block}
-                showRefNameLabel={
-                  !!block.isLeftEndOfDisplayedRegion &&
-                  block !== blockContainingLeftEndOfView
-                }
-                bpPerPx={model.bpPerPx}
-                flipped={model.horizontallyFlipped}
-              />
-            </svg>
-          </Block>
+          <RenderedBlock
+            key={block.key}
+            block={block}
+            model={model}
+            blockContainingLeftEndOfView={blockContainingLeftEndOfView}
+            height={height}
+          />
         )
       })}
       {// put in a floating ref label
