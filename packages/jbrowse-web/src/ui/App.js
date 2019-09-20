@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 
 const DrawerWidget = React.memo(props => {
   const { session, LazyReactComponent, HeadingComponent, heading } = props
-  const { visibleDrawerWidget, pluginManager } = session
+  const { visibleDrawerWidget } = session
   const classes = useStyles()
 
   return (
@@ -104,6 +104,9 @@ const DrawerWidget = React.memo(props => {
 
 DrawerWidget.propTypes = {
   session: PropTypes.observableObject.isRequired,
+  LazyReactComponent: ReactPropTypes.node.isRequired,
+  heading: ReactPropTypes.string.isRequired,
+  HeadingComponent: ReactPropTypes.node.isRequired,
 }
 
 function App({ size, session }) {
