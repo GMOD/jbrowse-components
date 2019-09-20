@@ -1,3 +1,4 @@
+import deepEqual from 'deep-equal'
 import { readConfObject } from '../../configuration'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
@@ -25,7 +26,7 @@ export class LayoutSession {
     return (
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
-      readConfObject(this.config) === cachedLayout.config
+      deepEqual(readConfObject(this.config), cachedLayout.config)
     )
   }
 
