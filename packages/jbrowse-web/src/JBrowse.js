@@ -30,6 +30,14 @@ export default observer(({ config, initialState }) => {
   }, [debouncedUrl])
 
   useEffect(() => {
+    // poke some things for testing (this stuff will eventually be removed)
+    if (root) {
+      window.ROOTMODEL = root
+      window.MODEL = root.session
+    }
+  })
+
+  useEffect(() => {
     async function loadConfig() {
       try {
         let r
@@ -79,9 +87,6 @@ export default observer(({ config, initialState }) => {
         }
 
         r.setHistory(UndoManager.create({}, { targetStore: r.session }))
-        // poke some things for testing (this stuff will eventually be removed)
-        window.ROOTMODEL = r
-        window.MODEL = r.session
         setRoot(r)
         setStatus('loaded')
       } catch (error) {
