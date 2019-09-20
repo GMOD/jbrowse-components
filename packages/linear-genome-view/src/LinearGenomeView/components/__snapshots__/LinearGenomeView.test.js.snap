@@ -214,6 +214,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     >
       <div
         class="makeStyles-scaleBar"
+        style="left: 0px; width: 0px;"
       />
     </div>
     <div
@@ -284,6 +285,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
+          style="left: 0px; width: 0px;"
         />
       </div>
     </div>
@@ -510,10 +512,11 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     >
       <div
         class="makeStyles-scaleBar"
+        style="left: 0px; width: 100px;"
       >
         <div
           class="makeStyles-block makeStyles-leftBorder makeStyles-rightBorder"
-          style="left: 0px; width: 100px;"
+          style="width: 100px;"
         >
           <svg
             height="32"
@@ -684,10 +687,11 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
+          style="left: 0px; width: 100px;"
         >
           <div
             class="makeStyles-block makeStyles-leftBorder makeStyles-rightBorder"
-            style="left: 0px; width: 100px;"
+            style="width: 100px;"
           >
             <div
               class="makeStyles-blockMessage"
@@ -771,10 +775,11 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         <div
           class="makeStyles-trackBlocks"
           data-testid="Block"
+          style="left: 0px; width: 100px;"
         >
           <div
             class="makeStyles-block makeStyles-leftBorder makeStyles-rightBorder"
-            style="left: 0px; width: 100px;"
+            style="width: 100px;"
           >
             <div
               class="makeStyles-blockMessage"
@@ -1008,6 +1013,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     >
       <div
         class="makeStyles-scaleBar"
+        style="left: 0px; width: 0px;"
       />
     </div>
   </div>

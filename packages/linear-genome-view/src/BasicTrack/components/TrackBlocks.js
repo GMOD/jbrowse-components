@@ -48,7 +48,7 @@ ElidedBlockMarker.propTypes = {
 const RenderedBlock = observer(({ block, viewModel, state }) => {
   const classes = useStyles()
   return (
-    <Block key={block.key} block={block} model={viewModel}>
+    <Block block={block} model={viewModel}>
       {state && state.reactComponent ? (
         <state.reactComponent model={state} />
       ) : null}
@@ -88,13 +88,19 @@ function TrackBlocks({ model, viewModel, blockState }) {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
-            <RenderedBlock block={block} viewModel={viewModel} state={state} />
+            <RenderedBlock
+              key={`${model.id}-${block.key}`}
+              block={block}
+              trackId={model.id}
+              viewModel={viewModel}
+              state={state}
+            />
           )
         }
         if (block instanceof ElidedBlock) {
           return (
             <ElidedBlockMarker
-              key={block.key}
+              key={`${model.id}-${block.key}`}
               width={block.widthPx}
               offset={block.offsetPx - viewModel.offsetPx}
             />
