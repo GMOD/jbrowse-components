@@ -33,7 +33,6 @@ export default pluginManager => {
                 topLGV.height +
                 bottomLGV.headerHeight +
                 bottomLGV.scaleBarHeight +
-                model.headerHeight +
                 6 // margin
               return (
                 <polygon

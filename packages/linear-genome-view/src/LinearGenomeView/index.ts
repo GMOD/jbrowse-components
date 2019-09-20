@@ -96,8 +96,11 @@ export function stateModelFactory(pluginManager: any) {
         return self.width - self.controlsWidth
       },
       get scaleBarHeight() {
-        // 32px plus 1px pad
-        return 33
+        // +1px pad
+        return SCALE_BAR_HEIGHT + 1
+      },
+      get headerHeight() {
+        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT
       },
       get height() {
         return (
@@ -105,7 +108,7 @@ export function stateModelFactory(pluginManager: any) {
           self.tracks.length * 2 + // trackresizehandles
           HEADER_BAR_HEIGHT +
           SCALE_BAR_HEIGHT +
-          2 // 1px in scalebar border, 1px in bottom border
+          1 // 1px in scalebar border, 1px in bottom border
         )
       },
       get totalBp() {
