@@ -53,24 +53,18 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App({ size, session }) {
+const DrawerWidget = observer(props => {
+  const { session } = props
+  const { visibleDrawerWidget, pluginManager } = session
+  const {
+    LazyReactComponent,
+    HeadingComponent,
+    heading,
+  } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
   const classes = useStyles()
 
-  const { pluginManager } = session
-
-  useEffect(() => {
-    session.updateWidth(size.width)
-  }, [session, size.width])
-
-  const { visibleDrawerWidget } = session
-  let drawerComponent
-  if (visibleDrawerWidget) {
-    const {
-      LazyReactComponent,
-      HeadingComponent,
-      heading,
-    } = pluginManager.getDrawerWidgetType(visibleDrawerWidget.type)
-    drawerComponent = (
+  return (
+    <Drawer session={session} open={Boolean(session.activeDrawerWidgets.size)}>
       <Slide direction="left" in>
         <div className={classes.defaultDrawer}>
           <AppBar position="static">
@@ -109,23 +103,38 @@ function App({ size, session }) {
           </React.Suspense>
         </div>
       </Slide>
-    )
-  }
+    </Drawer>
+  )
+})
 
+DrawerWidget.propTypes = {
+  session: PropTypes.observableObject.isRequired,
+}
+
+function App({ size, session }) {
+  const classes = useStyles()
+
+  const { pluginManager } = session
+
+  useEffect(() => {
+    session.updateWidth(size.width)
+  }, [session, size.width])
+
+  const { visibleDrawerWidget } = session
   return (
     <div className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
-            const { LazyReactComponent } = pluginManager.getMenuBarType(
-              menuBar.type,
-            )
+            const {
+              LazyReactComponent: MenuBarLazyReactComponent,
+            } = pluginManager.getMenuBarType(menuBar.type)
             return (
               <React.Suspense
                 key={`view-${menuBar.id}`}
                 fallback={<div>Loading...</div>}
               >
-                <LazyReactComponent
+                <MenuBarLazyReactComponent
                   key={`view-${menuBar.id}`}
                   model={menuBar}
                   session={session}
@@ -149,12 +158,8 @@ function App({ size, session }) {
           <DevTools session={session} />
         </div>
       </div>
-      <Drawer
-        session={session}
-        open={Boolean(session.activeDrawerWidgets.size)}
-      >
-        {drawerComponent}
-      </Drawer>
+
+      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
     </div>
   )
 }
