@@ -6,6 +6,10 @@ import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
 
 const useStyles = makeStyles((/* theme */) => ({
+  scaleBarContainer: {
+    position: 'relative',
+    display: 'block',
+  },
   scaleBar: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
@@ -71,32 +75,31 @@ function ScaleBar({ model, height }) {
     .reduce((a, b) => a + b, 0)
 
   return (
-    <div
-      className={classes.scaleBar}
-      style={{ left: offsetBlockPx - model.offsetPx, width }}
-    >
-      {model.staticBlocks.map(block => {
-        return (
-          <RenderedBlock
-            key={block.key}
-            block={block}
-            model={model}
-            blockContainingLeftEndOfView={blockContainingLeftEndOfView}
-            height={height}
-          />
-        )
-      })}
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className={classes.refLabel}>
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
+    <div className={classes.scaleBarContainer}>
+      <div
+        className={classes.scaleBar}
+        style={{ left: offsetBlockPx - model.offsetPx, width }}
+      >
+        {model.staticBlocks.map(block => {
+          return (
+            <RenderedBlock
+              key={block.key}
+              block={block}
+              model={model}
+              blockContainingLeftEndOfView={blockContainingLeftEndOfView}
+              height={height}
+            />
+          )
+        })}
+        {// put in a floating ref label
+        blockContainingLeftEndOfView ? (
+          <div className={classes.refLabel}>
+            {blockContainingLeftEndOfView.refName}
+          </div>
+        ) : null}
+      </div>
     </div>
   )
-}
-ScaleBar.defaultProps = {
-  style: {},
 }
 ScaleBar.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,

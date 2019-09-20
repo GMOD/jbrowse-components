@@ -206,16 +206,24 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    />
+    >
+      <div
+        style="height: 32px;"
+      />
+    </div>
     <div
       class="Rubberband-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar"
-        style="left: 0px; width: 0px;"
-      />
+        class="makeStyles-scaleBarContainer"
+      >
+        <div
+          class="makeStyles-scaleBar"
+          style="left: 0px; width: 0px;"
+        />
+      </div>
     </div>
     <div
       class="makeStyles-controls makeStyles-trackControls"
@@ -504,118 +512,126 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    />
+    >
+      <div
+        style="height: 32px;"
+      />
+    </div>
     <div
       class="Rubberband-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar"
-        style="left: 0px; width: 100px;"
+        class="makeStyles-scaleBarContainer"
       >
         <div
-          class="makeStyles-block makeStyles-leftBorder makeStyles-rightBorder"
-          style="width: 100px;"
+          class="makeStyles-scaleBar"
+          style="left: 0px; width: 100px;"
         >
-          <svg
-            height="32"
-            width="100"
+          <div
+            class="makeStyles-block makeStyles-leftBorder makeStyles-rightBorder"
+            style="width: 100px;"
           >
-            <line
-              class="makeStyles-majorTick"
-              data-bp="-1"
-              stroke="#555"
-              stroke-width="1"
-              x1="-1"
-              x2="-1"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="19"
-              stroke="#999"
-              stroke-width="1"
-              x1="19"
-              x2="19"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="39"
-              stroke="#999"
-              stroke-width="1"
-              x1="39"
-              x2="39"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="59"
-              stroke="#999"
-              stroke-width="1"
-              x1="59"
-              x2="59"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="79"
-              stroke="#999"
-              stroke-width="1"
-              x1="79"
-              x2="79"
-              y1="0"
-              y2="4"
-            />
-            <line
-              class="makeStyles-majorTick"
-              data-bp="99"
-              stroke="#555"
-              stroke-width="1"
-              x1="99"
-              x2="99"
-              y1="0"
-              y2="6"
-            />
-            <line
-              class="makeStyles-minorTick"
-              data-bp="119"
-              stroke="#999"
-              stroke-width="1"
-              x1="119"
-              x2="119"
-              y1="0"
-              y2="4"
-            />
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="-4"
-              y="7"
+            <svg
+              height="32"
+              width="100"
             >
-              0
-            </text>
-            <text
-              class="makeStyles-majorTickLabel"
-              dominant-baseline="hanging"
-              style="font-size: 11px;"
-              x="96"
-              y="7"
-            >
-              100
-            </text>
-          </svg>
-        </div>
-        <div
-          class="makeStyles-refLabel"
-        >
-          ctgA
+              <line
+                class="makeStyles-majorTick"
+                data-bp="-1"
+                stroke="#555"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="19"
+                stroke="#999"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="39"
+                stroke="#999"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="59"
+                stroke="#999"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="79"
+                stroke="#999"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="4"
+              />
+              <line
+                class="makeStyles-majorTick"
+                data-bp="99"
+                stroke="#555"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="6"
+              />
+              <line
+                class="makeStyles-minorTick"
+                data-bp="119"
+                stroke="#999"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="4"
+              />
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="-4"
+                y="7"
+              >
+                0
+              </text>
+              <text
+                class="makeStyles-majorTickLabel"
+                dominant-baseline="hanging"
+                style="font-size: 11px;"
+                x="96"
+                y="7"
+              >
+                100
+              </text>
+            </svg>
+          </div>
+          <div
+            class="makeStyles-refLabel"
+          >
+            ctgA
+          </div>
         </div>
       </div>
     </div>
@@ -1005,16 +1021,24 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    />
+    >
+      <div
+        style="height: 32px;"
+      />
+    </div>
     <div
       class="Rubberband-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
     >
       <div
-        class="makeStyles-scaleBar"
-        style="left: 0px; width: 0px;"
-      />
+        class="makeStyles-scaleBarContainer"
+      >
+        <div
+          class="makeStyles-scaleBar"
+          style="left: 0px; width: 0px;"
+        />
+      </div>
     </div>
   </div>
 </div>
