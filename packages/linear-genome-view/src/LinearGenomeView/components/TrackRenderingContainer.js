@@ -19,15 +19,7 @@ const styles = {
 class TrackRenderingContainer extends Component {
   constructor(props) {
     super(props)
-    this.mainNode = React.createRef()
     this.wheel = this.wheel.bind(this)
-  }
-
-  componentDidMount() {
-    if (this.mainNode.current)
-      this.mainNode.current.addEventListener('wheel', this.wheel, {
-        passive: false,
-      })
   }
 
   wheel(event) {
@@ -41,7 +33,7 @@ class TrackRenderingContainer extends Component {
     return (
       <div
         className={classes.trackRenderingContainer}
-        ref={this.mainNode}
+        onWheel={this.wheel}
         style={{
           gridRow: `track-${trackId}`,
           gridColumn: 'blocks',
