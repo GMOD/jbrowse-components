@@ -68,7 +68,6 @@ Object.keys(rpcMethods).forEach(key => {
   rpcConfig[key] = wrapForRpc(rpcMethods[key])
 })
 
-// eslint-disable-next-line no-restricted-globals
 self.rpcServer = new RpcServer.Server({
   ...rpcConfig,
   ...remoteAbortRpcHandler(),

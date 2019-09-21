@@ -16,7 +16,6 @@ interface ConnectionType {
 }
 
 function ConnectionTypeSelect(props: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function

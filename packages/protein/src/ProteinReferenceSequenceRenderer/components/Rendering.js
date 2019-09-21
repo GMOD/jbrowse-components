@@ -31,7 +31,6 @@ function Sequence({
         const fill = getColorForLetter(letter)
         return (
           <g
-            /* eslint-disable-next-line */
             key={`${region.start}-${iter}`}
             transform={`translate(${left}, 0)`}
           >
