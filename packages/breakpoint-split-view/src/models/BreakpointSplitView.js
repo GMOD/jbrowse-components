@@ -64,35 +64,39 @@ export default pluginManager => {
       },
       get matchedFeatures() {
         const candidates = {}
-        const matches = {}
-        if (!self.topLGV.tracks.length || self.bottomLGV.tracks.length) {
+        const matches = []
+        if (!self.topLGV.tracks.length || !self.bottomLGV.tracks.length) {
           return {}
         }
         for (const f of self.topLGV.tracks[0].features.values()) {
-          candidates[f.get('name')] = f
+          const n = f.get('name')
+          if (!candidates[n]) {
+            candidates[n] = []
+          }
+          candidates[n].push(f)
         }
+        const alreadySeen = {}
         for (const f of self.bottomLGV.tracks[0].features.values()) {
           const name = f.get('name')
           const id = f.id()
-          if (
-            candidates[name] &&
-            candidates[name].id() !== id &&
-            Math.abs(candidates[name].get('start') - f.get('start')) > 1000
-          ) {
-            matches[name] = [candidates[name], f]
+          const c = candidates[name] || []
+          for (let i = 0; i < c.length; i += 1) {
+            const candidateId = c[i].id()
+            if (candidateId !== id && !alreadySeen[`${id}-${candidateId}`]) {
+              alreadySeen[`${id}-${candidateId}`] = true
+              matches.push([name, c[i], f])
+            }
           }
         }
-        return matches
+                return matches
       },
 
       get layoutMatches() {
-        const layoutMatches = new Map()
+        const layoutMatches = []
         const l1 = self.topLGV.tracks[0].layoutFeatures
         const l2 = self.bottomLGV.tracks[0].layoutFeatures
-        for (const [key, elt] of Object.entries(self.matchedFeatures)) {
-          const f1 = l1.get(elt[0].id())
-          const f2 = l2.get(elt[1].id())
-          layoutMatches[key] = [f1, f2]
+        for (const [name, f1, f2] of self.matchedFeatures) {
+          layoutMatches.push([name, l1.get(f1.id()), l2.get(f2.id())])
         }
         return layoutMatches
       },

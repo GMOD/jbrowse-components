@@ -15,8 +15,8 @@ export default pluginManager => {
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ width: controlsWidth, flexShrink: 0 }} />
           <svg style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}>
-            {Object.values(alignmentChunks).map(chunk => {
-              const [c1, c2] = chunk
+            {alignmentChunks.map(chunk => {
+              const [name, c1, c2] = chunk
               const f1 = transform(topLGV, c1[LEFT])
               const f2 = transform(topLGV, c1[RIGHT])
               const f3 = transform(bottomLGV, c2[LEFT])
@@ -37,6 +37,7 @@ export default pluginManager => {
               return (
                 <polygon
                   key={JSON.stringify(chunk)}
+                  name={name}
                   points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
                   style={{
                     fill: 'rgba(255,0,0,0.5)',
