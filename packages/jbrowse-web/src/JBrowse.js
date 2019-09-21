@@ -32,8 +32,9 @@ export default observer(({ config, initialState }) => {
         JSON.stringify(debouncedUrlSnapshot),
       )}`
       window.history.replaceState({}, '', updatedUrl)
+      root.jbrowse.updateSavedSession(debouncedUrlSnapshot)
     }
-  }, [debouncedUrlSnapshot])
+  }, [debouncedUrlSnapshot, root])
 
   useEffect(() => {
     async function loadConfig() {
