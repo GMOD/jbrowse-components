@@ -53,42 +53,10 @@ export default pluginManager => {
     return <div className={classes.breakpointMarker} style={{ left }} />
   })
 
-  function findMatches(features1, features2) {
-    const candidates = {}
-    const matches = {}
-    for (const f of features1.values()) {
-      candidates[f.get('name')] = f
-    }
-    for (const f of features2.values()) {
-      const name = f.get('name')
-      const id = f.id()
-      if (
-        candidates[name] &&
-        candidates[name].id() !== id &&
-        Math.abs(candidates[name].get('start') - f.get('start')) > 1000
-      ) {
-        matches[name] = [candidates[name], f]
-      }
-    }
-    return matches
-  }
-
   const BreakpointSplitView = observer(({ model }) => {
     const classes = useStyles()
     const { topLGV, bottomLGV } = model
-    const t1 = topLGV.tracks.length > 0 ? topLGV.tracks[0] : {}
-    const t2 = bottomLGV.tracks.length > 0 ? bottomLGV.tracks[0] : {}
-    const features1 = t1.features || []
-    const features2 = t2.features || []
-    const layoutFeats1 = t1.layoutFeatures || []
-    const layoutFeats2 = t2.layoutFeatures || []
-    const matches = findMatches(features1, features2)
-    const layoutMatches = new Map()
-    for (const [key, elt] of Object.entries(matches)) {
-      const f1 = layoutFeats1.get(elt[0].id())
-      const f2 = layoutFeats2.get(elt[1].id())
-      layoutMatches[key] = [f1, f2]
-    }
+
     return (
       <div className={classes.container}>
         <div className={classes.content}>
@@ -106,7 +74,7 @@ export default pluginManager => {
         <div className={classes.overlay}>
           <AlignmentPolygons
             model={model}
-            alignmentChunks={layoutMatches}
+            alignmentChunks={model.layoutMatches}
             className={classes.root}
             data-testid={model.configuration.configId}
           />
