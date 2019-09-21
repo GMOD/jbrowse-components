@@ -22,12 +22,18 @@ export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState)
-  const [url, setUrl] = useState()
-  const debouncedUrl = useDebounce(url, 400)
+  const [urlSnapshot, setUrlSnapshot] = useState()
+  const debouncedUrlSnapshot = useDebounce(urlSnapshot, 2000)
 
   useEffect(() => {
-    window.history.replaceState({}, '', debouncedUrl)
-  }, [debouncedUrl])
+    if (debouncedUrlSnapshot) {
+      const l = document.location
+      const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
+        JSON.stringify(debouncedUrlSnapshot),
+      )}`
+      window.history.replaceState({}, '', updatedUrl)
+    }
+  }, [debouncedUrlSnapshot])
 
   useEffect(() => {
     async function loadConfig() {
@@ -47,18 +53,20 @@ export default observer(({ config, initialState }) => {
         }
         const params = new URL(document.location).searchParams
         const urlSession = params.get('session')
-        if (urlSession)
+        if (urlSession) {
           try {
             const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
               urlSession,
             )
-            if (savedSessionIndex !== -1)
+            if (savedSessionIndex !== -1) {
               r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
-            else r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+            } else {
+              r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+            }
           } catch (error) {
             console.error('could not load session from URL', error)
           }
-        else {
+        } else {
           const localStorageSession = localStorage.getItem(
             'jbrowse-web-session',
           )
@@ -135,11 +143,7 @@ export default observer(({ config, initialState }) => {
     if (session) {
       if (updateUrl)
         urlDisposer = onSnapshot(session, snapshot => {
-          const l = document.location
-          const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-            JSON.stringify(snapshot),
-          )}`
-          setUrl(updatedUrl)
+          setUrlSnapshot(snapshot)
         })
     }
 
