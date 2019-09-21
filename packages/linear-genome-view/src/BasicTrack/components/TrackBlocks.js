@@ -69,19 +69,12 @@ const RenderedBlock = observer(({ block, viewModel, state }) => {
 function TrackBlocks({ model, viewModel, blockState }) {
   const classes = useStyles()
   const { blockDefinitions } = model
-  const width = blockDefinitions
-    .map(block => block.widthPx)
-    .reduce((a, b) => a + b, 0)
-  const offsetBlockPx = blockDefinitions.length
-    ? blockDefinitions.getBlocks()[0].offsetPx
-    : 0
   return (
     <div
       data-testid="Block"
       className={classes.trackBlocks}
       style={{
-        left: offsetBlockPx - viewModel.offsetPx,
-        width,
+        left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
     >
       {blockDefinitions.map(block => {
@@ -91,7 +84,6 @@ function TrackBlocks({ model, viewModel, blockState }) {
             <RenderedBlock
               key={`${model.id}-${block.key}`}
               block={block}
-              trackId={model.id}
               viewModel={viewModel}
               state={state}
             />

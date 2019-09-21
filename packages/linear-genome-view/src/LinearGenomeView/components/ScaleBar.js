@@ -67,12 +67,8 @@ function ScaleBar({ model, height }) {
     model.offsetPx,
     model.staticBlocks,
   )
-  const offsetBlockPx = model.staticBlocks.length
-    ? model.staticBlocks.getBlocks()[0].offsetPx
-    : 0
-  const width = model.staticBlocks
-    .map(block => block.widthPx)
-    .reduce((a, b) => a + b, 0)
+  const offsetBlockPx = model.staticBlocks.offsetPx
+  const width = model.staticBlocks.totalWidthPx
 
   return (
     <div className={classes.scaleBarContainer}>

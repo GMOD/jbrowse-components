@@ -34,6 +34,16 @@ export class BlockSet {
   get length() {
     return this.blocks.length
   }
+
+  get totalWidthPx() {
+    return this.blocks.length
+      ? this.blocks.map(blocks => blocks.widthPx).reduce((a, b) => a + b)
+      : 0
+  }
+
+  get offsetPx() {
+    return this.blocks.length ? this.blocks[0].offsetPx : 0
+  }
 }
 
 class BaseBlock {
