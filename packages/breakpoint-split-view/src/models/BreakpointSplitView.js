@@ -88,7 +88,7 @@ export default pluginManager => {
             }
           }
         }
-                return matches
+        return matches
       },
 
       get layoutMatches() {

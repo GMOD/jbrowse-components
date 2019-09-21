@@ -56,34 +56,29 @@ export default pluginManager => {
   const BreakpointSplitView = observer(({ model }) => {
     const classes = useStyles()
     const { topLGV, bottomLGV } = model
-    try {
-      return (
-        <div className={classes.container}>
-          <div className={classes.content}>
-            <Header model={model} />
-            <div style={{ position: 'relative' }}>
-              <div className={classes.viewContainer}>
-                <LinearGenomeView model={topLGV} />
-              </div>
-              <div className={classes.viewContainer}>
-                <LinearGenomeView model={bottomLGV} />
-              </div>
+    return (
+      <div className={classes.container}>
+        <div className={classes.content}>
+          <Header model={model} />
+          <div style={{ position: 'relative' }}>
+            <div className={classes.viewContainer}>
+              <LinearGenomeView model={topLGV} />
+            </div>
+            <div className={classes.viewContainer}>
+              <LinearGenomeView model={bottomLGV} />
             </div>
           </div>
-          <div className={classes.overlay}>
-            <AlignmentPolygons
-              model={model}
-              alignmentChunks={model.layoutMatches}
-              className={classes.root}
-              data-testid={model.configuration.configId}
-            />
-          </div>
         </div>
-      )
-    } catch (e) {
-      console.log(error)
-      return <div>Error</div>
-    }
+        <div className={classes.overlay}>
+          <AlignmentPolygons
+            model={model}
+            alignmentChunks={model.layoutMatches}
+            className={classes.root}
+            data-testid={model.configuration.configId}
+          />
+        </div>
+      </div>
+    )
   })
   BreakpointSplitView.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
