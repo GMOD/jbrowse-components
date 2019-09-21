@@ -23,7 +23,7 @@ export default observer(({ config, initialState }) => {
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState)
   const [urlSnapshot, setUrlSnapshot] = useState()
-  const debouncedUrlSnapshot = useDebounce(urlSnapshot, 2000)
+  const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   useEffect(() => {
     if (debouncedUrlSnapshot) {
