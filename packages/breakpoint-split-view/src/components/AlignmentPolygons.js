@@ -1,3 +1,5 @@
+import Path from 'svg-path-generator'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
@@ -7,6 +9,9 @@ export default pluginManager => {
 
   function transform(view, coord) {
     return coord / view.bpPerPx - view.offsetPx
+  }
+  function cheight(chunk) {
+    return chunk[BOTTOM] - chunk[TOP]
   }
   const AlignmentInfo = observer(
     ({ model, alignmentChunks, height, children }) => {
@@ -34,14 +39,17 @@ export default pluginManager => {
                 bottomLGV.headerHeight +
                 bottomLGV.scaleBarHeight +
                 6 // margin
+              const path = Path()
+                .moveTo(f1, h1 - cheight(c1) / 2)
+                .curveTo(f1 - 200, h1, f4 + 200, h2, f4, h2 + cheight(c2) / 2)
+                .end()
               return (
-                <polygon
+                <path
+                  d={path}
                   key={JSON.stringify(chunk)}
                   name={name}
-                  points={`${f1},${h1} ${f2},${h1} ${f4},${h2} ${f3},${h2} `}
-                  style={{
-                    fill: 'rgba(255,0,0,0.5)',
-                  }}
+                  stroke="black"
+                  fill="none"
                 />
               )
             })}
