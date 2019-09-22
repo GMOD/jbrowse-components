@@ -108,13 +108,13 @@ export default pluginManager => {
         addDisposer(
           self,
           onAction(self, ({ name, path, args }) => {
-            if (name === 'horizontalScroll') {
-              // console.log(path, args)
-              self.onSubviewHorizontalScroll(path, args)
-            } else if (name === 'zoomTo') {
-              // console.log(path, args)
-              self.onSubviewZoom(path, args)
-            }
+            // if (name === 'horizontalScroll') {
+            //   // console.log(path, args)
+            //   self.onSubviewHorizontalScroll(path, args)
+            // } else if (name === 'zoomTo') {
+            //   // console.log(path, args)
+            //   self.onSubviewZoom(path, args)
+            // }
           }),
         )
       },

@@ -1,4 +1,8 @@
-export default ({ jbrequire }) => {
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
+
+export default ({ jbrequire }: { jbrequire: Function }) => {
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
@@ -9,7 +13,11 @@ export default ({ jbrequire }) => {
   )
 
   class BreakpointSplitViewType extends ViewType {
-    snapshotFromBreakendFeature(feature, startRegion, endRegion) {
+    snapshotFromBreakendFeature(
+      feature: Feature,
+      startRegion: IRegion,
+      endRegion: IRegion,
+    ) {
       const breakendSpecification = (feature.get('ALT') || [])[0]
       const matePosition = breakendSpecification.MatePosition.split(':')
       matePosition[1] = parseInt(matePosition[1], 10) - 1 // convert to interbase coord
@@ -61,6 +69,7 @@ export default ({ jbrequire }) => {
     }
   }
 
+  // @ts-ignore
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
     stateModel,
