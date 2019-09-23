@@ -62,13 +62,26 @@ export default pluginManager => {
           // },
         ]
       },
-      get matchedFeatures() {
+
+      get matchedTracks() {
+        const t1 = self.topLGV.tracks.map(t => t.configuration.configId)
+        const t2 = self.bottomLGV.tracks.map(t => t.configuration.configId)
+        return t1.filter(t => t2.indexOf(t) !== -1)
+      },
+
+      getMatchedFeatures(trackConfigId) {
         const candidates = {}
         const matches = []
         if (!self.topLGV.tracks.length || !self.bottomLGV.tracks.length) {
           return {}
         }
-        for (const f of self.topLGV.tracks[0].features.values()) {
+        const t1 = self.topLGV.tracks.find(
+          t => t.configuration.configId === trackConfigId,
+        )
+        const t2 = self.bottomLGV.tracks.find(
+          t => t.configuration.configId === trackConfigId,
+        )
+        for (const f of t1.features.values()) {
           const n = f.get('name')
           if (!candidates[n]) {
             candidates[n] = []
@@ -76,7 +89,7 @@ export default pluginManager => {
           candidates[n].push(f)
         }
         const alreadySeen = {}
-        for (const f of self.bottomLGV.tracks[0].features.values()) {
+        for (const f of t2.features.values()) {
           const name = f.get('name')
           const id = f.id()
           const c = candidates[name] || []
@@ -91,12 +104,20 @@ export default pluginManager => {
         return matches
       },
 
-      get layoutMatches() {
+      getLayoutMatches(trackConfigId) {
         const layoutMatches = []
-        const l1 = self.topLGV.tracks[0].layoutFeatures
-        const l2 = self.bottomLGV.tracks[0].layoutFeatures
-        for (const [name, f1, f2] of self.matchedFeatures) {
-          layoutMatches.push([name, l1.get(f1.id()), l2.get(f2.id())])
+        const t1 = self.topLGV.tracks.find(
+          t => t.configuration.configId === trackConfigId,
+        )
+        const t2 = self.bottomLGV.tracks.find(
+          t => t.configuration.configId === trackConfigId,
+        )
+        for (const [name, f1, f2] of self.getMatchedFeatures(trackConfigId)) {
+          layoutMatches.push([
+            name,
+            t1.layoutFeatures.get(f1.id()),
+            t2.layoutFeatures.get(f2.id()),
+          ])
         }
         return layoutMatches
       },

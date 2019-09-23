@@ -69,14 +69,16 @@ export default pluginManager => {
             </div>
           </div>
         </div>
-        <div className={classes.overlay}>
-          <AlignmentPolygons
-            model={model}
-            alignmentChunks={model.layoutMatches}
-            className={classes.root}
-            data-testid={model.configuration.configId}
-          />
-        </div>
+        {model.matchedTracks.map(m => (
+          <div className={classes.overlay} key={`overlay-${m}`}>
+            <AlignmentPolygons
+              model={model}
+              alignmentChunks={model.getLayoutMatches(m)}
+              className={classes.root}
+              data-testid={model.configuration.configId}
+            />
+          </div>
+        ))}
       </div>
     )
   })
