@@ -187,7 +187,7 @@ const LongMenu = observer(
   },
 )
 
-function TextFieldOrTypography({ model }: { model: LGV }) {
+const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [name, setName] = useState(
     model.displayName || model.displayRegionsFromAssemblyName,
@@ -225,7 +225,7 @@ function TextFieldOrTypography({ model }: { model: LGV }) {
       </Typography>
     </div>
   )
-}
+})
 
 function Search({
   onSubmit,
