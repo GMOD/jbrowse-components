@@ -193,25 +193,22 @@ const LongMenu = observer(
   },
 )
 
-function TextFieldOrTypography({ model }: { model: LGV }) {
+const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const [name, setName] = useState(
-    model.displayName || model.displayRegionsFromAssemblyName,
-  )
+  const name = model.displayName || model.displayRegionsFromAssemblyName
   const [edit, setEdit] = useState(false)
   const [hover, setHover] = useState(false)
   return edit ? (
     <form
       onSubmit={event => {
         setEdit(false)
-        model.setDisplayName(name || '')
         event.preventDefault()
       }}
     >
       <TextField
         value={name}
         onChange={event => {
-          setName(event.target.value)
+          model.setDisplayName(event.target.value)
         }}
         onBlur={() => {
           setEdit(false)
@@ -231,7 +228,7 @@ function TextFieldOrTypography({ model }: { model: LGV }) {
       </Typography>
     </div>
   )
-}
+})
 
 function Search({
   onSubmit,
