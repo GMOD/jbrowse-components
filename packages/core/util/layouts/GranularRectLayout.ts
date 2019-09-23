@@ -151,7 +151,10 @@ class LayoutRow<T> {
     if (left < this.rowState.offset) {
       // expand to new left - the whole current length (or 0)
       // additionalLength = (offset - left) + currLength = -(left - offset) + currLength
-      const additionalLength = currLength - oLeft
+      const additionalLength = Math.min(
+        currLength - oLeft,
+        this.rowState.offset,
+      )
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
