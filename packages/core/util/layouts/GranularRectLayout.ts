@@ -153,6 +153,10 @@ class LayoutRow<T> {
       // additionalLength = (offset - left) + currLength = -(left - offset) + currLength
       const additionalLength = currLength - oLeft
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
+        console.warn(
+          'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
+        )
+
         this.initialize(left, right)
       } else {
         this.rowState.bits = new Array(additionalLength).concat(
