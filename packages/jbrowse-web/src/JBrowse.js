@@ -21,7 +21,7 @@ import Theme from './ui/theme'
 export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
-  const [root, setRoot] = useState(initialState)
+  const [root, setRoot] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
@@ -88,8 +88,6 @@ export default observer(({ config, initialState }) => {
 
         r.setHistory(UndoManager.create({}, { targetStore: r.session }))
         // poke some things for testing (this stuff will eventually be removed)
-        window.ROOTMODEL = r
-        window.MODEL = r.session
         setRoot(r)
         setStatus('loaded')
       } catch (error) {
@@ -101,6 +99,13 @@ export default observer(({ config, initialState }) => {
 
     loadConfig()
   }, [config, initialState])
+
+  useEffect(() => {
+    if (root) {
+      window.MODEL = root.session
+      window.ROOTMODEL = root
+    }
+  }, [root, root.session])
 
   useEffect(() => {
     let disposer = () => {}
