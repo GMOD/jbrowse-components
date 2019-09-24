@@ -50,11 +50,12 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "start": "rescripts start",
+    "build": "rescripts build",
+    "test": "rescripts test",
+    "eject": "rescripts eject",
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots packages/jbrowse-web/",
-    "test": "node scripts/test.js",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
   },
   "homepage": "."

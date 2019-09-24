@@ -5,7 +5,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from 'quick-lru'
+import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { Observable, Observer } from 'rxjs'
 import { map, mergeAll } from 'rxjs/operators'
 import {
