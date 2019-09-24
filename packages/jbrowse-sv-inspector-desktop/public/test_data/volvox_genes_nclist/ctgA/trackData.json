@@ -1,0 +1,303 @@
+{
+    "featureCount": 1,
+    "formatVersion": 1,
+    "histograms": {
+        "meta": [
+            {
+                "arrayParams": {
+                    "chunkSize": 10000,
+                    "length": 1,
+                    "urlTemplate": "hist-50000-{Chunk}.json"
+                },
+                "basesPerBin": "50000"
+            }
+        ],
+        "stats": [
+            {
+                "basesPerBin": "50000",
+                "max": 1,
+                "mean": 1
+            }
+        ]
+    },
+    "intervals": {
+        "classes": [
+            {
+                "attributes": [
+                    "Start",
+                    "End",
+                    "Strand",
+                    "Load_id",
+                    "Name",
+                    "Note",
+                    "Seq_id",
+                    "Source",
+                    "Subfeatures",
+                    "Type"
+                ],
+                "isArrayAttr": {
+                    "Subfeatures": 1
+                }
+            },
+            {
+                "attributes": [
+                    "Start",
+                    "End",
+                    "Strand",
+                    "Phase",
+                    "Seq_id",
+                    "Source",
+                    "Type"
+                ],
+                "isArrayAttr": {}
+            },
+            {
+                "attributes": [
+                    "Start",
+                    "End",
+                    "Strand",
+                    "Seq_id",
+                    "Source",
+                    "Type"
+                ],
+                "isArrayAttr": {}
+            },
+            {
+                "attributes": [
+                    "Start",
+                    "End",
+                    "Chunk"
+                ],
+                "isArrayAttr": {
+                    "Sublist": 1
+                }
+            }
+        ],
+        "count": 1,
+        "lazyClass": 3,
+        "maxEnd": 9000,
+        "minStart": 1049,
+        "nclist": [
+            [
+                0,
+                1049,
+                9000,
+                1,
+                "EDEN",
+                "EDEN",
+                "protein kinase",
+                "ctgA",
+                "example",
+                [
+                    [
+                        0,
+                        1299,
+                        9000,
+                        1,
+                        "EDEN.3",
+                        "EDEN.3",
+                        "Eden splice form 3",
+                        "ctgA",
+                        "example",
+                        [
+                            [
+                                1,
+                                6999,
+                                7600,
+                                1,
+                                "1",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                1,
+                                4999,
+                                5500,
+                                1,
+                                "1",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                2,
+                                7600,
+                                9000,
+                                1,
+                                "ctgA",
+                                "example",
+                                "three_prime_UTR"
+                            ],
+                            [
+                                2,
+                                2999,
+                                3300,
+                                1,
+                                "ctgA",
+                                "example",
+                                "five_prime_UTR"
+                            ],
+                            [
+                                2,
+                                1299,
+                                1500,
+                                1,
+                                "ctgA",
+                                "example",
+                                "five_prime_UTR"
+                            ],
+                            [
+                                1,
+                                3300,
+                                3902,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ]
+                        ],
+                        "mRNA"
+                    ],
+                    [
+                        0,
+                        1049,
+                        9000,
+                        1,
+                        "EDEN.1",
+                        "EDEN.1",
+                        "Eden splice form 1",
+                        "ctgA",
+                        "example",
+                        [
+                            [
+                                2,
+                                7608,
+                                9000,
+                                1,
+                                "ctgA",
+                                "example",
+                                "three_prime_UTR"
+                            ],
+                            [
+                                1,
+                                2999,
+                                3902,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                1,
+                                4999,
+                                5500,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                2,
+                                1049,
+                                1200,
+                                1,
+                                "ctgA",
+                                "example",
+                                "five_prime_UTR"
+                            ],
+                            [
+                                1,
+                                6999,
+                                7608,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                1,
+                                1200,
+                                1500,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ]
+                        ],
+                        "mRNA"
+                    ],
+                    [
+                        0,
+                        1049,
+                        9000,
+                        1,
+                        "EDEN.2",
+                        "EDEN.2",
+                        "Eden splice form 2",
+                        "ctgA",
+                        "example",
+                        [
+                            [
+                                1,
+                                6999,
+                                7608,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                1,
+                                4999,
+                                5500,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                1,
+                                1200,
+                                1500,
+                                1,
+                                "0",
+                                "ctgA",
+                                "example",
+                                "CDS"
+                            ],
+                            [
+                                2,
+                                1049,
+                                1200,
+                                1,
+                                "ctgA",
+                                "example",
+                                "five_prime_UTR"
+                            ],
+                            [
+                                2,
+                                7608,
+                                9000,
+                                1,
+                                "ctgA",
+                                "example",
+                                "three_prime_UTR"
+                            ]
+                        ],
+                        "mRNA"
+                    ]
+                ],
+                "gene"
+            ]
+        ],
+        "urlTemplate": "lf-{Chunk}.json"
+    }
+}

@@ -1,0 +1,1 @@
+[["This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()-_+="],"long_names","This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()-_+=","ctgA",0,100]
