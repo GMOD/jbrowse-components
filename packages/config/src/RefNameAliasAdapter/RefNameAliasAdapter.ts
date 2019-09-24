@@ -1,8 +1,6 @@
 import { BaseRefNameAliasAdapter, Alias } from '@gmod/jbrowse-core/BaseAdapter'
 import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Observable } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
