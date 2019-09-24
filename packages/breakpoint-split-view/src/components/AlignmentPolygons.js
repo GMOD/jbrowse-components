@@ -14,7 +14,7 @@ export default pluginManager => {
     return chunk[BOTTOM] - chunk[TOP]
   }
   const AlignmentInfo = observer(
-    ({ model, alignmentChunks, height, children }) => {
+    ({ model, alignmentChunks, height, children, trackConfigId }) => {
       const { topLGV, bottomLGV, controlsWidth } = model
       return (
         <div style={{ display: 'flex', height: '100%' }}>
@@ -31,14 +31,18 @@ export default pluginManager => {
                 c1[BOTTOM] +
                 topLGV.headerHeight +
                 topLGV.scaleBarHeight +
+                topLGV.getTrackPos(trackConfigId) +
                 model.headerHeight +
-                3 // margin
+                3 // margin-top
               const h2 =
                 c2[TOP] +
+                model.headerHeight +
                 topLGV.height +
+                3 +
                 bottomLGV.headerHeight +
                 bottomLGV.scaleBarHeight +
-                6 // margin
+                bottomLGV.getTrackPos(trackConfigId) +
+                10 // margin
               const path = Path()
                 .moveTo(f1, h1 - cheight(c1) / 2)
                 .curveTo(f1 - 200, h1, f4 + 200, h2, f4, h2 + cheight(c2) / 2)

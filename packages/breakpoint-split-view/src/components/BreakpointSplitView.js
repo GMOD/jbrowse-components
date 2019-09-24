@@ -72,6 +72,7 @@ export default pluginManager => {
         {model.matchedTracks.map(m => (
           <div className={classes.overlay} key={`overlay-${m}`}>
             <AlignmentPolygons
+              trackConfigId={m}
               model={model}
               alignmentChunks={model.getLayoutMatches(m)}
               className={classes.root}

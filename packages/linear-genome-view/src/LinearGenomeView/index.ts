@@ -96,19 +96,22 @@ export function stateModelFactory(pluginManager: any) {
         return self.width - self.controlsWidth
       },
       get scaleBarHeight() {
-        // +1px pad
-        return SCALE_BAR_HEIGHT + 1
+        return SCALE_BAR_HEIGHT + 1 // 1px border
       },
       get headerHeight() {
-        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT
+        return self.hideHeader ? 0 : HEADER_BAR_HEIGHT + 1 // 1px border
+      },
+      get trackHeights() {
+        return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
+      },
+      get trackHeightsWithResizeHandles() {
+        return this.trackHeights + self.tracks.length * 3
       },
       get height() {
         return (
-          self.tracks.map(t => t.height).reduce((a, b) => a + b) +
-          self.tracks.length * 2 + // trackresizehandles
-          HEADER_BAR_HEIGHT +
-          SCALE_BAR_HEIGHT +
-          1 // 1px in scalebar border, 1px in bottom border
+          this.trackHeightsWithResizeHandles +
+          this.headerHeight +
+          this.scaleBarHeight
         )
       },
       get totalBp() {
@@ -184,6 +187,17 @@ export function stateModelFactory(pluginManager: any) {
           offset: Math.round(bp - bpSoFar),
           index: this.displayedRegionsInOrder.length,
         }
+      },
+
+      getTrackPos(trackConfigId: string) {
+        const idx = self.tracks.findIndex(
+          t => t.configuration.configId === trackConfigId,
+        )
+        let accum = 0
+        for (let i = 0; i < idx; i += 1) {
+          accum += self.tracks[i].height + 3 // +1px for trackresizehandle
+        }
+        return accum
       },
     }))
     .actions(self => ({
