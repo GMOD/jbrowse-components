@@ -41,7 +41,7 @@ export default pluginManager => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(self => ({
+    .volatile((/* self */) => ({
       ReactComponent: mainReactComponent,
 
       // NOTE: all this volatile stuff has to be filled in at once

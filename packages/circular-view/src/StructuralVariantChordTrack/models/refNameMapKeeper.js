@@ -10,7 +10,7 @@ export default pluginManager => {
 
   const model = types
     .model('RefNameMap', {})
-    .volatile(self => ({
+    .volatile((/* self */) => ({
       refNameMap: undefined,
     }))
     .actions(self => ({
@@ -35,7 +35,6 @@ export default pluginManager => {
         )
       },
 
-      loadAssemblyRefNameMapStarted() {},
       loadAssemblyRefNameMapSuccess(result) {
         // console.log('loaded refname map', result)
         self.refNameMap = result

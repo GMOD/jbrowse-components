@@ -8,7 +8,7 @@ import React from 'react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import AddConnectionDrawerWidget from './AddConnectionDrawerWidget'
 
-window.fetch = jest.fn(url => new Promise(resolve => resolve()))
+window.fetch = jest.fn(() => new Promise(resolve => resolve()))
 
 describe('<AddConnectionDrawerWidget />', () => {
   let model

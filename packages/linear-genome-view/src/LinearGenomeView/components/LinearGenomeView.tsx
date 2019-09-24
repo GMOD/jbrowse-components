@@ -16,7 +16,7 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState, CSSProperties } from 'react'
+import React, { useState } from 'react'
 import buttonStyles from './buttonStyles'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
@@ -94,7 +94,7 @@ const TrackContainer = observer(
   ({ model, track }: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
-    const { RenderingComponent } = track
+    const { RenderingComponent, ControlsComponent } = track
     return (
       <>
         <div
@@ -102,7 +102,7 @@ const TrackContainer = observer(
           key={`controls:${track.id}`}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
         >
-          <track.ControlsComponent
+          <ControlsComponent
             track={track}
             key={track.id}
             view={model}

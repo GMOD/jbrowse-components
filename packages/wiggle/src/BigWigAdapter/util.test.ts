@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-object-literal-type-assertion */
-
 import {
   calcStdFromSums,
   rectifyStats,

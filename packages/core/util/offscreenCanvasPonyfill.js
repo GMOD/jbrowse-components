@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */

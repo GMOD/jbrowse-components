@@ -11,7 +11,7 @@ import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-// eslint-disable-next-line @typescript-eslint/camelcase
+// eslint-disable-next-line @typescript-eslint/camelcase,react-hooks/rules-of-hooks
 if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
 const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))

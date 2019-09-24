@@ -13,6 +13,7 @@ export default class CircularViewPlugin {
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   configure() {}
 }
 

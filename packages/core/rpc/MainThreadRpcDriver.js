@@ -41,7 +41,7 @@ export default class MainThreadRpcDriver {
       }
       if (args instanceof Set) {
         return new Set(
-          iterMap(args.entries(), ([k, v]) => this.cloneArgs(v), args.size),
+          iterMap(args.entries(), ([, v]) => this.cloneArgs(v), args.size),
         )
       }
       if (args instanceof AbortSignal) {

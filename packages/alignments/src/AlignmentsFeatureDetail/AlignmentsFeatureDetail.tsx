@@ -157,7 +157,6 @@ interface AlnInputProps extends AlnCardProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
   const classes = useStyles()
   const { model } = props

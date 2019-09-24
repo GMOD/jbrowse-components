@@ -9,12 +9,12 @@ import { observer, PropTypes } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import React, { useState } from 'react'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   developer: {
     background: 'white',
     display: 'block',
   },
-}))
+})
 
 function addView(session, type) {
   // clone the last view if there is one

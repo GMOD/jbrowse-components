@@ -58,10 +58,14 @@ const BaseTrack = types
     error: '',
   }))
   .views(self => ({
-    get name() {
+    get name(): string {
       return getConf(self, 'name')
     },
-    get ControlsComponent() {
+    get ControlsComponent(): React.FC<{
+      track: any
+      view: any
+      onConfigureClick: any
+    }> {
       return TrackControls
     },
 
@@ -74,7 +78,7 @@ const BaseTrack = types
     }> {
       return (
         self.ReactComponent ||
-        (() => (
+        ((): JSX.Element => (
           <div className="TrackRenderingNotImplemented">
             Rendering not implemented for {self.type} tracks
           </div>
@@ -86,7 +90,7 @@ const BaseTrack = types
      * the react props that are passed to the Renderer when data
      * is rendered in this track
      */
-    get renderProps() {
+    get renderProps(): Record<string, any> {
       return {
         ...getParentRenderProps(self),
         trackModel: self,
@@ -97,7 +101,7 @@ const BaseTrack = types
      * the pluggable element type object for this track's
      * renderer
      */
-    get rendererType() {
+    get rendererType(): any {
       const track = getContainingView(self)
       const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
@@ -115,7 +119,7 @@ const BaseTrack = types
     /**
      * the PluggableElementType for the currently defined adapter
      */
-    get adapterType() {
+    get adapterType(): any {
       const adapterConfig = getConf(self, 'adapter')
       const session: any = getSession(self)
       if (!adapterConfig)
@@ -128,7 +132,7 @@ const BaseTrack = types
       return adapterType
     },
 
-    get showConfigurationButton() {
+    get showConfigurationButton(): boolean {
       const session: any = getSession(self)
       return !!session.editConfiguration
     },
@@ -137,7 +141,7 @@ const BaseTrack = types
      * if a track-level message should be displayed instead of the blocks,
      * make this return a react component
      */
-    get trackMessageComponent() {
+    get trackMessageComponent(): void {
       return undefined
     },
 
@@ -146,27 +150,27 @@ const BaseTrack = types
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a string of text saying why the region can't be rendered.
      */
-    regionCannotBeRendered() {
+    regionCannotBeRendered(): void {
       return undefined
     },
   }))
   .actions(self => ({
-    setHeight(trackHeight: number) {
+    setHeight(trackHeight: number): number {
       if (trackHeight > minTrackHeight) self.height = trackHeight
       else self.height = minTrackHeight
       return self.height
     },
-    resizeHeight(distance: number) {
+    resizeHeight(distance: number): number {
       const oldHeight = self.height
       const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
-    setError(e: string) {
+    setError(e: string): void {
       self.ready = true
       self.error = e
     },
 
-    activateConfigurationUI() {
+    activateConfigurationUI(): void {
       const session: any = getSession(self)
       session.editConfiguration(self.configuration)
     },

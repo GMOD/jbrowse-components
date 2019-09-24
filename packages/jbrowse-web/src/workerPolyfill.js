@@ -2,7 +2,7 @@
 // contains just enough stubbing to make webpack style-loader
 // think that it is actually inserting styles into the DOM
 
-/* eslint-disable no-restricted-globals */
+/* eslint-disable no-restricted-globals,@typescript-eslint/no-empty-function */
 // @ts-ignore
 self.window = {
   addEventListener() {},

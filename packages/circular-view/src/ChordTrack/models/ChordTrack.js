@@ -45,7 +45,7 @@ export default pluginManager => {
       configuration: ConfigurationReference(configSchema),
       bezierRadiusRatio: 0.1,
     })
-    .volatile(self => ({
+    .volatile((/* self */) => ({
       refNameMap: undefined,
     }))
     .views(self => ({

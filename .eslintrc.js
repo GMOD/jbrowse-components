@@ -16,14 +16,15 @@ module.exports = {
   },
   rules: {
     'class-methods-use-this': 'off',
+    'global-require': 'off',
     'import/no-cycle': 'warn',
     'import/prefer-default-export': 'off',
+    'max-classes-per-file': 'off',
     'monorepo/no-internal-import': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'warn',
     'no-param-reassign': 'off',
     'no-restricted-syntax': 'off',
-    'global-require': 'off',
     'no-underscore-dangle': 'warn',
     'no-unused-vars': 'warn',
     'no-use-before-define': 'off',
@@ -42,11 +43,13 @@ module.exports = {
     'react/prefer-stateless-function': 'warn',
     'react/prop-types': 'warn',
     'react/require-default-props': 'warn',
-    '@typescript-eslint/explicit-function-return-type': ['error', { 'allowExpressions': true }],
+    'spaced-comment': ['error', 'always', { 'markers': ['/'] }],
+    '@typescript-eslint/ban-ts-ignore': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/camelcase': 'warn',
-    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
   },
   settings: {
     'import/resolver': {
@@ -57,14 +60,15 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['packages/generator-jbrowse/**/*'],
-      env: { node: true },
-      rules: { '@typescript-eslint/no-var-requires': 'off' },
-    },
-    {
       files: ['**/*.worker.js'],
       globals: { self: true },
       rules: { 'no-restricted-globals': 'off' },
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "@typescript-eslint/explicit-function-return-type": ["error"]
+      }
     },
     {
       files: ['**/*.test.[t,j]s'],

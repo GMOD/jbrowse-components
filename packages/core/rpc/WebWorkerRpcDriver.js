@@ -54,7 +54,7 @@ function createWorkerPool(WorkerClass, configuredWorkerCount = 0) {
   }
 
   function watchAndReplaceWorker(rpcWorkerHandle, workerIndex) {
-    watchWorker(rpcWorkerHandle, WORKER_MAX_PING_TIME).catch(error => {
+    watchWorker(rpcWorkerHandle, WORKER_MAX_PING_TIME).catch(() => {
       console.warn(
         `worker ${workerIndex +
           1} did not respond within ${WORKER_MAX_PING_TIME} ms, terminating and replacing.`,

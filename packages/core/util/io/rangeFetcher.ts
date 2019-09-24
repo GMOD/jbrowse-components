@@ -27,24 +27,19 @@ function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
   } else {
     mfetch = window.fetch
   }
-  return mfetch(
-    url,
-    Object.assign(
-      {
-        method: 'GET',
-        credentials: 'same-origin',
-        retries: 5,
-        retryDelay: 1000, // 1 sec, 2 sec, 3 sec
-        retryStatus: [500, 404, 503],
-        onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
-          console.warn(
-            `${url} request failed, retrying (${retriesLeft} retries left)`,
-          )
-        },
-      },
-      opts,
-    ),
-  )
+  return mfetch(url, {
+    method: 'GET',
+    credentials: 'same-origin',
+    retries: 5,
+    retryDelay: 1000, // 1 sec, 2 sec, 3 sec
+    retryStatus: [500, 404, 503],
+    onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
+      console.warn(
+        `${url} request failed, retrying (${retriesLeft} retries left)`,
+      )
+    },
+    ...opts,
+  })
 }
 export interface RangeResponse {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,7 +128,7 @@ function globalCacheFetch<T>(
           return {
             status: 206,
             ok: true,
-            async arrayBuffer() {
+            async arrayBuffer(): Promise<Buffer> {
               return response.buffer
             },
             headers,

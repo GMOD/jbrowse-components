@@ -26,7 +26,7 @@ export const NoAssemblyRegion = types
     end: types.number,
   })
   .actions(self => ({
-    setRefName(newRefName: string) {
+    setRefName(newRefName: string): void {
       self.refName = newRefName
     },
   }))

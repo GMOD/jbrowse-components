@@ -209,7 +209,7 @@ export default class ServerSideRenderer extends RendererType {
     return rpcManager.call(stateGroupName, 'freeResources', serializedArgs)
   }
 
-  freeResourcesInWorker(args) {
+  freeResourcesInWorker() {
     /* stub method */
   }
 }

@@ -78,6 +78,7 @@ export default types.compose(
       },
     }))
     .postProcessSnapshot(self => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { blockState, ...rest } = self
       return rest
     }),
