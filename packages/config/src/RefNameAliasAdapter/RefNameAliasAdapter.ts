@@ -25,10 +25,13 @@ export default class RefNameAliasAdapter extends BaseAdapter {
 
   private async downloadResults(): Promise<Alias[]> {
     const results = (await this.location.readFile('utf8')) as string
-    return results.split('\n').map((row: string) => {
-      const [refName, ...aliases] = results.split('\t')
-      return { refName, aliases }
-    })
+    return results
+      .trim()
+      .split('\n')
+      .map((row: string) => {
+        const [refName, ...aliases] = row.split('\t')
+        return { refName, aliases }
+      })
   }
 
   getRefNameAliases(): Promise<Alias[]> {
