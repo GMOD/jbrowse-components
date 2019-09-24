@@ -1,11 +1,6 @@
-import { toArray } from 'rxjs/operators'
 import Adapter from './RefNameAliasAdapter.ts'
 
-test('adapter can fetch features', async () => {
-  const features = [
-    { uniqueId: 'one', refName: 'ctgA', start: 20, end: 40 },
-    { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
-  ]
+test('adapter can fetch a simple alias file', async () => {
   const adapter = new Adapter({
     location: { localPath: require.resolve('./test_data/simple_alias.txt') },
   })
