@@ -3,12 +3,8 @@ import { IFileLocation } from '@gmod/jbrowse-core/mst-types'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Observable } from 'rxjs'
+import { GenericFilehandle } from 'generic-filehandle'
 
-/**
- * Adapter that just returns the features defined in its `features` configuration
- * key, like:
- *   "features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]
- */
 interface Alias {
   refName: string
   aliases: string[]
@@ -17,26 +13,25 @@ interface Alias {
 export default class RefNameAliasAdapter extends BaseAdapter {
   public static capabilities = ['getRefNameAliases']
 
-  private location: any
+  private location: GenericFilehandle
 
   private promise: Promise<Alias[]>
 
   constructor(config: { location: IFileLocation }) {
     super()
-    console.log(config.location)
     this.location = openLocation(config.location)
-    this.promise = (async () => {
-      const results = await this.location.readFile('utf8')
-      return results.split('\n').map((row: string) => {
-        const [refName, ...aliases] = results.split('\t')
-        return { refName, aliases }
-      })
-    })()
+    this.promise = this.downloadResults()
   }
 
-  async getRefNameAliases(): Promise<Alias[]> {
-    const res = await this.promise
-    console.log('here', res)
+  private async downloadResults(): Promise<Alias[]> {
+    const results = (await this.location.readFile('utf8')) as string
+    return results.split('\n').map((row: string) => {
+      const [refName, ...aliases] = results.split('\t')
+      return { refName, aliases }
+    })
+  }
+
+  getRefNameAliases(): Promise<Alias[]> {
     return this.promise
   }
 
