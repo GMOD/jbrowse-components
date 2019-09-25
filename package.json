@@ -96,6 +96,7 @@
         "typedoc": "^0.15.0",
         "typescript": "^3.3.4000",
         "wait-on": "^3.3.0",
+        "webpack-cli": "^3.3.9",
         "whatwg-fetch": "^3.0.0",
         "worker-loader": "^2.0.0",
         "yeoman-test": "^1.9.1"
