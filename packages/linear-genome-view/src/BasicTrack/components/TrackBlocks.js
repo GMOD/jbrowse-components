@@ -49,8 +49,8 @@ const RenderedBlock = observer(({ block, viewModel, state }) => {
   const classes = useStyles()
   return (
     <Block block={block} model={viewModel}>
-      {state && state.reactComponent ? (
-        <state.reactComponent model={state} />
+      {state && state.ReactComponent ? (
+        <state.ReactComponent model={state} />
       ) : null}
       {state && state.maxHeightReached ? (
         <div
