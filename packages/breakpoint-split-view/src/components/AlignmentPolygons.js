@@ -29,8 +29,14 @@ export default pluginManager => {
                 const { feature: feature2, layout: c2, level: level2 } = chunk[
                   i + 1
                 ]
-                const f1 = calc(level1 == 0 ? topLGV : bottomLGV, c1[RIGHT])
-                const f4 = calc(level2 == 0 ? topLGV : bottomLGV, c2[LEFT])
+                const f1 = calc(
+                  level1 == 0 ? topLGV : bottomLGV,
+                  c1[feature1.get('strand') == -1 ? LEFT : RIGHT],
+                )
+                const f4 = calc(
+                  level2 == 0 ? topLGV : bottomLGV,
+                  c2[feature2.get('strand') == -1 ? RIGHT : LEFT],
+                )
                 const added = level => {
                   return level == 0
                     ? topLGV.headerHeight +
@@ -51,7 +57,14 @@ export default pluginManager => {
                 const h2 = c2[TOP] + added(level2)
                 const path = Path()
                   .moveTo(f1, h1 - cheight(c1) / 2)
-                  .curveTo(f1 + 200, h1, f4 - 200, h2, f4, h2 + cheight(c2) / 2)
+                  .curveTo(
+                    f1 + 200 * feature1.get('strand'),
+                    h1,
+                    f4 - 200 * feature2.get('strand'),
+                    h2,
+                    f4,
+                    h2 + cheight(c2) / 2,
+                  )
                   .end()
                 ret.push(
                   <path
