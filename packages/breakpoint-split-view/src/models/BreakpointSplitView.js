@@ -1,3 +1,5 @@
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent, getRoot, addDisposer, onAction } = jbrequire(
@@ -71,55 +73,74 @@ export default pluginManager => {
 
       getMatchedFeatures(trackConfigId) {
         const candidates = {}
-        const matches = []
+        const alreadySeen = {}
         if (!self.topLGV.tracks.length || !self.bottomLGV.tracks.length) {
           return {}
         }
-        const t1 = self.topLGV.tracks.find(
-          t => t.configuration.configId === trackConfigId,
-        )
-        const t2 = self.bottomLGV.tracks.find(
-          t => t.configuration.configId === trackConfigId,
-        )
-        for (const f of t1.features.values()) {
-          const n = f.get('name')
-          if (!candidates[n]) {
-            candidates[n] = []
-          }
-          candidates[n].push(f)
-        }
-        const alreadySeen = {}
-        for (const f of t2.features.values()) {
-          const name = f.get('name')
-          const id = f.id()
-          const c = candidates[name] || []
-          for (let i = 0; i < c.length; i += 1) {
-            const candidateId = c[i].id()
-            if (candidateId !== id && !alreadySeen[`${id}-${candidateId}`]) {
-              alreadySeen[`${id}-${candidateId}`] = true
-              matches.push([name, c[i], f])
+        const t1 = self.topLGV.getTrack(trackConfigId)
+        const t2 = self.bottomLGV.getTrack(trackConfigId)
+        const adder = f => {
+          if (!alreadySeen[f.id()]) {
+            const n = f.get('name')
+            if (!candidates[n]) {
+              candidates[n] = []
             }
+            candidates[n].push(f)
           }
+          alreadySeen[f.id()] = true
         }
-        return matches
+
+        for (const f of new CompositeMap([t1.features, t2.features]).values()) {
+          adder(f)
+        }
+
+        return Object.values(candidates)
+          .filter(v => v.length > 1)
+          .map(v => {
+            v.forEach(r => {
+              const cigar = r.get('CIGAR')
+              const match = cigar.match(/^(\d+)([SH])/)
+              if (r.get('SA')) {
+                r.chimericReadPos = 0
+                if (match) {
+                  if (match[2] === 'S') {
+                    r.chimericReadPos = +match[1]
+                  }
+                }
+              }
+            })
+            return v
+          })
       },
 
       getLayoutMatches(trackConfigId) {
-        const layoutMatches = []
-        const t1 = self.topLGV.tracks.find(
-          t => t.configuration.configId === trackConfigId,
-        )
-        const t2 = self.bottomLGV.tracks.find(
-          t => t.configuration.configId === trackConfigId,
-        )
-        for (const [name, f1, f2] of self.getMatchedFeatures(trackConfigId)) {
-          layoutMatches.push([
-            name,
-            t1.layoutFeatures.get(f1.id()),
-            t2.layoutFeatures.get(f2.id()),
-          ])
-        }
-        return layoutMatches
+        const t1 = self.topLGV.getTrack(trackConfigId)
+        const t2 = self.bottomLGV.getTrack(trackConfigId)
+        const m = new CompositeMap([t1.layoutFeatures, t2.layoutFeatures])
+        const t = self.getMatchedFeatures(trackConfigId)
+        return t.map(c => {
+          return c
+            .map(feature => {
+              if (t1.layoutFeatures.get(feature.id())) {
+                return {
+                  feature,
+                  layout: m.get(feature.id()),
+                  level: 0,
+                }
+              }
+              if (t2.layoutFeatures.get(feature.id())) {
+                return {
+                  feature,
+                  layout: m.get(feature.id()),
+                  level: 1,
+                }
+              }
+              return undefined
+            })
+            .sort(
+              (a, b) => a.feature.chimericReadPos - b.feature.chimericReadPos,
+            )
+        })
       },
     }))
     .actions(self => ({

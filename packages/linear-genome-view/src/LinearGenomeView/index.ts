@@ -189,6 +189,10 @@ export function stateModelFactory(pluginManager: any) {
         }
       },
 
+      getTrack(id: string) {
+        return self.tracks.find(t => t.configuration.configId === id)
+      },
+
       getTrackPos(trackConfigId: string) {
         const idx = self.tracks.findIndex(
           t => t.configuration.configId === trackConfigId,

@@ -7,7 +7,7 @@ export default pluginManager => {
 
   const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
 
-  function transform(view, coord) {
+  function calc(view, coord) {
     return coord / view.bpPerPx - view.offsetPx
   }
   function cheight(chunk) {
@@ -21,41 +21,48 @@ export default pluginManager => {
           <div style={{ width: controlsWidth, flexShrink: 0 }} />
           <svg style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}>
             {alignmentChunks.map(chunk => {
-              const [name, c1, c2] = chunk
-              const f1 = transform(topLGV, c1[LEFT])
-              const f2 = transform(topLGV, c1[RIGHT])
-              const f3 = transform(bottomLGV, c2[LEFT])
-              const f4 = transform(bottomLGV, c2[RIGHT])
+              const ret = []
+              for (let i = 0; i < chunk.length - 1; i += 1) {
+                const { feature: feature1, layout: c1, level: level1 } = chunk[
+                  i
+                ]
+                const { feature: feature2, layout: c2, level: level2 } = chunk[
+                  i + 1
+                ]
+                const f1 = calc(level1 == 0 ? topLGV : bottomLGV, c1[RIGHT])
+                const f4 = calc(level2 == 0 ? topLGV : bottomLGV, c2[LEFT])
+                const added = level => {
+                  return level == 0
+                    ? topLGV.headerHeight +
+                        topLGV.scaleBarHeight +
+                        topLGV.getTrackPos(trackConfigId) +
+                        model.headerHeight +
+                        3
+                    : model.headerHeight +
+                        topLGV.height +
+                        3 +
+                        bottomLGV.headerHeight +
+                        bottomLGV.scaleBarHeight +
+                        bottomLGV.getTrackPos(trackConfigId) +
+                        10 // margin
+                }
 
-              const h1 =
-                c1[BOTTOM] +
-                topLGV.headerHeight +
-                topLGV.scaleBarHeight +
-                topLGV.getTrackPos(trackConfigId) +
-                model.headerHeight +
-                3 // margin-top
-              const h2 =
-                c2[TOP] +
-                model.headerHeight +
-                topLGV.height +
-                3 +
-                bottomLGV.headerHeight +
-                bottomLGV.scaleBarHeight +
-                bottomLGV.getTrackPos(trackConfigId) +
-                10 // margin
-              const path = Path()
-                .moveTo(f1, h1 - cheight(c1) / 2)
-                .curveTo(f1 - 200, h1, f4 + 200, h2, f4, h2 + cheight(c2) / 2)
-                .end()
-              return (
-                <path
-                  d={path}
-                  key={JSON.stringify(chunk)}
-                  name={name}
-                  stroke="black"
-                  fill="none"
-                />
-              )
+                const h1 = c1[BOTTOM] + added(level1)
+                const h2 = c2[TOP] + added(level2)
+                const path = Path()
+                  .moveTo(f1, h1 - cheight(c1) / 2)
+                  .curveTo(f1 + 200, h1, f4 - 200, h2, f4, h2 + cheight(c2) / 2)
+                  .end()
+                ret.push(
+                  <path
+                    d={path}
+                    key={JSON.stringify(path)}
+                    stroke="black"
+                    fill="none"
+                  />,
+                )
+              }
+              return ret
             })}
           </svg>
         </div>
