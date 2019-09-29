@@ -1,20 +1,45 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import Path from 'svg-path-generator'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { Instance } from 'mobx-state-tree'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
-export default pluginManager => {
+type LGV = Instance<typeof LinearGenomeViewStateModel>
+type BPV = Instance<BreakpointViewStateModel>
+interface Chunk {
+  feature: Feature
+  layout: [number, number, number, number]
+  level: number
+}
+
+export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
   const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
 
-  function calc(view, coord) {
+  function calc(view: LGV, coord: number) {
     return coord / view.bpPerPx - view.offsetPx
   }
-  function cheight(chunk) {
+  function cheight(chunk: [number, number, number, number]) {
     return chunk[BOTTOM] - chunk[TOP]
   }
   const AlignmentInfo = observer(
-    ({ model, alignmentChunks, height, children, trackConfigId }) => {
+    ({
+      model,
+      alignmentChunks,
+      height,
+      children,
+      trackConfigId,
+    }: {
+      model: BPV
+      alignmentChunks: Chunk[][]
+      height: number
+      trackConfigId: string
+      children: any
+    }) => {
       const { topLGV, bottomLGV, controlsWidth } = model
       return (
         <div style={{ display: 'flex', height: '100%' }}>
@@ -37,7 +62,7 @@ export default pluginManager => {
                   level2 === 0 ? topLGV : bottomLGV,
                   c2[feature2.get('strand') === -1 ? RIGHT : LEFT],
                 )
-                const added = level => {
+                const added = (level: number) => {
                   return level === 0
                     ? topLGV.headerHeight +
                         topLGV.scaleBarHeight +
