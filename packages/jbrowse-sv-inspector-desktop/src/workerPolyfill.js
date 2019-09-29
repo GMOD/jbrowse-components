@@ -14,6 +14,7 @@ self.window = {
   requestAnimationFrame: cb => cb(),
   cancelAnimationFrame: () => {},
   navigator: {},
+  electron: true,
 }
 self.document = {
   createTextNode() {},

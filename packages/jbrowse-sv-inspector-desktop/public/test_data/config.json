@@ -208,12 +208,12 @@
             "configId": "PphRAaR1y4_",
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "test_data/volvox-sorted.bam"
+              "localPath": "test_data/volvox-sorted.bam"
             },
             "index": {
               "configId": "PB2zR_KB-RN",
               "location": {
-                "uri": "test_data/volvox-sorted.bam.bai"
+                "localPath": "test_data/volvox-sorted.bam.bai"
               }
             }
           },
@@ -1262,6 +1262,7 @@
   "configuration": {
     "configId": "WBBdhiJUQdj",
     "rpc": {
+      "defaultDriver": "MainThreadRpcDriver",
       "configId": "A8raoinDhoH"
     }
   },
@@ -1293,47 +1294,6 @@
           "displayRegionsFromAssemblyName": "volvox",
           "reversed": false,
           "tracks": [
-            {
-              "id": "X6rIl1kHuP",
-              "type": "ReferenceSequenceTrack",
-              "height": 80,
-              "configuration": "volvox_refseq_track",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
-            },
             {
               "id": "Uz2i0KbGEL",
               "type": "AlignmentsTrack",
@@ -1375,47 +1335,6 @@
                 }
               },
               "selectedRendering": ""
-            },
-            {
-              "id": "07cHDos6N9",
-              "type": "BasicTrack",
-              "height": 80,
-              "configuration": "bigbed_genes",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
             }
           ],
           "controlsWidth": 120,

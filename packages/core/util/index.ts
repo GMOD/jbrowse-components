@@ -302,7 +302,9 @@ export function isAbortException(exception: Error): boolean {
     // Error: aborted
     // AbortError: aborted
     // AbortError: The user aborted a request.
-    !!exception.message.match(/\b(aborted|AbortError)\b/i)
+    !!(
+      exception.message && exception.message.match(/\b(aborted|AbortError)\b/i)
+    )
   )
 }
 

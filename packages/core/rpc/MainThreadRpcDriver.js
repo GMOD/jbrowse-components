@@ -77,6 +77,7 @@ export default class MainThreadRpcDriver {
     }
 
     const clonedArgs = this.cloneArgs(args)
-    return func.call(this, pluginManager, ...clonedArgs)
+    const a = func.call(this, pluginManager, ...clonedArgs)
+    return a
   }
 }

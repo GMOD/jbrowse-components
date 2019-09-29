@@ -104,44 +104,52 @@ export default self => ({
      * uses those to build a Map of adapter_ref_name -> canonical_ref_name
      */
     addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
-      return self.getRefNameAliases(assemblyName, opts).then(refNameAliases => {
-        const adapterConfigId = readConfObject(adapterConf, 'configId')
-        if (!self.refNameMaps.has(adapterConfigId))
-          self.refNameMaps.set(adapterConfigId, new Map())
-        const refNameMap = self.refNameMaps.get(adapterConfigId)
+      return self
+        .getRefNameAliases(assemblyName, opts)
+        .then(refNameAliases => {
+          const adapterConfigId = readConfObject(adapterConf, 'configId')
+          if (!self.refNameMaps.has(adapterConfigId))
+            self.refNameMaps.set(adapterConfigId, new Map())
+          const refNameMap = self.refNameMaps.get(adapterConfigId)
 
-        return self.rpcManager
-          .call(
-            readConfObject(adapterConf, 'configId'),
-            'getRefNames',
-            {
-              sessionId: assemblyName,
-              adapterType: readConfObject(adapterConf, 'type'),
-              adapterConfig: adapterConf,
-              signal: opts.signal,
-            },
-            { timeout: 1000000 },
-          )
-          .then(refNames => {
-            refNames.forEach(refName => {
-              if (refNameAliases[refName])
-                refNameAliases[refName].forEach(refNameAlias => {
-                  refNameMap.set(refNameAlias, refName)
-                })
-              else
-                Object.keys(refNameAliases).forEach(configRefName => {
-                  if (refNameAliases[configRefName].includes(refName)) {
-                    refNameMap.set(configRefName, refName)
-                    refNameAliases[configRefName].forEach(refNameAlias => {
-                      if (refNameAlias !== refName)
-                        refNameMap.set(refNameAlias, refName)
-                    })
-                  }
-                })
+          return self.rpcManager
+            .call(
+              readConfObject(adapterConf, 'configId'),
+              'getRefNames',
+              {
+                sessionId: assemblyName,
+                adapterType: readConfObject(adapterConf, 'type'),
+                adapterConfig: adapterConf,
+                signal: opts.signal,
+              },
+              { timeout: 1000000 },
+            )
+            .then(refNames => {
+              refNames.forEach(refName => {
+                if (refNameAliases[refName])
+                  refNameAliases[refName].forEach(refNameAlias => {
+                    refNameMap.set(refNameAlias, refName)
+                  })
+                else
+                  Object.keys(refNameAliases).forEach(configRefName => {
+                    if (refNameAliases[configRefName].includes(refName)) {
+                      refNameMap.set(configRefName, refName)
+                      refNameAliases[configRefName].forEach(refNameAlias => {
+                        if (refNameAlias !== refName)
+                          refNameMap.set(refNameAlias, refName)
+                      })
+                    }
+                  })
+              })
+              return refNameMap
             })
-            return refNameMap
-          })
-      })
+            .catch(err => {
+              console.error('2', err)
+            })
+        })
+        .catch(err => {
+          console.error('1', err)
+        })
     },
 
     getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {

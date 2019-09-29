@@ -22,18 +22,18 @@ export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState)
-  const [urlSnapshot, setUrlSnapshot] = useState()
-  const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
+  // const [urlSnapshot, setUrlSnapshot] = useState()
+  // const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
-  useEffect(() => {
-    if (debouncedUrlSnapshot) {
-      const l = document.location
-      const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-        JSON.stringify(debouncedUrlSnapshot),
-      )}`
-      window.history.replaceState({}, '', updatedUrl)
-    }
-  }, [debouncedUrlSnapshot])
+  // useEffect(() => {
+  //   if (debouncedUrlSnapshot) {
+  //     const l = document.location
+  //     const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
+  //       JSON.stringify(debouncedUrlSnapshot),
+  //     )}`
+  //     window.history.replaceState({}, '', updatedUrl)
+  //   }
+  // }, [debouncedUrlSnapshot])
 
   useEffect(() => {
     async function loadConfig() {
@@ -42,9 +42,9 @@ export default observer(({ config, initialState }) => {
         if (initialState) r = initialState
         else {
           let configSnapshot = config || {}
-          const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-          if (localStorageConfig)
-            configSnapshot = JSON.parse(localStorageConfig)
+          // const localStorageConfig = localStorage.getItem('jbrowse-web-data')
+          // if (localStorageConfig)
+          //   configSnapshot = JSON.parse(localStorageConfig)
           if (configSnapshot.uri || configSnapshot.localPath) {
             const configText = await openLocation(config).readFile('utf8')
             configSnapshot = JSON.parse(configText)
@@ -135,20 +135,20 @@ export default observer(({ config, initialState }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root && root.session && root.session.name, status, useLocalStorage])
 
-  const updateUrl = jbrowse
-    ? readConfObject(jbrowse.configuration, 'updateUrl')
-    : false
-  useEffect(() => {
-    let urlDisposer = () => {}
-    if (session) {
-      if (updateUrl)
-        urlDisposer = onSnapshot(session, snapshot => {
-          setUrlSnapshot(snapshot)
-        })
-    }
+  // const updateUrl = jbrowse
+  //   ? readConfObject(jbrowse.configuration, 'updateUrl')
+  //   : false
+  // useEffect(() => {
+  //   let urlDisposer = () => {}
+  //   if (session) {
+  //     if (updateUrl)
+  //       urlDisposer = onSnapshot(session, snapshot => {
+  //         setUrlSnapshot(snapshot)
+  //       })
+  //   }
 
-    return urlDisposer
-  }, [updateUrl, session])
+  //   return urlDisposer
+  // }, [updateUrl, session])
 
   let DisplayComponent = (
     <CircularProgress
