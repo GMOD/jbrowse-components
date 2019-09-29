@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
-  const { getParent, getRoot, addDisposer, onAction } = jbrequire(
-    'mobx-state-tree',
-  )
+  const {
+    types: jbrequiredTypes,
+    getParent,
+    getRoot,
+    addDisposer,
+    onAction,
+  } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const configSchema = ConfigurationSchema(
@@ -19,7 +23,7 @@ export default (pluginManager: any) => {
 
   const minHeight = 40
   const defaultHeight = 400
-  const stateModel = types
+  const stateModel = (jbrequiredTypes as Instance<typeof types>)
     .model('BreakpointSplitView', {
       id: ElementId,
       type: types.literal('BreakpointSplitView'),
