@@ -15,5 +15,7 @@
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0"
+    "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0"
+    "mobx-state-tree": "^2.0.0"
   }
 }

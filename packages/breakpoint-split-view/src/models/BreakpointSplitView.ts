@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { types } from 'mobx-state-tree'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-export default pluginManager => {
+export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getRoot, addDisposer, onAction } = jbrequire(
+  const { getParent, getRoot, addDisposer, onAction } = jbrequire(
     'mobx-state-tree',
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
@@ -22,15 +26,21 @@ export default pluginManager => {
       headerHeight: 0,
       width: 800,
       height: types.optional(
-        types.refinement('viewHeight', types.number, n => n >= minHeight),
+        types.refinement(
+          'viewHeight',
+          types.number,
+          (n: number) => n >= minHeight,
+        ),
         defaultHeight,
       ),
       displayName: 'breakpoint detail',
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
 
-      topLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
-      bottomLGV: pluginManager.getViewType('LinearGenomeView').stateModel,
+      topLGV: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
+      bottomLGV: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
     })
     .views(self => ({
       get viewingRegionWidth() {
@@ -71,15 +81,12 @@ export default pluginManager => {
         return t1.filter(t => t2.indexOf(t) !== -1)
       },
 
-      getMatchedFeatures(trackConfigId) {
-        const candidates = {}
-        const alreadySeen = {}
-        if (!self.topLGV.tracks.length || !self.bottomLGV.tracks.length) {
-          return {}
-        }
+      getMatchedFeatures(trackConfigId: string) {
+        const candidates: Record<string, Feature[]> = {}
+        const alreadySeen: Record<string, boolean> = {}
         const t1 = self.topLGV.getTrack(trackConfigId)
         const t2 = self.bottomLGV.getTrack(trackConfigId)
-        const adder = f => {
+        const adder = (f: Feature) => {
           if (!alreadySeen[f.id()]) {
             const n = f.get('name')
             if (!candidates[n]) {
@@ -90,7 +97,10 @@ export default pluginManager => {
           alreadySeen[f.id()] = true
         }
 
-        for (const f of new CompositeMap([t1.features, t2.features]).values()) {
+        for (const f of new CompositeMap<string, Feature>([
+          t1.features,
+          t2.features,
+        ]).values()) {
           adder(f)
         }
 
@@ -101,10 +111,10 @@ export default pluginManager => {
               const cigar = r.get('CIGAR')
               const match = cigar.match(/^(\d+)([SH])/)
               if (r.get('SA')) {
-                r.chimericReadPos = 0
+                r.set('chimeric_read_pos', 0)
                 if (match) {
                   if (match[2] === 'S') {
-                    r.chimericReadPos = +match[1]
+                    r.set('chimeric_read_pos', +match[1])
                   }
                 }
               }
@@ -113,32 +123,22 @@ export default pluginManager => {
           })
       },
 
-      getLayoutMatches(trackConfigId) {
+      getLayoutMatches(trackConfigId: string) {
         const t1 = self.topLGV.getTrack(trackConfigId)
         const t2 = self.bottomLGV.getTrack(trackConfigId)
         const m = new CompositeMap([t1.layoutFeatures, t2.layoutFeatures])
-        const t = self.getMatchedFeatures(trackConfigId)
+        const t = this.getMatchedFeatures(trackConfigId)
         return t.map(c => {
           return c
-            .map(feature => {
-              if (t1.layoutFeatures.get(feature.id())) {
-                return {
-                  feature,
-                  layout: m.get(feature.id()),
-                  level: 0,
-                }
-              }
-              if (t2.layoutFeatures.get(feature.id())) {
-                return {
-                  feature,
-                  layout: m.get(feature.id()),
-                  level: 1,
-                }
-              }
-              return undefined
-            })
+            .map((feature: Feature) => ({
+              feature,
+              layout: m.get(feature.id()),
+              level: t1.layoutFeatures.get(feature.id()) ? 0 : 1,
+            }))
             .sort(
-              (a, b) => a.feature.chimericReadPos - b.feature.chimericReadPos,
+              (a, b) =>
+                a.feature.get('chimeric_read_pos') -
+                b.feature.get('chimeric_read_pos'),
             )
         })
       },
@@ -149,20 +149,31 @@ export default pluginManager => {
         // and dispatch our own actions to keep the views in sync
         addDisposer(
           self,
-          onAction(self, ({ name, path, args }) => {
-            // if (name === 'horizontalScroll') {
-            //   // console.log(path, args)
-            //   self.onSubviewHorizontalScroll(path, args)
-            // } else if (name === 'zoomTo') {
-            //   // console.log(path, args)
-            //   self.onSubviewZoom(path, args)
-            // }
-          }),
+          onAction(
+            self,
+            ({
+              name,
+              path,
+              args,
+            }: {
+              name: string
+              path: string
+              args: any[]
+            }) => {
+              // if (name === 'horizontalScroll') {
+              //   // console.log(path, args)
+              //   self.onSubviewHorizontalScroll(path, args)
+              // } else if (name === 'zoomTo') {
+              //   // console.log(path, args)
+              //   self.onSubviewZoom(path, args)
+              // }
+            },
+          ),
         )
       },
 
       // binds the horizontal scrolling of the two LGVs together
-      onSubviewHorizontalScroll(path, args) {
+      onSubviewHorizontalScroll(path: string, args: any[]) {
         if (path === '/topLGV') {
           self.bottomLGV.horizontalScroll(args[0])
         } else if (path === '/bottomLGV') {
@@ -171,7 +182,7 @@ export default pluginManager => {
       },
 
       // binds the zooming of the two LGVs together
-      onSubviewZoom(path, args) {
+      onSubviewZoom(path: string, args: any[]) {
         if (path === '/topLGV') {
           self.bottomLGV.zoomTo(args[0])
         } else if (path === '/bottomLGV') {
@@ -179,24 +190,24 @@ export default pluginManager => {
         }
       },
 
-      setDisplayName(name) {
+      setDisplayName(name: string) {
         self.displayName = name
         return self.displayName
       },
 
-      setHeight(newHeight) {
+      setHeight(newHeight: number) {
         if (newHeight > minHeight) self.height = newHeight
         else self.height = minHeight
         return self.height
       },
 
-      setWidth(newWidth) {
+      setWidth(newWidth: number) {
         self.width = newWidth
       },
 
-      resizeHeight(distance) {
+      resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
+        const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
       },
 
@@ -208,7 +219,7 @@ export default pluginManager => {
         getParent(self, 2).removeView(self)
       },
 
-      setHeaderHeight(height) {
+      setHeaderHeight(height: number) {
         self.headerHeight = height
       },
 
