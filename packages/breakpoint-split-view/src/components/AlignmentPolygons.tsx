@@ -12,7 +12,7 @@ interface Chunk {
   layout: [number, number, number, number]
   level: number
 }
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
@@ -31,14 +31,12 @@ export default (pluginManager: any) => {
       model,
       alignmentChunks,
       height,
-      children,
       trackConfigId,
     }: {
       model: BPV
       alignmentChunks: Chunk[][]
       height: number
       trackConfigId: string
-      children: any
     }) => {
       const { topLGV, bottomLGV, controlsWidth } = model
       return (

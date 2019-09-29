@@ -4,6 +4,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -162,6 +163,7 @@ export default function stateModelFactory(pluginManager: any) {
             }: {
               name: string
               path: string
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               args: any[]
             }) => {
               // if (name === 'horizontalScroll') {
@@ -177,6 +179,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       // binds the horizontal scrolling of the two LGVs together
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewHorizontalScroll(path: string, args: any[]) {
         if (path === '/topLGV') {
           self.bottomLGV.horizontalScroll(args[0])
@@ -186,6 +189,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       // binds the zooming of the two LGVs together
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewZoom(path: string, args: any[]) {
         if (path === '/topLGV') {
           self.bottomLGV.zoomTo(args[0])

@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/core'
 import { Instance } from 'mobx-state-tree'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
@@ -46,22 +47,22 @@ export default (pluginManager: any) => {
     }
   })
 
-  const BreakpointMarker = observer(function BreakpointMarker({
-    model,
-  }: {
-    model: Instance<BreakpointViewStateModel>
-  }) {
-    const classes = useStyles()
+  // const BreakpointMarker = observer(function BreakpointMarker({
+  //   model,
+  // }: {
+  //   model: Instance<BreakpointViewStateModel>
+  // }) {
+  //   const classes = useStyles()
 
-    const leftRegion = model.topLGV.displayedRegions[0]
-    const leftWidthPx =
-      (leftRegion.end - leftRegion.start) / model.topLGV.bpPerPx
-    const offset =
-      leftWidthPx - model.topLGV.offsetPx + model.topLGV.controlsWidth - 2
-    const left = `${offset}px`
-    // TODO: draw little feet on the top and bottom of the marker line to show directionality
-    return <div className={classes.breakpointMarker} style={{ left }} />
-  })
+  //   const leftRegion = model.topLGV.displayedRegions[0]
+  //   const leftWidthPx =
+  //     (leftRegion.end - leftRegion.start) / model.topLGV.bpPerPx
+  //   const offset =
+  //     leftWidthPx - model.topLGV.offsetPx + model.topLGV.controlsWidth - 2
+  //   const left = `${offset}px`
+  //   // TODO: draw little feet on the top and bottom of the marker line to show directionality
+  //   return <div className={classes.breakpointMarker} style={{ left }} />
+  // })
 
   const BreakpointSplitView = observer(
     ({ model }: { model: Instance<BreakpointViewStateModel> }) => {
