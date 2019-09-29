@@ -1265,10 +1265,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.0.24":
-  version "1.0.24"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.24.tgz#d945dd864f854fa8f3b8c7385af0406df7cea0ee"
-  integrity sha512-4l0zXLdKySVJuOmAz7LEg8//iNKL/qcvmF2IyTVlecQWD33oLf6mjwc1a5G/ydM2a5uwh543PqpB1G6XNNuL9A==
+"@gmod/bam@^1.0.25":
+  version "1.0.25"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.25.tgz#14c7dc93362fcc3e2b71db5ac4316655024e5491"
+  integrity sha512-z1xkLI6LF3BRamJKYyFBRnSg+S02j3gnxHwNchw+AnNupJJ8nOrxv7DtOoM9ZWx7OwYC6h8WtC2dTdnRGN2yQw==
   dependencies:
     "@babel/runtime-corejs2" "^7.5.5"
     "@types/long" "^4.0.0"
@@ -1281,7 +1281,7 @@
     long "^4.0.0"
     object.entries-ponyfill "^1.0.1"
     pako "^1.0.10"
-    quick-lru "2"
+    quick-lru "^2.0.0"
 
 "@gmod/bbi@^1.0.21":
   version "1.0.22"
@@ -12248,15 +12248,15 @@ querystringify@^2.1.1:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha512-w7fLxIRCRT7U8Qu53jQnJyPkYZIaR4n5151KMfcJlO/A9397Wxb1amJvROTK6TOnp7PfoAmg/qXiNHI+08jRfA==
 
-quick-lru@2, quick-lru@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-2.0.0.tgz#32b017b28d1784631c8ab0a1ed2978e094dbe181"
-  integrity sha512-DqOtZziv7lDjEyuqyVQacRciAwMCEjTNrLYCHYEIIgjcE/tLEpBF82hiDIwCjRnEL9/hY2GJxA0T8ZvYvVVSSA==
-
 quick-lru@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-1.1.0.tgz#4360b17c61136ad38078397ff11416e186dcfbb8"
   integrity sha1-Q2CxfGETatOAeDl/8RQW4Ybc+7g=
+
+quick-lru@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-2.0.0.tgz#32b017b28d1784631c8ab0a1ed2978e094dbe181"
+  integrity sha512-DqOtZziv7lDjEyuqyVQacRciAwMCEjTNrLYCHYEIIgjcE/tLEpBF82hiDIwCjRnEL9/hY2GJxA0T8ZvYvVVSSA==
 
 quick-lru@^4.0.0:
   version "4.0.1"
