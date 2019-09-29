@@ -1120,6 +1120,14 @@
     core-js "^2.6.5"
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime-corejs2@^7.5.5":
+  version "7.6.2"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.6.2.tgz#062f8e31f3df30fc1a3dea68aa1bd854e06e9ba6"
+  integrity sha512-wdyVKnTv9Be4YlwF/7pByYNfcl23qC21aAQ0aIaZOo2ZOvhFEyJdBLJClYZ9i+Pmrz7sUQgg/MwbJa2RZTkygg==
+  dependencies:
+    core-js "^2.6.5"
+    regenerator-runtime "^0.13.2"
+
 "@babel/runtime@7.3.4":
   version "7.3.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.3.4.tgz#73d12ba819e365fcf7fd152aed56d6df97d21c83"
@@ -1127,7 +1135,7 @@
   dependencies:
     regenerator-runtime "^0.12.0"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.3", "@babel/runtime@^7.4.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.1", "@babel/runtime@^7.5.5":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.5.1", "@babel/runtime@^7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.5.5.tgz#74fba56d35efbeca444091c7850ccd494fd2f132"
   integrity sha512-28QvEGyQyNkB0/m2B4FU7IEZGK2NUrcMtT6BZEFALTguLk+AUT6ofsHtPk5QyjAdUkpMJ+/Em+quwz4HOt30AQ==
@@ -1257,12 +1265,15 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.0.21":
-  version "1.0.21"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.21.tgz#602180b5fc869b513cd66f2c2332d2a5db4777e4"
-  integrity sha512-ztBVSPIY8zEhdzIILZ+13hmxPfqv0DldB1XujCgtWdLnEcKhDjZwsoimsWAqdPbNBPCaGkXSaSNIvUbWyaCwCw==
+"@gmod/bam@^1.0.24":
+  version "1.0.24"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.0.24.tgz#d945dd864f854fa8f3b8c7385af0406df7cea0ee"
+  integrity sha512-4l0zXLdKySVJuOmAz7LEg8//iNKL/qcvmF2IyTVlecQWD33oLf6mjwc1a5G/ydM2a5uwh543PqpB1G6XNNuL9A==
   dependencies:
-    "@babel/runtime" "^7.4.3"
+    "@babel/runtime-corejs2" "^7.5.5"
+    "@types/long" "^4.0.0"
+    "@types/node" "^12.7.8"
+    "@types/pako" "^1.0.1"
     abortable-promise-cache "^1.0.1"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
@@ -1270,7 +1281,7 @@
     long "^4.0.0"
     object.entries-ponyfill "^1.0.1"
     pako "^1.0.10"
-    quick-lru "^2.0.0"
+    quick-lru "2"
 
 "@gmod/bbi@^1.0.21":
   version "1.0.22"
@@ -2713,6 +2724,11 @@
   version "12.7.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.1.tgz#3b5c3a26393c19b400844ac422bd0f631a94d69d"
   integrity sha512-aK9jxMypeSrhiYofWWBf/T7O+KwaiAHzM4sveCdWPn71lzUSMimRnKzhXDKfKwV1kWoBo2P1aGgaIYGLf9/ljw==
+
+"@types/node@^12.7.8":
+  version "12.7.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.8.tgz#cb1bf6800238898bc2ff6ffa5702c3cadd350708"
+  integrity sha512-FMdVn84tJJdV+xe+53sYiZS4R5yn1mAIxfj+DVoNiQjTYz1+OYmjwEZr1ev9nU0axXwda0QDbYl06QHanRVH3A==
 
 "@types/pako@^1.0.1":
   version "1.0.1"
@@ -12232,15 +12248,15 @@ querystringify@^2.1.1:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.1.1.tgz#60e5a5fd64a7f8bfa4d2ab2ed6fdf4c85bad154e"
   integrity sha512-w7fLxIRCRT7U8Qu53jQnJyPkYZIaR4n5151KMfcJlO/A9397Wxb1amJvROTK6TOnp7PfoAmg/qXiNHI+08jRfA==
 
+quick-lru@2, quick-lru@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-2.0.0.tgz#32b017b28d1784631c8ab0a1ed2978e094dbe181"
+  integrity sha512-DqOtZziv7lDjEyuqyVQacRciAwMCEjTNrLYCHYEIIgjcE/tLEpBF82hiDIwCjRnEL9/hY2GJxA0T8ZvYvVVSSA==
+
 quick-lru@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-1.1.0.tgz#4360b17c61136ad38078397ff11416e186dcfbb8"
   integrity sha1-Q2CxfGETatOAeDl/8RQW4Ybc+7g=
-
-quick-lru@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-2.0.0.tgz#32b017b28d1784631c8ab0a1ed2978e094dbe181"
-  integrity sha512-DqOtZziv7lDjEyuqyVQacRciAwMCEjTNrLYCHYEIIgjcE/tLEpBF82hiDIwCjRnEL9/hY2GJxA0T8ZvYvVVSSA==
 
 quick-lru@^4.0.0:
   version "4.0.1"
