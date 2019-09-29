@@ -30,15 +30,15 @@ export default pluginManager => {
                   i + 1
                 ]
                 const f1 = calc(
-                  level1 == 0 ? topLGV : bottomLGV,
-                  c1[feature1.get('strand') == -1 ? LEFT : RIGHT],
+                  level1 === 0 ? topLGV : bottomLGV,
+                  c1[feature1.get('strand') === -1 ? LEFT : RIGHT],
                 )
                 const f4 = calc(
-                  level2 == 0 ? topLGV : bottomLGV,
-                  c2[feature2.get('strand') == -1 ? RIGHT : LEFT],
+                  level2 === 0 ? topLGV : bottomLGV,
+                  c2[feature2.get('strand') === -1 ? RIGHT : LEFT],
                 )
                 const added = level => {
-                  return level == 0
+                  return level === 0
                     ? topLGV.headerHeight +
                         topLGV.scaleBarHeight +
                         topLGV.getTrackPos(trackConfigId) +

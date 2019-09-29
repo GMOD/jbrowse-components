@@ -15,11 +15,11 @@ interface HeaderLine {
   tag: string
   value: string
 }
-type ThenArg<T> = T extends Promise<infer U>
-  ? U
-  : T extends (...args: any[]) => Promise<infer U>
-  ? U
-  : T
+interface Header {
+  idToName: string[]
+  nameToId: Record<string, number>
+}
+
 const setup = memoize(async (bam: BamFile) => {
   const samHeader = await bam.getHeader()
 
@@ -44,7 +44,7 @@ const setup = memoize(async (bam: BamFile) => {
 export default class extends BaseAdapter {
   private bam: BamFile
 
-  private samHeader: ThenArg<typeof setup> = { idToName: [], nameToId: {} }
+  private samHeader: Header = { idToName: [], nameToId: {} }
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -100,8 +100,7 @@ export default class extends BaseAdapter {
           opts,
         )
         checkAbortSignal(opts.signal)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        records.forEach((record: any) => {
+        records.forEach(record => {
           observer.next(new BamSlightlyLazyFeature(record, this))
         })
         observer.complete()
