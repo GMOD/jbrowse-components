@@ -4,7 +4,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 
-export default (pluginManager: any) => {
+export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
     types: jbrequiredTypes,
@@ -234,3 +234,6 @@ export default (pluginManager: any) => {
 
   return { stateModel, configSchema }
 }
+
+export type BreakpointView = ReturnType<typeof stateModelFactory>
+export type BreakpointViewStateModel = BreakpointView['stateModel']
