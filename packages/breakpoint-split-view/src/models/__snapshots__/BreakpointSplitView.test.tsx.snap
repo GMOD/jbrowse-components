@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`basic BreakpointSplitView test 1`] = `
+exports[`BreakpointSplitView test with soft clipping 1`] = `
 Array [
   "pacbio_hg002",
 ]
 `;
 
-exports[`basic BreakpointSplitView test 2`] = `
+exports[`BreakpointSplitView test with soft clipping 2`] = `
 Array [
   Array [
     Object {
@@ -40,7 +40,7 @@ Array [
 ]
 `;
 
-exports[`basic BreakpointSplitView test 3`] = `
+exports[`BreakpointSplitView test with soft clipping 3`] = `
 Array [
   Array [
     Object {
@@ -78,6 +78,70 @@ Array [
         "name": "m64011_181218_235052/85067842/ccs",
         "start": 186692690,
         "uniqueId": "789",
+      },
+      "layout": undefined,
+      "level": 1,
+    },
+  ],
+]
+`;
+
+exports[`BreakpointSplitView with hard clipping 1`] = `
+Array [
+  "pacbio_hg002",
+]
+`;
+
+exports[`BreakpointSplitView with hard clipping 2`] = `
+Array [
+  Array [
+    Object {
+      "CIGAR": "5S6M",
+      "SA": "SA:Z:ref,29,-,6H5M,17,0;",
+      "chimeric_read_pos": 5,
+      "end": 12,
+      "name": "r003",
+      "start": 8,
+      "uniqueId": "123",
+    },
+    Object {
+      "CIGAR": "6H5M",
+      "SA": "SA:Z:ref,9,+,5S6M,30,1;",
+      "chimeric_read_pos": 6,
+      "end": 32,
+      "name": "r003",
+      "start": 28,
+      "uniqueId": "456",
+    },
+  ],
+]
+`;
+
+exports[`BreakpointSplitView with hard clipping 3`] = `
+Array [
+  Array [
+    Object {
+      "feature": Object {
+        "CIGAR": "5S6M",
+        "SA": "SA:Z:ref,29,-,6H5M,17,0;",
+        "chimeric_read_pos": 5,
+        "end": 12,
+        "name": "r003",
+        "start": 8,
+        "uniqueId": "123",
+      },
+      "layout": undefined,
+      "level": 1,
+    },
+    Object {
+      "feature": Object {
+        "CIGAR": "6H5M",
+        "SA": "SA:Z:ref,9,+,5S6M,30,1;",
+        "chimeric_read_pos": 6,
+        "end": 32,
+        "name": "r003",
+        "start": 28,
+        "uniqueId": "456",
       },
       "layout": undefined,
       "level": 1,

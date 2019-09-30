@@ -113,15 +113,9 @@ export default function stateModelFactory(pluginManager: any) {
           .filter(v => v.length > 1)
           .map(v => {
             v.forEach(r => {
-              const cigar = r.get('CIGAR')
-              const match = cigar.match(/^(\d+)([SH])/)
               if (r.get('SA')) {
-                r.set('chimeric_read_pos', 0)
-                if (match) {
-                  if (match[2] === 'S') {
-                    r.set('chimeric_read_pos', +match[1])
-                  }
-                }
+                const match = r.get('CIGAR').match(/^(\d+)([SH])/)
+                r.set('chimeric_read_pos', match ? +match[1] : 0)
               }
             })
             return v
