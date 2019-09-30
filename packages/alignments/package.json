@@ -1,5 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-alignments",
+  "private": true,
   "version": "2.0.0",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "main": "src/index.js",
