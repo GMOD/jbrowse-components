@@ -15,6 +15,7 @@ export interface LGVMenuOption {
   callback: Function
 }
 interface BpOffset {
+  refName?: string
   index: number
   offset: number
   start?: number
@@ -164,9 +165,10 @@ export function stateModelFactory(pluginManager: any) {
       pxToBp(px: number) {
         const bp = (self.offsetPx + px) * self.bpPerPx + 1
         let bpSoFar = 0
+        let r = this.displayedRegionsInOrder[0]
         if (bp < 0) {
           return {
-            ...this.displayedRegionsInOrder[0],
+            ...r,
             offset: Math.round(bp),
             index: 0,
           }
@@ -176,7 +178,7 @@ export function stateModelFactory(pluginManager: any) {
           index < this.displayedRegionsInOrder.length;
           index += 1
         ) {
-          const r = this.displayedRegionsInOrder[index]
+          r = this.displayedRegionsInOrder[index]
           if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
             return { ...r, offset: Math.round(bp - bpSoFar), index }
           }
@@ -184,6 +186,7 @@ export function stateModelFactory(pluginManager: any) {
         }
 
         return {
+          ...r,
           offset: Math.round(bp - bpSoFar),
           index: this.displayedRegionsInOrder.length,
         }
@@ -308,7 +311,16 @@ export function stateModelFactory(pluginManager: any) {
        * @param {refName,start,end} is a proposed location to navigate to
        * returns true if navigation was successful, false if not
        */
-      navTo({ refName, start, end }: IRegion) {
+      navTo({
+        refName,
+        start,
+        end,
+      }: {
+        assemblyName?: string
+        start?: number
+        end?: number
+        refName: string
+      }) {
         let s = start
         let e = end
         const index = self.displayedRegionsInOrder.findIndex(r => {
@@ -325,6 +337,12 @@ export function stateModelFactory(pluginManager: any) {
           }
           return false
         })
+        if (s === undefined) {
+          throw new Error('start coordinate not found')
+        }
+        if (e === undefined) {
+          throw new Error('end coordinate not found')
+        }
         const f = self.displayedRegionsInOrder[index]
         if (index !== -1) {
           this.moveTo(
