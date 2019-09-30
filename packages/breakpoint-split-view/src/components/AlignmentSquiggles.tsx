@@ -5,8 +5,6 @@ import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
-type LGV = Instance<typeof LinearGenomeViewStateModel>
-type BPV = Instance<BreakpointViewStateModel>
 interface Chunk {
   feature: Feature
   layout: [number, number, number, number]
@@ -20,7 +18,10 @@ export default (pluginManager: any) => {
 
   const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
 
-  function calc(view: LGV, coord: number) {
+  function calc(
+    view: Instance<typeof LinearGenomeViewStateModel>,
+    coord: number,
+  ) {
     return coord / view.bpPerPx - view.offsetPx
   }
   function cheight(chunk: [number, number, number, number]) {
@@ -33,7 +34,7 @@ export default (pluginManager: any) => {
       height,
       trackConfigId,
     }: {
-      model: BPV
+      model: Instance<BreakpointViewStateModel>
       alignmentChunks: Chunk[][]
       height: number
       trackConfigId: string
@@ -42,7 +43,14 @@ export default (pluginManager: any) => {
       return (
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ width: controlsWidth, flexShrink: 0 }} />
-          <svg style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}>
+          <svg
+            data-testid={
+              alignmentChunks.length
+                ? 'breakpoint-split-squiggles-loaded'
+                : 'breakpoint-split-squiggles'
+            }
+            style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}
+          >
             {alignmentChunks.map(chunk => {
               const ret = []
               for (let i = 0; i < chunk.length - 1; i += 1) {

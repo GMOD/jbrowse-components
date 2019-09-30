@@ -192,33 +192,7 @@
         "name": "hg19",
         "aliases": [
           "GRCh37"
-        ],
-        "sequence": {
-          "type": "ReferenceSequenceTrack",
-          "adapter": {
-            "type": "BgzipFastaAdapter",
-            "fastaLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz"
-            },
-            "faiLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.fai"
-            },
-            "gziLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.gzi"
-            }
-          },
-          "rendering": {
-            "type": "DivSequenceRenderer"
-          }
-        },
-        "refNameAliases": {
-          "adapter": {
-            "type": "RefNameAliasAdapter",
-            "location": {
-              "uri": "test_data/hg19_aliases.txt"
-            }
-          }
-        }
+        ]
       },
       "tracks": [
         {
@@ -272,6 +246,9 @@
     }
   ],
   "configuration": {
-    "rpc": {}
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false
   }
 }

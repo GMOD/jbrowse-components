@@ -16,6 +16,21 @@ import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
+// filter mobx-state-tree onAction warning
+const originalWarn = console.warn
+beforeAll(() => {
+  console.warn = (...args) => {
+    if (/onAction/.test(args[0])) {
+      return
+    }
+    originalWarn.call(console, ...args)
+  }
+})
+
+afterAll(() => {
+  console.warn = originalWarn
+})
+
 fetchMock.config.sendAsJson = false
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
@@ -381,5 +396,19 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
+  })
+})
+
+describe('breakpoint split view', () => {
+  it('open a split view', async () => {
+    const state = rootModel.create({ jbrowse: breakpointConfig })
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    // wait for the UI to be loaded
+    await waitForElement(() => getByText('JBrowse'))
+
+    const overlay = await waitForElement(() =>
+      getByTestId('breakpoint-split-squiggles-loaded'),
+    )
+    expect(overlay).toMatchSnapshot()
   })
 })
