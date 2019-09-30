@@ -5,6 +5,7 @@
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "main": "src/index.js",
   "scripts": {
+    "build": "NODE_ENV=production babel . --root-mode upward src --out-dir umd --extensions '.ts,.js,.tsx,.jsx' src",
     "test": "cd ../..; jest packages/protein"
   },
   "author": "Garrett Stevens",
