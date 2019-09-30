@@ -2,6 +2,7 @@
   "name": "@gmod/jbrowse-plugin-sequence",
   "version": "2.0.0",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
+  "private": true,
   "main": "src/index.js",
   "scripts": {
     "test": "cd ../..; jest packages/sequence"

@@ -1,5 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-jbrowse1",
+  "private": true,
   "version": "2.0.0",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "main": "src/index.js",

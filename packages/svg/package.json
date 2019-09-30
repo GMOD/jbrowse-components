@@ -1,6 +1,7 @@
 {
   "name": "@gmod/jbrowse-plugin-svg",
   "version": "2.0.0",
+  "private": true,
   "description": "JBrowse 2 plugin for svg features",
   "main": "umd/index.js",
   "files": [

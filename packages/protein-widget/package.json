@@ -1,5 +1,6 @@
 {
   "name": "@gmod/jbrowse-protein-widget",
+  "private": true,
   "version": "1.0.0",
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
