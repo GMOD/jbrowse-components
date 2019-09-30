@@ -7,3 +7,4 @@ yarn-error.log
 lint.log
 .eslintcache
 .idea
+**/umd
