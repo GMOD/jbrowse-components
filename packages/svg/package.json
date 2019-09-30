@@ -2,9 +2,13 @@
   "name": "@gmod/jbrowse-plugin-svg",
   "version": "2.0.0",
   "description": "JBrowse 2 plugin for svg features",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
-    "test": "cd ../..; jest packages/svg"
+    "test": "cd ../..; jest packages/svg",
+    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx'"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
