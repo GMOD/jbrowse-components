@@ -81,9 +81,9 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       get matchedTracks() {
-        const t1 = self.topLGV.tracks.map(t => t.configuration.configId)
-        const t2 = self.bottomLGV.tracks.map(t => t.configuration.configId)
-        return t1.filter(t => t2.indexOf(t) !== -1)
+        const a = self.topLGV.tracks.map(t => t.configuration.configId)
+        const b = self.bottomLGV.tracks.map(t => t.configuration.configId)
+        return a.filter(t => b.includes(t))
       },
 
       getMatchedFeatures(trackConfigId: string) {
