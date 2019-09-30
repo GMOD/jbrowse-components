@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "cd ../..; jest packages/svg",
-    "build": "NODE_ENV=production webpack"
+    "build": "NODE_ENV=production babel . --root-mode upward src --out-dir umd --extensions '.ts,.js,.tsx,.jsx' src"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
