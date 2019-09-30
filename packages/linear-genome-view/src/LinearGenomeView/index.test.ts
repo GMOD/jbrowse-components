@@ -224,7 +224,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.pxToBp(15000).refName).toEqual('ctgB')
   expect(model.pxToBp(25000).refName).toEqual('ctgC')
   // extending past gives us the last displayed region
-  expect(model.pxToBp(35000).refName).toEqual(undefined)
+  expect(model.pxToBp(35000).refName).toEqual('ctgC')
 
   model.setDisplayName('Volvox view')
   expect(model.displayName).toBe('Volvox view')
