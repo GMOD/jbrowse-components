@@ -133,3 +133,13 @@ export default abstract class BaseAdapter {
     return false
   }
 }
+
+export interface Alias {
+  refName: string
+  aliases: string[]
+}
+export abstract class BaseRefNameAliasAdapter {
+  public static capabilities: string[]
+
+  public abstract async getRefNameAliases(): Promise<Alias[]>
+}

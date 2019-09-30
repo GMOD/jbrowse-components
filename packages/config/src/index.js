@@ -12,6 +12,10 @@ import {
   AdapterClass as FromConfigAdapterClass,
   configSchema as fromConfigAdapterConfigSchema,
 } from './FromConfigAdapter'
+import {
+  AdapterClass as RefNameAliasAdapterClass,
+  configSchema as refNameAliasAdapterConfigSchema,
+} from './RefNameAliasAdapter'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -21,6 +25,14 @@ export default class extends Plugin {
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
           AdapterClass: FromConfigAdapterClass,
+        }),
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'RefNameAliasAdapter',
+          configSchema: refNameAliasAdapterConfigSchema,
+          AdapterClass: RefNameAliasAdapterClass,
         }),
     )
 
