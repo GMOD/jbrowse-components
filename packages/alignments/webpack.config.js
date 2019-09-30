@@ -44,12 +44,12 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
 
 module.exports = {
   mode: 'development',
-  entry: './src/Viewer.js',
+  entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'umd'),
     publicPath: 'umd/',
-    filename: 'jbrowse-protein-viewer.js',
-    library: 'JBrowseProteinViewer',
+    filename: 'index.js',
+    library: 'Alignments',
     libraryTarget: 'umd',
   },
   resolve: {
