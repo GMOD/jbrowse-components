@@ -9,14 +9,13 @@
   ],
   "scripts": {
     "test": "cd ../..; jest packages/svg",
-    "build": "NODE_ENV=production babel . --root-mode upward src --out-dir umd --extensions '.ts,.js,.tsx,.jsx' src"
+    "build": "NODE_ENV=production babel . --root-mode upward src --out-dir umd --extensions '.ts,.js,.tsx,.jsx' src",
+    "publish": "yalc publish --private"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
-  "dependencies": {
-    "@gmod/jbrowse-core": "^2.0.0"
-  },
   "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
     "mobx-react": "^6.0.0",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"

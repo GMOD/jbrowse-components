@@ -8,6 +8,7 @@
     "build": "NODE_ENV=production webpack",
     "start": "echo opening app in file:/// to demonstrate the simplicity of this setup. refresh when webpack --watch is done building && sleep 3 && open-cli umd.html &&  NODE_ENV=development webpack -w",
     "test": "jest --config ../../jest.config.js --roots packages/protein-widget/",
+    "publish": "yalc publish --private",
     "lint": "eslint src/"
   },
   "unpkg": "umd/jbrowse-protein-viewer.js",
