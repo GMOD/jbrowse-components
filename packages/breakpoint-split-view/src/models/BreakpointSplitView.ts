@@ -48,13 +48,6 @@ export default function stateModelFactory(pluginManager: any) {
         .stateModel as LinearGenomeViewStateModel,
     })
     .views(self => ({
-      get viewingRegionWidth() {
-        return self.width - this.controlsWidth
-      },
-      get controlsWidth() {
-        return self.topLGV.controlsWidth
-      },
-
       get menuOptions() {
         return [
           // {
@@ -197,25 +190,9 @@ export default function stateModelFactory(pluginManager: any) {
         return self.displayName
       },
 
-      setHeight(newHeight: number) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
-        return self.height
-      },
-
       setWidth(newWidth: number) {
         self.width = newWidth
       },
-
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-
-      //   setBpPerPx(newVal) {
-      //     self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
-      //   },
 
       closeView() {
         getParent(self, 2).removeView(self)
