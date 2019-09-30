@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can instantiate a mostly empty model and read a default configuration value 1`] = `
+Array [
+  "pacbio_hg002",
+]
+`;
+
+exports[`can instantiate a mostly empty model and read a default configuration value 2`] = `
+Array [
+  Array [
+    Object {
+      "CIGAR": "20M",
+      "end": 456,
+      "name": "match",
+      "start": 123,
+      "uniqueId": "test1",
+    },
+    Object {
+      "CIGAR": "6S10M",
+      "end": 999,
+      "name": "match",
+      "start": 789,
+      "uniqueId": "test2",
+    },
+  ],
+]
+`;
+
+exports[`can instantiate a mostly empty model and read a default configuration value 3`] = `
+Array [
+  Array [
+    Object {
+      "feature": Object {
+        "CIGAR": "20M",
+        "end": 456,
+        "name": "match",
+        "start": 123,
+        "uniqueId": "test1",
+      },
+      "layout": undefined,
+      "level": 1,
+    },
+    Object {
+      "feature": Object {
+        "CIGAR": "6S10M",
+        "end": 999,
+        "name": "match",
+        "start": 789,
+        "uniqueId": "test2",
+      },
+      "layout": undefined,
+      "level": 1,
+    },
+  ],
+]
+`;
