@@ -4,12 +4,18 @@
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/alignments"
+    "test": "cd ../..; jest packages/alignments",
+    "build": "NODE_ENV=production webpack"
   },
+  "unpkg": "umd/index.js",
+  "files": [
+    "umd"
+  ],
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
     "@gmod/bam": "^1.0.21",
+    "@gmod/jbrowse-plugin-svg": "^2.0.0",
     "generic-filehandle": "^2.0.0",
     "react-style-proptype": "^3.2.2"
   },
