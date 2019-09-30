@@ -16,21 +16,6 @@ import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
-// filter mobx-state-tree onAction warning
-const originalWarn = console.warn
-beforeAll(() => {
-  console.warn = (...args) => {
-    if (/onAction/.test(args[0])) {
-      return
-    }
-    originalWarn.call(console, ...args)
-  }
-})
-
-afterAll(() => {
-  console.warn = originalWarn
-})
-
 fetchMock.config.sendAsJson = false
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
