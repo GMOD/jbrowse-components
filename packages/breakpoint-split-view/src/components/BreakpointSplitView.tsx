@@ -11,7 +11,7 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const AlignmentSquiggles = jbrequire(require('./AlignmentPolygons'))
+  const AlignmentSquiggles = jbrequire(require('./AlignmentSquiggles'))
   const Header = jbrequire(require('./Header'))
 
   const LinearGenomeView = pluginManager.getViewType('LinearGenomeView')
