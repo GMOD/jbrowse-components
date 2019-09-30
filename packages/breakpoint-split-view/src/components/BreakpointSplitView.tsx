@@ -11,7 +11,7 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const AlignmentPolygons = jbrequire(require('./AlignmentPolygons'))
+  const AlignmentSquiggles = jbrequire(require('./AlignmentPolygons'))
   const Header = jbrequire(require('./Header'))
 
   const LinearGenomeView = pluginManager.getViewType('LinearGenomeView')
@@ -83,7 +83,7 @@ export default (pluginManager: any) => {
           </div>
           {model.matchedTracks.map(m => (
             <div className={classes.overlay} key={`overlay-${m}`}>
-              <AlignmentPolygons
+              <AlignmentSquiggles
                 trackConfigId={m}
                 model={model}
                 alignmentChunks={model.getLayoutMatches(m)}
