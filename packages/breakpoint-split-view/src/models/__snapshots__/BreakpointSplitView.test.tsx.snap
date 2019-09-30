@@ -1,53 +1,83 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`can instantiate a mostly empty model and read a default configuration value 1`] = `
+exports[`basic BreakpointSplitView test 1`] = `
 Array [
   "pacbio_hg002",
 ]
 `;
 
-exports[`can instantiate a mostly empty model and read a default configuration value 2`] = `
+exports[`basic BreakpointSplitView test 2`] = `
 Array [
   Array [
     Object {
-      "CIGAR": "20M",
-      "end": 456,
-      "name": "match",
-      "start": 123,
-      "uniqueId": "test1",
+      "CIGAR": "7956S4=1D5=1X744=1D63=1X121=1I18=1X99=1X57=1I64=1D8=1X207=1D42=1I103=1X425=1X48=2I107=1I116=1X222=7D75=1D5=533S",
+      "SA": "3,186692690,+,7955M4D3081S,60,14;3,186700631,+,10597S438M1S,60,1;",
+      "chimeric_read_pos": 7956,
+      "end": 56760944,
+      "name": "m64011_181218_235052/85067842/ccs",
+      "start": 56758392,
+      "uniqueId": "123",
     },
     Object {
-      "CIGAR": "6S10M",
-      "end": 999,
-      "name": "match",
-      "start": 789,
-      "uniqueId": "test2",
+      "CIGAR": "919=1I420=1X191=1I1903=1D495=1D92=1X4=1X293=1D707=1X333=1X275=2D223=1D155=1X34=1X204=1X41=1X43=1X572=1X629=1X401=1X3=1X2=3081S",
+      "SA": "3,186700631,+,10597S438M1S,60,1;6,56758392,+,7956S2547M6D533S,22,8;",
+      "chimeric_read_pos": 0,
+      "end": 186700648,
+      "name": "m64011_181218_235052/85067842/ccs",
+      "start": 186692690,
+      "uniqueId": "456",
+    },
+    Object {
+      "CIGAR": "10597S11=1X426=1S",
+      "SA": "3,186692690,+,7955M4D3081S,60,14;6,56758392,+,7956S2547M6D533S,22,8;",
+      "chimeric_read_pos": 10597,
+      "end": 186700648,
+      "name": "m64011_181218_235052/85067842/ccs",
+      "start": 186692690,
+      "uniqueId": "789",
     },
   ],
 ]
 `;
 
-exports[`can instantiate a mostly empty model and read a default configuration value 3`] = `
+exports[`basic BreakpointSplitView test 3`] = `
 Array [
   Array [
     Object {
       "feature": Object {
-        "CIGAR": "20M",
-        "end": 456,
-        "name": "match",
-        "start": 123,
-        "uniqueId": "test1",
+        "CIGAR": "919=1I420=1X191=1I1903=1D495=1D92=1X4=1X293=1D707=1X333=1X275=2D223=1D155=1X34=1X204=1X41=1X43=1X572=1X629=1X401=1X3=1X2=3081S",
+        "SA": "3,186700631,+,10597S438M1S,60,1;6,56758392,+,7956S2547M6D533S,22,8;",
+        "chimeric_read_pos": 0,
+        "end": 186700648,
+        "name": "m64011_181218_235052/85067842/ccs",
+        "start": 186692690,
+        "uniqueId": "456",
       },
       "layout": undefined,
       "level": 1,
     },
     Object {
       "feature": Object {
-        "CIGAR": "6S10M",
-        "end": 999,
-        "name": "match",
-        "start": 789,
-        "uniqueId": "test2",
+        "CIGAR": "7956S4=1D5=1X744=1D63=1X121=1I18=1X99=1X57=1I64=1D8=1X207=1D42=1I103=1X425=1X48=2I107=1I116=1X222=7D75=1D5=533S",
+        "SA": "3,186692690,+,7955M4D3081S,60,14;3,186700631,+,10597S438M1S,60,1;",
+        "chimeric_read_pos": 7956,
+        "end": 56760944,
+        "name": "m64011_181218_235052/85067842/ccs",
+        "start": 56758392,
+        "uniqueId": "123",
+      },
+      "layout": undefined,
+      "level": 1,
+    },
+    Object {
+      "feature": Object {
+        "CIGAR": "10597S11=1X426=1S",
+        "SA": "3,186692690,+,7955M4D3081S,60,14;6,56758392,+,7956S2547M6D533S,22,8;",
+        "chimeric_read_pos": 10597,
+        "end": 186700648,
+        "name": "m64011_181218_235052/85067842/ccs",
+        "start": 186692690,
+        "uniqueId": "789",
       },
       "layout": undefined,
       "level": 1,

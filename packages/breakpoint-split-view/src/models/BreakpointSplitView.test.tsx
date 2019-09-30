@@ -10,8 +10,6 @@ import stateModelFactory, {
   BreakpointViewStateModel,
 } from './BreakpointSplitView'
 
-// a stub linear genome view state model that only accepts base track types.
-// used in unit tests.
 const stubManager = new PluginManager()
 const FakeTrack = types
   .model('FakeTrack', { type: 'FakeTrack', configuration: types.frozen() })
@@ -24,38 +22,67 @@ const FakeTrack = types
         [
           123,
           new SimpleFeature({
-            id: 'test1',
-            data: { name: 'match', CIGAR: '20M', start: 123, end: 456 },
+            id: 123,
+            data: {
+              name: 'm64011_181218_235052/85067842/ccs',
+              CIGAR:
+                '7956S4=1D5=1X744=1D63=1X121=1I18=1X99=1X57=1I64=1D8=1X207=1D42=1I103=1X425=1X48=2I107=1I116=1X222=7D75=1D5=533S',
+              SA:
+                '3,186692690,+,7955M4D3081S,60,14;3,186700631,+,10597S438M1S,60,1;',
+              start: 56758392,
+              end: 56760944,
+            },
           }),
         ],
         [
           456,
           new SimpleFeature({
-            id: 'test2',
-            data: { name: 'match', CIGAR: '6S10M', start: 789, end: 999 },
+            id: 456,
+            data: {
+              name: 'm64011_181218_235052/85067842/ccs',
+              CIGAR:
+                '919=1I420=1X191=1I1903=1D495=1D92=1X4=1X293=1D707=1X333=1X275=2D223=1D155=1X34=1X204=1X41=1X43=1X572=1X629=1X401=1X3=1X2=3081S',
+              SA:
+                '3,186700631,+,10597S438M1S,60,1;6,56758392,+,7956S2547M6D533S,22,8;',
+              start: 186692690,
+              end: 186700648,
+            },
+          }),
+        ],
+        [
+          789,
+          new SimpleFeature({
+            id: 789,
+            data: {
+              name: 'm64011_181218_235052/85067842/ccs',
+              CIGAR: '10597S11=1X426=1S',
+              SA:
+                '3,186692690,+,7955M4D3081S,60,14;6,56758392,+,7956S2547M6D533S,22,8;',
+              start: 186692690,
+              end: 186700648,
+            },
           }),
         ],
       ])
     },
   }))
 
-const FakeLinearGenomeView = types
-  .model('LinearGenomeView', {
-    type: 'LinearGenomeView',
-    tracks: types.array(FakeTrack),
-  })
-  .views(self => ({
-    getTrack(configId: string) {
-      return self.tracks.find(t => t.configuration.configId === configId)
-    },
-  }))
 const ReactComponent = () => <>Hello World</>
 
 stubManager.addViewType(
   () =>
     new ViewType({
       name: 'LinearGenomeView',
-      stateModel: FakeLinearGenomeView,
+      stateModel: types
+        .model('LinearGenomeView', {
+          type: 'LinearGenomeView',
+          tracks: types.array(FakeTrack),
+        })
+        .views(self => ({
+          getTrack(configId: string) {
+            return self.tracks.find(t => t.configuration.configId === configId)
+          },
+        })),
       ReactComponent,
       RenderingComponent: true,
     }),
@@ -71,39 +98,7 @@ stubManager.addTrackType(
 stubManager.configure()
 const BreakpointSplitView = stateModelFactory(stubManager)
 
-const configuration = {
-  tracks: [
-    {
-      configId: 'pacbio_hg002',
-      type: 'AlignmentsTrack',
-      name: 'HG002.hs37d5.11kb',
-      category: ['PacBio', 'BAM'],
-      adapter: {
-        configId: 'yqdN4rtSSS',
-        type: 'BamAdapter',
-        bamLocation: { uri: 'test_data/pacbio_chr3_chr6.bam' },
-        index: {
-          configId: 'z0jYC37_2h',
-          location: { uri: 'test_data/pacbio_chr3_chr6.bam.bai' },
-        },
-      },
-      renderers: {
-        configId: 'XKcazRjYUO',
-        PileupRenderer: {
-          configId: 'G71Pm63GoW',
-          type: 'PileupRenderer',
-        },
-        SvgFeatureRenderer: {
-          configId: 'r7zVi_Jgrt',
-          type: 'SvgFeatureRenderer',
-          labels: { configId: 'tVwnQLG0u4' },
-        },
-      },
-    },
-  ],
-}
-
-test('can instantiate a mostly empty model and read a default configuration value', () => {
+test('basic BreakpointSplitView test', () => {
   const name = types
     .model({
       name: 'testSession',
@@ -117,7 +112,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
       },
     }))
     .create({
-      configuration,
+      configuration: {},
     })
 
   const model = name.setView(
