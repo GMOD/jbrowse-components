@@ -99,6 +99,7 @@ export default function stateModelFactory(pluginManager: any) {
               layout: m.get(f.id()),
               level: t1.layoutFeatures.get(f.id()) ? 0 : 1,
               clipPos:
+                // match clipping from the start or end depending on the strand of the feature
                 f.get('strand') === -1
                   ? +(f.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
                   : +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
