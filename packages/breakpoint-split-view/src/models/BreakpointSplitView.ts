@@ -48,29 +48,8 @@ export default function stateModelFactory(pluginManager: any) {
         .stateModel as LinearGenomeViewStateModel,
     })
     .views(self => ({
-      get menuOptions() {
-        return [
-          // {
-          //   title: 'Show track selector',
-          //   key: 'track_selector',
-          //   callback: self.activateTrackSelector,
-          // },
-          // {
-          //   title: 'Horizontal flip',
-          //   key: 'flip',
-          //   callback: self.horizontallyFlip,
-          // },
-          // {
-          //   title: 'Show all regions',
-          //   key: 'showall',
-          //   callback: self.showAllRegions,
-          // },
-          // {
-          //   title: self.hideHeader ? 'Show header' : 'Hide header',
-          //   key: 'hide_header',
-          //   callback: self.toggleHeader,
-          // },
-        ]
+      get controlsWidth() {
+        return self.topLGV.controlsWidth
       },
 
       get matchedTracks() {
@@ -84,6 +63,9 @@ export default function stateModelFactory(pluginManager: any) {
         const alreadySeen: Record<string, boolean> = {}
         const t1 = self.topLGV.getTrack(trackConfigId)
         const t2 = self.bottomLGV.getTrack(trackConfigId)
+        if (!t1 && !t2) {
+          return []
+        }
         const adder = (f: Feature) => {
           if (!alreadySeen[f.id()]) {
             const n = f.get('name')

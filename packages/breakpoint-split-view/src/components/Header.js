@@ -28,28 +28,6 @@ export default ({ jbrequire }) => {
     },
   }))
 
-  //   const LongMenu = observer(props => {
-  //     const { model, className } = props
-
-  //     const [anchorEl, setAnchorEl] = React.useState(null)
-  //     const open = Boolean(anchorEl)
-
-  //     function handleClick(event) {
-  //       setAnchorEl(event.currentTarget)
-  //     }
-
-  //     function handleClose() {
-  //       setAnchorEl(null)
-  //     }
-
-  //     return <></>
-  //   })
-
-  //   LongMenu.propTypes = {
-  //     className: ReactPropTypes.string,
-  //     model: PropTypes.objectOrObservableObject.isRequired,
-  //   }
-
   const Controls = observer(({ model }) => {
     const classes = useStyles()
     return (
