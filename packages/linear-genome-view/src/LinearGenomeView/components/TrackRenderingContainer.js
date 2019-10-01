@@ -2,7 +2,7 @@
 import { withStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useEffect, Component } from 'react'
+import React, { Component } from 'react'
 
 const styles = {
   trackRenderingContainer: {

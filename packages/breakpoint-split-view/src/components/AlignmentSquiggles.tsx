@@ -53,11 +53,6 @@ export default (pluginManager: any) => {
           >
             {alignmentChunks.map(chunk => {
               const ret = []
-              if (
-                chunk[0].feature.get('name') ===
-                'm64011_181218_235052/70715077/ccs'
-              )
-                console.log(chunk, chunk[0].feature.get('name'))
               // we follow a path in the list of chunks, not from top to bottom, just in series
               // following x1,y1 -> x2,y2
               for (let i = 0; i < chunk.length - 1; i += 1) {
@@ -92,23 +87,22 @@ export default (pluginManager: any) => {
                 const y1 =
                   c1[BOTTOM] +
                   added(level1) -
-                  (level1 == 0 ? t1 : t2) -
+                  (level1 === 0 ? t1 : t2) -
                   cheight(c1) / 2
                 const y2 =
                   c2[TOP] +
                   added(level2) -
-                  (level2 == 0 ? t1 : t2) +
+                  (level2 === 0 ? t1 : t2) +
                   cheight(c2) / 2
-                const totalCurveHeight = Math.abs(y1 - y2)
+
+                // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                 const path = Path()
                   .moveTo(x1, y1)
                   .curveTo(
                     x1 + 200 * f1.get('strand'),
-                    // totalCurveHeight < 50 ? 10 : y1,
                     y1,
                     x2 - 200 * f2.get('strand'),
                     y2,
-                    // totalCurveHeight < 50 ? 10 : y2,
                     x2,
                     y2,
                   )
