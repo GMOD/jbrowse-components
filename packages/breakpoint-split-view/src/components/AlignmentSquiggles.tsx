@@ -53,13 +53,24 @@ export default (pluginManager: any) => {
           >
             {alignmentChunks.map(chunk => {
               const ret = []
+              if (
+                chunk[0].feature.get('name') ===
+                'm64011_181218_235052/70715077/ccs'
+              )
+                console.log(chunk, chunk[0].feature.get('name'))
               // we follow a path in the list of chunks, not from top to bottom, just in series
               // following x1,y1 -> x2,y2
               for (let i = 0; i < chunk.length - 1; i += 1) {
-                const { layout: c1, level: level1 } = chunk[i]
-                const { layout: c2, level: level2 } = chunk[i + 1]
-                const x1 = calc(level1 === 0 ? topLGV : bottomLGV, c1[RIGHT])
-                const x2 = calc(level2 === 0 ? topLGV : bottomLGV, c2[LEFT])
+                const { layout: c1, feature: f1, level: level1 } = chunk[i]
+                const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+                const x1 = calc(
+                  level1 === 0 ? topLGV : bottomLGV,
+                  c1[f1.get('strand') === -1 ? LEFT : RIGHT],
+                )
+                const x2 = calc(
+                  level2 === 0 ? topLGV : bottomLGV,
+                  c2[f2.get('strand') === -1 ? RIGHT : LEFT],
+                )
                 const t1 = topLGV.getTrack(trackConfigId).scrollTop
                 const t2 = bottomLGV.getTrack(trackConfigId).scrollTop
                 const added = (level: number) => {
@@ -78,11 +89,29 @@ export default (pluginManager: any) => {
                         10 // margin
                 }
 
-                const y1 = c1[BOTTOM] + added(level1) - (level1 == 0 ? t1 : t2)
-                const y2 = c2[TOP] + added(level2) - (level2 == 0 ? t1 : t2)
+                const y1 =
+                  c1[BOTTOM] +
+                  added(level1) -
+                  (level1 == 0 ? t1 : t2) -
+                  cheight(c1) / 2
+                const y2 =
+                  c2[TOP] +
+                  added(level2) -
+                  (level2 == 0 ? t1 : t2) +
+                  cheight(c2) / 2
+                const totalCurveHeight = Math.abs(y1 - y2)
                 const path = Path()
-                  .moveTo(x1, y1 - cheight(c1) / 2)
-                  .curveTo(x1 + 200, y1, x2 - 200, y2, x2, y2 + cheight(c2) / 2)
+                  .moveTo(x1, y1)
+                  .curveTo(
+                    x1 + 200 * f1.get('strand'),
+                    // totalCurveHeight < 50 ? 10 : y1,
+                    y1,
+                    x2 - 200 * f2.get('strand'),
+                    y2,
+                    // totalCurveHeight < 50 ? 10 : y2,
+                    x2,
+                    y2,
+                  )
                   .end()
                 ret.push(
                   <path
