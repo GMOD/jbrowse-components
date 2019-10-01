@@ -3,6 +3,7 @@ import Path from 'svg-path-generator'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { clamp } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
 interface Chunk {
@@ -66,8 +67,8 @@ export default (pluginManager: any) => {
                   level2 === 0 ? topLGV : bottomLGV,
                   c2[f2.get('strand') === -1 ? RIGHT : LEFT],
                 )
-                const t1 = topLGV.getTrack(trackConfigId).scrollTop
-                const t2 = bottomLGV.getTrack(trackConfigId).scrollTop
+                const track1 = topLGV.getTrack(trackConfigId)
+                const track2 = bottomLGV.getTrack(trackConfigId)
                 const added = (level: number) => {
                   return level === 0
                     ? topLGV.headerHeight +
@@ -85,15 +86,21 @@ export default (pluginManager: any) => {
                 }
 
                 const y1 =
-                  c1[BOTTOM] +
-                  added(level1) -
-                  (level1 === 0 ? t1 : t2) -
-                  cheight(c1) / 2
+                  clamp(
+                    c1[BOTTOM] -
+                      (level1 === 0 ? track1.scrollTop : track2.scrollTop) -
+                      cheight(c1) / 2,
+                    0,
+                    level1 === 0 ? track1.height : track2.height,
+                  ) + added(level1)
                 const y2 =
-                  c2[TOP] +
-                  added(level2) -
-                  (level2 === 0 ? t1 : t2) +
-                  cheight(c2) / 2
+                  clamp(
+                    c2[TOP] -
+                      (level2 === 0 ? track1.scrollTop : track2.scrollTop) +
+                      cheight(c2) / 2,
+                    0,
+                    level2 === 0 ? track1.height : track2.height,
+                  ) + added(level2)
 
                 // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                 const path = Path()
