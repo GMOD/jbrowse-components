@@ -53,21 +53,13 @@ export default (pluginManager: any) => {
           >
             {alignmentChunks.map(chunk => {
               const ret = []
+              // we follow a path in the list of chunks, not from top to bottom, just in series
+              // following x1,y1 -> x2,y2
               for (let i = 0; i < chunk.length - 1; i += 1) {
-                const { feature: feature1, layout: c1, level: level1 } = chunk[
-                  i
-                ]
-                const { feature: feature2, layout: c2, level: level2 } = chunk[
-                  i + 1
-                ]
-                const f1 = calc(
-                  level1 === 0 ? topLGV : bottomLGV,
-                  c1[feature1.get('strand') === -1 ? LEFT : RIGHT],
-                )
-                const f4 = calc(
-                  level2 === 0 ? topLGV : bottomLGV,
-                  c2[feature2.get('strand') === -1 ? RIGHT : LEFT],
-                )
+                const { layout: c1, level: level1 } = chunk[i]
+                const { layout: c2, level: level2 } = chunk[i + 1]
+                const x1 = calc(level1 === 0 ? topLGV : bottomLGV, c1[RIGHT])
+                const x2 = calc(level2 === 0 ? topLGV : bottomLGV, c2[LEFT])
                 const added = (level: number) => {
                   return level === 0
                     ? topLGV.headerHeight +
@@ -84,18 +76,11 @@ export default (pluginManager: any) => {
                         10 // margin
                 }
 
-                const h1 = c1[BOTTOM] + added(level1)
-                const h2 = c2[TOP] + added(level2)
+                const y1 = c1[BOTTOM] + added(level1)
+                const y2 = c2[TOP] + added(level2)
                 const path = Path()
-                  .moveTo(f1, h1 - cheight(c1) / 2)
-                  .curveTo(
-                    f1 + 200 * feature1.get('strand'),
-                    h1,
-                    f4 - 200 * feature2.get('strand'),
-                    h2,
-                    f4,
-                    h2 + cheight(c2) / 2,
-                  )
+                  .moveTo(x1, y1 - cheight(c1) / 2)
+                  .curveTo(x1 + 200, y1, x2 - 200, y2, x2, y2 + cheight(c2) / 2)
                   .end()
                 ret.push(
                   <path

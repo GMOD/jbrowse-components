@@ -84,17 +84,7 @@ export default function stateModelFactory(pluginManager: any) {
           adder(f)
         }
 
-        return Object.values(candidates)
-          .filter(v => v.length > 1)
-          .map(v => {
-            v.forEach(r => {
-              if (r.get('SA')) {
-                const match = r.get('CIGAR').match(/^(\d+)([SH])/)
-                r.set('chimeric_read_pos', match ? +match[1] : 0)
-              }
-            })
-            return v
-          })
+        return Object.values(candidates).filter(v => v.length > 1)
       },
 
       getLayoutMatches(trackConfigId: string) {
@@ -104,16 +94,13 @@ export default function stateModelFactory(pluginManager: any) {
         const t = this.getMatchedFeatures(trackConfigId)
         return t.map(c => {
           return c
-            .map((feature: Feature) => ({
-              feature,
-              layout: m.get(feature.id()),
-              level: t1.layoutFeatures.get(feature.id()) ? 0 : 1,
+            .map((f: Feature) => ({
+              feature: f,
+              layout: m.get(f.id()),
+              level: t1.layoutFeatures.get(f.id()) ? 0 : 1,
+              clipPos: +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
             }))
-            .sort(
-              (a, b) =>
-                a.feature.get('chimeric_read_pos') -
-                b.feature.get('chimeric_read_pos'),
-            )
+            .sort((a, b) => a.clipPos - b.clipPos)
         })
       },
     }))
