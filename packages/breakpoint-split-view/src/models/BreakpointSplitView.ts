@@ -98,7 +98,10 @@ export default function stateModelFactory(pluginManager: any) {
               feature: f,
               layout: m.get(f.id()),
               level: t1.layoutFeatures.get(f.id()) ? 0 : 1,
-              clipPos: +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
+              clipPos:
+                f.get('strand') === -1
+                  ? +(f.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
+                  : +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
             }))
             .sort((a, b) => a.clipPos - b.clipPos)
         })
