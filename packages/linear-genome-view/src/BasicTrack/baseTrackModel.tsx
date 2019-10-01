@@ -167,8 +167,8 @@ const BaseTrack = types
       self.error = e
     },
 
-    setScrollTop(t: number) {
-      self.scrollTop = t
+    setScrollTop(scrollTop: number) {
+      self.scrollTop = scrollTop
     },
 
     activateConfigurationUI() {

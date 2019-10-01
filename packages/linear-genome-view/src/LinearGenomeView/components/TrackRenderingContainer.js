@@ -36,15 +36,15 @@ class TrackRenderingContainer extends Component {
   }
 
   render() {
-    const { trackId, children, classes } = this.props
-    useEffect(() => {
-      model.setScrollTop(this.mainNode.scrollTop)
-    })
+    const { setScrollTop, trackId, children, classes } = this.props
 
     return (
       <div
         className={classes.trackRenderingContainer}
         ref={this.mainNode}
+        onScroll={event => {
+          setScrollTop(event.target.scrollTop, event.target.clientHeight)
+        }}
         style={{
           gridRow: `track-${trackId}`,
           gridColumn: 'blocks',
@@ -61,6 +61,7 @@ class TrackRenderingContainer extends Component {
     trackId: PropTypes.string.isRequired,
     children: PropTypes.node,
     onHorizontalScroll: PropTypes.func.isRequired,
+    setScrollTop: PropTypes.func.isRequired,
   }
 }
 
