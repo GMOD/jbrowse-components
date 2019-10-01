@@ -58,18 +58,18 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.answerRenderer('read', async (...args) => {
+ipcMain.answerRenderer('read', async args => {
   return fsRead(...args)
 })
 
-ipcMain.answerRenderer('readFile', async (...args) => {
+ipcMain.answerRenderer('readFile', async args => {
   return fsReadFile(...args)
 })
 
-ipcMain.answerRenderer('stat', (...args) => {
+ipcMain.answerRenderer('stat', async args => {
   return fsFStat(...args)
 })
 
-ipcMain.answerRenderer('open', (...args) => {
+ipcMain.answerRenderer('open', async args => {
   return fsOpen(...args)
 })

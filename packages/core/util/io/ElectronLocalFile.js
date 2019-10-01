@@ -17,31 +17,30 @@ export default class ElectronLocalFile {
   }
 
   async getFd() {
-    if (!this.fd) this.fd = ipcRenderer.callMain('open', this.filename, 'r')
+    if (!this.fd) this.fd = ipcRenderer.callMain('open', [this.filename, 'r'])
     return this.fd
   }
 
   async read(buffer, offset, length, position) {
     const fetchLength = Math.min(buffer.length - offset, length)
-    return {
-      bytesRead: ipcRenderer.callMain(
-        'read',
-        await this.getFd(),
-        buffer,
-        offset,
-        fetchLength,
-        position,
-      ),
+    const fd = await this.getFd()
+    const { bytesRead, buffer: newBuf } = await ipcRenderer.callMain('read', [
+      fd,
       buffer,
-    }
+      offset,
+      fetchLength,
+      position,
+    ])
+    // console.log(bytesRead, newBuf)
+    return { bytesRead, buffer: newBuf }
   }
 
   async readFile(options) {
-    return ipcRenderer.callMain('readFile', this.filename)
+    return ipcRenderer.callMain('readFile', [this.filename, options])
   }
 
   // todo memoize
   async stat() {
-    return ipcRenderer.callMain('stat', await this.getFd())
+    return ipcRenderer.callMain('stat', [await this.getFd()])
   }
 }

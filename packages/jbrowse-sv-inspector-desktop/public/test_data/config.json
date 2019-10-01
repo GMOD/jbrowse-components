@@ -16,7 +16,7 @@
             "configId": "Rzzq0j7cBQ",
             "type": "TwoBitAdapter",
             "twoBitLocation": {
-              "uri": "test_data/volvox.2bit"
+              "localPath": "test_data/volvox.2bit"
             }
           },
           "rendering": {
@@ -58,11 +58,11 @@
           "adapter": {
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "test_data/volvox.dup.vcf.gz"
+              "localPath": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
               "location": {
-                "uri": "test_data/volvox.dup.vcf.gz.tbi"
+                "localPath": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
@@ -135,12 +135,12 @@
             "configId": "_m5epcAGu6",
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
+              "localPath": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
             "index": {
               "configId": "-bETsJYDd9",
               "location": {
-                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
+                "localPath": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
           },
@@ -169,11 +169,11 @@
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "test_data/volvox-samspec.bam"
+              "localPath": "test_data/volvox-samspec.bam"
             },
             "index": {
               "location": {
-                "uri": "test_data/volvox-samspec.bam.bai"
+                "localPath": "test_data/volvox-samspec.bam.bai"
               }
             }
           }
@@ -188,11 +188,11 @@
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
-              "uri": "test_data/volvox-sv.bam"
+              "localPath": "test_data/volvox-sv.bam"
             },
             "index": {
               "location": {
-                "uri": "test_data/volvox-sv.bam.bai"
+                "localPath": "test_data/volvox-sv.bam.bai"
               }
             }
           }
@@ -243,12 +243,12 @@
             "configId": "bzyhJPlur4p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "test_data/volvox.filtered.vcf.gz"
+              "localPath": "test_data/volvox.filtered.vcf.gz"
             },
             "index": {
               "configId": "5c3arnyCBht",
               "location": {
-                "uri": "test_data/volvox.filtered.vcf.gz.tbi"
+                "localPath": "test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
           },
@@ -278,7 +278,7 @@
             "configId": "JxEowEEheuJ",
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "test_data/volvox.bb"
+              "localPath": "test_data/volvox.bb"
             }
           },
           "renderer": {
@@ -383,7 +383,7 @@
             "configId": "DB-sDX31tgH",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray.bw"
+              "localPath": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "line",
@@ -415,7 +415,7 @@
             "configId": "ex8Em3Ozuno",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray.bw"
+              "localPath": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "density",
@@ -447,7 +447,7 @@
             "configId": "26uNqVISq5X",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray.bw"
+              "localPath": "test_data/volvox_microarray.bw"
             }
           },
           "renderers": {
@@ -478,7 +478,7 @@
             "configId": "M_yb4o2pnJQ",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray_negative.bw"
+              "localPath": "test_data/volvox_microarray_negative.bw"
             }
           },
           "defaultRendering": "density",
@@ -510,7 +510,7 @@
             "configId": "mvznsyIjAbx",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray_negative.bw"
+              "localPath": "test_data/volvox_microarray_negative.bw"
             }
           },
           "renderers": {
@@ -541,7 +541,7 @@
             "configId": "deTs4XSQOI6",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray_posneg.bw"
+              "localPath": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "defaultRendering": "line",
@@ -573,7 +573,7 @@
             "configId": "cRHHbdsiAPC",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox_microarray_posneg.bw"
+              "localPath": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "renderers": {
@@ -604,7 +604,7 @@
             "configId": "tti4u-USnnP",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox-sorted.bam.coverage.bw"
+              "localPath": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "defaultRendering": "line",
@@ -635,7 +635,7 @@
             "configId": "LqumLPc7aJg",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "test_data/volvox-sorted.bam.coverage.bw"
+              "localPath": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "renderers": {
@@ -897,11 +897,11 @@
           "adapter": {
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+              "localPath": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
               "location": {
-                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+                "localPath": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
@@ -1295,45 +1295,16 @@
           "reversed": false,
           "tracks": [
             {
+              "id": "X6rIl1kHuP",
+              "type": "ReferenceSequenceTrack",
+              "height": 80,
+              "configuration": "volvox_refseq_track"
+            },
+            {
               "id": "Uz2i0KbGEL",
               "type": "AlignmentsTrack",
               "height": 200,
               "configuration": "volvox_bam",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             }
           ],

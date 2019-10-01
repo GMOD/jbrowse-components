@@ -5,16 +5,9 @@
   "private": false,
   "main": "public/electron.js",
   "dir": "src",
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version"
-    ]
-  },
+  "browserslist": [
+    "last 1 chrome version"
+  ],
   "dependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
     "@gmod/jbrowse-plugin-alignments": "^2.0.0",

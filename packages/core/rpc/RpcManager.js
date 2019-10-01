@@ -95,19 +95,13 @@ class RpcManager {
     // TODO: this renaming stuff should probably be moved to the session model
     // when we have a session model
     if (assemblyName) {
-      let refNameMap
-      try {
-        refNameMap = await this.getRefNameMapForAdapter(
-          adapterConfig,
-          assemblyName,
-          { signal },
-        )
-      } catch (error) {
-        console.error(error)
-      }
-      console.log(args)
+      const refNameMap = await this.getRefNameMapForAdapter(
+        adapterConfig,
+        assemblyName,
+        { signal },
+      )
+
       this.renameRegionIfNeeded(refNameMap, args[0], 'region')
-      console.log(args)
 
       if (regions) {
         regions.forEach((r, index) => {
@@ -115,15 +109,13 @@ class RpcManager {
         })
       }
     }
-
-    const a = this.getDriverForCall(stateGroupName, functionName, args).call(
+    return this.getDriverForCall(stateGroupName, functionName, args).call(
       this.pluginManager,
       stateGroupName,
       functionName,
       args,
       { signal },
     )
-    return a
   }
 }
 
