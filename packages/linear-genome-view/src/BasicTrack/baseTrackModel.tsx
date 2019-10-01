@@ -55,6 +55,7 @@ const BaseTrack = types
     ReactComponent: undefined,
     rendererTypeName: undefined,
     ready: false,
+    scrollTop: 0,
     error: '',
   }))
   .views(self => ({
@@ -164,6 +165,10 @@ const BaseTrack = types
     setError(e: string) {
       self.ready = true
       self.error = e
+    },
+
+    setScrollTop(t: number) {
+      self.scrollTop = t
     },
 
     activateConfigurationUI() {

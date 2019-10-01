@@ -2,7 +2,7 @@
 import { withStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { useEffect, Component } from 'react'
 
 const styles = {
   trackRenderingContainer: {
@@ -37,6 +37,9 @@ class TrackRenderingContainer extends Component {
 
   render() {
     const { trackId, children, classes } = this.props
+    useEffect(() => {
+      model.setScrollTop(this.mainNode.scrollTop)
+    })
 
     return (
       <div

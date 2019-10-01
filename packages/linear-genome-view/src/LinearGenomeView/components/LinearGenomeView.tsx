@@ -120,6 +120,7 @@ const TrackContainer = observer(
           trackId={track.id}
           height={track.height}
           onHorizontalScroll={model.horizontalScroll}
+          onVerticalScroll={track.setScrollTop}
         >
           <RenderingComponent
             model={track}
