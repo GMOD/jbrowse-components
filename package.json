@@ -7,6 +7,7 @@
     "scripts": {
         "build": "NODE_ENV=production lerna run build",
         "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
+        "typecheck": "tsc --noEmit",
         "test-ci": "jest --ci --coverage",
         "built-test-ci": "jest --ci packages/integration-tests",
         "test": "jest"

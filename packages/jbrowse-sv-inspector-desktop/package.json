@@ -1,5 +1,5 @@
 {
-  "name": "@gmod/jbrowse-sv-inspector-desktop",
+  "name": "jbrowse-sv-inspector-desktop",
   "version": "2.0.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "private": false,
@@ -46,7 +46,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "concurrently \"BROWSER=none yarn craStart\" \"wait-on http://localhost:3000/ && electron .\"",
+    "start": "concurrently \"BROWSER=none yarn craStart\" \"wait-on http://localhost:3000 && electron .\"",
     "craStart": "rescripts start",
     "test": "rescripts test",
     "eject": "rescripts eject"

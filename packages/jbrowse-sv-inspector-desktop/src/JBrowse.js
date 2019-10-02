@@ -1,10 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
-import {
-  toUrlSafeB64,
-  fromUrlSafeB64,
-  useDebounce,
-} from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -22,18 +17,6 @@ export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState)
-  // const [urlSnapshot, setUrlSnapshot] = useState()
-  // const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
-
-  // useEffect(() => {
-  //   if (debouncedUrlSnapshot) {
-  //     const l = document.location
-  //     const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-  //       JSON.stringify(debouncedUrlSnapshot),
-  //     )}`
-  //     window.history.replaceState({}, '', updatedUrl)
-  //   }
-  // }, [debouncedUrlSnapshot])
 
   useEffect(() => {
     async function loadConfig() {
@@ -42,40 +25,18 @@ export default observer(({ config, initialState }) => {
         if (initialState) r = initialState
         else {
           let configSnapshot = config || {}
-          // const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-          // if (localStorageConfig)
-          //   configSnapshot = JSON.parse(localStorageConfig)
           if (configSnapshot.uri || configSnapshot.localPath) {
             const configText = await openLocation(config).readFile('utf8')
             configSnapshot = JSON.parse(configText)
           }
           r = rootModel.create({ jbrowse: configSnapshot })
         }
-        const params = new URL(document.location).searchParams
-        const urlSession = params.get('session')
-        if (urlSession) {
-          try {
-            const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
-              urlSession,
-            )
-            if (savedSessionIndex !== -1) {
-              r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
-            } else {
-              r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
-            }
-          } catch (error) {
-            console.error('could not load session from URL', error)
-          }
-        } else {
-          const localStorageSession = localStorage.getItem(
-            'jbrowse-web-session',
-          )
-          try {
-            const parsedSession = JSON.parse(localStorageSession)
-            if (parsedSession) r.setSession(parsedSession)
-          } catch (error) {
-            console.error('could not load session from local storage', error)
-          }
+        const localStorageSession = localStorage.getItem('jbrowse-web-session')
+        try {
+          const parsedSession = JSON.parse(localStorageSession)
+          if (parsedSession) r.setSession(parsedSession)
+        } catch (error) {
+          console.error('could not load session from local storage', error)
         }
         if (!r.session) {
           if (r.jbrowse.savedSessions.length) {
@@ -112,7 +73,7 @@ export default observer(({ config, initialState }) => {
     return disposer
   }, [root])
 
-  const { session, jbrowse } = root || {}
+  const { jbrowse } = root || {}
   const useLocalStorage = jbrowse
     ? readConfObject(jbrowse.configuration, 'useLocalStorage')
     : false
