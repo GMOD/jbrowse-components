@@ -33,6 +33,11 @@ function Tooltip({ offsetX, feature }) {
   )
 }
 
+Tooltip.propTypes = {
+  offsetX: ReactPropTypes.number.isRequired,
+  feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
+}
+
 class WiggleRendering extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
