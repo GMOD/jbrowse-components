@@ -25,14 +25,14 @@ function createWindow() {
       nodeIntegration: false,
       nodeIntegrationInWorker: true,
       preload: isDev
-        ? path.join(__dirname, 'preload.js')
-        : `file://${path.join(__dirname, '../build/preload.js')}`,
+        ? path.join(app.getAppPath(), 'public/preload.js')
+        : `file://${path.join(app.getAppPath(), 'public/../build/preload.js')}`,
     },
   })
   mainWindow.loadURL(
     isDev
       ? 'http://localhost:3000'
-      : `file://${path.join(__dirname, '../build/index.html')}`,
+      : `file://${path.join(app.getAppPath(), 'public/../build/index.html')}`,
   )
   if (isDev) {
     // Open the DevTools.
