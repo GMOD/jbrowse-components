@@ -67,18 +67,17 @@ export default (pluginManager: any) => {
   const BreakpointSplitView = observer(
     ({ model }: { model: Instance<BreakpointViewStateModel> }) => {
       const classes = useStyles()
-      const { topLGV, bottomLGV } = model
+      const { views } = model
       return (
         <div className={classes.container}>
           <div className={classes.content}>
             <Header model={model} />
             <div style={{ position: 'relative' }}>
-              <div className={classes.viewContainer}>
-                <LinearGenomeView model={topLGV} />
-              </div>
-              <div className={classes.viewContainer}>
-                <LinearGenomeView model={bottomLGV} />
-              </div>
+              {views.map(view => (
+                <div key={view.id} className={classes.viewContainer}>
+                  <LinearGenomeView model={view} />
+                </div>
+              ))}
             </div>
           </div>
           {model.matchedTracks.map(m => (

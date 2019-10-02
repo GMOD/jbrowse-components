@@ -137,7 +137,7 @@ export default pluginManager => {
             .snapshotFromBreakendFeature(feature, startRegion, endRegion)
 
           // add the specific evidence tracks to the LGVs in the split view
-          viewSnapshot.topLGV.tracks = [
+          viewSnapshot.views[0].tracks = [
             {
               type: 'AlignmentsTrack',
               height: 100,
@@ -145,7 +145,7 @@ export default pluginManager => {
               selectedRendering: '',
             },
           ]
-          viewSnapshot.bottomLGV.tracks = [
+          viewSnapshot.views[1].tracks = [
             {
               type: 'AlignmentsTrack',
               height: 100,
@@ -155,8 +155,8 @@ export default pluginManager => {
           ]
 
           // try to center the offsetPx
-          viewSnapshot.topLGV.offsetPx -= view.width / 2 + 100
-          viewSnapshot.bottomLGV.offsetPx -= view.width / 2 + 100
+          viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+          viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
 
           session.addView('BreakpointSplitView', viewSnapshot)
         } catch (e) {

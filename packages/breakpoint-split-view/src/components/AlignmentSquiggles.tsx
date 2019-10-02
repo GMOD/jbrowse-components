@@ -40,7 +40,7 @@ export default (pluginManager: any) => {
       height: number
       trackConfigId: string
     }) => {
-      const { topLGV, bottomLGV, controlsWidth } = model
+      const { views, controlsWidth } = model
       return (
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ width: controlsWidth, flexShrink: 0 }} />
@@ -60,47 +60,43 @@ export default (pluginManager: any) => {
                 const { layout: c1, feature: f1, level: level1 } = chunk[i]
                 const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
                 const x1 = calc(
-                  level1 === 0 ? topLGV : bottomLGV,
+                  views[level1],
                   c1[f1.get('strand') === -1 ? LEFT : RIGHT],
                 )
                 const x2 = calc(
-                  level2 === 0 ? topLGV : bottomLGV,
+                  views[level2],
                   c2[f2.get('strand') === -1 ? RIGHT : LEFT],
                 )
-                const track1 = topLGV.getTrack(trackConfigId)
-                const track2 = bottomLGV.getTrack(trackConfigId)
+
+                const tracks = views.map(v => v.getTrack(trackConfigId))
                 const added = (level: number) => {
-                  return level === 0
-                    ? topLGV.headerHeight +
-                        topLGV.scaleBarHeight +
-                        topLGV.getTrackPos(trackConfigId) +
-                        model.headerHeight +
-                        3
-                    : model.headerHeight +
-                        topLGV.height +
-                        3 +
-                        bottomLGV.headerHeight +
-                        bottomLGV.scaleBarHeight +
-                        bottomLGV.getTrackPos(trackConfigId) +
-                        10 // margin
+                  const heightUpUntilThisPoint = views
+                    .slice(0, level)
+                    .map(v => v.height + 7)
+                    .reduce((a, b) => a + b, 0)
+                  return (
+                    heightUpUntilThisPoint +
+                    views[level].headerHeight +
+                    views[level].scaleBarHeight +
+                    views[level].getTrackPos(trackConfigId) +
+                    model.headerHeight +
+                    3
+                  )
                 }
 
-                const y1 =
+                // calculate the yPos, but clamp to the visible scroll region of the track
+                const yPos = (
+                  level: number,
+                  c: [number, number, number, number],
+                ) =>
                   clamp(
-                    c1[BOTTOM] -
-                      (level1 === 0 ? track1.scrollTop : track2.scrollTop) -
-                      cheight(c1) / 2,
+                    c[TOP] - tracks[level].scrollTop + cheight(c) / 2,
                     0,
-                    level1 === 0 ? track1.height : track2.height,
-                  ) + added(level1)
-                const y2 =
-                  clamp(
-                    c2[TOP] -
-                      (level2 === 0 ? track1.scrollTop : track2.scrollTop) +
-                      cheight(c2) / 2,
-                    0,
-                    level2 === 0 ? track1.height : track2.height,
-                  ) + added(level2)
+                    tracks[level].height,
+                  ) + added(level)
+
+                const y1 = yPos(level1, c1)
+                const y2 = yPos(level2, c2)
 
                 // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                 const path = Path()

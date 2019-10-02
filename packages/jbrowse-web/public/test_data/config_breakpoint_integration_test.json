@@ -25,80 +25,82 @@
             "type": "BreakpointSplitView"
           },
           "trackSelectorType": "hierarchical",
-          "topLGV": {
-            "id": "AcZl9Uifbv",
-            "type": "LinearGenomeView",
-            "offsetPx": 18669656.00687344,
-            "bpPerPx": 10,
-            "displayedRegions": [
-              {
-                "refName": "3",
-                "start": 0,
-                "end": 186700647,
-                "assemblyName": "hg19"
-              },
-              {
-                "refName": "3",
-                "start": 186700647,
-                "end": 198022430,
-                "assemblyName": "hg19"
-              }
-            ],
-            "reversed": false,
-            "tracks": [
-              {
-                "id": "yQ2EdXaSBc",
-                "type": "AlignmentsTrack",
-                "height": 100,
-                "configuration": "pacbio_hg002",
-                "selectedRendering": ""
-              }
-            ],
-            "controlsWidth": 120,
-            "width": 800,
-            "hideControls": false,
-            "hideHeader": true,
-            "hideCloseButton": true,
-            "trackSelectorType": "hierarchical",
-            "minimumBlockWidth": 20
-          },
-          "bottomLGV": {
-            "id": "0Q9aAu1h7g",
-            "type": "LinearGenomeView",
-            "offsetPx": 5675435.581319785,
-            "bpPerPx": 10,
-            "displayedRegions": [
-              {
-                "refName": "6",
-                "start": 0,
-                "end": 56758391,
-                "assemblyName": "hg19"
-              },
-              {
-                "refName": "6",
-                "start": 56758391,
-                "end": 171115067,
-                "assemblyName": "hg19"
-              }
-            ],
-            "reversed": false,
-            "tracks": [
-              {
-                "id": "SKJqZhlLV5",
-                "type": "AlignmentsTrack",
-                "height": 100,
-                "configuration": "pacbio_hg002",
-                "selectedRendering": ""
-              }
-            ],
-            "controlsWidth": 120,
-            "width": 800,
-            "hideControls": false,
-            "hideHeader": true,
-            "hideCloseButton": true,
-            "trackSelectorType": "hierarchical",
-            "minimumBlockWidth": 20
-          }
+          "views": [
+            {
+              "id": "AcZl9Uifbv",
+              "type": "LinearGenomeView",
+              "offsetPx": 18669656.00687344,
+              "bpPerPx": 10,
+              "displayedRegions": [
+                {
+                  "refName": "3",
+                  "start": 0,
+                  "end": 186700647,
+                  "assemblyName": "hg19"
+                },
+                {
+                  "refName": "3",
+                  "start": 186700647,
+                  "end": 198022430,
+                  "assemblyName": "hg19"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "id": "yQ2EdXaSBc",
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "pacbio_hg002",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "id": "0Q9aAu1h7g",
+              "type": "LinearGenomeView",
+              "offsetPx": 5675435.581319785,
+              "bpPerPx": 10,
+              "displayedRegions": [
+                {
+                  "refName": "6",
+                  "start": 0,
+                  "end": 56758391,
+                  "assemblyName": "hg19"
+                },
+                {
+                  "refName": "6",
+                  "start": 56758391,
+                  "end": 171115067,
+                  "assemblyName": "hg19"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "id": "SKJqZhlLV5",
+                  "type": "AlignmentsTrack",
+                  "height": 100,
+                  "configuration": "pacbio_hg002",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ]
         }
       ],
       "drawerWidgets": {

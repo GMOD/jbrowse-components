@@ -51,7 +51,7 @@ export default function stateModelFactory(pluginManager: any) {
         const viewTracks = self.views.map(view =>
           view.tracks.map(t => t.configuration.configId),
         )
-        return intersection(viewTracks)
+        return intersection(...viewTracks)
       },
 
       getMatchedFeatures(trackConfigId: string) {
