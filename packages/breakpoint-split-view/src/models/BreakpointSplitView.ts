@@ -47,7 +47,7 @@ export default function stateModelFactory(pluginManager: any) {
         return self.views[0].controlsWidth
       },
 
-      get matchedTracks() {
+      get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
           view.tracks.map(t => t.configuration.configId),
         )
