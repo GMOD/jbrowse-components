@@ -5,6 +5,34 @@ import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import './WiggleRendering.scss'
 
+const toP = s => parseFloat(s.toPrecision(6))
+
+function Tooltip({ offsetX, feature }) {
+  return (
+    <>
+      <div
+        className="hoverLabel"
+        style={{ left: `${offsetX}px`, zIndex: 10000 }}
+      >
+        {feature.get('maxScore') !== undefined ? (
+          <div>
+            Summary
+            <br />
+            Max: {toP(feature.get('maxScore'))}
+            <br />
+            Avg: {toP(feature.get('score'))}
+            <br />
+            Min: {toP(feature.get('minScore'))}
+          </div>
+        ) : (
+          toP(feature.get('score'))
+        )}
+      </div>
+      <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
+    </>
+  )
+}
+
 class WiggleRendering extends Component {
   static propTypes = {
     height: ReactPropTypes.number.isRequired,
@@ -26,7 +54,7 @@ class WiggleRendering extends Component {
 
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = { hasLeft: false }
   }
 
   onMouseMove(evt) {
@@ -36,14 +64,18 @@ class WiggleRendering extends Component {
     const clientBp = region.start + bpPerPx * px
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        this.setState({ offsetX, featureUnderMouse: feature })
+        this.setState({ offsetX, hasLeft: false, featureUnderMouse: feature })
         return
       }
     }
   }
 
   onMouseLeave() {
-    this.setState({ featureUnderMouse: undefined })
+    this.setState({ hasLeft: true, featureUnderMouse: undefined })
+  }
+
+  onMouseEnter() {
+    this.setState({ hasLeft: false })
   }
 
   /**
@@ -65,37 +97,14 @@ class WiggleRendering extends Component {
   }
 
   render() {
-    const { featureUnderMouse, offsetX } = this.state
+    const { hasLeft, featureUnderMouse, offsetX } = this.state
     const { height } = this.props
 
-    const toP = s => parseFloat(s.toPrecision(6))
-    const getFeatRepr = feature => {
-      return feature.get('maxScore') !== undefined ? (
-        <div>
-          Summary
-          <br />
-          Max: {toP(feature.get('maxScore'))}
-          <br />
-          Avg: {toP(feature.get('score'))}
-          <br />
-          Min: {toP(feature.get('minScore'))}
-        </div>
-      ) : (
-        toP(feature.get('score'))
-      )
-    }
-    const getMouseoverFlag = feature => (
-      <>
-        <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
-          {getFeatRepr(feature)}
-        </div>
-        <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
-      </>
-    )
     return (
       <div
         onMouseMove={this.onMouseMove.bind(this)}
         onMouseLeave={this.onMouseLeave.bind(this)}
+        onMouseEnter={this.onMouseEnter.bind(this)}
         role="presentation"
         onFocus={() => {}}
         className="WiggleRendering"
@@ -105,7 +114,9 @@ class WiggleRendering extends Component {
         }}
       >
         <PrerenderedCanvas {...this.props} />
-        {featureUnderMouse ? getMouseoverFlag(featureUnderMouse) : null}
+        {!hasLeft && featureUnderMouse ? (
+          <Tooltip feature={featureUnderMouse} offsetX={offsetX} />
+        ) : null}
       </div>
     )
   }
