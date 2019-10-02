@@ -66,7 +66,7 @@ Array [
     },
     "start": 276,
     "type": "SNV",
-    "uniqueId": "vcf-2560",
+    "uniqueId": "vcf-2887076490",
   },
   Object {
     "ALT": Array [
@@ -132,7 +132,7 @@ Array [
     },
     "start": 1693,
     "type": "SNV",
-    "uniqueId": "vcf-2658",
+    "uniqueId": "vcf-2700386169",
   },
   Object {
     "ALT": Array [
@@ -198,7 +198,7 @@ Array [
     },
     "start": 2643,
     "type": "SNV",
-    "uniqueId": "vcf-2775",
+    "uniqueId": "vcf-3997136951",
   },
   Object {
     "ALT": Array [
@@ -258,7 +258,7 @@ Array [
     },
     "start": 3212,
     "type": "SNV",
-    "uniqueId": "vcf-2892",
+    "uniqueId": "vcf-2191644558",
   },
   Object {
     "ALT": Array [
@@ -319,7 +319,7 @@ Array [
     },
     "start": 3857,
     "type": "deletion",
-    "uniqueId": "vcf-2994",
+    "uniqueId": "vcf-677159638",
   },
 ]
 `;
