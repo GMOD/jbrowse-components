@@ -45,22 +45,24 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
 
       const snapshot = {
         type: 'BreakpointSplitView',
-        topLGV: {
-          type: 'LinearGenomeView',
-          displayedRegions: topRegions,
-          hideCloseButton: true,
-          hideHeader: true,
-          bpPerPx,
-          offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx,
-        },
-        bottomLGV: {
-          type: 'LinearGenomeView',
-          displayedRegions: bottomRegions,
-          hideHeader: true,
-          hideCloseButton: true,
-          bpPerPx,
-          offsetPx: (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx,
-        },
+        views: [
+          {
+            type: 'LinearGenomeView',
+            displayedRegions: topRegions,
+            hideCloseButton: true,
+            hideHeader: true,
+            bpPerPx,
+            offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx,
+          },
+          {
+            type: 'LinearGenomeView',
+            displayedRegions: bottomRegions,
+            hideHeader: true,
+            hideCloseButton: true,
+            bpPerPx,
+            offsetPx: (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx,
+          },
+        ],
         displayName: `${feature.get('name') ||
           feature.get('id') ||
           'breakend'} split detail`,
