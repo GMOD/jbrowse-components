@@ -57,7 +57,10 @@ export default function stateModelFactory(pluginManager: any) {
       getMatchedFeatures(trackConfigId: string) {
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen: Record<string, boolean> = {}
-        const tracks = self.views.map(view => view.getTrack(trackConfigId))
+        const tracks = self.views
+          .map(view => view.getTrack(trackConfigId))
+          .filter(f => !!f)
+        if (!tracks.length) return []
         const adder = (f: Feature) => {
           if (!alreadySeen[f.id()]) {
             const n = f.get('name')
