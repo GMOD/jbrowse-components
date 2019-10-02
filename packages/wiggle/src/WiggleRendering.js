@@ -85,12 +85,12 @@ class WiggleRendering extends Component {
       )
     }
     const getMouseoverFlag = feature => (
-      <div style={{ pointerEvents: 'none' }}>
+      <>
         <div className="hoverLabel" style={{ left: `${offsetX}px` }}>
           {getFeatRepr(feature)}
         </div>
         <div className="hoverVertical" style={{ left: `${offsetX}px` }} />
-      </div>
+      </>
     )
     return (
       <div
@@ -100,7 +100,7 @@ class WiggleRendering extends Component {
         onFocus={() => {}}
         className="WiggleRendering"
         style={{
-          overflow: 'hidden',
+          overflow: 'visible',
           height,
         }}
       >

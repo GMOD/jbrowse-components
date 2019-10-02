@@ -5,10 +5,10 @@ import {
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import { getScale } from '../util'
 
-import ConfigSchema from './configSchema'
+import ConfigSchema from '../configSchema'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
-export { default as ReactComponent } from './components/WiggleRendering'
+export { default as ReactComponent } from '../WiggleRendering'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
