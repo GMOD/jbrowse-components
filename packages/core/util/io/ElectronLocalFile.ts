@@ -50,7 +50,11 @@ export default class ElectronLocalFile implements GenericFilehandle {
       fetchLength,
       position,
     ])) as { buffer: Buffer; bytesRead: number }
+    // TODO: This looks like a buffer, but fails Buffer.isBuffer(), so we have
+    // to coerce it. Why?
     res.buffer = Buffer.from(res.buffer)
+    // Copy into input buffer to match node's fs.promises.read() behavior.
+    res.buffer.copy(buffer)
     return res
   }
 
