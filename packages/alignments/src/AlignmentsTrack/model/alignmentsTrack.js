@@ -9,7 +9,9 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import { trace } from 'mobx'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import RBush from 'rbush'
 import TrackControls from '../components/TrackControls'
 
 // using a map because it preserves order
@@ -33,6 +35,7 @@ export default (pluginManager, configSchema) =>
       .volatile(() => ({
         ReactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
+        rbush: new RBush(),
       }))
       .actions(self => ({
         selectFeature(feature) {
@@ -136,6 +139,30 @@ export default (pluginManager, configSchema) =>
             }
           }
           return new CompositeMap(layoutMaps)
+        },
+
+        get rtree() {
+          self.rbush.clear()
+          for (const [key, item] of this.features) {
+            const layout = this.layoutFeatures.get(key)
+            self.rbush.insert({
+              minX: item.get('start'),
+              minY: layout[1],
+              maxX: item.get('end'),
+              maxY: layout[3],
+              name: key,
+            })
+          }
+          return self.rbush
+        },
+        getFeatureOverlapping(x, y) {
+          trace(self, 'rtree')
+          return self.rtree.search({
+            minX: x,
+            minY: y,
+            maxX: x + 1,
+            maxY: y + 1,
+          })
         },
       })),
   )
