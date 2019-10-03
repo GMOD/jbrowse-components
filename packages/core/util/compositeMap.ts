@@ -26,7 +26,7 @@ export default class CompositeMap<T, U> {
       for (const value of submap.values()) yield value
   }
 
-  *[Symbol.iterator]() {
+  *[Symbol.iterator](): Iterator<[T, U]> {
     for (const submap of this.submaps.values())
       for (const value of submap.entries()) yield value
   }

@@ -10,7 +10,6 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import { trace } from 'mobx'
 import RBush from 'rbush'
 import TrackControls from '../components/TrackControls'
 
@@ -169,7 +168,6 @@ export default (pluginManager, configSchema) =>
           return self.rbush
         },
         getFeatureOverlapping(x, y) {
-          trace(self, 'rtree')
           return self.rtree.search({
             minX: x,
             minY: y,
