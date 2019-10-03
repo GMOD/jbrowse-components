@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
+import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import {
@@ -9,8 +10,6 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import { trace } from 'mobx'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import RBush from 'rbush'
 import TrackControls from '../components/TrackControls'
 
@@ -127,6 +126,19 @@ export default (pluginManager, configSchema) =>
          * a CompositeMap of featureId -> feature obj that
          * just looks in all the block data for that feature
          */
+        get features() {
+          const featureMaps = []
+          for (const block of self.blockState.values()) {
+            if (block.data && block.data.features)
+              featureMaps.push(block.data.features)
+          }
+          return new CompositeMap(featureMaps)
+        },
+
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
         get layoutFeatures() {
           const layoutMaps = []
           for (const block of self.blockState.values()) {
@@ -156,7 +168,6 @@ export default (pluginManager, configSchema) =>
           return self.rbush
         },
         getFeatureOverlapping(x, y) {
-          trace(self, 'rtree')
           return self.rtree.search({
             minX: x,
             minY: y,

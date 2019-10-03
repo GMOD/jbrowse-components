@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'
 import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
+import runner from 'mobx-run-in-reactive-context'
 
 const layoutPropType = ReactPropTypes.shape({
   getRectangles: ReactPropTypes.func.isRequired,
@@ -240,16 +241,16 @@ class PileupRendering extends Component {
           style={{ position: 'absolute', left: 0, top: 0 }}
           className="highlightOverlayCanvas"
           ref={this.highlightOverlayCanvas}
-          onMouseDown={this.onMouseDown}
-          onMouseEnter={this.onMouseEnter}
-          onMouseOut={this.onMouseOut}
-          onMouseOver={this.onMouseOver}
-          onMouseUp={this.onMouseUp}
-          onMouseLeave={this.onMouseLeave}
-          onMouseMove={this.onMouseMove}
+          onMouseDown={event => runner(() => this.onMouseDown(event))}
+          onMouseEnter={event => runner(() => this.onMouseEnter(event))}
+          onMouseOut={event => runner(() => this.onMouseOut(event))}
+          onMouseOver={event => runner(() => this.onMouseOver(event))}
+          onMouseUp={event => runner(() => this.onMouseUp(event))}
+          onMouseLeave={event => runner(() => this.onMouseLeave(event))}
+          onMouseMove={event => runner(() => this.onMouseMove(event))}
+          onClick={event => runner(() => this.onClick(event))}
           onFocus={() => {}}
           onBlur={() => {}}
-          onClick={this.onClick}
         />
       </div>
     )

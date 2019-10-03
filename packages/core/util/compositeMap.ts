@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
 // takes an array or Map or Set (anything iterable with values()) of Maps
 // and lets you query them as one Map
 export default class CompositeMap<T, U> {
@@ -23,12 +21,12 @@ export default class CompositeMap<T, U> {
     return undefined
   }
 
-  *values() {
+  *values(): Iterator<U> {
     for (const submap of this.submaps.values())
       for (const value of submap.values()) yield value
   }
 
-  *[Symbol.iterator]() {
+  *[Symbol.iterator](): Iterator<[T, U]> {
     for (const submap of this.submaps.values())
       for (const value of submap.entries()) yield value
   }
