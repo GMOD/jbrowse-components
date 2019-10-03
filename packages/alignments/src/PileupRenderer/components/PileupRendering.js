@@ -117,15 +117,6 @@ class PileupRendering extends Component {
 
   onMouseDown = event => {
     this.callMouseHandler('MouseDown', event)
-    if (this.featureUnderMouse) {
-      this.lastFeatureMouseDown = {
-        featureId: this.featureUnderMouse,
-        x: event.clientX,
-        y: event.clientY,
-      }
-    } else {
-      this.lastFeatureMouseDown = undefined
-    }
   }
 
   onMouseEnter = event => {
@@ -135,7 +126,7 @@ class PileupRendering extends Component {
   onMouseOut = event => {
     this.callMouseHandler('MouseOut', event)
     this.callMouseHandler('MouseLeave', event)
-    this.featureUnderMouse = undefined
+    this.setState({ featureUnderMouse: undefined })
   }
 
   onMouseOver = event => {
@@ -153,7 +144,7 @@ class PileupRendering extends Component {
   onMouseLeave = event => {
     this.callMouseHandler('MouseOut', event)
     this.callMouseHandler('MouseLeave', event)
-    this.featureUnderMouse = undefined
+    this.setState({ featureUnderMouse: undefined })
   }
 
   onMouseMove = event => {
@@ -164,6 +155,7 @@ class PileupRendering extends Component {
       trackModel,
       region,
     } = this.props
+    const { featureUnderMouse } = this.state
     let offsetX = 0
     let offsetY = 0
     if (this.highlightOverlayCanvas.current) {
@@ -181,14 +173,14 @@ class PileupRendering extends Component {
       : undefined
     this.setState({ offsetX, offsetY })
 
-    if (this.featureUnderMouse === featureIdCurrentlyUnderMouse) {
+    if (featureUnderMouse === featureIdCurrentlyUnderMouse) {
       this.callMouseHandler('MouseMove', event)
     } else {
-      if (this.featureUnderMouse) {
+      if (featureUnderMouse) {
         this.callMouseHandler('MouseOut', event)
         this.callMouseHandler('MouseLeave', event)
       }
-      this.featureUnderMouse = featureIdCurrentlyUnderMouse
+      this.setState({ featureUnderMouse: featureIdCurrentlyUnderMouse })
       this.callMouseHandler('MouseOver', event)
       this.callMouseHandler('MouseEnter', event)
     }
@@ -234,20 +226,21 @@ class PileupRendering extends Component {
    * @param {bool} always - call this handler even if there is no feature
    */
   callMouseHandler(handlerName, event, always = false) {
+    const { featureUnderMouse } = this.state
     // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = this.props[`onFeature${handlerName}`]
     // eslint-disable-next-line react/destructuring-assignment
     const canvasHandler = this.props[`on${handlerName}`]
-    if (featureHandler && (always || this.featureUnderMouse)) {
-      featureHandler(event, this.featureUnderMouse)
+    if (featureHandler && (always || featureUnderMouse)) {
+      featureHandler(event, featureUnderMouse)
     } else if (canvasHandler) {
-      canvasHandler(event, this.featureUnderMouse)
+      canvasHandler(event, featureUnderMouse)
     }
   }
 
   render() {
     const { width, height, trackModel } = this.props
-    const { offsetX, offsetY } = this.state
+    const { featureUnderMouse, offsetX, offsetY } = this.state
     const canvasWidth = Math.ceil(width)
     // need to call this in render so we get the right observer behavior
     this.updateSelectionHighlight()
@@ -277,9 +270,9 @@ class PileupRendering extends Component {
           onFocus={() => {}}
           onBlur={() => {}}
         />
-        {this.featureUnderMouse ? (
+        {featureUnderMouse ? (
           <Tooltip
-            feature={trackModel.features.get(this.featureUnderMouse)}
+            feature={trackModel.features.get(featureUnderMouse)}
             offsetX={offsetX}
             offsetY={offsetY}
           />
