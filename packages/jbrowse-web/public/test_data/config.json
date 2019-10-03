@@ -1000,6 +1000,25 @@
           }
         },
         {
+          "configId": "repeats_hg19",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "bigbed_peaks",
           "type": "BasicTrack",
           "name": "Encode peaks",
@@ -1499,6 +1518,25 @@
             "labels": {
               "configId": "t43o3wEqG9"
             }
+          }
+        },
+        {
+          "configId": "repeats_hg38",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
           }
         },
         {
