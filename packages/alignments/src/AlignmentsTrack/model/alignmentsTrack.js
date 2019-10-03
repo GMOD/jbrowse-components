@@ -168,12 +168,16 @@ export default (pluginManager, configSchema) =>
           return self.rbush
         },
         getFeatureOverlapping(x, y) {
-          return self.rtree.search({
-            minX: x,
-            minY: y,
-            maxX: x + 1,
-            maxY: y + 1,
-          })
+          const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+          if (self.rtree.collides(rect)) {
+            return self.rtree.search({
+              minX: x,
+              minY: y,
+              maxX: x + 1,
+              maxY: y + 1,
+            })
+          }
+          return []
         },
       })),
   )
