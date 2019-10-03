@@ -21,6 +21,7 @@ class PileupRendering extends Component {
     trackModel: ReactPropTypes.shape({
       /** id of the currently selected feature, if any */
       selectedFeatureId: ReactPropTypes.string,
+      getFeatureOverlapping: ReactPropTypes.func,
     }),
 
     onFeatureMouseDown: ReactPropTypes.func,
@@ -152,6 +153,7 @@ class PileupRendering extends Component {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     if (selectedFeatureId) {
       for (const [
         id,
@@ -180,35 +182,24 @@ class PileupRendering extends Component {
   }
 
   findFeatureIdUnderMouse(event) {
-    const { offsetX, offsetY } = event.nativeEvent
-    if (typeof offsetX !== 'number')
-      throw new Error(
-        `invalid offsetX, does this browser provide offsetX and offsetY on mouse events? ${offsetX} ${String(
-          event,
-        )}`,
-      )
-
-    const { layout, bpPerPx, region, horizontallyFlipped } = this.props
-    for (const [
-      id,
-      [leftBp, topPx, rightBp, bottomPx],
-    ] of layout.getRectangles()) {
-      let leftPx = bpToPx(leftBp, region, bpPerPx, horizontallyFlipped)
-      let rightPx = bpToPx(rightBp, region, bpPerPx, horizontallyFlipped)
-      if (horizontallyFlipped) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
-      if (
-        offsetX >= leftPx &&
-        offsetX <= rightPx &&
-        offsetY >= topPx &&
-        offsetY <= bottomPx
-      ) {
-        return id
-      }
+    const { offsetY } = event.nativeEvent
+    const {
+      width,
+      horizontallyFlipped,
+      bpPerPx,
+      trackModel,
+      region,
+    } = this.props
+    let offset = 0
+    if (this.highlightOverlayCanvas.current) {
+      offset = this.highlightOverlayCanvas.current.getBoundingClientRect().left
     }
+    const offsetX = event.clientX - offset
+    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const clientBp = region.start + bpPerPx * px
 
-    return undefined
+    const feat = trackModel.getFeatureOverlapping(clientBp, offsetY)
+    return feat.length ? feat[0].name : undefined
   }
 
   /**

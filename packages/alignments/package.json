@@ -9,8 +9,10 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.21",
+    "@gmod/bam": "^1.0.26",
     "generic-filehandle": "^2.0.0",
+    "memoize-one": "^5.1.1",
+    "rbush": "^3.0.1",
     "react-style-proptype": "^3.2.2"
   },
   "peerDependencies": {
