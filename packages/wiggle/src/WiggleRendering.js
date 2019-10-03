@@ -59,28 +59,31 @@ class WiggleRendering extends Component {
 
   constructor(props) {
     super(props)
-    this.state = { hasLeft: false }
+    this.state = {}
+    this.ref = React.createRef()
   }
 
   onMouseMove(evt) {
     const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
-    const { offsetX } = evt.nativeEvent
+    const { clientX } = evt
+    let offset = 0
+    if (this.ref.current) {
+      offset = this.ref.current.getBoundingClientRect().left
+    }
+    const offsetX = clientX - offset
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
+
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        this.setState({ offsetX, hasLeft: false, featureUnderMouse: feature })
+        this.setState({ clientX, featureUnderMouse: feature })
         return
       }
     }
   }
 
   onMouseLeave() {
-    this.setState({ hasLeft: true, featureUnderMouse: undefined })
-  }
-
-  onMouseEnter() {
-    this.setState({ hasLeft: false })
+    this.setState({ featureUnderMouse: undefined })
   }
 
   /**
@@ -102,14 +105,18 @@ class WiggleRendering extends Component {
   }
 
   render() {
-    const { hasLeft, featureUnderMouse, offsetX } = this.state
+    const { featureUnderMouse, clientX } = this.state
     const { height } = this.props
+    let offset = 0
+    if (this.ref.current) {
+      offset = this.ref.current.getBoundingClientRect().left
+    }
 
     return (
       <div
+        ref={this.ref}
         onMouseMove={this.onMouseMove.bind(this)}
         onMouseLeave={this.onMouseLeave.bind(this)}
-        onMouseEnter={this.onMouseEnter.bind(this)}
         role="presentation"
         onFocus={() => {}}
         className="WiggleRendering"
@@ -119,8 +126,8 @@ class WiggleRendering extends Component {
         }}
       >
         <PrerenderedCanvas {...this.props} />
-        {!hasLeft && featureUnderMouse ? (
-          <Tooltip feature={featureUnderMouse} offsetX={offsetX} />
+        {featureUnderMouse ? (
+          <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
         ) : null}
       </div>
     )
