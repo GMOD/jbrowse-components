@@ -475,7 +475,7 @@ export function stateModelFactory(pluginManager: any) {
           return currentlyCalculatedStaticBlocks
         },
 
-        get dynamicBlocks(): any {
+        get dynamicBlocks() {
           return calculateDynamicBlocks(self, self.horizontallyFlipped)
         },
       }
