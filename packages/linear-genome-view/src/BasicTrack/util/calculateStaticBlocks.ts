@@ -1,39 +1,52 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
+import { Instance } from 'mobx-state-tree'
 import {
+  BaseBlock,
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
 const interRegionPaddingWidth = 2
 
-export function calculateBlocksReversed(self, extra = 0) {
+type LGV = Instance<LinearGenomeViewStateModel>
+
+export function calculateBlocksReversed(self: LGV, extra = 0) {
   return new BlockSet(
-    calculateBlocksForward(self, extra).map(fwdBlock => {
-      const { parentRegion } = fwdBlock
+    calculateBlocksForward(self, extra).map<BaseBlock>(
+      (fwdBlock: BaseBlock) => {
+        const { parentRegion } = fwdBlock
 
-      const args = {
-        ...fwdBlock,
-      }
-      if (parentRegion) {
-        args.start = parentRegion.start + parentRegion.end - fwdBlock.end
-        args.end = parentRegion.start + parentRegion.end - fwdBlock.start
-      }
+        const args = {
+          ...fwdBlock,
+        }
+        if (parentRegion) {
+          args.start = parentRegion.start + parentRegion.end - fwdBlock.end
+          args.end = parentRegion.start + parentRegion.end - fwdBlock.start
+        }
 
-      let revBlock
-      if (fwdBlock instanceof ElidedBlock) revBlock = new ElidedBlock(args)
-      else if (fwdBlock instanceof InterRegionPaddingBlock)
-        revBlock = new InterRegionPaddingBlock(args)
-      else revBlock = new ContentBlock(args)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = (data: any) => {
+          if (fwdBlock instanceof ElidedBlock) {
+            return new ElidedBlock(data)
+          }
+          if (fwdBlock instanceof InterRegionPaddingBlock) {
+            return new InterRegionPaddingBlock(data)
+          }
+          return new ContentBlock(data)
+        }
 
-      revBlock.key = assembleLocString(revBlock)
-      return revBlock
-    }),
+        const block = r(args)
+        block.key = assembleLocString(block)
+        return block
+      },
+    ),
   )
 }
 
-export function calculateBlocksForward(self, extra = 0) {
+export function calculateBlocksForward(self: LGV, extra = 0) {
   const {
     offsetPx,
     bpPerPx,
@@ -87,6 +100,7 @@ export function calculateBlocksForward(self, extra = 0) {
         widthPx,
         isLeftEndOfDisplayedRegion: start === region.start,
         isRightEndOfDisplayedRegion: end === region.end,
+        key: '',
       }
       blockData.key = assembleLocString(blockData)
       if (widthPx < minimumBlockWidth) {
@@ -118,7 +132,11 @@ export function calculateBlocksForward(self, extra = 0) {
   return blocks
 }
 
-export default function calculateBlocks(view, reversed, extra = 0) {
+export default function calculateBlocks(
+  view: LGV,
+  reversed: boolean,
+  extra = 0,
+) {
   return reversed
     ? calculateBlocksReversed(view, extra)
     : calculateBlocksForward(view, extra)

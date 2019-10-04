@@ -1,7 +1,11 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
+import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 import {
+  BaseBlock,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
@@ -35,12 +39,21 @@ const useStyles = makeStyles({
   },
 })
 
-function TrackBlocks({ model, viewModel, blockState }) {
+function TrackBlocks({
+  model,
+  viewModel,
+  blockState,
+}: {
+  model: Instance<BlockBasedTrackStateModel>
+  viewModel: Instance<LinearGenomeViewStateModel>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blockState: Record<string, any>
+}) {
   const classes = useStyles()
   const { blockDefinitions } = model
   return (
     <div data-testid="Block" className={classes.trackBlocks}>
-      {blockDefinitions.map(block => {
+      {blockDefinitions.map((block: BaseBlock) => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
@@ -75,7 +88,6 @@ function TrackBlocks({ model, viewModel, blockState }) {
           return (
             <InterRegionPaddingBlockMarker
               key={block.key}
-              width={block.widthPx}
               block={block}
               model={viewModel}
             />

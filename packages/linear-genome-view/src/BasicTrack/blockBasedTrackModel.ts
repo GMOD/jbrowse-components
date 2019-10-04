@@ -1,12 +1,12 @@
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
-import BlockState from './util/serverSideRenderedBlock'
+import { addDisposer, types, Instance } from 'mobx-state-tree'
+import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import { ContentBlock } from './util/blockTypes'
+import { BaseBlock, ContentBlock } from './util/blockTypes'
 
-export default types.compose(
+const blockBasedTrack = types.compose(
   'BlockBasedTrackState',
   baseTrack,
   types
@@ -40,7 +40,7 @@ export default types.compose(
       },
 
       get blockDefinitions() {
-        return getContainingView(self)[self.blockType]
+        return getContainingView(self)[this.blockType]
       },
     }))
     .actions(self => ({
@@ -48,24 +48,24 @@ export default types.compose(
         // watch the parent's blocks to update our block state when they change
         const blockWatchDisposer = autorun(() => {
           // create any blocks that we need to create
-          const blocksPresent = {}
-          self.blockDefinitions.forEach(block => {
+          const blocksPresent: { [key: string]: boolean } = {}
+          self.blockDefinitions.forEach((block: Instance<BlockStateModel>) => {
             if (!(block instanceof ContentBlock)) return
             blocksPresent[block.key] = true
             if (!self.blockState.has(block.key)) {
-              self.addBlock(block.key, block)
+              this.addBlock(block.key, block)
             }
           })
           // delete any blocks we need to delete
           self.blockState.forEach((value, key) => {
-            if (!blocksPresent[key]) self.deleteBlock(key)
+            if (!blocksPresent[key]) this.deleteBlock(key)
           })
         })
 
         addDisposer(self, blockWatchDisposer)
       },
 
-      addBlock(key, block) {
+      addBlock(key: string, block: BaseBlock) {
         self.blockState.set(
           key,
           BlockState.create({
@@ -75,7 +75,7 @@ export default types.compose(
         )
       },
 
-      deleteBlock(key) {
+      deleteBlock(key: string) {
         self.blockState.delete(key)
       },
     }))
@@ -84,3 +84,6 @@ export default types.compose(
       return rest
     }),
 )
+
+export type BlockBasedTrackStateModel = typeof blockBasedTrack
+export default blockBasedTrack

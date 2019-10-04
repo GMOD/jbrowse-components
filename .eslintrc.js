@@ -42,7 +42,7 @@ module.exports = {
     'react/prefer-stateless-function': 'warn',
     'react/prop-types': 'warn',
     'react/require-default-props': 'warn',
-    '@typescript-eslint/explicit-function-return-type': ['error', { 'allowExpressions': true }],
+    '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/camelcase': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',

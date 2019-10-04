@@ -1,13 +1,16 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
+import { LinearGenomeViewStateModel } from '..'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
+  BlockSet,
 } from '../../BasicTrack/util/blockTypes'
 
 import {
@@ -37,7 +40,10 @@ const useStyles = makeStyles((/* theme */) => ({
   },
 }))
 
-function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
+function findBlockContainingLeftSideOfView(
+  offsetPx: number,
+  blockSet: BlockSet,
+) {
   const blocks = blockSet.getBlocks()
   for (let i = 0; i < blocks.length; i += 1) {
     const block = blocks[i]
@@ -47,7 +53,8 @@ function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   return undefined
 }
 
-function ScaleBar({ model, height }) {
+type LGV = Instance<LinearGenomeViewStateModel>
+function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
     model.offsetPx,
@@ -87,7 +94,6 @@ function ScaleBar({ model, height }) {
           return (
             <InterRegionPaddingBlockMarker
               key={block.key}
-              width={block.widthPx}
               block={block}
               model={model}
             />

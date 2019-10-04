@@ -224,7 +224,7 @@ export const objectFromEntries = Object.fromEntries.bind(Object)
 export function iterMap<T, U>(
   iterable: Iterable<T>,
   func: (item: T) => U,
-  sizeHint: number,
+  sizeHint?: number,
 ): U[] {
   const results = sizeHint ? new Array(sizeHint) : []
   let counter = 0
