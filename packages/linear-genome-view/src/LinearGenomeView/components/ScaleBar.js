@@ -93,6 +93,7 @@ function ScaleBar({ model, height }) {
             />
           )
         }
+        return null
       })}
       {// put in a floating ref label
       blockContainingLeftEndOfView ? (

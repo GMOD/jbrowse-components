@@ -1,5 +1,4 @@
 import { makeStyles } from '@material-ui/core/styles'
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
