@@ -57,28 +57,31 @@ export default function stateModelFactory(pluginManager: any) {
       getMatchedFeatures(trackConfigId: string) {
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen: Record<string, boolean> = {}
+
+        // finds "matching tracks across views" but filters out if a particular
+        // view does not have it (all views don't necessarily have to include it)
         const tracks = self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(f => !!f)
+
+        // if it happens none of them have it, return null
         if (!tracks.length) return []
-        const adder = (f: Feature) => {
-          if (!alreadySeen[f.id()]) {
-            const n = f.get('name')
+
+        // this finds candidate features that share the same name
+        for (const feature of new CompositeMap<string, Feature>(
+          tracks.map(t => t.features),
+        ).values()) {
+          if (!alreadySeen[feature.id()]) {
+            const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []
             }
-            candidates[n].push(f)
+            candidates[n].push(feature)
           }
-          alreadySeen[f.id()] = true
+          alreadySeen[feature.id()] = true
         }
 
-        for (const value of new CompositeMap<string, Feature>(
-          tracks.map(t => t.features),
-        ).values()) {
-          console.log(value)
-          adder(value)
-        }
-
+        // get only features appearing more than once
         return Object.values(candidates).filter(v => v.length > 1)
       },
 
