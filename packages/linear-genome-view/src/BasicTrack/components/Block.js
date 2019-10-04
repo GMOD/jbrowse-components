@@ -13,14 +13,6 @@ const useStyles = makeStyles((/* theme */) => ({
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
   },
-  leftBorder: {
-    borderLeft: `2px solid #333`,
-    // borderLeft: `2px solid ${theme.palette.divider}`,
-  },
-  rightBorder: {
-    borderRight: `2px solid #333`,
-    // borderRight: `2px solid ${theme.palette.divider}`,
-  },
 }))
 
 function Block({ block, model, children }) {
@@ -31,10 +23,7 @@ function Block({ block, model, children }) {
         left: `${block.offsetPx - model.offsetPx}px`,
         width: `${block.widthPx}px`,
       }}
-      className={clsx(classes.block, {
-        [classes.leftBorder]: block.isLeftEndOfDisplayedRegion,
-        [classes.rightBorder]: block.isRightEndOfDisplayedRegion,
-      })}
+      className={classes.block}
     >
       {children}
     </div>
