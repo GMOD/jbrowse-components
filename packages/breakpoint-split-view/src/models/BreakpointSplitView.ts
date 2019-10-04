@@ -72,10 +72,11 @@ export default function stateModelFactory(pluginManager: any) {
           alreadySeen[f.id()] = true
         }
 
-        for (const f of new CompositeMap<string, Feature>(
+        for (const value of new CompositeMap<string, Feature>(
           tracks.map(t => t.features),
         ).values()) {
-          adder(f)
+          console.log(value)
+          adder(value)
         }
 
         return Object.values(candidates).filter(v => v.length > 1)
