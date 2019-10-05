@@ -3,6 +3,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getSession } from '@gmod/jbrowse-core/util'
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
@@ -66,5 +67,20 @@ export default (pluginManager, configSchema) =>
           trackModel: self,
           config,
         }
+      },
+    }))
+    .actions(self => ({
+      selectFeature(feature) {
+        const session = getSession(self)
+        if (session.drawerWidgets) {
+          const featureWidget = session.addDrawerWidget(
+            'AlignmentsFeatureDrawerWidget',
+            'alignmentsFeature',
+            // @ts-ignore
+            { featureData: feature.data },
+          )
+          session.showDrawerWidget(featureWidget)
+        }
+        session.setSelection(feature)
       },
     }))

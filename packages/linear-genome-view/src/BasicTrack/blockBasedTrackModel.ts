@@ -111,8 +111,8 @@ const blockBasedTrack = types.compose(
         // setting a selected feature...right???
         if (session.drawerWidgets) {
           const featureWidget = session.addDrawerWidget(
-            'AlignmentsFeatureDrawerWidget',
-            'alignmentsFeature',
+            'BaseFeatureDrawerWidget',
+            'baseFeature',
             // @ts-ignore
             { featureData: feature.data as any },
           )

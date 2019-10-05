@@ -3,6 +3,7 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getSession } from '@gmod/jbrowse-core/util'
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
@@ -35,6 +36,17 @@ export default configSchema =>
       rendererTypeChoices: Array.from(rendererTypes.keys()),
     }))
     .actions(self => ({
+      selectFeature(feature) {
+        const session = getSession(self)
+        const featureWidget = session.addDrawerWidget(
+          'VariantFeatureDrawerWidget',
+          'variantFeature',
+          { featureData: feature.data },
+        )
+        session.showDrawerWidget(featureWidget)
+        session.setSelection(feature)
+      },
+
       setRenderer(newRenderer) {
         self.selectedRendering = newRenderer
       },
