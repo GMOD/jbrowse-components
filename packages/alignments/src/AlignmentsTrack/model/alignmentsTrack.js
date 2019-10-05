@@ -2,8 +2,6 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import {
   BlockBasedTrack,
@@ -34,30 +32,6 @@ export default (pluginManager, configSchema) =>
         ReactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
-      .actions(self => ({
-        selectFeature(feature) {
-          const session = getSession(self)
-          // TODO: we shouldn't need to have to get this deep into knowing about
-          // drawer widgets here, the drawer widget should be a reaction to
-          // setting a selected feature...right???
-          if (session.drawerWidgets) {
-            const featureWidget = session.addDrawerWidget(
-              'AlignmentsFeatureDrawerWidget',
-              'alignmentsFeature',
-              { featureData: feature.data },
-            )
-            session.showDrawerWidget(featureWidget)
-          }
-          session.setSelection(feature)
-        },
-        clearFeatureSelection() {
-          const session = getSession(self)
-          session.clearSelection()
-        },
-        setRenderer(newRenderer) {
-          self.selectedRendering = newRenderer
-        },
-      }))
       .views(self => ({
         /**
          * the renderer type name is based on the "view"
@@ -74,26 +48,6 @@ export default (pluginManager, configSchema) =>
 
         get ControlsComponent() {
           return TrackControls
-        },
-
-        /**
-         * returns a string feature ID if the globally-selected object
-         * is probably a feature
-         */
-        get selectedFeatureId() {
-          const session = getSession(self)
-          if (!session) return undefined
-          const { selection } = session
-          // does it quack like a feature?
-          if (
-            selection &&
-            typeof selection.get === 'function' &&
-            typeof selection.id === 'function'
-          ) {
-            // probably is a feature
-            return selection.id()
-          }
-          return undefined
         },
 
         /**
@@ -118,19 +72,6 @@ export default (pluginManager, configSchema) =>
               self.clearFeatureSelection()
             },
           }
-        },
-
-        /**
-         * a CompositeMap of featureId -> feature obj that
-         * just looks in all the block data for that feature
-         */
-        get features() {
-          const featureMaps = []
-          for (const block of self.blockState.values()) {
-            if (block.data && block.data.features)
-              featureMaps.push(block.data.features)
-          }
-          return new CompositeMap(featureMaps)
         },
       })),
   )
