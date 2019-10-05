@@ -14968,6 +14968,11 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
+use-timeout@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/use-timeout/-/use-timeout-1.1.0.tgz#622843678ff9e2c59a030b86baa36de0a8462f8a"
+  integrity sha512-1veqpjjjHvjQ7qcMrz72HnL+6WgsehNFnFbdKNsSGWa+GcbjXrPrfFiBj/wtzHBBB8h5WO4B3O7i54NT8RIr6w==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
