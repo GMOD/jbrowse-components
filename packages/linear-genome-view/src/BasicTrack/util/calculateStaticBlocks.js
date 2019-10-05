@@ -1,19 +1,32 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { BlockSet, ContentBlock, ElidedBlock } from './blockTypes'
+import {
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from './blockTypes'
+
+const interRegionPaddingWidth = 2
 
 export function calculateBlocksReversed(self, extra = 0) {
   return new BlockSet(
     calculateBlocksForward(self, extra).map(fwdBlock => {
       const { parentRegion } = fwdBlock
+
       const args = {
         ...fwdBlock,
-        start: parentRegion.start + parentRegion.end - fwdBlock.end,
-        end: parentRegion.start + parentRegion.end - fwdBlock.start,
       }
-      const revBlock =
-        fwdBlock instanceof ElidedBlock
-          ? new ElidedBlock(args)
-          : new ContentBlock(args)
+      if (parentRegion) {
+        args.start = parentRegion.start + parentRegion.end - fwdBlock.end
+        args.end = parentRegion.start + parentRegion.end - fwdBlock.start
+      }
+
+      let revBlock
+      if (fwdBlock instanceof ElidedBlock) revBlock = new ElidedBlock(args)
+      else if (fwdBlock instanceof InterRegionPaddingBlock)
+        revBlock = new InterRegionPaddingBlock(args)
+      else revBlock = new ContentBlock(args)
+
       revBlock.key = assembleLocString(revBlock)
       return revBlock
     }),
@@ -37,7 +50,7 @@ export function calculateBlocksForward(self, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegionsInOrder.forEach(region => {
+  displayedRegionsInOrder.forEach((region, regionNumber) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const regionBlockCount = Math.ceil(
@@ -80,6 +93,22 @@ export function calculateBlocksForward(self, extra = 0) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
+      }
+
+      // insert a inter-region padding block if we are crossing a displayed
+      if (
+        widthPx >= minimumBlockWidth &&
+        blockData.isRightEndOfDisplayedRegion &&
+        regionNumber < displayedRegionsInOrder.length - 1
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-rightpad`,
+            widthPx: interRegionPaddingWidth,
+            offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+        regionBpOffset += interRegionPaddingWidth * bpPerPx
       }
     }
 

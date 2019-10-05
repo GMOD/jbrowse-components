@@ -4,6 +4,7 @@ import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
+import { ContentBlock } from './util/blockTypes'
 
 export default types.compose(
   'BlockBasedTrackState',
@@ -49,6 +50,7 @@ export default types.compose(
           // create any blocks that we need to create
           const blocksPresent = {}
           self.blockDefinitions.forEach(block => {
+            if (!(block instanceof ContentBlock)) return
             blocksPresent[block.key] = true
             if (!self.blockState.has(block.key)) {
               self.addBlock(block.key, block)

@@ -88,3 +88,9 @@ export class ElidedBlock extends BaseBlock {
     }
   }
 }
+
+/**
+ * marker block that sits between two different displayed regions
+ * and provides a thick border between them
+ */
+export class InterRegionPaddingBlock extends BaseBlock {}
