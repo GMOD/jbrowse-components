@@ -246,7 +246,7 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
   )
-  const ret = await waitForElement(() => byId('vcf-2887076490'))
+  const ret = await waitForElement(() => byId('vcf-2560'))
   fireEvent.click(ret)
   await expect(
     waitForElement(() => getByText('ctgA:277..277')),
@@ -294,9 +294,10 @@ describe('test configuration editor', () => {
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
     await wait(async () => {
-      expect(
-        await waitForElement(() => byId('vcf-2887076490')),
-      ).toHaveAttribute('fill', 'green')
+      expect(await waitForElement(() => byId('vcf-2560'))).toHaveAttribute(
+        'fill',
+        'green',
+      )
     })
   }, 10000)
 })
