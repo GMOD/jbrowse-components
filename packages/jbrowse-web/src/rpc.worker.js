@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'

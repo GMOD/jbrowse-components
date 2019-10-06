@@ -60,11 +60,6 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['**/*.worker.js'],
-      globals: { self: true },
-      rules: { 'no-restricted-globals': 'off' },
-    },
-    {
       "files": ["*.ts", "*.tsx"],
       "rules": {
         "@typescript-eslint/explicit-function-return-type": ["error"]
@@ -81,7 +76,6 @@ module.exports = {
       },
       rules: {
         'import/no-extraneous-dependencies': 'off',
-        // 'no-restricted-globals': 'off',
       },
     },
   ],
