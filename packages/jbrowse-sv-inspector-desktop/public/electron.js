@@ -22,8 +22,6 @@ function createWindow() {
     width: 900,
     height: 680,
     webPreferences: {
-      nodeIntegration: false,
-      nodeIntegrationInWorker: true,
       preload: isDev
         ? path.join(app.getAppPath(), 'public/preload.js')
         : `file://${path.join(app.getAppPath(), 'public/../build/preload.js')}`,

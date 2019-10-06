@@ -6,7 +6,6 @@ import * as rpcFuncs from './rpcMethods'
 import assemblyManager from './assemblyManager'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
-import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
 const pluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -119,7 +118,6 @@ const JBrowseWeb = types
       pluginManager,
       self.configuration.rpc,
       {
-        WebWorkerRpcDriver: { WorkerClass: RenderWorker },
         MainThreadRpcDriver: { rpcFuncs },
       },
       self.getRefNameMapForAdapter,
