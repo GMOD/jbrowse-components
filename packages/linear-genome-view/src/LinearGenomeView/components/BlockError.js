@@ -14,6 +14,7 @@ const useStyles = makeStyles({
 
 function Error({ error }) {
   const classes = useStyles()
+  console.error(error)
   return <div className={classes.blockError}>{error.message}</div>
 }
 Error.propTypes = {
