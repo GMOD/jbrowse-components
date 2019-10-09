@@ -3,7 +3,6 @@ import {
   getConf,
 } from '@gmod/jbrowse-core/configuration'
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getSession } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import {
   BlockBasedTrack,
@@ -59,26 +58,22 @@ export default (pluginManager, configSchema) =>
           return TrackControls
         },
 
-
-
-      /**
-       * the react props that are passed to the Renderer when data
-       * is rendered in this track
-       */
-      get renderProps() {
-        // view -> [tracks] -> [blocks]
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', self.rendererTypeName]) || {},
-        )
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          trackModel: self,
-          config,
-        }
-      },
-
-
+        /**
+         * the react props that are passed to the Renderer when data
+         * is rendered in this track
+         */
+        get renderProps() {
+          // view -> [tracks] -> [blocks]
+          const config = self.rendererType.configSchema.create(
+            getConf(self, ['renderers', self.rendererTypeName]) || {},
+          )
+          return {
+            ...self.composedRenderProps,
+            ...getParentRenderProps(self),
+            trackModel: self,
+            config,
+          }
+        },
 
         /**
          * a CompositeMap of featureId -> feature obj that
