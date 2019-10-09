@@ -1,12 +1,39 @@
+const path = require('path')
+// eslint-disable-next-line import/no-extraneous-dependencies
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
 module.exports = {
   webpack: config => {
+    // Get rid fo the webpackHotDevClient entry
     config.entry.shift()
+    // Specify two entry points, a main one and one for the window worker
+    const main = config.entry.pop()
+    config.entry = {
+      main,
+      rpc: path.join(path.dirname(main), 'rpcMethods.js'),
+    }
+    config.plugins[0].options.chunks = ['main']
+    // Generate an HTML file for out window workers to load
+    config.plugins.unshift(
+      new HtmlWebpackPlugin({
+        template: path.join(
+          path.dirname(config.plugins[0].options.template),
+          'workerTemplate.html',
+        ),
+        chunks: ['rpc'],
+        filename: 'worker.html',
+      }),
+    )
+    // Not sure why, but have to change this or the rpc entrypoint won't run
+    config.optimization.runtimeChunk = 'single'
+    // Make sure some node stuff is polyfilled
     config.node.global = true
     config.node.process = true
     config.node.Buffer = true
     return config
   },
   devServer: config => {
+    // Don't redirect to index.html when accessing a non-existent url
     config.staticOptions = { fallthrough: false }
     return config
   },

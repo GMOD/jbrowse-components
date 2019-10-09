@@ -4,6 +4,7 @@ import { readConfObject } from '../configuration'
 import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
+import ElectronRpcDriver from './ElectronRpcDriver'
 
 /*
  requirements
@@ -50,6 +51,7 @@ class RpcManager {
       const DriverClass = {
         WebWorkerRpcDriver,
         MainThreadRpcDriver,
+        ElectronRpcDriver,
       }[backendName]
       if (!DriverClass) {
         throw new Error(

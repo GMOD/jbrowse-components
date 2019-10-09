@@ -3,7 +3,7 @@ import { GenericFilehandle, FilehandleOptions } from 'generic-filehandle'
 declare global {
   interface Window {
     electronBetterIpc: {
-      ipcRenderer?: import('electron-better-ipc').RendererProcessIpc
+      ipcRenderer?: import('electron-better-ipc-extra').RendererProcessIpc
     }
   }
 }
@@ -15,12 +15,12 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   private fd?: Promise<number>
 
-  private ipcRenderer: import('electron-better-ipc').RendererProcessIpc
+  private ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc
 
   constructor(source: import('fs').PathLike) {
     if (!ipcRenderer)
       throw new Error(
-        'Cannot use ElectronLocalFile without ipcRenderer from electron-better-ipc',
+        'Cannot use ElectronLocalFile without ipcRenderer from electron-better-ipc-extra',
       )
     this.ipcRenderer = ipcRenderer
     this.filename = source
@@ -28,10 +28,11 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   private async getFd(): Promise<number> {
     if (!this.fd)
-      this.fd = this.ipcRenderer.callMain('open', [
+      this.fd = this.ipcRenderer.callMain(
+        'open',
         this.filename,
         'r',
-      ]) as Promise<number>
+      ) as Promise<number>
     return this.fd as Promise<number>
   }
 
@@ -43,13 +44,14 @@ export default class ElectronLocalFile implements GenericFilehandle {
   ): Promise<{ buffer: Buffer; bytesRead: number }> {
     const fetchLength = Math.min(buffer.length - offset, length)
     const fd = await this.getFd()
-    const res = (await this.ipcRenderer.callMain('read', [
+    const res = (await this.ipcRenderer.callMain(
+      'read',
       fd,
       buffer,
       offset,
       fetchLength,
       position,
-    ])) as { buffer: Buffer; bytesRead: number }
+    )) as { buffer: Buffer; bytesRead: number }
     // TODO: This looks like a buffer, but fails Buffer.isBuffer(), so we have
     // to coerce it. Why?
     res.buffer = Buffer.from(res.buffer)
@@ -59,15 +61,16 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   async readFile(options: FilehandleOptions): Promise<Buffer | string> {
-    return this.ipcRenderer.callMain('readFile', [
+    return this.ipcRenderer.callMain(
+      'readFile',
       this.filename,
       options,
-    ]) as Promise<Buffer | string>
+    ) as Promise<Buffer | string>
   }
 
   // todo memoize
   async stat(): Promise<import('fs').Stats> {
-    return this.ipcRenderer.callMain('stat', [await this.getFd()]) as Promise<
+    return this.ipcRenderer.callMain('stat', await this.getFd()) as Promise<
       import('fs').Stats
     >
   }

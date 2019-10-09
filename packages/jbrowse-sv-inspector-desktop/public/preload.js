@@ -1,3 +1,3 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 window.electron = require('electron')
-window.electronBetterIpc = require('electron-better-ipc')
+window.electronBetterIpc = require('electron-better-ipc-extra')

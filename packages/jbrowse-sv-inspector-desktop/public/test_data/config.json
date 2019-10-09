@@ -1262,7 +1262,7 @@
   "configuration": {
     "configId": "WBBdhiJUQdj",
     "rpc": {
-      "defaultDriver": "MainThreadRpcDriver",
+      "defaultDriver": "ElectronRpcDriver",
       "configId": "A8raoinDhoH"
     }
   },

@@ -1,14 +1,26 @@
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import {
+  deserializeAbortSignal,
+  isRemoteAbortSignal,
+  remoteAbortRpcHandler,
+} from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
+import { checkAbortSignal, isAbortException } from '@gmod/jbrowse-core/util'
 import {
   freeAdapterResources,
   getAdapter,
 } from '@gmod/jbrowse-core/util/dataAdapterCache'
-import {
-  deserializeAbortSignal,
-  isRemoteAbortSignal,
-} from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
+import { useStaticRendering } from 'mobx-react'
+import corePlugins from './corePlugins'
 
-export async function getGlobalStats(
+window.rpcStuff = {
+  useStaticRendering,
+  PluginManager,
+  remoteAbortRpcHandler,
+  isAbortException,
+  corePlugins,
+}
+
+async function getGlobalStats(
   pluginManager,
   { adapterType, adapterConfig, signal, sessionId },
 ) {
@@ -25,7 +37,7 @@ export async function getGlobalStats(
   return dataAdapter.getGlobalStats({ signal })
 }
 
-export async function getRegionStats(
+async function getRegionStats(
   pluginManager,
   { region, adapterType, adapterConfig, signal, bpPerPx, sessionId },
 ) {
@@ -42,7 +54,7 @@ export async function getRegionStats(
   return dataAdapter.getRegionStats(region, { signal, bpPerPx })
 }
 
-export async function getMultiRegionStats(
+async function getMultiRegionStats(
   pluginManager,
   { regions, adapterType, adapterConfig, signal, bpPerPx, sessionId },
 ) {
@@ -59,7 +71,7 @@ export async function getMultiRegionStats(
   return dataAdapter.getMultiRegionStats(regions, { signal, bpPerPx })
 }
 
-export async function getRegions(
+async function getRegions(
   pluginManager,
   { sessionId, adapterType, signal, adapterConfig },
 ) {
@@ -76,7 +88,7 @@ export async function getRegions(
   return dataAdapter.getRegions({ signal })
 }
 
-export async function getRefNames(
+async function getRefNames(
   pluginManager,
   { sessionId, adapterType, signal, adapterConfig },
 ) {
@@ -93,7 +105,7 @@ export async function getRefNames(
   return dataAdapter.getRefNames({ signal })
 }
 
-export async function getRefNameAliases(
+async function getRefNameAliases(
   pluginManager,
   { sessionId, adapterType, signal, adapterConfig },
 ) {
@@ -115,7 +127,7 @@ export async function getRefNameAliases(
  *
  * returns number of objects deleted
  */
-export function freeResources(pluginManager, specification) {
+function freeResources(pluginManager, specification) {
   let deleteCount = 0
 
   deleteCount += freeAdapterResources(specification)
@@ -142,7 +154,7 @@ export function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {AbortSignal} [args.signal]
  */
-export async function render(
+async function render(
   pluginManager,
   {
     regions,
@@ -186,4 +198,15 @@ export async function render(
   })
   checkAbortSignal(signal)
   return result
+}
+
+window.rpcMethods = {
+  getGlobalStats,
+  getRegionStats,
+  getMultiRegionStats,
+  getRegions,
+  getRefNames,
+  getRefNameAliases,
+  freeResources,
+  render,
 }

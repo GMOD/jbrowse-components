@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
-const { ipcMain } = require('electron-better-ipc')
+const { ipcMain } = require('electron-better-ipc-extra')
 const fs = require('fs')
 const { promisify } = require('util')
 
@@ -38,6 +38,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools()
   }
   mainWindow.on('closed', () => {
+    BrowserWindow.getAllWindows().forEach(win => win.close())
     mainWindow = null
   })
 }
@@ -56,18 +57,35 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.answerRenderer('read', async args => {
+ipcMain.on('createWindowWorker', event => {
+  const workerWindow = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      preload: isDev
+        ? path.join(app.getAppPath(), 'public/preload.js')
+        : `file://${path.join(app.getAppPath(), 'public/../build/preload.js')}`,
+    },
+  })
+  workerWindow.loadURL(
+    isDev
+      ? 'http://localhost:3000/worker.html'
+      : `file://${path.join(app.getAppPath(), 'public/../build/worker.html')}`,
+  )
+  event.returnValue = workerWindow.id
+})
+
+ipcMain.answerRenderer('read', async (...args) => {
   return fsRead(...args)
 })
 
-ipcMain.answerRenderer('readFile', async args => {
+ipcMain.answerRenderer('readFile', async (...args) => {
   return fsReadFile(...args)
 })
 
-ipcMain.answerRenderer('stat', async args => {
+ipcMain.answerRenderer('stat', async (...args) => {
   return fsFStat(...args)
 })
 
-ipcMain.answerRenderer('open', async args => {
+ipcMain.answerRenderer('open', async (...args) => {
   return fsOpen(...args)
 })

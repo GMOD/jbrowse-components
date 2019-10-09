@@ -38,7 +38,6 @@ setInterval(flushLog, 1000)
 let callCounter = 0
 function wrapForRpc(func) {
   return args => {
-    // console.log(args)
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, func.name, args])

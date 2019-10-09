@@ -12,7 +12,7 @@ export const openUrl = rangeFetcherOpenUrl
 
 declare global {
   interface Window {
-    electron?: {}
+    electron?: import('electron').AllElectron
   }
 }
 

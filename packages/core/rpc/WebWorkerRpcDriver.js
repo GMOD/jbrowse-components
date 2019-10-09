@@ -72,22 +72,12 @@ function createWorkerPool(WorkerClass, configuredWorkerCount = 0) {
   return workerHandles
 }
 
-// keep global pools of each worker class
-const workerPools = new Map()
-function getWorkerPool(WorkerClass, configuredWorkerCount) {
-  if (!workerPools.has(WorkerClass)) {
-    workerPools.set(
-      WorkerClass,
-      createWorkerPool(WorkerClass, configuredWorkerCount),
-    )
-  }
-  return workerPools.get(WorkerClass)
-}
-
 export default class WebWorkerRpcDriver {
   lastWorkerAssignment = -1
 
   workerAssignments = new Map() // stateGroupName -> worker number
+
+  workerPool = undefined
 
   constructor({ WorkerClass }) {
     this.WorkerClass = WorkerClass
@@ -124,8 +114,18 @@ export default class WebWorkerRpcDriver {
     return thing
   }
 
+  getWorkerPool(configuredWorkerCount) {
+    if (!this.workerPool) {
+      this.workerPool = createWorkerPool(
+        this.WorkerClass,
+        configuredWorkerCount,
+      )
+    }
+    return this.workerPool
+  }
+
   getWorker(stateGroupName) {
-    const workers = getWorkerPool(this.WorkerClass)
+    const workers = this.getWorkerPool()
     if (!this.workerAssignments.has(stateGroupName)) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
       this.workerAssignments.set(stateGroupName, workerAssignment)

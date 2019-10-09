@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
-import * as rpcFuncs from './rpcMethods'
 import assemblyManager from './assemblyManager'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
@@ -118,7 +117,7 @@ const JBrowseWeb = types
       pluginManager,
       self.configuration.rpc,
       {
-        MainThreadRpcDriver: { rpcFuncs },
+        ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
       },
       self.getRefNameMapForAdapter,
     ),
