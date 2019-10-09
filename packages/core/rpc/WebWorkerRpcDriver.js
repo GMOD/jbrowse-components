@@ -89,7 +89,7 @@ export default class WebWorkerRpcDriver {
 
   workerAssignments = new Map() // stateGroupName -> worker number
 
-  constructor(pluginManager, { WorkerClass }) {
+  constructor({ WorkerClass }) {
     this.WorkerClass = WorkerClass
   }
 

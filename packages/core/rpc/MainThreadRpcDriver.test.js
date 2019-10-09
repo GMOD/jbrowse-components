@@ -1,14 +1,14 @@
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 
 test('isPlainObject', () => {
-  const d = new MainThreadRpcDriver(null, { rpcFuncs: 'stub' })
+  const d = new MainThreadRpcDriver({ rpcFuncs: 'stub' })
   expect(d.isPlainObject({ foo: 2 })).toBe(true)
   expect(d.isPlainObject(new Map())).toBe(false)
   expect(d.isPlainObject([])).toBe(false)
   expect(d.isPlainObject(new AbortController())).toBe(false)
 })
 test('arg cloning', () => {
-  const d = new MainThreadRpcDriver(null, { rpcFuncs: 'stub' })
+  const d = new MainThreadRpcDriver({ rpcFuncs: 'stub' })
   const aborter = new AbortController()
   const original = {
     signal: aborter.signal,

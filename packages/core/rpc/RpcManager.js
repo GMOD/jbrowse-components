@@ -57,10 +57,7 @@ class RpcManager {
         )
       }
 
-      this.driverObjects[backendName] = new DriverClass(
-        this.pluginManager,
-        backendConfiguration,
-      )
+      this.driverObjects[backendName] = new DriverClass(backendConfiguration)
     }
     return this.driverObjects[backendName]
   }
@@ -89,8 +86,8 @@ class RpcManager {
     }
   }
 
-  async call(stateGroupName, functionName, ...args) {
-    const { assemblyName, signal, regions, adapterConfig } = args[0]
+  async call(stateGroupName, functionName, args, opts = {}) {
+    const { assemblyName, signal, regions, adapterConfig } = args
 
     // TODO: this renaming stuff should probably be moved to the session model
     // when we have a session model
@@ -101,7 +98,7 @@ class RpcManager {
         { signal },
       )
 
-      this.renameRegionIfNeeded(refNameMap, args[0], 'region')
+      this.renameRegionIfNeeded(refNameMap, args, 'region')
 
       if (regions) {
         regions.forEach((r, index) => {
@@ -114,7 +111,7 @@ class RpcManager {
       stateGroupName,
       functionName,
       args,
-      { signal },
+      opts,
     )
   }
 }

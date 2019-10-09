@@ -8,7 +8,7 @@ export default class MainThreadRpcDriver {
    *
    * @param {Object} rpcFuncs object containing runnable rpc functions
    */
-  constructor(pluginManager, { rpcFuncs }) {
+  constructor({ rpcFuncs }) {
     this.rpcFuncs = rpcFuncs
     if (!rpcFuncs) throw new TypeError('rpcFuncs argument required')
   }
@@ -77,6 +77,6 @@ export default class MainThreadRpcDriver {
     }
 
     const clonedArgs = this.cloneArgs(args)
-    return func.call(this, pluginManager, ...clonedArgs)
+    return func.call(this, pluginManager, clonedArgs)
   }
 }
