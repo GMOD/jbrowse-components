@@ -10,6 +10,7 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
+import RBush from 'rbush'
 import TrackControls from '../components/TrackControls'
 
 // using a map because it preserves order
@@ -33,6 +34,7 @@ export default (pluginManager, configSchema) =>
       .volatile(() => ({
         ReactComponent: BlockBasedTrack,
         rendererTypeChoices: Array.from(rendererTypes.keys()),
+        rbush: new RBush(),
       }))
       .actions(self => ({
         selectFeature(feature) {
@@ -131,6 +133,51 @@ export default (pluginManager, configSchema) =>
               featureMaps.push(block.data.features)
           }
           return new CompositeMap(featureMaps)
+        },
+
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
+        get layoutFeatures() {
+          const layoutMaps = []
+          for (const block of self.blockState.values()) {
+            if (
+              block.data &&
+              block.data.layout &&
+              block.data.layout.rectangles
+            ) {
+              layoutMaps.push(block.data.layout.rectangles)
+            }
+          }
+          return new CompositeMap(layoutMaps)
+        },
+
+        get rtree() {
+          self.rbush.clear()
+          for (const [key, item] of this.features) {
+            const layout = this.layoutFeatures.get(key)
+            self.rbush.insert({
+              minX: item.get('start'),
+              minY: layout[1],
+              maxX: item.get('end'),
+              maxY: layout[3],
+              name: key,
+            })
+          }
+          return self.rbush
+        },
+        getFeatureOverlapping(x, y) {
+          const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+          if (self.rtree.collides(rect)) {
+            return self.rtree.search({
+              minX: x,
+              minY: y,
+              maxX: x + 1,
+              maxY: y + 1,
+            })
+          }
+          return []
         },
       })),
   )
