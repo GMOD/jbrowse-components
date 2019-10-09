@@ -205,6 +205,7 @@ export default types
       self.renderInProgress = undefined
     },
     setError(error) {
+      console.error(error)
       if (self.renderInProgress && !self.renderInProgress.signal.aborted) {
         self.renderInProgress.abort()
       }
