@@ -1,17 +1,47 @@
+/* eslint-disable react/require-default-props */
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { makeStyles } from '@material-ui/core/styles'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { Component, useState } from 'react'
 import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
+import runner from 'mobx-run-in-reactive-context'
+import useTimeout from 'use-timeout'
 
-const layoutPropType = ReactPropTypes.shape({
-  getRectangles: ReactPropTypes.func.isRequired,
-})
+const useStyles = makeStyles(theme => ({
+  hoverLabel: {
+    border: '1px solid black',
+    backgroundColor: '#fffa',
+    position: 'absolute',
+    pointerEvents: 'none',
+    zIndex: 10000,
+  },
+}))
+
+function Tooltip({ offsetX, offsetY, feature, timeout = 300 }) {
+  const classes = useStyles()
+  const [hidden, setHidden] = useState(true)
+  useTimeout(() => setHidden(false), timeout)
+  return hidden ? null : (
+    <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
+      {feature.get('name')}
+    </div>
+  )
+}
+
+Tooltip.propTypes = {
+  offsetX: ReactPropTypes.number.isRequired,
+  offsetY: ReactPropTypes.number.isRequired,
+  feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
+  timeout: ReactPropTypes.number,
+}
 
 class PileupRendering extends Component {
   static propTypes = {
-    layout: layoutPropType.isRequired,
+    layout: ReactPropTypes.shape({
+      getRectangles: ReactPropTypes.func.isRequired,
+    }).isRequired,
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     region: CommonPropTypes.Region.isRequired,
@@ -21,6 +51,9 @@ class PileupRendering extends Component {
     trackModel: ReactPropTypes.shape({
       /** id of the currently selected feature, if any */
       selectedFeatureId: ReactPropTypes.string,
+      getFeatureOverlapping: ReactPropTypes.func,
+      features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
+      layoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     }),
 
     onFeatureMouseDown: ReactPropTypes.func,
@@ -71,6 +104,7 @@ class PileupRendering extends Component {
 
   constructor(props) {
     super(props)
+    this.state = {}
     this.highlightOverlayCanvas = React.createRef()
   }
 
@@ -84,15 +118,6 @@ class PileupRendering extends Component {
 
   onMouseDown = event => {
     this.callMouseHandler('MouseDown', event)
-    if (this.featureUnderMouse) {
-      this.lastFeatureMouseDown = {
-        featureId: this.featureUnderMouse,
-        x: event.clientX,
-        y: event.clientY,
-      }
-    } else {
-      this.lastFeatureMouseDown = undefined
-    }
   }
 
   onMouseEnter = event => {
@@ -102,7 +127,7 @@ class PileupRendering extends Component {
   onMouseOut = event => {
     this.callMouseHandler('MouseOut', event)
     this.callMouseHandler('MouseLeave', event)
-    this.featureUnderMouse = undefined
+    this.setState({ featureUnderMouse: undefined })
   }
 
   onMouseOver = event => {
@@ -120,96 +145,81 @@ class PileupRendering extends Component {
   onMouseLeave = event => {
     this.callMouseHandler('MouseOut', event)
     this.callMouseHandler('MouseLeave', event)
-    this.featureUnderMouse = undefined
+    this.setState({ featureUnderMouse: undefined })
   }
 
   onMouseMove = event => {
-    const featureIdCurrentlyUnderMouse = this.findFeatureIdUnderMouse(event)
-    if (this.featureUnderMouse === featureIdCurrentlyUnderMouse) {
+    const {
+      width,
+      horizontallyFlipped,
+      bpPerPx,
+      trackModel,
+      region,
+    } = this.props
+    const { featureUnderMouse } = this.state
+    let offsetX = 0
+    let offsetY = 0
+    if (this.highlightOverlayCanvas.current) {
+      offsetX = this.highlightOverlayCanvas.current.getBoundingClientRect().left
+      offsetY = this.highlightOverlayCanvas.current.getBoundingClientRect().top
+    }
+    offsetX = event.clientX - offsetX
+    offsetY = event.clientY - offsetY
+    const px = horizontallyFlipped ? width - offsetX : offsetX
+    const clientBp = region.start + bpPerPx * px
+
+    const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+    const featureIdCurrentlyUnderMouse = feats.length
+      ? feats[0].name
+      : undefined
+    this.setState({ offsetX, offsetY })
+
+    if (featureUnderMouse === featureIdCurrentlyUnderMouse) {
       this.callMouseHandler('MouseMove', event)
     } else {
-      if (this.featureUnderMouse) {
+      if (featureUnderMouse) {
         this.callMouseHandler('MouseOut', event)
         this.callMouseHandler('MouseLeave', event)
       }
-      this.featureUnderMouse = featureIdCurrentlyUnderMouse
+      this.setState({ featureUnderMouse: featureIdCurrentlyUnderMouse })
       this.callMouseHandler('MouseOver', event)
       this.callMouseHandler('MouseEnter', event)
     }
   }
 
   updateSelectionHighlight() {
-    const {
-      trackModel,
-      region,
-      bpPerPx,
-      layout,
-      horizontallyFlipped,
-    } = this.props
+    const { trackModel, region, bpPerPx, horizontallyFlipped } = this.props
     const { selectedFeatureId } = trackModel
 
     const canvas = this.highlightOverlayCanvas.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     if (selectedFeatureId) {
-      for (const [
-        id,
-        [leftBp, topPx, rightBp, bottomPx],
-      ] of layout.getRectangles()) {
-        if (String(id) === String(selectedFeatureId)) {
-          const leftPx = Math.round(
-            bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
-          )
-          const rightPx = Math.round(
-            bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
-          )
-          const top = Math.round(topPx)
-          const height = Math.round(bottomPx - topPx)
-          ctx.shadowColor = '#222266'
-          ctx.shadowBlur = 10
-          ctx.lineJoin = 'bevel'
-          ctx.lineWidth = 2
-          ctx.strokeStyle = '#00b8ff'
-          ctx.strokeRect(leftPx - 2, top - 2, rightPx - leftPx + 4, height + 4)
-          ctx.clearRect(leftPx, top, rightPx - leftPx, height)
-          return
-        }
+      const res = trackModel.layoutFeatures.get(selectedFeatureId)
+      if (res) {
+        const [leftBp, topPx, rightBp, bottomPx] = res
+        const leftPx = Math.round(
+          bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+        )
+        const rightPx = Math.round(
+          bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+        )
+        const top = Math.round(topPx)
+        const height = Math.round(bottomPx - topPx)
+        ctx.shadowColor = '#222266'
+        ctx.shadowBlur = 10
+        ctx.lineJoin = 'bevel'
+        ctx.lineWidth = 2
+        ctx.strokeStyle = '#00b8ff'
+        ctx.strokeRect(leftPx - 2, top - 2, rightPx - leftPx + 4, height + 4)
+        ctx.clearRect(leftPx, top, rightPx - leftPx, height)
       }
     }
   }
 
-  findFeatureIdUnderMouse(event) {
-    const { offsetX, offsetY } = event.nativeEvent
-    if (typeof offsetX !== 'number')
-      throw new Error(
-        `invalid offsetX, does this browser provide offsetX and offsetY on mouse events? ${offsetX} ${String(
-          event,
-        )}`,
-      )
-
-    const { layout, bpPerPx, region, horizontallyFlipped } = this.props
-    for (const [
-      id,
-      [leftBp, topPx, rightBp, bottomPx],
-    ] of layout.getRectangles()) {
-      let leftPx = bpToPx(leftBp, region, bpPerPx, horizontallyFlipped)
-      let rightPx = bpToPx(rightBp, region, bpPerPx, horizontallyFlipped)
-      if (horizontallyFlipped) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
-      if (
-        offsetX >= leftPx &&
-        offsetX <= rightPx &&
-        offsetY >= topPx &&
-        offsetY <= bottomPx
-      ) {
-        return id
-      }
-    }
-
-    return undefined
-  }
+  findFeatureIdUnderMouse(event) {}
 
   /**
    * @param {string} handlerName
@@ -217,19 +227,21 @@ class PileupRendering extends Component {
    * @param {bool} always - call this handler even if there is no feature
    */
   callMouseHandler(handlerName, event, always = false) {
+    const { featureUnderMouse } = this.state
     // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = this.props[`onFeature${handlerName}`]
     // eslint-disable-next-line react/destructuring-assignment
     const canvasHandler = this.props[`on${handlerName}`]
-    if (featureHandler && (always || this.featureUnderMouse)) {
-      featureHandler(event, this.featureUnderMouse)
+    if (featureHandler && (always || featureUnderMouse)) {
+      featureHandler(event, featureUnderMouse)
     } else if (canvasHandler) {
-      canvasHandler(event, this.featureUnderMouse)
+      canvasHandler(event, featureUnderMouse)
     }
   }
 
   render() {
-    const { width, height } = this.props
+    const { width, height, trackModel } = this.props
+    const { featureUnderMouse, offsetX, offsetY } = this.state
     const canvasWidth = Math.ceil(width)
     // need to call this in render so we get the right observer behavior
     this.updateSelectionHighlight()
@@ -248,17 +260,24 @@ class PileupRendering extends Component {
           style={{ position: 'absolute', left: 0, top: 0 }}
           className="highlightOverlayCanvas"
           ref={this.highlightOverlayCanvas}
-          onMouseDown={this.onMouseDown}
-          onMouseEnter={this.onMouseEnter}
-          onMouseOut={this.onMouseOut}
-          onMouseOver={this.onMouseOver}
-          onMouseUp={this.onMouseUp}
-          onMouseLeave={this.onMouseLeave}
-          onMouseMove={this.onMouseMove}
+          onMouseDown={event => runner(() => this.onMouseDown(event))}
+          onMouseEnter={event => runner(() => this.onMouseEnter(event))}
+          onMouseOut={event => runner(() => this.onMouseOut(event))}
+          onMouseOver={event => runner(() => this.onMouseOver(event))}
+          onMouseUp={event => runner(() => this.onMouseUp(event))}
+          onMouseLeave={event => runner(() => this.onMouseLeave(event))}
+          onMouseMove={event => runner(() => this.onMouseMove(event))}
+          onClick={event => runner(() => this.onClick(event))}
           onFocus={() => {}}
           onBlur={() => {}}
-          onClick={this.onClick}
         />
+        {featureUnderMouse ? (
+          <Tooltip
+            feature={trackModel.features.get(featureUnderMouse)}
+            offsetX={offsetX}
+            offsetY={offsetY}
+          />
+        ) : null}
       </div>
     )
   }
