@@ -38,14 +38,15 @@ setInterval(flushLog, 1000)
 let callCounter = 0
 function wrapForRpc(func) {
   return args => {
+    // console.log(args)
     callCounter += 1
     const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, func.name, ...args])
+    // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
-      .then(() => func(jbPluginManager, ...args))
+      .then(() => func(jbPluginManager, args))
       .catch(error => {
         if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, func.name, ...args])
+          // logBuffer.push(['rpc-abort', myId, func.name, args])
         } else {
           logBuffer.push(['rpc-error', myId, func.name, error])
           flushLog()
