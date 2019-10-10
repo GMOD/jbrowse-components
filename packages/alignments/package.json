@@ -13,7 +13,6 @@
     "generic-filehandle": "^2.0.0",
     "memoize-one": "^5.1.1",
     "mobx-run-in-reactive-context": "^1.0.1",
-    "rbush": "^3.0.1",
     "react-style-proptype": "^3.2.2",
     "use-timeout": "^1.1.0"
   },

@@ -7,6 +7,8 @@ import {
 import { autorun } from 'mobx'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
+import RBush from 'rbush'
+import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import BlockState, { BlockStateModel } from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
@@ -18,6 +20,9 @@ const blockBasedTrack = types.compose(
     .model({
       blockState: types.map(BlockState),
     })
+    .volatile(() => ({
+      rbush: new RBush(),
+    }))
     .views(self => ({
       get blockType() {
         return 'staticBlocks'
@@ -41,7 +46,50 @@ const blockBasedTrack = types.compose(
           if (block.data && block.data.features)
             featureMaps.push(block.data.features)
         }
-        return new CompositeMap(featureMaps)
+        return new CompositeMap<string, Feature>(featureMaps)
+      },
+
+      /**
+       * a CompositeMap of featureId -> feature obj that
+       * just looks in all the block data for that feature
+       */
+      get layoutFeatures() {
+        const layoutMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.layout && block.data.layout.rectangles) {
+            layoutMaps.push(block.data.layout.rectangles)
+          }
+        }
+        return new CompositeMap<string, [number, number, number, number]>(
+          layoutMaps,
+        )
+      },
+
+      get rtree() {
+        self.rbush.clear()
+        for (const [key, item] of this.features) {
+          const layout = this.layoutFeatures.get(key) || []
+          self.rbush.insert({
+            minX: item.get('start'),
+            minY: layout[1],
+            maxX: item.get('end'),
+            maxY: layout[3],
+            name: key,
+          })
+        }
+        return self.rbush
+      },
+      getFeatureOverlapping(x: number, y: number) {
+        const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+        if (this.rtree.collides(rect)) {
+          return this.rtree.search({
+            minX: x,
+            minY: y,
+            maxX: x + 1,
+            maxY: y + 1,
+          })
+        }
+        return []
       },
 
       get blockDefinitions() {
