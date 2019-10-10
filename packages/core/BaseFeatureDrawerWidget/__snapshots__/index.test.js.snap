@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`open up a drawer widget 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-root MuiPaper-rounded"
+  data-testid="alignment-side-drawer"
+>
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+  >
+    <div
+      class="MuiCardHeader-root makeStyles-header"
+    >
+      <div
+        class="MuiCardHeader-content"
+      >
+        <span
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
+        >
+          Primary data
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="makeStyles-fieldName"
+        >
+          Position
+        </div>
+        <div
+          class="makeStyles-fieldValue"
+        >
+          ctgA:3..102
+        </div>
+      </div>
+      <div>
+        <div
+          class="makeStyles-fieldName"
+        >
+          Length
+        </div>
+        <div
+          class="makeStyles-fieldValue"
+        >
+          100
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+  >
+    <div
+      class="MuiCardHeader-root makeStyles-header"
+    >
+      <div
+        class="MuiCardHeader-content"
+      >
+        <span
+          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
+        >
+          Attributes
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiCardContent-root"
+    >
+      <div>
+        <div
+          class="makeStyles-fieldName"
+        >
+          score
+        </div>
+        <div
+          class="makeStyles-fieldValue"
+        >
+          37
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

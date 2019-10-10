@@ -1,11 +1,13 @@
+/* eslint-disable react/require-default-props */
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { makeStyles } from '@material-ui/core/styles'
 import { bpToPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { Component, useState } from 'react'
 import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
 import runner from 'mobx-run-in-reactive-context'
+import useTimeout from 'use-timeout'
 
 const useStyles = makeStyles(theme => ({
   hoverLabel: {
@@ -16,17 +18,15 @@ const useStyles = makeStyles(theme => ({
     zIndex: 10000,
   },
 }))
-function Tooltip({ offsetX, offsetY, feature }) {
+
+function Tooltip({ offsetX, offsetY, feature, timeout = 300 }) {
   const classes = useStyles()
-  return (
-    <>
-      <div
-        className={classes.hoverLabel}
-        style={{ left: offsetX, top: offsetY }}
-      >
-        {feature.get('name')}
-      </div>
-    </>
+  const [hidden, setHidden] = useState(true)
+  useTimeout(() => setHidden(false), timeout)
+  return hidden ? null : (
+    <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
+      {feature.get('name')}
+    </div>
   )
 }
 
@@ -34,6 +34,7 @@ Tooltip.propTypes = {
   offsetX: ReactPropTypes.number.isRequired,
   offsetY: ReactPropTypes.number.isRequired,
   feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
+  timeout: ReactPropTypes.number,
 }
 
 class PileupRendering extends Component {

@@ -1,9 +1,22 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React from 'react'
 import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
+import { LinearGenomeViewStateModel } from '..'
+import {
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+  BlockSet,
+} from '../../BasicTrack/util/blockTypes'
+
+import {
+  ElidedBlockMarker,
+  InterRegionPaddingBlockMarker,
+} from '../../BasicTrack/components/MarkerBlocks'
 
 const useStyles = makeStyles((/* theme */) => ({
   scaleBar: {
@@ -27,7 +40,10 @@ const useStyles = makeStyles((/* theme */) => ({
   },
 }))
 
-function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
+function findBlockContainingLeftSideOfView(
+  offsetPx: number,
+  blockSet: BlockSet,
+) {
   const blocks = blockSet.getBlocks()
   for (let i = 0; i < blocks.length; i += 1) {
     const block = blocks[i]
@@ -37,7 +53,8 @@ function findBlockContainingLeftSideOfView(offsetPx, blockSet) {
   return undefined
 }
 
-function ScaleBar({ model, height }) {
+type LGV = Instance<LinearGenomeViewStateModel>
+function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
   const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
     model.offsetPx,
@@ -47,21 +64,42 @@ function ScaleBar({ model, height }) {
   return (
     <div className={classes.scaleBar}>
       {model.staticBlocks.map(block => {
-        return (
-          <Block key={block.offsetPx} block={block} model={model}>
-            <svg height={height} width={block.widthPx}>
-              <Ruler
-                region={block}
-                showRefNameLabel={
-                  !!block.isLeftEndOfDisplayedRegion &&
-                  block !== blockContainingLeftEndOfView
-                }
-                bpPerPx={model.bpPerPx}
-                flipped={model.horizontallyFlipped}
-              />
-            </svg>
-          </Block>
-        )
+        if (block instanceof ContentBlock) {
+          return (
+            <Block key={block.offsetPx} block={block} model={model}>
+              <svg height={height} width={block.widthPx}>
+                <Ruler
+                  region={block}
+                  showRefNameLabel={
+                    !!block.isLeftEndOfDisplayedRegion &&
+                    block !== blockContainingLeftEndOfView
+                  }
+                  bpPerPx={model.bpPerPx}
+                  flipped={model.horizontallyFlipped}
+                />
+              </svg>
+            </Block>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return (
+            <ElidedBlockMarker
+              key={block.key}
+              width={block.widthPx}
+              offset={block.offsetPx - model.offsetPx}
+            />
+          )
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              block={block}
+              model={model}
+            />
+          )
+        }
+        return null
       })}
       {// put in a floating ref label
       blockContainingLeftEndOfView ? (

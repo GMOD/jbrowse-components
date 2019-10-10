@@ -1,26 +1,52 @@
 import { assembleLocString } from '@gmod/jbrowse-core/util'
-import { BlockSet, ContentBlock, ElidedBlock } from './blockTypes'
+import { Instance } from 'mobx-state-tree'
+import {
+  BaseBlock,
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from './blockTypes'
+import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
 
-export function calculateBlocksReversed(self, extra = 0) {
+const interRegionPaddingWidth = 2
+
+type LGV = Instance<LinearGenomeViewStateModel>
+
+export function calculateBlocksReversed(self: LGV, extra = 0) {
   return new BlockSet(
-    calculateBlocksForward(self, extra).map(fwdBlock => {
-      const { parentRegion } = fwdBlock
-      const args = {
-        ...fwdBlock,
-        start: parentRegion.start + parentRegion.end - fwdBlock.end,
-        end: parentRegion.start + parentRegion.end - fwdBlock.start,
-      }
-      const revBlock =
-        fwdBlock instanceof ElidedBlock
-          ? new ElidedBlock(args)
-          : new ContentBlock(args)
-      revBlock.key = assembleLocString(revBlock)
-      return revBlock
-    }),
+    calculateBlocksForward(self, extra).map<BaseBlock>(
+      (fwdBlock: BaseBlock) => {
+        const { parentRegion } = fwdBlock
+
+        const args = {
+          ...fwdBlock,
+        }
+        if (parentRegion) {
+          args.start = parentRegion.start + parentRegion.end - fwdBlock.end
+          args.end = parentRegion.start + parentRegion.end - fwdBlock.start
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = (data: any) => {
+          if (fwdBlock instanceof ElidedBlock) {
+            return new ElidedBlock(data)
+          }
+          if (fwdBlock instanceof InterRegionPaddingBlock) {
+            return new InterRegionPaddingBlock(data)
+          }
+          return new ContentBlock(data)
+        }
+
+        const block = r(args)
+        block.key = assembleLocString(block)
+        return block
+      },
+    ),
   )
 }
 
-export function calculateBlocksForward(self, extra = 0) {
+export function calculateBlocksForward(self: LGV, extra = 0) {
   const {
     offsetPx,
     bpPerPx,
@@ -37,7 +63,7 @@ export function calculateBlocksForward(self, extra = 0) {
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegionsInOrder.forEach(region => {
+  displayedRegionsInOrder.forEach((region, regionNumber) => {
     // find the block numbers of the left and right window sides,
     // clamp those to the region range, and then make blocks for that range
     const regionBlockCount = Math.ceil(
@@ -74,12 +100,29 @@ export function calculateBlocksForward(self, extra = 0) {
         widthPx,
         isLeftEndOfDisplayedRegion: start === region.start,
         isRightEndOfDisplayedRegion: end === region.end,
+        key: '',
       }
       blockData.key = assembleLocString(blockData)
       if (widthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
+      }
+
+      // insert a inter-region padding block if we are crossing a displayed
+      if (
+        widthPx >= minimumBlockWidth &&
+        blockData.isRightEndOfDisplayedRegion &&
+        regionNumber < displayedRegionsInOrder.length - 1
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-rightpad`,
+            widthPx: interRegionPaddingWidth,
+            offsetPx: blockData.offsetPx + blockData.widthPx,
+          }),
+        )
+        regionBpOffset += interRegionPaddingWidth * bpPerPx
       }
     }
 
@@ -89,7 +132,11 @@ export function calculateBlocksForward(self, extra = 0) {
   return blocks
 }
 
-export default function calculateBlocks(view, reversed, extra = 0) {
+export default function calculateBlocks(
+  view: LGV,
+  reversed: boolean,
+  extra = 0,
+) {
   return reversed
     ? calculateBlocksReversed(view, extra)
     : calculateBlocksForward(view, extra)

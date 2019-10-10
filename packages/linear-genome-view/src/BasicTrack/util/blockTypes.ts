@@ -1,11 +1,13 @@
-export class BlockSet {
-  blocks = []
+type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
-  constructor(blocks = []) {
+export class BlockSet {
+  blocks: BaseBlock[] = []
+
+  constructor(blocks: BaseBlock[] = []) {
     this.blocks = blocks
   }
 
-  push(block) {
+  push(block: BaseBlock) {
     if (block instanceof ElidedBlock) {
       if (this.blocks.length) {
         const lastBlock = this.blocks[this.blocks.length - 1]
@@ -23,11 +25,11 @@ export class BlockSet {
     return this.blocks
   }
 
-  map(func, thisarg) {
+  map<T, U = this>(func: Func<T>, thisarg?: U) {
     return this.blocks.map(func, thisarg)
   }
 
-  forEach(func, thisarg) {
+  forEach<T, U = this>(func: Func<T>, thisarg?: U) {
     return this.blocks.forEach(func, thisarg)
   }
 
@@ -36,12 +38,31 @@ export class BlockSet {
   }
 }
 
-class BaseBlock {
+export class BaseBlock {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+
+  public refName: string
+
+  public start: number
+
+  public end: number
+
+  public assemblyName: string
+
+  public key: string
+
   /**
    * a block that should be shown as filled with data
    */
-  constructor(data) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(data: any) {
     Object.assign(this, data)
+    this.assemblyName = data.assemblyName
+    this.refName = data.refName
+    this.start = data.start
+    this.end = data.end
+    this.key = data.key
   }
 
   /**
@@ -51,9 +72,10 @@ class BaseBlock {
    * @returns either a new block with a renamed reference sequence,
    * or the same block, if the ref name is not actually different
    */
-  renameReference(refName) {
+  renameReference(refName: string) {
     if (this.refName && refName !== this.refName) {
-      return new ContentBlock({ ...this, refName })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return new (this.constructor as any)({ ...this, refName })
     }
     return this
   }
@@ -75,9 +97,17 @@ export class ContentBlock extends BaseBlock {}
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
-  elidedBlockCount = 1
+  private elidedBlockCount = 1
 
-  push(otherBlock) {
+  public widthPx: number
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(data: Record<string, any>) {
+    super(data)
+    this.widthPx = data.widthPx
+  }
+
+  push(otherBlock: BaseBlock) {
     this.elidedBlockCount += 1
 
     if (otherBlock) {
@@ -88,3 +118,9 @@ export class ElidedBlock extends BaseBlock {
     }
   }
 }
+
+/**
+ * marker block that sits between two different displayed regions
+ * and provides a thick border between them
+ */
+export class InterRegionPaddingBlock extends BaseBlock {}
