@@ -63,7 +63,6 @@ function constrainBpPerPx(newBpPerPx: number): number {
   )[0]
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function stateModelFactory(pluginManager: any) {
   return types
     .model('LinearGenomeView', {

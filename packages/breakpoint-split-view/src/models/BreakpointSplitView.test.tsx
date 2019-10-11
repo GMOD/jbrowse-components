@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'

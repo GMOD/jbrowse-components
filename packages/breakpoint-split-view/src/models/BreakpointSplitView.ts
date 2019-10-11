@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'

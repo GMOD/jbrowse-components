@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import Path from 'svg-path-generator'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'

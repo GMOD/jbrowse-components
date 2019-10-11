@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
 // takes an array or Map or Set (anything iterable with values()) of Maps
 // and lets you query them as one Map
 export default class CompositeMap<T, U> {

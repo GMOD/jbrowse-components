@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { getSnapshot, types, cast, SnapshotIn } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import JBrowseWeb, { Session } from './jbrowseModel'
