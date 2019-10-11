@@ -7,7 +7,10 @@ export default class PrerenderedCanvas extends Component {
     height: ReactPropTypes.number.isRequired,
     width: ReactPropTypes.number.isRequired,
     highResolutionScaling: ReactPropTypes.number,
-    imageData: ReactPropTypes.instanceOf(ImageBitmapType),
+    imageData: ReactPropTypes.oneOfType([
+      ReactPropTypes.instanceOf(ImageBitmapType),
+      ReactPropTypes.shape({ dataURL: ReactPropTypes.string }),
+    ]),
     style: ReactPropTypes.objectOf(ReactPropTypes.any),
   }
 
@@ -33,11 +36,15 @@ export default class PrerenderedCanvas extends Component {
   draw() {
     const { imageData } = this.props
     if (!imageData) return
+    const canvas = this.featureCanvas.current
+    const context = canvas.getContext('2d')
     if (imageData instanceof ImageBitmapType) {
-      const canvas = this.featureCanvas.current
-      const context = canvas.getContext('2d')
       // console.log('got image data', imageData, imageData.constructor.name)
       context.drawImage(imageData, 0, 0)
+    } else if (imageData.dataURL) {
+      const img = new Image()
+      img.onload = () => context.drawImage(img, 0, 0)
+      img.src = imageData.dataURL
     } else {
       // TODO: add support for replay-based image data here
       throw new Error(
