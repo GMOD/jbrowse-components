@@ -1,14 +1,12 @@
-import MainThreadRpcDriver from './MainThreadRpcDriver'
+import { isPlainObject, cloneArgs } from './MainThreadRpcDriver'
 
 test('isPlainObject', () => {
-  const d = new MainThreadRpcDriver({ rpcFuncs: 'stub' })
-  expect(d.isPlainObject({ foo: 2 })).toBe(true)
-  expect(d.isPlainObject(new Map())).toBe(false)
-  expect(d.isPlainObject([])).toBe(false)
-  expect(d.isPlainObject(new AbortController())).toBe(false)
+  expect(isPlainObject(new Map())).toBe(false)
+  expect(isPlainObject({ foo: 2 })).toBe(true)
+  expect(isPlainObject([])).toBe(false)
+  expect(isPlainObject(new AbortController())).toBe(false)
 })
 test('arg cloning', () => {
-  const d = new MainThreadRpcDriver({ rpcFuncs: 'stub' })
   const aborter = new AbortController()
   const original = {
     signal: aborter.signal,
@@ -21,7 +19,7 @@ test('arg cloning', () => {
     ],
   }
 
-  const cloned = d.cloneArgs(original)
+  const cloned = cloneArgs(original)
   expect(typeof cloned.signal.addEventListener).toBe('function')
   expect(cloned.signal).toBe(
     cloned.buriedStuff[0].anotherThing.sameSignalInAnotherPlace,
