@@ -75,7 +75,13 @@ export default function stateModelFactory(pluginManager: any) {
             if (!candidates[n]) {
               candidates[n] = []
             }
-            candidates[n].push(feature)
+            //todo: this is a bit of a hack to have this here, but
+            //it prevents for example a "gene track" drawing
+            //lines between genes with the same name...only want
+            //to pair alignments?
+            if (feature.get('CIGAR')) {
+              candidates[n].push(feature)
+            }
           }
           alreadySeen[feature.id()] = true
         }
@@ -90,6 +96,7 @@ export default function stateModelFactory(pluginManager: any) {
           tracks.map(t => t.layoutFeatures),
         )
         const matches = this.getMatchedFeatures(trackConfigId)
+        console.log(matches)
         return matches.map(c => {
           return c
             .map((f: Feature) => ({
