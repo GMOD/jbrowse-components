@@ -160,9 +160,7 @@ function PileupRendering(props) {
    * @param {bool} always - call this handler even if there is no feature
    */
   function callMouseHandler(handlerName, event, always = false) {
-    // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = props[`onFeature${handlerName}`]
-    // eslint-disable-next-line react/destructuring-assignment
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && (always || featureIdUnderMouse)) {
       featureHandler(event, featureIdUnderMouse)
