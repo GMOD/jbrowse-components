@@ -5,6 +5,7 @@ import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, types, cast } from 'mobx-state-tree'
+import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
 
@@ -58,7 +59,6 @@ function constrainBpPerPx(newBpPerPx: number): number {
   )[0]
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function stateModelFactory(pluginManager: any) {
   return types
     .model('LinearGenomeView', {
@@ -382,8 +382,8 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .views(self => {
-      let currentlyCalculatedStaticBlocks: {}
-      let stringifiedCurrentlyCalculatedStaticBlocks: {}
+      let currentlyCalculatedStaticBlocks: BlockSet | undefined
+      let stringifiedCurrentlyCalculatedStaticBlocks: string
       return {
         get menuOptions(): LGVMenuOption[] {
           return [
@@ -411,17 +411,21 @@ export function stateModelFactory(pluginManager: any) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+          const ret = calculateStaticBlocks(
+            cast(self),
+            self.horizontallyFlipped,
+            1,
+          )
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
             stringifiedCurrentlyCalculatedStaticBlocks = sret
           }
-          return currentlyCalculatedStaticBlocks
+          return currentlyCalculatedStaticBlocks as BlockSet
         },
 
-        get dynamicBlocks(): any {
-          return calculateDynamicBlocks(self, self.horizontallyFlipped)
+        get dynamicBlocks() {
+          return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
       }
     })

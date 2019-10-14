@@ -32,6 +32,7 @@
         "@types/jest": "^24.0.9",
         "@types/long": "^4.0.0",
         "@types/pako": "^1.0.1",
+        "@types/react-dom": "^16.9.1",
         "@types/set-value": "^2.0.0",
         "@types/shortid": "^0.0.29",
         "@types/string-template": "^1.0.2",

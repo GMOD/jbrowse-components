@@ -13,7 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
-import { addDisposer, getSnapshot, types } from 'mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
@@ -75,7 +75,9 @@ export default configSchema =>
 
                 const stats = await statsPromise
                 checkAbortSignal(aborter.signal)
-                self.updateScale(stats)
+                if (isAlive(self)) {
+                  self.updateScale(stats)
+                }
               } catch (e) {
                 if (!isAbortException(e)) {
                   self.setError(e)

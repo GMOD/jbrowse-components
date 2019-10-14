@@ -1,9 +1,21 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
+import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { ContentBlock, ElidedBlock } from '../util/blockTypes'
+import { BlockBasedTrackStateModel } from '../blockBasedTrackModel'
+import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
+import {
+  BaseBlock,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from '../util/blockTypes'
 import Block from './Block'
+
+import {
+  ElidedBlockMarker,
+  InterRegionPaddingBlockMarker,
+} from './MarkerBlocks'
 
 const useStyles = makeStyles({
   trackBlocks: {
@@ -13,15 +25,6 @@ const useStyles = makeStyles({
     background: '#404040',
     minHeight: '100%',
   },
-  elidedBlock: {
-    position: 'absolute',
-    minHeight: '100%',
-    boxSizing: 'border-box',
-    backgroundColor: '#999',
-    backgroundImage:
-      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
-  },
-
   heightOverflowed: {
     position: 'absolute',
     color: 'rgb(77,77,77)',
@@ -36,26 +39,21 @@ const useStyles = makeStyles({
   },
 })
 
-const ElidedBlockMarker = ({ width, offset }) => {
-  const classes = useStyles()
-  return (
-    <div
-      className={classes.elidedBlock}
-      style={{ left: `${offset}px`, width: `${width}px` }}
-    />
-  )
-}
-ElidedBlockMarker.propTypes = {
-  width: ReactPropTypes.number.isRequired,
-  offset: ReactPropTypes.number.isRequired,
-}
-
-function TrackBlocks({ model, viewModel, blockState }) {
+function TrackBlocks({
+  model,
+  viewModel,
+  blockState,
+}: {
+  model: Instance<BlockBasedTrackStateModel>
+  viewModel: Instance<LinearGenomeViewStateModel>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blockState: Record<string, any>
+}) {
   const classes = useStyles()
   const { blockDefinitions } = model
   return (
     <div data-testid="Block" className={classes.trackBlocks}>
-      {blockDefinitions.map(block => {
+      {blockDefinitions.map((block: BaseBlock) => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
@@ -86,7 +84,16 @@ function TrackBlocks({ model, viewModel, blockState }) {
             />
           )
         }
-        return null
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockMarker
+              key={block.key}
+              block={block}
+              model={viewModel}
+            />
+          )
+        }
+        throw new Error(`invalid block type ${typeof block}`)
       })}
     </div>
   )
