@@ -111,7 +111,7 @@ export default pluginManager => {
                 self.assemblyData,
               )
               getParent(self).history.withoutUndo(() =>
-                view.setDisplayedRegions(displayedRegions, true),
+                view.setDisplayedRegions(displayedRegions || [], true),
               )
             }
           }

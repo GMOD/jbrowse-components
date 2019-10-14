@@ -14,6 +14,7 @@ import SVG from '@gmod/jbrowse-plugin-svg'
 import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
+import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 
 export default [
   Alignments,
@@ -32,4 +33,5 @@ export default [
   TrackHubRegistry,
   Variants,
   Wiggle,
+  SpreadsheetViewPlugin,
 ]
