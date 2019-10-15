@@ -6,10 +6,8 @@ exports[`<DivSequenceRendering /> renders with no features 1`] = `
   style="height: 16px; font-size: 12.8px;"
 >
   <div
-    class="blur"
-  >
-    Zoom in to see sequence
-  </div>
+    style="display: flex;"
+  />
 </div>
 `;
 
@@ -86,15 +84,20 @@ exports[`<DivSequenceRendering /> renders with one feature with no seq, zoomed i
 </h1>
 `;
 
-exports[`<DivSequenceRendering /> renders with one feature with no seq, zoomed way out 1`] = `
+exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
 <div
   class="DivSequenceRendering"
   style="height: 16px; font-size: 12.8px;"
 >
   <div
-    class="blur"
+    style="display: flex;"
   >
-    Zoom in to see sequence
+    <div
+      class="base base-a "
+    />
+    <div
+      class="base base-b "
+    />
   </div>
 </div>
 `;

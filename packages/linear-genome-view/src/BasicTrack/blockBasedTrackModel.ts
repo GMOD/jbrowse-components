@@ -179,9 +179,15 @@ const blockBasedTrack = types.compose(
         return {
           ...getParentRenderProps(self),
           trackModel: self,
-          onFeatureClick(event: any, featureId: string) {
-            const feature = self.features.get(featureId)
-            self.selectFeature(feature as Feature)
+          onFeatureClick(event: any, featureId: string | undefined) {
+            if (!featureId) self.clearFeatureSelection()
+            else {
+              const feature = self.features.get(featureId)
+              self.selectFeature(feature as Feature)
+            }
+          },
+          onClick() {
+            self.clearFeatureSelection()
           },
         }
       },

@@ -31,7 +31,7 @@ exports[`one feature 1`] = `
     />
     <text
       dominant-baseline="hanging"
-      style="font-size: 13px; fill: black;"
+      style="font-size: 13px; fill: black; cursor: default;"
       x="0.3"
       y="12"
     >

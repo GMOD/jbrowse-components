@@ -35,7 +35,7 @@ export default (configSchema, trackType) =>
          */
         regionCannotBeRendered(region) {
           const view = getContainingView(self)
-          if (view.bpPerPx > 2) {
+          if (view.bpPerPx >= 1) {
             return 'Zoom in to see sequence'
           }
           return undefined
