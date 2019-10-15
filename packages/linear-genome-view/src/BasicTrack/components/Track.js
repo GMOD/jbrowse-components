@@ -27,7 +27,7 @@ function Track({ children, onHorizontalScroll, trackId }) {
   useEffect(() => {
     let cleanup = () => {}
 
-    function mouseMove(event) {
+    function globalMouseMove(event) {
       event.preventDefault()
       const distance = event.clientX - prevX.current
       if (distance) {
@@ -36,17 +36,17 @@ function Track({ children, onHorizontalScroll, trackId }) {
       }
     }
 
-    function mouseUp() {
+    function globalMouseUp() {
       prevX.current = undefined
       setMouseDragging(false)
     }
 
     if (mouseDragging) {
-      window.addEventListener('mousemove', mouseMove, true)
-      window.addEventListener('mouseup', mouseUp, true)
+      window.addEventListener('mousemove', globalMouseMove, true)
+      window.addEventListener('mouseup', globalMouseUp, true)
       cleanup = () => {
-        window.removeEventListener('mousemove', mouseMove, true)
-        window.removeEventListener('mouseup', mouseUp, true)
+        window.removeEventListener('mousemove', globalMouseMove, true)
+        window.removeEventListener('mouseup', globalMouseUp, true)
       }
     }
     return cleanup
@@ -58,6 +58,13 @@ function Track({ children, onHorizontalScroll, trackId }) {
     setMouseDragging(true)
   }
 
+  // this local mouseup is used in addition to the global because sometimes
+  // the global add/remove are not called in time, resulting in issue #533
+  function mouseUp(event) {
+    event.preventDefault()
+    setMouseDragging(false)
+  }
+
   function mouseLeave(event) {
     event.preventDefault()
   }
@@ -67,6 +74,7 @@ function Track({ children, onHorizontalScroll, trackId }) {
       data-testid={`track-${trackId}`}
       className={classes.track}
       onMouseDown={mouseDown}
+      onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
       ref={mainNode}
       role="presentation"
