@@ -9,7 +9,7 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "classnames": "^2.2.6",
+    "classnames": "^2.2.6"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

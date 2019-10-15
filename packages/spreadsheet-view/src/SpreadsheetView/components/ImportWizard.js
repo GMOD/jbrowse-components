@@ -27,7 +27,10 @@ export default pluginManager => {
         <FormControl component="fieldset">
           <FormLabel component="legend">Import spreadsheet from</FormLabel>
           <FormGroup>
-            <FileSelector model={model} />
+            <FileSelector
+              fileRecord={model.fileSource}
+              onChange={model.setFileSource}
+            />
           </FormGroup>
         </FormControl>
       </div>

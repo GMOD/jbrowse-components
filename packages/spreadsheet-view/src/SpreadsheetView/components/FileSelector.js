@@ -2,7 +2,7 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = React
+  const ReactPropTypes = jbrequire('prop-types')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
   const Button = jbrequire('@material-ui/core/Button')
@@ -20,14 +20,13 @@ export default pluginManager => {
         marginBottom: theme.spacing(1),
         background: 'white',
       },
-      urlChooser: {},
     }
   })
 
-  function UrlChooser({ model }) {
+  function UrlChooser({ fileRecord, onChange }) {
     const classes = useStyles()
     const handleChange = evt => {
-      model.setFileSource({ url: evt.target.value })
+      onChange({ url: evt.target.value })
     }
     return (
       <TextField
@@ -35,26 +34,30 @@ export default pluginManager => {
         className={classes.urlChooser}
         margin="dense"
         fullWidth
-        defaultValue={model.fileSource && model.fileSource.url}
+        defaultValue={fileRecord && fileRecord.url}
         onChange={handleChange}
       />
     )
   }
   UrlChooser.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
+    fileRecord: ReactPropTypes.shape(),
+    onChange: ReactPropTypes.func,
+  }
+  UrlChooser.defaultProps = {
+    fileRecord: undefined,
+    onChange: () => {},
   }
 
-  function LocalFileChooser({ model }) {
+  function LocalFileChooser({ fileRecord, onChange }) {
     const handleChange = ({ target }) => {
       if (target.files[0]) {
-        model.setFileSource({
+        onChange({
           blob: target.files[0],
         })
       }
     }
 
-    const filename =
-      model.fileSource && model.fileSource.blob && model.fileSource.blob.name
+    const filename = fileRecord && fileRecord.blob && fileRecord.blob.name
 
     return (
       <div style={{ position: 'relative' }}>
@@ -83,18 +86,24 @@ export default pluginManager => {
     )
   }
   LocalFileChooser.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
+    fileRecord: ReactPropTypes.shape(),
+    onChange: ReactPropTypes.func,
+  }
+  LocalFileChooser.defaultProps = {
+    fileRecord: undefined,
+    onChange: () => {},
   }
 
-  function FileSelector({ model }) {
+  function FileSelector(props) {
+    const { fileRecord, onChange } = props
     const classes = useStyles()
 
-    const fileOrUrl = model.fileSource && model.fileSource.url ? 'url' : 'file'
+    const fileOrUrl = fileRecord && fileRecord.url ? 'url' : 'file'
 
     const handleFileOrUrlChange = (event, newValue) => {
-      if (newValue === 'url' && !(model.fileSource && model.fileSource.url))
-        model.setFileSource({ url: 'https://' })
-      else model.setFileSource(undefined)
+      if (newValue === 'url' && !(fileRecord && fileRecord.url))
+        onChange({ url: 'https://' })
+      else onChange(undefined)
     }
 
     return (
@@ -117,16 +126,21 @@ export default pluginManager => {
         </Grid>
         <Grid item>
           {fileOrUrl === 'url' ? (
-            <UrlChooser model={model} />
+            <UrlChooser {...props} />
           ) : (
-            <LocalFileChooser model={model} />
+            <LocalFileChooser {...props} />
           )}
         </Grid>
       </Grid>
     )
   }
   FileSelector.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
+    fileRecord: ReactPropTypes.shape(),
+    onChange: ReactPropTypes.func,
+  }
+  FileSelector.defaultProps = {
+    fileRecord: undefined,
+    onChange: () => {},
   }
 
   return observer(FileSelector)
