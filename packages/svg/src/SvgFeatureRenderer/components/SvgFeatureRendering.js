@@ -4,12 +4,14 @@ import { bpToPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
 const fontWidthScaleFactor = 0.55
-
+const renderingStyle = {
+  position: 'relative',
+}
 function SvgFeatureRendering(props) {
   const {
     region,
@@ -25,58 +27,92 @@ function SvgFeatureRendering(props) {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
+  const {
+    onMouseOut,
+    onMouseDown,
+    onMouseLeave,
+    onMouseEnter,
+    onMouseOver,
+    onMouseMove,
+    onMouseUp,
+    onClick,
+  } = props
 
-  function onMouseDown(event) {
-    setMouseIsDown(true)
-    setMovedDuringLastMouseDown(false)
-    const { onMouseDown: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseDown = useCallback(
+    event => {
+      setMouseIsDown(true)
+      setMovedDuringLastMouseDown(false)
+      const handler = onMouseDown
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseDown],
+  )
 
-  function onMouseUp(event) {
-    setMouseIsDown(false)
-    const { onMouseUp: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseUp = useCallback(
+    event => {
+      setMouseIsDown(false)
+      const handler = onMouseUp
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseUp],
+  )
 
-  function onMouseEnter(event) {
-    const { onMouseEnter: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseEnter = useCallback(
+    event => {
+      const handler = onMouseEnter
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseEnter],
+  )
 
-  function onMouseLeave(event) {
-    const { onMouseLeave: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseLeave = useCallback(
+    event => {
+      const handler = onMouseLeave
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseLeave],
+  )
 
-  function onMouseOver(event) {
-    const { onMouseOver: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseOver = useCallback(
+    event => {
+      const handler = onMouseOver
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseOver],
+  )
 
-  function onMouseOut(event) {
-    const { onMouseOut: handler } = props
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseOut = useCallback(
+    event => {
+      const handler = onMouseOut
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [onMouseOut],
+  )
 
-  function onMouseMove(event) {
-    const { onMouseMove: handler } = props
-    if (mouseIsDown) setMovedDuringLastMouseDown(true)
-    if (!handler) return undefined
-    return handler(event)
-  }
+  const mouseMove = useCallback(
+    event => {
+      const handler = onMouseMove
+      if (mouseIsDown) setMovedDuringLastMouseDown(true)
+      if (!handler) return undefined
+      return handler(event)
+    },
+    [mouseIsDown, onMouseMove],
+  )
 
-  function onClick(event) {
-    const { onClick: handler } = props
-    if (!handler || movedDuringLastMouseDown) return undefined
-    return handler(event)
-  }
+  const click = useCallback(
+    event => {
+      const handler = onClick
+      if (!handler || movedDuringLastMouseDown) return undefined
+      return handler(event)
+    },
+    [movedDuringLastMouseDown, onClick],
+  )
 
   function createFeatureGlyphComponent(feature) {
     const start = feature.get(horizontallyFlipped ? 'end' : 'start')
@@ -183,19 +219,17 @@ function SvgFeatureRendering(props) {
       className="SvgFeatureRendering"
       width={`${width}px`}
       height={`${height}px`}
-      style={{
-        position: 'relative',
-      }}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-      onMouseMove={onMouseMove}
-      onFocus={onMouseEnter}
-      onBlur={onMouseLeave}
-      onClick={onClick}
+      style={renderingStyle}
+      onMouseDown={mouseDown}
+      onMouseUp={mouseUp}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
+      onMouseOver={mouseOver}
+      onMouseOut={mouseOut}
+      onMouseMove={mouseMove}
+      onFocus={mouseEnter}
+      onBlur={mouseLeave}
+      onClick={click}
     >
       {featuresRendered}
     </svg>
