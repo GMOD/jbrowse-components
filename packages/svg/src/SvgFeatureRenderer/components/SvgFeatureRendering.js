@@ -4,7 +4,7 @@ import { bpToPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
@@ -21,13 +21,21 @@ function SvgFeatureRendering(props) {
     trackModel: { selectedFeatureId },
   } = props
 
+  const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
+    false,
+  )
+
   function onMouseDown(event) {
+    setMouseIsDown(true)
+    setMovedDuringLastMouseDown(false)
     const { onMouseDown: handler } = props
     if (!handler) return undefined
     return handler(event)
   }
 
   function onMouseUp(event) {
+    setMouseIsDown(false)
     const { onMouseUp: handler } = props
     if (!handler) return undefined
     return handler(event)
@@ -57,9 +65,16 @@ function SvgFeatureRendering(props) {
     return handler(event)
   }
 
+  function onMouseMove(event) {
+    const { onMouseMove: handler } = props
+    if (mouseIsDown) setMovedDuringLastMouseDown(true)
+    if (!handler) return undefined
+    return handler(event)
+  }
+
   function onClick(event) {
     const { onClick: handler } = props
-    if (!handler) return undefined
+    if (!handler || movedDuringLastMouseDown) return undefined
     return handler(event)
   }
 
@@ -148,6 +163,7 @@ function SvgFeatureRendering(props) {
         shouldShowDescription={shouldShowDescription}
         fontHeight={fontHeight}
         allowedWidthExpansion={exp}
+        movedDuringLastMouseDown={movedDuringLastMouseDown}
         {...props}
       />
     )
@@ -176,6 +192,7 @@ function SvgFeatureRendering(props) {
       onMouseLeave={onMouseLeave}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
+      onMouseMove={onMouseMove}
       onFocus={onMouseEnter}
       onBlur={onMouseLeave}
       onClick={onClick}
@@ -210,6 +227,7 @@ SvgFeatureRendering.propTypes = {
   onMouseLeave: ReactPropTypes.func,
   onMouseOver: ReactPropTypes.func,
   onMouseOut: ReactPropTypes.func,
+  onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
 }
 
@@ -226,6 +244,7 @@ SvgFeatureRendering.defaultProps = {
   onMouseLeave: undefined,
   onMouseOver: undefined,
   onMouseOut: undefined,
+  onMouseMove: undefined,
   onClick: undefined,
 }
 

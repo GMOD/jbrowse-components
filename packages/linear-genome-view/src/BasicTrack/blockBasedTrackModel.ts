@@ -186,6 +186,9 @@ const blockBasedTrack = types.compose(
               self.selectFeature(feature as Feature)
             }
           },
+          onClick() {
+            self.clearFeatureSelection()
+          },
         }
       },
       get renderProps() {

@@ -30,7 +30,7 @@ export default function Label(props: {
     <text
       x={x}
       y={y}
-      style={{ fontSize: fontHeight, fill: color }}
+      style={{ fontSize: fontHeight, fill: color, cursor: 'default' }}
       dominantBaseline="hanging"
     >
       {fontWidth * text.length > totalWidth
