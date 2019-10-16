@@ -125,25 +125,22 @@ class LayoutRow<T> {
     // or check if we need to expand to the left and/or to the right
 
     let oLeft = left - this.rowState.offset
-    const oRight = right - this.rowState.offset
+    let oRight = right - this.rowState.offset
     const currLength = this.rowState.bits.length
 
     // expand rightward if necessary
     if (oRight >= this.rowState.bits.length) {
       // expand to new right + the whole current length
-      // additionalLength = (oRight - currLength) + currentLength
-      const additionalLength = oRight
+      const additionalLength = oRight + 1
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
-        this.initialize(left, right)
+        this.rowState = this.initialize(left, right)
       } else if (additionalLength > 0) {
         this.rowState.bits = this.rowState.bits.concat(
           new Array(additionalLength),
         )
-        // this.log(`expand right (${additionalLength}): ${this.rowState.offset} | ${
-        // this.rowState.min} - ${this.rowState.max}`)
       }
     }
 
@@ -160,17 +157,16 @@ class LayoutRow<T> {
           'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
         )
 
-        this.initialize(left, right)
+        this.rowState = this.initialize(left, right)
       } else {
         this.rowState.bits = new Array(additionalLength).concat(
           this.rowState.bits,
         )
         this.rowState.offset -= additionalLength
-        oLeft = left - this.rowState.offset
-        // this.log(`expand left (${additionalLength}): ${this.rowState.offset} | ${
-        //   this.rowState.min} - ${this.rowState.max}`)
       }
     }
+    oRight = right - this.rowState.offset
+    oLeft = left - this.rowState.offset
 
     // set the bits in the bitmask
     // if (oLeft < 0) debugger

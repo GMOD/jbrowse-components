@@ -71,8 +71,8 @@ describe('GranularRectLayout', () => {
       expect(top).toEqual((i % 2) * 4)
     }
 
-    expect(l.bitmap[0].rowState.bits.length).toBe(34809)
-    expect(l.bitmap[1].rowState.bits.length).toBe(34809)
+    expect(l.bitmap[0].rowState.bits.length).toBe(34812)
+    expect(l.bitmap[1].rowState.bits.length).toBe(34812)
     l.discardRange(190000, 220000)
     expect(l.bitmap[0].rowState.bits.length).toBe(24802)
     expect(l.bitmap[1].rowState.bits.length).toBe(23802)
