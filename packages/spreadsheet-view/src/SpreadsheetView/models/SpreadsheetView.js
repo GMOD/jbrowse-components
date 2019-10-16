@@ -57,6 +57,20 @@ export default pluginManager => {
         return newHeight - oldHeight
       },
 
+      // load a new spreadsheet and set our mode to display it
+      displaySpreadsheet(spreadsheet) {
+        self.spreadsheet = spreadsheet
+        self.mode = 'display'
+      },
+
+      setImportMode() {
+        self.mode = 'import'
+      },
+
+      setDisplayMode() {
+        if (self.spreadsheet) self.mode = 'display'
+      },
+
       closeView() {
         getParent(self, 2).removeView(self)
       },

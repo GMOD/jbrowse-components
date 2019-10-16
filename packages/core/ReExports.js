@@ -21,6 +21,7 @@ import MUIFormGroup from '@material-ui/core/FormGroup'
 import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISnackbarContent from '@material-ui/core/SnackbarContent'
 import MUITypography from '@material-ui/core/Typography'
+import MUIContainer from '@material-ui/core/Container'
 
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -36,6 +37,7 @@ import * as Configuration from './configuration'
 import Plugin from './Plugin'
 import * as coreUtil from './util'
 import * as trackUtils from './util/tracks'
+import * as coreIo from './util/io'
 
 import * as MUIColors from './ReExports/material-ui-colors'
 
@@ -66,6 +68,7 @@ export default {
   '@material-ui/core/Snackbar': MUISnackbar,
   '@material-ui/core/SnackbarContent': MUISnackbarContent,
   '@material-ui/core/Typography': MUITypography,
+  '@material-ui/core/Container': MUIContainer,
 
   '@material-ui/core/colors': MUIColors,
 
@@ -83,5 +86,6 @@ export default {
   '@gmod/jbrowse-core/mst-types': mstTypes,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
+  '@gmod/jbrowse-core/util/io': coreIo,
   '@gmod/jbrowse-core/components/ResizeHandle': ResizeHandle,
 }

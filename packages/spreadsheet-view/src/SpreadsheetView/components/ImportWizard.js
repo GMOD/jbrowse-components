@@ -6,6 +6,10 @@ export default pluginManager => {
   const FormControl = jbrequire('@material-ui/core/FormControl')
   const FormGroup = jbrequire('@material-ui/core/FormGroup')
   const FormLabel = jbrequire('@material-ui/core/FormLabel')
+  const Container = jbrequire('@material-ui/core/Container')
+  const Box = jbrequire('@material-ui/core/Box')
+  const Button = jbrequire('@material-ui/core/Button')
+  const Grid = jbrequire('@material-ui/core/Grid')
 
   const FileSelector = jbrequire(require('./FileSelector'))
 
@@ -13,7 +17,7 @@ export default pluginManager => {
     return {
       root: {
         position: 'relative',
-        marginBottom: theme.spacing(1),
+        padding: theme.spacing(1),
         background: 'white',
       },
     }
@@ -23,17 +27,36 @@ export default pluginManager => {
     const classes = useStyles()
 
     return (
-      <div className={classes.root}>
-        <FormControl component="fieldset">
-          <FormLabel component="legend">Import spreadsheet from</FormLabel>
-          <FormGroup>
-            <FileSelector
-              fileRecord={model.fileSource}
-              onChange={model.setFileSource}
-            />
-          </FormGroup>
-        </FormControl>
-      </div>
+      <Container>
+        <Grid container spacing={1} direction="column" alignItems="center">
+          <Grid item>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Open spreadsheet from</FormLabel>
+              <FormGroup>
+                <FileSelector
+                  fileRecord={model.fileSource}
+                  onChange={model.setFileSource}
+                />
+              </FormGroup>
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <Button
+              disabled={
+                !(
+                  model.fileSource &&
+                  (model.fileSource.blob || model.fileSource.url)
+                )
+              }
+              variant="contained"
+              color="primary"
+              onClick={model.import}
+            >
+              Open
+            </Button>
+          </Grid>
+        </Grid>
+      </Container>
     )
   }
   ImportWizard.propTypes = {

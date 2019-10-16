@@ -5,11 +5,14 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { Icon, IconButton } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
+  const Typography = jbrequire('@material-ui/core/Typography')
+  const Grid = jbrequire('@material-ui/core/Grid')
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
 
   const ImportWizard = jbrequire(require('./ImportWizard'))
   const Spreadsheet = jbrequire(require('./Spreadsheet'))
+
+  const headerHeight = 48
 
   const useStyles = makeStyles(theme => {
     return {
@@ -17,81 +20,68 @@ export default pluginManager => {
         position: 'relative',
         marginBottom: theme.spacing(1),
         background: 'white',
+        overflow: 'hidden',
       },
-      controls: {
+      header: {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
-        background: '#eee',
         boxSizing: 'border-box',
-        borderRight: '1px solid #a2a2a2',
-        borderBottom: '1px solid #a2a2a2',
-        left: 0,
-        top: 0,
+        height: headerHeight,
+        margin: 0,
+        // background: '#eee',
+        // borderBottom: '1px solid #a2a2a2',
+      },
+      rowCount: {
+        marginLeft: theme.spacing(1),
       },
     }
   })
 
   const Controls = observer(({ model }) => {
     const classes = useStyles()
-    const rootModel = getRoot(model)
-
     return (
-      <div className={classes.controls}>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-          data-testid="spreadsheet_view_close"
-        >
-          <Icon fontSize="small">close</Icon>
-        </IconButton>
+      <Grid
+        className={classes.header}
+        container
+        spacing={1}
+        direction="row"
+        alignItems="center"
+      >
+        <Grid item>
+          <IconButton
+            onClick={model.closeView}
+            className={classes.iconButton}
+            title="close this view"
+            data-testid="spreadsheet_view_close"
+          >
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
 
-        <IconButton
-          onClick={model.zoomOutButton}
-          className={classes.iconButton}
-          title="zoom out"
-        >
-          <Icon fontSize="small">zoom_out</Icon>
-        </IconButton>
+          <IconButton
+            onClick={() => model.setImportMode()}
+            className={classes.iconButton}
+            title="open a different file"
+            data-testid="spreadsheet_view_open"
+          >
+            <Icon fontSize="small">folder_open</Icon>
+          </IconButton>
 
-        <IconButton
-          onClick={model.zoomInButton}
-          className={classes.iconButton}
-          title="zoom in"
-        >
-          <Icon fontSize="small">zoom_in</Icon>
-        </IconButton>
-
-        <IconButton
-          onClick={model.rotateCounterClockwiseButton}
-          className={classes.iconButton}
-          title="rotate counter-clockwise"
-        >
-          <Icon fontSize="small">rotate_left</Icon>
-        </IconButton>
-
-        <IconButton
-          onClick={model.rotateClockwiseButton}
-          className={classes.iconButton}
-          title="rotate clockwise"
-        >
-          <Icon fontSize="small">rotate_right</Icon>
-        </IconButton>
-
-        <ToggleButton
-          onClick={model.activateTrackSelector}
-          title="select tracks"
-          selected={
-            rootModel.visibleDrawerWidget &&
-            rootModel.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-            rootModel.visibleDrawerWidget.view.id === model.id
-          }
-          value="track_select"
-          data-testid="spreadsheet_track_select"
-        >
-          <Icon fontSize="small">line_style</Icon>
-        </ToggleButton>
-      </div>
+          <IconButton
+            onClick={() => model.setDisplayMode()}
+            disabled={!model.spreadsheet}
+            className={classes.iconButton}
+            title="show current spreadsheet"
+            data-testid="spreadsheet_view_spreadsheet"
+          >
+            <Icon fontSize="small">grid_on</Icon>
+          </IconButton>
+        </Grid>
+        <Grid item>
+          {model.spreadsheet && model.spreadsheet.rowSet.isLoaded
+            ? `${model.spreadsheet.rowSet.rows.length} rows`
+            : null}
+        </Grid>
+      </Grid>
     )
   })
 
@@ -101,8 +91,13 @@ export default pluginManager => {
     let mode
     if (model.mode === 'import')
       mode = <ImportWizard model={model.importWizard} />
-    else if (model.mode === 'spreadsheet')
-      mode = <Spreadsheet model={model.spreadsheet} />
+    else if (model.mode === 'display')
+      mode = (
+        <Spreadsheet
+          model={model.spreadsheet}
+          height={model.height - headerHeight}
+        />
+      )
 
     return (
       <div

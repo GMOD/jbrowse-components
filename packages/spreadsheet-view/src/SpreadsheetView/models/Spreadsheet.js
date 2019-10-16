@@ -11,7 +11,9 @@ export default pluginManager => {
 
   const stateModel = types
     .model('Spreadsheet', {
-      rows: types.optional(StaticRowSetModel, () => StaticRowSetModel.create()),
+      rowSet: types.optional(StaticRowSetModel, () =>
+        StaticRowSetModel.create(),
+      ),
       columnDisplayOrder: types.array(types.number),
     })
     .views(self => ({}))

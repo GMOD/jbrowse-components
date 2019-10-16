@@ -61,7 +61,7 @@ export default pluginManager => {
 
     return (
       <div style={{ position: 'relative' }}>
-        <Button size="small" variant="contained" component="label">
+        <Button size="small" variant="outlined" component="label">
           Choose File
           <input
             type="file"
