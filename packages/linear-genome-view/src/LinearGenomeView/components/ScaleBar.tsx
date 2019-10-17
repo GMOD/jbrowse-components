@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { Fragment } from 'react'
 import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
 import { LinearGenomeViewStateModel } from '..'
@@ -10,7 +10,6 @@ import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-  BlockSet,
 } from '../../BasicTrack/util/blockTypes'
 
 import {
@@ -40,45 +39,48 @@ const useStyles = makeStyles((/* theme */) => ({
   },
 }))
 
-function findBlockContainingLeftSideOfView(
-  offsetPx: number,
-  blockSet: BlockSet,
-) {
-  const blocks = blockSet.getBlocks()
-  for (let i = 0; i < blocks.length; i += 1) {
-    const block = blocks[i]
-    if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
-      return block
-  }
-  return undefined
-}
-
 type LGV = Instance<LinearGenomeViewStateModel>
+
 function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
-  const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
-    model.offsetPx,
-    model.staticBlocks,
-  )
+
+  // find the block that needs pinning to the left side for context
+  let lastLeftBlock = 0
+  model.staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
+  })
 
   return (
     <div className={classes.scaleBar}>
-      {model.staticBlocks.map(block => {
+      {model.staticBlocks.map((block, i) => {
         if (block instanceof ContentBlock) {
           return (
-            <Block key={block.offsetPx} block={block} model={model}>
-              <svg height={height} width={block.widthPx}>
-                <Ruler
-                  region={block}
-                  showRefNameLabel={
-                    !!block.isLeftEndOfDisplayedRegion &&
-                    block !== blockContainingLeftEndOfView
-                  }
-                  bpPerPx={model.bpPerPx}
-                  flipped={model.horizontallyFlipped}
-                />
-              </svg>
-            </Block>
+            <Fragment key={block.offsetPx}>
+              <Block block={block} model={model}>
+                <svg height={height} width={block.widthPx}>
+                  <Ruler
+                    region={block}
+                    bpPerPx={model.bpPerPx}
+                    flipped={model.horizontallyFlipped}
+                  />
+                </svg>
+              </Block>
+              {block.isLeftEndOfDisplayedRegion || i === lastLeftBlock ? (
+                <div
+                  style={{
+                    left:
+                      i === lastLeftBlock
+                        ? Math.max(0, block.offsetPx - model.offsetPx)
+                        : block.offsetPx - model.offsetPx,
+                    zIndex: i,
+                  }}
+                  className={classes.refLabel}
+                  data-testid={`refLabel-${block.refName}`}
+                >
+                  {block.refName}
+                </div>
+              ) : null}
+            </Fragment>
           )
         }
         if (block instanceof ElidedBlock) {
@@ -101,12 +103,6 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
         }
         return null
       })}
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className={classes.refLabel}>
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
     </div>
   )
 }
