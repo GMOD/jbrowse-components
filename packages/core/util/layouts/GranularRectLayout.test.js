@@ -94,7 +94,7 @@ describe('GranularRectLayout', () => {
     ).toBeTruthy()
   })
 
-  it('tests adding some gigantic layouts', () => {
+  it('tests reinitializing layout due to throwing away old one', () => {
     const l = new Layout({
       pitchX: 1,
       pitchY: 1,
@@ -105,5 +105,20 @@ describe('GranularRectLayout', () => {
     l.addRect('test2', 1000000, 1000100, 1)
     l.addRect('test3', 0, 10000, 1)
     expect(l.rectangles.size).toBe(3)
+  })
+
+  it('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {
+    const l = new Layout({
+      pitchX: 100,
+      pitchY: 1,
+      maxHeight: 600,
+    })
+
+    expect(l.getByCoord(50000, 0)).toEqual(undefined)
+    l.addRect('test1', 0, 100000000, 1, { id: 'feat1' })
+    expect(l.getByCoord(50000, 0)).toEqual({ id: 'feat1' })
+    l.addRect('test2', 0, 1000, 1, { id: 'feat2' })
+    expect(l.getByCoord(500, 1)).toEqual({ id: 'feat2' })
+    expect(l.rectangles.size).toBe(2)
   })
 })

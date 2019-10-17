@@ -57,11 +57,11 @@ class LayoutRow<T> {
     // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
   }
 
-  log(msg: string): void {
-    // if (this.rowNumber === 0)
-    // eslint-disable-next-line no-console
-    console.log(`r${this.rowNumber}: ${msg}`)
-  }
+  // log(msg: string): void {
+  //   // if (this.rowNumber === 0)
+  //   // eslint-disable-next-line no-console
+  //   console.log(`r${this.rowNumber}: ${msg}`)
+  // }
 
   setAllFilled(data: Record<string, T> | boolean): void {
     this.allFilled = data
