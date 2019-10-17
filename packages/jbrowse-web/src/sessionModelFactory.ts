@@ -118,15 +118,15 @@ export default function sessionModelFactory(pluginManager: any) {
                 assemblyName,
                 self.assemblyData,
               )
-if(isAlive(self)) {
-              getParent(self).history.withoutUndo(() => {
-                if (
-                  JSON.stringify(view.displayedRegions) !==
-                  JSON.stringify(displayedRegions)
-                )
-                  view.setDisplayedRegions(displayedRegions, true)
-              })
-}
+              if (isAlive(self)) {
+                getParent(self).history.withoutUndo(() => {
+                  if (
+                    JSON.stringify(view.displayedRegions) !==
+                    JSON.stringify(displayedRegions)
+                  )
+                    view.setDisplayedRegions(displayedRegions, true)
+                })
+              }
             }
           }
         })

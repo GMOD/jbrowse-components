@@ -32,6 +32,8 @@ export const generateBaseTrackConfig = (pluginManager: any) =>
       type: 'stringArray',
       defaultValue: [],
     },
+    // see corresponding entry in circular-view ChordTrack
+    // no config slot editor exists for this at the time being
     configRelationships: {
       type: 'configRelationships',
       model: types.array(
@@ -71,7 +73,7 @@ const BaseTrack = (pluginManager: any) =>
       ReactComponent: undefined,
       rendererTypeName: undefined,
       ready: false,
-    scrollTop: 0,
+      scrollTop: 0,
       error: '',
     }))
     .views(self => ({
@@ -183,9 +185,9 @@ const BaseTrack = (pluginManager: any) =>
         self.error = e
       },
 
-    setScrollTop(scrollTop: number) {
-      self.scrollTop = scrollTop
-    },
+      setScrollTop(scrollTop: number) {
+        self.scrollTop = scrollTop
+      },
       activateConfigurationUI() {
         const session: any = getSession(self)
         session.editConfiguration(self.configuration)

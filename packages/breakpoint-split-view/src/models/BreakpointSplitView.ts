@@ -75,10 +75,10 @@ export default function stateModelFactory(pluginManager: any) {
             if (!candidates[n]) {
               candidates[n] = []
             }
-            //todo: this is a bit of a hack to have this here, but
-            //it prevents for example a "gene track" drawing
-            //lines between genes with the same name...only want
-            //to pair alignments?
+            // todo: this is a bit of a hack to have this here, but
+            // it prevents for example a "gene track" drawing
+            // lines between genes with the same name...only want
+            // to pair alignments?
             if (feature.get('CIGAR')) {
               candidates[n].push(feature)
             }
@@ -95,10 +95,8 @@ export default function stateModelFactory(pluginManager: any) {
         const metaLayoutFeatures = new CompositeMap(
           tracks.map(t => t.layoutFeatures),
         )
-        const matches = this.getMatchedFeatures(trackConfigId)
-        console.log(matches)
-        return matches.map(c => {
-          return c
+        return this.getMatchedFeatures(trackConfigId).map(c =>
+          c
             .map((f: Feature) => ({
               feature: f,
               layout: metaLayoutFeatures.get(f.id()),
@@ -109,8 +107,8 @@ export default function stateModelFactory(pluginManager: any) {
                   ? +(f.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
                   : +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
             }))
-            .sort((a, b) => a.clipPos - b.clipPos)
-        })
+            .sort((a, b) => a.clipPos - b.clipPos),
+        )
       },
     }))
     .actions(self => ({

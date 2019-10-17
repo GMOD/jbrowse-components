@@ -1,7 +1,7 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types } = jbrequire('mobx-state-tree')
+  const { types, getSnapshot } = jbrequire('mobx-state-tree')
   const { ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
@@ -135,13 +135,14 @@ export default pluginManager => {
           const viewSnapshot = pluginManager
             .getViewType('BreakpointSplitView')
             .snapshotFromBreakendFeature(feature, startRegion, endRegion)
+          const ret = getSnapshot(self.configuration.configRelationships)
 
           // add the specific evidence tracks to the LGVs in the split view
           viewSnapshot.views[0].tracks = [
             {
               type: 'AlignmentsTrack',
               height: 100,
-              configuration: 'pacbio_hg002',
+              configuration: ret[0].target,
               selectedRendering: '',
             },
           ]
@@ -149,7 +150,7 @@ export default pluginManager => {
             {
               type: 'AlignmentsTrack',
               height: 100,
-              configuration: 'pacbio_hg002',
+              configuration: ret[0].target,
               selectedRendering: '',
             },
           ]

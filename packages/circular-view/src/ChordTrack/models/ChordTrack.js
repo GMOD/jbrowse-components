@@ -35,6 +35,20 @@ export default pluginManager => {
         type: 'stringArray',
         defaultValue: [],
       },
+      // see corresponding entry in linear-genome-view BaseTrack
+      // no config slot editor exists for this at the time being
+      configRelationships: {
+        type: 'configRelationships',
+        model: types.array(
+          types.model('Relationship', {
+            type: types.string,
+            target: types.reference(
+              pluginManager.pluggableConfigSchemaType('track'),
+            ),
+          }),
+        ),
+        defaultValue: [],
+      },
     },
     { explicitlyTyped: true },
   )
