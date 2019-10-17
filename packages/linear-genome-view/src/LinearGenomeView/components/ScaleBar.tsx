@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { Fragment } from 'react'
 import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
 import { LinearGenomeViewStateModel } from '..'
@@ -40,35 +40,18 @@ const useStyles = makeStyles((/* theme */) => ({
   },
 }))
 
-function findBlockContainingLeftSideOfView(
-  offsetPx: number,
-  blockSet: BlockSet,
-) {
-  const blocks = blockSet.getBlocks()
-  for (let i = 0; i < blocks.length; i += 1) {
-    const block = blocks[i]
-    if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
-      return block
-  }
-  return blocks[0]
-}
-
 type LGV = Instance<LinearGenomeViewStateModel>
+
 function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
-  const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
-    model.offsetPx,
-    model.staticBlocks,
-  )
-  console.log(model.displayedRegions)
 
   return (
     <div className={classes.scaleBar}>
-      {model.staticBlocks.map(block => {
+      {model.staticBlocks.map((block, i) => {
         if (block instanceof ContentBlock) {
           return (
-            <>
-              <Block key={block.offsetPx} block={block} model={model}>
+            <Fragment key={block.offsetPx}>
+              <Block block={block} model={model}>
                 <svg height={height} width={block.widthPx}>
                   <Ruler
                     region={block}
@@ -81,13 +64,14 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
                 <div
                   style={{
                     left: Math.max(0, block.offsetPx - model.offsetPx),
+                    zIndex: i, // this makes it so the refLabel "to the right" lives on top of the refLabel on the left
                   }}
                   className={classes.refLabel}
                 >
                   {block.refName}
                 </div>
               ) : null}
-            </>
+            </Fragment>
           )
         }
         if (block instanceof ElidedBlock) {
@@ -110,19 +94,6 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
         }
         return null
       })}
-      {blockContainingLeftEndOfView ? (
-        <div
-          style={{
-            left: Math.max(
-              0,
-              blockContainingLeftEndOfView.offsetPx - model.offsetPx,
-            ),
-          }}
-          className={classes.refLabel}
-        >
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
     </div>
   )
 }
