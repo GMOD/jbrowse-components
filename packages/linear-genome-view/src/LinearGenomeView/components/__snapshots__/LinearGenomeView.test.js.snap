@@ -610,14 +610,16 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </svg>
         </div>
         <div
-          class="makeStyles-interRegionPaddingBlock"
-          style="left: 100px; width: 2px;"
-        />
-        <div
           class="makeStyles-refLabel"
+          data-testid="refLabel-ctgA"
+          style="left: 0px; z-index: 0;"
         >
           ctgA
         </div>
+        <div
+          class="makeStyles-interRegionPaddingBlock"
+          style="left: 100px; width: 2px;"
+        />
       </div>
     </div>
     <div
