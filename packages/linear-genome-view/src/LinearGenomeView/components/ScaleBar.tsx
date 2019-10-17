@@ -75,6 +75,7 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
                     zIndex: i,
                   }}
                   className={classes.refLabel}
+                  data-testid={`refLabel-${block.refName}`}
                 >
                   {block.refName}
                 </div>
