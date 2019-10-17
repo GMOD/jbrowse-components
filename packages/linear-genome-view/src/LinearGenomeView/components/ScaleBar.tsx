@@ -60,21 +60,34 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
     model.offsetPx,
     model.staticBlocks,
   )
+  console.log(model.displayedRegions)
 
   return (
     <div className={classes.scaleBar}>
       {model.staticBlocks.map(block => {
         if (block instanceof ContentBlock) {
           return (
-            <Block key={block.offsetPx} block={block} model={model}>
-              <svg height={height} width={block.widthPx}>
-                <Ruler
-                  region={block}
-                  bpPerPx={model.bpPerPx}
-                  flipped={model.horizontallyFlipped}
-                />
-              </svg>
-            </Block>
+            <>
+              <Block key={block.offsetPx} block={block} model={model}>
+                <svg height={height} width={block.widthPx}>
+                  <Ruler
+                    region={block}
+                    bpPerPx={model.bpPerPx}
+                    flipped={model.horizontallyFlipped}
+                  />
+                </svg>
+              </Block>
+              {block.isLeftEndOfDisplayedRegion ? (
+                <div
+                  style={{
+                    left: Math.max(0, block.offsetPx - model.offsetPx),
+                  }}
+                  className={classes.refLabel}
+                >
+                  {block.refName}
+                </div>
+              ) : null}
+            </>
           )
         }
         if (block instanceof ElidedBlock) {
