@@ -90,6 +90,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
         region.start + (blockNum + 1) * blockSizeBp,
       )
       const widthPx = Math.abs(end - start) / bpPerPx
+      const regionWidthPx = Math.abs(region.end - region.start) / bpPerPx
       const blockData = {
         assemblyName: region.assemblyName,
         refName: region.refName,
@@ -103,7 +104,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
         key: '',
       }
       blockData.key = assembleLocString(blockData)
-      if (widthPx < minimumBlockWidth) {
+      if (regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
@@ -111,7 +112,7 @@ export function calculateBlocksForward(self: LGV, extra = 0) {
 
       // insert a inter-region padding block if we are crossing a displayed
       if (
-        widthPx >= minimumBlockWidth &&
+        regionWidthPx >= minimumBlockWidth &&
         blockData.isRightEndOfDisplayedRegion &&
         regionNumber < displayedRegionsInOrder.length - 1
       ) {
