@@ -50,7 +50,7 @@ function findBlockContainingLeftSideOfView(
     if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
       return block
   }
-  return undefined
+  return blocks[0]
 }
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -97,9 +97,16 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
         }
         return null
       })}
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className={classes.refLabel}>
+      {blockContainingLeftEndOfView ? (
+        <div
+          style={{
+            left: Math.max(
+              0,
+              blockContainingLeftEndOfView.offsetPx - model.offsetPx,
+            ),
+          }}
+          className={classes.refLabel}
+        >
           {blockContainingLeftEndOfView.refName}
         </div>
       ) : null}
