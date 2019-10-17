@@ -10,7 +10,6 @@ import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-  BlockSet,
 } from '../../BasicTrack/util/blockTypes'
 
 import {

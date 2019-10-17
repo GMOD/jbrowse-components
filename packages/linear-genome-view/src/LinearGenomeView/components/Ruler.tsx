@@ -1,4 +1,4 @@
-import { PropTypes, IRegion } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes } from '@gmod/jbrowse-core/mst-types'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
