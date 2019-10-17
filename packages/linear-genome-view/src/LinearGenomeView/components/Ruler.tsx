@@ -1,15 +1,19 @@
-import { PropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PropTypes, IRegion } from '@gmod/jbrowse-core/mst-types'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Fragment } from 'react'
+import React from 'react'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major
  * and minor gridlines, return an object like { majorPitch: bp,
  * minorPitch: bp } giving the gridline pitches to use.
  */
-function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
+function chooseGridPitch(
+  scale: number,
+  minMajorPitchPx: number,
+  minMinorPitchPx: number,
+) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
   const majorMagnitude = parseInt(
@@ -41,8 +45,8 @@ function chooseGridPitch(scale, minMajorPitchPx, minMinorPitchPx) {
 }
 
 export function* makeTicks(
-  region,
-  bpPerPx,
+  region: { start: number; end: number },
+  bpPerPx: number,
   emitMajor = true,
   emitMinor = true,
 ) {
@@ -91,23 +95,21 @@ const useStyles = makeStyles((/* theme */) => ({
     stroke: '#999',
     // stroke: theme.palette.text.hint,
   },
-  refNameLabel: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    // fill: theme.palette.text.primary,
-  },
-  refNameLabelBackground: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    fill: 'white',
-    // fill: theme.palette.background.default,
-    fillOpacity: 0.75,
-    filter: 'url(#dilate)',
-  },
 }))
 
-function Ruler(props) {
-  const { region, bpPerPx, flipped, major, minor, showRefNameLabel } = props
+function Ruler({
+  region,
+  bpPerPx,
+  flipped,
+  major,
+  minor,
+}: {
+  region: { start: number; end: number }
+  bpPerPx: number
+  flipped: boolean
+  major: boolean
+  minor: boolean
+}) {
   const classes = useStyles()
   const ticks = []
   const labels = []
@@ -145,41 +147,10 @@ function Ruler(props) {
       )
   }
 
-  const refNameLabels = []
-  if (showRefNameLabel && region.refName) {
-    refNameLabels.push(
-      <Fragment key="refname-label">
-        <g>
-          <defs>
-            <filter id="dilate">
-              <feMorphology operator="dilate" radius="5" />
-            </filter>
-          </defs>
-          <text
-            x={0}
-            y={2}
-            alignmentBaseline="hanging"
-            className={classes.refNameLabelBackground}
-          >
-            {region.refName}
-          </text>
-          <text
-            x={0}
-            y={2}
-            alignmentBaseline="hanging"
-            className={classes.refNameLabel}
-          >
-            {region.refName}
-          </text>
-        </g>
-      </Fragment>,
-    )
-  }
-
   // svg painting is based on the document order,
   // so the labels need to come after the ticks in the
   // doc, so that they draw over them.
-  return [...ticks, ...labels, ...refNameLabels]
+  return <>{[...ticks, ...labels]}</>
 }
 
 Ruler.propTypes = {

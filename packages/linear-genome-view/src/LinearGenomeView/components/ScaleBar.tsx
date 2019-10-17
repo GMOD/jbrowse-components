@@ -70,10 +70,6 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
               <svg height={height} width={block.widthPx}>
                 <Ruler
                   region={block}
-                  showRefNameLabel={
-                    !!block.isLeftEndOfDisplayedRegion &&
-                    block !== blockContainingLeftEndOfView
-                  }
                   bpPerPx={model.bpPerPx}
                   flipped={model.horizontallyFlipped}
                 />
