@@ -93,4 +93,17 @@ describe('GranularRectLayout', () => {
       l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
     ).toBeTruthy()
   })
+
+  it('tests adding some gigantic layouts', () => {
+    const l = new Layout({
+      pitchX: 1,
+      pitchY: 1,
+      maxHeight: 600,
+    })
+
+    l.addRect('test1', 0, 10000, 1)
+    l.addRect('test2', 1000000, 1000100, 1)
+    l.addRect('test3', 0, 10000, 1)
+    expect(l.rectangles.size).toBe(3)
+  })
 })

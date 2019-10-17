@@ -127,10 +127,10 @@ class LayoutRow<T> {
     let oLeft = left - this.rowState.offset
     let oRight = right - this.rowState.offset
     const currLength = this.rowState.bits.length
+    // console.log(oRight, this.rowState.bits.length)
 
     // expand rightward if necessary
     if (oRight >= this.rowState.bits.length) {
-      // expand to new right + the whole current length
       const additionalLength = oRight + 1
       if (this.rowState.bits.length + additionalLength > this.widthLimit) {
         console.warn(
@@ -146,8 +146,7 @@ class LayoutRow<T> {
 
     // expand leftward if necessary
     if (left < this.rowState.offset) {
-      // expand to new left - the whole current length (or 0)
-      // additionalLength = (offset - left) + currLength = -(left - offset) + currLength
+      // use math.min to avoid negative lengths
       const additionalLength = Math.min(
         currLength - oLeft,
         this.rowState.offset,
