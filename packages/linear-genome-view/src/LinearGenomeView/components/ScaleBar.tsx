@@ -69,7 +69,9 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
                 <div
                   style={{
                     left:
-                      i === lastLeftBlock ? 0 : block.offsetPx - model.offsetPx,
+                      i === lastLeftBlock
+                        ? Math.max(0, block.offsetPx - model.offsetPx)
+                        : block.offsetPx - model.offsetPx,
                     zIndex: i,
                   }}
                   className={classes.refLabel}
