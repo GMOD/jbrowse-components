@@ -45,6 +45,12 @@ type LGV = Instance<LinearGenomeViewStateModel>
 function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
 
+  // find the block that needs pinning to the left side for context
+  let lastLeftBlock = 0
+  model.staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
+  })
+
   return (
     <div className={classes.scaleBar}>
       {model.staticBlocks.map((block, i) => {
@@ -60,11 +66,12 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
                   />
                 </svg>
               </Block>
-              {block.isLeftEndOfDisplayedRegion ? (
+              {block.isLeftEndOfDisplayedRegion || i === lastLeftBlock ? (
                 <div
                   style={{
-                    left: Math.max(0, block.offsetPx - model.offsetPx),
-                    zIndex: i, // this makes it so the refLabel "to the right" lives on top of the refLabel on the left
+                    left:
+                      i === lastLeftBlock ? 0 : block.offsetPx - model.offsetPx,
+                    zIndex: i,
                   }}
                   className={classes.refLabel}
                 >
