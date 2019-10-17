@@ -118,6 +118,7 @@ export default function sessionModelFactory(pluginManager: any) {
                 assemblyName,
                 self.assemblyData,
               )
+if(isAlive(self)) {
               getParent(self).history.withoutUndo(() => {
                 if (
                   JSON.stringify(view.displayedRegions) !==
@@ -125,6 +126,7 @@ export default function sessionModelFactory(pluginManager: any) {
                 )
                   view.setDisplayedRegions(displayedRegions, true)
               })
+}
             }
           }
         })

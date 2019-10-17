@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 
 const useStyles = makeStyles({
-  callbackEditor: {
+  jsonEditor: {
     // Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
     fontFamily:
       'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace',
@@ -20,6 +20,10 @@ const useStyles = makeStyles({
     overflowX: 'auto',
     marginTop: '16px',
     borderBottom: '1px solid rgba(0,0,0,0.42)',
+  },
+  error: {
+    fontSize: '0.8em',
+    color: 'red',
   },
 })
 
@@ -31,32 +35,33 @@ function JsonEditor({ slot }) {
 
   useEffect(() => {
     try {
-      const parsed = JSON.parse(debouncedJson)
-      slot.set(parsed)
+      slot.set(JSON.parse(debouncedJson))
       setError(false)
     } catch (e) {
-      setError(true)
+      setError(e.message)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedJson])
+  }, [debouncedJson, error, slot])
 
   return (
-    <FormControl error={error}>
-      <InputLabel shrink htmlFor="callback-editor">
-        {`${slot.name}${error ? ' (invalid JSON)' : ''}`}
-      </InputLabel>
-      <Editor
-        className={classes.callbackEditor}
-        value={json}
-        onValueChange={setJson}
-        highlight={newCode =>
-          highlight(newCode, languages.javascript, 'javascript')
-        }
-        padding={10}
-        style={{}}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </FormControl>
+    <>
+      {error ? <p className={classes.error}>{error}</p> : null}
+      <FormControl error={!!error}>
+        <InputLabel shrink htmlFor="json-editor">
+          {slot.name}
+        </InputLabel>
+        <Editor
+          className={classes.jsonEditor}
+          value={json}
+          onValueChange={setJson}
+          highlight={newCode =>
+            highlight(newCode, languages.javascript, 'javascript')
+          }
+          padding={10}
+          style={{}}
+        />
+        <FormHelperText>{slot.description}</FormHelperText>
+      </FormControl>
+    </>
   )
 }
 

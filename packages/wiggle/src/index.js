@@ -29,7 +29,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'WiggleTrack',
         configSchema,
-        stateModel: wiggleTrackModelFactory(configSchema),
+        stateModel: wiggleTrackModelFactory(pluginManager, configSchema),
       })
     })
 

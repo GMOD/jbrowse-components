@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { generateBaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 export default pluginManager => {
@@ -58,7 +58,7 @@ export default pluginManager => {
       }),
     },
     {
-      baseConfiguration: BaseTrackConfig,
+      baseConfiguration: generateBaseTrackConfig(pluginManager),
       explicitlyTyped: true,
     },
   )

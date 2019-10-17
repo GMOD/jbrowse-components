@@ -23,10 +23,10 @@ const rendererTypes = new Map([
   ['density', 'DensityRenderer'],
   ['line', 'LinePlotRenderer'],
 ])
-export default configSchema =>
+export default (pluginManager, configSchema) =>
   types.compose(
     'WiggleTrack',
-    blockBasedTrackModel,
+    blockBasedTrackModel(pluginManager),
     types
       .model({
         type: types.literal('WiggleTrack'),

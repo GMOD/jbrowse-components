@@ -19,12 +19,10 @@ function makeFilters(trackModel) {
   return filters
 }
 
-export default configSchema => {
-  const basicTrackStateModel = basicTrackStateModelFactory(configSchema)
-
-  return types.compose(
+export default (pluginManager, configSchema) =>
+  types.compose(
     'FilteringTrack',
-    basicTrackStateModel,
+    basicTrackStateModelFactory(pluginManager, configSchema),
     types
       .model({
         type: types.literal('FilteringTrack'),
@@ -81,4 +79,3 @@ export default configSchema => {
         ReactComponent: FilteringTrackComponent,
       })),
   )
-}

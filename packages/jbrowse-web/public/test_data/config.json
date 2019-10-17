@@ -742,6 +742,12 @@
           "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
           "name": "human chord test",
+          "configRelationships": [
+            {
+              "type": "evidence",
+              "target": "pacbio_hg002"
+            }
+          ],
           "adapter": {
             "configId": "JjSnfYk0a",
             "type": "VcfTabixAdapter",

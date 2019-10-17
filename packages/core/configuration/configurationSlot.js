@@ -7,6 +7,13 @@ function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
 }
+
+// const configRelationship = types.model({
+//   type: types.string,
+//   targetConfigType: types.string,
+//   target: types.reference(types.frozen()),
+// })
+
 const typeModels = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
@@ -18,6 +25,7 @@ const typeModels = {
   string: types.string,
   text: types.string,
   fileLocation: FileLocation,
+  // configRelationships: types.array(configRelationship),
   frozen: types.frozen(),
 }
 
@@ -33,6 +41,7 @@ const fallbackDefaults = {
   string: '',
   text: '',
   fileLocation: { uri: '/path/to/resource.txt' },
+  // configRelationships: [],
   frozen: {},
 }
 
@@ -59,6 +68,7 @@ const typeModelExtensions = {
   integer: literalJSON,
   boolean: literalJSON,
   frozen: objectJSON,
+
   // special actions for working with stringArray slots
   stringArray: self => ({
     views: {
@@ -195,22 +205,15 @@ export default function ConfigSlot(
           : `'${self.value}'`
       },
     }))
-    .preProcessSnapshot(
-      val =>
-        typeof val === 'object' && val.name === slotName
-          ? val
-          : {
-              name: slotName,
-              description,
-              type,
-              value: val,
-            },
-      // ({
-      //   name: slotName,
-      //   description,
-      //   type,
-      //   value: val,
-      // }),
+    .preProcessSnapshot(val =>
+      typeof val === 'object' && val.name === slotName
+        ? val
+        : {
+            name: slotName,
+            description,
+            type,
+            value: val,
+          },
     )
     .postProcessSnapshot(snap => {
       if (typeof snap.value === 'object')
