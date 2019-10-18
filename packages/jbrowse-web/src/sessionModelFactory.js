@@ -12,7 +12,7 @@ export default pluginManager => {
       name: types.identifier,
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
-        512,
+        1024,
       ),
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
