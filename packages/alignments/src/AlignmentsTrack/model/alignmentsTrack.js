@@ -19,7 +19,7 @@ const rendererTypes = new Map([
 export default (pluginManager, configSchema) =>
   types.compose(
     'AlignmentsTrack',
-    blockBasedTrackModel(pluginManager),
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal('AlignmentsTrack'),

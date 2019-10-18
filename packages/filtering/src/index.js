@@ -12,7 +12,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'FilteringTrack',
         configSchema,
-        stateModel: filteringTrackModelFactory(pluginManager, configSchema),
+        stateModel: filteringTrackModelFactory(configSchema),
       })
     })
   }

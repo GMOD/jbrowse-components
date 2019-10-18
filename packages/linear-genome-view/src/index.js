@@ -29,7 +29,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'BasicTrack',
         configSchema,
-        stateModel: basicTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: basicTrackStateModelFactory(configSchema),
       })
     })
 
@@ -38,7 +38,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'DynamicTrack',
         configSchema,
-        stateModel: dynamicTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: dynamicTrackStateModelFactory(configSchema),
       })
     })
 

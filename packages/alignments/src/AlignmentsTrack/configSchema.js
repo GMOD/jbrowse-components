@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 export default pluginManager => {
@@ -25,9 +25,6 @@ export default pluginManager => {
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
     },
-    {
-      baseConfiguration: BaseTrackConfig,
-      explicitlyTyped: true,
-    },
+    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
   )
 }

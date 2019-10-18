@@ -17,11 +17,11 @@ const rendererTypes = new Map([
   ['svg', 'SvgFeatureRenderer'],
 ])
 
-export default (pluginManager, configSchema) =>
+export default configSchema =>
   types
     .compose(
       'VariantTrack',
-      blockBasedTrackModel(pluginManager),
+      blockBasedTrackModel,
       types.model({
         type: types.literal('VariantTrack'),
         configuration: ConfigurationReference(configSchema),

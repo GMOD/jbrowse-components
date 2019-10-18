@@ -1137,12 +1137,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
           data-shrink="true"
-          for="json-editor"
+          for="callback-editor"
         >
           configRelationships
         </label>
         <div
-          class="makeStyles-jsonEditor"
+          class="makeStyles-callbackEditor"
           style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
         >
           <textarea

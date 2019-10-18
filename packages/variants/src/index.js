@@ -33,7 +33,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'VariantTrack',
         configSchema,
-        stateModel: variantTrackModelFactory(pluginManager, configSchema),
+        stateModel: variantTrackModelFactory(configSchema),
       })
     })
 

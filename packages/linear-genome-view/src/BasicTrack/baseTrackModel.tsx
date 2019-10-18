@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ConfigurationReference,
-  ConfigurationSchema,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {

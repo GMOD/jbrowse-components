@@ -24,11 +24,11 @@ export function configSchemaFactory(pluginManager: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function stateModelFactory(pluginManager: any, configSchema: any) {
+export function stateModelFactory(configSchema: any) {
   return types
     .compose(
       'BasicTrack',
-      blockBasedTrack(pluginManager),
+      blockBasedTrack,
       types.model({
         type: types.literal('BasicTrack'),
         configuration: ConfigurationReference(configSchema),

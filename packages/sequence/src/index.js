@@ -64,11 +64,7 @@ export default class extends Plugin {
       return new TrackType({
         name: 'SequenceTrack',
         configSchema,
-        stateModel: sequenceTrackModelFactory(
-          pluginManager,
-          configSchema,
-          'SequenceTrack',
-        ),
+        stateModel: sequenceTrackModelFactory(configSchema, 'SequenceTrack'),
       })
     })
 
@@ -81,7 +77,6 @@ export default class extends Plugin {
         name: 'ReferenceSequenceTrack',
         configSchema,
         stateModel: referenceSequenceTrackModelFactory(
-          pluginManager,
           configSchema,
           'ReferenceSequenceTrack',
         ),

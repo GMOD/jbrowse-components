@@ -13,7 +13,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
-import { addDisposer, getSnapshot, types, isAlive } from 'mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 import { getNiceDomain } from '../util'
 import WiggleTrackComponent from './components/WiggleTrackComponent'
 
@@ -23,10 +23,10 @@ const rendererTypes = new Map([
   ['density', 'DensityRenderer'],
   ['line', 'LinePlotRenderer'],
 ])
-export default (pluginManager, configSchema) =>
+export default configSchema =>
   types.compose(
     'WiggleTrack',
-    blockBasedTrackModel(pluginManager),
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal('WiggleTrack'),

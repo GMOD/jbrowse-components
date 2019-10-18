@@ -17,10 +17,10 @@ export function configSchemaFactory(pluginManager) {
   )
 }
 
-export const stateModelFactory = (pluginManager, configSchema) =>
+export const stateModelFactory = configSchema =>
   types.compose(
     'DynamicTrack',
-    basicTrackStateModelFactory(pluginManager, configSchema),
+    basicTrackStateModelFactory(configSchema),
     types
       .model({
         type: types.literal('DynamicTrack'),

@@ -9,10 +9,10 @@ import {
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
-export default (pluginManager, configSchema, trackType) =>
+export default (configSchema, trackType) =>
   types.compose(
     trackType,
-    blockBasedTrackModel(pluginManager),
+    blockBasedTrackModel,
     types
       .model({
         type: types.literal(trackType),

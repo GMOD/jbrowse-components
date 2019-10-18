@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 
 const useStyles = makeStyles({
-  jsonEditor: {
+  callbackEditor: {
     // Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
     fontFamily:
       'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace',
@@ -22,35 +22,36 @@ const useStyles = makeStyles({
     borderBottom: '1px solid rgba(0,0,0,0.42)',
   },
   error: {
-    fontSize: '0.8em',
     color: 'red',
+    fontSize: '0.8em',
   },
 })
 
 function JsonEditor({ slot }) {
   const classes = useStyles()
   const [json, setJson] = useState(JSON.stringify(slot.value, null, '  '))
-  const [error, setError] = useState(false)
+  const [error, setError] = useState()
   const debouncedJson = useDebounce(json, 400)
 
   useEffect(() => {
     try {
       slot.set(JSON.parse(debouncedJson))
-      setError(false)
+      setError(undefined)
     } catch (e) {
       setError(e.message)
     }
-  }, [debouncedJson, error, slot])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedJson])
 
   return (
     <>
       {error ? <p className={classes.error}>{error}</p> : null}
-      <FormControl error={!!error}>
-        <InputLabel shrink htmlFor="json-editor">
+      <FormControl error={error}>
+        <InputLabel shrink htmlFor="callback-editor">
           {slot.name}
         </InputLabel>
         <Editor
-          className={classes.jsonEditor}
+          className={classes.callbackEditor}
           value={json}
           onValueChange={setJson}
           highlight={newCode =>
