@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   // const { transaction } = jbrequire('mobx')
@@ -42,9 +45,7 @@ export default pluginManager => {
         model: types.array(
           types.model('Relationship', {
             type: types.string,
-            target: types.reference(
-              pluginManager.pluggableConfigSchemaType('track'),
-            ),
+            target: types.reference(BaseTrack),
           }),
         ),
         defaultValue: [],

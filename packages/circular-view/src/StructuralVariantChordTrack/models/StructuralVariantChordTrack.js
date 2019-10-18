@@ -136,6 +136,9 @@ export default pluginManager => {
             .getViewType('BreakpointSplitView')
             .snapshotFromBreakendFeature(feature, startRegion, endRegion)
           const ret = getSnapshot(self.configuration.configRelationships)
+          // doesn't work?
+          // console.log(self.configuration.configRelationships[0])
+          // console.log(self.configuration.configRelationships[0].target)
 
           // add the specific evidence tracks to the LGVs in the split view
           viewSnapshot.views[0].tracks = [
