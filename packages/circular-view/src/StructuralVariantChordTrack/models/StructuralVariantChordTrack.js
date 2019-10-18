@@ -1,8 +1,8 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types, getSnapshot } = jbrequire('mobx-state-tree')
-  const { ConfigurationSchema, ConfigurationReference } = jbrequire(
+  const { types, resolveIdentifier } = jbrequire('mobx-state-tree')
+  const { getConf, ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
 
@@ -135,34 +135,37 @@ export default pluginManager => {
           const viewSnapshot = pluginManager
             .getViewType('BreakpointSplitView')
             .snapshotFromBreakendFeature(feature, startRegion, endRegion)
-          const ret = getSnapshot(self.configuration.configRelationships)
-          // doesn't work?
-          // console.log(self.configuration.configRelationships[0])
-          // console.log(self.configuration.configRelationships[0].target)
+          const ref = getConf(self, 'configRelationships')
+          const ret = ref[0].target
+          const type = pluginManager.pluggableConfigSchemaType('track')
+          const trackConfig = resolveIdentifier(type, session, ret)
+          if (trackConfig) {
+            // add the specific evidence tracks to the LGVs in the split view
+            viewSnapshot.views[0].tracks = [
+              {
+                type: trackConfig.type,
+                height: 100,
+                configuration: trackConfig.configId,
+                selectedRendering: '',
+              },
+            ]
+            viewSnapshot.views[1].tracks = [
+              {
+                type: trackConfig.type,
+                height: 100,
+                configuration: trackConfig.configId,
+                selectedRendering: '',
+              },
+            ]
 
-          // add the specific evidence tracks to the LGVs in the split view
-          viewSnapshot.views[0].tracks = [
-            {
-              type: 'AlignmentsTrack',
-              height: 100,
-              configuration: ret[0].target,
-              selectedRendering: '',
-            },
-          ]
-          viewSnapshot.views[1].tracks = [
-            {
-              type: 'AlignmentsTrack',
-              height: 100,
-              configuration: ret[0].target,
-              selectedRendering: '',
-            },
-          ]
+            // try to center the offsetPx
+            viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+            viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
 
-          // try to center the offsetPx
-          viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-          viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-
-          session.addView('BreakpointSplitView', viewSnapshot)
+            session.addView('BreakpointSplitView', viewSnapshot)
+          } else {
+            // TODO configReference undefined
+          }
         } catch (e) {
           console.error(e)
         }

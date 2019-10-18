@@ -55,6 +55,12 @@
           "configId": "QGoUN4vNq",
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
+          "configRelationships": [
+            {
+              "type": "test",
+              "target": "volvox_long_reads_sv"
+            }
+          ],
           "adapter": {
             "configId": "R1d4tYPHY",
             "type": "VcfTabixAdapter",
