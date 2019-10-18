@@ -4,6 +4,8 @@ import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
 
+type LGV = Instance<LinearGenomeViewStateModel>
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -119,6 +121,10 @@ export default function stateModelFactory(pluginManager: any) {
 
       setWidth(newWidth: number) {
         self.width = newWidth
+      },
+
+      removeView(view: LGV) {
+        self.views.remove(view)
       },
 
       closeView() {

@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
 import { ElementId, Region, IRegion } from '@gmod/jbrowse-core/mst-types'
-import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
+import {
+  clamp,
+  getContainingView,
+  getSession,
+  parseLocString,
+} from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, types, cast } from 'mobx-state-tree'
@@ -250,7 +255,14 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        const parent = getContainingView(self) as any
+        if (parent) {
+          // I am embedded in a higher order view
+          parent.removeView(self)
+        } else {
+          // I am part of a session
+          getParent(self, 2).removeView(self)
+        }
       },
 
       toggleTrack(configuration: any) {
