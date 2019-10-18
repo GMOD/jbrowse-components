@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { generateBaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import DivSequenceRendererConfigurationSchema from '../DivSequenceRenderer/configSchema'
 
 export default (pluginManager, trackType) => {
@@ -12,7 +12,7 @@ export default (pluginManager, trackType) => {
         rendering: DivSequenceRendererConfigurationSchema,
       },
       {
-        baseConfiguration: generateBaseTrackConfig(pluginManager),
+        baseConfiguration: BaseTrackConfig,
         explicitlyTyped: true,
       },
     )

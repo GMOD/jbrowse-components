@@ -16,7 +16,7 @@ import { BaseBlock, ContentBlock } from './util/blockTypes'
 const blockBasedTrack = (pluginManager: any) =>
   types.compose(
     'BlockBasedTrackState',
-    baseTrack(pluginManager),
+    baseTrack,
     types
       .model({
         blockState: types.map(BlockState),

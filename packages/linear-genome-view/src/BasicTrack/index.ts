@@ -4,7 +4,7 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
-import { generateBaseTrackConfig } from './baseTrackModel'
+import { BaseTrackConfig } from './baseTrackModel'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import blockBasedTrack from './blockBasedTrackModel'
 
@@ -17,7 +17,7 @@ export function configSchemaFactory(pluginManager: any) {
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
-      baseConfiguration: generateBaseTrackConfig(pluginManager),
+      baseConfiguration: BaseTrackConfig,
       explicitlyTyped: true,
     },
   )
