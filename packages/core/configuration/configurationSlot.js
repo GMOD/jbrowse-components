@@ -223,6 +223,9 @@ export default function ConfigSlot(
       set(newVal) {
         self.value = newVal
       },
+      reset() {
+        self.value = defaultValue
+      },
       convertToCallback() {
         if (self.isCallback) return
         self.value = `function(${self.functionSignature.join(', ')}) {
