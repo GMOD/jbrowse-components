@@ -32,27 +32,6 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
-        tabindex="0"
-        title="select tracks"
-        type="button"
-        value="track_select"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            line_style
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
         aria-controls="long-menu"
         aria-haspopup="true"
         aria-label="more"
@@ -342,27 +321,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             close
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        class="MuiButtonBase-root MuiIconButton-root"
-        tabindex="0"
-        title="select tracks"
-        type="button"
-        value="track_select"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            line_style
           </span>
         </span>
         <span
@@ -875,27 +833,6 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             close
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        class="MuiButtonBase-root MuiIconButton-root"
-        tabindex="0"
-        title="select tracks"
-        type="button"
-        value="track_select"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
-          >
-            line_style
           </span>
         </span>
         <span
