@@ -9,6 +9,6 @@ Object {
   "menuBars": Array [],
   "name": "testSession",
   "views": Array [],
-  "width": 512,
+  "width": 1024,
 }
 `;

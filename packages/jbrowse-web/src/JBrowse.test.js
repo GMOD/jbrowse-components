@@ -133,7 +133,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
-    expect(state.session.views[0].bpPerPx).toEqual(0.03125)
+    expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
   it('click and zoom in and back out', async () => {

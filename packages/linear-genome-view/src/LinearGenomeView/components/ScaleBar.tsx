@@ -55,7 +55,7 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
       {model.staticBlocks.map((block, i) => {
         if (block instanceof ContentBlock) {
           return (
-            <Fragment key={block.offsetPx}>
+            <Fragment key={block.key}>
               <Block block={block} model={model}>
                 <svg height={height} width={block.widthPx}>
                   <Ruler

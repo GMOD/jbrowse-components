@@ -1,21 +1,29 @@
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { generateLocString } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+
+// material ui things
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
+import Checkbox from '@material-ui/core/Checkbox'
 import Select from '@material-ui/core/Select'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+
+// misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState, CSSProperties } from 'react'
+
+// locals
 import buttonStyles from './buttonStyles'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
@@ -23,7 +31,6 @@ import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
 import {
   LinearGenomeViewStateModel,
-  LGVMenuOption,
   HEADER_BAR_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from '..'
@@ -176,17 +183,36 @@ const LongMenu = observer(
           open={open}
           onClose={handleClose}
         >
-          {model.menuOptions.map((option: LGVMenuOption) => (
-            <MenuItem
-              key={option.key}
-              onClick={() => {
-                option.callback()
-                handleClose()
-              }}
-            >
-              {option.title}
-            </MenuItem>
-          ))}
+          {model.menuOptions.map(option => {
+            return option.isCheckbox ? (
+              <MenuItem key={option.key}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={option.checked}
+                      onChange={() => {
+                        option.callback()
+                        handleClose()
+                      }}
+                    />
+                  }
+                  label={option.title}
+                  key={option.key}
+                />
+              </MenuItem>
+            ) : (
+              <MenuItem
+                key={option.key}
+                onClick={() => {
+                  option.callback()
+                  handleClose()
+                }}
+              >
+                {option.title}
+              </MenuItem>
+            )
+          })}
+          )}
         </Menu>
       </>
     )
