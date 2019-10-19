@@ -201,36 +201,37 @@
           }
         },
         {
-          "configId": "volvox_bam",
+          "configId": "volvox_cram",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue",
+          "name": "volvox-sorted.cram",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "PphRAaR1y4_",
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sorted.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-sorted.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox_bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted.bam",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
-              "configId": "PB2zR_KB-RN",
               "location": {
                 "uri": "test_data/volvox-sorted.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "NGINUnvvMqj",
-            "PileupRenderer": {
-              "configId": "oO78CJInOtk",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "1am8PdZjPfJ",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "cH9mZmuv1Fq"
               }
             }
           }

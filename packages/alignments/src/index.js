@@ -16,6 +16,10 @@ import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
 } from './BamAdapter'
+import {
+  AdapterClass as CramAdapterClass,
+  configSchema as cramAdapterConfigSchema,
+} from './CramAdapter'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
@@ -52,6 +56,15 @@ export default class extends Plugin {
         }),
     )
 
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'CramAdapter',
+          requiresSequenceAdapter: true,
+          configSchema: cramAdapterConfigSchema,
+          AdapterClass: CramAdapterClass,
+        }),
+    )
     pluginManager.addRendererType(
       () =>
         new PileupRenderer({
