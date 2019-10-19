@@ -121,6 +121,7 @@ export default function stateModelFactory(pluginManager: any) {
 
       setWidth(newWidth: number) {
         self.width = newWidth
+        self.views.forEach(v => v.setWidth(newWidth))
       },
 
       removeView(view: LGV) {
