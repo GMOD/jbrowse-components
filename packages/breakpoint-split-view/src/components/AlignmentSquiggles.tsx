@@ -2,7 +2,7 @@ import Path from 'svg-path-generator'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { clamp } from '@gmod/jbrowse-core/util'
+import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
 interface Chunk {
@@ -22,7 +22,9 @@ export default (pluginManager: any) => {
     view: Instance<typeof LinearGenomeViewStateModel>,
     coord: number,
   ) {
-    return coord / view.bpPerPx - view.offsetPx
+    const region = { start: 0, end: view.totalBp }
+    const { bpPerPx, horizontallyFlipped, offsetPx } = view
+    return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
   }
   function cheight(chunk: [number, number, number, number]) {
     return chunk[BOTTOM] - chunk[TOP]
@@ -58,6 +60,9 @@ export default (pluginManager: any) => {
               for (let i = 0; i < chunk.length - 1; i += 1) {
                 const { layout: c1, feature: f1, level: level1 } = chunk[i]
                 const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+                const flipMultipliers = views.map(v =>
+                  v.horizontallyFlipped ? -1 : 1,
+                )
                 const x1 = calc(
                   views[level1],
                   c1[f1.get('strand') === -1 ? LEFT : RIGHT],
@@ -101,9 +106,9 @@ export default (pluginManager: any) => {
                 const path = Path()
                   .moveTo(x1, y1)
                   .curveTo(
-                    x1 + 200 * f1.get('strand'),
+                    x1 + 200 * f1.get('strand') * flipMultipliers[level1],
                     y1,
-                    x2 - 200 * f2.get('strand'),
+                    x2 - 200 * f2.get('strand') * flipMultipliers[level2],
                     y2,
                     x2,
                     y2,

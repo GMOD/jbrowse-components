@@ -59,14 +59,10 @@ export default function stateModelFactory(pluginManager: any) {
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen: Record<string, boolean> = {}
 
-        // finds "matching tracks across views" but filters out if a particular
-        // view does not have it (all views don't necessarily have to include it)
+        // finds "matching tracks across views"
         const tracks = self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(f => !!f)
-
-        // if it happens none of them have it, return null
-        if (!tracks.length) return []
 
         // this finds candidate features that share the same name
         for (const feature of new CompositeMap<string, Feature>(
@@ -116,7 +112,6 @@ export default function stateModelFactory(pluginManager: any) {
     .actions(self => ({
       setDisplayName(name: string) {
         self.displayName = name
-        return self.displayName
       },
 
       setWidth(newWidth: number) {

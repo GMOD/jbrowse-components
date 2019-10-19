@@ -179,7 +179,7 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: IRegion,
+  region: { start: number; end: number },
   bpPerPx: number,
   flipped = false,
 ): number {
@@ -218,7 +218,7 @@ export function cartesianToPolar(x: number, y: number): [number, number] {
 
 export function featureSpanPx(
   feature: Feature,
-  region: IRegion,
+  region: { start: number; end: number },
   bpPerPx: number,
   flipped = false,
 ): [number, number] {
