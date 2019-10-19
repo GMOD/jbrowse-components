@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
 
   const DataType = types.enumeration('SpreadsheetDataType', ['text'])
 
@@ -15,10 +15,16 @@ export default pluginManager => {
       // the cell's text in context of the schema
     }))
 
-  const RowModel = types.model('SpreadsheetRow', {
-    id: types.string,
-    cells: types.array(CellModel),
-  })
+  const RowModel = types
+    .model('SpreadsheetRow', {
+      cells: types.array(CellModel),
+      isSelected: false,
+    })
+    .actions(self => ({
+      toggleSelect() {
+        self.isSelected = !self.isSelected
+      },
+    }))
 
   return RowModel
 }

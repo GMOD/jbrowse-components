@@ -22,6 +22,7 @@ import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISnackbarContent from '@material-ui/core/SnackbarContent'
 import MUITypography from '@material-ui/core/Typography'
 import MUIContainer from '@material-ui/core/Container'
+import MUICheckbox from '@material-ui/core/Checkbox'
 
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -69,6 +70,7 @@ export default {
   '@material-ui/core/SnackbarContent': MUISnackbarContent,
   '@material-ui/core/Typography': MUITypography,
   '@material-ui/core/Container': MUIContainer,
+  '@material-ui/core/Checkbox': MUICheckbox,
 
   '@material-ui/core/colors': MUIColors,
 

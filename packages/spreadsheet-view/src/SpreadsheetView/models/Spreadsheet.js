@@ -5,7 +5,6 @@ export default pluginManager => {
   const { ConfigurationSchema, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
-  const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   const StaticRowSetModel = jbrequire(require('./StaticRowSet'))
 
@@ -15,8 +14,14 @@ export default pluginManager => {
         StaticRowSetModel.create(),
       ),
       columnDisplayOrder: types.array(types.number),
+      columnNames: types.map(types.string),
     })
-    .views(self => ({}))
+    .views(self => ({
+      get hideRowSelection() {
+        // just delegates to parent
+        return getParent(self).hideRowSelection
+      },
+    }))
     .actions(self => ({}))
 
   return stateModel

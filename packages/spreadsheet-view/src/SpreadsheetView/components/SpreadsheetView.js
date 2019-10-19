@@ -13,6 +13,7 @@ export default pluginManager => {
   const Spreadsheet = jbrequire(require('./Spreadsheet'))
 
   const headerHeight = 48
+  const statusBarHeight = 20
 
   const useStyles = makeStyles(theme => {
     return {
@@ -33,6 +34,17 @@ export default pluginManager => {
       },
       rowCount: {
         marginLeft: theme.spacing(1),
+      },
+      statusBar: {
+        position: 'absolute',
+        left: 0,
+        bottom: 0,
+        height: statusBarHeight,
+        width: '100%',
+        background: '#fafafa',
+        boxSizing: 'border-box',
+        borderTop: '1px outset #b1b1b1',
+        paddingLeft: theme.spacing(1),
       },
     }
   })
@@ -60,26 +72,11 @@ export default pluginManager => {
           <IconButton
             onClick={() => model.setImportMode()}
             className={classes.iconButton}
-            title="open a different file"
+            title="open a tabular file"
             data-testid="spreadsheet_view_open"
           >
             <Icon fontSize="small">folder_open</Icon>
           </IconButton>
-
-          <IconButton
-            onClick={() => model.setDisplayMode()}
-            disabled={!model.spreadsheet}
-            className={classes.iconButton}
-            title="show current spreadsheet"
-            data-testid="spreadsheet_view_spreadsheet"
-          >
-            <Icon fontSize="small">grid_on</Icon>
-          </IconButton>
-        </Grid>
-        <Grid item>
-          {model.spreadsheet && model.spreadsheet.rowSet.isLoaded
-            ? `${model.spreadsheet.rowSet.rows.length} rows`
-            : null}
         </Grid>
       </Grid>
     )
@@ -87,17 +84,6 @@ export default pluginManager => {
 
   function SpreadsheetView({ model }) {
     const classes = useStyles()
-
-    let mode
-    if (model.mode === 'import')
-      mode = <ImportWizard model={model.importWizard} />
-    else if (model.mode === 'display')
-      mode = (
-        <Spreadsheet
-          model={model.spreadsheet}
-          height={model.height - headerHeight}
-        />
-      )
 
     return (
       <div
@@ -107,8 +93,29 @@ export default pluginManager => {
       >
         <Controls model={model} />
 
-        {mode}
+        <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>
+          <ImportWizard model={model.importWizard} />
+        </span>
+        <div
+          style={{
+            position: 'relative',
+            top: model.mode === 'display' ? undefined : model.height,
+          }}
+        >
+          <Spreadsheet
+            model={model.spreadsheet}
+            height={model.height - headerHeight - statusBarHeight}
+          />
+        </div>
 
+        <div
+          className={classes.statusBar}
+          style={{ display: model.mode === 'display' ? undefined : 'none' }}
+        >
+          {model.spreadsheet && model.spreadsheet.rowSet.isLoaded
+            ? `${model.spreadsheet.rowSet.rows.length} rows`
+            : null}
+        </div>
         <ResizeHandle
           onDrag={model.resizeHeight}
           objectId={model.id}

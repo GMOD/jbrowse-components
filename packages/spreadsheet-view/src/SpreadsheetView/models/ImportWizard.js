@@ -18,6 +18,14 @@ export default pluginManager => {
 
       errorObject: types.optional(types.frozen()),
     })
+    .views(self => ({
+      get isReadyToOpen() {
+        return self.fileSource && (self.fileSource.blob || self.fileSource.url)
+      },
+      get canCancel() {
+        return getParent(self).readyToDisplay
+      },
+    }))
     .actions(self => ({
       setFileSource(newSource) {
         self.fileSource = newSource
@@ -31,6 +39,10 @@ export default pluginManager => {
 
       setLoaded() {
         self.loading = false
+      },
+
+      cancelButton() {
+        getParent(self).setDisplayMode()
       },
 
       // fetch and parse the file, make a new Spreadsheet model for it,

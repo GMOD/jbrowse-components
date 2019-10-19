@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
+  const { types, getParent, getRoot, getEnv } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
@@ -41,7 +41,19 @@ export default pluginManager => {
       ),
       spreadsheet: types.maybe(SpreadsheetModel),
     })
-    .views(self => ({}))
+    .views(self => ({
+      get readyToDisplay() {
+        return !!self.spreadsheet
+      },
+
+      get hideRowSelection() {
+        return !!getEnv(self).hideRowSelection
+      },
+
+      get selectedRows() {
+        return self.rowSet.selectedRows
+      },
+    }))
     .actions(self => ({
       setWidth(newWidth) {
         self.width = newWidth
@@ -68,7 +80,7 @@ export default pluginManager => {
       },
 
       setDisplayMode() {
-        if (self.spreadsheet) self.mode = 'display'
+        if (self.readyToDisplay) self.mode = 'display'
       },
 
       closeView() {

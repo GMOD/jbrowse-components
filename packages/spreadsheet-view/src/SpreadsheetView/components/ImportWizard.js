@@ -9,6 +9,7 @@ export default pluginManager => {
   const Container = jbrequire('@material-ui/core/Container')
   const Box = jbrequire('@material-ui/core/Box')
   const Button = jbrequire('@material-ui/core/Button')
+  const ButtonGroup = jbrequire('@material-ui/core/ButtonGroup')
   const Grid = jbrequire('@material-ui/core/Grid')
 
   const FileSelector = jbrequire(require('./FileSelector'))
@@ -41,13 +42,18 @@ export default pluginManager => {
             </FormControl>
           </Grid>
           <Grid item>
+            {model.canCancel ? (
+              <Button
+                variant="contained"
+                color="default"
+                onClick={model.cancelButton}
+                disabled={!model.canCancel}
+              >
+                Cancel
+              </Button>
+            ) : null}{' '}
             <Button
-              disabled={
-                !(
-                  model.fileSource &&
-                  (model.fileSource.blob || model.fileSource.url)
-                )
-              }
+              disabled={!model.isReadyToOpen}
               variant="contained"
               color="primary"
               onClick={model.import}

@@ -221,9 +221,13 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       setDisplayedRegions(regions: IRegion[], isFromAssemblyName = false) {
-        self.displayedRegions = cast(regions)
-        if (!isFromAssemblyName)
-          this.setDisplayedRegionsFromAssemblyName(undefined)
+        try {
+          self.displayedRegions = cast(regions)
+          if (!isFromAssemblyName)
+            this.setDisplayedRegionsFromAssemblyName(undefined)
+        } catch (error) {
+          console.error(error)
+        }
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName: string | undefined) {

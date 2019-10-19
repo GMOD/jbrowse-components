@@ -13,8 +13,12 @@ export default pluginManager => {
         return self.rows.length
       },
 
-      getRows(startRowNum, endRowNum) {
-        return Promise.resolve(self.rows.slice(startRowNum, endRowNum + 1))
+      // getRows(startRowNum, endRowNum) {
+      //   return Promise.resolve(self.rows.slice(startRowNum, endRowNum + 1))
+      // },
+
+      get selectedRows() {
+        return self.rows.filter(r => r.isSelected)
       },
     }))
 }
