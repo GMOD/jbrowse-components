@@ -23,6 +23,8 @@ export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private samHeader: any
 
+  private refNames: string[] | undefined
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
@@ -90,7 +92,7 @@ export default class CramAdapter extends BaseAdapter {
     return sequence
   }
 
-  async setup(): Promise<void> {
+  async setup(opts: BaseOptions): Promise<void> {
     if (!this.samHeader) {
       const samHeader = await this.cram.cram.getSamHeader()
       this.samHeader = {}
@@ -117,21 +119,33 @@ export default class CramAdapter extends BaseAdapter {
     }
   }
 
-  async getRefNames() {
-    await this.setup()
+  async getRefNames(opts: BaseOptions) {
+    await this.setup(opts)
     return this.samHeader.idToName
   }
 
   // use info from the SAM header if possible, but fall back to using
   // the ref seq order from when the browser's refseqs were loaded
   refNameToId(refName: string) {
-    return this.samHeader.nameToId[refName]
+    if (this.samHeader.nameToId) {
+      return this.samHeader.nameToId[refName]
+    }
+    if (this.refNames) {
+      return this.refNames.indexOf(refName)
+    }
+    return undefined
   }
 
   // use info from the SAM header if possible, but fall back to using
   // the ref seq order from when the browser's refseqs were loaded
   refIdToName(refId: number) {
-    return this.samHeader.idToName[refId]
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName[refId]
+    }
+    if (this.refNames) {
+      return this.refNames[refId]
+    }
+    return undefined
   }
 
   /**
@@ -148,7 +162,8 @@ export default class CramAdapter extends BaseAdapter {
   ): Observable<Feature> {
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
-        await this.setup()
+        await this.setup(opts)
+        this.refNames = await this.sequenceAdapter.getRefNames(opts)
         const refId = this.refNameToId(refName)
         const records = await this.cram.getRecordsForRange(
           refId,
