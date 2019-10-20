@@ -37,6 +37,8 @@ export function getAdapter(
   sessionId,
   adapterType,
   adapterConfig,
+  sequenceAdapterType,
+  sequenceAdapterConfig,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterType, adapterConfig)
@@ -44,6 +46,19 @@ export function getAdapter(
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
       throw new Error(`unknown data adapter type ${adapterType}`)
+    }
+
+    if (
+      dataAdapterType.requiresSequenceAdapter &&
+      sequenceAdapterType &&
+      sequenceAdapterConfig
+    ) {
+      adapterConfig.sequenceAdapter = getAdapter(
+        pluginManager,
+        sessionId,
+        sequenceAdapterType,
+        sequenceAdapterConfig,
+      ).dataAdapter
     }
     // console.log('new adapter', cacheKey)
     const dataAdapter = new dataAdapterType.AdapterClass(adapterConfig)
