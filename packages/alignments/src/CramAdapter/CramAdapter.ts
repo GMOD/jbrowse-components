@@ -48,7 +48,9 @@ export default class CramAdapter extends BaseAdapter {
       checkSequenceMD5: false,
       fetchSizeLimit: config.fetchSizeLimit || 60000000,
     })
-    this.sequenceAdapter = sequenceAdapter
+    if (sequenceAdapter) {
+      this.sequenceAdapter = sequenceAdapter
+    }
   }
 
   async seqFetch(seqId: number, start: number, end: number) {
@@ -92,7 +94,7 @@ export default class CramAdapter extends BaseAdapter {
     return sequence
   }
 
-  async setup(opts: BaseOptions): Promise<void> {
+  async setup(opts?: BaseOptions) {
     if (!this.samHeader) {
       const samHeader = await this.cram.cram.getSamHeader()
       this.samHeader = {}
@@ -119,9 +121,15 @@ export default class CramAdapter extends BaseAdapter {
     }
   }
 
-  async getRefNames(opts: BaseOptions) {
+  async getRefNames(opts?: BaseOptions) {
     await this.setup(opts)
-    return this.samHeader.idToName
+    if (this.samHeader.idToName) {
+      return this.samHeader.idToName
+    }
+    if (this.sequenceAdapter) {
+      return this.sequenceAdapter.getRefNames()
+    }
+    throw new Error('unable to get refnames')
   }
 
   // use info from the SAM header if possible, but fall back to using
@@ -160,25 +168,25 @@ export default class CramAdapter extends BaseAdapter {
     { refName, start, end }: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
-    return ObservableCreate(
-      async (observer: Observer<Feature>): Promise<void> => {
-        await this.setup(opts)
+    return ObservableCreate(async (observer: Observer<Feature>) => {
+      await this.setup(opts)
+      if (this.sequenceAdapter && !this.refNames) {
         this.refNames = await this.sequenceAdapter.getRefNames(opts)
-        const refId = this.refNameToId(refName)
-        const records = await this.cram.getRecordsForRange(
-          refId,
-          start,
-          end,
-          opts,
-        )
-        checkAbortSignal(opts.signal)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        records.forEach((record: any) => {
-          observer.next(this.cramRecordToFeature(record))
-        })
-        observer.complete()
-      },
-    )
+      }
+      const refId = this.refNameToId(refName)
+      const records = await this.cram.getRecordsForRange(
+        refId,
+        start,
+        end,
+        opts,
+      )
+      checkAbortSignal(opts.signal)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      records.forEach((record: any) => {
+        observer.next(this.cramRecordToFeature(record))
+      })
+      observer.complete()
+    })
   }
 
   /**
