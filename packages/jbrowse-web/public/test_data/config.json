@@ -58,7 +58,7 @@
           "configRelationships": [
             {
               "type": "test",
-              "target": "volvox_long_reads_sv"
+              "target": "volvox_long_reads_sv.cram"
             }
           ],
           "adapter": {
@@ -153,9 +153,26 @@
           }
         },
         {
-          "configId": "volvox_long_reads_sv",
+          "configId": "volvox_long_reads_sv.cram",
           "type": "AlignmentsTrack",
-          "name": "volvox-long-reads-sv",
+          "name": "volvox-long-reads-sv.cram",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox_long_reads_sv.bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long-reads-sv.bam",
           "category": [
             "Alignments"
           ],

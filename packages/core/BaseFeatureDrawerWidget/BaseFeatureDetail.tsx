@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
-import Card from '@material-ui/core/Card'
+import ExpansionPanel from '@material-ui/core/ExpansionPanel'
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
 import Divider from '@material-ui/core/Divider'
@@ -7,18 +9,39 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles, Theme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
+import isObject from 'is-object'
 
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {},
-  table: {
-    padding: 0,
+const useStyles = makeStyles(theme => ({
+  expansionPanelDetails: {
+    display: 'block',
+    padding: theme.spacing(1),
+  },
+  content: {
+    '&$expanded': {
+      margin: theme.spacing(1, 0),
+    },
+    margin: theme.spacing(1, 0),
+  },
+  root: {
+    background: theme.palette.grey[300],
+    '&$expanded': {
+      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
+      minHeight: 0,
+      margin: 0,
+    },
+    margin: 0,
+    minHeight: 0,
+    padding: theme.spacing(0, 1),
+  },
+  expanded: {
+    // empty block needed to keep small
   },
   fieldName: {
     display: 'inline-block',
     minWidth: '90px',
-    fontSize: '0.9em',
     borderBottom: '1px solid #0003',
-    backgroundColor: '#ddd',
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.contrastText,
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -29,18 +52,29 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxHeight: 300,
     overflow: 'auto',
   },
-  header: {
-    padding: 0.5 * theme.spacing(1),
-    backgroundColor: '#ddd',
-  },
-  title: {
-    fontSize: '1em',
-  },
-
-  valbox: {
-    border: '1px solid #bbb',
-  },
 }))
+
+// const useStyles = makeStyles((theme: Theme) => ({
+//   root: {},
+//   table: {
+//     padding: 0,
+//   },
+
+//   subgroup: {
+//     border: '1px solid black',
+//   },
+//   header: {
+//     // padding: 0.5 * theme.spacing(1),
+//     // backgroundColor: '#ddd',
+//   },
+//   title: {
+//     // fontSize: '1em',
+//   },
+
+//   valbox: {
+//     border: '1px solid #bbb',
+//   },
+// }))
 
 const coreRenderedDetails = [
   'Position',
@@ -58,26 +92,31 @@ const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (
-    <Card>
-      <CardHeader
-        classes={{ root: classes.header, title: classes.title }}
-        title={title}
-      />
-
-      <CardContent>{children}</CardContent>
-    </Card>
+    <ExpansionPanel style={{ marginTop: '4px' }}>
+      <ExpansionPanelDetails className={classes.expansionPanelDetails}>
+        {children}
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
   )
 }
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const BaseCoreDetails: FunctionComponent<BaseProps> = (props): JSX.Element => {
+const BaseCoreDetails = (props: BaseProps) => {
   const classes = useStyles()
   const { feature } = props
-  const { refName, start, end } = feature
+  const { refName, start, end, strand } = feature
+  const strandMap: Record<number, string> = {
+    '-1': '-',
+    '0': '',
+    '1': '+',
+  }
+  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
   feature.length = end - start
-  feature.position = `${refName}:${start + 1}..${end}`
+
+  feature.position = `${refName}:${start + 1}..${end} ${strandStr}`
+
   return (
     <BaseCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
@@ -107,19 +146,35 @@ const omit = [
   'position',
 ]
 
-const BaseAttributes: FunctionComponent<BaseProps> = (props): JSX.Element => {
+interface AttributeProps {
+  feature: Record<string, any>
+}
+const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
   const { feature } = props
   return (
-    <BaseCard {...props} title="Attributes">
+    <>
       {Object.entries(feature)
         .filter(([k, v]) => v !== undefined && !omit.includes(k))
         .map(([key, value]) => (
           <div key={key}>
             <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>{String(value)}</div>
+            {isObject(value) ? (
+              <div>
+                <Attributes key={key} feature={value} />
+              </div>
+            ) : (
+              <div className={classes.fieldValue}>{String(value)}</div>
+            )}
           </div>
         ))}
+    </>
+  )
+}
+const BaseAttributes = (props: BaseProps) => {
+  return (
+    <BaseCard {...props} title="Attributes">
+      <Attributes {...props} />
     </BaseCard>
   )
 }
@@ -128,7 +183,7 @@ interface BaseInputProps extends BaseCardProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const BaseFeatureDetails: FunctionComponent<BaseInputProps> = props => {
+const BaseFeatureDetails = (props: BaseInputProps) => {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))

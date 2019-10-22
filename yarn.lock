@@ -2712,6 +2712,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/is-object@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/is-object/-/is-object-1.0.0.tgz#b9268cdf65e36da0119049a6e8fecc6e7b3e86f5"
+  integrity sha512-toWDYGbRPsGd5v8+LfoGEZ2oOD8SKIyNwk8/84rZbp0ZI/Jk4UEvp4axQ91fRFcMFbR/qc4mryDIEDnEHlve/g==
+
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.1.tgz#42995b446db9a48a11a07ec083499a860e9138ff"

@@ -77,7 +77,7 @@ export default function stateModelFactory(pluginManager: any) {
             // it prevents for example a "gene track" drawing
             // lines between genes with the same name...only want
             // to pair alignments?
-            if (feature.get('CIGAR')) {
+            if (feature.get('mismatches')) {
               candidates[n].push(feature)
             }
           }
@@ -93,6 +93,7 @@ export default function stateModelFactory(pluginManager: any) {
         const metaLayoutFeatures = new CompositeMap(
           tracks.map(t => t.layoutFeatures),
         )
+        // console.log(f.get('cram_read_features'))
         return this.getMatchedFeatures(trackConfigId).map(c =>
           c
             .map((f: Feature) => ({
