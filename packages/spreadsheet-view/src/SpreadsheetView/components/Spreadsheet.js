@@ -40,6 +40,7 @@ export default pluginManager => {
           padding: '0.2rem',
         },
       },
+      dataTableBody: {},
       rowNumCell: {
         background: grey[200],
         textAlign: 'right',
@@ -50,21 +51,28 @@ export default pluginManager => {
       },
       rowNumber: {
         fontWeight: 'normal',
+        display: 'flex',
+        textAlign: 'right',
       },
       rowSelector: {
-        position: 'absolute',
-        top: 1,
-        left: 0,
+        position: 'relative',
+        top: '-2px',
         margin: 0,
-        padding: 0,
+        padding: '0 0.2rem',
       },
-      columnLetter: {
+      columnName: {
         fontWeight: 'normal',
         background: grey[200],
         border: `1px solid ${grey[300]}`,
+        position: 'sticky',
+        top: '-1px',
+        zIndex: 2,
       },
       topLeftCorner: {
         background: grey[300],
+        position: 'sticky',
+        top: '-1px',
+        zIndex: 2,
       },
       dataRowSelected: {
         background: indigo[100],
@@ -82,11 +90,8 @@ export default pluginManager => {
     if (rowModel.isSelected) rowClass += ` ${classes.dataRowSelected}`
     return (
       <tr className={rowClass}>
-        <th className={classes.rowNumCell}>
-          <label
-            className={classes.rowNumber}
-            style={{ paddingLeft: hideRowSelection ? undefined : '23px' }}
-          >
+        <th className={classes.rowNumCell} onClick={rowModel.toggleSelect}>
+          <label className={classes.rowNumber}>
             {hideRowSelection ? null : (
               <Checkbox
                 className={classes.rowSelector}
@@ -110,7 +115,7 @@ export default pluginManager => {
   })
 
   const DataTable = observer(({ model }) => {
-    const { columnDisplayOrder, columnNames, rowSet } = model
+    const { columnDisplayOrder, columnNames, hasColumnNames, rowSet } = model
     const classes = useStyles()
     return (
       <table className={classes.dataTable}>
@@ -118,13 +123,14 @@ export default pluginManager => {
           <tr>
             <th className={classes.topLeftCorner}></th>
             {columnDisplayOrder.map(colNumber => (
-              <th className={classes.columnLetter} key={colNumber}>
-                {columnNames[colNumber] || numToColName(colNumber)}
+              <th className={classes.columnName} key={colNumber}>
+                {(hasColumnNames && columnNames.get(colNumber)) ||
+                  numToColName(colNumber)}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className={classes.dataTableBody}>
           {rowSet.rows.map((row, rowNumber) => (
             <DataRow
               key={rowNumber}

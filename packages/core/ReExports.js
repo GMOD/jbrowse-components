@@ -17,6 +17,9 @@ import MUIIcon from '@material-ui/core/Icon'
 import MUIIconButton from '@material-ui/core/IconButton'
 import MUIFormLabel from '@material-ui/core/FormLabel'
 import MUIFormControl from '@material-ui/core/FormControl'
+import MUIFormControlLabel from '@material-ui/core/FormControlLabel'
+import MUIRadio from '@material-ui/core/Radio'
+import MUIRadioGroup from '@material-ui/core/RadioGroup'
 import MUIFormGroup from '@material-ui/core/FormGroup'
 import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISnackbarContent from '@material-ui/core/SnackbarContent'
@@ -61,6 +64,7 @@ export default {
   '@material-ui/core/FormGroup': MUIFormGroup,
   '@material-ui/core/FormLabel': MUIFormLabel,
   '@material-ui/core/FormControl': MUIFormControl,
+  '@material-ui/core/FormControlLabel': MUIFormControlLabel,
   '@material-ui/core/Grid': MUIGrid,
   '@material-ui/core/Box': MUIBox,
   '@material-ui/core/TextField': MUITextField,
@@ -71,6 +75,8 @@ export default {
   '@material-ui/core/Typography': MUITypography,
   '@material-ui/core/Container': MUIContainer,
   '@material-ui/core/Checkbox': MUICheckbox,
+  '@material-ui/core/RadioGroup': MUIRadioGroup,
+  '@material-ui/core/Radio': MUIRadio,
 
   '@material-ui/core/colors': MUIColors,
 

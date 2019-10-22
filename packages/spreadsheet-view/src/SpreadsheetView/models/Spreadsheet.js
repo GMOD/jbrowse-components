@@ -15,6 +15,7 @@ export default pluginManager => {
       ),
       columnDisplayOrder: types.array(types.number),
       columnNames: types.map(types.string),
+      hasColumnNames: false,
     })
     .views(self => ({
       get hideRowSelection() {

@@ -2,15 +2,19 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { useState, useEffect } = React
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const FormControl = jbrequire('@material-ui/core/FormControl')
   const FormGroup = jbrequire('@material-ui/core/FormGroup')
   const FormLabel = jbrequire('@material-ui/core/FormLabel')
+  const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
+  const Checkbox = jbrequire('@material-ui/core/Checkbox')
+  const RadioGroup = jbrequire('@material-ui/core/RadioGroup')
+  const Radio = jbrequire('@material-ui/core/Radio')
   const Container = jbrequire('@material-ui/core/Container')
-  const Box = jbrequire('@material-ui/core/Box')
   const Button = jbrequire('@material-ui/core/Button')
-  const ButtonGroup = jbrequire('@material-ui/core/ButtonGroup')
   const Grid = jbrequire('@material-ui/core/Grid')
+  const TextField = jbrequire('@material-ui/core/TextField')
 
   const FileSelector = jbrequire(require('./FileSelector'))
 
@@ -24,15 +28,44 @@ export default pluginManager => {
     }
   })
 
+  const NumberEditor = observer(
+    ({ model, disabled, modelPropName, modelSetterName }) => {
+      const [val, setVal] = useState(model[modelPropName])
+      useEffect(() => {
+        const num = parseInt(val, 10)
+        if (!Number.isNaN(num)) {
+          if (num > 0) model[modelSetterName](num)
+          else setVal(1)
+        }
+      }, [model, modelSetterName, val])
+      return (
+        <TextField
+          value={val}
+          disabled={disabled}
+          type="number"
+          onChange={evt => setVal(evt.target.value)}
+          style={{ width: '2rem', verticalAlign: 'baseline' }}
+        />
+      )
+    },
+  )
   function ImportWizard({ model }) {
     const classes = useStyles()
+    const showColumnNameRowControls =
+      model.fileType === 'CSV' || model.fileType === 'TSV'
 
     return (
       <Container>
-        <Grid container spacing={1} direction="column" alignItems="center">
+        <Grid
+          style={{ width: '25rem', margin: '0 auto' }}
+          container
+          spacing={1}
+          direction="column"
+          alignItems="flex-start"
+        >
           <Grid item>
             <FormControl component="fieldset">
-              <FormLabel component="legend">Open spreadsheet from</FormLabel>
+              <FormLabel component="legend">Tabular file</FormLabel>
               <FormGroup>
                 <FileSelector
                   fileRecord={model.fileSource}
@@ -41,6 +74,60 @@ export default pluginManager => {
               </FormGroup>
             </FormControl>
           </Grid>
+          <Grid item>
+            <FormControl component="fieldset" className={classes.formControl}>
+              <FormLabel component="legend">File Type</FormLabel>
+              <RadioGroup
+                aria-label="file type"
+                name="type"
+                value={model.fileType}
+              >
+                <Grid container spacing={1} direction="row">
+                  {model.fileTypes.map(fileTypeName => {
+                    return (
+                      <Grid item key={fileTypeName}>
+                        <FormControlLabel
+                          checked={model.fileType === fileTypeName}
+                          value={fileTypeName}
+                          onClick={() => model.setFileType(fileTypeName)}
+                          control={<Radio />}
+                          label={fileTypeName}
+                        />
+                      </Grid>
+                    )
+                  })}
+                </Grid>
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          {showColumnNameRowControls ? (
+            <Grid item>
+              <FormControl component="fieldset" className={classes.formControl}>
+                <FormLabel component="legend">Column Names</FormLabel>
+                <div>
+                  <FormControlLabel
+                    disabled={!showColumnNameRowControls}
+                    label="has column names on line"
+                    labelPlacement="end"
+                    control={
+                      <Checkbox
+                        checked={model.hasColumnNameLine}
+                        onClick={model.toggleHasColumnNameLine}
+                      />
+                    }
+                  />
+                  <NumberEditor
+                    model={model}
+                    disabled={
+                      !showColumnNameRowControls || !model.hasColumnNameLine
+                    }
+                    modelPropName="columnNameLineNumber"
+                    modelSetterName="setColumnNameLineNumber"
+                  />
+                </div>
+              </FormControl>
+            </Grid>
+          ) : null}
           <Grid item>
             {model.canCancel ? (
               <Button

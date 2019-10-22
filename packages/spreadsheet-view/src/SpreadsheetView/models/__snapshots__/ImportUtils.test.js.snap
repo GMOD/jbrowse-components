@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`import data handling utilities csv to spreadsheet snapshot 1`] = `
+exports[`csv to spreadsheet snapshot 1`] = `
 Object {
   "columnDisplayOrder": Array [
     0,
@@ -43,22 +43,152 @@ Object {
           Object {
             "columnNumber": 0,
             "dataType": "text",
-            "text": "569",
+            "text": "one",
           },
           Object {
             "columnNumber": 1,
             "dataType": "text",
-            "text": "30",
+            "text": "two",
           },
           Object {
             "columnNumber": 2,
             "dataType": "text",
-            "text": "malignant",
+            "text": "three",
           },
           Object {
             "columnNumber": 3,
             "dataType": "text",
-            "text": "benign",
+            "text": "four",
+          },
+          Object {
+            "columnNumber": 4,
+            "dataType": "text",
+            "text": "",
+          },
+          Object {
+            "columnNumber": 5,
+            "dataType": "text",
+            "text": "six",
+          },
+          Object {
+            "columnNumber": 6,
+            "dataType": "text",
+            "text": "seven",
+          },
+          Object {
+            "columnNumber": 7,
+            "dataType": "text",
+            "text": "eight",
+          },
+          Object {
+            "columnNumber": 8,
+            "dataType": "text",
+            "text": "nine",
+          },
+          Object {
+            "columnNumber": 9,
+            "dataType": "text",
+            "text": "ten",
+          },
+          Object {
+            "columnNumber": 10,
+            "dataType": "text",
+            "text": "eleven",
+          },
+          Object {
+            "columnNumber": 11,
+            "dataType": "text",
+            "text": "twelve",
+          },
+          Object {
+            "columnNumber": 12,
+            "dataType": "text",
+            "text": "thirteen",
+          },
+          Object {
+            "columnNumber": 13,
+            "dataType": "text",
+            "text": "fourteen",
+          },
+          Object {
+            "columnNumber": 14,
+            "dataType": "text",
+            "text": "fifteen",
+          },
+          Object {
+            "columnNumber": 15,
+            "dataType": "text",
+            "text": "sixteen",
+          },
+          Object {
+            "columnNumber": 16,
+            "dataType": "text",
+            "text": "seventeen",
+          },
+          Object {
+            "columnNumber": 17,
+            "dataType": "text",
+            "text": "eighteen",
+          },
+          Object {
+            "columnNumber": 18,
+            "dataType": "text",
+            "text": "nineteen",
+          },
+          Object {
+            "columnNumber": 19,
+            "dataType": "text",
+            "text": "twenty",
+          },
+          Object {
+            "columnNumber": 20,
+            "dataType": "text",
+            "text": "twentyone",
+          },
+          Object {
+            "columnNumber": 21,
+            "dataType": "text",
+            "text": "twentytwo",
+          },
+          Object {
+            "columnNumber": 22,
+            "dataType": "text",
+            "text": "twentythree",
+          },
+          Object {
+            "columnNumber": 23,
+            "dataType": "text",
+            "text": "twentyfour",
+          },
+          Object {
+            "columnNumber": 24,
+            "dataType": "text",
+            "text": "twentyfive",
+          },
+          Object {
+            "columnNumber": 25,
+            "dataType": "text",
+            "text": "twentysix",
+          },
+          Object {
+            "columnNumber": 26,
+            "dataType": "text",
+            "text": "twentyseven",
+          },
+          Object {
+            "columnNumber": 27,
+            "dataType": "text",
+            "text": "twentyeight",
+          },
+          Object {
+            "columnNumber": 28,
+            "dataType": "text",
+            "text": "twentynine",
+          },
+          Object {
+            "columnNumber": 29,
+            "dataType": "text",
+            "text": "thirty",
           },
         ],
         "id": "0",

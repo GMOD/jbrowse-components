@@ -1,23 +1,39 @@
-import {
-  parseCsvBuffer,
-  parseTsvBuffer,
-  dataToSpreadsheetSnapshot,
-} from './ImportUtils'
+import { parseCsvBuffer, parseTsvBuffer, parseBedBuffer } from './ImportUtils'
+
+import { parseVcfBuffer } from './VcfImport'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
-
+  const { types, getParent } = jbrequire('mobx-state-tree')
   const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
+
+  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED']
+  const fileTypeParsers = {
+    CSV: parseCsvBuffer,
+    TSV: parseTsvBuffer,
+    VCF: parseVcfBuffer,
+    BED: parseBedBuffer,
+  }
+  // regexp used to guess the type of a file or URL from its file extension
+  const fileTypesRegexp = new RegExp(
+    `\\.(${fileTypes.join('|')})(\\.gz)?$`,
+    'i',
+  )
 
   return types
     .model('SpreadsheetImportWizard', {
       fileSource: types.frozen(),
-      fileType: types.optional(types.enumeration(['csv', 'tsv']), 'csv'),
+      fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
       loading: false,
+
+      hasColumnNameLine: true,
+      columnNameLineNumber: 1,
 
       errorObject: types.optional(types.frozen()),
     })
+    .volatile(self => ({
+      fileTypes,
+    }))
     .views(self => ({
       get isReadyToOpen() {
         return self.fileSource && (self.fileSource.blob || self.fileSource.url)
@@ -29,6 +45,29 @@ export default pluginManager => {
     .actions(self => ({
       setFileSource(newSource) {
         self.fileSource = newSource
+
+        if (self.fileSource) {
+          // try to autodetect the file type, ignore errors
+          const name = self.fileSource.url || self.fileSource.blob.name
+          if (name) {
+            const match = fileTypesRegexp.exec(name)
+            if (match && match[1]) {
+              self.fileType = match[1].toUpperCase()
+            }
+          }
+        }
+      },
+
+      toggleHasColumnNameLine() {
+        self.hasColumnNameLine = !self.hasColumnNameLine
+      },
+
+      setColumnNameLineNumber(newnumber) {
+        if (newnumber > 0) self.columnNameLineNumber = newnumber
+      },
+
+      setFileType(typeName) {
+        self.fileType = typeName
       },
 
       setError(error) {
@@ -50,9 +89,7 @@ export default pluginManager => {
       import() {
         try {
           if (!self.fileSource) return
-          const typeParser = { csv: parseCsvBuffer, tsv: parseTsvBuffer }[
-            self.fileType
-          ]
+          const typeParser = fileTypeParsers[self.fileType]
           if (!typeParser)
             throw new Error(`cannot open files of type '${self.fileType}'`)
           self.loading = true
@@ -60,7 +97,6 @@ export default pluginManager => {
           filehandle
             .readFile()
             .then(typeParser)
-            .then(dataToSpreadsheetSnapshot)
             .then(spreadsheet => {
               self.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)

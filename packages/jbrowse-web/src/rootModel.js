@@ -9,8 +9,13 @@ const RootModel = types
   })
   .actions(self => ({
     setSession(sessionSnapshot) {
-      self.session = sessionSnapshot
-      self.jbrowse.updateSavedSession(sessionSnapshot)
+      try {
+        self.session = sessionSnapshot
+        self.jbrowse.updateSavedSession(sessionSnapshot)
+        return true
+      } catch (error) {
+        return false
+      }
     },
     setDefaultSession() {
       self.setSession({

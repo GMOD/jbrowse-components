@@ -9,6 +9,7 @@ export default pluginManager => {
       columnNumber: types.number,
       text: types.string,
       dataType: DataType,
+      extendedData: types.maybe(types.frozen()),
     })
     .views(self => ({
       // TODO: will probably want to make a view here called 'value' that parses
