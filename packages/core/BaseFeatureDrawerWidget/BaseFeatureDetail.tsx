@@ -67,7 +67,7 @@ interface BaseCardProps {
   title: string
 }
 
-const BaseCard: FunctionComponent<BaseCardProps> = props => {
+export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (

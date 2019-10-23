@@ -1,14 +1,13 @@
 /* eslint-disable react/prop-types */
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles, Theme } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
+import BaseFeatureDetails, {
+  BaseCard,
+} from '@gmod/jbrowse-core/BaseFeatureDrawerWidget/BaseFeatureDetail'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {},
   table: {
     padding: 0,
@@ -41,95 +40,14 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: '1px solid #bbb',
   },
 }))
-
-const coreRenderedDetails = [
-  'Position',
-  'Description',
-  'Name',
-  'Length',
-  'Type',
-]
-
 interface AlnCardProps {
   title: string
 }
 
-const AlignmentCard: FunctionComponent<AlnCardProps> = props => {
-  const classes = useStyles()
-  const { children, title } = props
-  return (
-    <Card>
-      <CardHeader
-        classes={{ root: classes.header, title: classes.title }}
-        title={title}
-      />
-
-      <CardContent>{children}</CardContent>
-    </Card>
-  )
-}
 interface AlnProps extends AlnCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const AlignmentCoreDetails: FunctionComponent<AlnProps> = (
-  props,
-): JSX.Element => {
-  const classes = useStyles()
-  const { feature } = props
-  const { refName, start, end } = feature
-  feature.length = end - start
-  feature.position = `${refName}:${start + 1}..${end}`
-  return (
-    <AlignmentCard {...props} title="Primary data">
-      {coreRenderedDetails.map(key => {
-        const value = feature[key.toLowerCase()]
-        return (
-          value && (
-            <div key={key}>
-              <div className={classes.fieldName}>{key}</div>
-              <div className={classes.fieldValue}>{String(value)}</div>
-            </div>
-          )
-        )
-      })}
-    </AlignmentCard>
-  )
-}
-
-const omit = [
-  'id',
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
-  'length',
-  'position',
-]
-
-const AlignmentAttributes: FunctionComponent<AlnProps> = (
-  props,
-): JSX.Element => {
-  const classes = useStyles()
-  const { feature } = props
-  return (
-    <AlignmentCard {...props} title="Attributes">
-      {Object.entries(feature)
-        .filter(
-          ([k, v]) =>
-            v !== undefined && !omit.includes(k) && !flags.includes(k),
-        )
-        .map(([key, value]) => (
-          <div key={key}>
-            <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>{String(value)}</div>
-          </div>
-        ))}
-    </AlignmentCard>
-  )
-}
 const flags = [
   'unmapped',
   'qc_failed',
@@ -142,14 +60,14 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
   const { feature } = props
   return (
-    <AlignmentCard {...props} title="Flags">
+    <BaseCard {...props} title="Flags">
       {flags.map(key => (
         <div key={key}>
           <div className={classes.fieldName}>{key}</div>
           <div className={classes.fieldValue}>{String(feature[key])}</div>
         </div>
       ))}
-    </AlignmentCard>
+    </BaseCard>
   )
 }
 
@@ -161,12 +79,10 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
+  console.log('herere')
   return (
     <Paper className={classes.root} data-testid="alignment-side-drawer">
-      <AlignmentCoreDetails feature={feat} {...props} />
-      <Divider />
-      <AlignmentAttributes feature={feat} {...props} />
-      <Divider />
+      <BaseFeatureDetails {...props} />
       <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
