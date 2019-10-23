@@ -96,7 +96,7 @@ export default pluginManager => {
           const filehandle = openLocation(self.fileSource)
           filehandle
             .readFile()
-            .then(typeParser)
+            .then(buffer => typeParser(buffer, self))
             .then(spreadsheet => {
               self.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)
