@@ -1,10 +1,8 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
-  const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema, readConfObject } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const { types, getParent } = jbrequire('mobx-state-tree')
+
+  const DataTypes = jbrequire(require('./ColumnDataTypes'))
 
   const StaticRowSetModel = jbrequire(require('./StaticRowSet'))
 
@@ -15,8 +13,12 @@ export default pluginManager => {
       ),
       columnDisplayOrder: types.array(types.number),
       columnNames: types.map(types.string),
+      columnDataTypes: types.map(DataTypes.Any),
       hasColumnNames: false,
     })
+    .volatile(self => ({
+      defaultDataType: DataTypes.Text,
+    }))
     .views(self => ({
       get hideRowSelection() {
         // just delegates to parent

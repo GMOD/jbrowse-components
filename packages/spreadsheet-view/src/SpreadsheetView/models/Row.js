@@ -2,13 +2,10 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types } = jbrequire('mobx-state-tree')
 
-  const DataType = types.enumeration('SpreadsheetDataType', ['text'])
-
   const CellModel = types
     .model('SpreadsheetCell', {
       columnNumber: types.number,
       text: types.string,
-      dataType: DataType,
       extendedData: types.maybe(types.frozen()),
     })
     .views(self => ({

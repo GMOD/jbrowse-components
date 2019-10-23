@@ -1,16 +1,16 @@
 import VCF from '@gmod/vcf'
 import { bufferToString, Row, RowSet } from './ImportUtils'
 
-const vcfCoreColumns = [
-  'CHROM', // 0
-  'POS', // 1
-  'ID', // 2
-  'REF', // 3
-  'ALT', // 4
-  'QUAL', // 5
-  'FILTER', // 6
-  'INFO', // 7
-  'FORMAT', // 8
+const vcfCoreColumns: { name: string; type: string }[] = [
+  { name: 'CHROM', type: 'Text' }, // 0
+  { name: 'POS', type: 'Number' }, // 1
+  { name: 'ID', type: 'Text' }, // 2
+  { name: 'REF', type: 'Text' }, // 3
+  { name: 'ALT', type: 'Text' }, // 4
+  { name: 'QUAL', type: 'Text' }, // 5
+  { name: 'FILTER', type: 'Text' }, // 6
+  { name: 'INFO', type: 'Text' }, // 7
+  { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
 // const formatters: Record<string, Function> = {
@@ -68,10 +68,12 @@ export function parseVcfBuffer(buffer: Buffer) {
 
   const columnDisplayOrder: number[] = []
   const columnNames: Record<number, string> = {}
+  const columnDataTypes: Record<string, { type: string }> = {}
 
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
-    columnNames[i] = vcfCoreColumns[i]
+    columnNames[i] = vcfCoreColumns[i].name
+    columnDataTypes[i] = { type: vcfCoreColumns[i].type }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
@@ -79,7 +81,13 @@ export function parseVcfBuffer(buffer: Buffer) {
     columnNames[oi] = vcfParser.samples[i]
   }
 
-  return { rowSet, columnDisplayOrder, hasColumnNames: true, columnNames }
+  return {
+    rowSet,
+    columnDisplayOrder,
+    hasColumnNames: true,
+    columnNames,
+    columnDataTypes,
+  }
 }
 
 export function splitVcfFileHeaderAndBody(wholeFile: string) {

@@ -1,5 +1,6 @@
 import csv from 'csvtojson'
 import { TextDecoder } from 'text-encoding-polyfill'
+import ColumnDataTypes from './ColumnDataTypes'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
@@ -44,7 +45,7 @@ async function dataToSpreadsheetSnapshot(
       return {
         id: String(rowNumber),
         cells: row.map((text, columnNumber) => {
-          return { columnNumber, text, dataType: 'text' }
+          return { columnNumber, text }
         }),
       }
     }),
@@ -66,13 +67,18 @@ async function dataToSpreadsheetSnapshot(
   }
 
   const columnDisplayOrder = []
-  for (let i = 0; i < maxCols; i += 1) columnDisplayOrder.push(i)
+  const columnDataTypes: Record<string, { type: string }> = {}
+  for (let i = 0; i < maxCols; i += 1) {
+    columnDisplayOrder.push(i)
+    columnDataTypes[i] = { type: 'Text' }
+  }
 
   return {
     rowSet,
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
     columnNames,
+    columnDataTypes,
   }
 }
 

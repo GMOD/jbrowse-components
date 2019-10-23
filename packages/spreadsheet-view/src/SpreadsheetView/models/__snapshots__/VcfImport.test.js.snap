@@ -2,6 +2,35 @@
 
 exports[`vcf file import 1`] = `
 Object {
+  "columnDataTypes": Object {
+    "0": Object {
+      "type": "Text",
+    },
+    "1": Object {
+      "type": "Number",
+    },
+    "2": Object {
+      "type": "Text",
+    },
+    "3": Object {
+      "type": "Text",
+    },
+    "4": Object {
+      "type": "Text",
+    },
+    "5": Object {
+      "type": "Text",
+    },
+    "6": Object {
+      "type": "Text",
+    },
+    "7": Object {
+      "type": "Text",
+    },
+    "8": Object {
+      "type": "Text",
+    },
+  },
   "columnDisplayOrder": Array [
     0,
     1,

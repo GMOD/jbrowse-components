@@ -83,6 +83,19 @@ export default pluginManager => {
     }
   })
 
+  const CellData = observer(({ cell, spreadsheetModel }) => {
+    const dataType =
+      spreadsheetModel.columnDataTypes[cell.columnNumber] ||
+      spreadsheetModel.defaultDataType
+    if (dataType.ReactComponent) {
+      return (
+        <dataType.ReactComponent cell={cell} spreadsheet={spreadsheetModel} />
+      )
+    }
+
+    return cell.text
+  })
+
   const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
     const classes = useStyles()
     const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
@@ -105,9 +118,12 @@ export default pluginManager => {
         </th>
         {columnDisplayOrder.map(colNumber => (
           <td key={colNumber}>
-            {rowModel.cells.length > colNumber
-              ? rowModel.cells[colNumber].text
-              : null}
+            {rowModel.cells.length > colNumber ? (
+              <CellData
+                cell={rowModel.cells[colNumber]}
+                spreadsheetModel={spreadsheetModel}
+              />
+            ) : null}
           </td>
         ))}
       </tr>
