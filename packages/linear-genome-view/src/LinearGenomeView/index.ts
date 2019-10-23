@@ -459,12 +459,6 @@ export function stateModelFactory(pluginManager: any) {
         get menuOptions(): LGVMenuOption[] {
           return [
             {
-              title: 'Show track selector',
-              key: 'track_selector',
-              callback: self.activateTrackSelector,
-              isCheckbox: false,
-            },
-            {
               title: 'Horizontally flip',
               key: 'flip',
               callback: self.horizontallyFlip,
