@@ -3,18 +3,18 @@ import { generateLocString } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
+import { makeStyles } from '@material-ui/core/styles'
+import Checkbox from '@material-ui/core/Checkbox'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
-import Checkbox from '@material-ui/core/Checkbox'
 import Select from '@material-ui/core/Select'
-import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
 
 // misc
 import clsx from 'clsx'
@@ -350,6 +350,14 @@ const Controls = observer(({ model }) => {
         title="close this view"
       >
         <Icon fontSize="small">close</Icon>
+      </IconButton>
+
+      <IconButton
+        onClick={model.activateTrackSelector}
+        title="select tracks"
+        value="track_select"
+      >
+        <Icon fontSize="small">line_style</Icon>
       </IconButton>
       <LongMenu className={classes.iconButton} model={model} />
     </>
