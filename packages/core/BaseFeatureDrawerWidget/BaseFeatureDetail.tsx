@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any */
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -40,7 +40,6 @@ export const useStyles = makeStyles(theme => ({
     // empty block needed to keep small
   },
   fieldName: {
-    display: 'inline-block',
     minWidth: '90px',
     borderBottom: '1px solid #0003',
     backgroundColor: theme.palette.grey[200],
@@ -48,10 +47,18 @@ export const useStyles = makeStyles(theme => ({
     padding: theme.spacing(0.5),
   },
   fieldValue: {
-    display: 'inline-block',
     wordBreak: 'break-word',
-    fontSize: '0.8em',
     maxHeight: 300,
+    padding: theme.spacing(0.5),
+    overflow: 'auto',
+  },
+  fieldSubvalue: {
+    wordBreak: 'break-word',
+    maxHeight: 300,
+    padding: theme.spacing(0.5),
+    backgroundColor: theme.palette.grey[100],
+    border: `1px solid ${theme.palette.grey[300]}`,
+    boxSizing: 'border-box',
     overflow: 'auto',
   },
 }))
@@ -90,7 +97,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
 }
 
 interface BaseProps extends BaseCardProps {
-  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: Record<string, any>
 }
 
 const BaseCoreDetails = (props: BaseProps) => {
@@ -113,7 +120,7 @@ const BaseCoreDetails = (props: BaseProps) => {
         const value = feature[key.toLowerCase()]
         return (
           value && (
-            <div key={key}>
+            <div key={key} style={{ display: 'flex' }}>
               <div className={classes.fieldName}>{key}</div>
               <div className={classes.fieldValue}>{String(value)}</div>
             </div>
@@ -137,40 +144,57 @@ const omit = [
 ]
 
 interface AttributeProps {
-  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  attributes: any
 }
+
 const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()
-  const { feature } = props
+  const { attributes } = props
+  const SimpleValue = ({ name, value }: { name: string; value: any }) => (
+    <div style={{ display: 'flex' }}>
+      <div className={classes.fieldName}>{name}</div>
+      <div className={classes.fieldValue}>{String(value)}</div>
+    </div>
+  )
+  const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
+    <div style={{ display: 'flex' }}>
+      <div className={classes.fieldName}>{name}</div>
+      {value.map((val, i) => (
+        <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+          {String(val)}
+        </div>
+      ))}
+    </div>
+  )
+
   return (
     <>
-      {Object.entries(feature)
+      {Object.entries(attributes)
         .filter(([k, v]) => v !== undefined && !omit.includes(k))
-        .map(([key, value]) => (
-          <div key={key}>
-            <div className={classes.fieldName}>{key}</div>
-            {isObject(value) ? (
-              <div>
-                <Attributes key={key} feature={value} />
-              </div>
-            ) : (
-              <div className={classes.fieldValue}>{String(value)}</div>
-            )}
-          </div>
-        ))}
+        .map(([key, value]) => {
+          if (Array.isArray(value)) {
+            return <ArrayValue key={key} name={key} value={value} />
+          }
+          if (isObject(value)) {
+            return <Attributes key={key} attributes={value} />
+          }
+
+          return <SimpleValue key={key} name={key} value={value} />
+        })}
     </>
   )
 }
 const BaseAttributes = (props: BaseProps) => {
+  const { feature } = props
   return (
     <BaseCard {...props} title="Attributes">
-      <Attributes {...props} />
+      <Attributes {...props} attributes={feature} />
     </BaseCard>
   )
 }
 
 interface BaseInputProps extends BaseCardProps {
-  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  model: any
 }
 
 const BaseFeatureDetails = (props: BaseInputProps) => {

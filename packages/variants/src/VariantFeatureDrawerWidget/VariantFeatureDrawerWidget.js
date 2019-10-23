@@ -102,7 +102,7 @@ function VariantFeatureDetails(props) {
   const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
-  const { genotypes, ...rest } = feat
+  const { samples, ...rest } = feat
   return (
     <Paper className={classes.root} data-testid="variant-side-drawer">
       <BaseFeatureDetail feature={rest} {...props} />

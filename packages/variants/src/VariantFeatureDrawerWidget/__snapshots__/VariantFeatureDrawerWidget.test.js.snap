@@ -68,7 +68,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -149,7 +151,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -161,7 +165,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     176
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -173,7 +179,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     A
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -185,7 +193,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     C
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -197,25 +207,18 @@ exports[`VariantTrack drawer widget renders with just the required model element
                     10.4
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
-                    INFO
+                    MQ
                   </div>
-                  <div>
-                    <div>
-                      <div
-                        class="makeStyles-fieldName"
-                      >
-                        MQ
-                      </div>
-                      <div
-                        class="makeStyles-fieldValue"
-                      >
-                        5
-                      </div>
-                    </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    5
                   </div>
                 </div>
               </div>

@@ -64,7 +64,9 @@ exports[`open up a drawer widget 1`] = `
             <div
               class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <div
+                style="display: flex;"
+              >
                 <div
                   class="makeStyles-fieldName"
                 >
@@ -76,7 +78,9 @@ exports[`open up a drawer widget 1`] = `
                   ctgA:3..102 (+)
                 </div>
               </div>
-              <div>
+              <div
+                style="display: flex;"
+              >
                 <div
                   class="makeStyles-fieldName"
                 >
@@ -156,7 +160,9 @@ exports[`open up a drawer widget 1`] = `
             <div
               class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <div
+                style="display: flex;"
+              >
                 <div
                   class="makeStyles-fieldName"
                 >

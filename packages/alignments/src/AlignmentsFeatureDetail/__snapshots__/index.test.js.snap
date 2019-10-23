@@ -68,7 +68,9 @@ exports[`open up a drawer widget 1`] = `
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -80,7 +82,9 @@ exports[`open up a drawer widget 1`] = `
                     ctgA:3..102 (+)
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -92,7 +96,9 @@ exports[`open up a drawer widget 1`] = `
                     ctgA_3_555_0:0:0_2:0:0_102d
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -104,7 +110,9 @@ exports[`open up a drawer widget 1`] = `
                     100
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -184,7 +192,9 @@ exports[`open up a drawer widget 1`] = `
               <div
                 class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
               >
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -196,7 +206,9 @@ exports[`open up a drawer widget 1`] = `
                     TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -208,7 +220,9 @@ exports[`open up a drawer widget 1`] = `
                     false
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -220,7 +234,9 @@ exports[`open up a drawer widget 1`] = `
                     false
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -232,7 +248,9 @@ exports[`open up a drawer widget 1`] = `
                     false
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -244,7 +262,9 @@ exports[`open up a drawer widget 1`] = `
                     false
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -256,7 +276,9 @@ exports[`open up a drawer widget 1`] = `
                     false
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -268,7 +290,9 @@ exports[`open up a drawer widget 1`] = `
                     37
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -280,7 +304,9 @@ exports[`open up a drawer widget 1`] = `
                     17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -292,7 +318,9 @@ exports[`open up a drawer widget 1`] = `
                     37
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -304,7 +332,9 @@ exports[`open up a drawer widget 1`] = `
                     100M
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -316,7 +346,9 @@ exports[`open up a drawer widget 1`] = `
                     100
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
@@ -328,7 +360,9 @@ exports[`open up a drawer widget 1`] = `
                     0
                   </div>
                 </div>
-                <div>
+                <div
+                  style="display: flex;"
+                >
                   <div
                     class="makeStyles-fieldName"
                   >
