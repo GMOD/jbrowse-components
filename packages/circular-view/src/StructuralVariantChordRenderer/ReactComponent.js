@@ -1,5 +1,6 @@
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
+  const { useMemo } = jbrequire('react')
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -92,15 +93,18 @@ export default ({ jbrequire }) => {
       onChordClick,
     } = props
     // make a map of refName -> blockDefinition
-    const blocksForRefs = {}
-    blockDefinitions.forEach(block => {
-      const regions = block.region.elided
-        ? block.region.regions
-        : [block.region]
-      regions.forEach(region => {
-        blocksForRefs[region.refName] = block
+    const blocksForRefsMemo = useMemo(() => {
+      const blocksForRefs = {}
+      blockDefinitions.forEach(block => {
+        const regions = block.region.elided
+          ? block.region.regions
+          : [block.region]
+        regions.forEach(region => {
+          blocksForRefs[region.refName] = block
+        })
       })
-    })
+      return blocksForRefs
+    }, [blockDefinitions])
     // console.log(blocksForRefs)
     const chords = []
     for (const [id, feature] of features) {
@@ -113,7 +117,7 @@ export default ({ jbrequire }) => {
           trackModel={trackModel}
           radius={radius}
           bezierRadius={bezierRadius}
-          blocksForRefs={blocksForRefs}
+          blocksForRefs={blocksForRefsMemo}
           selected={selected}
           onClick={onChordClick}
         />,
