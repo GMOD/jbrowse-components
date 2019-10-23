@@ -289,7 +289,7 @@ export default class CramSlightlyLazyFeature implements Feature {
           // padding
         } else if (code === 'H') {
           // hard clip
-          const len = data.length
+          const len = data
           mismatches.push({
             start: refPos,
             type: 'hardclip',
