@@ -47,7 +47,8 @@
     "react-measure": "^2.3.0",
     "react-sizeme": "^2.6.7",
     "rxjs": "6.5.2",
-    "typeface-roboto": "^0.0.54"
+    "typeface-roboto": "^0.0.54",
+    "use-query-params": "^0.4.3"
   },
   "license": "MIT",
   "scripts": {
