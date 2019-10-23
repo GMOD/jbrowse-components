@@ -57,7 +57,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
         >
           <div
             class="makeStyles-linearGenomeView"
-            style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto; grid-template-columns: [controls] 120px [blocks] auto;"
+            style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
           >
             <div
               class="makeStyles-headerBar"
@@ -76,6 +76,27 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
                     close
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                tabindex="0"
+                title="select tracks"
+                type="button"
+                value="track_select"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                  >
+                    line_style
                   </span>
                 </span>
                 <span
@@ -278,7 +299,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
         >
           <div
             class="makeStyles-linearGenomeView"
-            style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto; grid-template-columns: [controls] 120px [blocks] auto;"
+            style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px; grid-template-columns: [controls] 120px [blocks] auto;"
           >
             <div
               class="makeStyles-headerBar"
@@ -297,6 +318,27 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                     class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                   >
                     close
+                  </span>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                tabindex="0"
+                title="select tracks"
+                type="button"
+                value="track_select"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                  >
+                    line_style
                   </span>
                 </span>
                 <span

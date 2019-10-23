@@ -6,7 +6,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
@@ -323,7 +323,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
@@ -558,7 +558,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           style="left: 0px; width: 100px;"
         >
           <svg
-            height="32"
+            height="40"
             width="100"
           >
             <line
@@ -856,7 +856,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"

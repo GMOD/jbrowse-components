@@ -77,7 +77,7 @@ export default function stateModelFactory(pluginManager: any) {
             // it prevents for example a "gene track" drawing
             // lines between genes with the same name...only want
             // to pair alignments?
-            if (feature.get('mismatches')) {
+            if (feature.get('CIGAR')) {
               candidates[n].push(feature)
             }
           }

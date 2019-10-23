@@ -22,11 +22,11 @@ const useStyles = makeStyles((/* theme */) => ({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
+    height: '100%',
     position: 'relative',
     background: '#555',
     // background: theme.palette.background.default,
     overflow: 'hidden',
-    height: 32,
   },
   refLabel: {
     fontSize: '16px',

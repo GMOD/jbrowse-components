@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 
-const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -88,6 +88,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
     </ExpansionPanel>
   )
 }
+
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
@@ -136,7 +137,7 @@ const omit = [
 ]
 
 interface AttributeProps {
-  feature: Record<string, any>
+  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 const Attributes: FunctionComponent<AttributeProps> = props => {
   const classes = useStyles()

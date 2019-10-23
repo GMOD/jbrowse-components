@@ -383,7 +383,7 @@ function LinearGenomeView({ model }: { model: LGV }) {
     position: 'relative',
     gridTemplateRows: `${
       !model.hideHeader ? '[header] auto ' : ''
-    } [scale-bar] auto ${tracks
+    } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
       .map(
         t =>
           `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,

@@ -49,5 +49,6 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the drawer widget)',
   expect(f.refName).toBe('ctgA')
   expect(f.start).toBe(2)
   expect(f.end).toBe(102)
-  expect(f.mismatches).toEqual([])
+  // don't pass the mismatches to the frontend
+  expect(f.mismatches).toEqual(undefined)
 })

@@ -60,7 +60,7 @@ const validBpPerPx = [
 ]
 
 export const HEADER_BAR_HEIGHT = 50
-export const SCALE_BAR_HEIGHT = 32
+export const SCALE_BAR_HEIGHT = 40
 
 function constrainBpPerPx(newBpPerPx: number): number {
   // find the closest valid zoom level and return it
