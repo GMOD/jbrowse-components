@@ -2,11 +2,11 @@
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
+import Icon from '@material-ui/core/Icon'
+import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles, Theme } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
@@ -21,6 +21,9 @@ const useStyles = makeStyles(theme => ({
       margin: theme.spacing(1, 0),
     },
     margin: theme.spacing(1, 0),
+  },
+  paperRoot: {
+    background: theme.palette.grey[100],
   },
   root: {
     background: theme.palette.grey[300],
@@ -40,8 +43,7 @@ const useStyles = makeStyles(theme => ({
     display: 'inline-block',
     minWidth: '90px',
     borderBottom: '1px solid #0003',
-    backgroundColor: theme.palette.primary.light,
-    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -53,29 +55,6 @@ const useStyles = makeStyles(theme => ({
     overflow: 'auto',
   },
 }))
-
-// const useStyles = makeStyles((theme: Theme) => ({
-//   root: {},
-//   table: {
-//     padding: 0,
-//   },
-
-//   subgroup: {
-//     border: '1px solid black',
-//   },
-//   header: {
-//     // padding: 0.5 * theme.spacing(1),
-//     // backgroundColor: '#ddd',
-//   },
-//   title: {
-//     // fontSize: '1em',
-//   },
-
-//   valbox: {
-//     border: '1px solid #bbb',
-//   },
-// }))
-
 const coreRenderedDetails = [
   'Position',
   'Description',
@@ -92,7 +71,17 @@ const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (
-    <ExpansionPanel style={{ marginTop: '4px' }}>
+    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={true}>
+      <ExpansionPanelSummary
+        classes={{
+          root: classes.root,
+          expanded: classes.expanded,
+          content: classes.content,
+        }}
+        expandIcon={<Icon>expand_more</Icon>}
+      >
+        <Typography variant="button"> {title}</Typography>
+      </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.expansionPanelDetails}>
         {children}
       </ExpansionPanelDetails>
@@ -188,7 +177,7 @@ const BaseFeatureDetails = (props: BaseInputProps) => {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
-    <Paper className={classes.root} data-testid="alignment-side-drawer">
+    <Paper className={classes.paperRoot} data-testid="alignment-side-drawer">
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
       <BaseAttributes feature={feat} {...props} />
