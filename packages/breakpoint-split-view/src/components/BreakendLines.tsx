@@ -111,12 +111,11 @@ export default (pluginManager: any) => {
                     'the relevant ALT allele was not found, cannot render',
                   )
                 } else {
-                  console.log(relevantAlt)
                   const path = Path()
                     .moveTo(
                       x1 -
                         20 *
-                          (relevantAlt.Join === 'left' ? 1 : -1) *
+                          (relevantAlt.Join === 'left' ? -1 : 1) *
                           flipMultipliers[level1],
                       y1,
                     )
