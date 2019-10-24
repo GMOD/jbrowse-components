@@ -2,35 +2,6 @@
 
 exports[`vcf file import 1`] = `
 Object {
-  "columnDataTypes": Object {
-    "0": Object {
-      "type": "Text",
-    },
-    "1": Object {
-      "type": "Number",
-    },
-    "2": Object {
-      "type": "Text",
-    },
-    "3": Object {
-      "type": "Text",
-    },
-    "4": Object {
-      "type": "Text",
-    },
-    "5": Object {
-      "type": "Text",
-    },
-    "6": Object {
-      "type": "Text",
-    },
-    "7": Object {
-      "type": "Text",
-    },
-    "8": Object {
-      "type": "Text",
-    },
-  },
   "columnDisplayOrder": Array [
     0,
     1,
@@ -43,18 +14,68 @@ Object {
     8,
     9,
   ],
-  "columnNames": Object {
-    "0": "CHROM",
-    "1": "POS",
-    "2": "ID",
-    "3": "REF",
-    "4": "ALT",
-    "5": "QUAL",
-    "6": "FILTER",
-    "7": "INFO",
-    "8": "FORMAT",
-    "9": "1801160099-N32519_26611_S51_56704",
-  },
+  "columns": Array [
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "CHROM",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Number",
+      },
+      "name": "POS",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "ID",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "REF",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "ALT",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Number",
+      },
+      "name": "QUAL",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "FILTER",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "INFO",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "FORMAT",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "1801160099-N32519_26611_S51_56704",
+    },
+  ],
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

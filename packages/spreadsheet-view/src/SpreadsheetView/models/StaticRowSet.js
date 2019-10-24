@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types } = jbrequire('mobx-state-tree')
+  const { types, getParent } = jbrequire('mobx-state-tree')
   const RowModel = jbrequire(require('./Row'))
 
   return types
@@ -13,9 +13,10 @@ export default pluginManager => {
         return self.rows.length
       },
 
-      // getRows(startRowNum, endRowNum) {
-      //   return Promise.resolve(self.rows.slice(startRowNum, endRowNum + 1))
-      // },
+      get sortedRows() {
+        const parent = getParent(self)
+        return self.rows.slice().sort(parent.rowSortingComparisonFunction)
+      },
 
       get selectedRows() {
         return self.rows.filter(r => r.isSelected)

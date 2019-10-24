@@ -12,16 +12,22 @@ export default pluginManager => {
   }
 
   ColumnDataType('Text', {
-    compare(a, b) {
-      return a.localeCompare(b)
+    compare(cellA, cellB) {
+      return cellA.text.localeCompare(cellB.text)
     },
   })
 
   ColumnDataType('Number', {
-    compare(a, b) {
-      return a - b
+    compare(cellA, cellB) {
+      return parseFloat(cellA.text, 10) - parseFloat(cellB.text, 10)
     },
   })
+
+  // ColumnDataType('VcfInfo', {
+  //   ReactComponent: VCFInfoColumn,
+  //   SortMenuItem: VCFInfoSortMenuItem,
+  //   compare(a, b) {},
+  // })
 
   DataTypes.Any = types.union(...Object.values(DataTypes))
 

@@ -2,101 +2,6 @@
 
 exports[`csv to spreadsheet snapshot 1`] = `
 Object {
-  "columnDataTypes": Object {
-    "0": Object {
-      "type": "Text",
-    },
-    "1": Object {
-      "type": "Text",
-    },
-    "10": Object {
-      "type": "Text",
-    },
-    "11": Object {
-      "type": "Text",
-    },
-    "12": Object {
-      "type": "Text",
-    },
-    "13": Object {
-      "type": "Text",
-    },
-    "14": Object {
-      "type": "Text",
-    },
-    "15": Object {
-      "type": "Text",
-    },
-    "16": Object {
-      "type": "Text",
-    },
-    "17": Object {
-      "type": "Text",
-    },
-    "18": Object {
-      "type": "Text",
-    },
-    "19": Object {
-      "type": "Text",
-    },
-    "2": Object {
-      "type": "Text",
-    },
-    "20": Object {
-      "type": "Text",
-    },
-    "21": Object {
-      "type": "Text",
-    },
-    "22": Object {
-      "type": "Text",
-    },
-    "23": Object {
-      "type": "Text",
-    },
-    "24": Object {
-      "type": "Text",
-    },
-    "25": Object {
-      "type": "Text",
-    },
-    "26": Object {
-      "type": "Text",
-    },
-    "27": Object {
-      "type": "Text",
-    },
-    "28": Object {
-      "type": "Text",
-    },
-    "29": Object {
-      "type": "Text",
-    },
-    "3": Object {
-      "type": "Text",
-    },
-    "30": Object {
-      "type": "Text",
-    },
-    "4": Object {
-      "type": "Text",
-    },
-    "5": Object {
-      "type": "Text",
-    },
-    "6": Object {
-      "type": "Text",
-    },
-    "7": Object {
-      "type": "Text",
-    },
-    "8": Object {
-      "type": "Text",
-    },
-    "9": Object {
-      "type": "Text",
-    },
-  },
   "columnDisplayOrder": Array [
     0,
     1,
@@ -130,38 +35,194 @@ Object {
     29,
     30,
   ],
-  "columnNames": Object {
-    "0": "one",
-    "1": "two",
-    "10": "eleven",
-    "11": "twelve",
-    "12": "thirteen",
-    "13": "fourteen",
-    "14": "fifteen",
-    "15": "sixteen",
-    "16": "seventeen",
-    "17": "eighteen",
-    "18": "nineteen",
-    "19": "twenty",
-    "2": "three",
-    "20": "twentyone",
-    "21": "twentytwo",
-    "22": "twentythree",
-    "23": "twentyfour",
-    "24": "twentyfive",
-    "25": "twentysix",
-    "26": "twentyseven",
-    "27": "twentyeight",
-    "28": "twentynine",
-    "29": "thirty",
-    "3": "four",
-    "4": "",
-    "5": "six",
-    "6": "seven",
-    "7": "eight",
-    "8": "nine",
-    "9": "ten",
-  },
+  "columns": Array [
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "one",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "two",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "three",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "four",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "six",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "seven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eight",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "nine",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "ten",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eleven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twelve",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "thirteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "fourteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "fifteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "sixteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "seventeen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eighteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "nineteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twenty",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyone",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentytwo",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentythree",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyfour",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyfive",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentysix",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyseven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyeight",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentynine",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "thirty",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": undefined,
+    },
+  ],
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,

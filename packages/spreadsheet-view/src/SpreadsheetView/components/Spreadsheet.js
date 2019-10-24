@@ -18,10 +18,17 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { useState } = React
   const ReactPropTypes = jbrequire('prop-types')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey, indigo } = jbrequire('@material-ui/core/colors')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
+  const IconButton = jbrequire('@material-ui/core/IconButton')
+  const Icon = jbrequire('@material-ui/core/Icon')
+  const Menu = jbrequire('@material-ui/core/Menu')
+  const MenuItem = jbrequire('@material-ui/core/MenuItem')
+  const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
+  const ListItemText = jbrequire('@material-ui/core/ListItemText')
 
   const useStyles = makeStyles(theme => {
     return {
@@ -60,13 +67,26 @@ export default pluginManager => {
         margin: 0,
         padding: '0 0.2rem',
       },
-      columnName: {
+      columnHead: {
         fontWeight: 'normal',
         background: grey[200],
         border: `1px solid ${grey[300]}`,
         position: 'sticky',
         top: '-1px',
         zIndex: 2,
+      },
+      columnButtonContainer: {
+        display: 'none',
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        background: grey[100],
+        height: '100%',
+        boxSizing: 'border-box',
+        borderLeft: `1px solid ${grey[300]}`,
+      },
+      columnButton: {
+        padding: 0,
       },
       topLeftCorner: {
         background: grey[300],
@@ -84,9 +104,7 @@ export default pluginManager => {
   })
 
   const CellData = observer(({ cell, spreadsheetModel }) => {
-    const dataType =
-      spreadsheetModel.columnDataTypes[cell.columnNumber] ||
-      spreadsheetModel.defaultDataType
+    const { dataType } = spreadsheetModel.columns.get(cell.columnNumber)
     if (dataType.ReactComponent) {
       return (
         <dataType.ReactComponent cell={cell} spreadsheet={spreadsheetModel} />
@@ -101,6 +119,7 @@ export default pluginManager => {
     const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
     let rowClass = classes.dataRow
     if (rowModel.isSelected) rowClass += ` ${classes.dataRowSelected}`
+
     return (
       <tr className={rowClass}>
         <th className={classes.rowNumCell} onClick={rowModel.toggleSelect}>
@@ -131,32 +150,119 @@ export default pluginManager => {
   })
 
   const DataTable = observer(({ model }) => {
-    const { columnDisplayOrder, columnNames, hasColumnNames, rowSet } = model
+    const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
     const classes = useStyles()
+
+    // column menu active state
+    const [currentColumnMenu, setColumnMenu] = useState(null)
+    const columnButtonClick = (colNumber, evt) => {
+      setColumnMenu({ colNumber, anchorEl: evt.currentTarget })
+    }
+    const columnMenuClose = () => {
+      setColumnMenu(null)
+    }
+
+    // column header hover state
+    const [currentHoveredColumn, setHoveredColumn] = useState(null)
+    const columnHeaderMouseOver = (colNumber, evt) => {
+      setHoveredColumn(colNumber)
+    }
+    const columnHeaderMouseOut = (colNumber, evt) => {
+      setHoveredColumn(null)
+    }
+
+    const sortMenuClick = descending => {
+      columnMenuClose()
+      model.setSortColumns([
+        {
+          columnNumber: currentColumnMenu.colNumber,
+          descending,
+        },
+      ])
+    }
+
     return (
-      <table className={classes.dataTable}>
-        <thead>
-          <tr>
-            <th className={classes.topLeftCorner}></th>
-            {columnDisplayOrder.map(colNumber => (
-              <th className={classes.columnName} key={colNumber}>
-                {(hasColumnNames && columnNames.get(colNumber)) ||
-                  numToColName(colNumber)}
-              </th>
+      <>
+        <Menu
+          anchorEl={currentColumnMenu && currentColumnMenu.anchorEl}
+          keepMounted
+          open={Boolean(currentColumnMenu)}
+          onClose={columnMenuClose}
+          elevation={8}
+          getContentAnchorEl={null}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={sortMenuClick.bind(null, false)}>
+            <ListItemIcon>
+              <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
+                sort
+              </Icon>
+            </ListItemIcon>
+            <ListItemText primary="Sort ascending" />
+          </MenuItem>
+          <MenuItem onClick={sortMenuClick.bind(null, true)}>
+            <ListItemIcon>
+              <Icon fontSize="small">sort</Icon>
+            </ListItemIcon>
+            <ListItemText primary="Sort descending" />
+          </MenuItem>
+        </Menu>
+        <table className={classes.dataTable}>
+          <thead>
+            <tr>
+              <th className={classes.topLeftCorner}></th>
+              {columnDisplayOrder.map(colNumber => (
+                <th
+                  className={classes.columnHead}
+                  key={colNumber}
+                  onMouseOver={columnHeaderMouseOver.bind(null, colNumber)}
+                  onMouseOut={columnHeaderMouseOut.bind(null, colNumber)}
+                >
+                  {(hasColumnNames && columns.get(colNumber).name) ||
+                    numToColName(colNumber)}
+                  <div
+                    className={classes.columnButtonContainer}
+                    style={{
+                      display:
+                        currentHoveredColumn === colNumber ||
+                        (currentColumnMenu &&
+                          currentColumnMenu.colNumber === colNumber)
+                          ? 'block'
+                          : 'none',
+                    }}
+                  >
+                    <IconButton
+                      className={classes.columnButton}
+                      onClick={columnButtonClick.bind(null, colNumber)}
+                    >
+                      <Icon className={classes.columnButtonIcon}>
+                        arrow_drop_down
+                      </Icon>
+                    </IconButton>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className={classes.dataTableBody}>
+            {rowSet.sortedRows.map((row, rowNumber) => (
+              <DataRow
+                key={rowNumber}
+                rowNumber={rowNumber}
+                spreadsheetModel={model}
+                rowModel={row}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody className={classes.dataTableBody}>
-          {rowSet.rows.map((row, rowNumber) => (
-            <DataRow
-              key={rowNumber}
-              rowNumber={rowNumber}
-              spreadsheetModel={model}
-              rowModel={row}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </>
     )
   })
 

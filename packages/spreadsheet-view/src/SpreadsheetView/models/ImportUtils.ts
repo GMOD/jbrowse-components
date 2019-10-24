@@ -1,6 +1,5 @@
 import csv from 'csvtojson'
 import { TextDecoder } from 'text-encoding-polyfill'
-import ColumnDataTypes from './ColumnDataTypes'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
@@ -17,7 +16,6 @@ export interface Row {
   cells: {
     columnNumber: number
     text: string
-    dataType: string
   }[]
 }
 
@@ -29,6 +27,11 @@ export interface RowSet {
 interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
+}
+
+export interface Column {
+  name: string
+  dataType: { type: string }
 }
 
 async function dataToSpreadsheetSnapshot(
@@ -66,19 +69,18 @@ async function dataToSpreadsheetSnapshot(
     }
   }
 
+  const columns: Column[] = []
   const columnDisplayOrder = []
-  const columnDataTypes: Record<string, { type: string }> = {}
   for (let i = 0; i < maxCols; i += 1) {
     columnDisplayOrder.push(i)
-    columnDataTypes[i] = { type: 'Text' }
+    columns[i] = { name: columnNames[i], dataType: { type: 'Text' } }
   }
 
   return {
     rowSet,
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
-    columnNames,
-    columnDataTypes,
+    columns,
   }
 }
 

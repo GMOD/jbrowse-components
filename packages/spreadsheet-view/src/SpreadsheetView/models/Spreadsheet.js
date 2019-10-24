@@ -11,10 +11,23 @@ export default pluginManager => {
       rowSet: types.optional(StaticRowSetModel, () =>
         StaticRowSetModel.create(),
       ),
+      columns: types.array(
+        types.model('ColumnDefinition', {
+          name: types.maybe(types.string),
+          dataType: types.optional(DataTypes.Any, () => ({
+            type: 'Text',
+          })),
+        }),
+      ),
       columnDisplayOrder: types.array(types.number),
-      columnNames: types.map(types.string),
-      columnDataTypes: types.map(DataTypes.Any),
       hasColumnNames: false,
+
+      sortColumns: types.array(
+        types.model('SortColumns', {
+          columnNumber: types.number,
+          descending: false,
+        }),
+      ),
     })
     .volatile(self => ({
       defaultDataType: DataTypes.Text,
@@ -24,8 +37,25 @@ export default pluginManager => {
         // just delegates to parent
         return getParent(self).hideRowSelection
       },
+
+      rowSortingComparisonFunction(rowA, rowB) {
+        for (let i = 0; i < self.sortColumns.length; i += 1) {
+          const { columnNumber, descending } = self.sortColumns[i]
+          const { dataType } = self.columns.get(columnNumber)
+          const result = dataType.compare(
+            rowA.cells[columnNumber],
+            rowB.cells[columnNumber],
+          )
+          if (result) return descending ? -result : result
+        }
+        return 0
+      },
     }))
-    .actions(self => ({}))
+    .actions(self => ({
+      setSortColumns(newSort) {
+        self.sortColumns = newSort
+      },
+    }))
 
   return stateModel
 }
