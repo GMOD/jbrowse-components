@@ -14,9 +14,6 @@ export default (pluginManager: any) => {
   const AlignmentSquiggles = jbrequire(require('./AlignmentSquiggles'))
   const Header = jbrequire(require('./Header'))
 
-  const LinearGenomeView = pluginManager.getViewType('LinearGenomeView')
-    .ReactComponent
-
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
       root: {
@@ -73,11 +70,14 @@ export default (pluginManager: any) => {
           <div className={classes.content}>
             <Header model={model} />
             <div style={{ position: 'relative' }}>
-              {views.map(view => (
-                <div key={view.id} className={classes.viewContainer}>
-                  <LinearGenomeView model={view} />
-                </div>
-              ))}
+              {views.map(view => {
+                const { ReactComponent } = pluginManager.getViewType(view.type)
+                return (
+                  <div key={view.id} className={classes.viewContainer}>
+                    <ReactComponent model={view} />
+                  </div>
+                )
+              })}
             </div>
           </div>
           {model.matchedTracks.map(m => (
