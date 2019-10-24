@@ -135,38 +135,31 @@ export default pluginManager => {
           const viewSnapshot = pluginManager
             .getViewType('BreakpointSplitView')
             .snapshotFromBreakendFeature(feature, startRegion, endRegion)
-          const ref = getConf(self, 'configRelationships')
-          const ret = ref[0].target
-          const type = pluginManager.pluggableConfigSchemaType('track')
-          const trackConfig = resolveIdentifier(type, session, ret)
-          if (trackConfig) {
-            // add the specific evidence tracks to the LGVs in the split view
-            viewSnapshot.views[0].tracks = [
-              {
-                type: trackConfig.type,
-                height: 100,
-                configuration: trackConfig.configId,
-                selectedRendering: '',
-              },
-            ]
-            viewSnapshot.views[1].tracks = [
-              {
-                type: trackConfig.type,
-                height: 100,
-                configuration: trackConfig.configId,
-                selectedRendering: '',
-              },
-            ]
+          const tracks = getConf(self, 'configRelationships')
+            .map(entry => {
+              const type = pluginManager.pluggableConfigSchemaType('track')
+              const trackConfig = resolveIdentifier(type, session, entry.target)
+              return trackConfig
+                ? {
+                    type: trackConfig.type,
+                    height: 100,
+                    configuration: trackConfig.configId,
+                    selectedRendering: '',
+                  }
+                : null
+            })
+            .filter(f => !!f)
 
-            // try to center the offsetPx
-            viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-            viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-            viewSnapshot.featureData = feature.data
+          // add the specific evidence tracks to the LGVs in the split view
+          viewSnapshot.views[0].tracks = tracks
+          viewSnapshot.views[1].tracks = tracks
 
-            session.addView('BreakpointSplitView', viewSnapshot)
-          } else {
-            // TODO configReference undefined
-          }
+          // try to center the offsetPx
+          viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+          viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+          viewSnapshot.featureData = feature.data
+
+          session.addView('BreakpointSplitView', viewSnapshot)
         } catch (e) {
           console.error(e)
         }

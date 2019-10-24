@@ -99,18 +99,19 @@ export default (pluginManager: any) => {
                 // calculate the yPos, but clamp to the visible scroll region of the track
                 const yPos = (level: number, c: LayoutRecord) =>
                   clamp(
-                    c[TOP] - tracks[level].scrollTop,
+                    c[TOP] - tracks[level].scrollTop + cheight(c1),
                     0,
                     tracks[level].height,
                   ) + added(level)
 
-                const y1 = yPos(level1, c1) + cheight(c1)
+                const y1 = yPos(level1, c1)
                 const y2 = yPos(level2, c2)
                 if (!relevantAlt) {
                   console.warn(
                     'the relevant ALT allele was not found, cannot render',
                   )
                 } else {
+                  console.log(relevantAlt)
                   const path = Path()
                     .moveTo(
                       x1 -

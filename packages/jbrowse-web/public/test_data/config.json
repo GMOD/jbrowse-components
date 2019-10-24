@@ -59,6 +59,10 @@
             {
               "type": "test",
               "target": "volvox_long_reads_sv.cram"
+            },
+            {
+              "type": "test",
+              "target": "volvox_breakends"
             }
           ],
           "adapter": {
@@ -803,8 +807,12 @@
           "name": "human chord test",
           "configRelationships": [
             {
-              "type": "evidence",
+              "type": "AlignmentEvidence",
               "target": "pacbio_hg002"
+            },
+            {
+              "target": "pacbio_sv_vcf",
+              "type": "VariantCalls"
             }
           ],
           "adapter": {
@@ -1182,7 +1190,7 @@
           }
         },
         {
-          "configId": "sequelII_variants",
+          "configId": "pacbio_sv_vcf",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
           "category": [
@@ -1190,29 +1198,13 @@
             "VCF"
           ],
           "adapter": {
-            "configId": "ZPtZB7IrE2p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
-              "configId": "SCRNxKd1jEj",
               "location": {
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "c199JG88ZZy",
-            "PileupRenderer": {
-              "configId": "c67OtxkO-Li",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "dgD7muCI2fV",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "94VLL8-n2Qi"
               }
             }
           }

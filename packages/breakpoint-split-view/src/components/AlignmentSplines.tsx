@@ -5,9 +5,11 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
+type LayoutRecord = [number, number, number, number]
+
 interface Chunk {
   feature: Feature
-  layout: [number, number, number, number]
+  layout: LayoutRecord
   level: number
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +28,7 @@ export default (pluginManager: any) => {
     const { bpPerPx, horizontallyFlipped, offsetPx } = view
     return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
   }
-  function cheight(chunk: [number, number, number, number]) {
+  function cheight(chunk: LayoutRecord) {
     return chunk[BOTTOM] - chunk[TOP]
   }
   const AlignmentInfo = observer(
@@ -89,10 +91,7 @@ export default (pluginManager: any) => {
                 }
 
                 // calculate the yPos, but clamp to the visible scroll region of the track
-                const yPos = (
-                  level: number,
-                  c: [number, number, number, number],
-                ) =>
+                const yPos = (level: number, c: LayoutRecord) =>
                   clamp(
                     c[TOP] - tracks[level].scrollTop + cheight(c) / 2,
                     0,
