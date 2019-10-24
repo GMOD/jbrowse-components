@@ -5,9 +5,10 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
+type LayoutRecord = [number, number, number, number]
 interface Chunk {
   feature: Feature
-  layout: [number, number, number, number]
+  layout: LayoutRecord
   level: number
 }
 interface Breakend {
@@ -21,7 +22,7 @@ function findMatchingAlt(feat1: Feature, feat2: Feature) {
   feat1.get('ALT').forEach((alt: Breakend) => {
     candidates[alt.MatePosition] = alt
   })
-  return candidates[`${feat2.get('refName')}:${feat2.get('start')}`]
+  return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -39,7 +40,7 @@ export default (pluginManager: any) => {
     const { bpPerPx, horizontallyFlipped, offsetPx } = view
     return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
   }
-  function cheight(chunk: [number, number, number, number]) {
+  function cheight(chunk: LayoutRecord) {
     return chunk[BOTTOM] - chunk[TOP]
   }
   const AlignmentInfo = observer(
@@ -65,8 +66,6 @@ export default (pluginManager: any) => {
             style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}
           >
             {alignmentChunks.map(chunk => {
-              console.log(chunk)
-
               const ret = []
               // we follow a path in the list of chunks, not from top to bottom, just in series
               // following x1,y1 -> x2,y2
@@ -78,14 +77,8 @@ export default (pluginManager: any) => {
                 )
                 const relevantAlt = findMatchingAlt(f1, f2)
 
-                const x1 = calc(
-                  views[level1],
-                  c1[f1.get('strand') === -1 ? LEFT : RIGHT],
-                )
-                const x2 = calc(
-                  views[level2],
-                  c2[f2.get('strand') === -1 ? RIGHT : LEFT],
-                )
+                const x1 = calc(views[level1], c1[LEFT])
+                const x2 = calc(views[level2], c2[LEFT])
 
                 const tracks = views.map(v => v.getTrack(trackConfigId))
                 const added = (level: number) => {
@@ -104,10 +97,7 @@ export default (pluginManager: any) => {
                 }
 
                 // calculate the yPos, but clamp to the visible scroll region of the track
-                const yPos = (
-                  level: number,
-                  c: [number, number, number, number],
-                ) =>
+                const yPos = (level: number, c: LayoutRecord) =>
                   clamp(
                     c[TOP] - tracks[level].scrollTop + cheight(c) / 2,
                     0,
@@ -116,20 +106,38 @@ export default (pluginManager: any) => {
 
                 const y1 = yPos(level1, c1)
                 const y2 = yPos(level2, c2)
-                console.log(x1, y1, x2, y2)
-
-                const path = Path()
-                  .moveTo(x1, y1)
-                  .lineTo(x2, y2)
-                  .end()
-                ret.push(
-                  <path
-                    d={path}
-                    key={JSON.stringify(path)}
-                    stroke="red"
-                    fill="none"
-                  />,
-                )
+                if (!relevantAlt) {
+                  console.warn(
+                    'the relevant ALT allele was not found, cannot render',
+                  )
+                } else {
+                  const path = Path()
+                    .moveTo(
+                      x1 -
+                        100 *
+                          (relevantAlt.Join === 'left' ? 1 : -1) *
+                          flipMultipliers[level1],
+                      y1,
+                    )
+                    .lineTo(x1, y1)
+                    .lineTo(x2, y2)
+                    .lineTo(
+                      x2 -
+                        100 *
+                          (relevantAlt.MateDirection === 'left' ? 1 : -1) *
+                          flipMultipliers[level2],
+                      y2,
+                    )
+                    .end()
+                  ret.push(
+                    <path
+                      d={path}
+                      key={JSON.stringify(path)}
+                      stroke="red"
+                      fill="none"
+                    />,
+                  )
+                }
               }
               return ret
             })}

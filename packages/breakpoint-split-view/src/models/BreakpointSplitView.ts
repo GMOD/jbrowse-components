@@ -94,24 +94,23 @@ export default function stateModelFactory(pluginManager: any) {
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen = new Set<string>()
 
-        for (const feature of features.values()) {
-          if (!alreadySeen.has(feature.id())) {
-            if (feature.get('type') === 'breakend') {
-              feature.get('ALT').forEach((a: Breakend | string) => {
-                const cur = `${feature.get('refName')}:${feature.get('start')}`
+        for (const f of features.values()) {
+          if (!alreadySeen.has(f.id())) {
+            if (f.get('type') === 'breakend') {
+              f.get('ALT').forEach((a: Breakend | string) => {
+                const cur = `${f.get('refName')}:${f.get('start') + 1}`
                 if (isObject(a)) {
                   const alt = a as Breakend
                   if (!candidates[cur]) {
-                    candidates[alt.MatePosition] = [feature]
+                    candidates[alt.MatePosition] = [f]
                   } else {
-                    candidates[cur].push(feature)
+                    candidates[cur].push(f)
                   }
-                  alreadySeen.add(feature.id())
                 }
               })
             }
           }
-          alreadySeen.add(feature.id())
+          alreadySeen.add(f.id())
         }
 
         return {
