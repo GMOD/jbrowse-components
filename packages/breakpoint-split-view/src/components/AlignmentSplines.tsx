@@ -101,7 +101,6 @@ export default (pluginManager: any) => {
 
                 const y1 = yPos(level1, c1)
                 const y2 = yPos(level2, c2)
-                console.log(x1, y1, x2, y2)
 
                 // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                 const path = Path()

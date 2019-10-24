@@ -30,7 +30,7 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
-  const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
+  const [LEFT, TOP, , BOTTOM] = [0, 1, 2, 3]
 
   function calc(
     view: Instance<typeof LinearGenomeViewStateModel>,
@@ -99,12 +99,12 @@ export default (pluginManager: any) => {
                 // calculate the yPos, but clamp to the visible scroll region of the track
                 const yPos = (level: number, c: LayoutRecord) =>
                   clamp(
-                    c[TOP] - tracks[level].scrollTop + cheight(c) / 2,
+                    c[TOP] - tracks[level].scrollTop,
                     0,
                     tracks[level].height,
                   ) + added(level)
 
-                const y1 = yPos(level1, c1)
+                const y1 = yPos(level1, c1) + cheight(c1)
                 const y2 = yPos(level2, c2)
                 if (!relevantAlt) {
                   console.warn(
@@ -114,7 +114,7 @@ export default (pluginManager: any) => {
                   const path = Path()
                     .moveTo(
                       x1 -
-                        100 *
+                        20 *
                           (relevantAlt.Join === 'left' ? 1 : -1) *
                           flipMultipliers[level1],
                       y1,
@@ -123,7 +123,7 @@ export default (pluginManager: any) => {
                     .lineTo(x2, y2)
                     .lineTo(
                       x2 -
-                        100 *
+                        20 *
                           (relevantAlt.MateDirection === 'left' ? 1 : -1) *
                           flipMultipliers[level2],
                       y2,
@@ -133,7 +133,8 @@ export default (pluginManager: any) => {
                     <path
                       d={path}
                       key={JSON.stringify(path)}
-                      stroke="red"
+                      stroke="green"
+                      strokeWidth={5}
                       fill="none"
                     />,
                   )
