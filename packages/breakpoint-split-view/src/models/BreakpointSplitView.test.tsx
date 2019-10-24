@@ -11,6 +11,7 @@ const getView = () => {
   const stubManager = new PluginManager()
   const FakeTrack = types
     .model('FakeTrack', {
+      configId: 'FakeTrack',
       type: 'FakeTrack',
       features: types.frozen(),
       layoutFeatures: types.frozen(),
@@ -79,6 +80,7 @@ test('BreakpointSplitView with soft clipping', () => {
           type: 'LinearGenomeView',
           tracks: [
             {
+              configId: 'pacbio_hg002',
               configuration: {
                 configId: 'pacbio_hg002',
               },
@@ -119,6 +121,7 @@ test('BreakpointSplitView with soft clipping', () => {
           type: 'LinearGenomeView',
           tracks: [
             {
+              configId: 'pacbio_hg002',
               layoutFeatures: { 123: [0, 0, 100, 10] },
               configuration: { configId: 'pacbio_hg002' },
               features: {
@@ -149,7 +152,7 @@ test('BreakpointSplitView with soft clipping', () => {
   expect(model.trackSelectorType).toBe('hierarchical')
   expect(model.matchedTracks).toMatchSnapshot()
   expect(model.getMatchedFeatures('pacbio_hg002')).toMatchSnapshot()
-  expect(model.getLayoutMatches('pacbio_hg002')).toMatchSnapshot()
+  expect(model.getMatchedFeaturesInLayout('pacbio_hg002')).toMatchSnapshot()
 })
 
 test('BreakpointSplitView with hard clipping', () => {
@@ -231,7 +234,10 @@ test('BreakpointSplitView with hard clipping', () => {
   expect(model.views[1]).toBeTruthy()
   expect(model.trackSelectorType).toBe('hierarchical')
   expect(model.matchedTracks).toMatchSnapshot()
-  expect(model.getMatchedFeatures('nonexist')).toEqual([])
+  expect(model.getMatchedFeatures('nonexist')).toEqual({
+    features: [],
+    type: 'None',
+  })
   expect(model.getMatchedFeatures('volvox_samspec')).toMatchSnapshot()
-  expect(model.getLayoutMatches('volvox_samspec')).toMatchSnapshot()
+  expect(model.getMatchedFeaturesInLayout('volvox_samspec')).toMatchSnapshot()
 })

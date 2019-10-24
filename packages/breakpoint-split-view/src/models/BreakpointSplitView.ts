@@ -75,13 +75,15 @@ export default function stateModelFactory(pluginManager: any) {
         // TODO: extend to handle different trackIds e.g.
         // in a synteny scenario with different tracks
         const tracks = this.getMatchedTracks(trackConfigId)
-        const features = new CompositeMap<string, Feature>(
-          tracks.map(t => t.features),
-        )
-        if (tracks[0].type === 'AlignmentsTrack')
-          return this.getMatchedAlignmentFeatures(features)
-        if (tracks[0].type === 'VariantTrack') {
-          return this.getMatchedVariantFeatures(features)
+        if (tracks.length) {
+          const features = new CompositeMap<string, Feature>(
+            tracks.map(t => t.features),
+          )
+          if (tracks[0].type === 'AlignmentsTrack')
+            return this.getMatchedAlignmentFeatures(features)
+          if (tracks[0].type === 'VariantTrack') {
+            return this.getMatchedVariantFeatures(features)
+          }
         }
 
         return { features: [], type: 'None' }

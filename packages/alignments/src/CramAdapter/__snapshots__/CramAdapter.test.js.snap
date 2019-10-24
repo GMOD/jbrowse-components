@@ -3,6 +3,7 @@
 exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
 Array [
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5540,
@@ -48,6 +49,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5541,
@@ -93,6 +95,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5544,
@@ -138,6 +141,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5553,
@@ -183,6 +187,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5554,
@@ -228,6 +233,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5559,
@@ -273,6 +279,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5560,
@@ -318,6 +325,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5568,
@@ -363,6 +371,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5594,
@@ -408,6 +417,7 @@ Array [
     "unmapped": false,
   },
   Object {
+    "clipPos": 0,
     "cramFlags": undefined,
     "duplicate": false,
     "end": 5596,
