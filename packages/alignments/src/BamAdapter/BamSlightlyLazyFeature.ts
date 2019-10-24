@@ -290,6 +290,7 @@ export default class implements Feature {
           start: currOffset,
           type: 'hardclip',
           base: `H${len}`,
+          cliplen: len,
           length: 1,
         })
       } else if (op === 'S') {

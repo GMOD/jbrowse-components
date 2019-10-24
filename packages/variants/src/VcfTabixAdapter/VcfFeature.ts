@@ -200,7 +200,6 @@ export default class VCFFeature implements Feature {
     ref: string,
     alt: string | Breakend,
   ): [string, string] {
-    console.log(ref, alt, typeof alt)
     if (typeof alt === 'object') {
       return ['breakend', this._makeDescriptionString('breakend', ref, alt)]
     }

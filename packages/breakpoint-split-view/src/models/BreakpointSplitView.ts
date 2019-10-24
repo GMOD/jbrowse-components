@@ -71,11 +71,9 @@ export default function stateModelFactory(pluginManager: any) {
         const features = new CompositeMap<string, Feature>(
           tracks.map(t => t.features),
         )
-        console.log('here', tracks[0].type)
         if (tracks[0].type === 'AlignmentsTrack')
           return this.getMatchedAlignmentFeatures(features)
         if (tracks[0].type === 'VariantTrack') {
-          console.log(tracks)
           return this.getMatchedVariantFeatures(features)
         }
 
@@ -89,11 +87,10 @@ export default function stateModelFactory(pluginManager: any) {
         const candidates: Record<string, Feature[]> = {}
         for (const feature of features.values()) {
           // TODO: handle other variant types
-          if (feature.get('type') == 'breakend') {
+          if (feature.get('type') === 'breakend') {
             candidates[feature.id()] = [feature]
           }
         }
-        console.log(candidates)
 
         return {
           features: Object.values(candidates),
@@ -129,9 +126,9 @@ export default function stateModelFactory(pluginManager: any) {
       getMatchedFeaturesInLayout(trackConfigId: string) {
         const { features, type } = this.getMatchedFeatures(trackConfigId)
         let ret
-        if (type == 'Alignments') {
+        if (type === 'Alignments') {
           ret = this.getMatchedAlignmentsInLayout(trackConfigId, features)
-        } else if (type == 'Breakends') {
+        } else if (type === 'Breakends') {
           ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
         }
         return { type, features: ret }
