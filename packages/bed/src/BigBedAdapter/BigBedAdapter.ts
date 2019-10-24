@@ -233,6 +233,14 @@ function ucscProcessedTranscript(feature: Feature) {
   newData.subfeatures = newChildren
   newData.type = 'mRNA'
   newData.uniqueId = feature.id()
+  delete newData.chromStarts
+  delete newData.chromStart
+  delete newData.chromEnd
+  delete newData.chrom
+  delete newData.blockSizes
+  delete newData.blockCount
+  delete newData.thickStart
+  delete newData.thickEnd
   const newFeature = new SimpleFeature({
     data: newData,
     id: feature.id(),
