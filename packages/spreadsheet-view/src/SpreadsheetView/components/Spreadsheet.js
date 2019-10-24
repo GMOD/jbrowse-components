@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 export function numToColName(num) {
   function letterFor(n) {
     return String.fromCharCode(n + 65)
@@ -74,6 +75,12 @@ export default pluginManager => {
         position: 'sticky',
         top: '-1px',
         zIndex: 2,
+        whiteSpace: 'nowrap',
+      },
+      sortIndicator: {
+        position: 'relative',
+        top: '0.2rem',
+        fontSize: '1rem',
       },
       columnButtonContainer: {
         display: 'none',
@@ -148,6 +155,22 @@ export default pluginManager => {
       </tr>
     )
   })
+
+  function SortIndicator({ model, columnNumber }) {
+    const classes = useStyles()
+    const sortSpec = model.sortColumns.find(
+      c => c.columnNumber === columnNumber,
+    )
+    if (sortSpec) {
+      const { descending } = sortSpec
+      return (
+        <Icon fontSize="small" className={classes.sortIndicator}>
+          {descending ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+        </Icon>
+      )
+    }
+    return null
+  }
 
   const DataTable = observer(({ model }) => {
     const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
@@ -225,6 +248,7 @@ export default pluginManager => {
                   onMouseOver={columnHeaderMouseOver.bind(null, colNumber)}
                   onMouseOut={columnHeaderMouseOut.bind(null, colNumber)}
                 >
+                  <SortIndicator model={model} columnNumber={colNumber} />
                   {(hasColumnNames && columns.get(colNumber).name) ||
                     numToColName(colNumber)}
                   <div
