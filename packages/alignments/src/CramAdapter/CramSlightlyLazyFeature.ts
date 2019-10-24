@@ -240,7 +240,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     plain.type = this.get('type')
     plain.uniqueId = this.id()
     plain.clipPos = this._get_clipPos()
-    const { cram_read_features, ...rest } = plain
+    const { cram_read_features, mismatches, ...rest } = plain
 
     return rest
   }

@@ -76,9 +76,7 @@ export default (pluginManager: any) => {
                 const flipMultipliers = views.map(v =>
                   v.horizontallyFlipped ? -1 : 1,
                 )
-                console.log(c1, c2, f1, f2)
-
-                console.log(findMatchingAlt(f1, f2))
+                const relevantAlt = findMatchingAlt(f1, f2)
 
                 const x1 = calc(
                   views[level1],
@@ -118,24 +116,17 @@ export default (pluginManager: any) => {
 
                 const y1 = yPos(level1, c1)
                 const y2 = yPos(level2, c2)
+                console.log(x1, y1, x2, y2)
 
-                // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                 const path = Path()
                   .moveTo(x1, y1)
-                  .curveTo(
-                    x1 + 200 * f1.get('strand') * flipMultipliers[level1],
-                    y1,
-                    x2 - 200 * f2.get('strand') * flipMultipliers[level2],
-                    y2,
-                    x2,
-                    y2,
-                  )
+                  .lineTo(x2, y2)
                   .end()
                 ret.push(
                   <path
                     d={path}
                     key={JSON.stringify(path)}
-                    stroke="black"
+                    stroke="red"
                     fill="none"
                   />,
                 )

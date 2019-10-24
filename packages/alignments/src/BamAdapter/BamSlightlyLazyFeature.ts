@@ -192,7 +192,6 @@ export default class implements Feature {
     plain.name = this.get('name')
     plain.type = this.get('type')
     plain.uniqueId = this.id()
-    // plain.mismatches = this._get_mismatches()
     plain.clipPos = this._get_clippos()
     return plain
   }
