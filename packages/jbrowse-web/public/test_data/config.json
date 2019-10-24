@@ -315,6 +315,25 @@
           }
         },
         {
+          "configId": "volvox_breakends",
+          "type": "VariantTrack",
+          "name": "volvox breakends",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/volvox.dup.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox.dup.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
           "configId": "bigbed_genes",
           "type": "BasicTrack",
           "name": "BigBed genes",
