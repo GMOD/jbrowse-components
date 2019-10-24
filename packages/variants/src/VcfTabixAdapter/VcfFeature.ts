@@ -196,13 +196,19 @@ export default class VCFFeature implements Feature {
     return [undefined, undefined]
   }
 
-  _getSOAndDescByExamination(ref: string, alt: string): [string, string] {
+  _getSOAndDescByExamination(
+    ref: string,
+    alt: string | Breakend,
+  ): [string, string] {
+    console.log(ref, alt, typeof alt)
+    if (typeof alt === 'object') {
+      return ['breakend', this._makeDescriptionString('breakend', ref, alt)]
+    }
     if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
-
     if (ref.length === alt.length)
       if (
         ref
@@ -226,7 +232,11 @@ export default class VCFFeature implements Feature {
     return ['indel', this._makeDescriptionString('indel', ref, alt)]
   }
 
-  _makeDescriptionString(soTerm: string, ref: string, alt: string): string {
+  _makeDescriptionString(
+    soTerm: string,
+    ref: string,
+    alt: string | Breakend,
+  ): string {
     return `${soTerm} ${ref} -> ${alt}`
   }
 

@@ -11,7 +11,8 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const AlignmentSquiggles = jbrequire(require('./AlignmentSquiggles'))
+  const AlignmentSplines = jbrequire(require('./AlignmentSplines'))
+  const BreakendLines = jbrequire(require('./BreakendLines'))
   const Header = jbrequire(require('./Header'))
 
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
@@ -80,17 +81,35 @@ export default (pluginManager: any) => {
               })}
             </div>
           </div>
-          {model.matchedTracks.map(m => (
-            <div className={classes.overlay} key={`overlay-${m}`}>
-              <AlignmentSquiggles
-                trackConfigId={m}
-                model={model}
-                alignmentChunks={model.getLayoutMatches(m)}
-                className={classes.root}
-                data-testid={model.configuration.configId}
-              />
-            </div>
-          ))}
+          {model.matchedTracks.map(m => {
+            const { features, type } = model.getMatchedFeaturesInLayout(m)
+            if (type == 'Splines') {
+              return (
+                <div className={classes.overlay} key={`overlay-${m}`}>
+                  <AlignmentSplines
+                    trackConfigId={m}
+                    model={model}
+                    alignmentChunks={features}
+                    className={classes.root}
+                    data-testid={model.configuration.configId}
+                  />
+                </div>
+              )
+            }
+            if (type === 'Breakends') {
+              return (
+                <div className={classes.overlay} key={`overlay-${m}`}>
+                  <BreakendLines
+                    trackConfigId={m}
+                    model={model}
+                    alignmentChunks={features}
+                    className={classes.root}
+                    data-testid={model.configuration.configId}
+                  />
+                </div>
+              )
+            }
+          })}
         </div>
       )
     },

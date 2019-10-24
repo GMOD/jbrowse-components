@@ -1174,12 +1174,12 @@
             "configId": "ZPtZB7IrE2p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
               "configId": "SCRNxKd1jEj",
               "location": {
-                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },

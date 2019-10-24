@@ -55,19 +55,56 @@ export default function stateModelFactory(pluginManager: any) {
         return intersection(...viewTracks)
       },
 
+      // finds tracks with a given trackId across multiple views
+      getMatchedTracks(trackConfigId: string) {
+        return self.views
+          .map(view => view.getTrack(trackConfigId))
+          .filter(f => !!f)
+      },
+
+      // returns a list of features that "match" across views,
+      // applies to a specific trackId
       getMatchedFeatures(trackConfigId: string) {
+        // TODO: extend to handle different trackIds e.g.
+        // in a synteny scenario with different tracks
+        const tracks = this.getMatchedTracks(trackConfigId)
+        const features = new CompositeMap<string, Feature>(
+          this.getMatchedTracks(trackConfigId).map(t => t.features),
+        )
+        if (tracks[0].type === 'AlignmentTrack')
+          return this.getMatchedAlignmentFeatures(features)
+        if (tracks[0].type === 'VariantTrack')
+          return this.getMatchedVariantFeatures(features)
+
+        return { features: [], type: 'None' }
+      },
+
+      // this finds candidate variant features to plot,
+      // currently only breakends (could do intrachromosomal deletions, insertions, other SV
+      // if relevant too
+      getMatchedVariantFeatures(features: CompositeMap<string, Feature>) {
+        const candidates: Record<string, Feature[]> = {}
+        for (const feature of features.values()) {
+          // TODO: handle other variant types
+          if (feature.get('type') == 'breakend') {
+            candidates[feature.id()] = [feature]
+          }
+        }
+
+        return {
+          features: Object.values(candidates),
+          type: 'Breakends',
+        }
+      },
+
+      // this finds candidate alignment features, aimed at plotting split reads
+      // from BAM/CRAM files
+      getMatchedAlignmentFeatures(features: CompositeMap<string, Feature>) {
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen: Record<string, boolean> = {}
 
-        // finds "matching tracks across views"
-        const tracks = self.views
-          .map(view => view.getTrack(trackConfigId))
-          .filter(f => !!f)
-
         // this finds candidate features that share the same name
-        for (const feature of new CompositeMap<string, Feature>(
-          tracks.map(t => t.features),
-        ).values()) {
+        for (const feature of features.values()) {
           if (!alreadySeen[feature.id()]) {
             const n = feature.get('name')
             if (!candidates[n]) {
@@ -85,16 +122,48 @@ export default function stateModelFactory(pluginManager: any) {
         }
 
         // get only features appearing more than once
-        return Object.values(candidates).filter(v => v.length > 1)
+        return {
+          features: Object.values(candidates).filter(v => v.length > 1),
+          type: 'Splines',
+        }
       },
 
-      getLayoutMatches(trackConfigId: string) {
-        const tracks = self.views.map(view => view.getTrack(trackConfigId))
+      getMatchedFeaturesInLayout(trackConfigId: string) {
+        const { features, type } = this.getMatchedFeatures(trackConfigId)
+        let ret
+        if (type == 'Alignments') {
+          ret = this.getMatchedAlignmentsInLayout(trackConfigId, features)
+        } else if (type == 'Breakends') {
+          ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
+        }
+        return { type, features: ret }
+      },
+      getMatchedBreakendsInLayout(
+        trackConfigId: string,
+        features: Feature[][],
+      ) {
+        const tracks = this.getMatchedTracks(trackConfigId)
+        const metaLayoutFeatures = new CompositeMap(
+          tracks.map(t => t.layoutFeatures),
+        )
+        return features.map(c =>
+          c.map((f: Feature) => ({
+            feature: f,
+            layout: metaLayoutFeatures.get(f.id()),
+            level: tracks.findIndex(t => t.layoutFeatures.get(f.id())),
+          })),
+        )
+      },
+      getMatchedAlignmentsInLayout(
+        trackConfigId: string,
+        features: Feature[][],
+      ) {
+        const tracks = this.getMatchedTracks(trackConfigId)
         const metaLayoutFeatures = new CompositeMap(
           tracks.map(t => t.layoutFeatures),
         )
         // console.log(f.get('cram_read_features'))
-        return this.getMatchedFeatures(trackConfigId).map(c =>
+        return features.map(c =>
           c
             .map((f: Feature) => ({
               feature: f,
