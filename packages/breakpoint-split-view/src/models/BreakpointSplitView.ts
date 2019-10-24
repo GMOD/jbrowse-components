@@ -69,12 +69,15 @@ export default function stateModelFactory(pluginManager: any) {
         // in a synteny scenario with different tracks
         const tracks = this.getMatchedTracks(trackConfigId)
         const features = new CompositeMap<string, Feature>(
-          this.getMatchedTracks(trackConfigId).map(t => t.features),
+          tracks.map(t => t.features),
         )
-        if (tracks[0].type === 'AlignmentTrack')
+        console.log('here', tracks[0].type)
+        if (tracks[0].type === 'AlignmentsTrack')
           return this.getMatchedAlignmentFeatures(features)
-        if (tracks[0].type === 'VariantTrack')
+        if (tracks[0].type === 'VariantTrack') {
+          console.log(tracks)
           return this.getMatchedVariantFeatures(features)
+        }
 
         return { features: [], type: 'None' }
       },
@@ -90,6 +93,7 @@ export default function stateModelFactory(pluginManager: any) {
             candidates[feature.id()] = [feature]
           }
         }
+        console.log(candidates)
 
         return {
           features: Object.values(candidates),
@@ -101,30 +105,24 @@ export default function stateModelFactory(pluginManager: any) {
       // from BAM/CRAM files
       getMatchedAlignmentFeatures(features: CompositeMap<string, Feature>) {
         const candidates: Record<string, Feature[]> = {}
-        const alreadySeen: Record<string, boolean> = {}
+        const alreadySeen = new Set<string>()
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          if (!alreadySeen[feature.id()]) {
+          if (!alreadySeen.has(feature.id())) {
             const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []
             }
-            // todo: this is a bit of a hack to have this here, but
-            // it prevents for example a "gene track" drawing
-            // lines between genes with the same name...only want
-            // to pair alignments?
-            if (feature.get('CIGAR')) {
-              candidates[n].push(feature)
-            }
+            candidates[n].push(feature)
           }
-          alreadySeen[feature.id()] = true
+          alreadySeen.add(feature.id())
         }
 
         // get only features appearing more than once
         return {
           features: Object.values(candidates).filter(v => v.length > 1),
-          type: 'Splines',
+          type: 'Alignments',
         }
       },
 
@@ -143,38 +141,50 @@ export default function stateModelFactory(pluginManager: any) {
         features: Feature[][],
       ) {
         const tracks = this.getMatchedTracks(trackConfigId)
-        const metaLayoutFeatures = new CompositeMap(
-          tracks.map(t => t.layoutFeatures),
-        )
-        return features.map(c =>
-          c.map((f: Feature) => ({
-            feature: f,
-            layout: metaLayoutFeatures.get(f.id()),
-            level: tracks.findIndex(t => t.layoutFeatures.get(f.id())),
-          })),
-        )
+        return features.map(c => {
+          return c.map((feature: Feature) => {
+            let layout: [number, number, number, number] | undefined
+            const level = tracks.findIndex(track => {
+              layout = track.layoutFeatures.get(feature.id())
+              return layout
+            })
+            return {
+              feature,
+              layout,
+              level,
+            }
+          })
+        })
       },
       getMatchedAlignmentsInLayout(
         trackConfigId: string,
         features: Feature[][],
       ) {
         const tracks = this.getMatchedTracks(trackConfigId)
-        const metaLayoutFeatures = new CompositeMap(
-          tracks.map(t => t.layoutFeatures),
-        )
-        // console.log(f.get('cram_read_features'))
         return features.map(c =>
           c
-            .map((f: Feature) => ({
-              feature: f,
-              layout: metaLayoutFeatures.get(f.id()),
-              level: tracks.findIndex(t => t.layoutFeatures.get(f.id())),
-              clipPos:
-                // match clipping from the start or end depending on the strand of the feature
-                f.get('strand') === -1
-                  ? +(f.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
-                  : +(f.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0,
-            }))
+            .map((feature: Feature) => {
+              const mismatches = feature.get('mismatches')
+              let clipPos = 0
+              let layout: [number, number, number, number] | undefined
+              const level = tracks.findIndex(track => {
+                layout = track.layoutFeatures.get(feature.id())
+                return layout
+              })
+              const record =
+                feature.get('strand') === -1
+                  ? mismatches[mismatches.length - 1]
+                  : mismatches[0]
+              if (record.type === 'softclip' || record.type === 'hardclip') {
+                clipPos = record.cliplen
+              }
+              return {
+                feature,
+                layout,
+                level,
+                clipPos,
+              }
+            })
             .sort((a, b) => a.clipPos - b.clipPos),
         )
       },

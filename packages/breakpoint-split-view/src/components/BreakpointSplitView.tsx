@@ -83,7 +83,7 @@ export default (pluginManager: any) => {
           </div>
           {model.matchedTracks.map(m => {
             const { features, type } = model.getMatchedFeaturesInLayout(m)
-            if (type == 'Splines') {
+            if (type == 'Alignments') {
               return (
                 <div className={classes.overlay} key={`overlay-${m}`}>
                   <AlignmentSplines

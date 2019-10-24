@@ -153,7 +153,9 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
   const SimpleValue = ({ name, value }: { name: string; value: any }) => (
     <div style={{ display: 'flex' }}>
       <div className={classes.fieldName}>{name}</div>
-      <div className={classes.fieldValue}>{String(value)}</div>
+      <div className={classes.fieldValue}>
+        {isObject(value) ? JSON.stringify(value) : String(value)}
+      </div>
     </div>
   )
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => (
@@ -161,7 +163,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
       <div className={classes.fieldName}>{name}</div>
       {value.map((val, i) => (
         <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-          {String(val)}
+          {isObject(val) ? JSON.stringify(val) : String(val)}
         </div>
       ))}
     </div>

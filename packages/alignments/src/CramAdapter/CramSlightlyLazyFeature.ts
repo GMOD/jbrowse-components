@@ -224,7 +224,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     plain.name = this.get('name')
     plain.type = this.get('type')
     plain.uniqueId = this.id()
-    const { cram_read_features, mismatches, ...rest } = plain
+    const { cram_read_features, ...rest } = plain
 
     return rest
   }
