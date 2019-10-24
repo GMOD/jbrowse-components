@@ -30,6 +30,7 @@ export default pluginManager => {
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
   const ListItemText = jbrequire('@material-ui/core/ListItemText')
+  const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
   const useStyles = makeStyles(theme => {
     return {
@@ -61,6 +62,7 @@ export default pluginManager => {
         fontWeight: 'normal',
         display: 'flex',
         textAlign: 'right',
+        margin: 0,
       },
       rowSelector: {
         position: 'relative',
@@ -127,20 +129,29 @@ export default pluginManager => {
     let rowClass = classes.dataRow
     if (rowModel.isSelected) rowClass += ` ${classes.dataRowSelected}`
 
+    const labelClick = evt => {
+      rowModel.toggleSelect()
+      evt.stopPropagation()
+      evt.preventDefault()
+    }
+
     return (
       <tr className={rowClass}>
-        <th className={classes.rowNumCell} onClick={rowModel.toggleSelect}>
-          <label className={classes.rowNumber}>
-            {hideRowSelection ? null : (
-              <Checkbox
-                className={classes.rowSelector}
-                checked={rowModel.isSelected}
-                onClick={rowModel.toggleSelect}
-                size="small"
-              />
-            )}
-            {rowNumber + 1}
-          </label>
+        <th className={classes.rowNumCell} onClick={labelClick}>
+          <FormControlLabel
+            className={classes.rowNumber}
+            control={
+              hideRowSelection ? null : (
+                <Checkbox
+                  className={classes.rowSelector}
+                  checked={rowModel.isSelected}
+                  onClick={labelClick}
+                  size="small"
+                />
+              )
+            }
+            label={rowNumber + 1}
+          />
         </th>
         {columnDisplayOrder.map(colNumber => (
           <td key={colNumber}>
@@ -278,7 +289,7 @@ export default pluginManager => {
           <tbody className={classes.dataTableBody}>
             {rowSet.sortedRows.map((row, rowNumber) => (
               <DataRow
-                key={rowNumber}
+                key={row.id}
                 rowNumber={rowNumber}
                 spreadsheetModel={model}
                 rowModel={row}

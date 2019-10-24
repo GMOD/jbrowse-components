@@ -1250,7 +1250,7 @@ Object {
           Object {
             "columnNumber": 2,
             "dataType": "text",
-            "text": ".",
+            "text": "",
           },
           Object {
             "columnNumber": 3,
@@ -1288,7 +1288,7 @@ Object {
             "text": "0/1:131,35:166:99:138,0,3431:89,42,35,0",
           },
         ],
-        "id": ".",
+        "id": "21",
       },
       Object {
         "cells": Array [
@@ -1360,7 +1360,7 @@ Object {
           Object {
             "columnNumber": 2,
             "dataType": "text",
-            "text": ".",
+            "text": "",
           },
           Object {
             "columnNumber": 3,
@@ -1398,7 +1398,7 @@ Object {
             "text": "0/1:14,11:25:99:382,0,510:0,14,0,11",
           },
         ],
-        "id": ".",
+        "id": "23",
       },
       Object {
         "cells": Array [

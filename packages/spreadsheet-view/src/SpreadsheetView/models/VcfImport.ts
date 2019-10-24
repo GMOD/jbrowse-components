@@ -13,11 +13,6 @@ const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
-// const formatters: Record<string, Function> = {
-//   ALT: (altArr: string[]): string => altArr.join(','),
-
-// }
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   // const record = vcfParser.parseLine(line)
@@ -37,7 +32,7 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   //     }
   //   }),
   // ]
-  const data = line.split('\t')
+  const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
     id: data[2] || String(lineNumber),
     cells: data.map((text, columnNumber) => {

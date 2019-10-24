@@ -15,6 +15,7 @@ export default pluginManager => {
 
   const RowModel = types
     .model('SpreadsheetRow', {
+      id: types.identifier,
       cells: types.array(CellModel),
       isSelected: false,
     })
