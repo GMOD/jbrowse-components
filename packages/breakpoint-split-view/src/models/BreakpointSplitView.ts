@@ -3,8 +3,15 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
+import isObject from 'is-object'
 
 type LGV = Instance<LinearGenomeViewStateModel>
+interface Breakend {
+  MateDirection: string
+  Join: string
+  Replacement: string
+  MatePosition: string
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
@@ -85,15 +92,30 @@ export default function stateModelFactory(pluginManager: any) {
       // if relevant too
       getMatchedVariantFeatures(features: CompositeMap<string, Feature>) {
         const candidates: Record<string, Feature[]> = {}
+        const alreadySeen = new Set<string>()
+
         for (const feature of features.values()) {
-          // TODO: handle other variant types
-          if (feature.get('type') === 'breakend') {
-            candidates[feature.id()] = [feature]
+          if (!alreadySeen.has(feature.id())) {
+            if (feature.get('type') === 'breakend') {
+              feature.get('ALT').forEach((a: Breakend | string) => {
+                const cur = `${feature.get('refName')}:${feature.get('start')}`
+                if (isObject(a)) {
+                  const alt = a as Breakend
+                  if (!candidates[cur]) {
+                    candidates[alt.MatePosition] = [feature]
+                  } else {
+                    candidates[cur].push(feature)
+                  }
+                  alreadySeen.add(feature.id())
+                }
+              })
+            }
           }
+          alreadySeen.add(feature.id())
         }
 
         return {
-          features: Object.values(candidates),
+          features: Object.values(candidates).filter(v => v.length > 1),
           type: 'Breakends',
         }
       },
@@ -116,7 +138,6 @@ export default function stateModelFactory(pluginManager: any) {
           alreadySeen.add(feature.id())
         }
 
-        // get only features appearing more than once
         return {
           features: Object.values(candidates).filter(v => v.length > 1),
           type: 'Alignments',
