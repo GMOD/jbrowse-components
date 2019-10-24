@@ -30,4 +30,6 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
   getRefNameAliases(): Promise<Alias[]> {
     return this.promise
   }
+
+  freeResources() {}
 }

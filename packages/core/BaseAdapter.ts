@@ -142,4 +142,6 @@ export abstract class BaseRefNameAliasAdapter {
   public static capabilities: string[]
 
   public abstract async getRefNameAliases(): Promise<Alias[]>
+
+  public abstract async freeResources(): Promise<void>
 }
