@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
@@ -29,7 +30,6 @@ interface Parser {
 }
 
 export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private bigbed: any
 
   private parser: Promise<Parser>
@@ -47,12 +47,12 @@ export default class extends BaseAdapter {
       .then(({ autoSql }: { autoSql: string }) => new BED({ autoSql }))
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public async getRefNames() {
     const header = await this.bigbed.getHeader()
     return Object.keys(header.refsByName)
   }
 
-  public async refIdToName(refId: number): Promise<string> {
+  public async refIdToName(refId: number) {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
 
@@ -138,9 +138,6 @@ function ucscProcessedTranscript(feature: Feature) {
   // split the blocks into UTR, CDS, and exons
   const thickStart = feature.get('thickStart')
   const thickEnd = feature.get('thickEnd')
-  console.log(feature)
-  console.log(thickStart, thickEnd)
-  console.log(children)
 
   if (!thickStart && !thickEnd) return feature
 
@@ -157,7 +154,6 @@ function ucscProcessedTranscript(feature: Feature) {
       // left-side UTR
       const prime = feature.get('strand') > 0 ? 'five' : 'three'
       newChildren.push({
-        uniqueId: `${feature.id()}-${index}`,
         type: `${prime}_prime_UTR`,
         start,
         end,
@@ -167,14 +163,12 @@ function ucscProcessedTranscript(feature: Feature) {
       const prime = feature.get('strand') > 0 ? 'five' : 'three'
       newChildren.push(
         {
-          uniqueId: `${feature.id()}-${index}-0`,
           type: `${prime}_prime_UTR`,
           start,
           end: thickStart,
         },
         {
-          uniqueId: `${feature.id()}-${index}-1`,
-          type: `CDS`,
+          type: 'CDS',
           start: thickStart,
           end,
         },
@@ -182,7 +176,6 @@ function ucscProcessedTranscript(feature: Feature) {
     } else if (thickStart <= start && thickEnd >= end) {
       // CDS
       newChildren.push({
-        uniqueId: `${feature.id()}-${index}`,
         type: 'CDS',
         start,
         end,
@@ -193,19 +186,16 @@ function ucscProcessedTranscript(feature: Feature) {
       const rightPrime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push(
         {
-          uniqueId: `${feature.id()}-${index}`,
           type: `${leftPrime}_prime_UTR`,
           start,
           end: thickStart,
         },
         {
-          uniqueId: `${feature.id()}-${index}`,
           type: `CDS`,
           start: thickStart,
           end: thickEnd,
         },
         {
-          uniqueId: `${feature.id()}-${index}`,
           type: `${rightPrime}_prime_UTR`,
           start: thickEnd,
           end,
@@ -216,13 +206,11 @@ function ucscProcessedTranscript(feature: Feature) {
       const prime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push(
         {
-          uniqueId: `${feature.id()}-${index}-0`,
           type: `CDS`,
           start,
           end: thickEnd,
         },
         {
-          uniqueId: `${feature.id()}-${index}-1`,
           type: `${prime}_prime_UTR`,
           start: thickEnd,
           end,
@@ -232,7 +220,6 @@ function ucscProcessedTranscript(feature: Feature) {
       // right-side UTR
       const prime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push({
-        uniqueId: `${feature.id()}-${index}`,
         type: `${prime}_prime_UTR`,
         start,
         end,
@@ -252,5 +239,3 @@ function ucscProcessedTranscript(feature: Feature) {
   })
   return newFeature
 }
-
-function processUcscBlocks(feature: Feature) {}
