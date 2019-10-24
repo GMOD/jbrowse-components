@@ -164,20 +164,12 @@ export default function stateModelFactory(pluginManager: any) {
         return features.map(c =>
           c
             .map((feature: Feature) => {
-              const mismatches = feature.get('mismatches')
-              let clipPos = 0
               let layout: [number, number, number, number] | undefined
               const level = tracks.findIndex(track => {
                 layout = track.layoutFeatures.get(feature.id())
                 return layout
               })
-              const record =
-                feature.get('strand') === -1
-                  ? mismatches[mismatches.length - 1]
-                  : mismatches[0]
-              if (record.type === 'softclip' || record.type === 'hardclip') {
-                clipPos = record.cliplen
-              }
+              const clipPos = feature.get('clipPos')
               return {
                 feature,
                 layout,

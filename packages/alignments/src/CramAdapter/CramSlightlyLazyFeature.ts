@@ -214,6 +214,21 @@ export default class CramSlightlyLazyFeature implements Feature {
     return false
   }
 
+  _get_clipPos() {
+    const mismatches = this.get('mismatches')
+    if (mismatches.length) {
+      const record =
+        this.get('strand') === -1
+          ? mismatches[mismatches.length - 1]
+          : mismatches[0]
+      const { type, cliplen } = record
+      if (type === 'softclip' || type === 'hardclip') {
+        return cliplen
+      }
+    }
+    return 0
+  }
+
   toJSON() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plain: Record<string, any> = {}
@@ -224,6 +239,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     plain.name = this.get('name')
     plain.type = this.get('type')
     plain.uniqueId = this.id()
+    plain.clipPos = this._get_clipPos()
     const { cram_read_features, ...rest } = plain
 
     return rest

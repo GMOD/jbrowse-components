@@ -192,7 +192,8 @@ export default class implements Feature {
     plain.name = this.get('name')
     plain.type = this.get('type')
     plain.uniqueId = this.id()
-    plain.mismatches = this._get_mismatches()
+    // plain.mismatches = this._get_mismatches()
+    plain.clipPos = this._get_clippos()
     return plain
   }
 
@@ -229,6 +230,21 @@ export default class implements Feature {
       seen[key] = true
       return !s
     })
+  }
+
+  _get_clippos() {
+    const mismatches = this.get('mismatches')
+    if (mismatches.length) {
+      const record =
+        this.get('strand') === -1
+          ? mismatches[mismatches.length - 1]
+          : mismatches[0]
+      const { type, cliplen } = record
+      if (type === 'softclip' || type === 'hardclip') {
+        return cliplen
+      }
+    }
+    return 0
   }
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
