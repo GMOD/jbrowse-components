@@ -102,4 +102,24 @@ export function parseTsvBuffer(
   )
 }
 
-export function parseBedBuffer(buffer: Buffer) {}
+export function parseBedBuffer(buffer: Buffer) {
+  return parseTsvBuffer(buffer).then(data => {
+    const bedColumns = [
+      { name: 'chrom', dataType: { type: 'Text' } },
+      { name: 'chromStart', dataType: { type: 'Number' } },
+      { name: 'chromEnd', dataType: { type: 'Number' } },
+      { name: 'name', dataType: { type: 'Text' } },
+      { name: 'score', dataType: { type: 'Number' } },
+      { name: 'strand', dataType: { type: 'Text' } },
+    ]
+    data.columns.forEach((col, colNumber) => {
+      const bedColumn = bedColumns[colNumber]
+      if (bedColumn) {
+        col.name = bedColumn.name
+        col.dataType = bedColumn.dataType
+      }
+    })
+    data.hasColumnNames = true
+    return data
+  })
+}
