@@ -399,6 +399,21 @@
           ]
         },
         {
+          "configId": "nclist_transcripts",
+          "type": "BasicTrack",
+          "name": "NCList transcripts",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "test_data/volvox_transcripts_nclist/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "EA_0Jp4oPKg",
           "type": "BasicTrack",
           "name": "NCList genes",
