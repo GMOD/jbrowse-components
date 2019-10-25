@@ -23,10 +23,16 @@ export default pluginManager => {
       hasColumnNames: false,
 
       sortColumns: types.array(
-        types.model('SortColumns', {
-          columnNumber: types.number,
-          descending: false,
-        }),
+        types
+          .model('SortColumns', {
+            columnNumber: types.number,
+            descending: false,
+          })
+          .actions(self => ({
+            switchDirection() {
+              self.descending = !self.descending
+            },
+          })),
       ),
     })
     .volatile(self => ({
@@ -36,6 +42,12 @@ export default pluginManager => {
       get hideRowSelection() {
         // just delegates to parent
         return getParent(self).hideRowSelection
+      },
+
+      // list of data type names to be made available in the column
+      // dropdown menu
+      get dataTypeChoices() {
+        return Object.keys(DataTypes).filter(k => k !== 'Any')
       },
 
       rowSortingComparisonFunction(rowA, rowB) {
@@ -54,6 +66,9 @@ export default pluginManager => {
     .actions(self => ({
       setSortColumns(newSort) {
         self.sortColumns = newSort
+      },
+      setColumnType(columnNumber, newTypeName) {
+        self.columns[columnNumber].dataType = { type: newTypeName }
       },
     }))
 

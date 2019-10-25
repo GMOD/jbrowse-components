@@ -19,7 +19,7 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = React
+  const { useState, useRef } = React
   const ReactPropTypes = jbrequire('prop-types')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey, indigo } = jbrequire('@material-ui/core/colors')
@@ -172,10 +172,15 @@ export default pluginManager => {
     const sortSpec = model.sortColumns.find(
       c => c.columnNumber === columnNumber,
     )
+
     if (sortSpec) {
       const { descending } = sortSpec
       return (
-        <Icon fontSize="small" className={classes.sortIndicator}>
+        <Icon
+          fontSize="small"
+          className={classes.sortIndicator}
+          onClick={sortSpec.switchDirection}
+        >
           {descending ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
         </Icon>
       )
@@ -183,37 +188,31 @@ export default pluginManager => {
     return null
   }
 
-  const DataTable = observer(({ model }) => {
-    const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
-    const classes = useStyles()
-
-    // column menu active state
-    const [currentColumnMenu, setColumnMenu] = useState(null)
-    const columnButtonClick = (colNumber, evt) => {
-      setColumnMenu({ colNumber, anchorEl: evt.currentTarget })
-    }
+  const ColumnMenu = observer(({ model, currentColumnMenu, setColumnMenu }) => {
     const columnMenuClose = () => {
+      setDataTypeMenuOpen(false)
       setColumnMenu(null)
     }
 
-    // column header hover state
-    const [currentHoveredColumn, setHoveredColumn] = useState(null)
-    const columnHeaderMouseOver = (colNumber, evt) => {
-      setHoveredColumn(colNumber)
-    }
-    const columnHeaderMouseOut = (colNumber, evt) => {
-      setHoveredColumn(null)
-    }
+    const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
 
     const sortMenuClick = descending => {
       columnMenuClose()
       model.setSortColumns([
         {
-          columnNumber: currentColumnMenu.colNumber,
+          columnNumber,
           descending,
         },
       ])
     }
+
+    const [dataTypeMenuOpen, setDataTypeMenuOpen] = useState(false)
+    const drawerMenuItemRef = useRef(null)
+
+    const { dataTypeChoices } = model
+
+    const dataTypeName =
+      (currentColumnMenu && model.columns[columnNumber].dataType.type) || ''
 
     return (
       <>
@@ -247,7 +246,90 @@ export default pluginManager => {
             </ListItemIcon>
             <ListItemText primary="Sort descending" />
           </MenuItem>
+          <MenuItem
+            ref={drawerMenuItemRef}
+            onClick={() => {
+              setDataTypeMenuOpen(true)
+            }}
+          >
+            <ListItemIcon>
+              <Icon fontSize="small">perm_data_setting</Icon>
+            </ListItemIcon>
+            <ListItemText primary={`Type: ${dataTypeName}`} />
+            <ListItemIcon>
+              <Icon fontSize="small">arrow_right</Icon>
+            </ListItemIcon>
+          </MenuItem>
         </Menu>
+        <Menu
+          anchorEl={
+            currentColumnMenu && drawerMenuItemRef && drawerMenuItemRef.current
+          }
+          open={Boolean(currentColumnMenu && dataTypeMenuOpen)}
+          onClose={columnMenuClose}
+          elevation={10}
+          getContentAnchorEl={null}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+        >
+          {dataTypeChoices.map(typeName => {
+            return (
+              <MenuItem
+                key={typeName}
+                onClick={() => {
+                  model.setColumnType(columnNumber, typeName)
+                  columnMenuClose()
+                }}
+              >
+                <ListItemIcon>
+                  <Icon fontSize="small">
+                    {dataTypeName === typeName ? 'check' : 'blank'}
+                  </Icon>
+                </ListItemIcon>
+                <ListItemText primary={typeName} />
+              </MenuItem>
+            )
+          })}
+        </Menu>
+      </>
+    )
+  })
+
+  const DataTable = observer(({ model }) => {
+    const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
+    const classes = useStyles()
+
+    // column menu active state
+    const [currentColumnMenu, setColumnMenu] = useState(null)
+    const columnButtonClick = (colNumber, evt) => {
+      setColumnMenu({
+        colNumber,
+        anchorEl: evt.currentTarget,
+      })
+    }
+
+    // column header hover state
+    const [currentHoveredColumn, setHoveredColumn] = useState(null)
+    const columnHeaderMouseOver = (colNumber, evt) => {
+      setHoveredColumn(colNumber)
+    }
+    const columnHeaderMouseOut = (colNumber, evt) => {
+      setHoveredColumn(null)
+    }
+
+    return (
+      <>
+        <ColumnMenu
+          model={model}
+          currentColumnMenu={currentColumnMenu}
+          setColumnMenu={setColumnMenu}
+        />
         <table className={classes.dataTable}>
           <thead>
             <tr>
