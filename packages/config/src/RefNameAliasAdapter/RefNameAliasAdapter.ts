@@ -31,5 +31,5 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
     return this.promise
   }
 
-  freeResources() {}
+  async freeResources(): Promise<void> {}
 }
