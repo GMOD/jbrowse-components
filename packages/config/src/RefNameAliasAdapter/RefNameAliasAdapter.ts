@@ -31,5 +31,6 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
     return this.promise
   }
 
+  // eslint-disable-next-line no-empty-function
   async freeResources(): Promise<void> {}
 }
