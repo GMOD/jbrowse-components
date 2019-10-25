@@ -61,4 +61,29 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
       return new WindowWorkerHandle(ipcRenderer, window)
     }
   }
+
+  call(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pluginManager: any,
+    stateGroupName: string,
+    functionName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    args: any,
+    options = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any {
+    return (
+      super
+        .call(pluginManager, stateGroupName, functionName, args, options)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .then((r: any) => {
+          if (r && r.imageData) {
+            const img = new Image()
+            img.src = r.imageData.dataURL
+            r.imageData = img
+          }
+          return r
+        })
+    )
+  }
 }

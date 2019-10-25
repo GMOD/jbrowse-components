@@ -22,7 +22,7 @@ function flushLog() {
     for (const l of logBuffer) {
       const [head, ...rest] = l
       if (head === 'rpc-error') {
-        console.error(head, ...rest)
+        // console.error(head, ...rest)
       } else {
         // eslint-disable-next-line no-console
         console.log(head, ...rest)
@@ -52,10 +52,10 @@ function wrapForRpc(func) {
       })
 
     // uncomment below to log returns
-    retP.then(
-      result => logBuffer.push(['rpc-return', myId, func.name, result]),
-      // err => {},
-    )
+    // retP.then(
+    //   result => logBuffer.push(['rpc-return', myId, func.name, result]),
+    //   err => {},
+    // )
 
     return retP
   }

@@ -7085,10 +7085,10 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-generic-filehandle@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.0.tgz#f3bd727eb88dfb2aa5d527b9c492c7fc075b0645"
-  integrity sha512-QrrHlY40pGGPPr6BpdQq30mSQ6Gm8xbsc8KZaWzsY60mSRK+3CTDAOJ6+e4M6lccy+tzIXMPwOwD5dSa8EnYDg==
+generic-filehandle@^2.0.0, generic-filehandle@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.1.tgz#cb3e9cb8098df52c55b510baabc5f92743f05046"
+  integrity sha512-lgCI05NxjUiNI3GA1P7uJyK90h+xIg1dCLLNIqWgvFqtZu/2BJ/a5/9QIfGfiCHGAiesZOzNunKxzkCgpd3jsA==
   dependencies:
     "@babel/runtime" "^7.4.5"
     es6-promisify "^6.0.1"
@@ -10259,7 +10259,7 @@ node-fetch@2.1.2:
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
   integrity sha1-q4hOjn5X44qUR1POxwb3iNF2i7U=
 
-node-fetch@2.6.0, node-fetch@^2.3.0, node-fetch@^2.5.0:
+node-fetch@2.6.0, node-fetch@^2.3.0, node-fetch@^2.5.0, node-fetch@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==

@@ -3,6 +3,7 @@ const electron = require('electron')
 const { ipcMain } = require('electron-better-ipc-extra')
 const fs = require('fs')
 const { promisify } = require('util')
+const fetch = require('node-fetch')
 
 const fsOpen = promisify(fs.open)
 const fsRead = promisify(fs.read)
@@ -71,7 +72,19 @@ ipcMain.on('createWindowWorker', event => {
       ? 'http://localhost:3000/worker.html'
       : `file://${path.join(app.getAppPath(), 'public/../build/worker.html')}`,
   )
+  // workerWindow.webContents.openDevTools()
   event.returnValue = workerWindow.id
+})
+
+ipcMain.answerRenderer('fetch', async (...args) => {
+  const response = await fetch(...args)
+  const serializableResponse = {}
+  serializableResponse.headers = Array.from(response.headers)
+  serializableResponse.url = response.url
+  serializableResponse.status = response.status
+  serializableResponse.statusText = response.statusText
+  serializableResponse.buffer = await response.buffer()
+  return serializableResponse
 })
 
 ipcMain.answerRenderer('read', async (...args) => {

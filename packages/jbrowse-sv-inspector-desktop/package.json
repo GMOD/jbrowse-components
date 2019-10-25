@@ -36,6 +36,7 @@
     "mobx-react": "^6.0.3",
     "mobx-state-tree": "3.14.1",
     "mst-middlewares": "3.10.2",
+    "node-fetch": "^2.6.0",
     "prop-types": "^15.7.2",
     "raf": "^3.4.1",
     "react": "^16.8.0",

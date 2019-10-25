@@ -10,14 +10,17 @@ declare global {
 const { electronBetterIpc = {} } = window
 const { ipcRenderer } = electronBetterIpc
 
+type PathLike = import('fs').PathLike
+type Stats = import('fs').Stats
+
 export default class ElectronLocalFile implements GenericFilehandle {
-  private filename: import('fs').PathLike
+  private filename: PathLike
 
   private fd?: Promise<number>
 
   private ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc
 
-  constructor(source: import('fs').PathLike) {
+  constructor(source: PathLike) {
     if (!ipcRenderer)
       throw new Error(
         'Cannot use ElectronLocalFile without ipcRenderer from electron-better-ipc-extra',
@@ -69,9 +72,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   // todo memoize
-  async stat(): Promise<import('fs').Stats> {
+  async stat(): Promise<Stats> {
     return this.ipcRenderer.callMain('stat', await this.getFd()) as Promise<
-      import('fs').Stats
+      Stats
     >
   }
 }
