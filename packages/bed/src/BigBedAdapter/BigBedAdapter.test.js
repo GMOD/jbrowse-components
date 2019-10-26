@@ -1,7 +1,7 @@
 import { toArray } from 'rxjs/operators'
 import BigBedAdapter from './BigBedAdapter'
 
-test('adapter can fetch features from volvox.bw', async () => {
+test('adapter can fetch features from volvox.bb', async () => {
   const adapter = new BigBedAdapter({
     bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
   })
@@ -18,5 +18,5 @@ test('adapter can fetch features from volvox.bw', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
+  expect(featuresJsonArray).toMatchSnapshot()
 })

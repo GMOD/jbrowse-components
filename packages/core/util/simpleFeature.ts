@@ -99,6 +99,7 @@ export default class SimpleFeature implements Feature {
     if (subfeatures) {
       for (let i = 0; i < subfeatures.length; i += 1) {
         if (typeof subfeatures[i].get !== 'function') {
+          subfeatures[i].strand = subfeatures[i].strand || this.data.strand
           subfeatures[i] = new SimpleFeature({
             id: subfeatures[i].uniqueId || `${id}-${i}`,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

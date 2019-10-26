@@ -27,13 +27,22 @@ export default observer(({ config, initialState }) => {
 
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const l = document.location
-      const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-        JSON.stringify(debouncedUrlSnapshot),
-      )}`
-      window.history.replaceState({}, '', updatedUrl)
+      const { origin, pathname } = document.location
+      window.history.replaceState(
+        {},
+        '',
+        `${origin}${pathname}?session=${toUrlSafeB64(
+          JSON.stringify(debouncedUrlSnapshot),
+        )}`,
+      )
     }
   }, [debouncedUrlSnapshot])
+
+  useEffect(() => {
+    if (root && root.session && debouncedUrlSnapshot) {
+      root.jbrowse.updateSavedSession(debouncedUrlSnapshot)
+    }
+  }, [debouncedUrlSnapshot, root])
 
   useEffect(() => {
     async function loadConfig() {
@@ -106,16 +115,6 @@ export default observer(({ config, initialState }) => {
       window.ROOTMODEL = root
     }
   }, [root, root.session])
-
-  useEffect(() => {
-    let disposer = () => {}
-    if (root && root.session)
-      disposer = onSnapshot(root.session, snapshot => {
-        root.jbrowse.updateSavedSession(snapshot)
-      })
-
-    return disposer
-  }, [root])
 
   const { session, jbrowse } = root || {}
   const useLocalStorage = jbrowse
