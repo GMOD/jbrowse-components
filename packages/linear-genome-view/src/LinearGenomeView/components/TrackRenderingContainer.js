@@ -39,9 +39,9 @@ function TrackRenderingContainer(props) {
           setDelta(0)
         }
       }}
-        onScroll={event => {
-          setScrollTop(event.target.scrollTop, event.target.clientHeight)
-        }}
+      onScroll={event => {
+        setScrollTop(event.target.scrollTop, event.target.clientHeight)
+      }}
       style={{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
@@ -57,7 +57,7 @@ TrackRenderingContainer.propTypes = {
   trackId: PropTypes.string.isRequired,
   children: PropTypes.node,
   onHorizontalScroll: PropTypes.func.isRequired,
-    setScrollTop: PropTypes.func.isRequired,
+  setScrollTop: PropTypes.func.isRequired,
 }
 
 export default observer(TrackRenderingContainer)
