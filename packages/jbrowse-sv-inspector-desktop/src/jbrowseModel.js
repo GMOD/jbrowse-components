@@ -59,7 +59,6 @@ const JBrowseWeb = types
       name: `New Session`,
       menuBars: [{ type: 'MainMenuBar' }],
     }),
-    savedSessions: types.array(types.frozen(Session)),
     datasets: types.array(DatasetConfigSchema),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
@@ -91,13 +90,6 @@ const JBrowseWeb = types
         savedSession => savedSession.name === oldName,
       )
       self.savedSessions[savedSessionIndex] = snapshot
-    },
-    updateSavedSession(sessionSnapshot) {
-      const sessionIndex = self.savedSessions.findIndex(
-        savedSession => savedSession.name === sessionSnapshot.name,
-      )
-      if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
-      else self.savedSessions[sessionIndex] = sessionSnapshot
     },
     addDataset(datasetConf) {
       const length = self.datasets.push(datasetConf)

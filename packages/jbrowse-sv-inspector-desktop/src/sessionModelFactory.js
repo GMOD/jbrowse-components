@@ -62,9 +62,6 @@ export default pluginManager => {
       get datasets() {
         return getParent(self).jbrowse.datasets
       },
-      get savedSessions() {
-        return getParent(self).jbrowse.savedSessions
-      },
       get savedSessionNames() {
         return getParent(self).jbrowse.savedSessionNames
       },

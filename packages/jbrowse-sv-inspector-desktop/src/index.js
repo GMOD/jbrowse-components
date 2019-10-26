@@ -11,6 +11,6 @@ window.onbeforeunload = () => {
   })
 }
 
-const app = <JBrowse config={{ uri: 'test_data/config.json' }} />
+const app = <JBrowse />
 
 ReactDOM.render(app, document.getElementById('root'))

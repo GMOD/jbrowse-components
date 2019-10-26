@@ -10,7 +10,6 @@ const RootModel = types
   .actions(self => ({
     setSession(sessionSnapshot) {
       self.session = sessionSnapshot
-      self.jbrowse.updateSavedSession(sessionSnapshot)
     },
     setDefaultSession() {
       self.setSession({
@@ -40,15 +39,9 @@ const RootModel = types
       snapshot.name = newSnapshotName
       self.setSession(snapshot)
     },
-    activateSession(name) {
-      const newSessionSnapshot = self.jbrowse.savedSessions.find(
-        sessionSnap => sessionSnap.name === name,
-      )
-      if (!newSessionSnapshot)
-        throw new Error(
-          `Can't activate session ${name}, it is not in the savedSessions`,
-        )
-      self.setSession(newSessionSnapshot)
+    activateSession(sessionSnapshot) {
+      self.setSession(sessionSnapshot)
+      self.setHistory(UndoManager.create({}, { targetStore: self.session }))
     },
     setHistory(history) {
       self.history = history

@@ -15,6 +15,8 @@ class WindowWorkerHandle {
 
   private window: import('electron').BrowserWindow
 
+  private ready = false
+
   constructor(
     ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc,
     window: import('electron').BrowserWindow,
@@ -23,12 +25,33 @@ class WindowWorkerHandle {
     this.window = window
   }
 
+  async wait(ms: number): Promise<void> {
+    return new Promise((resolve): void => {
+      setTimeout(resolve, ms)
+    })
+  }
+
   destroy(): void {
     this.window.destroy()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  call(functionName: string, filteredArgs?: any, options = {}): any {
+  async call(
+    functionName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filteredArgs?: any,
+    options = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    // The window can have been created, but still not be ready, and any
+    // `callRenderer` call to that window just returns Promise<undefined>
+    // instead of an error, which makes failures hard to track down. For now
+    // we'll just wait until it's ready until we find a better option.
+    while (!this.ready) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.wait(1000)
+      // eslint-disable-next-line no-await-in-loop
+      this.ready = !!(await this.ipcRenderer.callRenderer(this.window, 'ready'))
+    }
     return this.ipcRenderer.callRenderer(
       this.window,
       'call',
