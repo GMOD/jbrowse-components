@@ -15,10 +15,9 @@ import Paper from '@material-ui/core/Paper'
 import Select from '@material-ui/core/Select'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-
-// misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
+
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState, CSSProperties } from 'react'
@@ -97,8 +96,10 @@ const useStyles = makeStyles(theme => ({
   },
   ...buttonStyles(theme),
 }))
+
 const TrackContainer = observer(
-  ({ model, track }: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
+  (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
+    const { model, track } = props
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
     const { RenderingComponent } = track
@@ -106,20 +107,16 @@ const TrackContainer = observer(
       <>
         <div
           className={clsx(classes.controls, classes.trackControls)}
-          key={`controls:${track.id}`}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
         >
           <track.ControlsComponent
             track={track}
-            key={track.id}
             view={model}
             onConfigureClick={track.activateConfigurationUI}
           />
         </div>
         <TrackRenderingContainer
-          key={`track-rendering:${track.id}`}
           trackId={track.id}
-          height={track.height}
           onHorizontalScroll={model.horizontalScroll}
         >
           <RenderingComponent
@@ -131,7 +128,6 @@ const TrackContainer = observer(
           />
         </TrackRenderingContainer>
         <ResizeHandle
-          key={`handle:${track.id}`}
           onDrag={track.resizeHeight}
           style={{
             gridRow: `resize-${track.id}`,
@@ -191,7 +187,6 @@ const LongMenu = observer(
                     />
                   }
                   label={option.title}
-                  key={option.key}
                 />
               </MenuItem>
             ) : (
@@ -364,8 +359,9 @@ const Controls = observer(({ model }) => {
   )
 })
 
-function LinearGenomeView({ model }: { model: LGV }) {
-  const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
+function LinearGenomeView(props: { model: LGV }) {
+  const { model } = props
+  const { tracks, controlsWidth } = model
   const classes = useStyles()
 
   /*
@@ -388,11 +384,7 @@ function LinearGenomeView({ model }: { model: LGV }) {
 
   return (
     <div className={classes.root}>
-      <div
-        className={classes.linearGenomeView}
-        key={`view-${id}`}
-        style={style}
-      >
+      <div className={classes.linearGenomeView} style={style}>
         {!model.hideHeader ? <Header model={model} /> : null}
         <div
           className={clsx(classes.controls, classes.viewControls)}
@@ -408,9 +400,6 @@ function LinearGenomeView({ model }: { model: LGV }) {
             gridColumn: 'blocks',
             gridRow: 'scale-bar',
           }}
-          offsetPx={offsetPx}
-          blocks={staticBlocks}
-          bpPerPx={bpPerPx}
           model={model}
         >
           <ScaleBar model={model} height={32} />

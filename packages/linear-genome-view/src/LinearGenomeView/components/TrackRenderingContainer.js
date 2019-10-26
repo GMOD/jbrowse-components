@@ -1,64 +1,59 @@
 /* eslint-disable react/require-default-props */
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 
-const styles = {
+const useStyles = makeStyles({
   trackRenderingContainer: {
     overflowY: 'auto',
     overflowX: 'hidden',
     background: '#333',
     whiteSpace: 'nowrap',
   },
-}
+})
 
 /**
  * mostly does UI gestures: drag scrolling, etc
  */
-class TrackRenderingContainer extends Component {
-  constructor(props) {
-    super(props)
-    this.mainNode = React.createRef()
-    this.wheel = this.wheel.bind(this)
-  }
+function TrackRenderingContainer(props) {
+  const { onHorizontalScroll, trackId, children } = props
+  const classes = useStyles()
+  const [scheduled, setScheduled] = useState(false)
+  const [delta, setDelta] = useState(0)
 
-  componentDidMount() {
-    if (this.mainNode.current)
-      this.mainNode.current.addEventListener('wheel', this.wheel, {
-        passive: false,
-      })
-  }
-
-  wheel(event) {
-    const { onHorizontalScroll } = this.props
-    onHorizontalScroll(event.deltaX)
-  }
-
-  render() {
-    const { trackId, children, classes } = this.props
-
-    return (
-      <div
-        className={classes.trackRenderingContainer}
-        ref={this.mainNode}
-        style={{
-          gridRow: `track-${trackId}`,
-          gridColumn: 'blocks',
-        }}
-        role="presentation"
-      >
-        {children}
-      </div>
-    )
-  }
-
-  static propTypes = {
-    classes: PropTypes.objectOf(PropTypes.string).isRequired,
-    trackId: PropTypes.string.isRequired,
-    children: PropTypes.node,
-    onHorizontalScroll: PropTypes.func.isRequired,
-  }
+  return (
+    <div
+      className={classes.trackRenderingContainer}
+      onWheel={({ deltaX }) => {
+        if (scheduled) {
+          setDelta(delta + deltaX)
+        } else {
+          // use rAF to make it so multiple event handlers aren't fired per-frame
+          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+          window.requestAnimationFrame(() => {
+            onHorizontalScroll(delta + deltaX)
+            setScheduled(false)
+          })
+          setScheduled(true)
+          setDelta(0)
+        }
+      }}
+      style={{
+        gridRow: `track-${trackId}`,
+        gridColumn: 'blocks',
+      }}
+      role="presentation"
+    >
+      {children}
+    </div>
+  )
 }
 
-export default withStyles(styles)(observer(TrackRenderingContainer))
+TrackRenderingContainer.propTypes = {
+  trackId: PropTypes.string.isRequired,
+  children: PropTypes.node,
+  onHorizontalScroll: PropTypes.func.isRequired,
+}
+
+export default observer(TrackRenderingContainer)
