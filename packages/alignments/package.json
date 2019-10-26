@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bam": "^1.0.27",
+    "@gmod/cram": "^1.5.3",
     "generic-filehandle": "^2.0.0",
     "memoize-one": "^5.1.1",
     "mobx-run-in-reactive-context": "^1.0.1",
