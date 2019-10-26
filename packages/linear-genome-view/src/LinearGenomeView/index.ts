@@ -387,7 +387,7 @@ export function stateModelFactory(pluginManager: any) {
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
-      let stringifiedCurrentlyCalculatedStaticBlocks: string
+      let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuOptions(): LGVMenuOption[] {
           return [

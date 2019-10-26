@@ -4,6 +4,14 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 
+function mathPower(num: number): string {
+  if (num < 999) {
+    return String(num)
+  }
+  // eslint-disable-next-line no-bitwise
+  return `${mathPower(~~(num / 1000))},${`00${~~(num % 1000)}`.substr(-3, 3)}`
+}
+
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major
  * and minor gridlines, return an object like { majorPitch: bp,
@@ -44,7 +52,7 @@ function chooseGridPitch(
   return { majorPitch, minorPitch }
 }
 
-export function* makeTicks(
+export function makeTicks(
   region: { start: number; end: number },
   bpPerPx: number,
   emitMajor = true,
@@ -54,7 +62,7 @@ export function* makeTicks(
 
   let minBase = region.start
   let maxBase = region.end
-  if (minBase === null || maxBase === null) return
+  if (minBase === null || maxBase === null) return []
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -67,19 +75,21 @@ export function* makeTicks(
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   let index = 0
+  const ticks = []
   for (
     let base = Math.ceil(minBase / iterPitch) * iterPitch;
     base < maxBase;
     base += iterPitch
   ) {
     if (emitMinor && base % gridPitch.majorPitch) {
-      yield { type: 'minor', base: base - 1, index }
+      ticks.push({ type: 'minor', base: base - 1, index })
       index += 1
     } else if (emitMajor) {
-      yield { type: 'major', base: base - 1, index }
+      ticks.push({ type: 'major', base: base - 1, index })
       index += 1
     }
   }
+  return ticks
 }
 
 const useStyles = makeStyles((/* theme */) => ({
@@ -111,46 +121,50 @@ function Ruler({
   minor: boolean
 }) {
   const classes = useStyles()
-  const ticks = []
-  const labels = []
-  for (const tick of makeTicks(region, bpPerPx, major, minor)) {
-    const x =
-      (flipped ? region.end - tick.base : tick.base - region.start) / bpPerPx
-    ticks.push(
-      <line
-        key={tick.base}
-        x1={x}
-        x2={x}
-        y1={0}
-        y2={tick.type === 'major' ? 6 : 4}
-        strokeWidth={1}
-        stroke={tick.type === 'major' ? '#555' : '#999'}
-        className={
-          tick.type === 'major' ? classes.majorTick : classes.minorTick
-        }
-        data-bp={tick.base}
-      />,
-    )
-
-    if (tick.type === 'major')
-      labels.push(
-        <text
-          x={x - 3}
-          y={7}
-          key={`label-${tick.base}`}
-          dominantBaseline="hanging"
-          style={{ fontSize: '11px' }}
-          className={classes.majorTickLabel}
-        >
-          {(Number(tick.base) + 1).toLocaleString()}
-        </text>,
-      )
-  }
-
-  // svg painting is based on the document order,
-  // so the labels need to come after the ticks in the
-  // doc, so that they draw over them.
-  return <>{[...ticks, ...labels]}</>
+  const ticks = makeTicks(region, bpPerPx, major, minor)
+  return (
+    <>
+      {ticks.map(tick => {
+        const x =
+          (flipped ? region.end - tick.base : tick.base - region.start) /
+          bpPerPx
+        return (
+          <line
+            key={tick.base}
+            x1={x}
+            x2={x}
+            y1={0}
+            y2={tick.type === 'major' ? 6 : 4}
+            strokeWidth={1}
+            stroke={tick.type === 'major' ? '#555' : '#999'}
+            className={
+              tick.type === 'major' ? classes.majorTick : classes.minorTick
+            }
+            data-bp={tick.base}
+          />
+        )
+      })}
+      {ticks
+        .filter(tick => tick.type === 'major')
+        .map(tick => {
+          const x =
+            (flipped ? region.end - tick.base : tick.base - region.start) /
+            bpPerPx
+          return (
+            <text
+              x={x - 3}
+              y={7}
+              key={`label-${tick.base}`}
+              dominantBaseline="hanging"
+              style={{ fontSize: '11px' }}
+              className={classes.majorTickLabel}
+            >
+              {mathPower(tick.base + 1)}
+            </text>
+          )
+        })}
+    </>
+  )
 }
 
 Ruler.propTypes = {
