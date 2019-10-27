@@ -18,6 +18,8 @@ import rootModel from './rootModel'
 fetchMock.config.sendAsJson = false
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+window.requestAnimationFrame = cb => cb()
+window.cancelAnimationFrame = () => {}
 window.TextEncoder = TextEncoder
 window.TextDecoder = TextDecoder
 
