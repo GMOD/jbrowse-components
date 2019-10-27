@@ -1,8 +1,8 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/require-default-props */
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 const useStyles = makeStyles({
   track: {
@@ -22,70 +22,24 @@ const useStyles = makeStyles({
 const Track: React.FC<{
   onHorizontalScroll: Function
   trackId: string
+  children?: ReactNode
 }> = ({ children, onHorizontalScroll, trackId }) => {
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const [prevX, setPrevX] = useState()
   const classes = useStyles()
-
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      const distance = event.clientX - prevX
-      if (distance) {
-        const actualDistance = onHorizontalScroll(-distance)
-        setPrevX(prevX - actualDistance)
-      }
-    }
-
-    function globalMouseUp() {
-      setPrevX(undefined)
-      setMouseDragging(false)
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-      }
-    }
-    return cleanup
-  }, [mouseDragging, onHorizontalScroll, prevX])
-
-  function mouseDown(event: React.MouseEvent) {
-    if (event.button === 0) {
-      event.preventDefault()
-      setPrevX(event.clientX)
-      setMouseDragging(true)
-    }
-  }
-
-  // this local mouseup is used in addition to the global because sometimes
-  // the global add/remove are not called in time, resulting in issue #533
-  function mouseUp(event: React.MouseEvent) {
-    event.preventDefault()
-    setMouseDragging(false)
-  }
-
-  function mouseLeave(event: React.MouseEvent) {
-    event.preventDefault()
-  }
-
   return (
     <div
       data-testid={`track-${trackId}`}
       className={classes.track}
-      onMouseDown={mouseDown}
-      onMouseUp={mouseUp}
-      onMouseLeave={mouseLeave}
       role="presentation"
     >
       {children}
     </div>
   )
+}
+
+Track.propTypes = {
+  trackId: PropTypes.string.isRequired,
+  children: PropTypes.node,
+  onHorizontalScroll: PropTypes.func.isRequired,
 }
 
 export default observer(Track)
