@@ -2,18 +2,32 @@
 
 exports[`breakpoint split view open a split view 1`] = `
 <svg
-  data-testid="breakpoint-split-squiggles-loaded"
+  data-testid="pacbio_hg002-breakpoints-loaded"
   style="width: 100%; z-index: 10000; pointer-events: none;"
 >
   <path
-    d="M 407.99312656000257 74.5 C 607.9931265600026 74.5 203.41868021525443 234.5 403.4186802152544 234.5"
+    d="M 407.99312656000257 74.5 C 607.9931265600026 74.5 203.41868021525443 337.5 403.4186802152544 337.5"
     fill="none"
     stroke="black"
   />
   <path
-    d="M 658.4186802152544 234.5 C 858.4186802152544 234.5 206.99312656000257 47.5 406.99312656000257 47.5"
+    d="M 658.4186802152544 337.5 C 858.4186802152544 337.5 206.99312656000257 47.5 406.99312656000257 47.5"
     fill="none"
     stroke="black"
+  />
+</svg>
+`;
+
+exports[`breakpoint split view open a split view 2`] = `
+<svg
+  data-testid="pacbio_vcf-vcfbreakends-loaded"
+  style="width: 100%; z-index: 10000; pointer-events: none;"
+>
+  <path
+    d="M 387.99312656000257 172 L 407.99312656000257 172 L 403.4186802152544 426 L 423.4186802152544 426"
+    fill="none"
+    stroke="green"
+    stroke-width="5"
   />
 </svg>
 `;

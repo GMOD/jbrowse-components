@@ -393,9 +393,14 @@ describe('breakpoint split view', () => {
     // wait for the UI to be loaded
     await waitForElement(() => getByText('JBrowse'))
 
-    const overlay = await waitForElement(() =>
-      getByTestId('breakpoint-split-squiggles-loaded'),
-    )
-    expect(overlay).toMatchSnapshot()
+    expect(
+      await waitForElement(() =>
+        getByTestId('pacbio_hg002-breakpoints-loaded'),
+      ),
+    ).toMatchSnapshot()
+
+    expect(
+      await waitForElement(() => getByTestId('pacbio_vcf-vcfbreakends-loaded')),
+    ).toMatchSnapshot()
   })
 })

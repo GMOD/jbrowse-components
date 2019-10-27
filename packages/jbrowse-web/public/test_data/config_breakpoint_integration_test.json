@@ -48,10 +48,15 @@
               "reversed": false,
               "tracks": [
                 {
-                  "id": "yQ2EdXaSBc",
                   "type": "AlignmentsTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002",
+                  "selectedRendering": ""
+                },
+                {
+                  "type": "VariantTrack",
+                  "height": 100,
+                  "configuration": "pacbio_vcf",
                   "selectedRendering": ""
                 }
               ],
@@ -85,10 +90,15 @@
               "reversed": false,
               "tracks": [
                 {
-                  "id": "SKJqZhlLV5",
                   "type": "AlignmentsTrack",
                   "height": 100,
                   "configuration": "pacbio_hg002",
+                  "selectedRendering": ""
+                },
+                {
+                  "type": "VariantTrack",
+                  "height": 100,
+                  "configuration": "pacbio_vcf",
                   "selectedRendering": ""
                 }
               ],
@@ -213,6 +223,26 @@
           },
           "renderer": {
             "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "configId": "pacbio_vcf",
+          "type": "VariantTrack",
+          "name": "HG002.hs37d5.bnds",
+          "category": [
+            "PacBio",
+            "VCF"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
+              }
+            }
           }
         },
         {

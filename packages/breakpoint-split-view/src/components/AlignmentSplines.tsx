@@ -50,8 +50,8 @@ export default (pluginManager: any) => {
           <svg
             data-testid={
               alignmentChunks.length
-                ? 'breakpoint-split-squiggles-loaded'
-                : 'breakpoint-split-squiggles'
+                ? `${trackConfigId}-breakpoints-loaded`
+                : `${trackConfigId}-breakpoints`
             }
             style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}
           >

@@ -61,7 +61,9 @@ export default (pluginManager: any) => {
           <div style={{ width: controlsWidth, flexShrink: 0 }} />
           <svg
             data-testid={
-              alignmentChunks.length ? 'vcfbreakends-loaded' : 'vcfbreakends'
+              alignmentChunks.length
+                ? `${trackConfigId}-vcfbreakends-loaded`
+                : `${trackConfigId}-vcfbreakends`
             }
             style={{ width: '100%', zIndex: 10000, pointerEvents: 'none' }}
           >
