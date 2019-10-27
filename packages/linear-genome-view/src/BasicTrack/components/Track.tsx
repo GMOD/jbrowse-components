@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -18,26 +19,28 @@ const useStyles = makeStyles({
  * mostly does UI gestures: drag scrolling, etc
  */
 
-function Track({ children, onHorizontalScroll, trackId }) {
+const Track: React.FC<{
+  onHorizontalScroll: Function
+  trackId: string
+}> = ({ children, onHorizontalScroll, trackId }) => {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevX = useRef()
+  const [prevX, setPrevX] = useState()
   const classes = useStyles()
-  const mainNode = useRef()
 
   useEffect(() => {
     let cleanup = () => {}
 
-    function globalMouseMove(event) {
+    function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      const distance = event.clientX - prevX.current
+      const distance = event.clientX - prevX
       if (distance) {
         const actualDistance = onHorizontalScroll(-distance)
-        prevX.current -= actualDistance
+        setPrevX(prevX - actualDistance)
       }
     }
 
     function globalMouseUp() {
-      prevX.current = undefined
+      setPrevX(undefined)
       setMouseDragging(false)
     }
 
@@ -50,24 +53,24 @@ function Track({ children, onHorizontalScroll, trackId }) {
       }
     }
     return cleanup
-  }, [mouseDragging, onHorizontalScroll])
+  }, [mouseDragging, onHorizontalScroll, prevX])
 
-  function mouseDown(event) {
+  function mouseDown(event: React.MouseEvent) {
     if (event.button === 0) {
       event.preventDefault()
-      prevX.current = event.clientX
+      setPrevX(event.clientX)
       setMouseDragging(true)
     }
   }
 
   // this local mouseup is used in addition to the global because sometimes
   // the global add/remove are not called in time, resulting in issue #533
-  function mouseUp(event) {
+  function mouseUp(event: React.MouseEvent) {
     event.preventDefault()
     setMouseDragging(false)
   }
 
-  function mouseLeave(event) {
+  function mouseLeave(event: React.MouseEvent) {
     event.preventDefault()
   }
 
@@ -78,20 +81,11 @@ function Track({ children, onHorizontalScroll, trackId }) {
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
-      ref={mainNode}
       role="presentation"
     >
       {children}
     </div>
   )
 }
-
-Track.propTypes = {
-  trackId: PropTypes.string.isRequired,
-  children: PropTypes.node,
-  onHorizontalScroll: PropTypes.func.isRequired,
-}
-
-Track.defaultProps = { children: null }
 
 export default observer(Track)
