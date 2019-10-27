@@ -53,9 +53,11 @@ function Track({ children, onHorizontalScroll, trackId }) {
   }, [mouseDragging, onHorizontalScroll])
 
   function mouseDown(event) {
-    event.preventDefault()
-    prevX.current = event.clientX
-    setMouseDragging(true)
+    if (event.button === 0) {
+      event.preventDefault()
+      prevX.current = event.clientX
+      setMouseDragging(true)
+    }
   }
 
   // this local mouseup is used in addition to the global because sometimes
