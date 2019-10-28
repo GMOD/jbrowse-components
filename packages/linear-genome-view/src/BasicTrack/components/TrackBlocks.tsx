@@ -21,8 +21,9 @@ const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    width: '100%',
     background: '#404040',
+    position: 'absolute',
+    display: 'flex',
     minHeight: '100%',
   },
   heightOverflowed: {
@@ -38,7 +39,61 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
   },
 })
-
+const RenderedBlocks = observer(
+  (props: {
+    model: Instance<BlockBasedTrackStateModel>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    blockState: Record<string, any>
+  }) => {
+    const { model, blockState } = props
+    const classes = useStyles()
+    const { blockDefinitions } = model
+    return (
+      <>
+        {blockDefinitions.map((block: BaseBlock) => {
+          if (block instanceof ContentBlock) {
+            const state = blockState.get(block.key)
+            return (
+              <Block block={block} key={`${model.id}-${block.key}`}>
+                {state && state.ReactComponent ? (
+                  <state.ReactComponent model={state} />
+                ) : null}
+                {state && state.maxHeightReached ? (
+                  <div
+                    className={classes.heightOverflowed}
+                    style={{
+                      top: state.data.layout.totalHeight - 16,
+                      height: 16,
+                    }}
+                  >
+                    Max height reached
+                  </div>
+                ) : null}
+              </Block>
+            )
+          }
+          if (block instanceof ElidedBlock) {
+            return (
+              <ElidedBlockMarker
+                key={`${model.id}-${block.key}`}
+                width={block.widthPx}
+              />
+            )
+          }
+          if (block instanceof InterRegionPaddingBlock) {
+            return (
+              <InterRegionPaddingBlockMarker
+                key={block.key}
+                width={block.widthPx}
+              />
+            )
+          }
+          throw new Error(`invalid block type ${typeof block}`)
+        })}
+      </>
+    )
+  },
+)
 function TrackBlocks({
   model,
   viewModel,
@@ -52,49 +107,14 @@ function TrackBlocks({
   const classes = useStyles()
   const { blockDefinitions } = model
   return (
-    <div data-testid="Block" className={classes.trackBlocks}>
-      {blockDefinitions.map((block: BaseBlock) => {
-        if (block instanceof ContentBlock) {
-          const state = blockState.get(block.key)
-          return (
-            <Block key={block.offsetPx} block={block} model={viewModel}>
-              {state && state.ReactComponent ? (
-                <state.ReactComponent model={state} />
-              ) : null}
-              {state && state.maxHeightReached ? (
-                <div
-                  className={classes.heightOverflowed}
-                  style={{
-                    top: state.data.layout.totalHeight - 16,
-                    height: 16,
-                  }}
-                >
-                  Max height reached
-                </div>
-              ) : null}
-            </Block>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return (
-            <ElidedBlockMarker
-              key={block.key}
-              width={block.widthPx}
-              offset={block.offsetPx - viewModel.offsetPx}
-            />
-          )
-        }
-        if (block instanceof InterRegionPaddingBlock) {
-          return (
-            <InterRegionPaddingBlockMarker
-              key={block.key}
-              block={block}
-              model={viewModel}
-            />
-          )
-        }
-        throw new Error(`invalid block type ${typeof block}`)
-      })}
+    <div
+      data-testid="Block"
+      className={classes.trackBlocks}
+      style={{
+        left: blockDefinitions.offsetPx - viewModel.offsetPx,
+      }}
+    >
+      <RenderedBlocks model={model} blockState={blockState} />
     </div>
   )
 }
