@@ -13,7 +13,6 @@ const styles = {
   rubberBandContainer: {
     position: 'relative',
     cursor: 'crosshair',
-    zIndex: 999,
   },
 }
 

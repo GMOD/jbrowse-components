@@ -54,6 +54,8 @@ const useStyles = makeStyles(theme => ({
   },
   viewControls: {
     height: '100%',
+    zIndex: 10,
+    background: '#eee',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
   },
@@ -390,7 +392,9 @@ function LinearGenomeView(props: { model: LGV }) {
           className={clsx(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          {model.hideControls || !model.hideHeader ? null : (
+          {model.hideControls || !model.hideHeader ? (
+            <div style={{ height: 32 }} />
+          ) : (
             <Controls model={model} />
           )}
         </div>

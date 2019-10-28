@@ -21,8 +21,9 @@ const useStyles = makeStyles({
   trackBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
-    width: '100%',
     background: '#404040',
+    position: 'absolute',
+    display: 'flex',
     minHeight: '100%',
   },
   heightOverflowed: {
@@ -39,6 +40,28 @@ const useStyles = makeStyles({
   },
 })
 
+const RenderedBlock = observer(({ block, viewModel, state }) => {
+  const classes = useStyles()
+  return (
+    <Block block={block} model={viewModel}>
+      {state && state.ReactComponent ? (
+        <state.ReactComponent model={state} />
+      ) : null}
+      {state && state.maxHeightReached ? (
+        <div
+          className={classes.heightOverflowed}
+          style={{
+            top: state.data.layout.totalHeight - 16,
+            height: 16,
+          }}
+        >
+          Max height reached
+        </div>
+      ) : null}
+    </Block>
+  )
+})
+
 function TrackBlocks({
   model,
   viewModel,
@@ -52,33 +75,27 @@ function TrackBlocks({
   const classes = useStyles()
   const { blockDefinitions } = model
   return (
-    <div data-testid="Block" className={classes.trackBlocks}>
+    <div data-testid="Block" className={classes.trackBlocks}
+      style={{
+        left: blockDefinitions.offsetPx - viewModel.offsetPx,
+      }}
+    >
       {blockDefinitions.map((block: BaseBlock) => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
-            <Block key={block.offsetPx} block={block} model={viewModel}>
-              {state && state.ReactComponent ? (
-                <state.ReactComponent model={state} />
-              ) : null}
-              {state && state.maxHeightReached ? (
-                <div
-                  className={classes.heightOverflowed}
-                  style={{
-                    top: state.data.layout.totalHeight - 16,
-                    height: 16,
-                  }}
-                >
-                  Max height reached
-                </div>
-              ) : null}
-            </Block>
+            <RenderedBlock
+              key={`${model.id}-${block.key}`}
+              block={block}
+              viewModel={viewModel}
+              state={state}
+            />
           )
         }
         if (block instanceof ElidedBlock) {
           return (
             <ElidedBlockMarker
-              key={block.key}
+              key={`${model.id}-${block.key}`}
               width={block.widthPx}
               offset={block.offsetPx - viewModel.offsetPx}
             />
