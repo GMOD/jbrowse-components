@@ -17,6 +17,10 @@ export default pluginManager => {
           dataType: types.optional(DataTypes.Any, () => ({
             type: 'Text',
           })),
+          // set to true if column is derived from other columns
+          // if the column is derived, each cell will have a
+          // `derivationFunction` that is called to get its value
+          isDerived: false,
         }),
       ),
       columnDisplayOrder: types.array(types.number),
@@ -47,7 +51,12 @@ export default pluginManager => {
       // list of data type names to be made available in the column
       // dropdown menu
       get dataTypeChoices() {
-        return Object.keys(DataTypes).filter(k => k !== 'Any')
+        const typeNames = Object.keys(DataTypes).filter(k => k !== 'Any')
+        return typeNames.map(typeName => {
+          const dataType = DataTypes[typeName].create({ type: typeName })
+          const { displayName } = dataType
+          return { typeName, displayName }
+        })
       },
 
       rowSortingComparisonFunction(rowA, rowB) {

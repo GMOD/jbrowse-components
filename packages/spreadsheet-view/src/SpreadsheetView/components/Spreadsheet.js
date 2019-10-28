@@ -213,6 +213,9 @@ export default pluginManager => {
 
     const dataTypeName =
       (currentColumnMenu && model.columns[columnNumber].dataType.type) || ''
+    const dataTypeDisplayName =
+      (currentColumnMenu && model.columns[columnNumber].dataType.displayName) ||
+      ''
 
     return (
       <>
@@ -255,7 +258,7 @@ export default pluginManager => {
             <ListItemIcon>
               <Icon fontSize="small">perm_data_setting</Icon>
             </ListItemIcon>
-            <ListItemText primary={`Type: ${dataTypeName}`} />
+            <ListItemText primary={`Type: ${dataTypeDisplayName}`} />
             <ListItemIcon>
               <Icon fontSize="small">arrow_right</Icon>
             </ListItemIcon>
@@ -278,7 +281,7 @@ export default pluginManager => {
             horizontal: 'left',
           }}
         >
-          {dataTypeChoices.map(typeName => {
+          {dataTypeChoices.map(({ typeName, displayName }) => {
             return (
               <MenuItem
                 key={typeName}
@@ -292,7 +295,7 @@ export default pluginManager => {
                     {dataTypeName === typeName ? 'check' : 'blank'}
                   </Icon>
                 </ListItemIcon>
-                <ListItemText primary={typeName} />
+                <ListItemText primary={displayName || typeName} />
               </MenuItem>
             )
           })}

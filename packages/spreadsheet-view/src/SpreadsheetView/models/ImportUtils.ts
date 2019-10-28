@@ -31,7 +31,8 @@ interface ParseOptions {
 
 export interface Column {
   name: string
-  dataType: { type: string }
+  dataType: { type: string },
+  isDerived?: boolean
 }
 
 async function dataToSpreadsheetSnapshot(

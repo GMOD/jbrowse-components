@@ -94,6 +94,7 @@ export default types
   })
   .actions(self => ({
     afterCreate() {
+      self.menus = []
       if (!self.menus.find(menu => menu.name === 'Help'))
         self.pushMenu({
           name: 'Help',

@@ -7,10 +7,14 @@ export default pluginManager => {
       columnNumber: types.number,
       text: types.string,
       extendedData: types.maybe(types.frozen()),
+      // if this cell is derived from other cells, execute this function to get the value
+      derivationFunction: types.maybe(types.frozen()),
     })
     .views(self => ({
-      // TODO: will probably want to make a view here called 'value' that parses
-      // the cell's text in context of the schema
+      get value() {
+        if (self.derivationFunction) return self.derivationFunction(self)
+        return self.text
+      },
     }))
 
   const RowModel = types
