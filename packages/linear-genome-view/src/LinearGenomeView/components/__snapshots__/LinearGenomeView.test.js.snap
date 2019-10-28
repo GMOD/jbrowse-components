@@ -227,11 +227,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    >
-      <div
-        style="height: 32px;"
-      />
-    </div>
+    />
     <div
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"
@@ -555,11 +551,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    >
-      <div
-        style="height: 32px;"
-      />
-    </div>
+    />
     <div
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"
@@ -1100,11 +1092,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     <div
       class="makeStyles-controls makeStyles-viewControls"
       style="grid-row: scale-bar;"
-    >
-      <div
-        style="height: 32px;"
-      />
-    </div>
+    />
     <div
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"

@@ -392,21 +392,12 @@ function LinearGenomeView(props: { model: LGV }) {
           className={clsx(classes.controls, classes.viewControls)}
           style={{ gridRow: 'scale-bar' }}
         >
-          {model.hideControls || !model.hideHeader ? (
-            <div style={{ height: 32 }} />
-          ) : (
+          {model.hideControls || !model.hideHeader ? null : (
             <Controls model={model} />
           )}
         </div>
 
-        <Rubberband
-          style={{
-            gridColumn: 'blocks',
-            gridRow: 'scale-bar',
-          }}
-          height={32}
-          model={model}
-        >
+        <Rubberband height={32} model={model}>
           <ScaleBar model={model} height={32} />
         </Rubberband>
 

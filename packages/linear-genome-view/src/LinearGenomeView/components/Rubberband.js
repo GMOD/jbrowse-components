@@ -14,6 +14,8 @@ const useStyles = makeStyles({
   rubberBandContainer: {
     background: '#555',
     cursor: 'crosshair',
+    width: '100%',
+    height: '100%',
   },
 })
 
