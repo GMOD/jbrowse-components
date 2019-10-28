@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import React, { Fragment } from 'react'
+import React from 'react'
 import Block from '../../BasicTrack/components/Block'
 import Ruler from './Ruler'
 import { LinearGenomeViewStateModel } from '..'
@@ -45,32 +45,18 @@ const useStyles = makeStyles((/* theme */) => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
-function ScaleBar({ model, height }: { model: LGV; height: number }) {
-  const classes = useStyles()
-
-  // find the block that needs pinning to the left side for context
-  let lastLeftBlock = 0
-  model.staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
-  })
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
-  return (
-    <div className={classes.scaleBarContainer}>
-      <div
-        className={classes.scaleBar}
-        style={{
-          left: offsetLeft,
-          width: model.staticBlocks.totalWidthPx,
-        }}
-      >
+const RenderedScaleBar = observer(
+  ({ model, height }: { model: LGV; height: number }) => {
+    return (
+      <>
         {model.staticBlocks.map((block, index) => {
           if (block instanceof ContentBlock) {
             return (
               <Block key={block.key} block={block}>
                 <svg height={height} width={block.widthPx}>
                   <Ruler
-                    region={block}
+                    start={block.start}
+                    end={block.end}
                     bpPerPx={model.bpPerPx}
                     flipped={model.horizontallyFlipped}
                   />
@@ -91,6 +77,29 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
           }
           return null
         })}
+      </>
+    )
+  },
+)
+function ScaleBar({ model, height }: { model: LGV; height: number }) {
+  const classes = useStyles()
+
+  // find the block that needs pinning to the left side for context
+  let lastLeftBlock = 0
+  model.staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
+  })
+  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  return (
+    <div className={classes.scaleBarContainer}>
+      <div
+        className={classes.scaleBar}
+        style={{
+          left: offsetLeft,
+          width: model.staticBlocks.totalWidthPx,
+        }}
+      >
+        <RenderedScaleBar model={model} height={height} />
       </div>
       {model.staticBlocks.map((block, index) => {
         if (block instanceof ContentBlock) {

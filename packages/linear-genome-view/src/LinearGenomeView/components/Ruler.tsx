@@ -53,15 +53,16 @@ function chooseGridPitch(
 }
 
 export function makeTicks(
-  region: { start: number; end: number },
+  start: number,
+  end: number,
   bpPerPx: number,
   emitMajor = true,
   emitMinor = true,
 ) {
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
 
-  let minBase = region.start
-  let maxBase = region.end
+  let minBase = start
+  let maxBase = end
   if (minBase === null || maxBase === null) return []
 
   if (bpPerPx < 0) {
@@ -108,26 +109,26 @@ const useStyles = makeStyles((/* theme */) => ({
 }))
 
 function Ruler({
-  region,
+  start,
+  end,
   bpPerPx,
   flipped,
   major,
   minor,
 }: {
-  region: { start: number; end: number }
+  start: number
+  end: number
   bpPerPx: number
   flipped: boolean
   major: boolean
   minor: boolean
 }) {
   const classes = useStyles()
-  const ticks = makeTicks(region, bpPerPx, major, minor)
+  const ticks = makeTicks(start, end, bpPerPx, major, minor)
   return (
     <>
       {ticks.map(tick => {
-        const x =
-          (flipped ? region.end - tick.base : tick.base - region.start) /
-          bpPerPx
+        const x = (flipped ? end - tick.base : tick.base - start) / bpPerPx
         return (
           <line
             key={tick.base}
@@ -147,9 +148,7 @@ function Ruler({
       {ticks
         .filter(tick => tick.type === 'major')
         .map(tick => {
-          const x =
-            (flipped ? region.end - tick.base : tick.base - region.start) /
-            bpPerPx
+          const x = (flipped ? end - tick.base : tick.base - start) / bpPerPx
           return (
             <text
               x={x - 3}
@@ -168,7 +167,8 @@ function Ruler({
 }
 
 Ruler.propTypes = {
-  region: PropTypes.Region.isRequired,
+  start: ReactPropTypes.number.isRequired,
+  end: ReactPropTypes.number.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   flipped: ReactPropTypes.bool,
   major: ReactPropTypes.bool,

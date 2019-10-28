@@ -4,7 +4,6 @@ import React from 'react'
 
 const useStyles = makeStyles({
   elidedBlock: {
-    position: 'absolute',
     minHeight: '100%',
     boxSizing: 'border-box',
     backgroundColor: '#999',
@@ -12,7 +11,6 @@ const useStyles = makeStyles({
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
   },
   interRegionPaddingBlock: {
-    position: 'absolute',
     minHeight: '100%',
     backgroundColor: '#333',
   },

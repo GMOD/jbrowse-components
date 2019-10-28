@@ -39,14 +39,12 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
   },
 })
-function RenderedBlocks({
-  model,
-  blockState,
-}: {
+function RenderedBlocks(props: {
   model: Instance<BlockBasedTrackStateModel>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blockState: Record<string, any>
 }) {
+  const { model, blockState } = props
   const classes = useStyles()
   const { blockDefinitions } = model
   return (

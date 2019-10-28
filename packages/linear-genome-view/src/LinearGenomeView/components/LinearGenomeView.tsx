@@ -404,6 +404,7 @@ function LinearGenomeView(props: { model: LGV }) {
             gridColumn: 'blocks',
             gridRow: 'scale-bar',
           }}
+          height={32}
           model={model}
         >
           <ScaleBar model={model} height={32} />
