@@ -3,11 +3,10 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const useStyles = makeStyles((/* theme */) => ({
+const useStyles = makeStyles(theme => ({
   block: {
+    background: theme.palette.background.default,
     minHeight: '100%',
-    background: 'white',
-    // background: theme.palette.background.default,
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
   },
