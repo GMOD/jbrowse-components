@@ -18,33 +18,25 @@ const useStyles = makeStyles({
   },
 })
 
-export const ElidedBlockMarker = ({ width, offset }) => {
+export const ElidedBlockMarker = ({ width }) => {
   const classes = useStyles()
-  return (
-    <div
-      className={classes.elidedBlock}
-      style={{ left: `${offset}px`, width: `${width}px` }}
-    />
-  )
+  return <div className={classes.elidedBlock} style={{ width: `${width}px` }} />
 }
 ElidedBlockMarker.propTypes = {
   width: ReactPropTypes.number.isRequired,
-  offset: ReactPropTypes.number.isRequired,
 }
 
-export const InterRegionPaddingBlockMarker = ({ model, block }) => {
+export const InterRegionPaddingBlockMarker = ({ width }) => {
   const classes = useStyles()
   return (
     <div
       style={{
-        left: `${block.offsetPx - model.offsetPx}px`,
-        width: `${block.widthPx}px`,
+        width: `${width}px`,
       }}
       className={classes.interRegionPaddingBlock}
     ></div>
   )
 }
 InterRegionPaddingBlockMarker.propTypes = {
-  model: ReactPropTypes.shape().isRequired,
-  block: ReactPropTypes.shape().isRequired,
+  width: ReactPropTypes.number.isRequired,
 }
