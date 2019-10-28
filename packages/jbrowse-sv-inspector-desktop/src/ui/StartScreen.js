@@ -1,5 +1,5 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Button from '@material-ui/core/Button'
-import Card from '@material-ui/core/Card'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
 import Dialog from '@material-ui/core/Dialog'
@@ -8,8 +8,13 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
+import FormControl from '@material-ui/core/FormControl'
+import InputLabel from '@material-ui/core/InputLabel'
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
 import Input from '@material-ui/core/Input'
 import { makeStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
@@ -36,6 +41,7 @@ export default function StartScreen({ root }) {
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
   const [newSessionName, setNewSessionName] = useState('')
+  const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
 
   const classes = useStyles()
 
@@ -150,6 +156,65 @@ export default function StartScreen({ root }) {
       </>
     )
 
+  function selectDataset(event) {
+    setSelectedDatasetIdx(event.target.value)
+  }
+
+  function createLGVSessionOfDatasetIdx() {
+    const dataset = root.jbrowse.datasets[Number(selectedDatasetIdx)]
+    const assemblyName = readConfObject(dataset.assembly, 'name')
+    const snapshot = {
+      name: `New ${readConfObject(dataset, 'name')} Session ${new Date(
+        Date.now(),
+      ).toISOString()}`,
+      views: [
+        {
+          type: 'LinearGenomeView',
+          displayRegionsFromAssemblyName: assemblyName,
+        },
+      ],
+      menuBars: [
+        {
+          type: 'MainMenuBar',
+          menus: [
+            {
+              name: 'File',
+              menuItems: [
+                {
+                  name: 'Export configuration',
+                  icon: 'cloud_download',
+                  callback: 'exportConfiguration',
+                },
+                {
+                  name: 'Import configuration',
+                  icon: 'cloud_upload',
+                  callback: 'importConfiguration',
+                },
+              ],
+            },
+            {
+              name: 'Help',
+              menuItems: [
+                {
+                  name: 'About',
+                  icon: 'info',
+                  callback: 'openAbout',
+                },
+                {
+                  name: 'Help',
+                  icon: 'help',
+                  callback: 'openHelp',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      connections: {},
+    }
+    root.activateSession(snapshot)
+  }
+
   return (
     <>
       <Container maxWidth="md">
@@ -161,17 +226,42 @@ export default function StartScreen({ root }) {
             Start a new session
           </Typography>
           <Grid container spacing={4}>
-            {[
-              'Blank',
-              'Some preset',
-              'Some other preset',
-              'Yet another preset',
-              'And another preset (or template?)',
-            ].map(i => (
+            {/* {['Blank', 'SV Inspector', 'Linear Genome View'].map(i => (
               <Grid item key={i} className={classes.newSessionCard}>
-                <Card>{i}</Card>
+                <Card
+                  onClick={() =>
+                    root.activateSession({
+                      name: `New Session`,
+                      menuBars: [{ type: 'MainMenuBar' }],
+                    })
+                  }
+                >
+                  {i}
+                </Card>
               </Grid>
-            ))}
+            ))} */}
+            <Paper>
+              <Typography>Create new Linear Genome View</Typography>
+              <FormControl fullWidth className={classes.formControl}>
+                <InputLabel htmlFor="age-simple">Dataset</InputLabel>
+                <Select value={selectedDatasetIdx} onChange={selectDataset}>
+                  {root.jbrowse.datasets.map((dataset, idx) => {
+                    const name = readConfObject(dataset, 'name')
+                    return (
+                      <MenuItem key={name} value={idx}>
+                        {name}
+                      </MenuItem>
+                    )
+                  })}
+                </Select>
+              </FormControl>
+              <Button
+                disabled={selectedDatasetIdx === ''}
+                onClick={createLGVSessionOfDatasetIdx}
+              >
+                Open
+              </Button>
+            </Paper>
           </Grid>
         </div>
         <Typography variant="h5" className={classes.header}>
