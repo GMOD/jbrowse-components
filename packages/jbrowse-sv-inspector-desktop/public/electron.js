@@ -3,6 +3,7 @@ const electron = require('electron')
 const { ipcMain } = require('electron-better-ipc-extra')
 const fs = require('fs')
 const { promisify } = require('util')
+const url = require('url')
 const fetch = require('node-fetch')
 
 const fsCopyFile = promisify(fs.copyFile)
@@ -21,13 +22,17 @@ const { BrowserWindow } = electron
 const path = require('path')
 const isDev = require('electron-is-dev')
 
+const devServerUrl = url.parse(
+  process.env.DEV_SERVER_URL || 'http://localhost:3000',
+)
+
 const configLocation = path.join(app.getPath('userData'), 'config.json')
 const sessionDirectory = path.join(app.getPath('userData'), 'sessions')
 try {
   fs.statSync(sessionDirectory)
 } catch (error) {
   if (error.code === 'ENOENT' || error.code === 'ENOTDIR')
-    fs.mkdirSync(sessionDirectory)
+    fs.mkdirSync(sessionDirectory, { recursive: true })
   else throw error
 }
 
@@ -45,7 +50,7 @@ function createWindow() {
   })
   mainWindow.loadURL(
     isDev
-      ? 'http://localhost:3000'
+      ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'public/../build/index.html')}`,
   )
   if (isDev) {
@@ -84,7 +89,7 @@ ipcMain.on('createWindowWorker', event => {
   })
   workerWindow.loadURL(
     isDev
-      ? 'http://localhost:3000/worker.html'
+      ? url.format({ ...devServerUrl, path: 'worker.html' })
       : `file://${path.join(app.getAppPath(), 'public/../build/worker.html')}`,
   )
   // workerWindow.webContents.openDevTools()
