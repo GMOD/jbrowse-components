@@ -40,8 +40,8 @@ let mainWindow
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 680,
+    width: 1400,
+    height: 800,
     webPreferences: {
       preload: isDev
         ? path.join(app.getAppPath(), 'public/preload.js')
@@ -53,6 +53,7 @@ function createWindow() {
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'public/../build/index.html')}`,
   )
+  mainWindow.setMenuBarVisibility(false)
   if (isDev) {
     // Open the DevTools.
     // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
@@ -89,7 +90,7 @@ ipcMain.on('createWindowWorker', event => {
   })
   workerWindow.loadURL(
     isDev
-      ? url.format({ ...devServerUrl, path: 'worker.html' })
+      ? url.format({ ...devServerUrl, pathname: 'worker.html' })
       : `file://${path.join(app.getAppPath(), 'public/../build/worker.html')}`,
   )
   // workerWindow.webContents.openDevTools()
