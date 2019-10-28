@@ -39,59 +39,61 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
   },
 })
-function RenderedBlocks(props: {
-  model: Instance<BlockBasedTrackStateModel>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  blockState: Record<string, any>
-}) {
-  const { model, blockState } = props
-  const classes = useStyles()
-  const { blockDefinitions } = model
-  return (
-    <>
-      {blockDefinitions.map((block: BaseBlock) => {
-        if (block instanceof ContentBlock) {
-          const state = blockState.get(block.key)
-          return (
-            <Block block={block} key={`${model.id}-${block.key}`}>
-              {state && state.ReactComponent ? (
-                <state.ReactComponent model={state} />
-              ) : null}
-              {state && state.maxHeightReached ? (
-                <div
-                  className={classes.heightOverflowed}
-                  style={{
-                    top: state.data.layout.totalHeight - 16,
-                    height: 16,
-                  }}
-                >
-                  Max height reached
-                </div>
-              ) : null}
-            </Block>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return (
-            <ElidedBlockMarker
-              key={`${model.id}-${block.key}`}
-              width={block.widthPx}
-            />
-          )
-        }
-        if (block instanceof InterRegionPaddingBlock) {
-          return (
-            <InterRegionPaddingBlockMarker
-              key={block.key}
-              width={block.widthPx}
-            />
-          )
-        }
-        throw new Error(`invalid block type ${typeof block}`)
-      })}
-    </>
-  )
-}
+const RenderedBlocks = observer(
+  (props: {
+    model: Instance<BlockBasedTrackStateModel>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    blockState: Record<string, any>
+  }) => {
+    const { model, blockState } = props
+    const classes = useStyles()
+    const { blockDefinitions } = model
+    return (
+      <>
+        {blockDefinitions.map((block: BaseBlock) => {
+          if (block instanceof ContentBlock) {
+            const state = blockState.get(block.key)
+            return (
+              <Block block={block} key={`${model.id}-${block.key}`}>
+                {state && state.ReactComponent ? (
+                  <state.ReactComponent model={state} />
+                ) : null}
+                {state && state.maxHeightReached ? (
+                  <div
+                    className={classes.heightOverflowed}
+                    style={{
+                      top: state.data.layout.totalHeight - 16,
+                      height: 16,
+                    }}
+                  >
+                    Max height reached
+                  </div>
+                ) : null}
+              </Block>
+            )
+          }
+          if (block instanceof ElidedBlock) {
+            return (
+              <ElidedBlockMarker
+                key={`${model.id}-${block.key}`}
+                width={block.widthPx}
+              />
+            )
+          }
+          if (block instanceof InterRegionPaddingBlock) {
+            return (
+              <InterRegionPaddingBlockMarker
+                key={block.key}
+                width={block.widthPx}
+              />
+            )
+          }
+          throw new Error(`invalid block type ${typeof block}`)
+        })}
+      </>
+    )
+  },
+)
 function TrackBlocks({
   model,
   viewModel,

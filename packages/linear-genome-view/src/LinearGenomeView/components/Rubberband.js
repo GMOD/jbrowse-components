@@ -65,7 +65,6 @@ function Rubberband({ model, height, children }) {
     }
     return cleanup
   }, [currentX, model, mouseDragging, startX])
-  console.log(startX, currentX, currentX - startX)
 
   return (
     <div
@@ -80,7 +79,7 @@ function Rubberband({ model, height, children }) {
       }}
       style={{ height }}
     >
-      {startX !== undefined ? (
+      {startX !== undefined && currentX !== undefined ? (
         <div
           className={classes.rubberband}
           style={
