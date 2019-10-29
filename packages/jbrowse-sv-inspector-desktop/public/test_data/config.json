@@ -935,11 +935,11 @@
           "adapter": {
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2_sv.sites.vcf.gz"
+              "uri": "https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz"
             },
             "index": {
               "location": {
-                "uri": "https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2_sv.sites.vcf.gz.tbi"
+                "uri": "https://storage.googleapis.com/gnomad-public/papers/2019-sv/gnomad_v2.1_sv.sites.vcf.gz.tbi"
               }
             }
           },
