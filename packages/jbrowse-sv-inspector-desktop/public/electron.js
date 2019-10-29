@@ -104,8 +104,14 @@ ipcMain.answerRenderer('loadConfig', async () => {
   } catch (error) {
     if (error.code === 'ENOENT') {
       // make a config file since one does not exist yet
-      configJSON = '{}'
-      await fsWriteFile(configLocation, configJSON)
+      const configTemplateLocation = isDev
+        ? path.join(app.getAppPath(), 'public/test_data/config.json')
+        : `file://${path.join(
+            app.getAppPath(),
+            'public/../build/test_data/config.json',
+          )}`
+      await fsCopyFile(configTemplateLocation, configLocation)
+      configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
     } else throw error
   }
   return JSON.parse(configJSON)
