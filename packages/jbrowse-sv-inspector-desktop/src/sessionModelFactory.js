@@ -372,8 +372,8 @@ export default pluginManager => {
         return getParent(self).duplicateCurrentSession()
       },
 
-      activateSession(sessionName) {
-        return getParent(self).activateSession(sessionName)
+      activateSession(sessionSnapshot) {
+        return getParent(self).activateSession(sessionSnapshot)
       },
 
       setDefaultSession() {

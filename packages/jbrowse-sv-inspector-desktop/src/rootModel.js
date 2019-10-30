@@ -41,7 +41,9 @@ const RootModel = types
     },
     activateSession(sessionSnapshot) {
       self.setSession(sessionSnapshot)
-      self.setHistory(UndoManager.create({}, { targetStore: self.session }))
+      if (sessionSnapshot)
+        self.setHistory(UndoManager.create({}, { targetStore: self.session }))
+      else self.setHistory(undefined)
     },
     setHistory(history) {
       self.history = history

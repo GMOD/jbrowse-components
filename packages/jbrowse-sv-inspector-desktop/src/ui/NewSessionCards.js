@@ -12,9 +12,8 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import theme from './theme'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   card: {
     width: 150,
     height: 200,
@@ -23,7 +22,7 @@ const useStyles = makeStyles({
   name: {
     marginTop: theme.spacing(),
   },
-})
+}))
 
 function NewSessionCard({ name, onClick, children }) {
   const classes = useStyles()
@@ -68,14 +67,10 @@ const emptySessionSnapshot = {
           name: 'File',
           menuItems: [
             {
-              name: 'Export configuration',
-              icon: 'cloud_download',
-              callback: 'exportConfiguration',
-            },
-            {
-              name: 'Import configuration',
-              icon: 'cloud_upload',
-              callback: 'importConfiguration',
+              name: 'Back to Welcome Screen',
+              icon: 'arrow_back',
+              callback:
+                'function(session) {session.activateSession(undefined)}',
             },
           ],
         },
@@ -117,7 +112,14 @@ NewEmptySession.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
+const useNewLinearGenomeViewSessionStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(),
+  },
+}))
+
 export function NewLinearGenomeViewSession({ root }) {
+  const classes = useNewLinearGenomeViewSessionStyles()
   const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
 
   function selectDataset(event) {
@@ -160,6 +162,9 @@ export function NewLinearGenomeViewSession({ root }) {
       <Button
         disabled={selectedDatasetIdx === ''}
         onClick={createLGVSessionOfDatasetIdx}
+        variant="contained"
+        color="primary"
+        className={classes.button}
       >
         Open
       </Button>
