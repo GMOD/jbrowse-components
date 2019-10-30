@@ -28,10 +28,7 @@ const useStyles = makeStyles((/* theme */) => ({
     width: '100%',
     position: 'absolute',
     display: 'flex',
-    background: '#555',
-    // background: theme.palette.background.default,
     overflow: 'hidden',
-    height: 32,
   },
   refLabel: {
     fontSize: '16px',
@@ -40,7 +37,6 @@ const useStyles = makeStyles((/* theme */) => ({
     top: '-1px',
     fontWeight: 'bold',
     background: 'white',
-    // color: theme.palette.text.primary,
   },
 }))
 
@@ -97,6 +93,7 @@ function ScaleBar({ model, height }: { model: LGV; height: number }) {
         style={{
           left: offsetLeft,
           width: model.staticBlocks.totalWidthPx,
+          height,
         }}
       >
         <RenderedScaleBar model={model} height={height} />

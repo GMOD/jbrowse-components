@@ -124,7 +124,7 @@ export function stateModelFactory(pluginManager: any) {
       },
       get totalBp() {
         let totalbp = 0
-        this.displayedRegionsInOrder.forEach(region => {
+        this.displayedRegionsInOrder.map(region => {
           totalbp += region.end - region.start
         })
         return totalbp

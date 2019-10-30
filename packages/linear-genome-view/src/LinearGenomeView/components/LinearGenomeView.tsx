@@ -381,7 +381,7 @@ function LinearGenomeView(props: { model: LGV }) {
     position: 'relative',
     gridTemplateRows: `${
       !model.hideHeader ? '[header] auto ' : ''
-    } [scale-bar] auto ${tracks
+    } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
       .map(
         t =>
           `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -403,8 +403,8 @@ function LinearGenomeView(props: { model: LGV }) {
           )}
         </div>
 
-        <Rubberband height={32} model={model}>
-          <ScaleBar model={model} height={32} />
+        <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
+          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
         </Rubberband>
 
         {model.hideHeader ? (
