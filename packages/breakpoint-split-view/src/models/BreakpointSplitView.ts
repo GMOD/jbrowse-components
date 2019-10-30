@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
@@ -6,12 +7,14 @@ import intersection from 'array-intersection'
 import isObject from 'is-object'
 
 type LGV = Instance<LinearGenomeViewStateModel>
+
 interface Breakend {
   MateDirection: string
   Join: string
   Replacement: string
   MatePosition: string
 }
+
 export interface BSVMenuOption {
   title: string
   key: string
@@ -25,10 +28,9 @@ export type LayoutRecord = [number, number, number, number]
 interface LinkViewArgs {
   name: string
   path: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: any[]
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -37,6 +39,7 @@ export default function stateModelFactory(pluginManager: any) {
     getRoot,
     onAction,
     addDisposer,
+    getPath,
   } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
@@ -224,22 +227,25 @@ export default function stateModelFactory(pluginManager: any) {
         addDisposer(
           self,
           onAction(self, ({ name, path, args }: LinkViewArgs) => {
-            if (name === 'horizontalScroll') {
-              this.onSubviewHorizontalScroll(path, args)
-            } else if (name === 'zoomTo') {
-              this.onSubviewZoom(path, args)
+            if (self.linkViews) {
+              if (name === 'horizontalScroll') {
+                this.onSubviewHorizontalScroll(path, args)
+              } else if (name === 'zoomTo') {
+                this.onSubviewZoom(path, args)
+              }
             }
           }),
         )
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewHorizontalScroll(path: string, args: any[]) {
         self.views.forEach(view => {
-          view.horizontalScroll(args[0])
+          const ret = getPath(view)
+          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+            view.horizontalScroll(args[0])
+          }
         })
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewZoom(path: string, args: any[]) {
         self.views.forEach(view => {
           view.zoomTo(args[0])
