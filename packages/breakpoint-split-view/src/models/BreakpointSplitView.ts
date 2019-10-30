@@ -12,13 +12,32 @@ interface Breakend {
   Replacement: string
   MatePosition: string
 }
+export interface BSVMenuOption {
+  title: string
+  key: string
+  callback: Function
+  checked?: boolean
+  isCheckbox: boolean
+}
 
+export type LayoutRecord = [number, number, number, number]
+
+interface LinkViewArgs {
+  name: string
+  path: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: any[]
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
-  const { types: jbrequiredTypes, getParent, getRoot } = jbrequire(
-    'mobx-state-tree',
-  )
+  const {
+    types: jbrequiredTypes,
+    getParent,
+    getRoot,
+    onAction,
+    addDisposer,
+  } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const configSchema = ConfigurationSchema(
@@ -201,6 +220,32 @@ export default function stateModelFactory(pluginManager: any) {
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          onAction(self, ({ name, path, args }: LinkViewArgs) => {
+            if (name === 'horizontalScroll') {
+              this.onSubviewHorizontalScroll(path, args)
+            } else if (name === 'zoomTo') {
+              this.onSubviewZoom(path, args)
+            }
+          }),
+        )
+      },
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSubviewHorizontalScroll(path: string, args: any[]) {
+        self.views.forEach(view => {
+          view.horizontalScroll(args[0])
+        })
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSubviewZoom(path: string, args: any[]) {
+        self.views.forEach(view => {
+          view.zoomTo(args[0])
+        })
+      },
+
       setDisplayName(name: string) {
         self.displayName = name
       },
@@ -224,6 +269,23 @@ export default function stateModelFactory(pluginManager: any) {
 
       activateConfigurationUI() {
         getRoot(self).editConfiguration(self.configuration)
+      },
+
+      toggleLinkViews() {
+        self.linkViews = !self.linkViews
+      },
+    }))
+    .views(self => ({
+      get menuOptions(): BSVMenuOption[] {
+        return [
+          {
+            title: 'Link views',
+            key: 'flip',
+            callback: self.toggleLinkViews,
+            checked: self.linkViews,
+            isCheckbox: true,
+          },
+        ]
       },
     }))
 

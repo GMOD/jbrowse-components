@@ -3,9 +3,7 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
-import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
-
-type LayoutRecord = [number, number, number, number]
+import { BreakpointViewStateModel, LayoutRecord } from '../models/BreakpointSplitView'
 
 interface Chunk {
   feature: Feature

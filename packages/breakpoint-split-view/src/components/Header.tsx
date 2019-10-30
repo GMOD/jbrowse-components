@@ -12,9 +12,16 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = React
-  const { Icon, IconButton, TextField, Typography } = jbrequire(
-    '@material-ui/core',
-  )
+  const {
+    Checkbox,
+    FormControlLabel,
+    Icon,
+    IconButton,
+    Menu,
+    MenuItem,
+    TextField,
+    Typography,
+  } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
   const useStyles = makeStyles((theme: any) => ({
@@ -95,22 +102,88 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
+  const LongMenu = observer(
+    ({ model, className }: { model: BSV; className: string }) => {
+      const [anchorEl, setAnchorEl] = useState(null)
+      const open = Boolean(anchorEl)
 
-  function LinkViews({ model }: { model: BSV }) {
+      function handleClick(event: React.MouseEvent<HTMLElement>) {
+        setAnchorEl(event.currentTarget)
+      }
+
+      function handleClose() {
+        setAnchorEl(null)
+      }
+
+      return (
+        <>
+          <IconButton
+            aria-label="more"
+            aria-controls="long-menu"
+            aria-haspopup="true"
+            className={className}
+            onClick={handleClick}
+          >
+            <Icon>more_vert</Icon>
+          </IconButton>
+          <Menu
+            id="long-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={open}
+            onClose={handleClose}
+          >
+            {model.menuOptions.map(option => {
+              return option.isCheckbox ? (
+                <MenuItem key={option.key}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={option.checked}
+                        onChange={() => {
+                          option.callback()
+                          handleClose()
+                        }}
+                      />
+                    }
+                    label={option.title}
+                  />
+                </MenuItem>
+              ) : (
+                <MenuItem
+                  key={option.key}
+                  onClick={() => {
+                    option.callback()
+                    handleClose()
+                  }}
+                >
+                  {option.title}
+                </MenuItem>
+              )
+            })}
+            )}
+          </Menu>
+        </>
+      )
+    },
+  )
+
+  const LinkViews = observer(({ model }: { model: BSV }) => {
     const classes = useStyles()
-    const title = model.linkViews?"lock":"lock_open"
-    return <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title={title}
-        >
-          <Icon fontSize="small">{title}</Icon>
-        </IconButton>
-  }
+    const title = model.linkViews ? 'lock' : 'lock_open'
+    return (
+      <IconButton
+        onClick={model.toggleLinkViews}
+        className={classes.iconButton}
+        title={title}
+      >
+        <Icon fontSize="small">{title}</Icon>
+      </IconButton>
+    )
+  })
   LinkViews.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-
 
   const Header = observer(
     ({ model, size }: { model: BSV; size: { height: number } }) => {
@@ -121,8 +194,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         <div className={classes.headerBar}>
           <Controls model={model} />
           <TextFieldOrTypography model={model} />
-          <div className={classes.spacer} />
-          <LinkViews model={model} />
+          <LongMenu model={model} />
 
           <div className={classes.spacer} />
         </div>
