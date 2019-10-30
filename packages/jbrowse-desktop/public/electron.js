@@ -12,6 +12,7 @@ const fsOpen = promisify(fs.open)
 const fsRead = promisify(fs.read)
 const fsReaddir = promisify(fs.readdir)
 const fsReadFile = promisify(fs.readFile)
+const fsRename = promisify(fs.rename)
 const fsStat = promisify(fs.stat)
 const fsUnlink = promisify(fs.unlink)
 const fsWriteFile = promisify(fs.writeFile)
@@ -125,7 +126,7 @@ ipcMain.answerRenderer('listSessions', async () => {
   const sessionFiles = await fsReaddir(sessionDirectory)
   const sessionFilesData = []
   for (const sessionFile of sessionFiles) {
-    if (sessionFile.endsWith('.thumbnail'))
+    if (path.extname(sessionFile) === '.thumbnail')
       sessionFilesData.push(
         fsReadFile(path.join(sessionDirectory, sessionFile), {
           encoding: 'utf8',
@@ -136,12 +137,12 @@ ipcMain.answerRenderer('listSessions', async () => {
   const data = await Promise.all(sessionFilesData)
   const sessions = {}
   sessionFiles.forEach((sessionFile, idx) => {
-    if (sessionFile.endsWith('.thumbnail')) {
-      const sessionName = sessionFile.slice(0, -10)
+    if (path.extname(sessionFile) === '.thumbnail') {
+      const sessionName = path.basename(sessionFile, '.thumbnail')
       if (!sessions[sessionName]) sessions[sessionName] = {}
       sessions[sessionName].screenshot = data[idx]
-    } else if (sessionFile.endsWith('.json')) {
-      const sessionName = sessionFile.slice(0, -5)
+    } else if (path.extname(sessionFile) === '.json') {
+      const sessionName = path.basename(sessionFile, '.json')
       if (!sessions[sessionName]) sessions[sessionName] = {}
       sessions[sessionName].stats = data[idx]
     }
@@ -171,19 +172,17 @@ ipcMain.answerRenderer(
 
 ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
   try {
-    await fsCopyFile(
+    await fsRename(
       path.join(sessionDirectory, `${oldName}.thumbnail`),
       path.join(sessionDirectory, `${newName}.thumbnail`),
     )
-    await fsUnlink(path.join(sessionDirectory, `${oldName}.thumbnail`))
   } catch {
     // ignore
   }
-  await fsCopyFile(
+  await fsRename(
     path.join(sessionDirectory, `${oldName}.json`),
     path.join(sessionDirectory, `${newName}.json`),
   )
-  await fsUnlink(path.join(sessionDirectory, `${oldName}.json`))
 })
 
 ipcMain.answerRenderer('reset', async () => {
