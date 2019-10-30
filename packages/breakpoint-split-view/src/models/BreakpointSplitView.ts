@@ -46,7 +46,7 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'breakpoint detail',
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
-
+      linkViews: false,
       views: types.array(pluginManager.getViewType('LinearGenomeView')
         .stateModel as LinearGenomeViewStateModel),
     })

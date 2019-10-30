@@ -95,6 +95,23 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
+
+  function LinkViews({ model }: { model: BSV }) {
+    const classes = useStyles()
+    const title = model.linkViews?"lock":"lock_open"
+    return <IconButton
+          onClick={model.closeView}
+          className={classes.iconButton}
+          title={title}
+        >
+          <Icon fontSize="small">{title}</Icon>
+        </IconButton>
+  }
+  LinkViews.propTypes = {
+    model: PropTypes.objectOrObservableObject.isRequired,
+  }
+
+
   const Header = observer(
     ({ model, size }: { model: BSV; size: { height: number } }) => {
       const classes = useStyles()
@@ -105,6 +122,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           <Controls model={model} />
           <TextFieldOrTypography model={model} />
           <div className={classes.spacer} />
+          <LinkViews model={model} />
 
           <div className={classes.spacer} />
         </div>
