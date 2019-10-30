@@ -48,7 +48,8 @@ export default ConfigurationSchema(
       description: {
         type: 'string',
         description: 'the text description to show, if space is available',
-        defaultValue: "function(feature) { return feature.get('note') }",
+        defaultValue:
+          "function(feature) { return feature.get('note') || feature.get('description') }",
         functionSignature: ['feature'],
       },
       descriptionColor: {

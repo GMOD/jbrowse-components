@@ -59,12 +59,12 @@ module.exports = {
     },
   },
   overrides: [
-    {
-      "files": ["*.ts", "*.tsx"],
-      "rules": {
-        "@typescript-eslint/explicit-function-return-type": ["error"]
-      }
-    },
+    // {
+    //   "files": ["*.ts", "*.tsx"],
+    //   "rules": {
+    //     "@typescript-eslint/explicit-function-return-type": ["error"]
+    //   }
+    // },
     {
       files: ['**/*.test.[t,j]s'],
       env: { jest: true },

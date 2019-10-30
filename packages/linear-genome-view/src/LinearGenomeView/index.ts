@@ -5,15 +5,17 @@ import { clamp, getSession, parseLocString } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
 import { getParent, types, cast } from 'mobx-state-tree'
+import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
-import { BlockSet } from '../BasicTrack/util/blockTypes'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 export interface LGVMenuOption {
   title: string
   key: string
   callback: Function
+  checked?: boolean
+  isCheckbox: boolean
 }
 interface BpOffset {
   index: number
@@ -59,7 +61,6 @@ function constrainBpPerPx(newBpPerPx: number): number {
   )[0]
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function stateModelFactory(pluginManager: any) {
   return types
     .model('LinearGenomeView', {
@@ -349,10 +350,12 @@ export function stateModelFactory(pluginManager: any) {
 
       horizontalScroll(distance: number): number {
         const oldOffsetPx = self.offsetPx
+        // objectively determined to keep the linear genome on the main screen
         const leftPadding = 10
-        const rightPadding = 10
+        const rightPadding = 30
         const maxOffset = self.displayedRegionsTotalPx - leftPadding
         const minOffset = -self.viewingRegionWidth + rightPadding
+        // the scroll is clamped to keep the linear genome on the main screen
         const newOffsetPx = clamp(
           self.offsetPx + distance,
           minOffset,
@@ -388,46 +391,49 @@ export function stateModelFactory(pluginManager: any) {
       },
     }))
     .views(self => {
-      let currentlyCalculatedStaticBlocks: BlockSet
+      let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuOptions(): LGVMenuOption[] {
           return [
             {
-              title: 'Show track selector',
-              key: 'track_selector',
-              callback: self.activateTrackSelector,
-            },
-            {
-              title: 'Horizontal flip',
+              title: 'Horizontally flip',
               key: 'flip',
               callback: self.horizontallyFlip,
+              checked: self.horizontallyFlipped,
+              isCheckbox: true,
             },
             {
               title: 'Show all regions',
               key: 'showall',
               callback: self.showAllRegions,
+              isCheckbox: false,
             },
             {
               title: self.hideHeader ? 'Show header' : 'Hide header',
               key: 'hide_header',
               callback: self.toggleHeader,
+              isCheckbox: false,
             },
           ]
         },
 
-        get staticBlocks(): BlockSet {
-          const ret = calculateStaticBlocks(self, self.horizontallyFlipped, 1)
+        get staticBlocks() {
+          const ret = calculateStaticBlocks(
+            cast(self),
+            self.horizontallyFlipped,
+            1,
+          )
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
             stringifiedCurrentlyCalculatedStaticBlocks = sret
           }
-          return currentlyCalculatedStaticBlocks
+          return currentlyCalculatedStaticBlocks as BlockSet
         },
 
-        get dynamicBlocks(): any {
-          return calculateDynamicBlocks(self, self.horizontallyFlipped)
+        get dynamicBlocks() {
+          return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
       }
     })

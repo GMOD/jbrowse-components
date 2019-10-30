@@ -1,6 +1,10 @@
 import { intersection2 } from '@gmod/jbrowse-core/util/range'
 import { assembleLocString } from '@gmod/jbrowse-core/util'
+import { Instance } from 'mobx-state-tree'
 import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
+import { LinearGenomeViewStateModel } from '../../LinearGenomeView'
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 /**
  * returns an array of 'dynamic blocks', which are blocks representing only the regions that
@@ -21,7 +25,10 @@ import { ContentBlock, ElidedBlock, BlockSet } from './blockTypes'
  *
  * @returns {Array} of ` { refName, startBp, endBp, offsetPx, horizontallyFlipped? }`
  */
-export default function calculateDynamicBlocks(model, horizontallyFlipped) {
+export default function calculateDynamicBlocks(
+  model: LGV,
+  horizontallyFlipped: boolean,
+) {
   const {
     offsetPx,
     viewingRegionWidth: width,
@@ -79,6 +86,7 @@ export default function calculateDynamicBlocks(model, horizontallyFlipped) {
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
         widthPx,
+        key: '',
       }
       blockData.key = assembleLocString(blockData)
       if (widthPx < minimumBlockWidth) {

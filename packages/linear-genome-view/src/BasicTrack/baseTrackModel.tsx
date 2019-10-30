@@ -70,7 +70,7 @@ const BaseTrack = types
     },
 
     get RenderingComponent(): React.FC<{
-      model: self
+      model: typeof self
       offsetPx: number
       bpPerPx: number
       onHorizontalScroll: Function

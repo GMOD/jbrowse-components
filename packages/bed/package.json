@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bbi": "^1.0.23",
+    "@gmod/bbi": "^1.0.24",
     "@gmod/bed": "^2.0.0"
   },
   "peerDependencies": {

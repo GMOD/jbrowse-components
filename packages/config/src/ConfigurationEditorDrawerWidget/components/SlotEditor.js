@@ -249,6 +249,8 @@ const NumberEditor = observer(({ slot }) => {
     const num = parseFloat(val, 10)
     if (!Number.isNaN(num)) {
       slot.set(num)
+    } else {
+      slot.reset()
     }
   }, [slot, val])
   return (

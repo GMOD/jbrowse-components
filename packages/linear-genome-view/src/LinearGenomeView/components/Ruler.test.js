@@ -2,7 +2,7 @@ import { makeTicks } from './Ruler'
 
 describe('tick calculation', () => {
   test('one', () => {
-    const result = Array.from(makeTicks({ start: 0, end: 10 }, 0.05))
+    const result = Array.from(makeTicks(0, 10, 0.05))
     expect(result).toEqual([
       { type: 'major', base: -1, index: 0 },
       { type: 'minor', base: 0, index: 1 },
@@ -19,7 +19,7 @@ describe('tick calculation', () => {
     ])
   })
   test('two', () => {
-    const result = Array.from(makeTicks({ start: 0, end: 50 }, 1))
+    const result = Array.from(makeTicks(0, 50, 1))
     expect(result).toEqual([
       { type: 'major', base: -1, index: 0 },
       { type: 'minor', base: 19, index: 1 },

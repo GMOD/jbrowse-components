@@ -15,7 +15,7 @@ describe('JBrowseWebSessionModel', () => {
   it('accepts a custom drawer width', () => {
     const session = createTestSession({ drawerWidth: 256 })
     expect(session.drawerWidth).toBe(256)
-    expect(session.viewsWidth).toBe(512)
+    expect(session.viewsWidth).toBe(1024)
   })
 
   it('shrinks a drawer width that is too big', () => {

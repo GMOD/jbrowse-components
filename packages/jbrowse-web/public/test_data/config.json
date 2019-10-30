@@ -56,17 +56,20 @@
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
           "adapter": {
+            "configId": "R1d4tYPHY",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
+              "configId": "O9B8_NQzdk",
               "location": {
                 "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
+            "configId": "K3veZfJTYV",
             "type": "StructuralVariantChordRenderer"
           }
         },
@@ -125,41 +128,6 @@
           }
         },
         {
-          "configId": "OOv_Iwf5no",
-          "type": "AlignmentsTrack",
-          "name": "volvox-long reads",
-          "category": [
-            "Alignments"
-          ],
-          "adapter": {
-            "configId": "_m5epcAGu6",
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
-            },
-            "index": {
-              "configId": "-bETsJYDd9",
-              "location": {
-                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "cfV-sEuwTS",
-            "PileupRenderer": {
-              "configId": "Syc-_K0qM5",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "Ain_GttdTR",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "JbwBsHdbnP"
-              }
-            }
-          }
-        },
-        {
           "configId": "volvox_samspec",
           "type": "AlignmentsTrack",
           "name": "volvox-samspec",
@@ -179,9 +147,9 @@
           }
         },
         {
-          "configId": "volvox_sv",
+          "configId": "volvox_paired_sv",
           "type": "AlignmentsTrack",
-          "name": "volvox-sv",
+          "name": "volvox-paired sv",
           "category": [
             "Alignments"
           ],
@@ -198,36 +166,73 @@
           }
         },
         {
-          "configId": "volvox_bam",
+          "configId": "volvox-long-reads.bam",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue",
+          "name": "volvox-long-reads.bam",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "PphRAaR1y4_",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox-long-reads.cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long-reads.cram",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-long-reads.fastq.sorted.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-long-reads.fastq.sorted.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox_cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted.cram",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sorted.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-sorted.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox_bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted.bam",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
-              "configId": "PB2zR_KB-RN",
               "location": {
                 "uri": "test_data/volvox-sorted.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "NGINUnvvMqj",
-            "PileupRenderer": {
-              "configId": "oO78CJInOtk",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "1am8PdZjPfJ",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "cH9mZmuv1Fq"
               }
             }
           }
@@ -350,6 +355,21 @@
             "start",
             "end"
           ]
+        },
+        {
+          "configId": "nclist_transcripts",
+          "type": "BasicTrack",
+          "name": "NCList transcripts",
+          "category": [
+            "Miscellaneous"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "test_data/volvox_transcripts_nclist/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
         },
         {
           "configId": "EA_0Jp4oPKg",
@@ -708,184 +728,10 @@
           "configId": "Zur8oMv8w07",
           "adapter": {
             "configId": "681v51gSgQL",
-            "type": "FromConfigAdapter",
-            "features": [
-              {
-                "refName": "chr1",
-                "uniqueId": "hg19_alias1",
-                "aliases": [
-                  "1"
-                ]
-              },
-              {
-                "refName": "chr2",
-                "uniqueId": "hg19_alias2",
-                "aliases": [
-                  "2"
-                ]
-              },
-              {
-                "refName": "chr3",
-                "uniqueId": "hg19_alias3",
-                "aliases": [
-                  "3"
-                ]
-              },
-              {
-                "refName": "chr4",
-                "uniqueId": "hg19_alias4",
-                "aliases": [
-                  "4"
-                ]
-              },
-              {
-                "refName": "chr5",
-                "uniqueId": "hg19_alias5",
-                "aliases": [
-                  "5"
-                ]
-              },
-              {
-                "refName": "chr6",
-                "uniqueId": "hg19_alias6",
-                "aliases": [
-                  "6"
-                ]
-              },
-              {
-                "refName": "chr7",
-                "uniqueId": "hg19_alias7",
-                "aliases": [
-                  "7"
-                ]
-              },
-              {
-                "refName": "chr8",
-                "uniqueId": "hg19_alias8",
-                "aliases": [
-                  "8"
-                ]
-              },
-              {
-                "refName": "chr9",
-                "uniqueId": "hg19_alias9",
-                "aliases": [
-                  "9"
-                ]
-              },
-              {
-                "refName": "chr10",
-                "uniqueId": "hg19_alias10",
-                "aliases": [
-                  "10"
-                ]
-              },
-              {
-                "refName": "chr11",
-                "uniqueId": "hg19_alias11",
-                "aliases": [
-                  "11"
-                ]
-              },
-              {
-                "refName": "chr12",
-                "uniqueId": "hg19_alias12",
-                "aliases": [
-                  "12"
-                ]
-              },
-              {
-                "refName": "chr13",
-                "uniqueId": "hg19_alias13",
-                "aliases": [
-                  "13"
-                ]
-              },
-              {
-                "refName": "chr14",
-                "uniqueId": "hg19_alias14",
-                "aliases": [
-                  "14"
-                ]
-              },
-              {
-                "refName": "chr15",
-                "uniqueId": "hg19_alias15",
-                "aliases": [
-                  "15"
-                ]
-              },
-              {
-                "refName": "chr16",
-                "uniqueId": "hg19_alias16",
-                "aliases": [
-                  "16"
-                ]
-              },
-              {
-                "refName": "chr17",
-                "uniqueId": "hg19_alias17",
-                "aliases": [
-                  "17"
-                ]
-              },
-              {
-                "refName": "chr18",
-                "uniqueId": "hg19_alias18",
-                "aliases": [
-                  "18"
-                ]
-              },
-              {
-                "refName": "chr19",
-                "uniqueId": "hg19_alias19",
-                "aliases": [
-                  "19"
-                ]
-              },
-              {
-                "refName": "chr20",
-                "uniqueId": "hg19_alias20",
-                "aliases": [
-                  "20"
-                ]
-              },
-              {
-                "refName": "chr21",
-                "uniqueId": "hg19_alias21",
-                "aliases": [
-                  "21"
-                ]
-              },
-              {
-                "refName": "chr22",
-                "uniqueId": "hg19_alias22",
-                "aliases": [
-                  "22"
-                ]
-              },
-              {
-                "refName": "chrX",
-                "uniqueId": "hg19_aliasX",
-                "aliases": [
-                  "X"
-                ]
-              },
-              {
-                "refName": "chrY",
-                "uniqueId": "hg19_aliasY",
-                "aliases": [
-                  "Y"
-                ]
-              },
-              {
-                "refName": "chrM",
-                "uniqueId": "hg19_aliasMT",
-                "aliases": [
-                  "MT"
-                ]
-              }
-            ]
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/hg19_aliases.txt"
+            }
           }
         }
       },
@@ -895,17 +741,20 @@
           "type": "StructuralVariantChordTrack",
           "name": "human chord test",
           "adapter": {
+            "configId": "JjSnfYk0a",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
+              "configId": "WGiJIFVWgx",
               "location": {
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
+            "configId": "cnlG3T7NSc",
             "type": "StructuralVariantChordRenderer"
           }
         },
@@ -918,30 +767,37 @@
             "BAM"
           ],
           "adapter": {
+            "configId": "yqdN4rtSSS",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
             },
             "index": {
+              "configId": "z0jYC37_2h",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
               }
             }
           },
           "renderers": {
+            "configId": "XKcazRjYUO",
             "PileupRenderer": {
+              "configId": "G71Pm63GoW",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "r7zVi_Jgrt",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "tVwnQLG0u4"
+              }
             }
           }
         },
         {
+          "configId": "na12878_exome",
           "type": "AlignmentsTrack",
           "name": "NA12878 Exome",
-          "configId": "na12878_exome",
           "category": [
             "1000 genomes"
           ],
@@ -974,29 +830,45 @@
           }
         },
         {
-          "type": "AlignmentsTrack",
           "configId": "chm1_pacbio",
+          "type": "AlignmentsTrack",
+          "name": "CHM1 pacbio",
           "category": [
             "PacBio",
             "BAM"
           ],
-          "name": "CHM1 pacbio",
           "adapter": {
+            "configId": "fA7-Knm3_z",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
             },
             "index": {
+              "configId": "mOiFQ3uzLT",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "UuqCkHFZ5t",
+            "PileupRenderer": {
+              "configId": "8macjrkylb",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "-Yj1bHW27k",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "Bt9BQUTZ4J"
               }
             }
           }
         },
         {
+          "configId": "hg00096_highcov",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina high coverage",
-          "configId": "hg00096_highcov",
           "category": [
             "1000 genomes"
           ],
@@ -1145,6 +1017,25 @@
           }
         },
         {
+          "configId": "repeats_hg19",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "bigbed_peaks",
           "type": "BasicTrack",
           "name": "Encode peaks",
@@ -1199,60 +1090,496 @@
           }
         },
         {
+          "configId": "sequelII_variants",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
-          "configId": "sequelII_variants",
           "category": [
             "PacBio",
             "VCF"
           ],
           "adapter": {
+            "configId": "ZPtZB7IrE2p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
+              "configId": "SCRNxKd1jEj",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
+            "configId": "c199JG88ZZy",
             "PileupRenderer": {
+              "configId": "c67OtxkO-Li",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "dgD7muCI2fV",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "94VLL8-n2Qi"
+              }
             }
           }
         },
         {
-          "type": "VariantTrack",
           "configId": "chm_variants",
+          "type": "VariantTrack",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
             "PacBio",
             "VCF"
           ],
           "adapter": {
+            "configId": "Wd1VtBmf9Ms",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
             },
             "index": {
+              "configId": "9Z6Sihn9Hwx",
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
+            "configId": "FO6_S_9drFE",
             "PileupRenderer": {
+              "configId": "Q3Ifv1cyr_D",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
+              "configId": "PcBP8ovMTvd",
               "type": "SvgFeatureRenderer",
-              "labels": {}
+              "labels": {
+                "configId": "n7DxUtPx9mz"
+              }
+            }
+          }
+        },
+        {
+          "configId": "sparql_togogenome",
+          "type": "BasicTrack",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "ALCFDT789I",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\n\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nPREFIX obo: <http://purl.obolibrary.org/obo/>\nPREFIX sio: <http://semanticscience.org/resource/>\nPREFIX faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX so: <http://purl.obolibrary.org/obo/so#>\n\nSELECT DISTINCT ?uniqueId ?type ?start ?end ?sub_uniqueId ?sub_type ?sub_start ?sub_end ?sub_sub_uniqueId ?sub_sub_type ?sub_sub_start ?sub_sub_end ?strand ?name ?description ?sub_name ?sub_description ?sub_class ?sub_sub_name\nFROM <http://togovar.biosciencedbc.jp/graph/ensembl37>\nWHERE {\n  VALUES ?region_start { {start} }\n  VALUES ?region_end { {end} }\n  VALUES ?chr_id { <http://identifiers.org/hco/{refName}#GRCh37> }\n\n  # gene\n  BIND (\"gene\" AS ?type)\n  ?uniqueId so:part_of ?chr_id .\n  ?uniqueId faldo:location ?loc .\n  ?loc faldo:begin/rdf:type ?faldo_type .\n  ?loc faldo:begin/faldo:position ?start_pos .\n  ?loc faldo:end/faldo:position ?end_pos .\n\n  FILTER (?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition))\n  BIND (IF (?faldo_type = faldo:ForwardStrandPosition, 1, IF (?faldo_type = faldo:ReverseStrandPosition, -1, 0)) AS ?strand)\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?end_pos, ?start_pos) AS ?start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?end_pos, ?start_pos) AS ?end)\n\n  FILTER (!(?start > ?region_end || ?end < ?region_start))\n\n  # transcript\n  BIND (\"mRNA\" AS ?sub_type)\n  ?sub_uniqueId so:part_of ?uniqueId .\n  ?sub_uniqueId rdf:type ?sub_class_orig .\n  FILTER (!strstarts(str(?sub_class_orig), \"http://rdf.ebi.ac.uk/terms/ensembl/\"))\n  BIND (IF (?sub_class_orig = obo:SO_0001217, obo:SO_0000316, ?sub_class_orig) AS ?sub_class)\n\n  ?sub_uniqueId faldo:location ?sub_loc .\n  ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n  ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_end_pos, ?sub_start_pos) AS ?sub_end)\n\n  # sub_sub_\n  BIND (\"CDS\" AS ?sub_sub_type)\n  ?sub_uniqueId so:has_part ?sub_sub_uniqueId .\n\n  ?sub_sub_uniqueId faldo:location ?sub_sub_loc .\n  ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n  ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_end)\n\n  OPTIONAL { ?uniqueId dct:identifier ?name . }\n  OPTIONAL { ?uniqueId rdfs:label ?description . }\n  OPTIONAL { ?sub_uniqueId dct:identifier ?sub_name . }\n  OPTIONAL { ?sub_uniqueId so:translates_to/dct:identifier ?sub_description . }\n  OPTIONAL { ?sub_sub_uniqueId dct:identifier ?sub_sub_name . }\n}",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "lu4lp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "9m6o3wEqAf"
+            }
+          }
+        },
+        {
+          "configId": "sparql_togovar",
+          "type": "BasicTrack",
+          "name": "TogoVar SPARQL Variants",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "configId": "JOaFDT74Jk",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  m2r:  <http://med2rdf.org/ontology/med2rdf#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\nPREFIX  dct: <http://purl.org/dc/terms/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nSELECT DISTINCT  (?variant as ?uniqueId) ?hgvs ?name ?variant_type ?so_type ?start ?stop ?end ?ref ?alt\nFROM <http://togovar.biosciencedbc.jp/graph/variant>\nFROM <http://togovar.biosciencedbc.jp/graph/so>\nWHERE\n  { ?variant  a                     ?_vt ;\n              rdfs:label            ?hgvs ;\n              faldo:location        ?_loc ;\n              dct:identifier        ?name\n    VALUES ?_vt { obo:SO_0001483 obo:SO_0000667 obo:SO_0000159 obo:SO_1000032 obo:SO_1000002 }\n    ?_vt  rdfs:label  ?variant_type\n      { ?_loc_begin  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n                  faldo:position   ?start .\n        ?_loc     faldo:begin      ?_loc_begin .\n        ?_loc faldo:end/faldo:position ?stop .\n      }\n    UNION\n      { ?_loc  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n               faldo:position   ?start\n      }\n    FILTER ( ( ( ?start > {start} ) && ( ?start < {end} ) ) )\n    OPTIONAL\n      { ?variant  m2r:reference_allele  ?ref }\n    OPTIONAL\n      { ?variant  m2r:alternative_allele  ?alt }\n    BIND(replace(str(?_vt), \".*/\", \"\") AS ?so_type)\n    BIND(IF(?stop, ?stop, ?start + 1) AS ?end)\n  }",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "ad4lp9S_S0",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "4g3o3wEqAl"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "configId": "VkIXFcSSJ",
+      "name": "Homo sapiens (GRCh38)",
+      "assembly": {
+        "configId": "ZcKi-0FaG9",
+        "name": "GRCh38",
+        "aliases": [
+          "hg38"
+        ],
+        "sequence": {
+          "configId": "P6R5xbRqRr",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "configId": "BY0uXnap-Z",
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "http://jbrowse.org.s3.amazonaws.com/genomes/GRCh38/fasta/GRCh38.fa.gz"
+            },
+            "faiLocation": {
+              "uri": "http://jbrowse.org.s3.amazonaws.com/genomes/GRCh38/fasta/GRCh38.fa.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "http://jbrowse.org.s3.amazonaws.com/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi"
+            }
+          },
+          "rendering": {
+            "configId": "FVLPrs1AWM",
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "configId": "ry6l6FNIqv",
+          "adapter": {
+            "configId": "ElljUrzCMk",
+            "type": "FromConfigAdapter",
+            "features": [
+              {
+                "refName": "1",
+                "uniqueId": "hg19_alias1",
+                "aliases": [
+                  "chr1",
+                  "NC_000001.11"
+                ]
+              },
+              {
+                "refName": "2",
+                "uniqueId": "hg19_alias2",
+                "aliases": [
+                  "chr2",
+                  "NC_000002.12"
+                ]
+              },
+              {
+                "refName": "3",
+                "uniqueId": "hg19_alias3",
+                "aliases": [
+                  "chr3",
+                  "NC_000003.12"
+                ]
+              },
+              {
+                "refName": "4",
+                "uniqueId": "hg19_alias4",
+                "aliases": [
+                  "chr4",
+                  "NC_000004.12"
+                ]
+              },
+              {
+                "refName": "5",
+                "uniqueId": "hg19_alias5",
+                "aliases": [
+                  "chr5",
+                  "NC_000005.10"
+                ]
+              },
+              {
+                "refName": "6",
+                "uniqueId": "hg19_alias6",
+                "aliases": [
+                  "chr6",
+                  "NC_000006.12"
+                ]
+              },
+              {
+                "refName": "7",
+                "uniqueId": "hg19_alias7",
+                "aliases": [
+                  "chr7",
+                  "NC_000007.14"
+                ]
+              },
+              {
+                "refName": "8",
+                "uniqueId": "hg19_alias8",
+                "aliases": [
+                  "chr8",
+                  "NC_000008.11"
+                ]
+              },
+              {
+                "refName": "9",
+                "uniqueId": "hg19_alias9",
+                "aliases": [
+                  "chr9",
+                  "NC_000009.12"
+                ]
+              },
+              {
+                "refName": "10",
+                "uniqueId": "hg19_alias10",
+                "aliases": [
+                  "chr10",
+                  "NC_000010.11"
+                ]
+              },
+              {
+                "refName": "11",
+                "uniqueId": "hg19_alias11",
+                "aliases": [
+                  "chr11",
+                  "NC_000011.10"
+                ]
+              },
+              {
+                "refName": "12",
+                "uniqueId": "hg19_alias12",
+                "aliases": [
+                  "chr12",
+                  "NC_000012.12"
+                ]
+              },
+              {
+                "refName": "13",
+                "uniqueId": "hg19_alias13",
+                "aliases": [
+                  "chr13",
+                  "NC_000013.11"
+                ]
+              },
+              {
+                "refName": "14",
+                "uniqueId": "hg19_alias14",
+                "aliases": [
+                  "chr14",
+                  "NC_000014.9"
+                ]
+              },
+              {
+                "refName": "15",
+                "uniqueId": "hg19_alias15",
+                "aliases": [
+                  "chr15",
+                  "NC_000015.10"
+                ]
+              },
+              {
+                "refName": "16",
+                "uniqueId": "hg19_alias16",
+                "aliases": [
+                  "chr16",
+                  "NC_000016.10"
+                ]
+              },
+              {
+                "refName": "17",
+                "uniqueId": "hg19_alias17",
+                "aliases": [
+                  "chr17",
+                  "NC_000017.11"
+                ]
+              },
+              {
+                "refName": "18",
+                "uniqueId": "hg19_alias18",
+                "aliases": [
+                  "chr18",
+                  "NC_000018.10"
+                ]
+              },
+              {
+                "refName": "19",
+                "uniqueId": "hg19_alias19",
+                "aliases": [
+                  "chr19",
+                  "NC_000019.10"
+                ]
+              },
+              {
+                "refName": "20",
+                "uniqueId": "hg19_alias20",
+                "aliases": [
+                  "chr20",
+                  "NC_000020.11"
+                ]
+              },
+              {
+                "refName": "21",
+                "uniqueId": "hg19_alias21",
+                "aliases": [
+                  "chr21",
+                  "NC_000021.9"
+                ]
+              },
+              {
+                "refName": "22",
+                "uniqueId": "hg19_alias22",
+                "aliases": [
+                  "chr22",
+                  "NC_000022.11"
+                ]
+              },
+              {
+                "refName": "X",
+                "uniqueId": "hg19_aliasX",
+                "aliases": [
+                  "chrX",
+                  "NC_000023.11"
+                ]
+              },
+              {
+                "refName": "Y",
+                "uniqueId": "hg19_aliasY",
+                "aliases": [
+                  "chrY",
+                  "NC_000024.10"
+                ]
+              },
+              {
+                "refName": "MT",
+                "uniqueId": "hg19_aliasMT",
+                "aliases": [
+                  "chrM"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "sparql_ensembl",
+          "type": "BasicTrack",
+          "name": "Ensembl SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "AOaFDTivyl",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://www.ebi.ac.uk/rdf/services/sparql"
+            },
+            "queryTemplate": "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\n\nSELECT DISTINCT  ?gene (?id AS ?uniqueId) (?label AS ?name) (?desc AS ?note) ?strand ?start ?end\nWHERE\n  { VALUES ?location_type { faldo:ForwardStrandPosition faldo:ReverseStrandPosition faldo:BothStrandsPosition }\n    ?location  faldo:begin     _:b0 .\n    _:b0      rdf:type         ?location_type ;\n              faldo:position   ?faldo_begin .\n    ?location  faldo:end       _:b1 .\n    _:b1      rdf:type         ?location_type ;\n              faldo:position   ?faldo_end .\n    ?location  faldo:reference  <http://rdf.ebi.ac.uk/resource/ensembl/97/homo_sapiens/GRCh38/{refName}> .\n    ?gene     rdf:type         ?type ;\n              rdfs:label       ?label ;\n              dc:description   ?desc ;\n              dc:identifier    ?id ;\n              faldo:location   ?location\n    BIND(if(( ?location_type = faldo:ForwardStrandPosition ), 1, if(( ?location_type = faldo:ReverseStrandPosition ), -1, 0)) AS ?strand)\n    BIND(if(( ?strand = -1 ), ?faldo_end, ?faldo_begin) AS ?start)\n    BIND(if(( ?strand = -1 ), ?faldo_begin, ?faldo_end) AS ?end)\n    FILTER ( ( ?start >= {start} ) && ( ?end <= {end} ) )\n  }",
+            "additionalQueryParams": [
+              "format=JSON"
+            ]
+          },
+          "renderer": {
+            "configId": "lIylp9S_S6",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "t43o3wEqG9"
+            }
+          }
+        },
+        {
+          "configId": "repeats_hg38",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "sparql_togo",
+          "type": "BasicTrack",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "DOaFDTivy3",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "http://togogenome.org/sparql-app"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX  sio:  <http://semanticscience.org/resource/>\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\n\nSELECT DISTINCT ?uniqueId (\"gene\" AS ?type) ?start ?end ?sub_uniqueId (\"mRNA\" AS ?sub_type) ?sub_start ?sub_end ?sub_sub_uniqueId (\"CDS\" AS ?sub_sub_type) ?sub_sub_start ?sub_sub_end ?faldo_type ?strand (?strand AS ?sub_strand) (?strand AS ?sub_sub_strand) ?name ?description ?sub_name ?sub_description ?sub_class\nFROM <http://togogenome.org/graph/refseq>\nFROM <http://togogenome.org/graph/so>\nFROM <http://togogenome.org/graph/faldo>\nWHERE\n  { VALUES ?sub_class { obo:SO_0000316 obo:SO_0000253 obo:SO_0000252 }\n    ?refseq_id  insdc:sequence_version  \"{refName}\" ;\n              insdc:sequence        ?seq_id .\n    ?uniqueId  obo:so_part_of        ?seq_id ;\n              rdfs:subClassOf       obo:SO_0000704 ;\n              faldo:location        ?loc .\n    ?loc  faldo:begin          ?begin .\n    ?begin    faldo:position        ?start_pos .\n    ?loc faldo:end/faldo:position ?end_pos\n      { BIND(faldo:ForwardStrandPosition AS ?faldo_type)\n        BIND(1 AS ?strand)\n        ?begin  rdf:type  faldo:ForwardStrandPosition\n      }\n    UNION\n      { BIND(faldo:ReverseStrandPosition AS ?faldo_type)\n        BIND(-1 AS ?strand)\n        ?begin  rdf:type  faldo:ReverseStrandPosition\n      }\n    UNION\n      { BIND(faldo:BothStrandPosition AS ?faldo_type)\n        BIND(0 AS ?strand)\n        ?begin  rdf:type  faldo:BothStrandPosition\n      }\n    FILTER ( ! ( ( ?start_pos > {end} ) || ( ?end_pos < {start} ) ) )\n    ?sub_uniqueId  obo:so_part_of   ?uniqueId ;\n              rdfs:subClassOf  ?sub_class ;\n              faldo:location   ?sub_loc .\n    ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n    ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n    ?sub_uniqueId  obo:so_has_part  ?sub_sub_uri ;\n              sio:SIO_000974   ?uuid .\n    ?uuid     sio:SIO_000628   ?sub_sub_uri .\n    ?sub_sub_uri  rdfs:subClassOf  obo:SO_0000147 ;\n              faldo:location   ?sub_sub_loc .\n    ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n    ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos\n    OPTIONAL\n      { ?uniqueId  rdfs:label  ?name }\n    OPTIONAL\n      { ?uniqueId  insdc:product  ?product }\n    OPTIONAL\n      { ?uniqueId  insdc:note  ?note }\n    OPTIONAL\n      { ?sub_uniqueId  rdfs:label  ?sub_name }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:product  ?sub_product }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:note  ?sub_note }\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_start_pos, ?sub_sub_end_pos) AS ?sub_sub_end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?end_pos, ?start_pos) AS ?start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?start_pos, ?end_pos) AS ?end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_start_pos, ?sub_end_pos) AS ?sub_end)\n    BIND(iri(concat(str(?sub_sub_uri), \"-\", str(?uuid))) AS ?sub_sub_uniqueId)\n    BIND(coalesce(?product, ?note, \"\") AS ?description)\n    BIND(coalesce(?sub_product, ?sub_note, \"\") AS ?sub_description)\n  }",
+            "refNamesQueryTemplate": "PREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\n\nSELECT DISTINCT  ?refName\nWHERE\n  { ?refseq_id  insdc:sequence_version  ?refName }",
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "eIylp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "b43o3wEqG4"
             }
           }
         }
@@ -1261,9 +1588,18 @@
   ],
   "configuration": {
     "configId": "WBBdhiJUQdj",
+    "updateUrl": true,
     "rpc": {
       "configId": "A8raoinDhoH"
     }
+  },
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
   },
   "savedSessions": [
     {
@@ -1276,20 +1612,6 @@
           "type": "LinearGenomeView",
           "offsetPx": 2000,
           "bpPerPx": 0.05,
-          "displayedRegions": [
-            {
-              "refName": "ctgA",
-              "start": 0,
-              "end": 50001,
-              "assemblyName": "volvox"
-            },
-            {
-              "refName": "ctgB",
-              "start": 0,
-              "end": 6079,
-              "assemblyName": "volvox"
-            }
-          ],
           "displayRegionsFromAssemblyName": "volvox",
           "reversed": false,
           "tracks": [
@@ -1297,130 +1619,26 @@
               "id": "X6rIl1kHuP",
               "type": "ReferenceSequenceTrack",
               "height": 80,
-              "configuration": "volvox_refseq_track",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "volvox_refseq_track"
             },
             {
               "id": "Uz2i0KbGEL",
               "type": "AlignmentsTrack",
               "height": 200,
               "configuration": "volvox_bam",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
               "id": "07cHDos6N9",
               "type": "BasicTrack",
               "height": 80,
-              "configuration": "bigbed_genes",
-              "blockState": {
-                "volvox:ctgA:101-150": {
-                  "key": "volvox:ctgA:101-150",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 100,
-                    "end": 150,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:51-100": {
-                  "key": "volvox:ctgA:51-100",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 50,
-                    "end": 100,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "volvox:ctgA:151-200": {
-                  "key": "volvox:ctgA:151-200",
-                  "region": {
-                    "refName": "ctgA",
-                    "start": 150,
-                    "end": 200,
-                    "assemblyName": "volvox"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "bigbed_genes"
             }
           ],
           "controlsWidth": 120,
           "width": 808,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -1461,7 +1679,9 @@
                   "callback": "function(session) {session.duplicateCurrentSession();}"
                 },
                 {
-                  "name": "divider"
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
                 },
                 {
                   "name": "Export configuration",
@@ -1505,566 +1725,6 @@
           "type": "LinearGenomeView",
           "offsetPx": 835,
           "bpPerPx": 50,
-          "displayedRegions": [
-            {
-              "refName": "chr1",
-              "start": 0,
-              "end": 249250621,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr2",
-              "start": 0,
-              "end": 243199373,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr3",
-              "start": 0,
-              "end": 198022430,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr4",
-              "start": 0,
-              "end": 191154276,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr5",
-              "start": 0,
-              "end": 180915260,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6",
-              "start": 0,
-              "end": 171115067,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr7",
-              "start": 0,
-              "end": 159138663,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr8",
-              "start": 0,
-              "end": 146364022,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr9",
-              "start": 0,
-              "end": 141213431,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr10",
-              "start": 0,
-              "end": 135534747,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr11",
-              "start": 0,
-              "end": 135006516,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr12",
-              "start": 0,
-              "end": 133851895,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr13",
-              "start": 0,
-              "end": 115169878,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr14",
-              "start": 0,
-              "end": 107349540,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr15",
-              "start": 0,
-              "end": 102531392,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr16",
-              "start": 0,
-              "end": 90354753,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17",
-              "start": 0,
-              "end": 81195210,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr18",
-              "start": 0,
-              "end": 78077248,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr19",
-              "start": 0,
-              "end": 59128983,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr20",
-              "start": 0,
-              "end": 63025520,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr21",
-              "start": 0,
-              "end": 48129895,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr22",
-              "start": 0,
-              "end": 51304566,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrX",
-              "start": 0,
-              "end": 155270560,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrY",
-              "start": 0,
-              "end": 59373566,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrM",
-              "start": 0,
-              "end": 16571,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr1_gl000191_random",
-              "start": 0,
-              "end": 106433,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr1_gl000192_random",
-              "start": 0,
-              "end": 547496,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr4_ctg9_hap1",
-              "start": 0,
-              "end": 590426,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr4_gl000193_random",
-              "start": 0,
-              "end": 189789,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr4_gl000194_random",
-              "start": 0,
-              "end": 191469,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_apd_hap1",
-              "start": 0,
-              "end": 4622290,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_cox_hap2",
-              "start": 0,
-              "end": 4795371,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_dbb_hap3",
-              "start": 0,
-              "end": 4610396,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_mann_hap4",
-              "start": 0,
-              "end": 4683263,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_mcf_hap5",
-              "start": 0,
-              "end": 4833398,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_qbl_hap6",
-              "start": 0,
-              "end": 4611984,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr6_ssto_hap7",
-              "start": 0,
-              "end": 4928567,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr7_gl000195_random",
-              "start": 0,
-              "end": 182896,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr8_gl000196_random",
-              "start": 0,
-              "end": 38914,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr8_gl000197_random",
-              "start": 0,
-              "end": 37175,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr9_gl000198_random",
-              "start": 0,
-              "end": 90085,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr9_gl000199_random",
-              "start": 0,
-              "end": 169874,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr9_gl000200_random",
-              "start": 0,
-              "end": 187035,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr9_gl000201_random",
-              "start": 0,
-              "end": 36148,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr11_gl000202_random",
-              "start": 0,
-              "end": 40103,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17_ctg5_hap1",
-              "start": 0,
-              "end": 1680828,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17_gl000203_random",
-              "start": 0,
-              "end": 37498,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17_gl000204_random",
-              "start": 0,
-              "end": 81310,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17_gl000205_random",
-              "start": 0,
-              "end": 174588,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr17_gl000206_random",
-              "start": 0,
-              "end": 41001,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr18_gl000207_random",
-              "start": 0,
-              "end": 4262,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr19_gl000208_random",
-              "start": 0,
-              "end": 92689,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr19_gl000209_random",
-              "start": 0,
-              "end": 159169,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chr21_gl000210_random",
-              "start": 0,
-              "end": 27682,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000211",
-              "start": 0,
-              "end": 166566,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000212",
-              "start": 0,
-              "end": 186858,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000213",
-              "start": 0,
-              "end": 164239,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000214",
-              "start": 0,
-              "end": 137718,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000215",
-              "start": 0,
-              "end": 172545,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000216",
-              "start": 0,
-              "end": 172294,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000217",
-              "start": 0,
-              "end": 172149,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000218",
-              "start": 0,
-              "end": 161147,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000219",
-              "start": 0,
-              "end": 179198,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000220",
-              "start": 0,
-              "end": 161802,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000221",
-              "start": 0,
-              "end": 155397,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000222",
-              "start": 0,
-              "end": 186861,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000223",
-              "start": 0,
-              "end": 180455,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000224",
-              "start": 0,
-              "end": 179693,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000225",
-              "start": 0,
-              "end": 211173,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000226",
-              "start": 0,
-              "end": 15008,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000227",
-              "start": 0,
-              "end": 128374,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000228",
-              "start": 0,
-              "end": 129120,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000229",
-              "start": 0,
-              "end": 19913,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000230",
-              "start": 0,
-              "end": 43691,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000231",
-              "start": 0,
-              "end": 27386,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000232",
-              "start": 0,
-              "end": 40652,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000233",
-              "start": 0,
-              "end": 45941,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000234",
-              "start": 0,
-              "end": 40531,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000235",
-              "start": 0,
-              "end": 34474,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000236",
-              "start": 0,
-              "end": 41934,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000237",
-              "start": 0,
-              "end": 45867,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000238",
-              "start": 0,
-              "end": 39939,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000239",
-              "start": 0,
-              "end": 33824,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000240",
-              "start": 0,
-              "end": 41933,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000241",
-              "start": 0,
-              "end": 42152,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000242",
-              "start": 0,
-              "end": 43523,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000243",
-              "start": 0,
-              "end": 43341,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000244",
-              "start": 0,
-              "end": 39929,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000245",
-              "start": 0,
-              "end": 36651,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000246",
-              "start": 0,
-              "end": 38154,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000247",
-              "start": 0,
-              "end": 36422,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000248",
-              "start": 0,
-              "end": 39786,
-              "assemblyName": "hg19"
-            },
-            {
-              "refName": "chrUn_gl000249",
-              "start": 0,
-              "end": 38502,
-              "assemblyName": "hg19"
-            }
-          ],
           "displayRegionsFromAssemblyName": "hg19",
           "reversed": false,
           "tracks": [
@@ -2073,41 +1733,6 @@
               "type": "WiggleTrack",
               "height": 100,
               "configuration": "wiggle_global_autoscale",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
@@ -2115,88 +1740,19 @@
               "type": "WiggleTrack",
               "height": 100,
               "configuration": "wiggle_local_autoscale",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              },
               "selectedRendering": ""
             },
             {
               "id": "co9dWzCnSq",
               "type": "BasicTrack",
               "height": 100,
-              "configuration": "bigbed_peaks",
-              "blockState": {
-                "hg19:chr1:1-60000": {
-                  "key": "hg19:chr1:1-60000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 0,
-                    "end": 60000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:60001-120000": {
-                  "key": "hg19:chr1:60001-120000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 60000,
-                    "end": 120000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                },
-                "hg19:chr1:120001-180000": {
-                  "key": "hg19:chr1:120001-180000",
-                  "region": {
-                    "refName": "chr1",
-                    "start": 120000,
-                    "end": 180000,
-                    "assemblyName": "hg19"
-                  },
-                  "isLeftEndOfDisplayedRegion": false,
-                  "isRightEndOfDisplayedRegion": false
-                }
-              }
+              "configuration": "bigbed_peaks"
             }
           ],
           "controlsWidth": 120,
           "width": 1192,
           "hideControls": false,
+          "hideHeader": false,
           "trackSelectorType": "hierarchical",
           "minimumBlockWidth": 20
         }
@@ -2216,6 +1772,142 @@
           "id": "aU_iMpOUx4",
           "type": "MainMenuBar",
           "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    },
+    {
+      "name": "Human Example (GRCh38)",
+      "width": 1260,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "Cma34s8JJ",
+          "type": "LinearGenomeView",
+          "offsetPx": 69300,
+          "bpPerPx": 150,
+          "displayRegionsFromAssemblyName": "GRCh38",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "xwPzCDv22",
+              "type": "BasicTrack",
+              "height": 400,
+              "configuration": "sparql_togo"
+            },
+            {
+              "id": "alksdAD23",
+              "type": "BasicTrack",
+              "height": 100,
+              "configuration": "sparql_ensembl"
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 1260,
+          "hideControls": false,
+          "hideHeader": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {},
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
             {
               "name": "Admin",
               "menuItems": [

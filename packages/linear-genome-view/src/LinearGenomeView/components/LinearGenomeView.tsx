@@ -1,7 +1,11 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
 import { generateLocString } from '@gmod/jbrowse-core/util'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
+
+// material ui things
+import { makeStyles } from '@material-ui/core/styles'
+import Checkbox from '@material-ui/core/Checkbox'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
@@ -9,20 +13,22 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import Select from '@material-ui/core/Select'
-import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
+
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useState, CSSProperties } from 'react'
+
+// locals
 import buttonStyles from './buttonStyles'
 import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
-import { LinearGenomeViewStateModel, LGVMenuOption } from '..'
+import { LinearGenomeViewStateModel } from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const dragHandleHeight = 3
@@ -48,6 +54,8 @@ const useStyles = makeStyles(theme => ({
   },
   viewControls: {
     height: '100%',
+    zIndex: 10,
+    background: '#eee',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
   },
@@ -90,8 +98,10 @@ const useStyles = makeStyles(theme => ({
   },
   ...buttonStyles(theme),
 }))
+
 const TrackContainer = observer(
-  ({ model, track }: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
+  (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
+    const { model, track } = props
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
     const { RenderingComponent, ControlsComponent } = track
@@ -99,20 +109,16 @@ const TrackContainer = observer(
       <>
         <div
           className={clsx(classes.controls, classes.trackControls)}
-          key={`controls:${track.id}`}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
         >
           <ControlsComponent
             track={track}
-            key={track.id}
             view={model}
             onConfigureClick={track.activateConfigurationUI}
           />
         </div>
         <TrackRenderingContainer
-          key={`track-rendering:${track.id}`}
           trackId={track.id}
-          height={track.height}
           onHorizontalScroll={model.horizontalScroll}
         >
           <RenderingComponent
@@ -124,7 +130,6 @@ const TrackContainer = observer(
           />
         </TrackRenderingContainer>
         <ResizeHandle
-          key={`handle:${track.id}`}
           onDrag={track.resizeHeight}
           style={{
             gridRow: `resize-${track.id}`,
@@ -170,42 +175,57 @@ const LongMenu = observer(
           open={open}
           onClose={handleClose}
         >
-          {model.menuOptions.map((option: LGVMenuOption) => (
-            <MenuItem
-              key={option.key}
-              onClick={() => {
-                option.callback()
-                handleClose()
-              }}
-            >
-              {option.title}
-            </MenuItem>
-          ))}
+          {model.menuOptions.map(option => {
+            return option.isCheckbox ? (
+              <MenuItem key={option.key}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={option.checked}
+                      onChange={() => {
+                        option.callback()
+                        handleClose()
+                      }}
+                    />
+                  }
+                  label={option.title}
+                />
+              </MenuItem>
+            ) : (
+              <MenuItem
+                key={option.key}
+                onClick={() => {
+                  option.callback()
+                  handleClose()
+                }}
+              >
+                {option.title}
+              </MenuItem>
+            )
+          })}
+          )}
         </Menu>
       </>
     )
   },
 )
 
-function TextFieldOrTypography({ model }: { model: LGV }) {
+const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const [name, setName] = useState(
-    model.displayName || model.displayRegionsFromAssemblyName,
-  )
+  const name = model.displayName || model.displayRegionsFromAssemblyName
   const [edit, setEdit] = useState(false)
   const [hover, setHover] = useState(false)
   return edit ? (
     <form
       onSubmit={event => {
         setEdit(false)
-        model.setDisplayName(name || '')
         event.preventDefault()
       }}
     >
       <TextField
         value={name}
         onChange={event => {
-          setName(event.target.value)
+          model.setDisplayName(event.target.value)
         }}
         onBlur={() => {
           setEdit(false)
@@ -225,7 +245,7 @@ function TextFieldOrTypography({ model }: { model: LGV }) {
       </Typography>
     </div>
   )
-}
+})
 
 function Search({
   onSubmit,
@@ -328,13 +348,22 @@ const Controls = observer(({ model }) => {
       >
         <Icon fontSize="small">close</Icon>
       </IconButton>
+
+      <IconButton
+        onClick={model.activateTrackSelector}
+        title="select tracks"
+        value="track_select"
+      >
+        <Icon fontSize="small">line_style</Icon>
+      </IconButton>
       <LongMenu className={classes.iconButton} model={model} />
     </>
   )
 })
 
-function LinearGenomeView({ model }: { model: LGV }) {
-  const { id, staticBlocks, tracks, bpPerPx, controlsWidth, offsetPx } = model
+function LinearGenomeView(props: { model: LGV }) {
+  const { model } = props
+  const { tracks, controlsWidth } = model
   const classes = useStyles()
 
   /*
@@ -353,15 +382,11 @@ function LinearGenomeView({ model }: { model: LGV }) {
       )
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-  } as React.CSSProperties
+  } as CSSProperties
 
   return (
     <div className={classes.root}>
-      <div
-        className={classes.linearGenomeView}
-        key={`view-${id}`}
-        style={style}
-      >
+      <div className={classes.linearGenomeView} style={style}>
         {!model.hideHeader ? <Header model={model} /> : null}
         <div
           className={clsx(classes.controls, classes.viewControls)}
@@ -372,16 +397,7 @@ function LinearGenomeView({ model }: { model: LGV }) {
           )}
         </div>
 
-        <Rubberband
-          style={{
-            gridColumn: 'blocks',
-            gridRow: 'scale-bar',
-          }}
-          offsetPx={offsetPx}
-          blocks={staticBlocks}
-          bpPerPx={bpPerPx}
-          model={model}
-        >
+        <Rubberband height={32} model={model}>
           <ScaleBar model={model} height={32} />
         </Rubberband>
 

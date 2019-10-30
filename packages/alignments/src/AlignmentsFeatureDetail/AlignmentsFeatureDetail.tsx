@@ -54,7 +54,7 @@ interface AlnCardProps {
   title: string
 }
 
-const AlignmentCard: FunctionComponent<AlnCardProps> = (props): JSX.Element => {
+const AlignmentCard: FunctionComponent<AlnCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (
@@ -138,7 +138,7 @@ const flags = [
   'supplementary_alignment',
 ]
 
-const AlignmentFlags: FunctionComponent<AlnProps> = (props): JSX.Element => {
+const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
   const { feature } = props
   return (

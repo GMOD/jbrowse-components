@@ -86,7 +86,7 @@ describe('<DivSequenceRendering />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('renders with one feature with no seq, zoomed way out', () => {
+  it('renders with one, zoomed way out', () => {
     const { container } = render(
       <Rendering
         width={500}
@@ -94,7 +94,15 @@ describe('<DivSequenceRendering />', () => {
         region={{ refName: 'zonk', start: 0, end: 1000 }}
         features={
           new Map([
-            ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+            [
+              'one',
+              new SimpleFeature({
+                uniqueId: 'one',
+                start: 1,
+                end: 3,
+                seq: 'AB',
+              }),
+            ],
           ])
         }
         config={DivRenderingConfigSchema.create({})}

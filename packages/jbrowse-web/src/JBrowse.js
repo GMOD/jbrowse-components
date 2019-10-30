@@ -21,19 +21,28 @@ import Theme from './ui/theme'
 export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
-  const [root, setRoot] = useState(initialState)
+  const [root, setRoot] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const l = document.location
-      const updatedUrl = `${l.origin}${l.pathname}?session=${toUrlSafeB64(
-        JSON.stringify(debouncedUrlSnapshot),
-      )}`
-      window.history.replaceState({}, '', updatedUrl)
+      const { origin, pathname } = document.location
+      window.history.replaceState(
+        {},
+        '',
+        `${origin}${pathname}?session=${toUrlSafeB64(
+          JSON.stringify(debouncedUrlSnapshot),
+        )}`,
+      )
     }
   }, [debouncedUrlSnapshot])
+
+  useEffect(() => {
+    if (root && root.session && debouncedUrlSnapshot) {
+      root.jbrowse.updateSavedSession(debouncedUrlSnapshot)
+    }
+  }, [debouncedUrlSnapshot, root])
 
   useEffect(() => {
     async function loadConfig() {
@@ -88,8 +97,6 @@ export default observer(({ config, initialState }) => {
 
         r.setHistory(UndoManager.create({}, { targetStore: r.session }))
         // poke some things for testing (this stuff will eventually be removed)
-        window.ROOTMODEL = r
-        window.MODEL = r.session
         setRoot(r)
         setStatus('loaded')
       } catch (error) {
@@ -103,14 +110,11 @@ export default observer(({ config, initialState }) => {
   }, [config, initialState])
 
   useEffect(() => {
-    let disposer = () => {}
-    if (root && root.session)
-      disposer = onSnapshot(root.session, snapshot => {
-        root.jbrowse.updateSavedSession(snapshot)
-      })
-
-    return disposer
-  }, [root])
+    if (root) {
+      window.MODEL = root.session
+      window.ROOTMODEL = root
+    }
+  }, [root, root.session])
 
   const { session, jbrowse } = root || {}
   const useLocalStorage = jbrowse
