@@ -1,5 +1,5 @@
 {
-  "name": "jbrowse-sv-inspector-desktop",
+  "name": "jbrowse-desktop",
   "version": "2.0.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "private": false,
