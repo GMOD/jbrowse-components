@@ -39,9 +39,28 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           breakpoint detail
         </p>
       </div>
-      <div
-        class="makeStyles-spacer"
-      />
+      <button
+        aria-controls="long-menu"
+        aria-haspopup="true"
+        aria-label="more"
+        class="MuiButtonBase-root MuiIconButton-root"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            more_vert
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
       <div
         class="makeStyles-spacer"
       />
@@ -280,13 +299,19 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="grid-row: scale-bar;"
             />
             <div
-              class="Rubberband-rubberBandContainer"
+              class="makeStyles-rubberBandContainer"
               data-testid="rubberband_container"
               role="presentation"
+              style="height: 40px;"
             >
               <div
-                class="makeStyles-scaleBar"
-              />
+                class="makeStyles-scaleBarContainer"
+              >
+                <div
+                  class="makeStyles-scaleBar"
+                  style="left: 0px; width: 0px; height: 40px;"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -522,13 +547,19 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
               style="grid-row: scale-bar;"
             />
             <div
-              class="Rubberband-rubberBandContainer"
+              class="makeStyles-rubberBandContainer"
               data-testid="rubberband_container"
               role="presentation"
+              style="height: 40px;"
             >
               <div
-                class="makeStyles-scaleBar"
-              />
+                class="makeStyles-scaleBarContainer"
+              >
+                <div
+                  class="makeStyles-scaleBar"
+                  style="left: 0px; width: 0px; height: 40px;"
+                />
+              </div>
             </div>
           </div>
         </div>

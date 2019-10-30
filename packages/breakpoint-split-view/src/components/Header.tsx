@@ -1,7 +1,5 @@
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
-import LockOpen from '@material-ui/icons/LockOpenOutlined'
-import LockClosed from '@material-ui/icons/LockOutlined'
 import { Instance } from 'mobx-state-tree'
 import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
@@ -24,6 +22,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const useStyles = makeStyles((theme: any) => ({
     headerBar: {
       gridArea: '1/1/auto/span 2',

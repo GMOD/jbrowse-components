@@ -248,7 +248,10 @@ export default function stateModelFactory(pluginManager: any) {
       },
       onSubviewZoom(path: string, args: any[]) {
         self.views.forEach(view => {
-          view.zoomTo(args[0])
+          const ret = getPath(view)
+          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+            view.zoomTo(args[0])
+          }
         })
       },
 
