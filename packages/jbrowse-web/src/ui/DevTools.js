@@ -7,12 +7,12 @@ import React from 'react'
 import SessionMenu from './DevTools/SessionMenu'
 import ViewMenu from './DevTools/ViewMenu'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   developer: {
     background: 'white',
     display: 'block',
   },
-}))
+})
 
 function DeveloperTools({ session }) {
   const classes = useStyles()

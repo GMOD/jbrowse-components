@@ -148,6 +148,7 @@ export default class implements Feature {
     return this.record._get('md')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   set(): void {}
 
   tags(): string[] {

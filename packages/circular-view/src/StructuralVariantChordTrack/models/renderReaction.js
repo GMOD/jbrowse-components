@@ -31,13 +31,7 @@ export default ({ jbrequire }) => {
     return data
   }
 
-  async function renderReactionEffect(
-    props,
-    signal,
-    self,
-    mobxReactionHandle,
-    allowRefetch = true,
-  ) {
+  async function renderReactionEffect(props, signal, self) {
     if (!props) {
       throw new Error('cannot render with no props')
     }

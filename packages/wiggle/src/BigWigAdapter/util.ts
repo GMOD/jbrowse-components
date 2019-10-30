@@ -29,7 +29,7 @@ export function calcStdFromSums(
   sum: number,
   sumSquares: number,
   n: number,
-  population: boolean = false,
+  population = false,
 ): number {
   if (n === 0) return 0
   let variance

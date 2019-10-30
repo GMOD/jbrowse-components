@@ -5,7 +5,7 @@ import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from 'quick-lru'
+import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
 import { Observable, Observer } from 'rxjs'
 import { map, mergeAll } from 'rxjs/operators'
 import {
@@ -47,7 +47,7 @@ export default class extends BaseAdapter {
       async fill(
         args: { refName: string; start: number; end: number; bpPerPx: number },
         abortSignal: AbortSignal,
-      ) {
+      ): Promise<FeatureStats> {
         const { refName, start, end, bpPerPx } = args
         const feats = await bigwigRef.getFeatures(refName, start, end, {
           signal: abortSignal,
@@ -155,5 +155,6 @@ export default class extends BaseAdapter {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public freeResources(): void {}
 }

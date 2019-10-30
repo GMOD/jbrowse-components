@@ -346,10 +346,7 @@ export default function sessionModelFactory(pluginManager: any) {
         )
         if (!typeDefinition)
           throw new Error(`unknown menu bar type ${typeName}`)
-        const data = Object.assign({}, initialState, {
-          type: typeName,
-          configuration,
-        })
+        const data = { ...initialState, type: typeName, configuration }
         const model = typeDefinition.stateModel.create(data)
         self.menuBars.push(model)
       },

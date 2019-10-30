@@ -33,7 +33,7 @@ export default (configSchema, trackType) =>
          * @returns falsy if the region is fine to try rendering. Otherwise,
          *  return a string of text saying why the region can't be rendered.
          */
-        regionCannotBeRendered(region) {
+        regionCannotBeRendered(/* region */) {
           const view = getContainingView(self)
           if (view.bpPerPx >= 1) {
             return 'Zoom in to see sequence'
