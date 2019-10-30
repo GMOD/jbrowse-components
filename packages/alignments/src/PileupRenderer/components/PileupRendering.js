@@ -13,6 +13,7 @@ const useStyles = makeStyles(theme => ({
   hoverLabel: {
     border: '1px solid black',
     position: 'absolute',
+    background: '#fffa',
     pointerEvents: 'none',
     zIndex: 10000,
   },
