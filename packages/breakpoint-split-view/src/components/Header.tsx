@@ -1,7 +1,14 @@
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
+import LockOpen from '@material-ui/icons/LockOpenOutlined'
+import LockClosed from '@material-ui/icons/LockOutlined'
+import { Instance } from 'mobx-state-tree'
+import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
 
-export default ({ jbrequire }) => {
+type BSV = Instance<BreakpointViewStateModel>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = React
@@ -10,7 +17,7 @@ export default ({ jbrequire }) => {
   )
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
-  const useStyles = makeStyles(theme => ({
+  const useStyles = makeStyles((theme: any) => ({
     headerBar: {
       gridArea: '1/1/auto/span 2',
       display: 'flex',
@@ -28,7 +35,7 @@ export default ({ jbrequire }) => {
     },
   }))
 
-  const Controls = observer(({ model }) => {
+  const Controls = observer(({ model }: { model: BSV }) => {
     const classes = useStyles()
     return (
       <>
@@ -47,16 +54,14 @@ export default ({ jbrequire }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  function TextFieldOrTypography({ model }) {
+  function TextFieldOrTypography({ model }: { model: BSV }) {
     const classes = useStyles()
-    const [name, setName] = useState(
-      model.displayName || model.displayRegionsFromAssemblyName,
-    )
+    const [name, setName] = useState(model.displayName)
     const [edit, setEdit] = useState(false)
     const [hover, setHover] = useState(false)
     return edit ? (
       <form
-        onSubmit={event => {
+        onSubmit={(event: React.FormEvent) => {
           setEdit(false)
           model.setDisplayName(name)
           event.preventDefault()
@@ -64,7 +69,7 @@ export default ({ jbrequire }) => {
       >
         <TextField
           value={name}
-          onChange={event => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setName(event.target.value)
           }}
           onBlur={() => {
@@ -90,20 +95,22 @@ export default ({ jbrequire }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  const Header = observer(({ model, size }) => {
-    const classes = useStyles()
+  const Header = observer(
+    ({ model, size }: { model: BSV; size: { height: number } }) => {
+      const classes = useStyles()
 
-    model.setHeaderHeight(size.height)
-    return (
-      <div className={classes.headerBar}>
-        {model.hideControls ? null : <Controls model={model} />}
-        <TextFieldOrTypography model={model} />
-        <div className={classes.spacer} />
+      model.setHeaderHeight(size.height)
+      return (
+        <div className={classes.headerBar}>
+          <Controls model={model} />
+          <TextFieldOrTypography model={model} />
+          <div className={classes.spacer} />
 
-        <div className={classes.spacer} />
-      </div>
-    )
-  })
+          <div className={classes.spacer} />
+        </div>
+      )
+    },
+  )
 
   Header.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
