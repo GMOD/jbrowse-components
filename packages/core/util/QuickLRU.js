@@ -1,4 +1,9 @@
 /* eslint-disable no-underscore-dangle */
+/**
+ * Heavily based on [quick-lru](https://www.npmjs.com/package/quick-lru)
+ * (quick-lru didn't work for us because the export wouldn't compile in Webpack
+ * properly)
+ */
 class QuickLRU {
   constructor(options = {}) {
     if (!(options.maxSize && options.maxSize > 0)) {
