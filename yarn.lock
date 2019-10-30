@@ -1417,10 +1417,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.2.tgz#a02fcbcbafe5bc471798d54d667c272148122c91"
   integrity sha512-le/LUeGujO5J4pYdDEsNXTP6M9z8Y3YbCyds53rRwB2/yBmh1q0AHRA2fNrhiM8QqaIvoF8QAHwj4lz/Y6mQWw==
 
-"@gmod/vcf@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-4.0.0.tgz#6160c02b0ac87986a47f7b2c73016d8327051e4f"
-  integrity sha512-Jr3Jt1wlBUaj1jRSDqk9N5/sXxDZed7+RIxDwZR9MuVwQqqpu9g3ipyffBkWHtMWyKygeMLHvnaD67Mgz6nyjA==
+"@gmod/vcf@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-4.0.1.tgz#a07e991030bd140df78ed6279ffb8956218f464d"
+  integrity sha512-xiBJT+9sIHyAMWResAd/5V+uDCedoAQ621Wjhnd1H/43W1DthgYvzEVK4wscvy1cCjxxNt+aACrCN4wJ1Lntlg==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
