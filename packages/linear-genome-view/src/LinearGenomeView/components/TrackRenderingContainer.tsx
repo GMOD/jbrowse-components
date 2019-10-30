@@ -8,7 +8,7 @@ const useStyles = makeStyles({
   trackRenderingContainer: {
     overflowY: 'auto',
     overflowX: 'hidden',
-    background: '#333',
+    background: '#555',
     whiteSpace: 'nowrap',
   },
 })

@@ -8,7 +8,6 @@ import BlockError from '../../LinearGenomeView/components/BlockError'
 const useStyles = makeStyles({
   loading: {
     paddingLeft: '0.6em',
-    position: 'absolute',
     backgroundColor: '#f1f1f1',
     backgroundImage:
       'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',

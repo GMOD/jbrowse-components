@@ -122,6 +122,7 @@ class WiggleRendering extends Component {
         className="WiggleRendering"
         style={{
           overflow: 'visible',
+          position: 'relative',
           height,
         }}
       >

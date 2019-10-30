@@ -1,131 +1,109 @@
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 
-const styles = {
+const useStyles = makeStyles({
   rubberband: {
     height: '10000px',
     background: '#aad8',
     position: 'absolute',
+    display: 'flex',
     zIndex: 9999,
   },
   rubberBandContainer: {
-    position: 'relative',
+    background: '#555',
     cursor: 'crosshair',
+    width: '100%',
+    height: '100%',
   },
+})
+
+function getOffsetX(ref, clientX) {
+  let offset = 0
+  if (ref.current) {
+    offset = ref.current.getBoundingClientRect().left
+  }
+  return clientX - offset
 }
+function Rubberband({ model, height, children }) {
+  const [startX, setStartX] = useState()
+  const [currentX, setCurrentX] = useState()
+  const [mouseDragging, setMouseDragging] = useState(false)
+  const ref = useRef()
+  const classes = useStyles()
 
-class Rubberband extends Component {
-  static defaultProps = {
-    children: undefined,
-  }
+  useEffect(() => {
+    let cleanup = () => {}
 
-  static propTypes = {
-    model: MobxPropTypes.objectOrObservableObject.isRequired,
-    classes: ReactPropTypes.objectOf(ReactPropTypes.string).isRequired,
-    children: ReactPropTypes.node,
-  }
+    function globalMouseMove(event) {
+      event.preventDefault()
+      setCurrentX(event.clientX)
+    }
 
-  state = {}
-
-  containerNode = React.createRef()
-
-  onMouseDown = event => {
-    event.preventDefault()
-    const { clientX } = event
-    const x = this.clientXToOffset(clientX)
-    // console.log(x, this.props.model.pxToBp(x))
-
-    this.setState({
-      rubberband: [x, x + 1],
-    })
-    window.addEventListener('mousemove', this.mouseMove, true)
-    window.addEventListener('mouseup', this.mouseUp, true)
-  }
-
-  mouseUp = () => {
-    const { rubberband } = this.state
-    const { model } = this.props
-    if (rubberband) {
-      let [leftPx, rightPx] = rubberband
+    function globalMouseUp() {
+      setStartX(undefined)
+      setCurrentX(undefined)
+      setMouseDragging(false)
+      let leftPx = startX
+      let rightPx = currentX
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
       if (rightPx - leftPx > 3) {
-        const leftOffset = model.pxToBp(leftPx)
-        const rightOffset = model.pxToBp(rightPx)
+        const leftOffset = model.pxToBp(getOffsetX(ref, leftPx))
+        const rightOffset = model.pxToBp(getOffsetX(ref, rightPx))
         model.moveTo(leftOffset, rightOffset)
       }
     }
-    this.setState(() => ({
-      rubberband: undefined,
-    }))
-    window.removeEventListener('mouseup', this.mouseUp, true)
-    window.removeEventListener('mousemove', this.mouseMove, true)
-  }
 
-  mouseMove = ({ clientX }) => {
-    const x = this.clientXToOffset(clientX)
-
-    const { rubberband } = this.state
-    if (rubberband) {
-      this.setState({
-        rubberband: [rubberband[0], x],
-      })
-    }
-  }
-
-  /**
-   * convert clientX to an offsetX relative to our container dom node
-   * @param {number} clientX
-   */
-  clientXToOffset(clientX) {
-    if (!this.containerNode.current) return undefined
-    let offset = 0
-    for (
-      let node = this.containerNode.current;
-      node.offsetParent;
-      node = node.offsetParent
-    ) {
-      offset += node.offsetLeft
-    }
-    return clientX - offset
-  }
-
-  render() {
-    const { children, classes } = this.props
-    const { rubberband } = this.state
-
-    let leftPx
-    let rightPx
-    if (rubberband) {
-      ;[leftPx, rightPx] = rubberband
-      if (rightPx < leftPx) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
+    if (mouseDragging) {
+      window.addEventListener('mousemove', globalMouseMove, true)
+      window.addEventListener('mouseup', globalMouseUp, true)
+      cleanup = () => {
+        window.removeEventListener('mousemove', globalMouseMove, true)
+        window.removeEventListener('mouseup', globalMouseUp, true)
       }
     }
-    return (
-      <div
-        data-testid="rubberband_container"
-        className={classes.rubberBandContainer}
-        onMouseDown={this.onMouseDown}
-        role="presentation"
-        ref={this.containerNode}
-      >
-        {rubberband ? (
-          <div
-            className={classes.rubberband}
-            style={{
-              left: leftPx,
-              width: rightPx - leftPx,
-            }}
-          />
-        ) : null}
-        {children}
-      </div>
-    )
-  }
+    return cleanup
+  }, [currentX, model, mouseDragging, startX])
+
+  return (
+    <div
+      data-testid="rubberband_container"
+      className={classes.rubberBandContainer}
+      role="presentation"
+      ref={ref}
+      onMouseDown={event => {
+        event.preventDefault()
+        setMouseDragging(true)
+        setStartX(event.clientX)
+      }}
+      style={{ height }}
+    >
+      {startX !== undefined && currentX !== undefined ? (
+        <div
+          className={classes.rubberband}
+          style={
+            currentX < startX
+              ? { left: currentX, width: startX - currentX }
+              : { left: startX, width: currentX - startX }
+          }
+        />
+      ) : null}
+      {children}
+    </div>
+  )
 }
 
-export default withStyles(styles)(Rubberband)
+Rubberband.propTypes = {
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
+  height: ReactPropTypes.number.isRequired,
+  children: ReactPropTypes.node,
+}
+
+Rubberband.defaultProps = {
+  children: undefined,
+}
+
+export default Rubberband

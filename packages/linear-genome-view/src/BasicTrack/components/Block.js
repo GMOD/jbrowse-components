@@ -3,23 +3,21 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const useStyles = makeStyles((/* theme */) => ({
+const useStyles = makeStyles(theme => ({
   block: {
-    position: 'absolute',
+    background: theme.palette.background.default,
     minHeight: '100%',
-    background: 'white',
-    // background: theme.palette.background.default,
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
   },
 }))
 
-function Block({ block, model, children }) {
+function Block(props) {
+  const { block, children } = props
   const classes = useStyles()
   return (
     <div
       style={{
-        left: `${block.offsetPx - model.offsetPx}px`,
         width: `${block.widthPx}px`,
       }}
       className={classes.block}
@@ -33,7 +31,6 @@ Block.defaultProps = {
   children: undefined,
 }
 Block.propTypes = {
-  model: PropTypes.shape().isRequired,
   block: PropTypes.shape().isRequired,
   children: PropTypes.oneOfType([
     PropTypes.node,
