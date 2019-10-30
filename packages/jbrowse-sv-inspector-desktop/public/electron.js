@@ -186,6 +186,22 @@ ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
   await fsUnlink(path.join(sessionDirectory, `${oldName}.json`))
 })
 
+ipcMain.answerRenderer('reset', async () => {
+  const configTemplateLocation = isDev
+    ? path.join(app.getAppPath(), 'public/test_data/config.json')
+    : `file://${path.join(
+        app.getAppPath(),
+        'public/../build/test_data/config.json',
+      )}`
+  await fsCopyFile(configTemplateLocation, configLocation)
+  const sessionFiles = await fsReaddir(sessionDirectory)
+  const unlinkCommands = []
+  for (const sessionFile of sessionFiles) {
+    unlinkCommands.push(fsUnlink(path.join(sessionDirectory, sessionFile)))
+  }
+  await Promise.all(unlinkCommands)
+})
+
 ipcMain.answerRenderer('deleteSession', async sessionName => {
   try {
     await fsUnlink(path.join(sessionDirectory, `${sessionName}.thumbnail`))

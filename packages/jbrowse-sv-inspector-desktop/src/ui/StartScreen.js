@@ -7,7 +7,13 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import Input from '@material-ui/core/Input'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
@@ -30,6 +36,11 @@ const useStyles = makeStyles(theme => ({
   header: {
     margin: theme.spacing(2),
   },
+  settings: {
+    position: 'fixed',
+    top: 8,
+    left: 'calc(100% - 56px)',
+  },
 }))
 
 export default function StartScreen({ root }) {
@@ -37,6 +48,8 @@ export default function StartScreen({ root }) {
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
   const [newSessionName, setNewSessionName] = useState('')
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null)
+  const [reset, setReset] = useState(false)
 
   const classes = useStyles()
 
@@ -66,18 +79,35 @@ export default function StartScreen({ root }) {
     if (action === 'delete') {
       await ipcRenderer.callMain('deleteSession', sessionNameToDelete)
       getSessions()
-    }
-    if (action === 'rename') {
+    } else if (action === 'rename') {
       await ipcRenderer.callMain(
         'renameSession',
         sessionNameToRename,
         newSessionName,
       )
       getSessions()
+    } else if (action === 'reset') {
+      await ipcRenderer.callMain('reset')
+      window.location.reload()
     }
     setNewSessionName('')
     setSessionNameToDelete()
     setSessionNameToRename()
+    setReset(false)
+  }
+
+  function handleSettingsClick(event) {
+    event.stopPropagation()
+    setMenuAnchorEl(event.currentTarget)
+  }
+
+  function handleFactoryReset() {
+    setReset(true)
+    handleMenuClose()
+  }
+
+  function handleMenuClose() {
+    setMenuAnchorEl(null)
   }
 
   if (!sessions)
@@ -121,7 +151,7 @@ export default function StartScreen({ root }) {
         </DialogActions>
       </>
     )
-  if (sessionNameToRename)
+  else if (sessionNameToRename)
     DialogComponent = (
       <>
         <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
@@ -144,6 +174,30 @@ export default function StartScreen({ root }) {
             color="primary"
             variant="contained"
             disabled={!newSessionName}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </>
+    )
+  else if (reset)
+    DialogComponent = (
+      <>
+        <DialogTitle id="alert-dialog-title">Reset</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to reset? This will restore the default
+            configuration and remove all sessions.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleDialogClose()} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleDialogClose('reset')}
+            color="primary"
+            variant="contained"
           >
             OK
           </Button>
@@ -195,12 +249,30 @@ export default function StartScreen({ root }) {
         </Grid>
       </Container>
       <Dialog
-        open={Boolean(sessionNameToRename || sessionNameToDelete)}
+        open={Boolean(sessionNameToRename || sessionNameToDelete || reset)}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         {DialogComponent}
       </Dialog>
+      <IconButton className={classes.settings} onClick={handleSettingsClick}>
+        <Icon>settings</Icon>
+      </IconButton>
+      <Menu
+        id="simple-menu"
+        anchorEl={menuAnchorEl}
+        keepMounted
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+      >
+        <ListSubheader>Advanced Settings</ListSubheader>
+        <MenuItem onClick={() => handleFactoryReset()}>
+          <ListItemIcon>
+            <Icon fontSize="small">warning</Icon>
+          </ListItemIcon>
+          <Typography variant="inherit">Factory Reset</Typography>
+        </MenuItem>
+      </Menu>
     </>
   )
 }
