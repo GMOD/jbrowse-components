@@ -112,6 +112,7 @@ const blockState = types
         renderInProgress = undefined
       },
       setError(error: string) {
+        console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }

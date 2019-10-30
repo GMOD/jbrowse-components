@@ -17,7 +17,6 @@ export default ({ jbrequire }) => {
   }
 
   const Chord = observer(function Chord({
-    trackModel,
     feature,
     blocksForRefs,
     radius,

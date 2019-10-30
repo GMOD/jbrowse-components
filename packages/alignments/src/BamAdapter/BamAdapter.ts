@@ -13,12 +13,14 @@ interface HeaderLine {
   tag: string
   value: string
 }
+interface SamHeader {
+  idToName?: string[]
+  nameToId?: Record<string, number>
+}
 export default class extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private bam: any
+  private bam: BamFile
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private samHeader: any
+  private samHeader?: SamHeader
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -48,9 +50,9 @@ export default class extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async setup(): Promise<void> {
+  async setup(opts: BaseOptions = {}): Promise<void> {
     if (!this.samHeader) {
-      const samHeader = await this.bam.getHeader()
+      const samHeader = await this.bam.getHeader(opts.signal)
       this.samHeader = {}
 
       // use the @SQ lines in the header to figure out the
@@ -68,16 +70,14 @@ export default class extends BaseAdapter {
           }
         })
       })
-      if (idToName.length) {
-        this.samHeader.idToName = idToName
-        this.samHeader.nameToId = nameToId
-      }
+      this.samHeader.idToName = idToName
+      this.samHeader.nameToId = nameToId
     }
   }
 
-  async getRefNames(): Promise<string[]> {
-    await this.setup()
-    return this.samHeader.idToName
+  async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
+    await this.setup(opts)
+    return (this.samHeader && this.samHeader.idToName) || []
   }
 
   /**
@@ -94,7 +94,7 @@ export default class extends BaseAdapter {
   ): Observable<Feature> {
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
-        await this.setup()
+        await this.setup(opts)
         const records = await this.bam.getRecordsForRange(
           refName,
           start,
@@ -116,6 +116,7 @@ export default class extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   freeResources(/* { region } */): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,7 +127,7 @@ export default class extends BaseAdapter {
   refIdToName(refId: number): string | undefined {
     // use info from the SAM header if possible, but fall back to using
     // the ref name order from when the browser's ref names were loaded
-    if (this.samHeader.idToName) {
+    if (this.samHeader && this.samHeader.idToName) {
       return this.samHeader.idToName[refId]
     }
     return undefined

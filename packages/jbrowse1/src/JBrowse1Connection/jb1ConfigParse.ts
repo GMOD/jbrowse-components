@@ -323,7 +323,7 @@ function synthesizeTrackStoreConfig(
   }
 
   // synthesize a separate store conf
-  const storeConf: Store = Object.assign({}, trackConfig, { type: storeClass })
+  const storeConf: Store = { ...trackConfig, type: storeClass }
 
   // if this is the first sequence store we see, and we have no refseqs store
   // defined explicitly, make this the refseqs store.

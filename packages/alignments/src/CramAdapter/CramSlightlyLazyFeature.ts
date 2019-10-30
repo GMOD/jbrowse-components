@@ -208,6 +208,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   set(): void {}
 
   pairedFeature() {

@@ -1,0 +1,74 @@
+{
+  "drawerWidth": 256,
+  "views": [
+    {
+      "id": "Y-WM9HwhV",
+      "type": "LinearGenomeView",
+      "offsetPx": 20,
+      "bpPerPx": 1,
+      "tracks": [
+        {
+          "id": "foo",
+          "name": "Foo Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "configuration": {},
+          "blockState": {}
+        },
+      {
+          "id": "bar",
+          "name": "Bar Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "configuration": {},
+          "blockState": {}
+        },
+       {
+          "id": "baz",
+          "name": "Baz Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "configuration": {},
+          "blockState": {}
+        }
+      ],
+      "controlsWidth": 100,
+      "displayedRegions": [],
+      "configuration": "LinearGenomeView"
+    },
+    {
+      "id": "1YKfbpmZoU",
+      "type": "LinearGenomeView",
+      "offsetPx": 0,
+      "bpPerPx": 1,
+      "tracks": [
+         {
+          "id": "bee",
+          "name": "Bee Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "configuration": {},
+          "blockState": {}
+        },
+         {
+          "id": "bonk",
+          "name": "Bonk Track",
+          "description": "",
+          "type": "AlignmentsTrack",
+          "height": 20,
+          "configuration": {},
+          "blockState": {}
+        }
+      ],
+      "controlsWidth": 100,
+      "displayedRegions": [],
+      "configuration": {}
+    }
+  ],
+  "drawerWidgets": {},
+  "configuration": { "views": { "LinearGenomeView": { "configId": "LinearGenomeView"}}}
+}

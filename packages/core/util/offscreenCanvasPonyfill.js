@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
@@ -9,6 +8,8 @@ export let createImageBitmap
 export let ImageBitmapType
 
 // sniff environments
+const isElectron = !!window.electron
+
 const weHave = {
   realOffscreenCanvas:
     typeof __webpack_require__ === 'function' &&
@@ -17,7 +18,25 @@ const weHave = {
     typeof __webpack_require__ === 'undefined' && typeof process === 'object',
 }
 
-if (weHave.realOffscreenCanvas) {
+// Electron serializes everything to JSON through the IPC boundary, so we just
+// send the dataURL
+if (isElectron) {
+  createCanvas = (width, height) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    return canvas
+  }
+  createImageBitmap = async (canvas, ...otherargs) => {
+    if (otherargs.length) {
+      throw new Error(
+        'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
+      )
+    }
+    return { dataURL: canvas.toDataURL() }
+  }
+  ImageBitmapType = Image
+} else if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap

@@ -1,5 +1,5 @@
 export default class Plugin {
-  install(browser) {
+  install() {
     this.installed = true
   }
 

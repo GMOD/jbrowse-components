@@ -130,6 +130,7 @@ export default class extends BaseAdapter {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public freeResources(): void {}
 }
 

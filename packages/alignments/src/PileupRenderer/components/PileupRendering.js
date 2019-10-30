@@ -9,7 +9,7 @@ import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
 import runner from 'mobx-run-in-reactive-context'
 import useTimeout from 'use-timeout'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   hoverLabel: {
     border: '1px solid black',
     backgroundColor: '#fffa',
@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
     zIndex: 10000,
   },
-}))
+})
 
 function Tooltip({ offsetX, offsetY, feature, timeout = 300 }) {
   const classes = useStyles()

@@ -43,7 +43,7 @@ export default class extends BoxRendererType {
     config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
-    horizontallyFlipped: boolean = false,
+    horizontallyFlipped = false,
   ): LayoutRecord | null {
     const startPx = bpToPx(
       feature.get('start'),

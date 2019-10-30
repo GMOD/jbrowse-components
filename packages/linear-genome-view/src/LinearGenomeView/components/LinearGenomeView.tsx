@@ -104,14 +104,14 @@ const TrackContainer = observer(
     const { model, track } = props
     const classes = useStyles()
     const { bpPerPx, offsetPx } = model
-    const { RenderingComponent } = track
+    const { RenderingComponent, ControlsComponent } = track
     return (
       <>
         <div
           className={clsx(classes.controls, classes.trackControls)}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
         >
-          <track.ControlsComponent
+          <ControlsComponent
             track={track}
             view={model}
             onConfigureClick={track.activateConfigurationUI}
@@ -382,7 +382,7 @@ function LinearGenomeView(props: { model: LGV }) {
       )
       .join(' ')}`,
     gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-  } as React.CSSProperties
+  } as CSSProperties
 
   return (
     <div className={classes.root}>
