@@ -32,9 +32,11 @@ function watchWorker(worker: WorkerHandle, pingTime: number): Promise<void> {
         )
       } else {
         pingIsOK = false
-        worker.call('ping').then(() => {
-          pingIsOK = true
-        })
+        worker
+          .call('ping', [], { timeout: 2 * WORKER_MAX_PING_TIME })
+          .then(() => {
+            pingIsOK = true
+          })
       }
     }, pingTime)
   })
