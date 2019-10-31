@@ -843,7 +843,7 @@
             },
             "index": {
               "location": {
-                "uri": "test_data/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
               }
             }
           }
@@ -1011,6 +1011,25 @@
               "type": "SvgFeatureRenderer",
               "labels": {
                 "configId": "NG04oARDu88"
+              }
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
               }
             }
           }
