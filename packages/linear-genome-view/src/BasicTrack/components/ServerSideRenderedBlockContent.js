@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
+import { LinearProgress } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
@@ -37,7 +38,12 @@ function LoadingMessage() {
     return () => clearTimeout(timeout)
   })
 
-  return shown ? <div className={classes.loading}>Loading &hellip;</div> : null
+  return shown ? (
+    <div className={classes.loading}>
+      Loading &hellip;
+      <LinearProgress />
+    </div>
+  ) : null
 }
 
 function BlockMessage({ messageText }) {
