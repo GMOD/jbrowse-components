@@ -88,7 +88,8 @@ export default abstract class BaseRpcDriver {
   createWorkerPool(): WorkerHandle[] {
     const hardwareConcurrency =
       typeof window !== 'undefined' ? window.navigator.hardwareConcurrency : 2
-    const workerCount = this.workerCount || Math.max(1, hardwareConcurrency - 2)
+    const workerCount =
+      this.workerCount || Math.max(1, Math.ceil(hardwareConcurrency / 2))
 
     const workerHandles: WorkerHandle[] = new Array(workerCount)
     for (let i = 0; i < workerCount; i += 1) {
