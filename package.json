@@ -44,6 +44,7 @@
         "@typescript-eslint/eslint-plugin": "^2.0.0",
         "@typescript-eslint/parser": "^2.0.0",
         "babel-loader": "^8.0.4",
+        "babel-plugin-named-asset-import": "^0.3.0",
         "babel-preset-mobx": "^2.0.0",
         "babel-preset-react-app": "8.0.0-next.b0cbf2ca",
         "babel-preset-typescript": "^7.0.0-alpha.19",
