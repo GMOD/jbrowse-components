@@ -209,7 +209,6 @@ const LongMenu = observer(
               </MenuItem>
             )
           })}
-          )}
         </Menu>
       </>
     )
