@@ -132,7 +132,6 @@ const BaseCoreDetails = (props: BaseProps) => {
 }
 
 const omit = [
-  'id',
   'name',
   'start',
   'end',
@@ -141,6 +140,8 @@ const omit = [
   'type',
   'length',
   'position',
+  'subfeatures',
+  'uniqueId',
 ]
 
 interface AttributeProps {

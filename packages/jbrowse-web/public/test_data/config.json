@@ -1457,10 +1457,41 @@
           ],
           "adapter": {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz"
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+            "refNames": [
+              "chr1",
+              "chr2",
+              "chr3",
+              "chr4",
+              "chr5",
+              "chr6",
+              "chr7",
+              "chr8",
+              "chr9",
+              "chr10",
+              "chr11",
+              "chr12",
+              "chr13",
+              "chr14",
+              "chr15",
+              "chr16",
+              "chr17",
+              "chr18",
+              "chr19",
+              "chr20",
+              "chr21",
+              "chr22",
+              "chr23",
+              "chrX",
+              "chrY",
+              "chrMT"
+            ]
           },
           "renderer": {
-            "type": "SvgFeatureRenderer"
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
           }
         },
         {
