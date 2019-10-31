@@ -93,7 +93,11 @@ export function freeAdapterResources(specification) {
   } else {
     // otherwise call freeResources on all the cached data adapters
     Object.values(adapterCache).forEach(cacheEntry => {
-      cacheEntry.dataAdapter.freeResources(specification)
+      if (!cacheEntry.dataAdapter.freeResources) {
+        console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
+      } else {
+        cacheEntry.dataAdapter.freeResources(specification)
+      }
     })
   }
 

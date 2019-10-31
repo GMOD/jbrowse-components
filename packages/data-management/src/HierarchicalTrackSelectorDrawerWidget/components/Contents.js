@@ -87,8 +87,9 @@ function Contents({
 
   const showRefSeqTrack =
     top &&
-    thisAssemblyData &&
     !connection &&
+    thisAssemblyData &&
+    thisAssemblyData.sequence &&
     model.view.type === thisAssemblyData.sequence.viewType
 
   return (

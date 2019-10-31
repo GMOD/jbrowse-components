@@ -12,8 +12,8 @@ import useTimeout from 'use-timeout'
 const useStyles = makeStyles({
   hoverLabel: {
     border: '1px solid black',
-    backgroundColor: '#fffa',
     position: 'absolute',
+    background: '#fffa',
     pointerEvents: 'none',
     zIndex: 10000,
   },

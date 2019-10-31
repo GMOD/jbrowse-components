@@ -6,274 +6,496 @@ exports[`open up a drawer widget 1`] = `
   data-testid="alignment-side-drawer"
 >
   <div
-    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paperRoot MuiPaper-rounded"
+    data-testid="alignment-side-drawer"
   >
     <div
-      class="MuiCardHeader-root makeStyles-header"
+      class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+      style="margin-top: 4px;"
     >
       <div
-        class="MuiCardHeader-content"
+        aria-disabled="false"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+        role="button"
+        tabindex="0"
       >
-        <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
+        <div
+          class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
         >
-          Primary data
-        </span>
+          <span
+            class="MuiTypography-root MuiTypography-button"
+          >
+             
+            Primary data
+          </span>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-hidden="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root"
+            >
+              expand_more
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiCollapse-container MuiCollapse-entered"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner"
+          >
+            <div
+              role="region"
+            >
+              <div
+                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+              >
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Position
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    ctgA:3..102 (+)
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Name
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    ctgA_3_555_0:0:0_2:0:0_102d
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    100
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    Type
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    match
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <hr
+      class="MuiDivider-root"
+    />
     <div
-      class="MuiCardContent-root"
+      class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+      style="margin-top: 4px;"
     >
-      <div>
+      <div
+        aria-disabled="false"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+        role="button"
+        tabindex="0"
+      >
         <div
-          class="makeStyles-fieldName"
+          class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
         >
-          Position
+          <span
+            class="MuiTypography-root MuiTypography-button"
+          >
+             
+            Attributes
+          </span>
         </div>
         <div
-          class="makeStyles-fieldValue"
+          aria-disabled="false"
+          aria-hidden="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
         >
-          ctgA:3..102
+          <span
+            class="MuiIconButton-label"
+          >
+            <span
+              aria-hidden="true"
+              class="material-icons MuiIcon-root"
+            >
+              expand_more
+            </span>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
         </div>
       </div>
-      <div>
+      <div
+        class="MuiCollapse-container MuiCollapse-entered"
+        style="min-height: 0px;"
+      >
         <div
-          class="makeStyles-fieldName"
+          class="MuiCollapse-wrapper"
         >
-          Name
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          ctgA_3_555_0:0:0_2:0:0_102d
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          Length
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          100
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          Type
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          match
+          <div
+            class="MuiCollapse-wrapperInner"
+          >
+            <div
+              role="region"
+            >
+              <div
+                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+              >
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    seq
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    unmapped
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    false
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    qc_failed
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    false
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    duplicate
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    false
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    secondary_alignment
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    false
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    supplementary_alignment
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    false
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    score
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    37
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    qual
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    MQ
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    37
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    CIGAR
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    100M
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    length_on_ref
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    100
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    template_length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    0
+                  </div>
+                </div>
+                <div
+                  style="display: flex;"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    seq_length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    100
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <hr
-    class="MuiDivider-root"
-  />
   <div
-    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+    style="margin-top: 4px;"
   >
     <div
-      class="MuiCardHeader-root makeStyles-header"
+      aria-disabled="false"
+      aria-expanded="true"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      role="button"
+      tabindex="0"
     >
       <div
-        class="MuiCardHeader-content"
+        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
       >
         <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
+          class="MuiTypography-root MuiTypography-button"
         >
-          Attributes
-        </span>
-      </div>
-    </div>
-    <div
-      class="MuiCardContent-root"
-    >
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          seq
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          score
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          37
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          qual
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          MQ
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          37
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          CIGAR
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          100M
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          length_on_ref
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          100
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          template_length
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          0
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          seq_length
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          100
-        </div>
-      </div>
-    </div>
-  </div>
-  <hr
-    class="MuiDivider-root"
-  />
-  <div
-    class="MuiPaper-root MuiPaper-elevation1 MuiCard-root MuiPaper-rounded"
-  >
-    <div
-      class="MuiCardHeader-root makeStyles-header"
-    >
-      <div
-        class="MuiCardHeader-content"
-      >
-        <span
-          class="MuiTypography-root MuiCardHeader-title makeStyles-title MuiTypography-h5 MuiTypography-displayBlock"
-        >
+           
           Flags
         </span>
       </div>
+      <div
+        aria-disabled="false"
+        aria-hidden="true"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            expand_more
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </div>
     </div>
     <div
-      class="MuiCardContent-root"
+      class="MuiCollapse-container MuiCollapse-entered"
+      style="min-height: 0px;"
     >
-      <div>
+      <div
+        class="MuiCollapse-wrapper"
+      >
         <div
-          class="makeStyles-fieldName"
+          class="MuiCollapse-wrapperInner"
         >
-          unmapped
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          false
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          qc_failed
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          false
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          duplicate
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          false
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          secondary_alignment
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          false
-        </div>
-      </div>
-      <div>
-        <div
-          class="makeStyles-fieldName"
-        >
-          supplementary_alignment
-        </div>
-        <div
-          class="makeStyles-fieldValue"
-        >
-          false
+          <div
+            role="region"
+          >
+            <div
+              class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+            >
+              <div>
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  unmapped
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  false
+                </div>
+              </div>
+              <div>
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  qc_failed
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  false
+                </div>
+              </div>
+              <div>
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  duplicate
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  false
+                </div>
+              </div>
+              <div>
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  secondary_alignment
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  false
+                </div>
+              </div>
+              <div>
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  supplementary_alignment
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  false
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

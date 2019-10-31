@@ -18,10 +18,11 @@ const useStyles = makeStyles({
  */
 const TrackRenderingContainer: React.FC<{
   onHorizontalScroll: Function
+  setScrollTop: Function
   children?: ReactNode
   trackId: string
 }> = props => {
-  const { onHorizontalScroll, trackId, children } = props
+  const { onHorizontalScroll, setScrollTop, trackId, children } = props
   const classes = useStyles()
   const [scheduled, setScheduled] = useState(false)
   const [delta, setDelta] = useState(0)
@@ -103,6 +104,10 @@ const TrackRenderingContainer: React.FC<{
         gridRow: `track-${trackId}`,
         gridColumn: 'blocks',
       }}
+      onScroll={event => {
+        const target = event.target as HTMLDivElement
+        setScrollTop(target.scrollTop, target.clientHeight)
+      }}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
@@ -116,6 +121,7 @@ const TrackRenderingContainer: React.FC<{
 TrackRenderingContainer.propTypes = {
   trackId: PropTypes.string.isRequired,
   children: PropTypes.node,
+  setScrollTop: PropTypes.func.isRequired,
   onHorizontalScroll: PropTypes.func.isRequired,
 }
 

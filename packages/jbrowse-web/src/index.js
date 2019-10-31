@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { useQueryParam, StringParam } from 'use-query-params'
 import JBrowse from './JBrowse'
 import * as serviceWorker from './serviceWorker'
+import 'core-js/stable'
 
 const App = () => {
   const [config] = useQueryParam('config', StringParam)

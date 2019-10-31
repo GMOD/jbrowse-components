@@ -28,7 +28,11 @@ import Rubberband from './Rubberband'
 import ScaleBar from './ScaleBar'
 import TrackRenderingContainer from './TrackRenderingContainer'
 import ZoomControls from './ZoomControls'
-import { LinearGenomeViewStateModel } from '..'
+import {
+  LinearGenomeViewStateModel,
+  HEADER_BAR_HEIGHT,
+  SCALE_BAR_HEIGHT,
+} from '..'
 import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 
 const dragHandleHeight = 3
@@ -64,6 +68,7 @@ const useStyles = makeStyles(theme => ({
   },
   headerBar: {
     gridArea: '1/1/auto/span 2',
+    height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
   spacer: {
@@ -120,6 +125,7 @@ const TrackContainer = observer(
         <TrackRenderingContainer
           trackId={track.id}
           onHorizontalScroll={model.horizontalScroll}
+          setScrollTop={track.setScrollTop}
         >
           <RenderingComponent
             model={track}
@@ -375,7 +381,7 @@ function LinearGenomeView(props: { model: LGV }) {
     position: 'relative',
     gridTemplateRows: `${
       !model.hideHeader ? '[header] auto ' : ''
-    } [scale-bar] auto ${tracks
+    } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
       .map(
         t =>
           `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -397,8 +403,8 @@ function LinearGenomeView(props: { model: LGV }) {
           )}
         </div>
 
-        <Rubberband height={32} model={model}>
-          <ScaleBar model={model} height={32} />
+        <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
+          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
         </Rubberband>
 
         {model.hideHeader ? (

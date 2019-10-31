@@ -6,7 +6,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
@@ -126,8 +126,9 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -176,7 +177,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -193,7 +194,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"
@@ -232,14 +233,14 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
-      style="height: 32px;"
+      style="height: 40px;"
     >
       <div
         class="makeStyles-scaleBarContainer"
       >
         <div
           class="makeStyles-scaleBar"
-          style="left: 0px; width: 0px;"
+          style="left: 0px; width: 0px; height: 40px;"
         />
       </div>
     </div>
@@ -330,7 +331,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
@@ -450,8 +451,9 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -500,7 +502,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -517,7 +519,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"
@@ -556,21 +558,21 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
-      style="height: 32px;"
+      style="height: 40px;"
     >
       <div
         class="makeStyles-scaleBarContainer"
       >
         <div
           class="makeStyles-scaleBar"
-          style="left: 0px; width: 102px;"
+          style="left: 0px; width: 102px; height: 40px;"
         >
           <div
             class="makeStyles-block"
             style="width: 100px;"
           >
             <svg
-              height="32"
+              height="40"
               width="100"
             >
               <line
@@ -871,7 +873,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] auto; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
@@ -991,8 +993,9 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -1041,7 +1044,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -1058,7 +1061,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"
@@ -1097,14 +1100,14 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       class="makeStyles-rubberBandContainer"
       data-testid="rubberband_container"
       role="presentation"
-      style="height: 32px;"
+      style="height: 40px;"
     >
       <div
         class="makeStyles-scaleBarContainer"
       >
         <div
           class="makeStyles-scaleBar"
-          style="left: 0px; width: 0px;"
+          style="left: 0px; width: 0px; height: 40px;"
         />
       </div>
     </div>

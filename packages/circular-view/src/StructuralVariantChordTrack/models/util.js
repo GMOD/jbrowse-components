@@ -46,7 +46,7 @@ export default ({ jbrequire }) => {
           return {}
         }
       },
-      data => {
+      (data, mobxReactionHandle) => {
         if (inProgress && !inProgress.signal.aborted) inProgress.abort()
         if (!isAlive(self)) return
         inProgress = new AbortController()
@@ -54,7 +54,14 @@ export default ({ jbrequire }) => {
         const thisInProgress = inProgress
         self[`${flowName}Started`](thisInProgress)
         Promise.resolve()
-          .then(() => asyncReactionFunction(data, thisInProgress.signal, self))
+          .then(() =>
+            asyncReactionFunction(
+              data,
+              thisInProgress.signal,
+              self,
+              mobxReactionHandle,
+            ),
+          )
           .then(result => {
             checkAbortSignal(thisInProgress.signal)
             if (isAlive(self)) self[`${flowName}Success`](result)

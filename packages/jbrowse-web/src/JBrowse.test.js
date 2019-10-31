@@ -13,6 +13,7 @@ import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
+import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
 fetchMock.config.sendAsJson = false
@@ -382,5 +383,24 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
+  })
+})
+
+describe('breakpoint split view', () => {
+  it('open a split view', async () => {
+    const state = rootModel.create({ jbrowse: breakpointConfig })
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    // wait for the UI to be loaded
+    await waitForElement(() => getByText('JBrowse'))
+
+    expect(
+      await waitForElement(() =>
+        getByTestId('pacbio_hg002-breakpoints-loaded'),
+      ),
+    ).toMatchSnapshot()
+
+    expect(
+      await waitForElement(() => getByTestId('pacbio_vcf-vcfbreakends-loaded')),
+    ).toMatchSnapshot()
   })
 })

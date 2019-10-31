@@ -7,20 +7,43 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { GenericFilehandle } from 'generic-filehandle'
 import { Observable, Observer } from 'rxjs'
+import memoize from 'memoize-one'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface HeaderLine {
   tag: string
   value: string
 }
-interface SamHeader {
-  idToName?: string[]
-  nameToId?: Record<string, number>
+interface Header {
+  idToName: string[]
+  nameToId: Record<string, number>
 }
+
+const setup = memoize(async (bam: BamFile) => {
+  const samHeader = await bam.getHeader()
+
+  // use the @SQ lines in the header to figure out the
+  // mapping between ref ref ID numbers and names
+  const idToName: string[] = []
+  const nameToId: Record<string, number> = {}
+  const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
+  sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
+    sqLine.data.forEach((item: HeaderLine) => {
+      if (item.tag === 'SN') {
+        // this is the ref name
+        const refName = item.value
+        nameToId[refName] = refId
+        idToName[refId] = refName
+      }
+    })
+  })
+  return { idToName, nameToId }
+})
+
 export default class extends BaseAdapter {
   private bam: BamFile
 
-  private samHeader?: SamHeader
+  private samHeader: Header = { idToName: [], nameToId: {} }
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -50,34 +73,8 @@ export default class extends BaseAdapter {
     this.bam = new BamFile(bamOpts)
   }
 
-  async setup(opts: BaseOptions = {}): Promise<void> {
-    if (!this.samHeader) {
-      const samHeader = await this.bam.getHeader(opts.signal)
-      this.samHeader = {}
-
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ref ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-        sqLine.data.forEach((item: HeaderLine) => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
-          }
-        })
-      })
-      this.samHeader.idToName = idToName
-      this.samHeader.nameToId = nameToId
-    }
-  }
-
-  async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
-    await this.setup(opts)
-    return (this.samHeader && this.samHeader.idToName) || []
+  async getRefNames() {
+    return (await setup(this.bam)).idToName
   }
 
   /**
@@ -94,7 +91,7 @@ export default class extends BaseAdapter {
   ): Observable<Feature> {
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
-        await this.setup(opts)
+        this.samHeader = await setup(this.bam)
         const records = await this.bam.getRecordsForRange(
           refName,
           start,
@@ -102,9 +99,8 @@ export default class extends BaseAdapter {
           opts,
         )
         checkAbortSignal(opts.signal)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        records.forEach((record: any) => {
-          observer.next(this.bamRecordToFeature(record))
+        records.forEach(record => {
+          observer.next(new BamSlightlyLazyFeature(record, this))
         })
         observer.complete()
       },
@@ -119,17 +115,8 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   freeResources(/* { region } */): void {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bamRecordToFeature(record: any): Feature {
-    return new BamSlightlyLazyFeature(record, this)
-  }
-
+  // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
-    // use info from the SAM header if possible, but fall back to using
-    // the ref name order from when the browser's ref names were loaded
-    if (this.samHeader && this.samHeader.idToName) {
-      return this.samHeader.idToName[refId]
-    }
-    return undefined
+    return this.samHeader.idToName[refId]
   }
 }

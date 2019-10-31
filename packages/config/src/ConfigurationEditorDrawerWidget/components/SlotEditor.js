@@ -371,6 +371,7 @@ const valueComponents = {
   stringEnum: stringEnumEditor,
   boolean: booleanEditor,
   frozen: JsonEditor,
+  configRelationships: JsonEditor,
 }
 
 export const useSlotEditorStyles = makeStyles(theme => ({

@@ -55,6 +55,16 @@
           "configId": "QGoUN4vNq",
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
+          "configRelationships": [
+            {
+              "type": "test",
+              "target": "volvox_long_reads_sv.cram"
+            },
+            {
+              "type": "test",
+              "target": "volvox_breakends"
+            }
+          ],
           "adapter": {
             "configId": "R1d4tYPHY",
             "type": "VcfTabixAdapter",
@@ -142,6 +152,42 @@
             "index": {
               "location": {
                 "uri": "test_data/volvox-samspec.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_long_reads_sv.cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long-reads-sv.cram",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox_long_reads_sv.bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long-reads-sv.bam",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-long-reads-sv.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-long-reads-sv.bam.bai"
               }
             }
           }
@@ -268,6 +314,25 @@
               "type": "SvgFeatureRenderer",
               "labels": {
                 "configId": "egu03dn9JAj"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_breakends",
+          "type": "VariantTrack",
+          "name": "volvox breakends",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/volvox.dup.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           }
@@ -740,6 +805,16 @@
           "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
           "name": "human chord test",
+          "configRelationships": [
+            {
+              "type": "AlignmentEvidence",
+              "target": "pacbio_hg002"
+            },
+            {
+              "target": "pacbio_sv_vcf",
+              "type": "VariantCalls"
+            }
+          ],
           "adapter": {
             "configId": "JjSnfYk0a",
             "type": "VcfTabixAdapter",
@@ -759,7 +834,32 @@
           }
         },
         {
-          "configId": "XWkHTtv9ui5",
+          "configId": "illumina_hg002",
+          "type": "AlignmentsTrack",
+          "name": "HG002.hs37d5.2x250",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "pacbio_hg002",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.11kb",
           "category": [
@@ -1090,7 +1190,7 @@
           }
         },
         {
-          "configId": "sequelII_variants",
+          "configId": "pacbio_sv_vcf",
           "type": "VariantTrack",
           "name": "hs37d5.HG002-SequelII-CCS",
           "category": [
@@ -1098,29 +1198,13 @@
             "VCF"
           ],
           "adapter": {
-            "configId": "ZPtZB7IrE2p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
-              "configId": "SCRNxKd1jEj",
               "location": {
-                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "c199JG88ZZy",
-            "PileupRenderer": {
-              "configId": "c67OtxkO-Li",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "dgD7muCI2fV",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "94VLL8-n2Qi"
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           }

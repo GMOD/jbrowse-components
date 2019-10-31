@@ -5,6 +5,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5540,
     "length_on_ref": 100,
@@ -28,6 +29,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5541,
     "length_on_ref": 100,
@@ -51,6 +53,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5544,
     "length_on_ref": 100,
@@ -74,6 +77,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5553,
     "length_on_ref": 100,
@@ -97,6 +101,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5554,
     "length_on_ref": 100,
@@ -120,6 +125,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5559,
     "length_on_ref": 100,
@@ -143,6 +149,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5560,
     "length_on_ref": 100,
@@ -166,6 +173,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5568,
     "length_on_ref": 100,
@@ -189,6 +197,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5594,
     "length_on_ref": 100,
@@ -212,6 +221,7 @@ Array [
   Object {
     "CIGAR": "100M",
     "MQ": 37,
+    "clipPos": 0,
     "duplicate": false,
     "end": 5596,
     "length_on_ref": 100,

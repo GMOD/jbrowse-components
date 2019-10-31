@@ -83,6 +83,13 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                         <span
                           class="MuiIconButton-label"
                         >
+                          <input
+                            checked=""
+                            class="PrivateSwitchBase-input"
+                            data-testid="addTrackFromFileRadio"
+                            type="radio"
+                            value="fromFile"
+                          />
                           <div
                             class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                           >
@@ -109,13 +116,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               />
                             </svg>
                           </div>
-                          <input
-                            checked=""
-                            class="PrivateSwitchBase-input"
-                            data-testid="addTrackFromFileRadio"
-                            type="radio"
-                            value="fromFile"
-                          />
                         </span>
                         <span
                           class="MuiTouchRipple-root"
@@ -137,6 +137,12 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                         <span
                           class="MuiIconButton-label"
                         >
+                          <input
+                            class="PrivateSwitchBase-input"
+                            data-testid="addTrackFromConfigRadio"
+                            type="radio"
+                            value="fromConfig"
+                          />
                           <div
                             class="PrivateRadioButtonIcon-root"
                           >
@@ -163,12 +169,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                               />
                             </svg>
                           </div>
-                          <input
-                            class="PrivateSwitchBase-input"
-                            data-testid="addTrackFromConfigRadio"
-                            type="radio"
-                            value="fromConfig"
-                          />
                         </span>
                         <span
                           class="MuiTouchRipple-root"
@@ -202,6 +202,12 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           <span
                             class="MuiIconButton-label"
                           >
+                            <input
+                              checked=""
+                              class="PrivateSwitchBase-input"
+                              type="radio"
+                              value="uri"
+                            />
                             <div
                               class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                             >
@@ -228,12 +234,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                                 />
                               </svg>
                             </div>
-                            <input
-                              checked=""
-                              class="PrivateSwitchBase-input"
-                              type="radio"
-                              value="uri"
-                            />
                           </span>
                           <span
                             class="MuiTouchRipple-root"
@@ -256,6 +256,12 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                           <span
                             class="MuiIconButton-label"
                           >
+                            <input
+                              class="PrivateSwitchBase-input"
+                              disabled=""
+                              type="radio"
+                              value="localPath"
+                            />
                             <div
                               class="PrivateRadioButtonIcon-root"
                             >
@@ -282,12 +288,6 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                                 />
                               </svg>
                             </div>
-                            <input
-                              class="PrivateSwitchBase-input"
-                              disabled=""
-                              type="radio"
-                              value="localPath"
-                            />
                           </span>
                         </span>
                         <span
@@ -325,7 +325,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                 class="makeStyles-actionsContainer"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-text MuiButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-button MuiButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -337,7 +337,7 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-contained MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
                   data-testid="addTrackNextButton"
                   disabled=""
                   tabindex="-1"

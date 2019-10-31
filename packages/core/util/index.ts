@@ -1,5 +1,5 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import { getParent, IAnyStateTreeNode } from 'mobx-state-tree'
+import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -90,9 +90,19 @@ export function useDebounce(value: any, delay: number): any {
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
   let currentNode = node
   // @ts-ignore
-  while (currentNode.pluginManager === undefined)
+  while (isAlive(currentNode) && currentNode.pluginManager === undefined)
     currentNode = getParent(currentNode)
   return currentNode
+}
+
+export function getContainingView(
+  node: IAnyStateTreeNode,
+): IAnyStateTreeNode | undefined {
+  const currentNode = getParent(node, 2)
+  if (getType(currentNode).name.includes('View')) {
+    return currentNode
+  }
+  return undefined
 }
 
 /**
@@ -169,7 +179,7 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: IRegion,
+  region: { start: number; end: number },
   bpPerPx: number,
   flipped = false,
 ): number {
@@ -208,7 +218,7 @@ export function cartesianToPolar(x: number, y: number): [number, number] {
 
 export function featureSpanPx(
   feature: Feature,
-  region: IRegion,
+  region: { start: number; end: number },
   bpPerPx: number,
   flipped = false,
 ): [number, number] {

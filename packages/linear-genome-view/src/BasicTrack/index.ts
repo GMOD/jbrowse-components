@@ -16,7 +16,10 @@ export function configSchemaFactory(pluginManager: any) {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
-    { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
+    {
+      baseConfiguration: BaseTrackConfig,
+      explicitlyTyped: true,
+    },
   )
 }
 

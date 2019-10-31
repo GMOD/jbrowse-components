@@ -1,11 +1,12 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
 
-  const { types } = jbrequire('mobx-state-tree')
-  const { ConfigurationSchema, ConfigurationReference } = jbrequire(
+  const { types, resolveIdentifier } = jbrequire('mobx-state-tree')
+  const { getConf, ConfigurationSchema, ConfigurationReference } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
 
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { getContainingView } = jbrequire('@gmod/jbrowse-core/util/tracks')
 
   const { renderReactionData, renderReactionEffect } = jbrequire(
@@ -122,6 +123,45 @@ export default pluginManager => {
         self.data = undefined
         self.error = error
         self.renderingComponent = undefined
+      },
+
+      onChordClick(feature, startRegion, endRegion) {
+        const session = getSession(self)
+        session.setSelection(feature)
+        const view = getContainingView(self)
+
+        try {
+          const viewSnapshot = pluginManager
+            .getViewType('BreakpointSplitView')
+            .snapshotFromBreakendFeature(feature, startRegion, endRegion)
+          const tracks = getConf(self, 'configRelationships')
+            .map(entry => {
+              const type = pluginManager.pluggableConfigSchemaType('track')
+              const trackConfig = resolveIdentifier(type, session, entry.target)
+              return trackConfig
+                ? {
+                    type: trackConfig.type,
+                    height: 100,
+                    configuration: trackConfig.configId,
+                    selectedRendering: '',
+                  }
+                : null
+            })
+            .filter(f => !!f)
+
+          // add the specific evidence tracks to the LGVs in the split view
+          viewSnapshot.views[0].tracks = tracks
+          viewSnapshot.views[1].tracks = tracks
+
+          // try to center the offsetPx
+          viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+          viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+          viewSnapshot.featureData = feature.data
+
+          session.addView('BreakpointSplitView', viewSnapshot)
+        } catch (e) {
+          console.error(e)
+        }
       },
     }))
 

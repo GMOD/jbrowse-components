@@ -1,8 +1,8 @@
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { types } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import BaseTrack from '../BasicTrack/baseTrackModel'
-import { stateModelFactory } from '.'
+import { stateModelFactory, LinearGenomeViewStateModel } from '.'
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
@@ -26,13 +26,13 @@ test('can instantiate a mostly empty model and read a default configuration valu
       configuration: types.map(types.string),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
     }))
     .create({
-      config: {},
+      configuration: {},
     })
 
   const model = name.setView(
@@ -54,13 +54,13 @@ test('can instantiate a model that lets you navigate', () => {
       configuration: types.map(types.string),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
     }))
     .create({
-      config: {},
+      configuration: {},
     })
 
   const model = name.setView(
@@ -112,13 +112,13 @@ test('can instantiate a model that has multiple displayed regions', () => {
       configuration: types.map(types.string),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
     }))
     .create({
-      config: {},
+      configuration: {},
     })
 
   const model = name.setView(
@@ -152,13 +152,13 @@ test('can instantiate a model that tests navTo/moveTo', () => {
       configuration: types.map(types.string),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
     }))
     .create({
-      config: {},
+      configuration: {},
     })
 
   const model = name.setView(
@@ -192,13 +192,13 @@ test('can instantiate a model that >2 regions', () => {
       configuration: types.map(types.string),
     })
     .actions(self => ({
-      setView(view) {
+      setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
     }))
     .create({
-      config: {},
+      configuration: {},
     })
 
   const model = name.setView(
@@ -224,7 +224,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.pxToBp(15000).refName).toEqual('ctgB')
   expect(model.pxToBp(25000).refName).toEqual('ctgC')
   // extending past gives us the last displayed region
-  expect(model.pxToBp(35000).refName).toEqual(undefined)
+  expect(model.pxToBp(35000).refName).toEqual('ctgC')
 
   model.setDisplayName('Volvox view')
   expect(model.displayName).toBe('Volvox view')

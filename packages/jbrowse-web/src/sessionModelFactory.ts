@@ -1,10 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { autorun } from 'mobx'
-import { types, getParent, addDisposer, isAlive } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  addDisposer,
+  isAlive,
+  SnapshotIn,
+} from 'mobx-state-tree'
 
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
-export default pluginManager => {
+export default function sessionModelFactory(pluginManager: any) {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
@@ -73,7 +81,7 @@ export default pluginManager => {
       },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
-        return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
+        return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
       },
       get maxDrawerWidth() {
         return self.width - 256
@@ -106,20 +114,30 @@ export default pluginManager => {
               self.assemblyData.get(assemblyName).sequence
             ) {
               // eslint-disable-next-line no-await-in-loop
-              const displayedRegions = await self.getRegionsForAssembly(
+              const displayedRegions = await this.getRegionsForAssembly(
                 assemblyName,
                 self.assemblyData,
               )
-              getParent(self).history.withoutUndo(() =>
-                view.setDisplayedRegions(displayedRegions, true),
-              )
+              if (isAlive(self)) {
+                getParent(self).history.withoutUndo(() => {
+                  if (
+                    JSON.stringify(view.displayedRegions) !==
+                    JSON.stringify(displayedRegions)
+                  )
+                    view.setDisplayedRegions(displayedRegions, true)
+                })
+              }
             }
           }
         })
         addDisposer(self, displayedRegionsDisposer)
       },
 
-      getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
+      getRegionsForAssembly(
+        assemblyName: string,
+        assemblyData: any,
+        opts: { signal?: AbortSignal } = {},
+      ) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
@@ -135,7 +153,7 @@ export default pluginManager => {
               },
               { timeout: 1000000 },
             )
-            .then(adapterRegions => {
+            .then((adapterRegions: IRegion[]) => {
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -148,7 +166,7 @@ export default pluginManager => {
         return Promise.resolve(undefined)
       },
 
-      makeConnection(configuration, initialSnapshot = {}) {
+      makeConnection(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -163,24 +181,27 @@ export default pluginManager => {
         if (!self.connections.has(assemblyName))
           self.connections.set(assemblyName, [])
         const assemblyConnections = self.connections.get(assemblyName)
+        if (!assemblyConnections)
+          throw new Error(`assembly ${assemblyName} not found`)
         const length = assemblyConnections.push(connectionData)
         return assemblyConnections[length - 1]
       },
 
-      breakConnection(configuration) {
+      breakConnection(configuration: any) {
         const name = readConfObject(configuration, 'name')
         let confParent = configuration
         do {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const connection = self.connections
-          .get(assemblyName)
-          .find(c => c.name === name)
-        self.connections.get(assemblyName).remove(connection)
+        const connections = self.connections.get(assemblyName)
+        if (!connections)
+          throw new Error(`connections for ${assemblyName} not found`)
+        const connection = connections.find(c => c.name === name)
+        connections.remove(connection)
       },
 
-      updateWidth(width) {
+      updateWidth(width: number) {
         let newWidth = Math.floor(width)
         if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
@@ -189,7 +210,7 @@ export default pluginManager => {
           self.drawerWidth = self.maxDrawerWidth
       },
 
-      updateDrawerWidth(drawerWidth) {
+      updateDrawerWidth(drawerWidth: number) {
         if (drawerWidth === self.drawerWidth) return self.drawerWidth
         let newDrawerWidth = drawerWidth
         if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
@@ -199,14 +220,14 @@ export default pluginManager => {
         return newDrawerWidth
       },
 
-      resizeDrawer(distance) {
+      resizeDrawer(distance: number) {
         const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = self.updateDrawerWidth(oldDrawerWidth - distance)
+        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
         const actualDistance = oldDrawerWidth - newDrawerWidth
         return actualDistance
       },
 
-      addView(typeName, initialState = {}) {
+      addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
 
@@ -217,32 +238,37 @@ export default pluginManager => {
         return self.views[length - 1]
       },
 
-      removeView(view) {
+      removeView(view: any) {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
             id === 'hierarchicalTrackSelector' &&
+            drawerWidget.view &&
             drawerWidget.view.id === view.id
           )
-            self.hideDrawerWidget(drawerWidget)
+            this.hideDrawerWidget(drawerWidget)
         }
         self.views.remove(view)
       },
 
-      addDataset(datasetConf) {
+      addDataset(datasetConf: any) {
         return getParent(self).jbrowse.addDataset(datasetConf)
       },
 
-      addLinearGenomeViewOfDataset(datasetName, initialState = {}) {
-        return self.addViewOfDataset(
+      addLinearGenomeViewOfDataset(datasetName: string, initialState = {}) {
+        return this.addViewOfDataset(
           'LinearGenomeView',
           datasetName,
           initialState,
         )
       },
 
-      addViewOfDataset(viewType, datasetName, initialState = {}) {
+      addViewOfDataset(
+        viewType: any,
+        datasetName: string,
+        initialState: any = {},
+      ) {
         const dataset = self.datasets.find(
-          s => readConfObject(s.name) === datasetName,
+          (s: { name: string }) => readConfObject(s.name) === datasetName,
         )
         if (!dataset)
           throw new Error(
@@ -252,10 +278,17 @@ export default pluginManager => {
           dataset.assembly,
           'name',
         )
-        return self.addView(viewType, initialState)
+        return this.addView(viewType, initialState)
       },
 
-      addViewFromAnotherView(viewType, otherView, initialState = {}) {
+      addViewFromAnotherView(
+        viewType: any,
+        otherView: any,
+        initialState: {
+          displayedRegions?: IRegion[]
+          displayRegionsFromAssemblyName?: boolean
+        } = {},
+      ) {
         const state = { ...initialState }
         if (otherView.displayRegionsFromAssemblyName) {
           state.displayRegionsFromAssemblyName =
@@ -263,12 +296,12 @@ export default pluginManager => {
         } else {
           state.displayedRegions = otherView.displayedRegions
         }
-        return self.addView(viewType, state)
+        return this.addView(viewType, state)
       },
 
       addDrawerWidget(
-        typeName,
-        id,
+        typeName: string,
+        id: string,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -288,13 +321,13 @@ export default pluginManager => {
         return self.drawerWidgets.get(id)
       },
 
-      showDrawerWidget(drawerWidget) {
+      showDrawerWidget(drawerWidget: any) {
         if (self.activeDrawerWidgets.has(drawerWidget.id))
           self.activeDrawerWidgets.delete(drawerWidget.id)
         self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
       },
 
-      hideDrawerWidget(drawerWidget) {
+      hideDrawerWidget(drawerWidget: any) {
         self.activeDrawerWidgets.delete(drawerWidget.id)
       },
 
@@ -303,7 +336,7 @@ export default pluginManager => {
       },
 
       addMenuBar(
-        typeName,
+        typeName: string,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -323,7 +356,7 @@ export default pluginManager => {
        * can be a feature, a view, just about anything
        * @param {object} thing
        */
-      setSelection(thing) {
+      setSelection(thing: any) {
         self.selection = thing
         // console.log('selected', thing)
       },
@@ -341,33 +374,33 @@ export default pluginManager => {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration) {
+      editConfiguration(configuration: any) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = self.addDrawerWidget(
+        const editor = this.addDrawerWidget(
           'ConfigurationEditorDrawerWidget',
           'configEditor',
           { target: configuration },
         )
-        self.showDrawerWidget(editor)
+        this.showDrawerWidget(editor)
       },
 
       clearConnections() {
         self.connections.clear()
       },
 
-      addSavedSession(sessionSnapshot) {
+      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
         return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
-      removeSavedSession(sessionSnapshot) {
+      removeSavedSession(sessionSnapshot: any) {
         return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
-      renameCurrentSession(sessionName) {
+      renameCurrentSession(sessionName: string) {
         return getParent(self).renameCurrentSession(sessionName)
       },
 
@@ -375,7 +408,7 @@ export default pluginManager => {
         return getParent(self).duplicateCurrentSession()
       },
 
-      activateSession(sessionName) {
+      activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
       },
 
@@ -384,6 +417,8 @@ export default pluginManager => {
       },
     }))
 }
+
+export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // a track is a combination of a dataset and a renderer, along with some conditions
 // specifying in which contexts it is available (which assemblies, which views, etc)

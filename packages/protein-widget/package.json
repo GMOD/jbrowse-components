@@ -18,9 +18,9 @@
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@gmod/jbrowse-core": "^2.0.0",
-    "@gmod/jbrowse-plugin-jbrowse1": "^2.0.0",
     "@gmod/jbrowse-plugin-config": "^2.0.0",
     "@gmod/jbrowse-plugin-filtering": "^2.0.0",
+    "@gmod/jbrowse-plugin-jbrowse1": "^2.0.0",
     "@gmod/jbrowse-plugin-linear-genome-view": "^2.0.0",
     "@gmod/jbrowse-plugin-lollipop": "^2.0.0",
     "@gmod/jbrowse-plugin-protein": "^2.0.0",

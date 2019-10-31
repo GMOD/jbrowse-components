@@ -69,6 +69,13 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           <span
             class="MuiIconButton-label"
           >
+            <input
+              class="PrivateSwitchBase-input"
+              data-indeterminate="false"
+              data-testid="htsTrackEntry-sequenceConfigId"
+              type="checkbox"
+              value=""
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root"
@@ -80,13 +87,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                 d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
               />
             </svg>
-            <input
-              class="PrivateSwitchBase-input"
-              data-indeterminate="false"
-              data-testid="htsTrackEntry-sequenceConfigId"
-              type="checkbox"
-              value=""
-            />
           </span>
           <span
             class="MuiTouchRipple-root"
@@ -149,8 +149,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         aria-disabled="false"
         aria-hidden="true"
         class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
-        role="button"
-        tabindex="-1"
       >
         <span
           class="MuiIconButton-label"
@@ -201,6 +199,14 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                       <span
                         class="MuiIconButton-label"
                       >
+                        <input
+                          checked=""
+                          class="PrivateSwitchBase-input"
+                          data-indeterminate="false"
+                          data-testid="htsTrackEntry-fooC"
+                          type="checkbox"
+                          value=""
+                        />
                         <svg
                           aria-hidden="true"
                           class="MuiSvgIcon-root"
@@ -212,14 +218,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                             d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
                           />
                         </svg>
-                        <input
-                          checked=""
-                          class="PrivateSwitchBase-input"
-                          data-indeterminate="false"
-                          data-testid="htsTrackEntry-fooC"
-                          type="checkbox"
-                          value=""
-                        />
                       </span>
                       <span
                         class="MuiTouchRipple-root"
@@ -276,8 +274,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                     aria-disabled="false"
                     aria-hidden="true"
                     class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
-                    role="button"
-                    tabindex="-1"
                   >
                     <span
                       class="MuiIconButton-label"
@@ -328,6 +324,14 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                   <span
                                     class="MuiIconButton-label"
                                   >
+                                    <input
+                                      checked=""
+                                      class="PrivateSwitchBase-input"
+                                      data-indeterminate="false"
+                                      data-testid="htsTrackEntry-barC"
+                                      type="checkbox"
+                                      value=""
+                                    />
                                     <svg
                                       aria-hidden="true"
                                       class="MuiSvgIcon-root"
@@ -339,14 +343,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                         d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
                                       />
                                     </svg>
-                                    <input
-                                      checked=""
-                                      class="PrivateSwitchBase-input"
-                                      data-indeterminate="false"
-                                      data-testid="htsTrackEntry-barC"
-                                      type="checkbox"
-                                      value=""
-                                    />
                                   </span>
                                   <span
                                     class="MuiTouchRipple-root"
@@ -483,6 +479,13 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           <span
             class="MuiIconButton-label"
           >
+            <input
+              class="PrivateSwitchBase-input"
+              data-indeterminate="false"
+              data-testid="htsTrackEntry-sequenceConfigId"
+              type="checkbox"
+              value=""
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root"
@@ -494,13 +497,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
                 d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
               />
             </svg>
-            <input
-              class="PrivateSwitchBase-input"
-              data-indeterminate="false"
-              data-testid="htsTrackEntry-sequenceConfigId"
-              type="checkbox"
-              value=""
-            />
           </span>
           <span
             class="MuiTouchRipple-root"
@@ -554,6 +550,14 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           <span
             class="MuiIconButton-label"
           >
+            <input
+              checked=""
+              class="PrivateSwitchBase-input"
+              data-indeterminate="false"
+              data-testid="htsTrackEntry-fooC"
+              type="checkbox"
+              value=""
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root"
@@ -565,14 +569,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
                 d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
               />
             </svg>
-            <input
-              checked=""
-              class="PrivateSwitchBase-input"
-              data-indeterminate="false"
-              data-testid="htsTrackEntry-fooC"
-              type="checkbox"
-              value=""
-            />
           </span>
           <span
             class="MuiTouchRipple-root"
@@ -619,6 +615,14 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           <span
             class="MuiIconButton-label"
           >
+            <input
+              checked=""
+              class="PrivateSwitchBase-input"
+              data-indeterminate="false"
+              data-testid="htsTrackEntry-barC"
+              type="checkbox"
+              value=""
+            />
             <svg
               aria-hidden="true"
               class="MuiSvgIcon-root"
@@ -630,14 +634,6 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
                 d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
               />
             </svg>
-            <input
-              checked=""
-              class="PrivateSwitchBase-input"
-              data-indeterminate="false"
-              data-testid="htsTrackEntry-barC"
-              type="checkbox"
-              value=""
-            />
           </span>
           <span
             class="MuiTouchRipple-root"
