@@ -125,12 +125,11 @@ export default pluginManager => {
         self.renderingComponent = undefined
       },
 
-      onChordClick(feature, startRegion, endRegion, event) {
+      onChordClick(feature, startRegion, endRegion) {
         const session = getSession(self)
         session.setSelection(feature)
         const view = getContainingView(self)
 
-        // TODO: REMOVEME TEMPORARY STUFF TO OPEN A BREAKPOINT VIEW
         try {
           const viewSnapshot = pluginManager
             .getViewType('BreakpointSplitView')
