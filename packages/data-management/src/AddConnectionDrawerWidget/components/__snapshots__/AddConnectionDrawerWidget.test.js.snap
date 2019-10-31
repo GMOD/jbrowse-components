@@ -79,6 +79,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   >
                     <div
                       aria-haspopup="listbox"
+                      aria-labelledby=" "
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                       role="button"
                       tabindex="0"
@@ -124,6 +125,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   >
                     <div
                       aria-haspopup="listbox"
+                      aria-labelledby=" "
                       class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                       role="button"
                       tabindex="0"
@@ -154,7 +156,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                 class="makeStyles-actionsContainer"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-text MuiButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-button MuiButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -166,7 +168,7 @@ exports[`<AddConnectionDrawerWidget /> renders 1`] = `
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root makeStyles-button MuiButton-contained MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
                   data-testid="addConnectionNext"
                   disabled=""
                   tabindex="-1"

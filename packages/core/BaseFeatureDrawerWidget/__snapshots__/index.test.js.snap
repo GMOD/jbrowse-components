@@ -30,8 +30,6 @@ exports[`open up a drawer widget 1`] = `
         aria-disabled="false"
         aria-hidden="true"
         class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
-        role="button"
-        tabindex="-1"
       >
         <span
           class="MuiIconButton-label"
@@ -126,8 +124,6 @@ exports[`open up a drawer widget 1`] = `
         aria-disabled="false"
         aria-hidden="true"
         class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
-        role="button"
-        tabindex="-1"
       >
         <span
           class="MuiIconButton-label"

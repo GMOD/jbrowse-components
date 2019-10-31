@@ -126,8 +126,9 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -176,7 +177,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -193,7 +194,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"
@@ -450,8 +451,9 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -500,7 +502,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -517,7 +519,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"
@@ -991,8 +993,9 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       >
         <div
           aria-haspopup="listbox"
+          aria-labelledby=" mui-component-select-refseq"
           class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
-          id="select-refseq"
+          id="mui-component-select-refseq"
           role="button"
           tabindex="0"
         >
@@ -1041,7 +1044,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
           />
         </button>
         <span
-          class="MuiSlider-root makeStyles-slider"
+          class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
         >
           <span
             class="MuiSlider-rail"
@@ -1058,7 +1061,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
             aria-valuemax="5.643856189774724"
             aria-valuemin="5.643856189774724"
             aria-valuenow="5.643856189774724"
-            class="MuiSlider-thumb"
+            class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
             data-index="0"
             role="slider"
             tabindex="0"

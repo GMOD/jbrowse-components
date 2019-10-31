@@ -85,6 +85,12 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               <span
                 class="MuiIconButton-label"
               >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input"
+                  type="radio"
+                  value="uri"
+                />
                 <div
                   class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                 >
@@ -111,12 +117,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     />
                   </svg>
                 </div>
-                <input
-                  checked=""
-                  class="PrivateSwitchBase-input"
-                  type="radio"
-                  value="uri"
-                />
               </span>
               <span
                 class="MuiTouchRipple-root"
@@ -139,6 +139,12 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               <span
                 class="MuiIconButton-label"
               >
+                <input
+                  class="PrivateSwitchBase-input"
+                  disabled=""
+                  type="radio"
+                  value="localPath"
+                />
                 <div
                   class="PrivateRadioButtonIcon-root"
                 >
@@ -165,12 +171,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     />
                   </svg>
                 </div>
-                <input
-                  class="PrivateSwitchBase-input"
-                  disabled=""
-                  type="radio"
-                  value="localPath"
-                />
               </span>
             </span>
             <span
@@ -856,6 +856,13 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
             <span
               class="MuiIconButton-label"
             >
+              <input
+                checked=""
+                class="PrivateSwitchBase-input"
+                data-indeterminate="false"
+                type="checkbox"
+                value=""
+              />
               <svg
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
@@ -867,13 +874,6 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
                 />
               </svg>
-              <input
-                checked=""
-                class="PrivateSwitchBase-input"
-                data-indeterminate="false"
-                type="checkbox"
-                value=""
-              />
             </span>
             <span
               class="MuiTouchRipple-root"
@@ -1262,6 +1262,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           >
             <div
               aria-haspopup="listbox"
+              aria-labelledby=" "
               class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
               role="button"
               tabindex="0"
@@ -1318,6 +1319,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <span
                     class="MuiIconButton-label"
                   >
+                    <input
+                      checked=""
+                      class="PrivateSwitchBase-input"
+                      type="radio"
+                      value="uri"
+                    />
                     <div
                       class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                     >
@@ -1344,12 +1351,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         />
                       </svg>
                     </div>
-                    <input
-                      checked=""
-                      class="PrivateSwitchBase-input"
-                      type="radio"
-                      value="uri"
-                    />
                   </span>
                   <span
                     class="MuiTouchRipple-root"
@@ -1372,6 +1373,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   <span
                     class="MuiIconButton-label"
                   >
+                    <input
+                      class="PrivateSwitchBase-input"
+                      disabled=""
+                      type="radio"
+                      value="localPath"
+                    />
                     <div
                       class="PrivateRadioButtonIcon-root"
                     >
@@ -1398,12 +1405,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                         />
                       </svg>
                     </div>
-                    <input
-                      class="PrivateSwitchBase-input"
-                      disabled=""
-                      type="radio"
-                      value="localPath"
-                    />
                   </span>
                 </span>
                 <span
@@ -1492,6 +1493,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <div
                     aria-haspopup="listbox"
+                    aria-labelledby=" "
                     class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
                     role="button"
                     tabindex="0"
@@ -1565,6 +1567,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <span
                         class="MuiIconButton-label"
                       >
+                        <input
+                          checked=""
+                          class="PrivateSwitchBase-input"
+                          type="radio"
+                          value="uri"
+                        />
                         <div
                           class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
                         >
@@ -1591,12 +1599,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                             />
                           </svg>
                         </div>
-                        <input
-                          checked=""
-                          class="PrivateSwitchBase-input"
-                          type="radio"
-                          value="uri"
-                        />
                       </span>
                       <span
                         class="MuiTouchRipple-root"
@@ -1619,6 +1621,12 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       <span
                         class="MuiIconButton-label"
                       >
+                        <input
+                          class="PrivateSwitchBase-input"
+                          disabled=""
+                          type="radio"
+                          value="localPath"
+                        />
                         <div
                           class="PrivateRadioButtonIcon-root"
                         >
@@ -1645,12 +1653,6 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                             />
                           </svg>
                         </div>
-                        <input
-                          class="PrivateSwitchBase-input"
-                          disabled=""
-                          type="radio"
-                          value="localPath"
-                        />
                       </span>
                     </span>
                     <span
@@ -1732,6 +1734,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <div
             aria-haspopup="listbox"
+            aria-labelledby=" "
             class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input MuiInputBase-inputSelect"
             role="button"
             tabindex="0"
