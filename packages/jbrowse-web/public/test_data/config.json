@@ -833,6 +833,22 @@
           }
         },
         {
+          "configId": "ngmlr",
+          "type": "AlignmentsTrack",
+          "name": "Breast cancer pacbio (NGMLR)",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "illumina_hg002",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.2x250",
