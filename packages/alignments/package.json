@@ -9,7 +9,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.28",
+    "@gmod/bam": "^1.0.29",
     "@gmod/cram": "^1.5.3",
     "generic-filehandle": "^2.0.0",
     "memoize-one": "^5.1.1",
