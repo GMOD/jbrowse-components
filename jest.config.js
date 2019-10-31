@@ -23,10 +23,8 @@ module.exports = {
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
   resolver: 'jest-pnp-resolver',
-  setupFiles: [
-    '<rootDir>/config/jest/disableMobxWarning.js',
-    '<rootDir>/config/jest/createRange.js',
-  ],
+  setupFiles: ['<rootDir>/config/jest/createRange.js'],
+  setupFilesAfterEnv: ['jest-mock-console/dist/setupTestFramework.js'],
   testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',
   moduleNameMapper: {

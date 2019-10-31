@@ -139,7 +139,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         <input
           name="refseq"
           type="hidden"
-          value="Select refSeq"
+          value=""
         />
         <svg
           aria-hidden="true"
@@ -464,7 +464,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         <input
           name="refseq"
           type="hidden"
-          value="Select refSeq"
+          value=""
         />
         <svg
           aria-hidden="true"
@@ -1006,7 +1006,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         <input
           name="refseq"
           type="hidden"
-          value="Select refSeq"
+          value=""
         />
         <svg
           aria-hidden="true"

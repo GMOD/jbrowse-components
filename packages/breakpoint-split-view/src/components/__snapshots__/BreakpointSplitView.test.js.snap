@@ -209,7 +209,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <input
                   name="refseq"
                   type="hidden"
-                  value="Select refSeq"
+                  value=""
                 />
                 <svg
                   aria-hidden="true"
@@ -458,7 +458,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 <input
                   name="refseq"
                   type="hidden"
-                  value="Select refSeq"
+                  value=""
                 />
                 <svg
                   aria-hidden="true"

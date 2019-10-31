@@ -11,6 +11,7 @@ import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
+import mockConsole from 'jest-mock-console'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
@@ -177,6 +178,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
+    mockConsole()
     const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -193,6 +195,7 @@ describe('some error state', () => {
         ),
       ),
     ).resolves.toBeTruthy()
+    expect(console.error).toBeCalled()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = rootModel.create({ jbrowse: config })
@@ -354,6 +357,7 @@ describe('bigwig', () => {
 
 describe('circular views', () => {
   it('open a circular view', async () => {
+    mockConsole()
     const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -388,6 +392,7 @@ describe('circular views', () => {
 
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
+    mockConsole()
     const state = rootModel.create({ jbrowse: breakpointConfig })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     // wait for the UI to be loaded

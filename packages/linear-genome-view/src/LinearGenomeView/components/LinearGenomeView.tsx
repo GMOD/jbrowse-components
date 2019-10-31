@@ -298,8 +298,8 @@ const RefSeqDropdown = observer(({ model, onSubmit }) => {
   const tied = !!model.displayRegionsFromAssemblyName
   return (
     <Select
-      value="Select refSeq"
       name="refseq"
+      value=""
       onChange={event => {
         if (event.target.value !== '') {
           onSubmit(event.target.value)

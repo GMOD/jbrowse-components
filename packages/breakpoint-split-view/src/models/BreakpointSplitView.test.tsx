@@ -3,6 +3,8 @@ import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { types, Instance } from 'mobx-state-tree'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import mockConsole from 'jest-mock-console'
 import stateModelFactory, {
   BreakpointViewStateModel,
 } from './BreakpointSplitView'
@@ -54,6 +56,7 @@ const getView = () => {
 const ReactComponent = () => <>Hello World</>
 
 test('BreakpointSplitView with soft clipping', () => {
+  mockConsole()
   const BreakpointSplitView = getView()
   const name = types
     .model({
@@ -156,6 +159,7 @@ test('BreakpointSplitView with soft clipping', () => {
 })
 
 test('BreakpointSplitView with hard clipping', () => {
+  mockConsole()
   const BreakpointSplitView = getView()
   const name = types
     .model({
