@@ -19,13 +19,16 @@ function Box(props) {
 
   const { left, top, width, height } = featureLayout.absolute
 
+  // the below Math.min/Math.max 10000px limits are because SVG produces
+  // silent non-rendered elements if it's like millions of px
+  // renders -50000 to screenwidth (up to 100000) +50000
   return (
     <rect
       title={feature.id()}
       data-testid={feature.id()}
-      x={left}
+      x={Math.max(left, -50000)}
       y={top}
-      width={Math.max(width, 1)}
+      width={Math.min(Math.max(width, 1), 200000)}
       height={height}
       fill={selected ? emphasizedColor1 : color1}
       stroke={selected ? color2 : undefined}
