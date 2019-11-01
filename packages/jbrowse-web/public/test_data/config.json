@@ -836,6 +836,9 @@
           "configId": "ngmlr",
           "type": "AlignmentsTrack",
           "name": "Breast cancer pacbio (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -1184,11 +1187,30 @@
           }
         },
         {
-          "configId": "UppxfMGl81V",
+          "configId": "breast_cancer_sniffles_hg19",
+          "type": "VariantTrack",
+          "name": "Breast cancer pacbio (sniffles VCF)",
+          "category": [
+            "SKBR3"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "configId": "1000genomes_indels",
           "type": "VariantTrack",
           "name": "InDels",
           "category": [
-            "Variants"
+            "1000 genomes"
           ],
           "adapter": {
             "configId": "5cVzXc0r4sO",
