@@ -72,8 +72,14 @@ class ServerSideRenderedContent extends Component {
       if (this.hydrated) unmountComponentAtNode(domNode.firstChild)
       domNode.innerHTML = `<div className="ssr-container-inner"></div>`
       domNode.firstChild.innerHTML = html
+
       // defer main-thread rendering and hydration for when
       // we have some free time. helps keep the framerate up.
+      //
+      // note: the timeout param to rIC below helps when you are doing
+      // a long continuous scroll, it forces it to evaluate because
+      // otherwise the continuous scroll would never give it time to do
+      // so
       requestIdleCallback(
         () => {
           if (!isAlive(model) || !isAlive(region)) return
@@ -97,7 +103,7 @@ class ServerSideRenderedContent extends Component {
           hydrate(errorHandler, domNode.firstChild)
           this.hydrated = true
         },
-        { timeout: 50 },
+        { timeout: 300 },
       )
     }
   }
