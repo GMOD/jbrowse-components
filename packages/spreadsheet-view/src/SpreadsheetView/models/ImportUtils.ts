@@ -14,8 +14,7 @@ function parseWith(buffer: Buffer, options = {}) {
 export interface Row {
   id: string
   cells: {
-    columnNumber: number
-    text: string
+    text?: string
   }[]
 }
 
@@ -31,7 +30,7 @@ interface ParseOptions {
 
 export interface Column {
   name: string
-  dataType: { type: string },
+  dataType: { type: string }
   isDerived?: boolean
 }
 

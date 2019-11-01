@@ -4,18 +4,10 @@ export default pluginManager => {
 
   const CellModel = types
     .model('SpreadsheetCell', {
-      columnNumber: types.number,
       text: types.string,
       extendedData: types.maybe(types.frozen()),
-      // if this cell is derived from other cells, execute this function to get the value
-      derivationFunction: types.maybe(types.frozen()),
     })
-    .views(self => ({
-      get value() {
-        if (self.derivationFunction) return self.derivationFunction(self)
-        return self.text
-      },
-    }))
+    .views(self => ({}))
 
   const RowModel = types
     .model('SpreadsheetRow', {

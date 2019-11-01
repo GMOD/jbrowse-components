@@ -1,3 +1,5 @@
+import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent } = jbrequire('mobx-state-tree')
@@ -6,23 +8,35 @@ export default pluginManager => {
 
   const StaticRowSetModel = jbrequire(require('./StaticRowSet'))
 
+  const ColumnDefinition = types
+    .model('ColumnDefinition', {
+      name: types.maybe(types.string),
+      dataType: types.optional(DataTypes.Any, () => ({
+        type: 'Text',
+      })),
+      // set to true if column is derived from other columns
+      // if the column is derived, each cell will have a
+      // `derivationFunction` that is called to get its value
+      isDerived: false,
+      // if this cell is derived from other cells, execute this function to get the value
+      derivationFunctionText: types.maybe(types.string),
+    })
+    .views(self => ({
+      get func() {
+        if (self.isDerived) {
+          // compile this as a function
+          return stringToFunction(String(self.derivationFunctionText))
+        }
+        return undefined
+      },
+    }))
+
   const stateModel = types
     .model('Spreadsheet', {
       rowSet: types.optional(StaticRowSetModel, () =>
         StaticRowSetModel.create(),
       ),
-      columns: types.array(
-        types.model('ColumnDefinition', {
-          name: types.maybe(types.string),
-          dataType: types.optional(DataTypes.Any, () => ({
-            type: 'Text',
-          })),
-          // set to true if column is derived from other columns
-          // if the column is derived, each cell will have a
-          // `derivationFunction` that is called to get its value
-          isDerived: false,
-        }),
-      ),
+      columns: types.array(ColumnDefinition),
       columnDisplayOrder: types.array(types.number),
       hasColumnNames: false,
 

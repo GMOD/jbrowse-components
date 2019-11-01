@@ -112,8 +112,8 @@ export default pluginManager => {
     }
   })
 
-  const CellData = observer(({ cell, spreadsheetModel }) => {
-    const { dataType } = spreadsheetModel.columns.get(cell.columnNumber)
+  const CellData = observer(({ cell, spreadsheetModel, columnNumber }) => {
+    const { dataType } = spreadsheetModel.columns.get(columnNumber)
     if (dataType.ReactComponent) {
       return (
         <dataType.ReactComponent cell={cell} spreadsheet={spreadsheetModel} />
@@ -159,6 +159,7 @@ export default pluginManager => {
               <CellData
                 cell={rowModel.cells[colNumber]}
                 spreadsheetModel={spreadsheetModel}
+                columnNumber={colNumber}
               />
             ) : null}
           </td>
