@@ -1049,9 +1049,26 @@
           }
         },
         {
+          "configId": "nanopore_ultralong_cram",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong (CRAM)",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram"
+            },
+            "craiLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai"
+            }
+          }
+        },
+        {
           "configId": "nanopore_ultralong",
           "type": "AlignmentsTrack",
-          "name": "HG002 Nanopore ultralong",
+          "name": "HG002 Nanopore ultralong (BAM)",
           "category": [
             "GIAB"
           ],
