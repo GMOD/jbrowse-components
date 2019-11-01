@@ -803,7 +803,7 @@
         {
           "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
-          "name": "human chord test",
+          "name": "HG002 PacBio PBSV BND",
           "configRelationships": [
             {
               "type": "AlignmentEvidence",
@@ -824,6 +824,36 @@
               "configId": "WGiJIFVWgx",
               "location": {
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "configId": "cnlG3T7NSc",
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "configId": "breast_cancer_hg19_chords",
+          "type": "StructuralVariantChordTrack",
+          "name": "SKBR3 Sniffles TRA",
+          "configRelationships": [
+            {
+              "type": "AlignmentEvidence",
+              "target": "ngmlr"
+            },
+            {
+              "target": "breast_cancer_sniffles_hg19",
+              "type": "VariantCalls"
+            }
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
               }
             }
           },

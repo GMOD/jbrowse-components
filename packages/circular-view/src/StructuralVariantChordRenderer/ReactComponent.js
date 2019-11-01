@@ -33,47 +33,54 @@ export default ({ jbrequire }) => {
       return null
     }
     const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
+    let endPosition
+    let endBlock
     if (svType === 'BND') {
       const breakendSpecification = (feature.get('ALT') || [])[0]
       const matePosition = breakendSpecification.MatePosition.split(':')
-      matePosition[1] = parseInt(matePosition[1], 10)
-      const endBlock = blocksForRefs[matePosition[0]]
-      if (endBlock) {
-        const startPos = feature.get('start')
-        const startRadians = bpToRadians(startBlock, startPos)
-        const endRadians = bpToRadians(endBlock, matePosition[1])
-        const startXY = polarToCartesian(radius, startRadians)
-        const endXY = polarToCartesian(radius, endRadians)
-        const controlXY = polarToCartesian(
-          bezierRadius,
-          (endRadians + startRadians) / 2,
-        )
+      endPosition = parseInt(matePosition[1], 10)
+      endBlock = blocksForRefs[matePosition[0]]
+    } else if (svType === 'TRA') {
+      const chr2 = ((feature.get('INFO') || {}).CHR2 || [])[0]
+      const end = ((feature.get('INFO') || {}).END || [])[0]
+      endPosition = parseInt(end, 10)
+      endBlock = blocksForRefs[chr2]
+    }
+    if (endBlock) {
+      const startPos = feature.get('start')
+      const startRadians = bpToRadians(startBlock, startPos)
+      const endRadians = bpToRadians(endBlock, endPosition)
+      const startXY = polarToCartesian(radius, startRadians)
+      const endXY = polarToCartesian(radius, endRadians)
+      const controlXY = polarToCartesian(
+        bezierRadius,
+        (endRadians + startRadians) / 2,
+      )
 
-        let strokeColor
-        if (selected) {
-          strokeColor = readConfObject(config, 'strokeColorSelected', [feature])
-        } else {
-          strokeColor = readConfObject(config, 'strokeColor', [feature])
-        }
-        const hoverStrokeColor = readConfObject(config, 'strokeColorHover', [
-          feature,
-        ])
-        return (
-          <path
-            d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-            style={{ stroke: strokeColor }}
-            onClick={evt =>
-              onClick(feature, startBlock.region, endBlock.region, evt)
-            }
-            onMouseOver={evt => {
-              if (!selected) evt.target.style.stroke = hoverStrokeColor
-            }}
-            onMouseOut={evt => {
-              if (!selected) evt.target.style.stroke = strokeColor
-            }}
-          />
-        )
+      let strokeColor
+      if (selected) {
+        strokeColor = readConfObject(config, 'strokeColorSelected', [feature])
+      } else {
+        strokeColor = readConfObject(config, 'strokeColor', [feature])
       }
+      const hoverStrokeColor = readConfObject(config, 'strokeColorHover', [
+        feature,
+      ])
+      return (
+        <path
+          d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
+          style={{ stroke: strokeColor }}
+          onClick={evt =>
+            onClick(feature, startBlock.region, endBlock.region, evt)
+          }
+          onMouseOver={evt => {
+            if (!selected) evt.target.style.stroke = hoverStrokeColor
+          }}
+          onMouseOut={evt => {
+            if (!selected) evt.target.style.stroke = strokeColor
+          }}
+        />
+      )
     }
 
     return null

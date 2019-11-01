@@ -7,7 +7,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import React, { ComponentElement } from 'react'
+import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {
