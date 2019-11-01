@@ -176,7 +176,11 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
         .filter(([k, v]) => v !== undefined && !omit.includes(k))
         .map(([key, value]) => {
           if (Array.isArray(value)) {
-            return <ArrayValue key={key} name={key} value={value} />
+            return value.length === 1 ? (
+              <SimpleValue key={key} name={key} value={value[0]} />
+            ) : (
+              <ArrayValue key={key} name={key} value={value} />
+            )
           }
           if (isObject(value)) {
             return <Attributes key={key} attributes={value} />
