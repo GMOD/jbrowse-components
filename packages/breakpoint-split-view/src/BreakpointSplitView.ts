@@ -18,9 +18,14 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       endRegion: IRegion,
     ) {
       const breakendSpecification = (feature.get('ALT') || [])[0]
-      const matePosition = breakendSpecification.MatePosition.split(':')
-      matePosition[1] = parseInt(matePosition[1], 10) - 1 // convert to interbase coord
-      const [, endPos] = matePosition
+      let endPos
+      if (breakendSpecification == '<TRA>') {
+        const INFO = feature.get('INFO') || []
+        endPos = INFO.END[0] - 1
+      } else {
+        const matePosition = breakendSpecification.MatePosition.split(':')
+        endPos = parseInt(matePosition[1], 10) - 1
+      }
       const startPos = feature.get('start')
 
       const bpPerPx = 10
