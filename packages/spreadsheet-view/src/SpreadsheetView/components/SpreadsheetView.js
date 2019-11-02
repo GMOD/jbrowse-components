@@ -3,17 +3,35 @@ export default pluginManager => {
   const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { Icon, IconButton } = jbrequire('@material-ui/core')
+  const { useEffect, useState } = React
+  const { Icon, IconButton, InputAdornment } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Typography = jbrequire('@material-ui/core/Typography')
+  const TextField = jbrequire('@material-ui/core/TextField')
   const Grid = jbrequire('@material-ui/core/Grid')
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
 
   const ImportWizard = jbrequire(require('./ImportWizard'))
   const Spreadsheet = jbrequire(require('./Spreadsheet'))
 
-  const headerHeight = 48
+  const headerHeight = 52
   const statusBarHeight = 20
+
+  // stolen from https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
+  function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value)
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value)
+      }, delay)
+
+      return () => {
+        clearTimeout(handler)
+      }
+    }, [delay, value])
+
+    return debouncedValue
+  }
 
   const useStyles = makeStyles(theme => {
     return {
@@ -28,9 +46,11 @@ export default pluginManager => {
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
         height: headerHeight,
-        margin: 0,
         // background: '#eee',
         // borderBottom: '1px solid #a2a2a2',
+      },
+      viewControls: {
+        margin: 0,
       },
       rowCount: {
         marginLeft: theme.spacing(1),
@@ -46,14 +66,15 @@ export default pluginManager => {
         borderTop: '1px outset #b1b1b1',
         paddingLeft: theme.spacing(1),
       },
+      textFilterControlAdornment: { marginRight: '-18px' },
     }
   })
 
-  const Controls = observer(({ model }) => {
+  const ViewControls = observer(({ model }) => {
     const classes = useStyles()
     return (
       <Grid
-        className={classes.header}
+        className={classes.viewControls}
         container
         spacing={1}
         direction="row"
@@ -82,8 +103,65 @@ export default pluginManager => {
     )
   })
 
+  const FilterControls = observer(({ model }) => {
+    const classes = useStyles()
+    const textFilter = model.filterControls.filters[0] || {}
+
+    // this paragraph is silliness to debounce the text filter input
+    const [textFilterValue, setTextFilterValue] = useState(
+      textFilter.stringToFind,
+    )
+    const debouncedTextFilter = useDebounce(textFilterValue, 500)
+    useEffect(() => {
+      textFilter.setString(debouncedTextFilter)
+    }, [debouncedTextFilter, textFilter])
+
+    return (
+      <div className={classes.filterControls}>
+        <TextField
+          label="filter"
+          value={textFilterValue}
+          onChange={evt => setTextFilterValue(evt.target.value)}
+          className={classes.textFilterControl}
+          margin="dense"
+          variant="outlined"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlAdornment}
+                position="end"
+              >
+                <IconButton
+                  aria-label="clear filter"
+                  onClick={() => setTextFilterValue('')}
+                >
+                  <Icon>clear</Icon>
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </div>
+    )
+  })
+
+  const RowCountMessage = observer(({ spreadsheet }) => {
+    if (spreadsheet && spreadsheet.rowSet.isLoaded) {
+      const passing = spreadsheet.rowSet.passingFiltersCount
+      const total = spreadsheet.rowSet.count
+      if (passing !== total) {
+        return `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
+      }
+
+      return `${spreadsheet.rowSet.count} rows`
+    }
+    return null
+  })
+
   function SpreadsheetView({ model }) {
     const classes = useStyles()
+
+    const { spreadsheet } = model
 
     return (
       <div
@@ -91,7 +169,14 @@ export default pluginManager => {
         style={{ height: model.height, width: model.width }}
         data-testid={model.configuration.configId}
       >
-        <Controls model={model} />
+        <Grid container direction="row" className={classes.header}>
+          <Grid item>
+            <ViewControls model={model} />
+          </Grid>
+          <Grid item>
+            <FilterControls model={model} />
+          </Grid>
+        </Grid>
 
         <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>
           <ImportWizard model={model.importWizard} />
@@ -103,7 +188,7 @@ export default pluginManager => {
           }}
         >
           <Spreadsheet
-            model={model.spreadsheet}
+            model={spreadsheet}
             height={model.height - headerHeight - statusBarHeight}
           />
         </div>
@@ -112,9 +197,7 @@ export default pluginManager => {
           className={classes.statusBar}
           style={{ display: model.mode === 'display' ? undefined : 'none' }}
         >
-          {model.spreadsheet && model.spreadsheet.rowSet.isLoaded
-            ? `${model.spreadsheet.rowSet.rows.length} rows`
-            : null}
+          <RowCountMessage spreadsheet={spreadsheet} />
         </div>
         <ResizeHandle
           onDrag={model.resizeHeight}

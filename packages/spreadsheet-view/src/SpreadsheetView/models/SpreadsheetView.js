@@ -6,6 +6,7 @@ export default pluginManager => {
 
   const SpreadsheetModel = jbrequire(require('./Spreadsheet'))
   const ImportWizardModel = jbrequire(require('./ImportWizard'))
+  const FilterControlsModel = jbrequire(require('./FilterControls'))
 
   const configSchema = ConfigurationSchema(
     'SpreadsheetView',
@@ -30,6 +31,10 @@ export default pluginManager => {
         defaultHeight,
       ),
       configuration: configSchema,
+
+      filterControls: types.optional(FilterControlsModel, () =>
+        FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
+      ),
 
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
       mode: types.optional(

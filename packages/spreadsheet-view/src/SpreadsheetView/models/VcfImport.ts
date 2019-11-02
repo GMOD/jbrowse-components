@@ -39,7 +39,6 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
       return {
         columnNumber,
         text,
-        dataType: 'text',
       }
     }),
   }
@@ -75,10 +74,18 @@ export function parseVcfBuffer(buffer: Buffer) {
     columnDisplayOrder.push(oi)
     columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
   }
-  
-  // synthesize a linkable location column after the POS column
-  columnDisplayOrder.push(columnDisplayOrder.length)
-  columns.splice(2,0,{ name: 'Location', dataType: { type: 'LocationPoint'}, isDerived: true})
+
+  // TODO: synthesize a linkable location column after the POS column
+  // columnDisplayOrder.push(columnDisplayOrder.length)
+  // columns.splice(2, 0, {
+  //   name: 'Location',
+  //   dataType: { type: 'LocationPoint' },
+  //   isDerived: true,
+  //   derivationFunction: function deriveLocationColumn(column, cell) {},
+  // })
+  // rowSet.rows.forEach(row => {
+  //   row.cells.splice(2, 0, {})
+  // })
 
   return {
     rowSet,

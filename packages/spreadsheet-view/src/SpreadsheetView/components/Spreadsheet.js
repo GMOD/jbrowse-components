@@ -78,6 +78,7 @@ export default pluginManager => {
         top: '-1px',
         zIndex: 2,
         whiteSpace: 'nowrap',
+        padding: [[0, theme.spacing(1)]],
       },
       sortIndicator: {
         position: 'relative',
@@ -102,6 +103,7 @@ export default pluginManager => {
         position: 'sticky',
         top: '-1px',
         zIndex: 2,
+        minWidth: theme.spacing(2),
       },
       dataRowSelected: {
         background: indigo[100],
@@ -109,6 +111,7 @@ export default pluginManager => {
           background: indigo[100],
         },
       },
+      emptyMessage: { captionSide: 'bottom' },
     }
   })
 
@@ -327,6 +330,9 @@ export default pluginManager => {
       setHoveredColumn(null)
     }
 
+    const totalRows = rowSet.count
+    const rows = rowSet.sortedFilteredRows
+
     return (
       <>
         <ColumnMenu
@@ -373,7 +379,7 @@ export default pluginManager => {
             </tr>
           </thead>
           <tbody className={classes.dataTableBody}>
-            {rowSet.sortedRows.map((row, rowNumber) => (
+            {rows.map((row, rowNumber) => (
               <DataRow
                 key={row.id}
                 rowNumber={rowNumber}
@@ -382,6 +388,11 @@ export default pluginManager => {
               />
             ))}
           </tbody>
+          {!rows.length ? (
+            <caption className={classes.emptyMessage}>
+              {totalRows ? 'no rows match criteria' : 'no rows present'}
+            </caption>
+          ) : null}
         </table>
       </>
     )

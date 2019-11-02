@@ -30,6 +30,7 @@ import MUIMenu from '@material-ui/core/Menu'
 import MUIMenuItem from '@material-ui/core/MenuItem'
 import MUIListItemIcon from '@material-ui/core/ListItemIcon'
 import MUIListItemText from '@material-ui/core/ListItemText'
+import MUIInputAdornment from '@material-ui/core/InputAdornment'
 
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
@@ -85,7 +86,7 @@ export default {
   '@material-ui/core/MenuItem': MUIMenuItem,
   '@material-ui/core/ListItemIcon': MUIListItemIcon,
   '@material-ui/core/ListItemText': MUIListItemText,
-
+  '@material-ui/core/InputAdornment': MUIInputAdornment,
   '@material-ui/core/colors': MUIColors,
 
   '@material-ui/lab/ToggleButton': ToggleButton,
