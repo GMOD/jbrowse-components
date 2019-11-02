@@ -19,7 +19,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
     ) {
       const breakendSpecification = (feature.get('ALT') || [])[0]
       let endPos
-      if (breakendSpecification == '<TRA>') {
+      if (breakendSpecification === '<TRA>') {
         const INFO = feature.get('INFO') || []
         endPos = INFO.END[0] - 1
       } else {
