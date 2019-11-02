@@ -63,8 +63,8 @@ async function dataToSpreadsheetSnapshot(
     )
 
     if (colNamesRow) {
-      colNamesRow.cells.forEach(cell => {
-        columnNames[cell.columnNumber] = cell.text
+      colNamesRow.cells.forEach((cell, columnNumber) => {
+        columnNames[columnNumber] = cell.text || ''
       })
     }
   }
