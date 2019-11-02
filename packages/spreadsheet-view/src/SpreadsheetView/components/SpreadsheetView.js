@@ -1,6 +1,5 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useEffect, useState } = React

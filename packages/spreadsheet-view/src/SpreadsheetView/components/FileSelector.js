@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { observer, PropTypes } = jbrequire('mobx-react')
+  const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const ReactPropTypes = jbrequire('prop-types')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
@@ -96,7 +96,7 @@ export default pluginManager => {
 
   function FileSelector(props) {
     const { fileRecord, onChange } = props
-    const classes = useStyles()
+    // const classes = useStyles()
 
     const fileOrUrl = fileRecord && fileRecord.url ? 'url' : 'file'
 

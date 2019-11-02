@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
+  const { types } = jbrequire('mobx-state-tree')
 
   // filter that finds a simple string in any of the cells of a row
   const TextFilter = types
@@ -26,6 +26,7 @@ export default pluginManager => {
           ) {
             const cell = cells[columnNumber]
             // TODO: add support for derived cells
+            // note: case insensitive
             if (cell.text && cell.text.toLowerCase().indexOf(s) !== -1)
               return true
           }

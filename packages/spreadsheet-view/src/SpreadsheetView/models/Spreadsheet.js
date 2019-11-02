@@ -53,7 +53,7 @@ export default pluginManager => {
           })),
       ),
     })
-    .volatile(self => ({
+    .volatile(() => ({
       defaultDataType: DataTypes.Text,
     }))
     .views(self => ({

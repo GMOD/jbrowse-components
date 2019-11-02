@@ -31,7 +31,7 @@ export default pluginManager => {
 
       errorObject: types.optional(types.frozen()),
     })
-    .volatile(self => ({
+    .volatile(() => ({
       fileTypes,
     }))
     .views(self => ({

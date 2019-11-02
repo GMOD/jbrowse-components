@@ -323,10 +323,10 @@ export default pluginManager => {
 
     // column header hover state
     const [currentHoveredColumn, setHoveredColumn] = useState(null)
-    const columnHeaderMouseOver = (colNumber, evt) => {
+    const columnHeaderMouseOver = (colNumber /* , evt */) => {
       setHoveredColumn(colNumber)
     }
-    const columnHeaderMouseOut = (colNumber, evt) => {
+    const columnHeaderMouseOut = (/* colNumber, evt */) => {
       setHoveredColumn(null)
     }
 

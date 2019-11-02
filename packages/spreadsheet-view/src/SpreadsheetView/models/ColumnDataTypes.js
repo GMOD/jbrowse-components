@@ -12,7 +12,7 @@ export default pluginManager => {
       .model(`ColumnDataType${name}`, {
         type: types.literal(name),
       })
-      .volatile(self => ({ ReactComponent, displayName: displayName || name }))
+      .volatile(() => ({ ReactComponent, displayName: displayName || name }))
       .views(() => ({ compare }))
   }
 
@@ -28,22 +28,20 @@ export default pluginManager => {
     },
   })
 
-  ColumnDataType('LocationPoint', {
-    displayName: 'Location (point)',
-    compare(cellA, cellB) {
-      return 0 // TODO
-    },
-  })
-  // sort - requires interpretation with other columns
-  // display with react component - requires interpretation
-  //
+  // ColumnDataType('LocationPoint', {
+  //   displayName: 'Location (point)',
+  //   compare(cellA, cellB) {
+  //     return 0 // TODO
+  //   },
+  // })
 
-  ColumnDataType('LocationRange', {
-    displayName: 'Location (range)',
-    compare(cellA, cellB) {
-      return 0 // TODO
-    },
-  })
+  // ColumnDataType('LocationRange', {
+  //   displayName: 'Location (range)',
+  //   compare(cellA, cellB) {
+  //     return 0 // TODO
+  //   },
+  // })
+
   // ColumnDataType('VcfInfo', {
   //   ReactComponent: VCFInfoColumn,
   //   SortMenuItem: VCFInfoSortMenuItem,
