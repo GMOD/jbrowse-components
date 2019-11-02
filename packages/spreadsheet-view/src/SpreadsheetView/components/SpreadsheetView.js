@@ -4,6 +4,7 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useEffect, useState } = React
   const { Icon, IconButton, InputAdornment } = jbrequire('@material-ui/core')
+  const { useDebounce } = jbrequire('@gmod/jbrowse-core/util')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
   const Grid = jbrequire('@material-ui/core/Grid')
@@ -14,23 +15,6 @@ export default pluginManager => {
 
   const headerHeight = 52
   const statusBarHeight = 20
-
-  // stolen from https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
-  function useDebounce(value, delay) {
-    const [debouncedValue, setDebouncedValue] = useState(value)
-
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        setDebouncedValue(value)
-      }, delay)
-
-      return () => {
-        clearTimeout(handler)
-      }
-    }, [delay, value])
-
-    return debouncedValue
-  }
 
   const useStyles = makeStyles(theme => {
     return {
