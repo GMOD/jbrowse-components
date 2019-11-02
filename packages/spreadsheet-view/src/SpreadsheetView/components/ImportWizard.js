@@ -4,6 +4,7 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useState, useEffect } = React
   const { makeStyles } = jbrequire('@material-ui/core/styles')
+  const { Card, CardContent } = jbrequire('@material-ui/core')
   const FormControl = jbrequire('@material-ui/core/FormControl')
   const FormGroup = jbrequire('@material-ui/core/FormGroup')
   const FormLabel = jbrequire('@material-ui/core/FormLabel')
@@ -14,7 +15,9 @@ export default pluginManager => {
   const Container = jbrequire('@material-ui/core/Container')
   const Button = jbrequire('@material-ui/core/Button')
   const Grid = jbrequire('@material-ui/core/Grid')
+  const Typography = jbrequire('@material-ui/core/Typography')
   const TextField = jbrequire('@material-ui/core/TextField')
+  const { red } = jbrequire('@material-ui/core/colors')
 
   const FileSelector = jbrequire(require('./FileSelector'))
 
@@ -24,6 +27,14 @@ export default pluginManager => {
         position: 'relative',
         padding: theme.spacing(1),
         background: 'white',
+      },
+      errorCard: {
+        width: '50%',
+        margin: [[theme.spacing(2), 'auto']],
+        border: [['2px', 'solid', red[200]]],
+      },
+      errorMessage: {
+        color: red[400],
       },
     }
   })
@@ -49,7 +60,7 @@ export default pluginManager => {
       )
     },
   )
-  function ImportWizard({ model }) {
+  const ImportForm = observer(({ model }) => {
     const classes = useStyles()
     const showColumnNameRowControls =
       model.fileType === 'CSV' || model.fileType === 'TSV'
@@ -151,9 +162,37 @@ export default pluginManager => {
         </Grid>
       </Container>
     )
-  }
-  ImportWizard.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
-  return observer(ImportWizard)
+  })
+
+  const ErrorDisplay = observer(({ errorMessage, stackTrace }) => {
+    const classes = useStyles()
+    return (
+      <Card className={classes.errorCard}>
+        <CardContent>
+          <Typography variant="h6" className={classes.errorMessage}>
+            {String(errorMessage)}
+          </Typography>
+        </CardContent>
+      </Card>
+    )
+  })
+
+  const ImportWizard = observer(({ model }) => {
+    const classes = useStyles()
+    return (
+      <>
+        {model.error ? (
+          <Container className={classes.errorContainer}>
+            <ErrorDisplay
+              errorMessage={String(model.error.message)}
+              stackTrace={model.error.stackTrace}
+            />
+          </Container>
+        ) : null}
+        <ImportForm model={model} />
+      </>
+    )
+  })
+
+  return ImportWizard
 }

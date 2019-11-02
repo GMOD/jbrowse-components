@@ -1,6 +1,9 @@
 import { parseCsvBuffer, parseTsvBuffer, parseBedBuffer } from './ImportUtils'
 
 import { parseVcfBuffer } from './VcfImport'
+import set from 'set-value'
+
+const IMPORT_SIZE_LIMIT = 300000
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -29,14 +32,14 @@ export default pluginManager => {
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
 
-      errorObject: types.optional(types.frozen()),
+      error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
       fileTypes,
     }))
     .views(self => ({
       get isReadyToOpen() {
-        return self.fileSource && (self.fileSource.blob || self.fileSource.url)
+        return self.fileSource && (self.fileSource.blob || self.fileSource.uri)
       },
       get canCancel() {
         return getParent(self).readyToDisplay
@@ -48,7 +51,7 @@ export default pluginManager => {
 
         if (self.fileSource) {
           // try to autodetect the file type, ignore errors
-          const name = self.fileSource.url || self.fileSource.blob.name
+          const name = self.fileSource.uri || self.fileSource.blob.name
           if (name) {
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {
@@ -73,14 +76,19 @@ export default pluginManager => {
       setError(error) {
         console.error(error)
         self.loading = false
-        self.errorObject = error
+        self.error = {
+          message: String(error),
+          stackTrace: String(error.stack || ''),
+        }
       },
 
       setLoaded() {
         self.loading = false
+        self.error = undefined
       },
 
       cancelButton() {
+        self.error = undefined
         getParent(self).setDisplayMode()
       },
 
@@ -92,10 +100,21 @@ export default pluginManager => {
           const typeParser = fileTypeParsers[self.fileType]
           if (!typeParser)
             throw new Error(`cannot open files of type '${self.fileType}'`)
+          if (self.loading)
+            throw new Error('cannot import, load already in progress')
           self.loading = true
           const filehandle = openLocation(self.fileSource)
           filehandle
-            .readFile()
+            .stat()
+            .then(stat => {
+              if (stat.size > IMPORT_SIZE_LIMIT)
+                throw new Error(
+                  `File is too big. Tabular files are limited to at most ${(
+                    IMPORT_SIZE_LIMIT / 1000
+                  ).toLocaleString()}kb.`,
+                )
+            })
+            .then(() => filehandle.readFile())
             .then(buffer => typeParser(buffer, self))
             .then(spreadsheet => {
               self.setLoaded()

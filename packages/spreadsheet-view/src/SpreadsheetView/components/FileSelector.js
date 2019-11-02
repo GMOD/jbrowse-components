@@ -26,7 +26,7 @@ export default pluginManager => {
   function UrlChooser({ fileRecord, onChange }) {
     const classes = useStyles()
     const handleChange = evt => {
-      onChange({ url: evt.target.value })
+      onChange({ uri: evt.target.value })
     }
     return (
       <TextField
@@ -34,7 +34,7 @@ export default pluginManager => {
         className={classes.urlChooser}
         margin="dense"
         fullWidth
-        defaultValue={fileRecord && fileRecord.url}
+        defaultValue={fileRecord && fileRecord.uri}
         onChange={handleChange}
       />
     )
@@ -98,11 +98,11 @@ export default pluginManager => {
     const { fileRecord, onChange } = props
     // const classes = useStyles()
 
-    const fileOrUrl = fileRecord && fileRecord.url ? 'url' : 'file'
+    const fileOrUrl = fileRecord && fileRecord.uri ? 'url' : 'file'
 
     const handleFileOrUrlChange = (event, newValue) => {
-      if (newValue === 'url' && !(fileRecord && fileRecord.url))
-        onChange({ url: 'https://' })
+      if (newValue === 'url' && !(fileRecord && fileRecord.uri))
+        onChange({ uri: 'https://' })
       else onChange(undefined)
     }
 
