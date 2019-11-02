@@ -36,11 +36,6 @@ class RpcManager {
     }
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
-    // try {
-    //   this.getDriverForCall()
-    // } catch(e) {
-    //   debugger
-    // }
     this.backendConfigurations = backendConfigurations
     this.getRefNameMapForAdapter = getRefNameMapForAdapter
   }
@@ -74,9 +69,10 @@ class RpcManager {
     return this.getDriver(backendName)
   }
 
-  renameRegionIfNeeded(refNameMap, container, keyForRegion) {
-    let region = container[keyForRegion]
-    if (isStateTreeNode(region) && !isAlive(region)) return
+  renameRegionIfNeeded(refNameMap, region) {
+    if (isStateTreeNode(region) && !isAlive(region)) {
+      return region
+    }
     if (region && refNameMap && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
       if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
@@ -84,15 +80,12 @@ class RpcManager {
 
       // modify it directly in the container
       region.refName = refNameMap.get(region.refName)
-      container[keyForRegion] = region
     }
+    return region
   }
 
   async call(stateGroupName, functionName, args, opts = {}) {
-    const { assemblyName, signal, regions, adapterConfig } = args
-
-    // TODO: this renaming stuff should probably be moved to the session model
-    // when we have a session model
+    const { assemblyName, signal, regions, region, adapterConfig } = args
     if (assemblyName) {
       const refNameMap = await this.getRefNameMapForAdapter(
         adapterConfig,
@@ -100,12 +93,17 @@ class RpcManager {
         { signal },
       )
 
-      this.renameRegionIfNeeded(refNameMap, args, 'region')
+      if (region) {
+        args.region = this.renameRegionIfNeeded(refNameMap, args.region)
+      }
 
-      if (regions) {
-        regions.forEach((r, index) => {
-          this.renameRegionIfNeeded(refNameMap, regions, index)
-        })
+      if (args.regions) {
+        for (let i = 0; i < regions.length; i += 1) {
+          args.regions[i] = this.renameRegionIfNeeded(
+            refNameMap,
+            args.regions[i],
+          )
+        }
       }
     }
     return this.getDriverForCall(stateGroupName, functionName, args).call(

@@ -24,6 +24,7 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'warn',
     'no-param-reassign': 'off',
+    'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
     'no-restricted-syntax': 'off',
     'no-underscore-dangle': 'warn',
     'no-unused-vars': 'warn',
@@ -49,6 +50,7 @@ module.exports = {
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/camelcase': 'warn',
     '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
   },
   settings: {

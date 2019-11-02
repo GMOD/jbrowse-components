@@ -353,6 +353,22 @@ describe('bigwig', () => {
       waitForElement(() => getAllByTestId('prerendered_canvas')),
     ).resolves.toBeTruthy()
   })
+  it('open a bigwig with a renamed reference', async () => {
+    const state = rootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('JBrowse'))
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_microarray_density_altname'),
+      ),
+    )
+    await expect(
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
+  })
 })
 
 describe('circular views', () => {

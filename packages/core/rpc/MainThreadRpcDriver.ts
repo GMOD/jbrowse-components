@@ -54,10 +54,9 @@ export function cloneArgs(args: any): any {
 }
 
 class DummyHandle {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   destroy(): void {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   call(functionName: string, filteredArgs?: any, options = {}): any {}
 }
 

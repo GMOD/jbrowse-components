@@ -17,6 +17,7 @@ interface Breakend {
   Join: string
 }
 interface FeatureData {
+  [key: string]: unknown
   refName: string
   start: number
   end: number
@@ -49,11 +50,10 @@ export default class VCFFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     if (field === 'samples') return this.variant.SAMPLES
-    // @ts-ignore
     return this.variant[field] || this.data[field]
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set(name: string, val: any): void {}
 
   parent(): undefined {

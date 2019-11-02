@@ -474,7 +474,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return undefined
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   cleanup(): void {}
 
   getTotalHeight(): number {
