@@ -1,7 +1,6 @@
 import { parseCsvBuffer, parseTsvBuffer, parseBedBuffer } from './ImportUtils'
 
 import { parseVcfBuffer } from './VcfImport'
-import set from 'set-value'
 
 const IMPORT_SIZE_LIMIT = 300000
 

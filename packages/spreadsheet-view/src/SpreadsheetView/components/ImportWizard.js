@@ -1,6 +1,6 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { observer, PropTypes } = jbrequire('mobx-react')
+  const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState, useEffect } = React
   const { makeStyles } = jbrequire('@material-ui/core/styles')
@@ -164,7 +164,7 @@ export default pluginManager => {
     )
   })
 
-  const ErrorDisplay = observer(({ errorMessage, stackTrace }) => {
+  const ErrorDisplay = observer(({ errorMessage }) => {
     const classes = useStyles()
     return (
       <Card className={classes.errorCard}>
