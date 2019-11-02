@@ -54,7 +54,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "rescripts start",
+    "start": "NODE_OPTIONS='--max-http-header-size=100000' rescripts start",
     "build": "rescripts build",
     "test": "rescripts test",
     "eject": "rescripts eject",
