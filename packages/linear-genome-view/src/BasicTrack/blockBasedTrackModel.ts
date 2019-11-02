@@ -22,99 +22,113 @@ const blockBasedTrack = types.compose(
     })
     .volatile(() => ({
       rbush: new RBush(),
+      featureIdUnderMouse: undefined as undefined | string,
     }))
-    .views(self => ({
-      get blockType() {
-        return 'staticBlocks'
-      },
+    .views(self => {
+      let stringifiedCurrentBlocks: undefined | string
 
-      /**
-       * how many milliseconds to wait for the display to
-       * "settle" before re-rendering a block
-       */
-      get renderDelay() {
-        return 50
-      },
+      return {
+        get blockType() {
+          return 'staticBlocks'
+        },
 
-      /**
-       * a CompositeMap of featureId -> feature obj that
-       * just looks in all the block data for that feature
-       */
-      get features() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block.data && block.data.features)
-            featureMaps.push(block.data.features)
-        }
-        return new CompositeMap<string, Feature>(featureMaps)
-      },
+        /**
+         * how many milliseconds to wait for the display to
+         * "settle" before re-rendering a block
+         */
+        get renderDelay() {
+          return 50
+        },
 
-      /**
-       * a CompositeMap of featureId -> feature obj that
-       * just looks in all the block data for that feature
-       */
-      get layoutFeatures() {
-        const layoutMaps = []
-        for (const block of self.blockState.values()) {
-          if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.push(block.data.layout.rectangles)
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
+        get features() {
+          const featureMaps = []
+          for (const block of self.blockState.values()) {
+            if (block.data && block.data.features)
+              featureMaps.push(block.data.features)
           }
-        }
-        return new CompositeMap<string, [number, number, number, number]>(
-          layoutMaps,
-        )
-      },
+          return new CompositeMap<string, Feature>(featureMaps)
+        },
 
-      get rtree() {
-        self.rbush.clear()
-        for (const [key, item] of this.features) {
-          const layout = this.layoutFeatures.get(key) || []
-          self.rbush.insert({
-            minX: item.get('start'),
-            minY: layout[1],
-            maxX: item.get('end'),
-            maxY: layout[3],
-            name: key,
-          })
-        }
-        return self.rbush
-      },
-      getFeatureOverlapping(x: number, y: number) {
-        const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        if (this.rtree.collides(rect)) {
-          return this.rtree.search({
-            minX: x,
-            minY: y,
-            maxX: x + 1,
-            maxY: y + 1,
-          })
-        }
-        return []
-      },
+        /**
+         * a CompositeMap of featureId -> feature obj that
+         * just looks in all the block data for that feature
+         */
+        get layoutFeatures() {
+          const layoutMaps = []
+          for (const block of self.blockState.values()) {
+            if (
+              block.data &&
+              block.data.layout &&
+              block.data.layout.rectangles
+            ) {
+              layoutMaps.push(block.data.layout.rectangles)
+            }
+          }
+          return new CompositeMap<string, [number, number, number, number]>(
+            layoutMaps,
+          )
+        },
 
-      get blockDefinitions() {
-        return getContainingView(self)[this.blockType]
-      },
-      /**
-       * returns a string feature ID if the globally-selected object
-       * is probably a feature
-       */
-      get selectedFeatureId() {
-        const session = getSession(self) as any
-        if (!session) return undefined
-        const { selection } = session
-        // does it quack like a feature?
-        if (
-          selection &&
-          typeof selection.get === 'function' &&
-          typeof selection.id === 'function'
-        ) {
-          // probably is a feature
-          return selection.id()
-        }
-        return undefined
-      },
-    }))
+        get rtree() {
+          const s = JSON.stringify(this.blockDefinitions)
+          if (stringifiedCurrentBlocks !== s) {
+            self.rbush.clear()
+            for (const [key, item] of this.features) {
+              const layout = this.layoutFeatures.get(key) || []
+              self.rbush.insert({
+                minX: item.get('start'),
+                minY: layout[1],
+                maxX: item.get('end'),
+                maxY: layout[3],
+                name: key,
+              })
+            }
+            stringifiedCurrentBlocks = s
+          }
+          return self.rbush
+        },
+        getFeatureOverlapping(x: number, y: number) {
+          const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+          if (this.rtree.collides(rect)) {
+            return this.rtree.search({
+              minX: x,
+              minY: y,
+              maxX: x + 1,
+              maxY: y + 1,
+            })
+          }
+          return []
+        },
+
+        get blockDefinitions() {
+          return getContainingView(self)[this.blockType]
+        },
+
+        /**
+         * returns a string feature ID if the globally-selected object
+         * is probably a feature
+         */
+        get selectedFeatureId() {
+          const session = getSession(self) as any
+          if (!session) return undefined
+          const { selection } = session
+          // does it quack like a feature?
+          if (
+            selection &&
+            typeof selection.get === 'function' &&
+            typeof selection.id === 'function'
+          ) {
+            // probably is a feature
+            return selection.id()
+          }
+          return undefined
+        },
+      }
+    })
 
     .actions(self => ({
       afterAttach() {
@@ -168,9 +182,15 @@ const blockBasedTrack = types.compose(
         }
         session.setSelection(feature)
       },
+
       clearFeatureSelection() {
         const session = getSession(self) as any
         session.clearSelection()
+      },
+
+      setFeatureIdUnderMouse(feature: Feature | undefined) {
+        // @ts-ignore
+        self.featureIdUnderMouse = feature
       },
     }))
 

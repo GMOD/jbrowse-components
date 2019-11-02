@@ -4,7 +4,8 @@ import { bpToPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useState, useCallback } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
+import Tooltip from '@gmod/jbrowse-core/ui/Tooltip'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
@@ -12,6 +13,81 @@ const fontWidthScaleFactor = 0.55
 const renderingStyle = {
   position: 'relative',
 }
+
+const SvgSelected = observer(
+  ({
+    region,
+    trackModel: { layoutFeatures, selectedFeatureId },
+    bpPerPx,
+    horizontallyFlipped,
+  }) => {
+    let rect
+    if (
+      selectedFeatureId &&
+      layoutFeatures &&
+      (rect = layoutFeatures.get(selectedFeatureId))
+    ) {
+      const [leftBp, topPx, rightBp, bottomPx] = rect
+      const leftPx = Math.round(
+        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+      )
+      const rightPx = Math.round(
+        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+      )
+      const rectTop = Math.round(topPx)
+      const rectHeight = Math.round(bottomPx - topPx)
+      return (
+        <rect
+          x={leftPx - 2}
+          y={rectTop - 2}
+          width={rightPx - leftPx + 4}
+          height={rectHeight + 4}
+          stroke="#00b8ff"
+          fill="none"
+        />
+      )
+    }
+    return null
+  },
+)
+
+const SvgMouseover = observer(
+  ({
+    trackModel: { layoutFeatures, featureIdUnderMouse },
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+  }) => {
+    let rect
+    if (
+      featureIdUnderMouse &&
+      layoutFeatures &&
+      (rect = layoutFeatures.get(featureIdUnderMouse))
+    ) {
+      const [leftBp, topPx, rightBp, bottomPx] = rect
+      const leftPx = Math.round(
+        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+      )
+      const rightPx = Math.round(
+        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+      )
+      const rectTop = Math.round(topPx)
+      const rectHeight = Math.round(bottomPx - topPx)
+      return (
+        <rect
+          x={leftPx - 2}
+          y={rectTop - 2}
+          width={rightPx - leftPx + 4}
+          height={rectHeight + 4}
+          fill="#000"
+          fillOpacity="0.2"
+        />
+      )
+    }
+    return null
+  },
+)
+
 function SvgFeatureRendering(props) {
   const {
     region,
@@ -20,13 +96,18 @@ function SvgFeatureRendering(props) {
     horizontallyFlipped,
     config,
     features,
-    trackModel: { selectedFeatureId },
+    trackModel,
   } = props
+  const { featureIdUnderMouse, selectedFeatureId, configuration } = trackModel
+  const width = (region.end - region.start) / bpPerPx
 
+  const ref = useRef()
   const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
+  const [offset, setOffset] = useState([0, 0])
   const {
     onMouseOut,
     onMouseDown,
@@ -36,6 +117,7 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onClick,
+    onFeatureClick,
   } = props
 
   const mouseDown = useCallback(
@@ -71,10 +153,12 @@ function SvgFeatureRendering(props) {
   const mouseLeave = useCallback(
     event => {
       const handler = onMouseLeave
+      setLocalFeatureIdUnderMouse(undefined)
+      trackModel.setFeatureIdUnderMouse(undefined)
       if (!handler) return undefined
       return handler(event)
     },
-    [onMouseLeave],
+    [onMouseLeave, trackModel],
   )
 
   const mouseOver = useCallback(
@@ -99,19 +183,53 @@ function SvgFeatureRendering(props) {
     event => {
       const handler = onMouseMove
       if (mouseIsDown) setMovedDuringLastMouseDown(true)
+      let offsetX = 0
+      let offsetY = 0
+      if (ref.current) {
+        offsetX = ref.current.getBoundingClientRect().left
+        offsetY = ref.current.getBoundingClientRect().top
+      }
+      offsetX = event.clientX - offsetX
+      offsetY = event.clientY - offsetY
+      const px = horizontallyFlipped ? width - offsetX : offsetX
+      const clientBp = region.start + bpPerPx * px
+
+      const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+      const featureIdCurrentlyUnderMouse = feats.length
+        ? feats[0].name
+        : undefined
+      setOffset([offsetX, offsetY])
+      setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
+      trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
+
       if (!handler) return undefined
       return handler(event)
     },
-    [mouseIsDown, onMouseMove],
+    [
+      bpPerPx,
+      horizontallyFlipped,
+      mouseIsDown,
+      onMouseMove,
+      region.start,
+      trackModel,
+      width,
+    ],
   )
 
   const click = useCallback(
     event => {
-      const handler = onClick
-      if (!handler || movedDuringLastMouseDown) return undefined
-      return handler(event)
+      // don't select a feature if we are clicking and dragging
+      if (movedDuringLastMouseDown) return
+
+      if (featureIdUnderMouse) {
+        // else if feature under mouse, select feature
+        onFeatureClick && onFeatureClick(event, featureIdUnderMouse)
+      } else if (onClick) {
+        // else , clear feature basically
+        onClick && onClick(event)
+      }
     },
-    [movedDuringLastMouseDown, onClick],
+    [featureIdUnderMouse, movedDuringLastMouseDown, onClick, onFeatureClick],
   )
 
   function createFeatureGlyphComponent(feature) {
@@ -211,28 +329,39 @@ function SvgFeatureRendering(props) {
     if (ret) featuresRendered.push(ret)
   }
 
-  const width = (region.end - region.start) / bpPerPx
   const height = layout.getTotalHeight()
 
   return (
-    <svg
-      className="SvgFeatureRendering"
-      width={`${width}px`}
-      height={`${height}px`}
-      style={renderingStyle}
-      onMouseDown={mouseDown}
-      onMouseUp={mouseUp}
-      onMouseEnter={mouseEnter}
-      onMouseLeave={mouseLeave}
-      onMouseOver={mouseOver}
-      onMouseOut={mouseOut}
-      onMouseMove={mouseMove}
-      onFocus={mouseEnter}
-      onBlur={mouseLeave}
-      onClick={click}
-    >
-      {featuresRendered}
-    </svg>
+    <div style={renderingStyle}>
+      <svg
+        ref={ref}
+        className="SvgFeatureRendering"
+        width={`${width}px`}
+        height={`${height}px`}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
+        onMouseEnter={mouseEnter}
+        onMouseLeave={mouseLeave}
+        onMouseOver={mouseOver}
+        onMouseOut={mouseOut}
+        onMouseMove={mouseMove}
+        onFocus={mouseEnter}
+        onBlur={mouseLeave}
+        onClick={click}
+      >
+        {featuresRendered}
+        <SvgSelected {...props} />
+        <SvgMouseover {...props} />
+      </svg>
+      {localFeatureIdUnderMouse ? (
+        <Tooltip
+          configuration={configuration}
+          feature={features.get(localFeatureIdUnderMouse)}
+          offsetX={offset[0]}
+          offsetY={offset[1]}
+        />
+      ) : null}
+    </div>
   )
 }
 
@@ -251,8 +380,11 @@ SvgFeatureRendering.propTypes = {
   ]),
   config: CommonPropTypes.ConfigSchema.isRequired,
   trackModel: ReactPropTypes.shape({
-    /** id of the currently selected feature, if any */
+    configuration: ReactPropTypes.shape({}),
+    setFeatureIdUnderMouse: ReactPropTypes.func,
+    getFeatureOverlapping: ReactPropTypes.func,
     selectedFeatureId: ReactPropTypes.string,
+    featureIdUnderMouse: ReactPropTypes.string,
   }),
 
   onMouseDown: ReactPropTypes.func,
@@ -263,6 +395,7 @@ SvgFeatureRendering.propTypes = {
   onMouseOut: ReactPropTypes.func,
   onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
+  onFeatureClick: ReactPropTypes.func,
 }
 
 SvgFeatureRendering.defaultProps = {
@@ -280,6 +413,7 @@ SvgFeatureRendering.defaultProps = {
   onMouseOut: undefined,
   onMouseMove: undefined,
   onClick: undefined,
+  onFeatureClick: undefined,
 }
 
 export default observer(SvgFeatureRendering)

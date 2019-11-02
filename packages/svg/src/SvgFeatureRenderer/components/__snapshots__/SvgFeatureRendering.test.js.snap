@@ -1,42 +1,48 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`no features 1`] = `
-<svg
-  class="SvgFeatureRendering"
-  height="20px"
+<div
   style="position: relative;"
-  width="100px"
-/>
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="20px"
+    width="100px"
+  />
+</div>
 `;
 
 exports[`one feature 1`] = `
-<svg
-  class="SvgFeatureRendering"
-  height="25px"
+<div
   style="position: relative;"
-  width="333.3333333333333px"
 >
-  <g>
-    <title>
-      one
-    </title>
-    <rect
-      data-testid="one"
-      fill="goldenrod"
-      height="10"
-      title="one"
-      width="1"
-      x="0.3"
-      y="0"
-    />
-    <text
-      dominant-baseline="hanging"
-      style="font-size: 13px; fill: black; cursor: default;"
-      x="0.3"
-      y="12"
-    >
-      one
-    </text>
-  </g>
-</svg>
+  <svg
+    class="SvgFeatureRendering"
+    height="25px"
+    width="333.3333333333333px"
+  >
+    <g>
+      <title>
+        one
+      </title>
+      <rect
+        data-testid="one"
+        fill="goldenrod"
+        height="10"
+        title="one"
+        width="1"
+        x="0.3"
+        y="0"
+      />
+      <text
+        dominant-baseline="hanging"
+        style="font-size: 13px; fill: black; cursor: default;"
+        x="0.3"
+        y="12"
+      >
+        one
+      </text>
+    </g>
+  </svg>
+</div>
 `;

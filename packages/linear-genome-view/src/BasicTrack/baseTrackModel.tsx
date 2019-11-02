@@ -33,6 +33,16 @@ const generateBaseTrackConfig = (base: any) =>
       type: 'stringArray',
       defaultValue: [],
     },
+
+    mouseover: {
+      type: 'string',
+      description: 'what to display in a given mouseover',
+      defaultValue: `function(feature) {
+      return feature.get('name')
+      }`,
+      functionSignature: ['feature'],
+    },
+
     // see corresponding entry in circular-view ChordTrack
     // no config slot editor exists for this at the time being
     configRelationships: {
