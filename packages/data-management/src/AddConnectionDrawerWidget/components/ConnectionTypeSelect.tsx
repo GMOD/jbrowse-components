@@ -51,7 +51,7 @@ function ConnectionTypeSelect(props: {
         helperText="Dataset to which the track will be added"
         select
         fullWidth
-        onChange={event => setDatasetName(event.target.value)}
+        onChange={(event): void => setDatasetName(event.target.value)}
         inputProps={{ 'data-testid': 'datasetNameSelect' }}
       >
         {datasetNameChoices.map(datasetNameChoice => (

@@ -1,6 +1,14 @@
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
+import DrawerWidgetType from '@gmod/jbrowse-core/pluggableElementTypes/DrawerWidgetType'
 import Plugin from '@gmod/jbrowse-core/Plugin'
+import { lazy } from 'react'
+
+import {
+  configSchema as baseFeatureDrawerWidgetConfigSchema,
+  ReactComponent as baseFeatureDrawerWidgetReactComponent,
+  stateModel as baseFeatureDrawerWidgetStateModel,
+} from '@gmod/jbrowse-core/BaseFeatureDrawerWidget'
 import {
   configSchemaFactory as basicTrackConfigSchemaFactory,
   stateModelFactory as basicTrackStateModelFactory,
@@ -42,13 +50,26 @@ export default class extends Plugin {
           ReactComponent: LinearGenomeViewReactComponent,
         }),
     )
+    pluginManager.addDrawerWidgetType(
+      () =>
+        new DrawerWidgetType({
+          name: 'BaseFeatureDrawerWidget',
+          heading: 'Feature Details',
+          configSchema: baseFeatureDrawerWidgetConfigSchema,
+          stateModel: baseFeatureDrawerWidgetStateModel,
+          LazyReactComponent: lazy(() => baseFeatureDrawerWidgetReactComponent),
+        }),
+    )
   }
 }
 
 export {
   default as BaseTrackControls,
 } from './BasicTrack/components/TrackControls'
-export { BaseTrackConfig } from './BasicTrack/baseTrackModel'
+export {
+  default as BaseTrack,
+  BaseTrackConfig,
+} from './BasicTrack/baseTrackModel'
 export {
   default as blockBasedTrackModel,
 } from './BasicTrack/blockBasedTrackModel'

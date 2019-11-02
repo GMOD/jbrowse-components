@@ -53,7 +53,7 @@ export default class VCFFeature implements Feature {
     return this.variant[field] || this.data[field]
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function
   set(name: string, val: any): void {}
 
   parent(): undefined {
@@ -84,12 +84,14 @@ export default class VCFFeature implements Feature {
       variant.REF,
       variant.ALT,
     )
+    const isTRA = variant.ALT.some((f: string) => f === '<TRA>')
     const featureData: FeatureData = {
       refName: variant.CHROM,
       start,
-      end: variant.INFO.END
-        ? Number(variant.INFO.END[0])
-        : start + variant.REF.length,
+      end:
+        variant.INFO.END && !isTRA
+          ? Number(variant.INFO.END[0])
+          : start + variant.REF.length,
       description,
       type: SO_term,
       name: variant.ID ? variant.ID[0] : undefined,
@@ -196,13 +198,18 @@ export default class VCFFeature implements Feature {
     return [undefined, undefined]
   }
 
-  _getSOAndDescByExamination(ref: string, alt: string): [string, string] {
+  _getSOAndDescByExamination(
+    ref: string,
+    alt: string | Breakend,
+  ): [string, string] {
+    if (typeof alt === 'object') {
+      return ['breakend', this._makeDescriptionString('breakend', ref, alt)]
+    }
     if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
-
     if (ref.length === alt.length)
       if (
         ref
@@ -226,7 +233,11 @@ export default class VCFFeature implements Feature {
     return ['indel', this._makeDescriptionString('indel', ref, alt)]
   }
 
-  _makeDescriptionString(soTerm: string, ref: string, alt: string): string {
+  _makeDescriptionString(
+    soTerm: string,
+    ref: string,
+    alt: string | Breakend,
+  ): string {
     return `${soTerm} ${ref} -> ${alt}`
   }
 

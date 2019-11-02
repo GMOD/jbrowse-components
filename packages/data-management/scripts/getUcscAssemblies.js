@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-var-requires,no-console */
+/* eslint-disable no-console */
 
 /**
  * This grabs the UCSC genome downloads page and parses it for assembly names.

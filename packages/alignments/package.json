@@ -9,9 +9,13 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bam": "^1.0.21",
+    "@gmod/bam": "^1.0.29",
+    "@gmod/cram": "^1.5.3",
     "generic-filehandle": "^2.0.0",
-    "react-style-proptype": "^3.2.2"
+    "memoize-one": "^5.1.1",
+    "mobx-run-in-reactive-context": "^1.0.1",
+    "react-style-proptype": "^3.2.2",
+    "use-timeout": "^1.1.0"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ConfigurationReference,
-  ConfigurationSchema,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {
@@ -14,29 +10,42 @@ import { types } from 'mobx-state-tree'
 import React from 'react'
 import TrackControls from './components/TrackControls'
 
-export const BaseTrackConfig = ConfigurationSchema('BaseTrack', {
-  viewType: 'LinearGenomeView',
-  name: {
-    description: 'descriptive name of the track',
-    type: 'string',
-    defaultValue: 'Track',
-  },
-  description: {
-    description: 'a description of the track',
-    type: 'string',
-    defaultValue: '',
-  },
-  category: {
-    description: 'the category and sub-categories of a track',
-    type: 'stringArray',
-    defaultValue: [],
-  },
-})
-
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
 // a reference to a track configuration (stored under
 // session.configuration.assemblies.get(assemblyName).tracks).
+
+const generateBaseTrackConfig = (base: any) =>
+  ConfigurationSchema('BaseTrack', {
+    viewType: 'LinearGenomeView',
+    name: {
+      description: 'descriptive name of the track',
+      type: 'string',
+      defaultValue: 'Track',
+    },
+    description: {
+      description: 'a description of the track',
+      type: 'string',
+      defaultValue: '',
+    },
+    category: {
+      description: 'the category and sub-categories of a track',
+      type: 'stringArray',
+      defaultValue: [],
+    },
+    // see corresponding entry in circular-view ChordTrack
+    // no config slot editor exists for this at the time being
+    configRelationships: {
+      type: 'configRelationships',
+      model: types.array(
+        types.model('Relationship', {
+          type: types.string,
+          target: types.maybe(types.reference(base)),
+        }),
+      ),
+      defaultValue: [],
+    },
+  })
 
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20
@@ -49,12 +58,12 @@ const BaseTrack = types
       types.refinement('trackHeight', types.number, n => n >= minTrackHeight),
       defaultTrackHeight,
     ),
-    configuration: ConfigurationReference(BaseTrackConfig),
   })
   .volatile(() => ({
     ReactComponent: undefined,
     rendererTypeName: undefined,
     ready: false,
+    scrollTop: 0,
     error: '',
   }))
   .views(self => ({
@@ -66,7 +75,7 @@ const BaseTrack = types
     },
 
     get RenderingComponent(): React.FC<{
-      model: self
+      model: typeof self
       offsetPx: number
       bpPerPx: number
       onHorizontalScroll: Function
@@ -166,12 +175,26 @@ const BaseTrack = types
       self.error = e
     },
 
+    setScrollTop(scrollTop: number) {
+      self.scrollTop = scrollTop
+    },
+  }))
+
+export const BaseTrackConfig = generateBaseTrackConfig(BaseTrack)
+
+const BaseTrackWithReferences = types
+  .compose(
+    BaseTrack,
+    types.model({
+      configuration: BaseTrackConfig,
+    }),
+  )
+  .actions(self => ({
     activateConfigurationUI() {
       const session: any = getSession(self)
       session.editConfiguration(self.configuration)
     },
   }))
 
-export default BaseTrack
-
-export type BaseTrackStateModel = typeof BaseTrack
+export type BaseTrackStateModel = typeof BaseTrackWithReferences
+export default BaseTrackWithReferences

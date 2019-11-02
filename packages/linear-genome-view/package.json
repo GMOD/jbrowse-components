@@ -9,7 +9,9 @@
   "author": "Robert Buels",
   "license": "MIT",
   "dependencies": {
-    "clsx": "^1.0.4"
+    "clsx": "^1.0.4",
+    "rbush": "^3.0.1",
+    "react-sizeme": "^2.6.7"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",

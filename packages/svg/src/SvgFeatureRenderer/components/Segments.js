@@ -6,7 +6,13 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 function Segments(props) {
-  const { feature, featureLayout, selected, config } = props
+  const {
+    feature,
+    featureLayout,
+    selected,
+    config,
+    horizontallyFlipped,
+  } = props
 
   const color2 = readConfObject(config, 'color2', [feature])
   let emphasizedColor2
@@ -31,7 +37,9 @@ function Segments(props) {
         title={feature.id()}
         data-testid={feature.id()}
         transform={
-          strand && strand < 0
+          strand &&
+          ((!horizontallyFlipped && strand < 0) ||
+            (horizontallyFlipped && strand > 0))
             ? `rotate(180,${left + width / 2},${top + height / 2})`
             : undefined
         }
@@ -74,6 +82,7 @@ Segments.propTypes = {
   }).isRequired,
   selected: PropTypes.bool,
   config: CommonPropTypes.ConfigSchema.isRequired,
+  horizontallyFlipped: PropTypes.bool,
 }
 
 Segments.defaultProps = {

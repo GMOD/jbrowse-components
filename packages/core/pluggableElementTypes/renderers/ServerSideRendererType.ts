@@ -43,6 +43,7 @@ export default class ServerSideRenderer extends RendererType {
       args.renderProps = {
         ...args.renderProps,
         trackModel: {
+          id: trackModel.id,
           selectedFeatureId: trackModel.selectedFeatureId,
         },
       }
@@ -212,10 +213,7 @@ export default class ServerSideRenderer extends RendererType {
     const features = await this.getFeatures(args)
     checkAbortSignal(args.signal)
 
-    const renderProps = { ...args, features }
-
-    // @ts-ignore
-    const results = await this.render({ ...renderProps, signal: args.signal })
+    const results = await this.render({ ...args, features })
     checkAbortSignal(args.signal)
     // @ts-ignore
     results.html = renderToString(results.element)

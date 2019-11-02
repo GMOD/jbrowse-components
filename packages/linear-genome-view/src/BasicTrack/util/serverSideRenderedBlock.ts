@@ -6,6 +6,7 @@ import {
   addDisposer,
   cast,
   Instance,
+  getSnapshot,
 } from 'mobx-state-tree'
 import { Component } from 'react'
 import { reaction } from 'mobx'
@@ -111,6 +112,7 @@ const blockState = types
         renderInProgress = undefined
       },
       setError(error: string) {
+        console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
@@ -174,6 +176,12 @@ function renderBlockData(self: Instance<BlockStateModel>) {
   // This line is to trigger the mobx reaction when the config changes
   // It won't trigger the reaction if it doesn't think we're accessing it
   readConfObject(config)
+
+  let sequenceConfig: { type?: string } = {}
+  if (trackAssemblyData.sequence) {
+    sequenceConfig = getSnapshot(trackAssemblyData.sequence.adapter)
+  }
+
   return {
     rendererType,
     rpcManager,
@@ -185,6 +193,8 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       region: self.region,
       adapterType: track.adapterType.name,
       adapterConfig: getConf(track, 'adapter'),
+      sequenceAdapterType: sequenceConfig.type,
+      sequenceAdapterConfig: sequenceConfig,
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,

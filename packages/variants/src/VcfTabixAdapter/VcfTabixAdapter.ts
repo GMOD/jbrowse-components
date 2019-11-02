@@ -10,7 +10,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { GenericFilehandle } from 'generic-filehandle'
-import { Observable, Observer } from 'rxjs'
+import { Observer } from 'rxjs'
 import VcfFeature from './VcfFeature'
 
 export default class extends BaseAdapter {
@@ -56,7 +56,7 @@ export default class extends BaseAdapter {
       .then((header: string) => new VcfParser({ header }))
   }
 
-  public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
+  public async getRefNames(opts: BaseOptions = {}) {
     return this.vcf.getReferenceSequenceNames(opts)
   }
 
@@ -65,29 +65,24 @@ export default class extends BaseAdapter {
    * @param {IRegion} param
    * @returns {Observable[Feature]} Observable of Feature objects in the region
    */
-  public getFeatures(
-    query: INoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate<Feature>(
-      async (observer: Observer<Feature>): Promise<void> => {
-        const parser = await this.parser
-        await this.vcf.getLines(query.refName, query.start, query.end, {
-          lineCallback(line: string, fileOffset: number) {
-            const variant = parser.parseLine(line)
+  public getFeatures(query: INoAssemblyRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+      const parser = await this.parser
+      await this.vcf.getLines(query.refName, query.start, query.end, {
+        lineCallback(line: string, fileOffset: number) {
+          const variant = parser.parseLine(line)
 
-            const feature = new VcfFeature({
-              variant,
-              parser,
-              id: `vcf-${fileOffset}`,
-            }) as Feature
-            observer.next(feature)
-          },
-          signal: opts.signal,
-        })
-        observer.complete()
-      },
-    )
+          const feature = new VcfFeature({
+            variant,
+            parser,
+            id: `vcf-${fileOffset}`,
+          }) as Feature
+          observer.next(feature)
+        },
+        signal: opts.signal,
+      })
+      observer.complete()
+    })
   }
 
   /**
@@ -105,21 +100,19 @@ export default class extends BaseAdapter {
   public getFeaturesInMultipleRegions(
     regions: IRegion[],
     opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return ObservableCreate<Feature>(
-      async (observer: Observer<Feature>): Promise<void> => {
-        const bytes = await this.bytesForRegions(regions)
-        const stat = await this.vcf.filehandle.stat()
-        let pct = Math.round((bytes / stat.size) * 100)
-        if (pct > 100) pct = 100 // 💩
-        if (pct > 60) {
-          console.warn(
-            `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
-          )
-        }
-        super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
-      },
-    )
+  ) {
+    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
+      const bytes = await this.bytesForRegions(regions)
+      const stat = await this.vcf.filehandle.stat()
+      let pct = Math.round((bytes / stat.size) * 100)
+      if (pct > 100) pct = 100 // 💩
+      if (pct > 60) {
+        console.warn(
+          `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
+        )
+      }
+      super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
+    })
   }
 
   /**
@@ -127,7 +120,7 @@ export default class extends BaseAdapter {
    * query regions
    * @param regions list of query regions
    */
-  private async bytesForRegions(regions: IRegion[]): Promise<number> {
+  private async bytesForRegions(regions: IRegion[]) {
     const blockResults = await Promise.all(
       regions.map(region =>
         this.vcf.index.blocksForRange(region.refName, region.start, region.end),
@@ -172,5 +165,6 @@ export default class extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public freeResources(/* { region } */): void {}
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
@@ -11,7 +12,7 @@ import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-// eslint-disable-next-line @typescript-eslint/camelcase
+// eslint-disable-next-line @typescript-eslint/camelcase,react-hooks/rules-of-hooks
 if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
 const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -39,12 +40,12 @@ function wrapForRpc(func) {
   return args => {
     callCounter += 1
     const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, func.name, ...args])
+    // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
-      .then(() => func(jbPluginManager, ...args))
+      .then(() => func(jbPluginManager, args))
       .catch(error => {
         if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, func.name, ...args])
+          // logBuffer.push(['rpc-abort', myId, func.name, args])
         } else {
           logBuffer.push(['rpc-error', myId, func.name, error])
           flushLog()

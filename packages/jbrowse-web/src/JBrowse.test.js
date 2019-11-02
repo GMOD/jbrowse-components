@@ -11,13 +11,17 @@ import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
+import mockConsole from 'jest-mock-console'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
+import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
 fetchMock.config.sendAsJson = false
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
+window.requestAnimationFrame = cb => cb()
+window.cancelAnimationFrame = () => {}
 window.TextEncoder = TextEncoder
 window.TextDecoder = TextDecoder
 
@@ -132,7 +136,7 @@ describe('valid file tests', () => {
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
-    expect(state.session.views[0].bpPerPx).toEqual(0.03125)
+    expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
   it('click and zoom in and back out', async () => {
@@ -174,6 +178,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
+    mockConsole()
     const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -190,6 +195,7 @@ describe('some error state', () => {
         ),
       ),
     ).resolves.toBeTruthy()
+    expect(console.error).toBeCalled()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = rootModel.create({ jbrowse: config })
@@ -246,7 +252,7 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
   )
-  const ret = await waitForElement(() => byId('vcf-2560'))
+  const ret = await waitForElement(() => byId('vcf-604452'))
   fireEvent.click(ret)
   await expect(
     waitForElement(() => getByText('ctgA:277..277')),
@@ -294,7 +300,7 @@ describe('test configuration editor', () => {
     const input = await waitForElement(() => getByDisplayValue('goldenrod'))
     fireEvent.change(input, { target: { value: 'green' } })
     await wait(async () => {
-      expect(await waitForElement(() => byId('vcf-2560'))).toHaveAttribute(
+      expect(await waitForElement(() => byId('vcf-604452'))).toHaveAttribute(
         'fill',
         'green',
       )
@@ -351,6 +357,7 @@ describe('bigwig', () => {
 
 describe('circular views', () => {
   it('open a circular view', async () => {
+    mockConsole()
     const state = rootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -380,5 +387,25 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
+  })
+})
+
+describe('breakpoint split view', () => {
+  it('open a split view', async () => {
+    mockConsole()
+    const state = rootModel.create({ jbrowse: breakpointConfig })
+    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
+    // wait for the UI to be loaded
+    await waitForElement(() => getByText('JBrowse'))
+
+    expect(
+      await waitForElement(() =>
+        getByTestId('pacbio_hg002-breakpoints-loaded'),
+      ),
+    ).toMatchSnapshot()
+
+    expect(
+      await waitForElement(() => getByTestId('pacbio_vcf-vcfbreakends-loaded')),
+    ).toMatchSnapshot()
   })
 })

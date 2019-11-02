@@ -1,10 +1,12 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
+import mockConsole from 'jest-mock-console'
 import { createTestSession } from './rootModel'
 import sessionModelFactory from './sessionModelFactory'
 
 describe('JBrowseWebSessionModel', () => {
   it('creates with no parent and just a name', () => {
+    mockConsole()
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)
@@ -15,7 +17,7 @@ describe('JBrowseWebSessionModel', () => {
   it('accepts a custom drawer width', () => {
     const session = createTestSession({ drawerWidth: 256 })
     expect(session.drawerWidth).toBe(256)
-    expect(session.viewsWidth).toBe(512)
+    expect(session.viewsWidth).toBe(1024)
   })
 
   it('shrinks a drawer width that is too big', () => {

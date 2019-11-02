@@ -89,7 +89,7 @@ export async function fetchConfigFile(location: JBLocation): Promise<Config> {
   return parseJb1(result)
 }
 
-export function parseJb1(config: string, url: string = ''): Config {
+export function parseJb1(config: string, url = ''): Config {
   if (config.trim().startsWith('{')) return parseJB1Json(config, url)
   return parseJB1Conf(config, url)
 }

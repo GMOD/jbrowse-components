@@ -10,7 +10,6 @@ import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-  BlockSet,
 } from '../../BasicTrack/util/blockTypes'
 
 import {
@@ -19,15 +18,17 @@ import {
 } from '../../BasicTrack/components/MarkerBlocks'
 
 const useStyles = makeStyles((/* theme */) => ({
+  scaleBarContainer: {
+    position: 'relative',
+    display: 'block',
+  },
   scaleBar: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    position: 'relative',
-    background: '#555',
-    // background: theme.palette.background.default,
+    position: 'absolute',
+    display: 'flex',
     overflow: 'hidden',
-    height: 32,
   },
   refLabel: {
     fontSize: '16px',
@@ -36,77 +37,90 @@ const useStyles = makeStyles((/* theme */) => ({
     top: '-1px',
     fontWeight: 'bold',
     background: 'white',
-    // color: theme.palette.text.primary,
   },
 }))
 
-function findBlockContainingLeftSideOfView(
-  offsetPx: number,
-  blockSet: BlockSet,
-) {
-  const blocks = blockSet.getBlocks()
-  for (let i = 0; i < blocks.length; i += 1) {
-    const block = blocks[i]
-    if (block.offsetPx <= offsetPx && block.offsetPx + block.widthPx > offsetPx)
-      return block
-  }
-  return undefined
-}
-
 type LGV = Instance<LinearGenomeViewStateModel>
+const RenderedScaleBar = observer(
+  ({ model, height }: { model: LGV; height: number }) => {
+    return (
+      <>
+        {model.staticBlocks.map((block, index) => {
+          if (block instanceof ContentBlock) {
+            return (
+              <Block key={block.key} block={block}>
+                <svg height={height} width={block.widthPx}>
+                  <Ruler
+                    start={block.start}
+                    end={block.end}
+                    bpPerPx={model.bpPerPx}
+                    flipped={model.horizontallyFlipped}
+                  />
+                </svg>
+              </Block>
+            )
+          }
+          if (block instanceof ElidedBlock) {
+            return <ElidedBlockMarker key={block.key} width={block.widthPx} />
+          }
+          if (block instanceof InterRegionPaddingBlock) {
+            return (
+              <InterRegionPaddingBlockMarker
+                key={block.key}
+                width={block.widthPx}
+              />
+            )
+          }
+          return null
+        })}
+      </>
+    )
+  },
+)
 function ScaleBar({ model, height }: { model: LGV; height: number }) {
   const classes = useStyles()
-  const blockContainingLeftEndOfView = findBlockContainingLeftSideOfView(
-    model.offsetPx,
-    model.staticBlocks,
-  )
 
+  // find the block that needs pinning to the left side for context
+  let lastLeftBlock = 0
+  model.staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - model.offsetPx < 0) lastLeftBlock = i
+  })
+  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
   return (
-    <div className={classes.scaleBar}>
-      {model.staticBlocks.map(block => {
+    <div className={classes.scaleBarContainer}>
+      <div
+        className={classes.scaleBar}
+        style={{
+          left: offsetLeft,
+          width: model.staticBlocks.totalWidthPx,
+          height,
+        }}
+      >
+        <RenderedScaleBar model={model} height={height} />
+      </div>
+      {model.staticBlocks.map((block, index) => {
         if (block instanceof ContentBlock) {
-          return (
-            <Block key={block.offsetPx} block={block} model={model}>
-              <svg height={height} width={block.widthPx}>
-                <Ruler
-                  region={block}
-                  showRefNameLabel={
-                    !!block.isLeftEndOfDisplayedRegion &&
-                    block !== blockContainingLeftEndOfView
-                  }
-                  bpPerPx={model.bpPerPx}
-                  flipped={model.horizontallyFlipped}
-                />
-              </svg>
-            </Block>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return (
-            <ElidedBlockMarker
-              key={block.key}
-              width={block.widthPx}
-              offset={block.offsetPx - model.offsetPx}
-            />
-          )
-        }
-        if (block instanceof InterRegionPaddingBlock) {
-          return (
-            <InterRegionPaddingBlockMarker
-              key={block.key}
-              block={block}
-              model={model}
-            />
-          )
+          if (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) {
+            return (
+              <div
+                key={`refLabel-${block.key}`}
+                style={{
+                  left:
+                    index === lastLeftBlock
+                      ? Math.max(0, -model.offsetPx)
+                      : block.offsetPx - model.offsetPx,
+                  zIndex: index,
+                }}
+                className={classes.refLabel}
+                data-testid={`refLabel-${block.refName}`}
+              >
+                {block.refName}
+              </div>
+            )
+          }
         }
         return null
       })}
-      {// put in a floating ref label
-      blockContainingLeftEndOfView ? (
-        <div className={classes.refLabel}>
-          {blockContainingLeftEndOfView.refName}
-        </div>
-      ) : null}
     </div>
   )
 }

@@ -66,11 +66,7 @@ const StringArrayEditor = observer(({ slot }) => {
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List dense disablePadding>
         {slot.value.map((val, idx) => (
-          <ListItem
-            key={idx} // eslint-disable-line react/no-array-index-key
-            dense
-            disableGutters
-          >
+          <ListItem key={idx} dense disableGutters>
             <TextField
               value={val}
               onChange={evt => slot.setAtIndex(idx, evt.target.value)}
@@ -127,11 +123,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
     <>
       <InputLabel>{slot.name}</InputLabel>
       {Array.from(slot.value, ([key, val]) => (
-        <Card
-          raised
-          key={key} // eslint-disable-line react/no-array-index-key
-          className={classes.card}
-        >
+        <Card raised key={key} className={classes.card}>
           <CardHeader
             title={key}
             action={
@@ -199,11 +191,7 @@ const NumberMapEditor = observer(({ slot }) => {
     <>
       <InputLabel>{slot.name}</InputLabel>
       {Array.from(slot.value, ([key, val]) => (
-        <Card
-          raised
-          key={key} // eslint-disable-line react/no-array-index-key
-          className={classes.card}
-        >
+        <Card raised key={key} className={classes.card}>
           <CardHeader
             title={key}
             action={
@@ -261,6 +249,8 @@ const NumberEditor = observer(({ slot }) => {
     const num = parseFloat(val, 10)
     if (!Number.isNaN(num)) {
       slot.set(num)
+    } else {
+      slot.reset()
     }
   }, [slot, val])
   return (
@@ -381,6 +371,7 @@ const valueComponents = {
   stringEnum: stringEnumEditor,
   boolean: booleanEditor,
   frozen: JsonEditor,
+  configRelationships: JsonEditor,
 }
 
 export const useSlotEditorStyles = makeStyles(theme => ({

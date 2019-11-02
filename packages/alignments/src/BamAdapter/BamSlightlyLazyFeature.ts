@@ -148,6 +148,7 @@ export default class implements Feature {
     return this.record._get('md')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   set(): void {}
 
   tags(): string[] {
@@ -192,6 +193,7 @@ export default class implements Feature {
     plain.name = this.get('name')
     plain.type = this.get('type')
     plain.uniqueId = this.id()
+    plain.clipPos = this._get_clippos()
     return plain
   }
 
@@ -202,20 +204,22 @@ export default class implements Feature {
     },
   ): Mismatch[] {
     const { cigarAttributeName, mdAttributeName } = opts
-    const mismatches = []
+    let mismatches: Mismatch[] = []
     let cigarOps: CigarOp[] = []
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
     if (cigarString) {
       cigarOps = this.parseCigar(cigarString)
-      mismatches.push(...this.cigarToMismatches(cigarOps))
+      mismatches = mismatches.concat(this.cigarToMismatches(cigarOps))
     }
 
     // now let's look for CRAM or MD mismatches
     const mdString = this.get(mdAttributeName)
     if (mdString) {
-      mismatches.push(...this.mdToMismatches(mdString, cigarOps, mismatches))
+      mismatches = mismatches.concat(
+        this.mdToMismatches(mdString, cigarOps, mismatches),
+      )
     }
 
     // uniqify the mismatches
@@ -226,6 +230,21 @@ export default class implements Feature {
       seen[key] = true
       return !s
     })
+  }
+
+  _get_clippos() {
+    const mismatches = this.get('mismatches')
+    if (mismatches.length) {
+      const record =
+        this.get('strand') === -1
+          ? mismatches[mismatches.length - 1]
+          : mismatches[0]
+      const { type, cliplen } = record
+      if (type === 'softclip' || type === 'hardclip') {
+        return cliplen
+      }
+    }
+    return 0
   }
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
@@ -271,6 +290,7 @@ export default class implements Feature {
           start: currOffset,
           type: 'hardclip',
           base: `H${len}`,
+          cliplen: len,
           length: 1,
         })
       } else if (op === 'S') {

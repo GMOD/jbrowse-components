@@ -68,6 +68,7 @@ export default pluginManager =>
       },
 
       get assemblyNames() {
+        if (!self.view) return []
         const assemblyNames = []
         self.view.displayedRegions.forEach(displayedRegion => {
           if (!assemblyNames.includes(displayedRegion.assemblyName))

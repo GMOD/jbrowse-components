@@ -7,7 +7,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import React, { ComponentElement } from 'react'
+import React from 'react'
 import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
 
 interface PileupRenderProps {
@@ -43,7 +43,7 @@ export default class extends BoxRendererType {
     config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     bpPerPx: number,
     region: IRegion,
-    horizontallyFlipped: boolean = false,
+    horizontallyFlipped = false,
   ): LayoutRecord | null {
     const startPx = bpToPx(
       feature.get('start'),
@@ -86,7 +86,7 @@ export default class extends BoxRendererType {
     }
   }
 
-  async makeImageData(props: PileupRenderProps): Promise<PileupImageData> {
+  async makeImageData(props: PileupRenderProps) {
     const {
       features,
       layout,
@@ -100,6 +100,9 @@ export default class extends BoxRendererType {
     if (!layout.addRect) throw new Error('invalid layout object')
     const getCoord = (coord: number): number =>
       bpToPx(coord, region, bpPerPx, horizontallyFlipped)
+    const pxPerBp = Math.min(1 / bpPerPx, 2)
+    const minFeatWidth = 0.7
+    const w = Math.max(minFeatWidth, pxPerBp)
 
     const layoutRecords = iterMap(
       features.values(),
@@ -152,7 +155,10 @@ export default class extends BoxRendererType {
           const end = start + mismatch.length
           const mismatchStartPx = getCoord(start)
           const mismatchEndPx = getCoord(end)
-          const widthPx = Math.abs(mismatchStartPx - mismatchEndPx)
+          const widthPx = Math.max(
+            minFeatWidth,
+            Math.abs(mismatchStartPx - mismatchEndPx),
+          )
 
           if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
             ctx.fillStyle =
@@ -171,9 +177,10 @@ export default class extends BoxRendererType {
             }
           } else if (mismatch.type === 'insertion') {
             ctx.fillStyle = 'purple'
-            ctx.fillRect(mismatchStartPx - 1, topPx + 1, 2, heightPx - 2)
-            ctx.fillRect(mismatchStartPx - 2, topPx, 4, 1)
-            ctx.fillRect(mismatchStartPx - 2, topPx + heightPx - 1, 4, 1)
+            const pos = mismatchStartPx - 1
+            ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+            ctx.fillRect(pos - w, topPx, w * 3, 1)
+            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
               ctx.fillText(
                 `(${mismatch.base})`,
@@ -186,9 +193,10 @@ export default class extends BoxRendererType {
             mismatch.type === 'softclip'
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
-            ctx.fillRect(mismatchStartPx - 1, topPx + 1, 2, heightPx - 2)
-            ctx.fillRect(mismatchStartPx - 2, topPx, 4, 1)
-            ctx.fillRect(mismatchStartPx - 2, topPx + heightPx - 1, 4, 1)
+            const pos = mismatchStartPx - 1
+            ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+            ctx.fillRect(pos - w, topPx, w * 3, 1)
+            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
             if (widthPx >= charSize.width && heightPx >= charSize.height - 2) {
               ctx.fillText(
                 `(${mismatch.base})`,
@@ -214,15 +222,7 @@ export default class extends BoxRendererType {
     }
   }
 
-  async render(
-    renderProps: PileupRenderProps,
-  ): Promise<{
-    element: ComponentElement<PileupRenderProps & PileupImageData, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-    imageData?: ImageBitmap
-    height: number
-    width: number
-    maxHeightReached: boolean
-  }> {
+  async render(renderProps: PileupRenderProps) {
     const {
       height,
       width,
@@ -234,7 +234,13 @@ export default class extends BoxRendererType {
       { ...renderProps, height, width, imageData },
       null,
     )
-    // @ts-ignore seems to think imageData is optional in some context?
-    return { element, imageData, height, width, maxHeightReached }
+    return {
+      element,
+      imageData,
+      height,
+      width,
+      maxHeightReached,
+      layout: renderProps.layout,
+    }
   }
 }

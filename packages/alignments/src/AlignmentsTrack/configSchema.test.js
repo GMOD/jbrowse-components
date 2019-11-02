@@ -5,6 +5,7 @@ import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
 } from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
+import mockConsole from 'jest-mock-console'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
@@ -38,6 +39,7 @@ class SvgFeatureRendererPlugin extends Plugin {
 }
 
 test('has a viewType attr', () => {
+  mockConsole()
   const configSchema = configSchemaFactory(
     new PluginManager([
       new PileupRendererPlugin(),

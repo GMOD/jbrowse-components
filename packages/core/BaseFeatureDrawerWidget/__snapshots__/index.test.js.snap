@@ -1,0 +1,180 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`open up a drawer widget 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation1 makeStyles-paperRoot MuiPaper-rounded"
+  data-testid="alignment-side-drawer"
+>
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+    style="margin-top: 4px;"
+  >
+    <div
+      aria-disabled="false"
+      aria-expanded="true"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      >
+        <span
+          class="MuiTypography-root MuiTypography-button"
+        >
+           
+          Primary data
+        </span>
+      </div>
+      <div
+        aria-disabled="false"
+        aria-hidden="true"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            expand_more
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </div>
+    </div>
+    <div
+      class="MuiCollapse-container MuiCollapse-entered"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner"
+        >
+          <div
+            role="region"
+          >
+            <div
+              class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+            >
+              <div
+                style="display: flex;"
+              >
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  Position
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  ctgA:3..102 (+)
+                </div>
+              </div>
+              <div
+                style="display: flex;"
+              >
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  Length
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  100
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr
+    class="MuiDivider-root"
+  />
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-rounded"
+    style="margin-top: 4px;"
+  >
+    <div
+      aria-disabled="false"
+      aria-expanded="true"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      >
+        <span
+          class="MuiTypography-root MuiTypography-button"
+        >
+           
+          Attributes
+        </span>
+      </div>
+      <div
+        aria-disabled="false"
+        aria-hidden="true"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root"
+          >
+            expand_more
+          </span>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </div>
+    </div>
+    <div
+      class="MuiCollapse-container MuiCollapse-entered"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner"
+        >
+          <div
+            role="region"
+          >
+            <div
+              class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+            >
+              <div
+                style="display: flex;"
+              >
+                <div
+                  class="makeStyles-fieldName"
+                >
+                  score
+                </div>
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  37
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

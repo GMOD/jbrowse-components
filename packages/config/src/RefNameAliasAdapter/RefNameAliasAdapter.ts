@@ -30,4 +30,7 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
   getRefNameAliases(): Promise<Alias[]> {
     return this.promise
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async freeResources(): Promise<void> {}
 }

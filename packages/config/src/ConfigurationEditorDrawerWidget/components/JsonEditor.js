@@ -21,42 +21,48 @@ const useStyles = makeStyles({
     marginTop: '16px',
     borderBottom: '1px solid rgba(0,0,0,0.42)',
   },
+  error: {
+    color: 'red',
+    fontSize: '0.8em',
+  },
 })
 
 function JsonEditor({ slot }) {
   const classes = useStyles()
   const [json, setJson] = useState(JSON.stringify(slot.value, null, '  '))
-  const [error, setError] = useState(false)
+  const [error, setError] = useState()
   const debouncedJson = useDebounce(json, 400)
 
   useEffect(() => {
     try {
-      const parsed = JSON.parse(debouncedJson)
-      slot.set(parsed)
-      setError(false)
+      slot.set(JSON.parse(debouncedJson))
+      setError(undefined)
     } catch (e) {
-      setError(true)
+      setError(e.message)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedJson])
 
   return (
-    <FormControl error={error}>
-      <InputLabel shrink htmlFor="callback-editor">
-        {`${slot.name}${error ? ' (invalid JSON)' : ''}`}
-      </InputLabel>
-      <Editor
-        className={classes.callbackEditor}
-        value={json}
-        onValueChange={setJson}
-        highlight={newCode =>
-          highlight(newCode, languages.javascript, 'javascript')
-        }
-        padding={10}
-        style={{}}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </FormControl>
+    <>
+      {error ? <p className={classes.error}>{error}</p> : null}
+      <FormControl error={error}>
+        <InputLabel shrink htmlFor="callback-editor">
+          {slot.name}
+        </InputLabel>
+        <Editor
+          className={classes.callbackEditor}
+          value={json}
+          onValueChange={setJson}
+          highlight={newCode =>
+            highlight(newCode, languages.javascript, 'javascript')
+          }
+          padding={10}
+          style={{}}
+        />
+        <FormHelperText>{slot.description}</FormHelperText>
+      </FormControl>
+    </>
   )
 }
 

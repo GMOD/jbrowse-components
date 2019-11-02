@@ -6,7 +6,7 @@ exports[`<DropDownMenu /> opens a menu and selects a menu item 1`] = `
   class="MuiButtonBase-root MuiListItem-root MuiMenuItem-root MuiMenuItem-gutters MuiListItem-gutters MuiListItem-button"
   data-testid="menuItemId"
   role="menuitem"
-  tabindex="-1"
+  tabindex="0"
 >
   <div
     class="MuiListItemIcon-root"

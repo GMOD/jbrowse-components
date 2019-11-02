@@ -5,46 +5,24 @@ import { HttpRangeFetcher } from 'http-range-fetcher'
 import { Buffer } from 'buffer'
 import { RemoteFile, GenericFilehandle } from 'generic-filehandle'
 
-function isElectron(): boolean {
-  return false // TODO
-}
-
 // function unReplacePath() {
 //   throw new Error('unimplemented') // TODO
 // }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getfetch(url: string, opts: Record<string, any> = {}): Promise<any> {
-  let mfetch
-  if (isElectron()) {
-    if (url.slice(0, 4) === 'http') {
-      // @ts-ignore
-      mfetch = window.electronRequire('node-fetch')
-    } else {
-      url = url.replace('%20', ' ')
-      mfetch = fetch
-    }
-  } else {
-    mfetch = window.fetch
-  }
-  return mfetch(
-    url,
-    Object.assign(
-      {
-        method: 'GET',
-        credentials: 'same-origin',
-        retries: 5,
-        retryDelay: 1000, // 1 sec, 2 sec, 3 sec
-        retryStatus: [500, 404, 503],
-        onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
-          console.warn(
-            `${url} request failed, retrying (${retriesLeft} retries left)`,
-          )
-        },
-      },
-      opts,
-    ),
-  )
+function getfetch(url: RequestInfo, opts: RequestInit = {}): Promise<Response> {
+  return fetch(url, {
+    method: 'GET',
+    credentials: 'same-origin',
+    // retries: 5,
+    // retryDelay: 1000, // 1 sec, 2 sec, 3 sec
+    // retryStatus: [500, 404, 503],
+    // onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
+    //   console.warn(
+    //     `${url} request failed, retrying (${retriesLeft} retries left)`,
+    //   )
+    // },
+    ...opts,
+  })
 }
 export interface RangeResponse {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,11 +42,11 @@ async function fetchBinaryRange(
   const res = await getfetch(url, {
     ...options,
     headers: requestHeaders,
-    onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
-      console.warn(
-        `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
-      )
-    },
+    // onRetry: ({ retriesLeft }: { retriesLeft: number }) => {
+    //   console.warn(
+    //     `${url} bytes ${start}-${end} request failed, retrying (${retriesLeft} retries left)`,
+    //   )
+    // },
   })
   const responseDate = new Date()
   if (res.status !== 206 && res.status !== 200) {
@@ -109,21 +87,31 @@ const globalRangeCache = new HttpRangeFetcher({
   minimumTTL: 300000000,
 })
 
-function globalCacheFetch<T>(
-  url: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  opts: { headers?: Record<string, any>; signal?: AbortSignal },
-): Promise<T> {
+function globalCacheFetch(
+  url: RequestInfo,
+  opts?: RequestInit,
+): Promise<Response> {
   // if it is a range request, route it through the global range cache
-  if (opts && opts.headers && opts.headers.range) {
-    const rangeParse = /bytes=(\d+)-(\d+)/.exec(opts.headers.range)
+  const requestHeaders = opts && opts.headers
+  let range
+  if (requestHeaders) {
+    if (requestHeaders instanceof Headers) range = requestHeaders.get('range')
+    else if (Array.isArray(requestHeaders))
+      [, range] = requestHeaders.find(([key, val]) => key === 'range') || [
+        undefined,
+        undefined,
+      ]
+    else range = requestHeaders.range
+  }
+  if (range) {
+    const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
     if (rangeParse) {
       const [, start, end] = rangeParse
       const s = parseInt(start, 10)
       const e = parseInt(end, 10)
       return globalRangeCache
         .getRange(url, s, e - s + 1, {
-          signal: opts.signal,
+          signal: opts && opts.signal,
         })
         .then((response: RangeResponse) => {
           let { headers } = response
@@ -133,7 +121,7 @@ function globalCacheFetch<T>(
           return {
             status: 206,
             ok: true,
-            async arrayBuffer() {
+            async arrayBuffer(): Promise<Buffer> {
               return response.buffer
             },
             headers,

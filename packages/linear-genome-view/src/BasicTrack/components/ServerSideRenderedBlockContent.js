@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
+import { LinearProgress } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
@@ -8,7 +9,6 @@ import BlockError from '../../LinearGenomeView/components/BlockError'
 const useStyles = makeStyles({
   loading: {
     paddingLeft: '0.6em',
-    position: 'absolute',
     backgroundColor: '#f1f1f1',
     backgroundImage:
       'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
@@ -38,7 +38,12 @@ function LoadingMessage() {
     return () => clearTimeout(timeout)
   })
 
-  return shown ? <div className={classes.loading}>Loading &hellip;</div> : null
+  return shown ? (
+    <div className={classes.loading}>
+      Loading &hellip;
+      <LinearProgress />
+    </div>
+  ) : null
 }
 
 function BlockMessage({ messageText }) {

@@ -119,11 +119,10 @@ export function ConfigurationSchema(
     options.baseConfiguration &&
     options.baseConfiguration.jbrowseSchemaDefinition
   ) {
-    schemaDefinition = Object.assign(
-      {},
-      options.baseConfiguration.jbrowseSchemaDefinition,
-      schemaDefinition,
-    )
+    schemaDefinition = {
+      ...options.baseConfiguration.jbrowseSchemaDefinition,
+      ...schemaDefinition,
+    }
   }
 
   // now assemble the MST model of the configuration schema

@@ -319,7 +319,7 @@ BlockSet {
       "end": 1,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:1-1",
+      "key": "ctgA:1-1-reversed",
       "offsetPx": 0,
       "parentRegion": Object {
         "end": 1,
@@ -335,7 +335,7 @@ BlockSet {
       "end": 10000,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:9201-10000",
+      "key": "ctgA:9201-10000-reversed",
       "offsetPx": 1,
       "parentRegion": Object {
         "end": 10000,
@@ -351,7 +351,7 @@ BlockSet {
       "end": 9200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:8401-9200",
+      "key": "ctgA:8401-9200-reversed",
       "offsetPx": 801,
       "parentRegion": Object {
         "end": 10000,
@@ -374,7 +374,7 @@ BlockSet {
       "end": 200,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:101-200",
+      "key": "ctgA:101-200-reversed",
       "offsetPx": 0,
       "parentRegion": Object {
         "end": 200,
@@ -390,7 +390,7 @@ BlockSet {
       "end": 600,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,
-      "key": "ctgA:501-600",
+      "key": "ctgA:501-600-reversed",
       "offsetPx": 100,
       "parentRegion": Object {
         "end": 600,
@@ -413,7 +413,7 @@ BlockSet {
       "end": 10000,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:9201-10000",
+      "key": "ctgA:9201-10000-reversed",
       "offsetPx": 0,
       "parentRegion": Object {
         "end": 10000,
@@ -429,7 +429,7 @@ BlockSet {
       "end": 9200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "ctgA:8401-9200",
+      "key": "ctgA:8401-9200-reversed",
       "offsetPx": 800,
       "parentRegion": Object {
         "end": 10000,

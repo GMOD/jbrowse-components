@@ -36,7 +36,7 @@ export default abstract class BaseAdapter {
    * NOTE: if an adapter is unable to get it's own list of ref names, return empty
    *
    */
-  public abstract async getRefNames(opts: BaseOptions): Promise<string[]>
+  public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
 
   /**
    * Subclasses should override this method. Method signature here for reference.
@@ -142,4 +142,6 @@ export abstract class BaseRefNameAliasAdapter {
   public static capabilities: string[]
 
   public abstract async getRefNameAliases(): Promise<Alias[]>
+
+  public abstract async freeResources(): Promise<void>
 }

@@ -1,3 +1,4 @@
+import mockConsole from 'jest-mock-console'
 import Layout from './GranularRectLayout'
 
 describe('GranularRectLayout', () => {
@@ -71,8 +72,8 @@ describe('GranularRectLayout', () => {
       expect(top).toEqual((i % 2) * 4)
     }
 
-    expect(l.bitmap[0].rowState.bits.length).toBe(34809)
-    expect(l.bitmap[1].rowState.bits.length).toBe(34809)
+    expect(l.bitmap[0].rowState.bits.length).toBe(34812)
+    expect(l.bitmap[1].rowState.bits.length).toBe(34812)
     l.discardRange(190000, 220000)
     expect(l.bitmap[0].rowState.bits.length).toBe(24802)
     expect(l.bitmap[1].rowState.bits.length).toBe(23802)
@@ -92,5 +93,35 @@ describe('GranularRectLayout', () => {
     expect(
       l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
     ).toBeTruthy()
+  })
+
+  it('tests reinitializing layout due to throwing away old one', () => {
+    mockConsole()
+    const l = new Layout({
+      pitchX: 1,
+      pitchY: 1,
+      maxHeight: 600,
+    })
+
+    l.addRect('test1', 0, 10000, 1)
+    l.addRect('test2', 1000000, 1000100, 1)
+    l.addRect('test3', 0, 10000, 1)
+    expect(l.rectangles.size).toBe(3)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {
+    const l = new Layout({
+      pitchX: 100,
+      pitchY: 1,
+      maxHeight: 600,
+    })
+
+    expect(l.getByCoord(50000, 0)).toEqual(undefined)
+    l.addRect('test1', 0, 100000000, 1, { id: 'feat1' })
+    expect(l.getByCoord(50000, 0)).toEqual({ id: 'feat1' })
+    l.addRect('test2', 0, 1000, 1, { id: 'feat2' })
+    expect(l.getByCoord(500, 1)).toEqual({ id: 'feat2' })
+    expect(l.rectangles.size).toBe(2)
   })
 })

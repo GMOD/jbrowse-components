@@ -17,12 +17,10 @@ export function configSchemaFactory(pluginManager) {
   )
 }
 
-export function stateModelFactory(configSchema) {
-  const basicTrackStateModel = basicTrackStateModelFactory(configSchema)
-  // a DynamicTrack is just a BasicTrack but with blockType hardcoded to 'dynamicBlocks'
-  return types.compose(
+export const stateModelFactory = configSchema =>
+  types.compose(
     'DynamicTrack',
-    basicTrackStateModel,
+    basicTrackStateModelFactory(configSchema),
     types
       .model({
         type: types.literal('DynamicTrack'),
@@ -37,4 +35,3 @@ export function stateModelFactory(configSchema) {
         },
       })),
   )
-}

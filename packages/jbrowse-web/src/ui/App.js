@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import { withSize } from 'react-sizeme'
+import { withContentRect } from 'react-measure'
 import DevTools from './DevTools'
 import Drawer from './Drawer'
 
@@ -111,18 +111,19 @@ DrawerWidget.propTypes = {
   session: PropTypes.observableObject.isRequired,
 }
 
-function App({ size, session }) {
+function App({ contentRect, measureRef, session }) {
   const classes = useStyles()
-
   const { pluginManager } = session
 
   useEffect(() => {
-    session.updateWidth(size.width)
-  }, [session, size.width])
+    if (contentRect.bounds.width) {
+      session.updateWidth(contentRect.bounds.width)
+    }
+  }, [session, contentRect])
 
   const { visibleDrawerWidget } = session
   return (
-    <div className={classes.root}>
+    <div ref={measureRef} className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
@@ -165,8 +166,11 @@ function App({ size, session }) {
 }
 
 App.propTypes = {
-  size: ReactPropTypes.objectOf(ReactPropTypes.number).isRequired,
   session: PropTypes.observableObject.isRequired,
+  contentRect: ReactPropTypes.shape({
+    bounds: ReactPropTypes.shape({ width: ReactPropTypes.number }),
+  }).isRequired,
+  measureRef: ReactPropTypes.func.isRequired,
 }
 
-export default withSize()(observer(App))
+export default withContentRect('bounds')(observer(App))
