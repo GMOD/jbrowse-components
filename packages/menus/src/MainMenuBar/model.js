@@ -126,7 +126,7 @@ export default types
             },
             {
               name: 'Import tabular data',
-              icon: 'file_copy',
+              icon: 'table_chart',
               callback:
                 "function(session) { session.addView('SpreadsheetView', {})}",
             },
