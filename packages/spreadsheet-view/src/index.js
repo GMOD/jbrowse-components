@@ -5,5 +5,7 @@ export default class CircularViewPlugin {
     )
   }
 
-  configure() {}
+  configure() {
+    // nothing
+  }
 }
