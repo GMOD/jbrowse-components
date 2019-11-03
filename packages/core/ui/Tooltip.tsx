@@ -33,12 +33,13 @@ const Tooltip = ({
 }) => {
   const classes = useStyles()
   const [hidden, setHidden] = useState(true)
+  const text = readConfObject(configuration, 'mouseover', [feature])
   useTimeout(() => setHidden(false), timeout)
-  return hidden ? null : (
+  return text && !hidden ? (
     <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
-      {readConfObject(configuration, 'mouseover', [feature])}
+      {text}
     </div>
-  )
+  ) : null
 }
 
 Tooltip.propTypes = {

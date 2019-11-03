@@ -18,7 +18,7 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="25px"
+    height="0px"
     width="333.3333333333333px"
   >
     <g>

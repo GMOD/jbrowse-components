@@ -17,7 +17,6 @@ function FeatureGlyph(props) {
     shouldShowDescription,
     fontHeight,
     allowedWidthExpansion,
-    movedDuringLastMouseDown,
     horizontallyFlipped,
   } = props
 
@@ -65,7 +64,7 @@ function FeatureGlyph(props) {
 
   function onFeatureClick(event) {
     const { onFeatureClick: handler } = props
-    if (!handler || movedDuringLastMouseDown) return undefined
+    if (!handler) return undefined
     event.stopPropagation()
     return handler(event, feature.id())
   }
@@ -162,7 +161,6 @@ FeatureGlyph.propTypes = {
   shouldShowDescription: PropTypes.bool,
   fontHeight: PropTypes.number.isRequired,
   allowedWidthExpansion: PropTypes.number.isRequired,
-  movedDuringLastMouseDown: PropTypes.bool.isRequired,
 
   onFeatureMouseDown: PropTypes.func,
   onFeatureMouseEnter: PropTypes.func,

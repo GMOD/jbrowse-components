@@ -88,17 +88,156 @@ const SvgMouseover = observer(
   },
 )
 
-function SvgFeatureRendering(props) {
+function RenderedFeatureGlyph(props) {
   const {
-    region,
+    feature,
+    horizontallyFlipped,
     bpPerPx,
+    region,
+    config,
     layout,
+  } = props
+  const start = feature.get(horizontallyFlipped ? 'end' : 'start')
+  const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
+
+  const name = readConfObject(config, ['labels', 'name'], [feature]) || ''
+  const shouldShowName = /\S/.test(name)
+
+  const description =
+    readConfObject(config, ['labels', 'description'], [feature]) || ''
+  const shouldShowDescription = /\S/.test(description)
+
+  const expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+
+  const fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
+  const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
+  const GlyphComponent = chooseGlyphComponent(feature)
+  const featureLayout = (GlyphComponent.layOut || layOut)({
+    layout: rootLayout,
+    feature,
+    bpPerPx,
     horizontallyFlipped,
     config,
-    features,
-    trackModel,
-  } = props
-  const { featureIdUnderMouse, selectedFeatureId, configuration } = trackModel
+  })
+
+  const fontWidth = fontHeight * fontWidthScaleFactor
+  const textVerticalPadding = 2
+
+  let nameWidth = 0
+  if (shouldShowName) {
+    nameWidth = Math.round(
+      Math.min(name.length * fontWidth, rootLayout.width + expansion),
+    )
+    rootLayout.addChild(
+      'nameLabel',
+      0,
+      featureLayout.bottom + textVerticalPadding,
+      nameWidth,
+      fontHeight,
+    )
+  }
+
+  let descriptionWidth = 0
+  if (shouldShowDescription) {
+    const aboveLayout = shouldShowName
+      ? rootLayout.getSubRecord('nameLabel')
+      : featureLayout
+    descriptionWidth = Math.round(
+      Math.min(description.length * fontWidth, rootLayout.width + expansion),
+    )
+    rootLayout.addChild(
+      'descriptionLabel',
+      0,
+      aboveLayout.bottom + textVerticalPadding,
+      descriptionWidth,
+      fontHeight,
+    )
+  }
+
+  const topPx = layout.addRect(
+    feature.id(),
+    feature.get('start'),
+    feature.get('start') + rootLayout.width * bpPerPx,
+    rootLayout.height,
+  )
+  if (topPx === null) {
+    return null
+  }
+  rootLayout.move(startPx, topPx)
+
+  return (
+    <FeatureGlyph
+      key={`svg-feature-${feature.id()}`}
+      feature={feature}
+      layout={layout}
+      rootLayout={rootLayout}
+      bpPerPx={bpPerPx}
+      config={config}
+      name={name}
+      shouldShowName={shouldShowName}
+      description={description}
+      shouldShowDescription={shouldShowDescription}
+      fontHeight={fontHeight}
+      allowedWidthExpansion={expansion}
+      {...props}
+    />
+  )
+}
+
+RenderedFeatureGlyph.propTypes = {
+  layout: ReactPropTypes.shape({
+    addRect: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+
+  region: CommonPropTypes.Region.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  horizontallyFlipped: ReactPropTypes.bool,
+  feature: ReactPropTypes.shape({
+    id: ReactPropTypes.func.isRequired,
+    get: ReactPropTypes.func.isRequired,
+  }).isRequired,
+  config: CommonPropTypes.ConfigSchema.isRequired,
+}
+
+RenderedFeatureGlyph.defaultProps = {
+  horizontallyFlipped: false,
+}
+
+const RenderedFeatures = observer(props => {
+  const { layout, setHeight, features, selectedFeatureId } = props
+  const featuresRendered = []
+  for (const feature of features.values()) {
+    featuresRendered.push(
+      <RenderedFeatureGlyph
+        key={feature.id()}
+        feature={feature}
+        {...props}
+        selected={selectedFeatureId === feature.id()}
+      />,
+    )
+  }
+  setHeight(layout.getTotalHeight())
+  return <>{featuresRendered}</>
+})
+RenderedFeatures.propTypes = {
+  features: ReactPropTypes.oneOfType([
+    ReactPropTypes.instanceOf(Map),
+    ReactPropTypes.arrayOf(ReactPropTypes.shape()),
+  ]),
+  layout: ReactPropTypes.shape({
+    addRect: ReactPropTypes.func.isRequired,
+    getTotalHeight: ReactPropTypes.func.isRequired,
+  }).isRequired,
+}
+
+RenderedFeatures.defaultProps = {
+  features: [],
+}
+
+function SvgFeatureRendering(props) {
+  const { region, bpPerPx, horizontallyFlipped, features, trackModel } = props
+  const { configuration, selectedFeatureId } = trackModel
   const width = (region.end - region.start) / bpPerPx
 
   const ref = useRef()
@@ -108,6 +247,7 @@ function SvgFeatureRendering(props) {
     false,
   )
   const [offset, setOffset] = useState([0, 0])
+  const [height, setHeight] = useState(0)
   const {
     onMouseOut,
     onMouseDown,
@@ -116,7 +256,6 @@ function SvgFeatureRendering(props) {
     onMouseOver,
     onMouseMove,
     onMouseUp,
-    onClick,
     onFeatureClick,
   } = props
 
@@ -221,115 +360,10 @@ function SvgFeatureRendering(props) {
       // don't select a feature if we are clicking and dragging
       if (movedDuringLastMouseDown) return
 
-      if (featureIdUnderMouse) {
-        // else if feature under mouse, select feature
-        onFeatureClick && onFeatureClick(event, featureIdUnderMouse)
-      } else if (onClick) {
-        // else , clear feature basically
-        onClick && onClick(event)
-      }
+      onFeatureClick && onFeatureClick(event)
     },
-    [featureIdUnderMouse, movedDuringLastMouseDown, onClick, onFeatureClick],
+    [movedDuringLastMouseDown, onFeatureClick],
   )
-
-  function createFeatureGlyphComponent(feature) {
-    const start = feature.get(horizontallyFlipped ? 'end' : 'start')
-    const startPx = bpToPx(start, region, bpPerPx, horizontallyFlipped)
-    const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-    const GlyphComponent = chooseGlyphComponent(feature)
-    const featureLayout = (GlyphComponent.layOut || layOut)({
-      layout: rootLayout,
-      feature,
-      bpPerPx,
-      horizontallyFlipped,
-      config,
-    })
-
-    const fontHeight = readConfObject(
-      config,
-      ['labels', 'fontSize'],
-      ['feature'],
-    )
-    const fontWidth = fontHeight * fontWidthScaleFactor
-    const exp = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-    const textVerticalPadding = 2
-
-    const name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-    const shouldShowName = /\S/.test(name)
-    let nameWidth = 0
-    if (shouldShowName) {
-      nameWidth = Math.round(
-        Math.min(name.length * fontWidth, rootLayout.width + exp),
-      )
-      rootLayout.addChild(
-        'nameLabel',
-        0,
-        featureLayout.bottom + textVerticalPadding,
-        nameWidth,
-        fontHeight,
-      )
-    }
-
-    const description =
-      readConfObject(config, ['labels', 'description'], [feature]) || ''
-    const shouldShowDescription = /\S/.test(description)
-    let descriptionWidth = 0
-    if (shouldShowDescription) {
-      const aboveLayout = shouldShowName
-        ? rootLayout.getSubRecord('nameLabel')
-        : featureLayout
-      descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, rootLayout.width + exp),
-      )
-      rootLayout.addChild(
-        'descriptionLabel',
-        0,
-        aboveLayout.bottom + textVerticalPadding,
-        descriptionWidth,
-        fontHeight,
-      )
-    }
-
-    const topPx = layout.addRect(
-      feature.id(),
-      feature.get('start'),
-      feature.get('start') + rootLayout.width * bpPerPx,
-      rootLayout.height,
-    )
-    if (topPx === null) {
-      return null
-    }
-
-    rootLayout.move(startPx, topPx)
-
-    return (
-      <FeatureGlyph
-        key={`svg-feature-${feature.id()}`}
-        feature={feature}
-        layout={layout}
-        rootLayout={rootLayout}
-        bpPerPx={bpPerPx}
-        selected={String(selectedFeatureId) === String(feature.id())}
-        config={config}
-        name={name}
-        shouldShowName={shouldShowName}
-        description={description}
-        shouldShowDescription={shouldShowDescription}
-        fontHeight={fontHeight}
-        allowedWidthExpansion={exp}
-        movedDuringLastMouseDown={movedDuringLastMouseDown}
-        {...props}
-      />
-    )
-  }
-
-  const featuresRendered = []
-  for (const feature of features.values()) {
-    const ret = createFeatureGlyphComponent(feature)
-    if (ret) featuresRendered.push(ret)
-  }
-
-  const height = layout.getTotalHeight()
 
   return (
     <div style={renderingStyle}>
@@ -349,7 +383,12 @@ function SvgFeatureRendering(props) {
         onBlur={mouseLeave}
         onClick={click}
       >
-        {featuresRendered}
+        <RenderedFeatures
+          selectedFeatureId={selectedFeatureId}
+          features={features}
+          setHeight={setHeight}
+          {...props}
+        />
         <SvgSelected {...props} />
         <SvgMouseover {...props} />
       </svg>
