@@ -205,16 +205,11 @@ RenderedFeatureGlyph.defaultProps = {
 }
 
 const RenderedFeatures = observer(props => {
-  const { layout, setHeight, features, selectedFeatureId } = props
+  const { layout, setHeight, features } = props
   const featuresRendered = []
   for (const feature of features.values()) {
     featuresRendered.push(
-      <RenderedFeatureGlyph
-        key={feature.id()}
-        feature={feature}
-        {...props}
-        selected={selectedFeatureId === feature.id()}
-      />,
+      <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
     )
   }
   setHeight(layout.getTotalHeight())
@@ -237,7 +232,7 @@ RenderedFeatures.defaultProps = {
 
 function SvgFeatureRendering(props) {
   const { region, bpPerPx, horizontallyFlipped, features, trackModel } = props
-  const { configuration, selectedFeatureId } = trackModel
+  const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
 
   const ref = useRef()
@@ -384,7 +379,6 @@ function SvgFeatureRendering(props) {
         onClick={click}
       >
         <RenderedFeatures
-          selectedFeatureId={selectedFeatureId}
           features={features}
           setHeight={setHeight}
           {...props}
