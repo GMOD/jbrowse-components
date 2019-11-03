@@ -14,7 +14,7 @@ const renderingStyle = {
   position: 'relative',
 }
 
-const SvgSelected = observer(
+export const SvgSelected = observer(
   ({
     region,
     trackModel: { layoutFeatures, selectedFeatureId },
@@ -51,7 +51,7 @@ const SvgSelected = observer(
   },
 )
 
-const SvgMouseover = observer(
+export const SvgMouseover = observer(
   ({
     trackModel: { layoutFeatures, featureIdUnderMouse },
     region,

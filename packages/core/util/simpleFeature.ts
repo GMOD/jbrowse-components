@@ -83,7 +83,6 @@ export default class SimpleFeature implements Feature {
     const id = args.id || this.data.uniqueId || this.data.uniqueID
 
     if (id === undefined || id === null) {
-      console.log('here', args)
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
       )
