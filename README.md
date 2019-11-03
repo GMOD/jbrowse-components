@@ -15,9 +15,22 @@ You should already have [git](https://git-scm.com/downloads),
 [npm](https://nodejs.org/en/download/), and
 [yarn](https://yarnpkg.com/en/docs/install) installed
 
+**Linux/Mac**
 ```sh
 git clone https://github.com/GMOD/jbrowse-components.git
 cd jbrowse-components
+yarn
+```
+
+**Windows**
+```pwsh
+# Make sure you check out line-endings as-is by running
+# `git config --global core.autocrlf false`
+# Also, make sure symlinks are enabled by running
+# `git config --global core.symlinks true`.
+# You may also need to clone as an administrator for symlinks to work.
+git clone -c core.symlinks=true https://github.com/GMOD/jbrowse-components.git
+cd .\jbrowse-components\
 yarn
 ```
 
