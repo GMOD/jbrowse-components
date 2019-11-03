@@ -863,6 +863,40 @@
           }
         },
         {
+          "configId": "clinvar_cnv_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "ngmlr",
           "type": "AlignmentsTrack",
           "name": "Breast cancer pacbio (NGMLR)",
@@ -1596,6 +1630,40 @@
             "labels": {
               "description": "function(feature) { return feature.get('gene_name') }"
             }
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
           }
         },
         {
