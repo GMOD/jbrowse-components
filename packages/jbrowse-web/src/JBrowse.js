@@ -58,7 +58,14 @@ export default observer(({ config, initialState }) => {
             const configText = await openLocation(config).readFile('utf8')
             configSnapshot = JSON.parse(configText)
           }
-          r = rootModel.create({ jbrowse: configSnapshot })
+          try {
+            r = rootModel.create({ jbrowse: configSnapshot })
+          } catch (error) {
+            // if it failed to load, it's probably a problem with the saved sessions,
+            // so just delete them and try again
+            configSnapshot.savedSessions = []
+            r = rootModel.create({ jbrowse: configSnapshot })
+          }
         }
         const params = new URL(document.location).searchParams
         const urlSession = params.get('session')
