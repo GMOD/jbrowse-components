@@ -1,6 +1,6 @@
 {
   "name": "jbrowse-desktop",
-  "version": "2.0.0",
+  "version": "2.0.0-alpha.2",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "private": false,
   "main": "public/electron.js",
@@ -52,7 +52,39 @@
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
-    "eject": "rescripts eject"
+    "eject": "rescripts eject",
+    "build": "yarn cra-build && electron-builder build -wml",
+    "build:win": "yarn cra-build && electron-builder build -w",
+    "build:mac": "yarn cra-build && electron-builder build -m",
+    "build:linux": "yarn cra-build && electron-builder build -l",
+    "cra-build": "rescripts build",
+    "package": "yarn cra-build && electron-builder build -ml --dir",
+    "package:win": "yarn cra-build && electron-builder build -w --dir",
+    "package:mac": "yarn cra-build && electron-builder build -m --dir",
+    "package:linux": "yarn cra-build && electron-builder build -l --dir"
   },
-  "homepage": "."
+  "homepage": "./",
+  "build": {
+    "electronVersion": "7.0.0",
+    "extraMetadata": {
+      "main": "build/electron.js"
+    },
+    "appId": "com.my-website.my-app",
+    "productName": "JBrowse Desktop",
+    "copyright": "Copyright © 2019",
+    "linux": {
+      "target": "zip"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "zip"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
 }
