@@ -115,7 +115,7 @@ function readConfObject(confObject, slotPath, args) {
  * @param {any} args extra arguments e.g. for a feature callback, will
  *  be sent to each of the slotNames
  */
-function readConfObjects(confObject, slotNames, args) {
+function readConfObjects(confObject, slotNames, args = []) {
   return slotNames.map(slotName => readConfObject(confObject, slotName, args))
 }
 
@@ -127,7 +127,7 @@ function readConfObjects(confObject, slotNames, args) {
  * @param {any} args extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
-function getConf(model, slotName, args) {
+function getConf(model, slotName, args = []) {
   if (!model) throw new TypeError('must provide a model object')
   if (!model.configuration) {
     throw new TypeError('cannot getConf on this model, it has no configuration')

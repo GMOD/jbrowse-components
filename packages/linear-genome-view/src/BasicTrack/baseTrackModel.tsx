@@ -71,7 +71,6 @@ const BaseTrack = types
   })
   .volatile(() => ({
     ReactComponent: undefined,
-    rendererTypeName: undefined,
     ready: false,
     scrollTop: 0,
     error: '',
@@ -82,6 +81,9 @@ const BaseTrack = types
     },
     get ControlsComponent() {
       return TrackControls
+    },
+    get rendererTypeName() {
+      return undefined
     },
 
     get RenderingComponent(): React.FC<{
@@ -120,7 +122,7 @@ const BaseTrack = types
       const track = getContainingView(self)
       const session: any = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
-        self.rendererTypeName,
+        this.rendererTypeName,
       )
       if (!RendererType)
         throw new Error(`renderer "${track.rendererTypeName}" not found`)

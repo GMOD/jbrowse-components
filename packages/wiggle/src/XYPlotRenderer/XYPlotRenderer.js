@@ -4,7 +4,7 @@ import Color from 'color'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { getOrigin, getScale } from '../util'
 
-export default class extends WiggleBaseRenderer {
+export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
     const {
       features,
