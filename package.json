@@ -5,7 +5,7 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "NODE_ENV=production lerna run build",
+        "build": "cross-env NODE_ENV=production lerna run build",
         "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
         "typecheck": "tsc --noEmit",
         "test-ci": "jest --ci --coverage",
@@ -52,6 +52,7 @@
         "chalk": "^2.4.1",
         "concurrently": "^4.1.2",
         "core-js": "^3.2.1",
+        "cross-env": "^6.0.3",
         "css-loader": "^2.1.0",
         "electron": "^6.0.0",
         "eslint-config-airbnb": "^18.0.0",

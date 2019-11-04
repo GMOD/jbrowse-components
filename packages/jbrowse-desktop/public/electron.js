@@ -45,14 +45,14 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: isDev
-        ? path.join(app.getAppPath(), 'public/preload.js')
-        : `file://${path.join(app.getAppPath(), 'public/../build/preload.js')}`,
+        ? path.join(app.getAppPath(), 'public', 'preload.js')
+        : `file://${path.join(app.getAppPath(), 'build', 'preload.js')}`,
     },
   })
   mainWindow.loadURL(
     isDev
       ? url.format(devServerUrl)
-      : `file://${path.join(app.getAppPath(), 'public/../build/index.html')}`,
+      : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
   mainWindow.setMenuBarVisibility(false)
   if (isDev) {
@@ -85,14 +85,14 @@ ipcMain.on('createWindowWorker', event => {
     show: false,
     webPreferences: {
       preload: isDev
-        ? path.join(app.getAppPath(), 'public/preload.js')
-        : `file://${path.join(app.getAppPath(), 'public/../build/preload.js')}`,
+        ? path.join(app.getAppPath(), 'public', 'preload.js')
+        : `file://${path.join(app.getAppPath(), 'build', 'preload.js')}`,
     },
   })
   workerWindow.loadURL(
     isDev
       ? url.format({ ...devServerUrl, pathname: 'worker.html' })
-      : `file://${path.join(app.getAppPath(), 'public/../build/worker.html')}`,
+      : `file://${path.join(app.getAppPath(), 'build', 'worker.html')}`,
   )
   // workerWindow.webContents.openDevTools()
   event.returnValue = workerWindow.id
@@ -106,10 +106,12 @@ ipcMain.answerRenderer('loadConfig', async () => {
     if (error.code === 'ENOENT') {
       // make a config file since one does not exist yet
       const configTemplateLocation = isDev
-        ? path.join(app.getAppPath(), 'public/test_data/config.json')
+        ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
         : `file://${path.join(
             app.getAppPath(),
-            'public/../build/test_data/config.json',
+            'build',
+            'test_data',
+            'config.json',
           )}`
       await fsCopyFile(configTemplateLocation, configLocation)
       configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
@@ -138,11 +140,15 @@ ipcMain.answerRenderer('listSessions', async () => {
   const sessions = {}
   sessionFiles.forEach((sessionFile, idx) => {
     if (path.extname(sessionFile) === '.thumbnail') {
-      const sessionName = path.basename(sessionFile, '.thumbnail')
+      const sessionName = decodeURIComponent(
+        path.basename(sessionFile, '.thumbnail'),
+      )
       if (!sessions[sessionName]) sessions[sessionName] = {}
       sessions[sessionName].screenshot = data[idx]
     } else if (path.extname(sessionFile) === '.json') {
-      const sessionName = path.basename(sessionFile, '.json')
+      const sessionName = decodeURIComponent(
+        path.basename(sessionFile, '.json'),
+      )
       if (!sessions[sessionName]) sessions[sessionName] = {}
       sessions[sessionName].stats = data[idx]
     }
@@ -151,20 +157,27 @@ ipcMain.answerRenderer('listSessions', async () => {
 })
 
 ipcMain.answerRenderer('loadSession', async sessionName => {
-  return fsReadFile(path.join(sessionDirectory, `${sessionName}.json`), {
-    encoding: 'utf8',
-  })
+  return fsReadFile(
+    path.join(sessionDirectory, `${encodeURIComponent(sessionName)}.json`),
+    { encoding: 'utf8' },
+  )
 })
 
 ipcMain.answerRenderer(
   'saveSession',
   async (sessionSnapshot, sessionScreenshot) => {
     await fsWriteFile(
-      path.join(sessionDirectory, `${sessionSnapshot.name}.thumbnail`),
+      path.join(
+        sessionDirectory,
+        `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
+      ),
       sessionScreenshot,
     )
     return fsWriteFile(
-      path.join(sessionDirectory, `${sessionSnapshot.name}.json`),
+      path.join(
+        sessionDirectory,
+        `${encodeURIComponent(sessionSnapshot.name)}.json`,
+      ),
       JSON.stringify(sessionSnapshot),
     )
   },
@@ -173,15 +186,15 @@ ipcMain.answerRenderer(
 ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
   try {
     await fsRename(
-      path.join(sessionDirectory, `${oldName}.thumbnail`),
-      path.join(sessionDirectory, `${newName}.thumbnail`),
+      path.join(sessionDirectory, `${encodeURIComponent(oldName)}.thumbnail`),
+      path.join(sessionDirectory, `${encodeURIComponent(newName)}.thumbnail`),
     )
   } catch {
     // ignore
   }
   await fsRename(
-    path.join(sessionDirectory, `${oldName}.json`),
-    path.join(sessionDirectory, `${newName}.json`),
+    path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
+    path.join(sessionDirectory, `${encodeURIComponent(newName)}.json`),
   )
 })
 
@@ -190,7 +203,9 @@ ipcMain.answerRenderer('reset', async () => {
     ? path.join(app.getAppPath(), 'public/test_data/config.json')
     : `file://${path.join(
         app.getAppPath(),
-        'public/../build/test_data/config.json',
+        'build',
+        'test_data',
+        'config.json',
       )}`
   await fsCopyFile(configTemplateLocation, configLocation)
   const sessionFiles = await fsReaddir(sessionDirectory)
@@ -203,11 +218,18 @@ ipcMain.answerRenderer('reset', async () => {
 
 ipcMain.answerRenderer('deleteSession', async sessionName => {
   try {
-    await fsUnlink(path.join(sessionDirectory, `${sessionName}.thumbnail`))
+    await fsUnlink(
+      path.join(
+        sessionDirectory,
+        `${encodeURIComponent(sessionName)}.thumbnail`,
+      ),
+    )
   } catch {
     // ignore
   }
-  return fsUnlink(path.join(sessionDirectory, `${sessionName}.json`))
+  return fsUnlink(
+    path.join(sessionDirectory, `${encodeURIComponent(sessionName)}.json`),
+  )
 })
 
 ipcMain.answerRenderer('fetch', async (...args) => {

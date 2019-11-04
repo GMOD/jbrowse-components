@@ -47,8 +47,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "concurrently \"BROWSER=none yarn cra-start\" \"wait-on http://localhost:3000 && electron .\"",
-    "serve": "BROWSER=none yarn cra-start",
+    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && electron .\"",
+    "serve": "cross-env BROWSER=none yarn cra-start",
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",

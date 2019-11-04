@@ -4,8 +4,8 @@
   "description": "an embeddable protein viewer widget",
   "main": "umd/jbrowse-protein-viewer.js",
   "scripts": {
-    "build": "NODE_ENV=production webpack",
-    "start": "echo opening app in file:/// to demonstrate the simplicity of this setup. refresh when webpack --watch is done building && sleep 3 && open-cli umd.html &&  NODE_ENV=development webpack -w",
+    "build": "cross-env NODE_ENV=production webpack",
+    "start": "echo opening app in file:/// to demonstrate the simplicity of this setup. refresh when webpack --watch is done building && sleep 3 && open-cli umd.html && cross-env NODE_ENV=development webpack -w",
     "test": "jest --config ../../jest.config.js --roots packages/protein-widget/",
     "lint": "eslint src/"
   },
