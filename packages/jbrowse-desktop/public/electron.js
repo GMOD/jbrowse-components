@@ -1,10 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
 const { ipcMain } = require('electron-better-ipc-extra')
+const debug = require('electron-debug')
+const isDev = require('electron-is-dev')
 const fs = require('fs')
-const { promisify } = require('util')
-const url = require('url')
 const fetch = require('node-fetch')
+const path = require('path')
+const url = require('url')
+const { promisify } = require('util')
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
@@ -19,8 +22,7 @@ const fsWriteFile = promisify(fs.writeFile)
 
 const { app, BrowserWindow, Menu } = electron
 
-const path = require('path')
-const isDev = require('electron-is-dev')
+debug()
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
