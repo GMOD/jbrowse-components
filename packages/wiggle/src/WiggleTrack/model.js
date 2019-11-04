@@ -2,14 +2,11 @@ import {
   ConfigurationReference,
   getConf,
 } from '@gmod/jbrowse-core/configuration'
-import {
-  checkAbortSignal,
-  isAbortException,
-  getSession,
-} from '@gmod/jbrowse-core/util'
+import { isAbortException, getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
   getParentRenderProps,
+  getTrackAssemblyName,
 } from '@gmod/jbrowse-core/util/tracks'
 import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -23,6 +20,31 @@ const rendererTypes = new Map([
   ['density', 'DensityRenderer'],
   ['line', 'LinePlotRenderer'],
 ])
+
+function getStats(self, signal) {
+  const { rpcManager } = getSession(self)
+  const autoscaleType = getConf(self, 'autoscale')
+  if (autoscaleType === 'global') {
+    return rpcManager.call('statsGathering', 'getGlobalStats', {
+      adapterConfig: getSnapshot(self.configuration.adapter),
+      adapterType: self.configuration.adapter.type,
+      signal,
+    })
+  }
+  if (autoscaleType === 'local') {
+    const { dynamicBlocks, bpPerPx } = getContainingView(self)
+    return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+      adapterConfig: getSnapshot(self.configuration.adapter),
+      adapterType: self.configuration.adapter.type,
+      assemblyName: getTrackAssemblyName(self),
+      regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+      signal,
+      bpPerPx,
+    })
+  }
+  return {}
+}
+
 export default configSchema =>
   types.compose(
     'WiggleTrack',
@@ -35,60 +57,28 @@ export default configSchema =>
       })
       .actions(self => ({
         afterAttach() {
-          const getYAxisScale = autorun(
-            async function getYAxisScaleAutorun() {
-              try {
-                const { rpcManager } = getSession(self)
-                const autoscaleType = getConf(self, 'autoscale')
-                const aborter = new AbortController()
-                const { signal } = aborter
-                let statsPromise
-                self.setLoading(aborter)
-
-                if (autoscaleType === 'global') {
-                  statsPromise = rpcManager.call(
-                    'statsGathering',
-                    'getGlobalStats',
-                    {
-                      adapterConfig: getSnapshot(self.configuration.adapter),
-                      adapterType: self.configuration.adapter.type,
-                      signal,
-                    },
-                  )
-                } else if (autoscaleType === 'local') {
-                  const { dynamicBlocks, bpPerPx } = getContainingView(self)
-
-                  // possibly useful for the rpc group name to be the same group as getFeatures
-                  // reason: local stats fetches feature data that might get cached which getFeatures can use
-                  statsPromise = rpcManager.call(
-                    'statsGathering',
-                    'getMultiRegionStats',
-                    {
-                      adapterConfig: getSnapshot(self.configuration.adapter),
-                      adapterType: self.configuration.adapter.type,
-                      regions: dynamicBlocks.blocks,
-                      signal,
-                      bpPerPx,
-                    },
-                  )
+          addDisposer(
+            self,
+            autorun(
+              async function getYAxisScaleAutorun() {
+                try {
+                  const aborter = new AbortController()
+                  self.setLoading(aborter)
+                  const stats = await getStats(self, aborter.signal)
+                  if (isAlive(self)) {
+                    self.updateScale(stats)
+                  }
+                } catch (e) {
+                  if (!isAbortException(e)) {
+                    self.setError(e)
+                  }
                 }
-
-                const stats = await statsPromise
-                checkAbortSignal(aborter.signal)
-                if (isAlive(self)) {
-                  self.updateScale(stats)
-                }
-              } catch (e) {
-                if (!isAbortException(e)) {
-                  self.setError(e)
-                }
-              }
-            },
-            { delay: 1000 },
+              },
+              { delay: 1000 },
+            ),
           )
-
-          addDisposer(self, getYAxisScale)
         },
+
         updateScale(stats) {
           self.stats.setStats(stats)
           self.ready = true
@@ -131,14 +121,6 @@ export default configSchema =>
             notReady: !self.ready,
             trackModel: self,
             config,
-            onFeatureClick(event, featureId) {
-              // try to find the feature in our layout
-              const feature = self.features.get(featureId)
-              self.selectFeature(feature)
-            },
-            onClick() {
-              self.clearFeatureSelection()
-            },
             scaleOpts: {
               domain: self.domain,
               scaleType: getConf(self, 'scaleType'),

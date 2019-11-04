@@ -35,7 +35,6 @@ export default pluginManager => {
         )
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       loadAssemblyRefNameMapStarted() {},
       loadAssemblyRefNameMapSuccess(result) {
         // console.log('loaded refname map', result)

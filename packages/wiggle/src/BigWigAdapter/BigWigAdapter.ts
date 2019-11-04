@@ -58,27 +58,24 @@ export default class extends BaseAdapter {
     })
   }
 
-  public async getRefNames(): Promise<string[]> {
+  public async getRefNames() {
     const header = await this.bigwig.getHeader()
     return Object.keys(header.refsByName)
   }
 
-  public async refIdToName(refId: number): Promise<string | undefined> {
+  public async refIdToName(refId: number) {
     const h = await this.bigwig.getHeader()
-    // @ts-ignore wants indexer or true map object
+    // @ts-ignore
     return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
-  public async getGlobalStats(opts: BaseOptions = {}): Promise<FeatureStats> {
+  public async getGlobalStats(opts: BaseOptions = {}) {
     const header = await this.bigwig.getHeader(opts.signal)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   // todo: incorporate summary blocks
-  public getRegionStats(
-    region: INoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Promise<FeatureStats> {
+  public getRegionStats(region: INoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
     const { bpPerPx, signal } = opts
     return this.statsCache.get(
@@ -92,7 +89,7 @@ export default class extends BaseAdapter {
   public async getMultiRegionStats(
     regions: INoAssemblyRegion[] = [],
     opts: BaseOptions = {},
-  ): Promise<FeatureStats> {
+  ) {
     if (!regions.length) {
       return blankStats()
     }
@@ -155,6 +152,5 @@ export default class extends BaseAdapter {
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public freeResources(): void {}
 }
