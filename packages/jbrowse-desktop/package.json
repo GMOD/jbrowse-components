@@ -59,7 +59,7 @@
     "build:mac": "yarn cra-build && electron-builder build -m",
     "build:linux": "yarn cra-build && electron-builder build -l",
     "cra-build": "rescripts build",
-    "package": "yarn cra-build && electron-builder build -ml --dir",
+    "package": "yarn cra-build && electron-builder build -wml --dir",
     "package:win": "yarn cra-build && electron-builder build -w --dir",
     "package:mac": "yarn cra-build && electron-builder build -m --dir",
     "package:linux": "yarn cra-build && electron-builder build -l --dir"
@@ -73,6 +73,9 @@
     "appId": "com.my-website.my-app",
     "productName": "JBrowse Desktop",
     "copyright": "Copyright © 2019",
+    "win": {
+      "target": "zip"
+    },
     "linux": {
       "target": "zip"
     },
