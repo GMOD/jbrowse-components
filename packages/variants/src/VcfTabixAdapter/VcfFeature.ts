@@ -84,12 +84,14 @@ export default class VCFFeature implements Feature {
       variant.REF,
       variant.ALT,
     )
+    const isTRA = variant.ALT.some((f: string) => f === '<TRA>')
     const featureData: FeatureData = {
       refName: variant.CHROM,
       start,
-      end: variant.INFO.END
-        ? Number(variant.INFO.END[0])
-        : start + variant.REF.length,
+      end:
+        variant.INFO.END && !isTRA
+          ? Number(variant.INFO.END[0])
+          : start + variant.REF.length,
       description,
       type: SO_term,
       name: variant.ID ? variant.ID[0] : undefined,

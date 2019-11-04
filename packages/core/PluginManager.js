@@ -99,7 +99,7 @@ export default class PluginManager {
       const pack = ReExports[lib]
       if (!pack)
         throw new Error(
-          `No jbrequire re-export defined for package '${lib}'. Either import it normally, or add it to jbrowse-core ReExports`,
+          `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
         )
       return pack
     }

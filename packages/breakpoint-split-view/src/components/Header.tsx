@@ -160,7 +160,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
                 </MenuItem>
               )
             })}
-            )}
           </Menu>
         </>
       )

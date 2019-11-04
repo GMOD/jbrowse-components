@@ -803,7 +803,7 @@
         {
           "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
-          "name": "human chord test",
+          "name": "HG002 PacBio PBSV BND",
           "configRelationships": [
             {
               "type": "AlignmentEvidence",
@@ -833,9 +833,42 @@
           }
         },
         {
+          "configId": "breast_cancer_hg19_chords",
+          "type": "StructuralVariantChordTrack",
+          "name": "SKBR3 Sniffles TRA",
+          "configRelationships": [
+            {
+              "type": "AlignmentEvidence",
+              "target": "ngmlr"
+            },
+            {
+              "target": "breast_cancer_sniffles_hg19",
+              "type": "VariantCalls"
+            }
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "configId": "cnlG3T7NSc",
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "configId": "ngmlr",
           "type": "AlignmentsTrack",
           "name": "Breast cancer pacbio (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -843,7 +876,7 @@
             },
             "index": {
               "location": {
-                "uri": "test_data/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
               }
             }
           }
@@ -1016,6 +1049,42 @@
           }
         },
         {
+          "configId": "nanopore_ultralong_cram",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong (CRAM)",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram"
+            },
+            "craiLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong (BAM)",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "rJxR1X2T0yu",
           "type": "AlignmentsTrack",
           "name": "HG00096 Illumina low coverage",
@@ -1165,11 +1234,30 @@
           }
         },
         {
-          "configId": "UppxfMGl81V",
+          "configId": "breast_cancer_sniffles_hg19",
+          "type": "VariantTrack",
+          "name": "Breast cancer pacbio (sniffles VCF)",
+          "category": [
+            "SKBR3"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "configId": "1000genomes_indels",
           "type": "VariantTrack",
           "name": "InDels",
           "category": [
-            "Variants"
+            "1000 genomes"
           ],
           "adapter": {
             "configId": "5cVzXc0r4sO",

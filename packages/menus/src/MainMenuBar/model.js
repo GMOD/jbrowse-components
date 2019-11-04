@@ -94,6 +94,7 @@ export default types
   })
   .actions(self => ({
     afterCreate() {
+      self.menus = []
       if (!self.menus.find(menu => menu.name === 'Help'))
         self.pushMenu({
           name: 'Help',
@@ -111,19 +112,23 @@ export default types
               icon: 'add',
               callback: 'function(session) {session.setDefaultSession();}',
             },
-            { name: 'divider' },
             {
               name: 'Open Session...',
               icon: 'folder_open',
               callback:
                 "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}",
             },
-            { name: 'divider' },
             {
               name: 'Duplicate Session',
               icon: 'file_copy',
               callback:
                 'function(session) {session.duplicateCurrentSession();}',
+            },
+            {
+              name: 'Import tabular data',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
             },
           ],
         })

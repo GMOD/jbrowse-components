@@ -1,0 +1,6554 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`csv to spreadsheet snapshot 1`] = `
+Object {
+  "columnDisplayOrder": Array [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+  ],
+  "columns": Array [
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "one",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "two",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "three",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "four",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "six",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "seven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eight",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "nine",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "ten",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eleven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twelve",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "thirteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "fourteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "fifteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "sixteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "seventeen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "eighteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "nineteen",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twenty",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyone",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentytwo",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentythree",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyfour",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyfive",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentysix",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyseven",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentyeight",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "twentynine",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": "thirty",
+    },
+    Object {
+      "dataType": Object {
+        "type": "Text",
+      },
+      "name": undefined,
+    },
+  ],
+  "hasColumnNames": true,
+  "rowSet": Object {
+    "isLoaded": true,
+    "rows": Array [
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "17.99",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "10.38",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "122.8",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1001",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1184",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2776",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.3001",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1471",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2419",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07871",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "1.095",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9053",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "8.589",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "153.4",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006399",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.04904",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05373",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01587",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.03003",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.006193",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "25.38",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "17.33",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "184.6",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "2019",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1622",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.6656",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.7119",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2654",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4601",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1189",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "1",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "20.57",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "17.77",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "132.9",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1326",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.08474",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.07864",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.0869",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07017",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1812",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05667",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.5435",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7339",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.398",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "74.08",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005225",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01308",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.0186",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.0134",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01389",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003532",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "24.99",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "23.41",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "158.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1956",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1238",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1866",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2416",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.186",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.275",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08902",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "2",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "19.69",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.25",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "130",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1203",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1096",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1599",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1974",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1279",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2069",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05999",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.7456",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7869",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "4.585",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "94.03",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.00615",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.04006",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03832",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.02058",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.0225",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004571",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "23.57",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "25.53",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "152.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1709",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1444",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4245",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.4504",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.243",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3613",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08758",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "3",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "11.42",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.38",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "77.58",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "386.1",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1425",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2839",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2414",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1052",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2597",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.09744",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4956",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.156",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.445",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "27.23",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.00911",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.07458",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05661",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01867",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.05963",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.009208",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "14.91",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "26.5",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "98.87",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "567.7",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.2098",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.8663",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6869",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2575",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.6638",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.173",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "4",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "20.29",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "14.34",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "135.1",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1297",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1003",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1328",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.198",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1043",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1809",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05883",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.7572",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7813",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "5.438",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "94.44",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.01149",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02461",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05688",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01885",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01756",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.005115",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "22.54",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "16.67",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "152.2",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1575",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1374",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.205",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.4",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1625",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2364",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07678",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "5",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "12.45",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "15.7",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "82.57",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "477.1",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1278",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.17",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1578",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08089",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2087",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07613",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.3345",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.8902",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.217",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "27.19",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.00751",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03345",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03672",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01137",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02165",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.005082",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.47",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "23.75",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "103.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "741.6",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1791",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5249",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5355",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1741",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3985",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1244",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "6",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "18.25",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "19.98",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "119.6",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1040",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09463",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.109",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1127",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.074",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1794",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05742",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4467",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7732",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.18",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "53.91",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004314",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01382",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02254",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01039",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01369",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002179",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "22.88",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.66",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "153.2",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1606",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1442",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2576",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3784",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1932",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3063",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08368",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "7",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.71",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.83",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "90.2",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "577.9",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1189",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1645",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.09366",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05985",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2196",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07451",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.5835",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.377",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.856",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "50.96",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008805",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03029",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02488",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01448",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01486",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.005412",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "17.06",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "28.14",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "110.6",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "897",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1654",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3682",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2678",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1556",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3196",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1151",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "8",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.82",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "87.5",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "519.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1273",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1932",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1859",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.09353",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.235",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07389",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.3063",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.002",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.406",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "24.32",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005731",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03502",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03553",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01226",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02143",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003749",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.49",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.73",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "106.2",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "739.3",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1703",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5401",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.539",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.206",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4378",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1072",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "9",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "12.46",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "24.04",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "83.97",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "475.9",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1186",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2396",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2273",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08543",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.203",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.08243",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2976",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.599",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.039",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "23.94",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.007149",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.07217",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.07743",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01432",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01789",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.01008",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.09",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "40.68",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "97.65",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "711.4",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1853",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "1.058",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "1.105",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.221",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4366",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.2075",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "10",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "16.02",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "23.24",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "102.7",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "797.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.08206",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.06669",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.03299",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.03323",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1528",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05697",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.3795",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.187",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.466",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "40.51",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004029",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.009269",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01101",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.007591",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.0146",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003042",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "19.19",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "33.88",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "123.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1150",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1181",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1551",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.1459",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.09975",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2948",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08452",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "11",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "15.78",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "17.89",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "103.6",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "781",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.0971",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1292",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.09954",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.06606",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1842",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06082",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.5058",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9849",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.564",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "54.16",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005771",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.04061",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02791",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01282",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02008",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004144",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.42",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.28",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "136.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1299",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1396",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5609",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3965",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.181",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3792",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1048",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "12",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "19.17",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "24.8",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "132.4",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1123",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.0974",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2458",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2065",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1118",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2397",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.078",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.9555",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "3.568",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "11.07",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "116.2",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.003139",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.08297",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.0889",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.0409",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.04484",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.01284",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.96",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "29.94",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "151.7",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1332",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1037",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3903",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3639",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1767",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3176",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1023",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "13",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "15.85",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "23.95",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "103.7",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "782.7",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.08401",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1002",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.09938",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05364",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1847",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05338",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4033",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.078",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.903",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "36.58",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.009769",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03126",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05051",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01992",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02981",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003002",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "16.84",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.66",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "112",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "876.5",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1131",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1924",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2322",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1119",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2809",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.06287",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "14",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.73",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "22.61",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "93.6",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "578.3",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1131",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2293",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2128",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08025",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2069",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07682",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2121",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.169",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.061",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "19.21",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006429",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.05936",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05501",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01628",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01961",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.008093",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.03",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "32.01",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "108.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "697.7",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1651",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.7725",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6943",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2208",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3596",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1431",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "15",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "14.54",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "27.54",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "96.73",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "658.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1139",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1595",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1639",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07364",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2303",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07077",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.37",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.033",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.879",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "32.55",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005607",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.0424",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.04741",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.0109",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01857",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.005466",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "17.46",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "37.13",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "124.1",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "943.2",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1678",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.6577",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.7026",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1712",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4218",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1341",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "16",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "14.68",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.13",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "94.74",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "684.5",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09867",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.072",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.07395",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05259",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1586",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05922",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4727",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.24",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.195",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "45.4",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005718",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01162",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01998",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01109",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.0141",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002085",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "19.07",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.88",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "123.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1138",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1464",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1871",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2914",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1609",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3029",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08216",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "17",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "16.13",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.68",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "108.1",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "798.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.117",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2022",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1722",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1028",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2164",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07356",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.5692",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.073",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.854",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "54.18",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.007026",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02501",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03188",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01297",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01689",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004142",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.96",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "31.48",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "136.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1315",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1789",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4233",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.4784",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2073",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3706",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1142",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "18",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "19.81",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "22.15",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "130",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1260",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09831",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1027",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1479",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.09498",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1582",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05395",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.7582",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.017",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "5.865",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "112.4",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006494",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01893",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03391",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01521",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01356",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.001997",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "27.32",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.88",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "186.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "2398",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1512",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.315",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5372",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2388",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2768",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07615",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "19",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.54",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "14.36",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "87.46",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "566.3",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09779",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.08129",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.06664",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.04781",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1885",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05766",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2699",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7886",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.058",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "23.56",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008462",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.0146",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02387",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01315",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.0198",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.0023",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.11",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "19.26",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "99.7",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "711.2",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.144",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1773",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.239",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1288",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2977",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07259",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "20",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.08",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "15.71",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "85.63",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "520",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1075",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.127",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.04568",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.0311",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1967",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06811",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.1852",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7477",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.383",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "14.67",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004097",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01898",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01698",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.00649",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01678",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002425",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "14.5",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "20.49",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "96.09",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "630.5",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1312",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2776",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.189",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.07283",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3184",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08183",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "21",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "9.504",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "12.44",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "60.34",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "273.9",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1024",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.06492",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.02956",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.02076",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1815",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06905",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2773",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9768",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.909",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "15.7",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.009606",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01432",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01985",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01421",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02027",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002968",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "10.23",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "15.66",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "65.13",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "314.9",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1324",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1148",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.08867",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.06227",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.245",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07773",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "22",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "15.34",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "14.26",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "102.5",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "704.4",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1073",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2135",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2077",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.09756",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2521",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07032",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4388",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7096",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.384",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "44.91",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006789",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.05328",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.06446",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.02252",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.03672",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004394",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "18.07",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "19.08",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "125.1",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "980.9",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.139",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5954",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6305",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2393",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4667",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09946",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "23",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "21.16",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "23.04",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "137.2",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1404",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09428",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1022",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1097",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08632",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1769",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05278",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.6917",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.127",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "4.303",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "93.99",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004728",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01259",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01715",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01038",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01083",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.001987",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "29.17",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "35.59",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "188",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "2615",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1401",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.26",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3155",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2009",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2822",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07526",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "24",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "16.65",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.38",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "110",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "904.6",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1121",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1457",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1525",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.0917",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1995",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.0633",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.8068",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9017",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "5.455",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "102.6",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006048",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01882",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02741",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.0113",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01468",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002801",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "26.46",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "31.56",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "177",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "2215",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1805",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3578",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.4695",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2095",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3613",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09564",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "25",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "17.14",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "16.4",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "116",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "912.7",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1186",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.2276",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2229",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1401",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.304",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07413",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "1.046",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.976",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "7.276",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "111.4",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008029",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03799",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03732",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.02397",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02308",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.007444",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "22.25",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "21.4",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "152.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1461",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1545",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3949",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3853",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.255",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4066",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1059",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "26",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "14.58",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.53",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "97.41",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "644.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1054",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1868",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1425",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08783",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2252",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06924",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2545",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9832",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.11",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "21.05",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004452",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03055",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02681",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01352",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01454",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003711",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "17.62",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "33.21",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "122.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "896.9",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1525",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.6643",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5539",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2701",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4264",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1275",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "27",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "18.61",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.25",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "122.1",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1094",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.0944",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1066",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.149",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07731",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1697",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05699",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.8529",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.849",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "5.632",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "93.54",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.01075",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02722",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05081",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01911",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02293",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004217",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "21.31",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.26",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "139.9",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1403",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1338",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2117",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3446",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.149",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2341",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07421",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "28",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "15.3",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "25.27",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "102.4",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "732.4",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1082",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1697",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1683",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.08751",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1926",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.0654",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.439",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.012",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.498",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "43.5",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005233",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03057",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03576",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01083",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01768",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002967",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.27",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "36.71",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "149.3",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1269",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1641",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.611",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6335",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2024",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4027",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09876",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "29",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "17.57",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "15.05",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "115",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "955.1",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09847",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1157",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.09875",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07953",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1739",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06149",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.6003",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.8225",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "4.655",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "61.1",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005627",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03033",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03407",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01354",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01925",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003742",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.01",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "19.52",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "134.9",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1227",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1255",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2812",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2489",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1456",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2756",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07919",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "30",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "18.63",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "25.11",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "124.8",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1088",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1064",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1887",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2319",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1244",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2183",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06197",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.8307",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.466",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "5.574",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "105",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006248",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03374",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05196",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01158",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02007",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.00456",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "23.15",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "34.01",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "160.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1670",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1491",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4257",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6133",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1848",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3444",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09782",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "31",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "11.84",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "18.7",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "77.93",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "440.6",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1109",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1516",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1218",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05182",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2301",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.07799",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4825",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.03",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.475",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "41",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005551",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03414",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.04205",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01044",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02273",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.005667",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "16.82",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "28.12",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "119.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "888.7",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1637",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5775",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6956",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1546",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4761",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1402",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "32",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "17.02",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "23.98",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "112.8",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "899.3",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1197",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1496",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2417",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1203",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2248",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06382",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.6009",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.398",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.999",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "67.78",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008268",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03082",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05042",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01112",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02102",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003854",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.88",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "32.09",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "136.1",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1344",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1634",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3559",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5588",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1847",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.353",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08482",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "33",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "19.27",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "26.47",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "127.9",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1162",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09401",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1719",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1657",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07593",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1853",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06261",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.5558",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.6062",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.528",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "68.17",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005015",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03318",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03497",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.009643",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01543",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003896",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "24.15",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.9",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "161.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1813",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1509",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.659",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.6091",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1785",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3672",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1123",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "34",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "16.13",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "17.88",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "107",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "807.2",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.104",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1559",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1354",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.07752",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1998",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06515",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.334",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.6857",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.183",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "35.03",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004185",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02868",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02664",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.009067",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01703",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003817",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.21",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.26",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "132.7",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1261",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1446",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.5804",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5274",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1864",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.427",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1233",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "35",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "16.74",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.59",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "110.1",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "869.5",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.0961",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1336",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1348",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.06018",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1896",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05656",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.4615",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9197",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "3.008",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "45.19",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005776",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02499",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03695",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01195",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02789",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002665",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "20.01",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "29.02",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "133.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1229",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1563",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3835",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5409",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1813",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.4863",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08633",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "36",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "14.25",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.72",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "93.63",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "633",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09823",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1098",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1319",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05598",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1885",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06125",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.286",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.019",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.657",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "24.91",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005878",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02995",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.04815",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01161",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02028",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.004022",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.89",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.36",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "116.2",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "799.6",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1446",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4238",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5186",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1447",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3591",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1014",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "37",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.03",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "18.42",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "82.61",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "523.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.08983",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.03766",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.02562",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.02923",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1467",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05863",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.1839",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "2.342",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.17",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "14.16",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.004352",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.004899",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01343",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01164",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02671",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.001777",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "13.3",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "22.81",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "84.46",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "545.9",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.09701",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.04619",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.04833",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.05013",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.1987",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.06169",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "38",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "14.99",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "25.2",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "95.54",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "698.8",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09387",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.05131",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.02398",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.02899",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1565",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05504",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "1.214",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "2.188",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "8.077",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "106",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006883",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01094",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01818",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01917",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.007882",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.001754",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "14.99",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "25.2",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "95.54",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "698.8",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.09387",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.05131",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.02398",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.02899",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.1565",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.05504",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "39",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.48",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.82",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "88.4",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "559.2",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1016",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1255",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1063",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05439",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.172",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06419",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.213",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.5914",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.545",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "18.52",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005367",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02239",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.03049",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01262",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01377",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003187",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.53",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "26.02",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "107.3",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "740.4",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.161",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4225",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.503",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2258",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2807",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1071",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "40",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.44",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.58",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "86.18",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "563",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.08162",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.06031",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.0311",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.02031",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1784",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.05587",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2385",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.8265",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.572",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "20.53",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.00328",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01102",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.0139",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.006881",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.0138",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.001286",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.93",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "30.25",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "102.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "787.9",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1094",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2043",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.2085",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1112",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2994",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07146",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "41",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "10.95",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.35",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "71.9",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "371.1",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1227",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1218",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1044",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05669",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1895",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.0687",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2366",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.428",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.822",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "16.97",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008064",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01764",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02595",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01037",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01357",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.00304",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "12.84",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "35.34",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "87.22",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "514",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1909",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2698",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.4023",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1424",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2964",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09606",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "42",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "19.07",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "24.81",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "128.3",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1104",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09081",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.219",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.2107",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.09961",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.231",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06343",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.9811",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "1.666",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "8.83",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "104.9",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006548",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.1006",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.09723",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.02638",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.05333",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.007646",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "24.09",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "33.17",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "177.4",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1651",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1247",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.7444",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.7242",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2493",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.467",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1038",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "43",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.28",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "20.28",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "87.32",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "545.2",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1041",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1436",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.09847",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.06158",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1974",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06782",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.3704",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.8249",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "2.427",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "31.33",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005072",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02147",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02185",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.00956",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01719",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003317",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "17.38",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "28",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "113.1",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "907.2",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.153",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3724",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3664",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1492",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3739",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1027",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "44",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.17",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "21.81",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "85.42",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "531.5",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.09714",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1047",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.08259",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.05252",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1746",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06177",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.1938",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.6123",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.334",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "14.49",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.00335",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01384",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01452",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.006853",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01113",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.00172",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "16.23",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "29.89",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "105.5",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "740.7",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1503",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.3904",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.3728",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.1607",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3693",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09618",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "45",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "18.65",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "17.6",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "123.7",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "1076",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1099",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1686",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1974",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.1009",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1907",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06049",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.6289",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.6633",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "4.293",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "71.56",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006294",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.03994",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.05554",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01695",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02428",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003535",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "22.82",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "21.32",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "150.6",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "1567",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1679",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.509",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.7345",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2378",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3799",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.09185",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "46",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "8.196",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "16.84",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "51.71",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "201.9",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.086",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.05943",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.01588",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.005917",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1769",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06503",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.1563",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.9567",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.094",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "8.205",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.008968",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01646",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.01588",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.005917",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.02574",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002582",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "8.964",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "21.96",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "57.26",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "242.2",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1297",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.1357",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.0688",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.02564",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.3105",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.07409",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "47",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "13.17",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "18.66",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "85.98",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "534.6",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1158",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.1231",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.1226",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.0734",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.2128",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06777",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2871",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.8937",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.897",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "24.25",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.006532",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.02336",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02905",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.01215",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01743",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.003643",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "15.67",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "27.95",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "102.8",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "759.4",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1786",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.4166",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.5006",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.2088",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.39",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.1179",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "0",
+          },
+        ],
+        "id": "48",
+      },
+      Object {
+        "cells": Array [
+          Object {
+            "columnNumber": 0,
+            "text": "12.05",
+          },
+          Object {
+            "columnNumber": 1,
+            "text": "14.63",
+          },
+          Object {
+            "columnNumber": 2,
+            "text": "78.04",
+          },
+          Object {
+            "columnNumber": 3,
+            "text": "449.3",
+          },
+          Object {
+            "columnNumber": 4,
+            "text": "0.1031",
+          },
+          Object {
+            "columnNumber": 5,
+            "text": "0.09092",
+          },
+          Object {
+            "columnNumber": 6,
+            "text": "0.06592",
+          },
+          Object {
+            "columnNumber": 7,
+            "text": "0.02749",
+          },
+          Object {
+            "columnNumber": 8,
+            "text": "0.1675",
+          },
+          Object {
+            "columnNumber": 9,
+            "text": "0.06043",
+          },
+          Object {
+            "columnNumber": 10,
+            "text": "0.2636",
+          },
+          Object {
+            "columnNumber": 11,
+            "text": "0.7294",
+          },
+          Object {
+            "columnNumber": 12,
+            "text": "1.848",
+          },
+          Object {
+            "columnNumber": 13,
+            "text": "19.87",
+          },
+          Object {
+            "columnNumber": 14,
+            "text": "0.005488",
+          },
+          Object {
+            "columnNumber": 15,
+            "text": "0.01427",
+          },
+          Object {
+            "columnNumber": 16,
+            "text": "0.02322",
+          },
+          Object {
+            "columnNumber": 17,
+            "text": "0.00566",
+          },
+          Object {
+            "columnNumber": 18,
+            "text": "0.01428",
+          },
+          Object {
+            "columnNumber": 19,
+            "text": "0.002422",
+          },
+          Object {
+            "columnNumber": 20,
+            "text": "13.76",
+          },
+          Object {
+            "columnNumber": 21,
+            "text": "20.7",
+          },
+          Object {
+            "columnNumber": 22,
+            "text": "89.88",
+          },
+          Object {
+            "columnNumber": 23,
+            "text": "582.6",
+          },
+          Object {
+            "columnNumber": 24,
+            "text": "0.1494",
+          },
+          Object {
+            "columnNumber": 25,
+            "text": "0.2156",
+          },
+          Object {
+            "columnNumber": 26,
+            "text": "0.305",
+          },
+          Object {
+            "columnNumber": 27,
+            "text": "0.06548",
+          },
+          Object {
+            "columnNumber": 28,
+            "text": "0.2747",
+          },
+          Object {
+            "columnNumber": 29,
+            "text": "0.08301",
+          },
+          Object {
+            "columnNumber": 30,
+            "text": "1",
+          },
+        ],
+        "id": "49",
+      },
+    ],
+  },
+}
+`;
