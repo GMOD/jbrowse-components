@@ -1,5 +1,11 @@
 import VCF from '@gmod/vcf'
-import { bufferToString, Row, RowSet, Column } from './ImportUtils'
+import {
+  bufferToString,
+  Row,
+  RowSet,
+  Column,
+  ParseOptions,
+} from './ImportUtils'
 
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
@@ -45,7 +51,10 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   return row
 }
 
-export function parseVcfBuffer(buffer: Buffer) {
+export function parseVcfBuffer(
+  buffer: Buffer,
+  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 0 },
+) {
   let { header, body } = splitVcfFileHeaderAndBody(bufferToString(buffer))
   const rows: Row[] = []
   const vcfParser = new VCF({ header })
@@ -92,6 +101,7 @@ export function parseVcfBuffer(buffer: Buffer) {
     columnDisplayOrder,
     hasColumnNames: true,
     columns,
+    datasetName: options.selectedDatasetName,
   }
 }
 

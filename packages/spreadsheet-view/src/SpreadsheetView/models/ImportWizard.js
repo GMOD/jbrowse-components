@@ -6,8 +6,9 @@ const IMPORT_SIZE_LIMIT = 300000
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
+  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED']
   const fileTypeParsers = {
@@ -31,6 +32,7 @@ export default pluginManager => {
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
 
+      selectedDatasetIdx: 0,
       error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
@@ -42,6 +44,16 @@ export default pluginManager => {
       },
       get canCancel() {
         return getParent(self).readyToDisplay
+      },
+      get datasetChoices() {
+        return getRoot(self).jbrowse.datasets
+      },
+      get selectedDatasetName() {
+        const ds = getRoot(self).jbrowse.datasets[self.selectedDatasetIdx]
+        if (ds) {
+          return readConfObject(ds, 'name')
+        }
+        return undefined
       },
     }))
     .actions(self => ({
@@ -58,6 +70,10 @@ export default pluginManager => {
             }
           }
         }
+      },
+
+      setSelectedDatasetIdx(idx) {
+        self.selectedDatasetIdx = idx
       },
 
       toggleHasColumnNameLine() {

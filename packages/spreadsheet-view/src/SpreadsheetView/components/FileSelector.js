@@ -16,9 +16,8 @@ export default pluginManager => {
   const useStyles = makeStyles(theme => {
     return {
       root: {
-        position: 'relative',
         marginBottom: theme.spacing(1),
-        background: 'white',
+        marginTop: theme.spacing(1),
       },
     }
   })
@@ -96,7 +95,7 @@ export default pluginManager => {
 
   function FileSelector(props) {
     const { fileRecord, onChange } = props
-    // const classes = useStyles()
+    const classes = useStyles()
 
     const fileOrUrl = fileRecord && fileRecord.uri ? 'url' : 'file'
 
@@ -107,7 +106,13 @@ export default pluginManager => {
     }
 
     return (
-      <Grid container spacing={1} direction="row" alignItems="center">
+      <Grid
+        className={classes.root}
+        container
+        spacing={1}
+        direction="row"
+        alignItems="center"
+      >
         <Grid item>
           <ToggleButtonGroup
             value={fileOrUrl}

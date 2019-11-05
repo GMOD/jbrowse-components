@@ -23,9 +23,10 @@ export interface RowSet {
   rows: Row[]
 }
 
-interface ParseOptions {
+export interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
+  selectedDatasetName?: string
 }
 
 export interface Column {
@@ -36,7 +37,10 @@ export interface Column {
 
 async function dataToSpreadsheetSnapshot(
   rows: string[][],
-  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
+  options: ParseOptions = {
+    hasColumnNameLine: false,
+    columnNameLineNumber: 1,
+  },
 ) {
   // rows is an array of row objects and columnNames
   // is an array of column names (in import order)
@@ -81,6 +85,7 @@ async function dataToSpreadsheetSnapshot(
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
     columns,
+    datasetName: options.selectedDatasetName,
   }
 }
 
