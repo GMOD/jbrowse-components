@@ -19,10 +19,25 @@ server on another machine, e.g. `DEV_SERVER_URL=http://some.url yarn develop`.
 You will need some development libraries installed to be able to package the
 application, since native dependencies have to be rebuilt.
 
+#### Linux
+
+To install the development libraries:
+
+```sh
+# To build for Linux and Mac
+sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+# To build for Windows, you additionally need
+sudo apt install -y wine-stable
+```
+
+`yarn build` will then build and package the application for Linux, Mac, and
+Windows. You can also use `yarn build:win`, `yarn build:linux`, or
+`yarn build:mac` to build and package for a specific platform.
+
 #### Windows
 
 Only the Windows application can be packaged when developing on a Windows
-machine, trying to package the Linux or Mac applications will fail. To install
+machine. Trying to package the Linux or Mac applications will fail. To install
 the development libraries:
 
 ```pwsh
@@ -41,4 +56,4 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 # Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
 ```
 
-Then you can run `yarn build:win` to build the Windows application.
+Then you can run `yarn build:win` to build and package the Windows application.

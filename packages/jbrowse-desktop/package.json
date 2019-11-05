@@ -58,11 +58,19 @@
     "build:win": "yarn cra-build && electron-builder build -w",
     "build:mac": "yarn cra-build && electron-builder build -m",
     "build:linux": "yarn cra-build && electron-builder build -l",
+    "build-electron": "electron-builder build -wml",
+    "build-electron:win": "electron-builder build -w",
+    "build-electron:mac": "electron-builder build -m",
+    "build-electron:linux": "electron-builder build -l",
     "cra-build": "rescripts build",
     "package": "yarn cra-build && electron-builder build -wml --dir",
     "package:win": "yarn cra-build && electron-builder build -w --dir",
     "package:mac": "yarn cra-build && electron-builder build -m --dir",
-    "package:linux": "yarn cra-build && electron-builder build -l --dir"
+    "package:linux": "yarn cra-build && electron-builder build -l --dir",
+    "package-electron": "electron-builder build -wml --dir",
+    "package-electron:win": "electron-builder build -w --dir",
+    "package-electron:mac": "electron-builder build -m --dir",
+    "package-electron:linux": "electron-builder build -l --dir"
   },
   "homepage": "./",
   "build": {
