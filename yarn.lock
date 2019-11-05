@@ -1260,10 +1260,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.24":
-  version "1.0.24"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.24.tgz#14a3df7b28f96db0206749768d8b2c3ea316feb5"
-  integrity sha512-oQ48o64cXk2N7BBjCwqHa+8ysTNyq8JzOsZAwqHKQMZoO2pViAjJwqKepd2OB5LOvuajcumxsw1Tdce6hR8h/A==
+"@gmod/bbi@^1.0.25":
+  version "1.0.25"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.25.tgz#4517010d56afb2a6e4926d1a4da4c0b5b87d069f"
+  integrity sha512-pSiXnlAqxFax5jK8Yx73wGtawpdHLfblNI1ndtgJQvbHOgGZUAvVDhUYP6YRYBY+TzRrWE2gfj6mObiyuE53jw==
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@gmod/binary-parser" "^1.3.5"
@@ -1274,10 +1274,10 @@
     quick-lru "^4.0.0"
     rxjs "^6.5.2"
 
-"@gmod/bed@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.0.tgz#c5cfb9930db2a4abcef8881fe44b865d94e609d9"
-  integrity sha512-hGI0AZb/gmEVSUVfS/B7eOVfqwwqxvcZoiBdHlfkRmY6udWD8M/tH9+OoxHACpGjY5gQWEl+KafFgFMtu2lAoQ==
+"@gmod/bed@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.1.tgz#57f169c50fcc5d2137359251248a26697308f835"
+  integrity sha512-VFfxcvlQ4mH7QKqN/KaBiLiHKGJwirx3v6bxtjZWARXC4ArDclne6IDtBQl09023fpvmUUCO8ADZtDfj1mjzwg==
   dependencies:
     pegjs "^0.10.0"
     snake-case "^2.1.0"
@@ -13124,6 +13124,11 @@ react-measure@^2.3.0:
     prop-types "^15.6.2"
     resize-observer-polyfill "^1.5.0"
 
+react-sanitized-html@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-sanitized-html/-/react-sanitized-html-2.0.0.tgz#2ac300ae60e8e7cb28378b1233b9630e415d0241"
+  integrity sha512-G1n8smzDSqiHoBtvfJqcyvDKXlWTrvARRgWoSKhqeDVxxb9emO4ourS1OYnzV6yxx/G4jLqzaFSx8b6roL29Kw==
+
 react-scripts@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-3.2.0.tgz#58ccd6b4ffa27f1b4d2986cbdcaa916660e9e33c"
@@ -13932,7 +13937,7 @@ sanitize-filename@^1.6.2, sanitize-filename@^1.6.3:
   dependencies:
     truncate-utf8-bytes "^1.0.0"
 
-sanitize-html@^1.20.0:
+sanitize-html@^1.20.0, sanitize-html@^1.20.1:
   version "1.20.1"
   resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-1.20.1.tgz#f6effdf55dd398807171215a62bfc21811bacf85"
   integrity sha512-txnH8TQjaQvg2Q0HY06G6CDJLVYCpbnxrdO0WN8gjCKaU5J0KbyGYhZxx5QJg3WLZ1lB7XU9kDkfrCXUozqptA==

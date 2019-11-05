@@ -16,7 +16,7 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
     this.promise = this.downloadResults()
   }
 
-  private async downloadResults(): Promise<Alias[]> {
+  private async downloadResults() {
     const results = (await this.location.readFile('utf8')) as string
     return results
       .trim()
@@ -27,10 +27,9 @@ export default class RefNameAliasAdapter extends BaseRefNameAliasAdapter {
       })
   }
 
-  getRefNameAliases(): Promise<Alias[]> {
+  getRefNameAliases() {
     return this.promise
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async freeResources(): Promise<void> {}
+  async freeResources() {}
 }

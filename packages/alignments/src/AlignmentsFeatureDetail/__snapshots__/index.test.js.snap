@@ -77,7 +77,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    ctgA:3..102 (+)
+                    <div>
+                      ctgA:3..102 (+)
+                    </div>
                   </div>
                 </div>
                 <div
@@ -91,7 +93,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    ctgA_3_555_0:0:0_2:0:0_102d
+                    <div>
+                      ctgA_3_555_0:0:0_2:0:0_102d
+                    </div>
                   </div>
                 </div>
                 <div
@@ -105,7 +109,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    100
+                    <div>
+                      100
+                    </div>
                   </div>
                 </div>
                 <div
@@ -119,7 +125,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    match
+                    <div>
+                      match
+                    </div>
                   </div>
                 </div>
               </div>
@@ -199,7 +207,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                    <div>
+                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                    </div>
                   </div>
                 </div>
                 <div
@@ -213,7 +223,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    false
+                    <div>
+                      false
+                    </div>
                   </div>
                 </div>
                 <div
@@ -227,7 +239,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    false
+                    <div>
+                      false
+                    </div>
                   </div>
                 </div>
                 <div
@@ -241,7 +255,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    false
+                    <div>
+                      false
+                    </div>
                   </div>
                 </div>
                 <div
@@ -255,7 +271,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    false
+                    <div>
+                      false
+                    </div>
                   </div>
                 </div>
                 <div
@@ -269,7 +287,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    false
+                    <div>
+                      false
+                    </div>
                   </div>
                 </div>
                 <div
@@ -283,7 +303,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    37
+                    <div>
+                      37
+                    </div>
                   </div>
                 </div>
                 <div
@@ -297,7 +319,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                    <div>
+                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                    </div>
                   </div>
                 </div>
                 <div
@@ -311,7 +335,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    37
+                    <div>
+                      37
+                    </div>
                   </div>
                 </div>
                 <div
@@ -325,7 +351,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    100M
+                    <div>
+                      100M
+                    </div>
                   </div>
                 </div>
                 <div
@@ -339,7 +367,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    100
+                    <div>
+                      100
+                    </div>
                   </div>
                 </div>
                 <div
@@ -353,7 +383,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    0
+                    <div>
+                      0
+                    </div>
                   </div>
                 </div>
                 <div
@@ -367,7 +399,9 @@ exports[`open up a drawer widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    100
+                    <div>
+                      100
+                    </div>
                   </div>
                 </div>
               </div>

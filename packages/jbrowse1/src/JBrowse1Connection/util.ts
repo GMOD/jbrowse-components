@@ -123,7 +123,6 @@ export function clone(src: any): any {
   if (Array.isArray(src)) {
     // array
     r = []
-    // eslint-disable-next-line no-plusplus
     for (i = 0, l = src.length; i < l; ++i) {
       if (i in src) {
         r[i] = clone(src[i])

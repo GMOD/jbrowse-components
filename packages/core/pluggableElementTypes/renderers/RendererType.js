@@ -23,6 +23,5 @@ export default class RendererType extends PluggableElementType {
    * frees resources associated with the given range, session, etc.
    * optionally returns the number of data items deleted
    */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   freeResources(/* specification */) {}
 }

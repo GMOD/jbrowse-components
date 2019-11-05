@@ -77,7 +77,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    ctgA:NaN..undefined 
+                    <div>
+                      ctgA:NaN..undefined 
+                    </div>
                   </div>
                 </div>
                 NaN
@@ -158,7 +160,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    176
+                    <div>
+                      176
+                    </div>
                   </div>
                 </div>
                 <div
@@ -172,7 +176,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    A
+                    <div>
+                      A
+                    </div>
                   </div>
                 </div>
                 <div
@@ -186,7 +192,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    C
+                    <div>
+                      C
+                    </div>
                   </div>
                 </div>
                 <div
@@ -200,7 +208,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    10.4
+                    <div>
+                      10.4
+                    </div>
                   </div>
                 </div>
                 <div
@@ -214,7 +224,9 @@ exports[`VariantTrack drawer widget renders with just the required model element
                   <div
                     class="makeStyles-fieldValue"
                   >
-                    5
+                    <div>
+                      5
+                    </div>
                   </div>
                 </div>
               </div>

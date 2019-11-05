@@ -112,7 +112,6 @@ export default class extends BaseAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   freeResources(/* { region } */): void {}
 
   // depends on setup being called before the BAM constructor

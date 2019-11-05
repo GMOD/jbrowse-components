@@ -236,6 +236,19 @@
           }
         },
         {
+          "configId": "volvox_microarray_density_altname",
+          "type": "WiggleTrack",
+          "defaultRendering": "xyplot",
+          "autoscale": "local",
+          "name": "wiggle_track density (altname)",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "/test_data/volvox_microarray.altname.bw"
+            }
+          }
+        },
+        {
           "configId": "lollipop_track",
           "type": "DynamicTrack",
           "name": "Lollipop track",
