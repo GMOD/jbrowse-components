@@ -9,8 +9,8 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "dependencies": {
-    "@gmod/bbi": "^1.0.24",
-    "@gmod/bed": "^2.0.0"
+    "@gmod/bbi": "^1.0.25",
+    "@gmod/bed": "^2.0.1"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
