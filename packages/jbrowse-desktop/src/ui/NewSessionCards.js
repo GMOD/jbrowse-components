@@ -72,6 +72,12 @@ const emptySessionSnapshot = {
               callback:
                 'function(session) {session.activateSession(undefined)}',
             },
+            {
+              name: 'Import tabular data',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
+            },
           ],
         },
         {
