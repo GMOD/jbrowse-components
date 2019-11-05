@@ -1139,6 +1139,180 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           data-shrink="true"
           for="callback-editor"
         >
+          mouseover
+        </label>
+        <div
+          class="makeStyles-callbackEditor"
+          style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
+        >
+          <textarea
+            autocapitalize="off"
+            autocomplete="off"
+            autocorrect="off"
+            class="npm__react-simple-code-editor__textarea"
+            data-gramm="false"
+            spellcheck="false"
+            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
+          >
+            function(feature) {
+      return feature.get('name')
+      }
+          </textarea>
+          <pre
+            aria-hidden="true"
+            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
+          >
+            <span
+              class="token keyword"
+            >
+              function
+            </span>
+            <span
+              class="token punctuation"
+            >
+              (
+            </span>
+            <span
+              class="token parameter"
+            >
+              feature
+            </span>
+            <span
+              class="token punctuation"
+            >
+              )
+            </span>
+             
+            <span
+              class="token punctuation"
+            >
+              {
+            </span>
+            
+      
+            <span
+              class="token keyword"
+            >
+              return
+            </span>
+             feature
+            <span
+              class="token punctuation"
+            >
+              .
+            </span>
+            <span
+              class="token function"
+            >
+              get
+            </span>
+            <span
+              class="token punctuation"
+            >
+              (
+            </span>
+            <span
+              class="token string"
+            >
+              'name'
+            </span>
+            <span
+              class="token punctuation"
+            >
+              )
+            </span>
+            
+      
+            <span
+              class="token punctuation"
+            >
+              }
+            </span>
+            <br />
+          </pre>
+          <style
+            type="text/css"
+          >
+            
+/**
+ * Reset the text fill color so that placeholder is visible
+ */
+.npm__react-simple-code-editor__textarea:empty {
+  -webkit-text-fill-color: inherit !important;
+}
+
+/**
+ * Hack to apply on some CSS on IE10 and IE11
+ */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  /**
+    * IE doesn't support '-webkit-text-fill-color'
+    * So we use 'color: transparent' to make the text transparent on IE
+    * Unlike other browsers, it doesn't affect caret color in IE
+    */
+  .npm__react-simple-code-editor__textarea {
+    color: transparent !important;
+  }
+
+  .npm__react-simple-code-editor__textarea::selection {
+    background-color: #accef7 !important;
+    color: transparent !important;
+  }
+}
+
+          </style>
+        </div>
+        <p
+          class="MuiFormHelperText-root"
+        >
+          what to display in a given mouseover
+        </p>
+      </div>
+    </div>
+    <div
+      class="makeStyles-slotModeSwitch"
+    >
+      <button
+        class="MuiButtonBase-root MuiIconButton-root"
+        tabindex="0"
+        title="convert to regular value"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            role="presentation"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
+            />
+          </svg>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+  >
+    <div
+      class="makeStyles-paperContent"
+    >
+      <div
+        class="MuiFormControl-root"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
+          data-shrink="true"
+          for="callback-editor"
+        >
           configRelationships
         </label>
         <div
@@ -2033,6 +2207,63 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                       d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
                     />
                   </svg>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
+          <div
+            class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
+          >
+            <div
+              class="makeStyles-paperContent"
+            >
+              <div
+                class="MuiFormControl-root MuiTextField-root"
+              >
+                <label
+                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+                  data-shrink="true"
+                >
+                  minSubfeatureWidth
+                </label>
+                <div
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="MuiInputBase-input MuiInput-input"
+                    type="number"
+                    value="0"
+                  />
+                </div>
+                <p
+                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+                >
+                  the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px
+                </p>
+              </div>
+            </div>
+            <div
+              class="makeStyles-slotModeSwitch"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root"
+                tabindex="0"
+                title="convert to callback"
+                type="button"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="material-icons MuiIcon-root"
+                  >
+                    radio_button_unchecked
+                  </span>
                 </span>
                 <span
                   class="MuiTouchRipple-root"

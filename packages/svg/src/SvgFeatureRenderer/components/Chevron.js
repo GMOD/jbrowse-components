@@ -29,7 +29,6 @@ function Chevron(props) {
   const direction = strand * (horizontallyFlipped ? -1 : 1)
 
   const shapeProps = {
-    title: feature.id(),
     'data-testid': feature.id(),
     transform:
       direction < 0

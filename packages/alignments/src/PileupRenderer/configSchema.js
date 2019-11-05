@@ -12,6 +12,12 @@ export default ConfigurationSchema(
 }`,
       functionSignature: ['feature'],
     },
+    minSubfeatureWidth: {
+      type: 'number',
+      description:
+        'the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px',
+      defaultValue: 0,
+    },
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a pileup rendering',
