@@ -4,12 +4,8 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  BlockBasedTrack,
-  blockBasedTrackModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import TrackControls from './components/TrackControls'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -25,30 +21,19 @@ export default configSchema =>
       types.model({
         type: types.literal('VariantTrack'),
         configuration: ConfigurationReference(configSchema),
-        // the renderer that the user has selected in the UI, empty string
-        // if they have not made any selection
-        selectedRendering: types.optional(types.string, ''),
         height: types.optional(types.integer, 100),
       }),
     )
-    .volatile(() => ({
-      ReactComponent: BlockBasedTrack,
-      rendererTypeChoices: Array.from(rendererTypes.keys()),
-    }))
     .actions(self => ({
       selectFeature(feature) {
         const session = getSession(self)
         const featureWidget = session.addDrawerWidget(
           'VariantFeatureDrawerWidget',
           'variantFeature',
-          { featureData: feature.data },
+          { featureData: feature.toJSON() },
         )
         session.showDrawerWidget(featureWidget)
         session.setSelection(feature)
-      },
-
-      setRenderer(newRenderer) {
-        self.selectedRendering = newRenderer
       },
     }))
     .views(self => ({
@@ -57,8 +42,7 @@ export default configSchema =>
        * selected in the UI: pileup, coverage, etc
        */
       get rendererTypeName() {
-        const defaultRendering = getConf(self, 'defaultRendering')
-        const viewName = self.selectedRendering || defaultRendering
+        const viewName = getConf(self, 'defaultRendering')
         const rendererType = rendererTypes.get(viewName)
         if (!rendererType)
           throw new Error(`unknown alignments view name ${viewName}`)
@@ -80,8 +64,5 @@ export default configSchema =>
           config,
           trackModel: self,
         }
-      },
-      get ControlsComponent() {
-        return TrackControls
       },
     }))
