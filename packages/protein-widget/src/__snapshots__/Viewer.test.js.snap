@@ -5,7 +5,6 @@ exports[`basic protein widget rendering 1`] = `
   data-testid="IPR005225_1_159"
   fill="black"
   height="10"
-  title="IPR005225_1_159"
   width="3160"
   x="20"
   y="0"

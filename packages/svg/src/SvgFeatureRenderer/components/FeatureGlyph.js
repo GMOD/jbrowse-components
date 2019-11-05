@@ -73,7 +73,6 @@ function FeatureGlyph(props) {
   const { GlyphComponent } = featureLayout.data
 
   const glyphComponents = [
-    <title key={`glyph-title-${feature.id()}`}>{feature.id()}</title>,
     <GlyphComponent
       key={`glyph-${feature.id()}`}
       {...props}
