@@ -56,7 +56,7 @@
     "cra-start": "rescripts start",
     "test": "rescripts test",
     "eject": "rescripts eject",
-    "build": "yarn cra-build && electron-builder build -wml",
+    "build": "yarn cra-build && electron-builder build -ml",
     "build:win": "yarn cra-build && electron-builder build -w",
     "build:mac": "yarn cra-build && electron-builder build -m",
     "build:linux": "yarn cra-build && electron-builder build -l",
