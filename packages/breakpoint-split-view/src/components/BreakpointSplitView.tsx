@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { Instance } from 'mobx-state-tree'
-import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
+import { BreakpointViewStateModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -67,50 +67,54 @@ export default (pluginManager: any) => {
       const classes = useStyles()
       const { views } = model
       return (
-        <div className={classes.container}>
-          <div className={classes.content}>
-            <Header model={model} />
-            <div style={{ position: 'relative' }}>
-              {views.map(view => {
-                const { ReactComponent } = pluginManager.getViewType(view.type)
+        <div>
+          <Header model={model} />
+          <div className={classes.container}>
+            <div className={classes.content}>
+              <div style={{ position: 'relative' }}>
+                {views.map(view => {
+                  const { ReactComponent } = pluginManager.getViewType(
+                    view.type,
+                  )
+                  return (
+                    <div key={view.id} className={classes.viewContainer}>
+                      <ReactComponent model={view} />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            {model.matchedTracks.map(m => {
+              const { features, type } = model.getMatchedFeaturesInLayout(m)
+              if (type === 'Alignments') {
                 return (
-                  <div key={view.id} className={classes.viewContainer}>
-                    <ReactComponent model={view} />
+                  <div className={classes.overlay} key={`overlay-${m}`}>
+                    <AlignmentSplines
+                      trackConfigId={m}
+                      model={model}
+                      alignmentChunks={features}
+                      className={classes.root}
+                      data-testid={model.configuration.configId}
+                    />
                   </div>
                 )
-              })}
-            </div>
+              }
+              if (type === 'Breakends') {
+                return (
+                  <div className={classes.overlay} key={`overlay-${m}`}>
+                    <BreakendLines
+                      trackConfigId={m}
+                      model={model}
+                      alignmentChunks={features}
+                      className={classes.root}
+                      data-testid={model.configuration.configId}
+                    />
+                  </div>
+                )
+              }
+              return null
+            })}
           </div>
-          {model.matchedTracks.map(m => {
-            const { features, type } = model.getMatchedFeaturesInLayout(m)
-            if (type === 'Alignments') {
-              return (
-                <div className={classes.overlay} key={`overlay-${m}`}>
-                  <AlignmentSplines
-                    trackConfigId={m}
-                    model={model}
-                    alignmentChunks={features}
-                    className={classes.root}
-                    data-testid={model.configuration.configId}
-                  />
-                </div>
-              )
-            }
-            if (type === 'Breakends') {
-              return (
-                <div className={classes.overlay} key={`overlay-${m}`}>
-                  <BreakendLines
-                    trackConfigId={m}
-                    model={model}
-                    alignmentChunks={features}
-                    className={classes.root}
-                    data-testid={model.configuration.configId}
-                  />
-                </div>
-              )
-            }
-            return null
-          })}
         </div>
       )
     },

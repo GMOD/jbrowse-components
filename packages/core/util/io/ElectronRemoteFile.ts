@@ -127,7 +127,7 @@ export default class ElectronRemoteFile implements GenericFilehandle {
       response = await fetch(this.url, requestOptions)
     } catch (error) {
       if (this.nodeFetchFallback) throw error
-      console.warn('received error, falling back to node-fetch', e)
+      console.warn('received error, falling back to node-fetch', error)
       this.nodeFetchFallback = true
       return this.getFetch(opts)
     }

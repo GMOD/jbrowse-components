@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
 import { Instance } from 'mobx-state-tree'
-import { BreakpointViewStateModel } from '../models/BreakpointSplitView'
+import { BreakpointViewStateModel } from '../model'
 
 type BSV = Instance<BreakpointViewStateModel>
 
