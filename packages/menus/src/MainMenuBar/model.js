@@ -130,6 +130,12 @@ export default types
               callback:
                 "function(session) { session.addView('SpreadsheetView', {})}",
             },
+            {
+              name: 'New SV inspector',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SvInspectorView', {})}",
+            },
           ],
         })
     },

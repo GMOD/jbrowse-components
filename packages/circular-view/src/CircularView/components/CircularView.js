@@ -100,14 +100,16 @@ export default pluginManager => {
 
     return (
       <div className={classes.controls}>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-          data-testid="circular_view_close"
-        >
-          <Icon fontSize="small">close</Icon>
-        </IconButton>
+        {model.hideCloseButton ? null : (
+          <IconButton
+            onClick={model.closeView}
+            className={classes.iconButton}
+            title="close this view"
+            data-testid="circular_view_close"
+          >
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
+        )}
 
         <IconButton
           onClick={model.zoomOutButton}
@@ -166,8 +168,8 @@ export default pluginManager => {
         <div
           className={classes.scroller}
           style={{
-            width: '100%',
-            height: `${model.height}px`,
+            width: model.width,
+            height: model.height,
           }}
         >
           <div
@@ -198,19 +200,21 @@ export default pluginManager => {
 
         <Controls model={model} />
 
-        <ResizeHandle
-          onDrag={model.resizeHeight}
-          objectId={model.id}
-          style={{
-            height: dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
-        />
+        {model.hideVerticalResizeHandle ? null : (
+          <ResizeHandle
+            onDrag={model.resizeHeight}
+            objectId={model.id}
+            style={{
+              height: dragHandleHeight,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              background: '#ccc',
+              boxSizing: 'border-box',
+              borderTop: '1px solid #fafafa',
+            }}
+          />
+        )}
       </div>
     )
   }

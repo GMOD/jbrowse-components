@@ -31,6 +31,7 @@ export default pluginManager => {
         height: headerHeight,
         // background: '#eee',
         // borderBottom: '1px solid #a2a2a2',
+        paddingLeft: theme.spacing(1),
       },
       viewControls: {
         margin: 0,
@@ -153,9 +154,11 @@ export default pluginManager => {
         data-testid={model.configuration.configId}
       >
         <Grid container direction="row" className={classes.header}>
-          <Grid item>
-            <ViewControls model={model} />
-          </Grid>
+          {model.hideViewControls ? null : (
+            <Grid item>
+              <ViewControls model={model} />
+            </Grid>
+          )}
           <Grid item>
             <FilterControls model={model} />
           </Grid>
@@ -182,19 +185,21 @@ export default pluginManager => {
         >
           <RowCountMessage spreadsheet={spreadsheet} />
         </div>
-        <ResizeHandle
-          onDrag={model.resizeHeight}
-          objectId={model.id}
-          style={{
-            height: model.dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
-        />
+        {model.hideVerticalResizeHandle ? null : (
+          <ResizeHandle
+            onDrag={model.resizeHeight}
+            objectId={model.id}
+            style={{
+              height: model.dragHandleHeight,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              background: '#ccc',
+              boxSizing: 'border-box',
+              borderTop: '1px solid #fafafa',
+            }}
+          />
+        )}
       </div>
     )
   }

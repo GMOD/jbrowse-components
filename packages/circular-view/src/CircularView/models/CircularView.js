@@ -31,6 +31,10 @@ export default pluginManager => {
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+
+      hideCloseButton: false,
+      hideVerticalResizeHandle: false,
+
       width: 800,
       height: types.optional(
         types.refinement('trackHeight', types.number, n => n >= minHeight),
@@ -197,11 +201,13 @@ export default pluginManager => {
       },
 
       setDisplayedRegions(regions, isFromAssemblyName = false) {
+        const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = regions
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
 
-        self.setBpPerPx(self.bpPerPx)
+        if (previouslyEmpty) self.setBpPerPx(self.maxBpPerPx)
+        else self.setBpPerPx(self.bpPerPx)
       },
 
       setDisplayedRegionsFromAssemblyName(assemblyName) {
