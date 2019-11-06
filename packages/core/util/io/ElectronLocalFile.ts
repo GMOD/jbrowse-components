@@ -30,6 +30,7 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   private async getFd(): Promise<number> {
+    if (!this.filename) throw new Error('no file path specified')
     if (!this.fd)
       this.fd = this.ipcRenderer.callMain(
         'open',
@@ -64,6 +65,7 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   async readFile(options: FilehandleOptions): Promise<Buffer | string> {
+    if (!this.filename) throw new Error('no file path specified')
     return this.ipcRenderer.callMain(
       'readFile',
       this.filename,
