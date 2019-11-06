@@ -5,9 +5,7 @@ import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { types, Instance } from 'mobx-state-tree'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import mockConsole from 'jest-mock-console'
-import stateModelFactory, {
-  BreakpointViewStateModel,
-} from './BreakpointSplitView'
+import stateModelFactory, { BreakpointViewStateModel } from './model'
 
 const getView = () => {
   const stubManager = new PluginManager()
@@ -96,6 +94,7 @@ test('BreakpointSplitView with soft clipping', () => {
                   id: 456,
                   data: {
                     name: 'm64011_181218_235052/85067842/ccs',
+                    clipPos: 0,
                     CIGAR:
                       '919=1I420=1X191=1I1903=1D495=1D92=1X4=1X293=1D707=1X333=1X275=2D223=1D155=1X34=1X204=1X41=1X43=1X572=1X629=1X401=1X3=1X2=3081S',
                     SA:
@@ -108,6 +107,7 @@ test('BreakpointSplitView with soft clipping', () => {
                   id: 789,
                   data: {
                     name: 'm64011_181218_235052/85067842/ccs',
+                    clipPos: 10597,
                     CIGAR: '10597S11=1X426=1S',
                     SA:
                       '3,186692690,+,7955M4D3081S,60,14;6,56758392,+,7956S2547M6D533S,22,8;',
@@ -132,6 +132,7 @@ test('BreakpointSplitView with soft clipping', () => {
                   id: 123,
                   data: {
                     name: 'm64011_181218_235052/85067842/ccs',
+                    clipPos: 7956,
                     CIGAR:
                       '7956S4=1D5=1X744=1D63=1X121=1I18=1X99=1X57=1I64=1D8=1X207=1D42=1I103=1X425=1X48=2I107=1I116=1X222=7D75=1D5=533S',
                     SA:

@@ -6,8 +6,6 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
 
-type LGV = Instance<LinearGenomeViewStateModel>
-
 interface Breakend {
   MateDirection: string
   Join: string
@@ -24,12 +22,6 @@ export interface BSVMenuOption {
 }
 
 export type LayoutRecord = [number, number, number, number]
-
-interface LinkViewArgs {
-  name: string
-  path: string
-  args: any[]
-}
 
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -69,6 +61,7 @@ export default function stateModelFactory(pluginManager: any) {
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
       linkViews: false,
+      interactToggled: false,
       views: types.array(pluginManager.getViewType('LinearGenomeView')
         .stateModel as LinearGenomeViewStateModel),
     })
@@ -177,6 +170,7 @@ export default function stateModelFactory(pluginManager: any) {
         }
         return { type, features: ret }
       },
+
       getMatchedBreakendsInLayout(
         trackConfigId: string,
         features: Feature[][],
@@ -184,7 +178,7 @@ export default function stateModelFactory(pluginManager: any) {
         const tracks = this.getMatchedTracks(trackConfigId)
         return features.map(c => {
           return c.map((feature: Feature) => {
-            let layout: [number, number, number, number] | undefined
+            let layout: LayoutRecord | undefined
             const level = tracks.findIndex(track => {
               layout = track.layoutFeatures.get(feature.id())
               return layout
@@ -197,6 +191,7 @@ export default function stateModelFactory(pluginManager: any) {
           })
         })
       },
+
       getMatchedAlignmentsInLayout(
         trackConfigId: string,
         features: Feature[][],
@@ -205,7 +200,7 @@ export default function stateModelFactory(pluginManager: any) {
         return features.map(c =>
           c
             .map((feature: Feature) => {
-              let layout: [number, number, number, number] | undefined
+              let layout: LayoutRecord | undefined
               const level = tracks.findIndex(track => {
                 layout = track.layoutFeatures.get(feature.id())
                 return layout
@@ -226,15 +221,26 @@ export default function stateModelFactory(pluginManager: any) {
       afterAttach() {
         addDisposer(
           self,
-          onAction(self, ({ name, path, args }: LinkViewArgs) => {
-            if (self.linkViews) {
-              if (name === 'horizontalScroll') {
-                this.onSubviewHorizontalScroll(path, args)
-              } else if (name === 'zoomTo') {
-                this.onSubviewZoom(path, args)
+          onAction(
+            self,
+            ({
+              name,
+              path,
+              args,
+            }: {
+              name: string
+              path: string
+              args: any[]
+            }) => {
+              if (self.linkViews) {
+                if (name === 'horizontalScroll') {
+                  this.onSubviewHorizontalScroll(path, args)
+                } else if (name === 'zoomTo') {
+                  this.onSubviewZoom(path, args)
+                }
               }
-            }
-          }),
+            },
+          ),
         )
       },
 
@@ -264,7 +270,7 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: LGV) {
+      removeView(view: Instance<LinearGenomeViewStateModel>) {
         self.views.remove(view)
       },
 
@@ -280,6 +286,10 @@ export default function stateModelFactory(pluginManager: any) {
         getRoot(self).editConfiguration(self.configuration)
       },
 
+      toggleInteract() {
+        self.interactToggled = !self.interactToggled
+      },
+
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
@@ -292,6 +302,13 @@ export default function stateModelFactory(pluginManager: any) {
             key: 'flip',
             callback: self.toggleLinkViews,
             checked: self.linkViews,
+            isCheckbox: true,
+          },
+          {
+            title: 'Interact with overlap',
+            key: 'interact',
+            callback: self.toggleInteract,
+            checked: self.interactToggled,
             isCheckbox: true,
           },
         ]
