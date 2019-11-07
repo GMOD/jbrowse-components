@@ -44,6 +44,7 @@ import BoxRendererType from './pluggableElementTypes/renderers/BoxRendererType'
 
 import * as Configuration from './configuration'
 import Plugin from './Plugin'
+import * as coreUi from './ui'
 import * as coreUtil from './util'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
@@ -101,6 +102,7 @@ export default {
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
   '@gmod/jbrowse-core/configuration': Configuration,
   '@gmod/jbrowse-core/mst-types': mstTypes,
+  '@gmod/jbrowse-core/ui': coreUi,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/io': coreIo,

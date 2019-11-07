@@ -38,7 +38,13 @@ export default pluginManager => {
     }))
     .views(self => ({
       get isReadyToOpen() {
-        return self.fileSource && (self.fileSource.blob || self.fileSource.uri)
+        return (
+          !self.error &&
+          self.fileSource &&
+          (self.fileSource.blob ||
+            self.fileSource.localPath ||
+            self.fileSource.uri)
+        )
       },
       get canCancel() {
         return getParent(self).readyToDisplay
@@ -47,10 +53,14 @@ export default pluginManager => {
     .actions(self => ({
       setFileSource(newSource) {
         self.fileSource = newSource
+        self.error = undefined
 
         if (self.fileSource) {
           // try to autodetect the file type, ignore errors
-          const name = self.fileSource.uri || self.fileSource.blob.name
+          const name =
+            self.fileSource.uri ||
+            self.fileSource.localPath ||
+            self.fileSource.blob.name
           if (name) {
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {

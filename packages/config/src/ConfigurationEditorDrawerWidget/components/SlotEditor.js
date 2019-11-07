@@ -1,3 +1,4 @@
+import FileSelector from '@gmod/jbrowse-core/ui/FileSelector'
 import {
   getPropertyType,
   getSubType,
@@ -26,7 +27,6 @@ import { getPropertyMembers } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
-import FileLocationEditor from './FileLocationEditor'
 import JsonEditor from './JsonEditor'
 
 const StringEditor = observer(({ slot }) => (
@@ -322,10 +322,21 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
+const FileSelectorWrapper = observer(({ slot }) => {
+  return (
+    <FileSelector
+      location={slot.value}
+      setLocation={slot.set}
+      name={slot.name}
+      description={slot.description}
+    />
+  )
+})
+
 const valueComponents = {
   string: StringEditor,
   text: TextEditor,
-  fileLocation: FileLocationEditor,
+  fileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,

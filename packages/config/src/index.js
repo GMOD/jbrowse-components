@@ -54,6 +54,3 @@ export {
 export {
   default as JsonEditor,
 } from './ConfigurationEditorDrawerWidget/components/JsonEditor'
-export {
-  default as FileLocationEditor,
-} from './ConfigurationEditorDrawerWidget/components/FileLocationEditor'

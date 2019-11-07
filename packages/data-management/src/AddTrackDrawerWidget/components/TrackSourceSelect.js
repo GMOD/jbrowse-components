@@ -1,4 +1,5 @@
-import { FileLocationEditor, JsonEditor } from '@gmod/jbrowse-plugin-config'
+import { FileSelector } from '@gmod/jbrowse-core/ui'
+import { JsonEditor } from '@gmod/jbrowse-plugin-config'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Paper from '@material-ui/core/Paper'
@@ -53,13 +54,11 @@ function getInputComponent(trackSource, trackData, setTrackData) {
   switch (trackSource) {
     case 'fromFile':
       return (
-        <FileLocationEditor
-          slot={{
-            name: 'dataSourceLocation',
-            description: '',
-            value: trackData,
-            set: value => setTrackData(value),
-          }}
+        <FileSelector
+          name="dataSourceLocation"
+          description=""
+          location={trackData}
+          setLocation={setTrackData}
         />
       )
     case 'fromConfig':

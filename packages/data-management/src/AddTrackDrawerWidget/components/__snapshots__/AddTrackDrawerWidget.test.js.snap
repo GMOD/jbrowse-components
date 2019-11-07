@@ -205,8 +205,8 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                       >
                         <button
                           aria-label="local file"
-                          aria-pressed="true"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-disabled MuiToggleButton-selected MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+                          aria-pressed="false"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
                           disabled=""
                           tabindex="-1"
                           type="button"
@@ -220,8 +220,8 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                         </button>
                         <button
                           aria-label="url"
-                          aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-sizeSmall"
+                          aria-pressed="true"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-selected MuiToggleButton-sizeSmall"
                           tabindex="0"
                           type="button"
                           value="url"
@@ -241,31 +241,18 @@ exports[`<AddTrackDrawerWidget /> renders 1`] = `
                       class="MuiGrid-root MuiGrid-item"
                     >
                       <div
-                        style="position: relative;"
+                        class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
                       >
-                        <label
-                          aria-disabled="false"
-                          class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                          role="button"
-                          tabindex="0"
+                        <div
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense"
                         >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            Choose File
-                            <input
-                              style="position: absolute; top: 0px; left: 0px; width: 100%; opacity: 0;"
-                              type="file"
-                            />
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
+                          <input
+                            aria-invalid="false"
+                            class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+                            type="text"
+                            value=""
                           />
-                        </label>
-                        <span
-                          class="MuiTypography-root MuiTypography-body1"
-                          style="margin-left: 0.4rem;"
-                        />
+                        </div>
                       </div>
                     </div>
                   </div>
