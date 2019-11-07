@@ -65,12 +65,15 @@ export const SvgMouseover = observer(
       (rect = layoutFeatures.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const leftPx = Math.round(
+      let leftPx = Math.round(
         bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
       )
-      const rightPx = Math.round(
+      let rightPx = Math.round(
         bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
       )
+      if (rightPx < leftPx) {
+        ;[rightPx, leftPx] = [leftPx, rightPx]
+      }
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       return (
