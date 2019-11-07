@@ -121,7 +121,7 @@ ipcMain.answerRenderer('loadConfig', async () => {
 })
 
 ipcMain.answerRenderer('saveConfig', async configSnapshot => {
-  return fsWriteFile(configLocation, JSON.stringify(configSnapshot))
+  return fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
 })
 
 ipcMain.answerRenderer('listSessions', async () => {
@@ -178,7 +178,7 @@ ipcMain.answerRenderer(
         sessionDirectory,
         `${encodeURIComponent(sessionSnapshot.name)}.json`,
       ),
-      JSON.stringify(sessionSnapshot),
+      JSON.stringify(sessionSnapshot, null, 2),
     )
   },
 )
