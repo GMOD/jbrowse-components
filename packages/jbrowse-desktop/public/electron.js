@@ -17,7 +17,7 @@ const fsStat = promisify(fs.stat)
 const fsUnlink = promisify(fs.unlink)
 const fsWriteFile = promisify(fs.writeFile)
 
-const { app } = electron
+const { app, shell } = electron
 const { BrowserWindow } = electron
 
 const path = require('path')
@@ -60,6 +60,10 @@ function createWindow() {
     // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
     // mainWindow.webContents.openDevTools()
   }
+  mainWindow.webContents.on('new-window', (event, outboundUrl) => {
+    event.preventDefault()
+    shell.openExternal(outboundUrl)
+  })
   mainWindow.on('closed', () => {
     BrowserWindow.getAllWindows().forEach(win => win.close())
     mainWindow = null
