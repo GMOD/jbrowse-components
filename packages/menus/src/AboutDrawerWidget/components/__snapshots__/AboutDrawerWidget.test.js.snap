@@ -1,9 +1,55 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<AboutDrawerWidget /> renders 1`] = `
-<h6
-  class="MuiTypography-root MuiTypography-h6"
+<div
+  class="makeStyles-root"
 >
-  About JBrowse:
-</h6>
+  <h4
+    class="MuiTypography-root MuiTypography-h4 MuiTypography-colorPrimary MuiTypography-alignCenter"
+  >
+    JBrowse 2
+  </h4>
+  <h6
+    class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
+  >
+    JBrowse 2.0.0-alpha.2
+  </h6>
+  <p
+    class="MuiTypography-root MuiTypography-body2 MuiTypography-alignCenter"
+  >
+    JBrowse is a
+     
+    <a
+      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+      href="http://gmod.org/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      GMOD
+    </a>
+     
+    project
+  </p>
+  <br />
+  <p
+    class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter"
+  >
+    © 2007-2017 The Evolutionary Software Foundation
+  </p>
+  <br />
+  <p
+    class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter"
+  >
+    JBrowse is funded by the
+     
+    <a
+      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+      href="https://genome.gov/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      NHGRI
+    </a>
+  </p>
+</div>
 `;
