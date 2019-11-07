@@ -13,11 +13,7 @@ function BlockBasedTrack(props) {
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
       ) : (
-        <TrackBlocks
-          {...props}
-          viewModel={getParent(getParent(model))}
-          blockState={model.blockState}
-        />
+        <TrackBlocks {...props} viewModel={getParent(getParent(model))} />
       )}
       {children}
     </Track>
