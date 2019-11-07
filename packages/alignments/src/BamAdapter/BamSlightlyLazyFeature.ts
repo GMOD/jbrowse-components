@@ -155,7 +155,7 @@ export default class implements Feature {
   }
 
   id(): string {
-    return this.record.get('id')
+    return this.record.id()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
