@@ -11,13 +11,10 @@ import ElectronLocalFile from './ElectronLocalFile'
 
 declare global {
   interface Window {
-    electronBetterIpc: {
-      ipcRenderer?: import('electron-better-ipc-extra').RendererProcessIpc
-    }
+    electron?: import('electron').AllElectron
   }
 }
-const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
+const { electron } = window
 
 interface SerializedResponse {
   buffer: Buffer
@@ -39,12 +36,14 @@ export default class ElectronRemoteFile implements GenericFilehandle {
 
   private nodeFetchFallback = false
 
-  private ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc
+  private ipcRenderer: import('electron').IpcRenderer
 
   public constructor(source: string, opts: FilehandleOptions = {}) {
+    let ipcRenderer
+    if (electron) ipcRenderer = electron.ipcRenderer
     if (!ipcRenderer)
       throw new Error(
-        'Cannot use ElectronLocalFile without ipcRenderer from electron-better-ipc-extra',
+        'Cannot use ElectronLocalFile without ipcRenderer from electron',
       )
     this.ipcRenderer = ipcRenderer
 
@@ -94,7 +93,7 @@ export default class ElectronRemoteFile implements GenericFilehandle {
     init?: RequestInit,
   ): Promise<Response> => {
     if (init) init.signal = undefined
-    const serializedResponse = (await this.ipcRenderer.callMain(
+    const serializedResponse = (await this.ipcRenderer.invoke(
       'fetch',
       input,
       init,
