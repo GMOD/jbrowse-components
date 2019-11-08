@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 
-// @ts-ignore
 if (!Object.fromEntries) {
   fromEntries.shim()
 }
@@ -71,15 +70,14 @@ function b64PadSuffix(b64: string): string {
   return b64 + '='.repeat(num)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useDebounce(value: any, delay: number): any {
+export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value)
     }, delay)
-    return (): void => {
+    return () => {
       clearTimeout(handler)
     }
   }, [value, delay])
@@ -222,12 +220,27 @@ export function featureSpanPx(
   bpPerPx: number,
   flipped = false,
 ): [number, number] {
-  const start = bpToPx(feature.get('start'), region, bpPerPx, flipped)
-  const end = bpToPx(feature.get('end'), region, bpPerPx, flipped)
+  return bpSpanPx(
+    feature.get('start'),
+    feature.get('end'),
+    region,
+    bpPerPx,
+    flipped,
+  )
+}
+
+export function bpSpanPx(
+  leftBp: number,
+  rightBp: number,
+  region: { start: number; end: number },
+  bpPerPx: number,
+  flipped = false,
+): [number, number] {
+  const start = bpToPx(leftBp, region, bpPerPx, flipped)
+  const end = bpToPx(rightBp, region, bpPerPx, flipped)
   return flipped ? [end, start] : [start, end]
 }
 
-// @ts-ignore
 export const objectFromEntries = Object.fromEntries.bind(Object)
 
 // do an array map of an iterable
@@ -260,6 +273,10 @@ export function generateLocString(
   return `${s}${r.refName}:${r.start}..${r.end}`
 }
 
+class AbortError extends Error {
+  public code: string | undefined
+}
+
 /**
  * properly check if the given AbortSignal is aborted.
  * per the standard, if the signal reads as aborted,
@@ -282,8 +299,7 @@ export function checkAbortSignal(signal?: AbortSignal): void {
     if (typeof DOMException !== 'undefined') {
       throw new DOMException('aborted', 'AbortError')
     } else {
-      const e = new Error('aborted')
-      // @ts-ignore
+      const e = new AbortError('aborted')
       e.code = 'ERR_ABORTED'
       throw e
     }
@@ -300,12 +316,11 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
  * @param {Error} exception
  * @returns {boolean}
  */
-export function isAbortException(exception: Error): boolean {
+export function isAbortException(exception: AbortError): boolean {
   return (
     // DOMException
     exception.name === 'AbortError' ||
     // standard-ish non-DOM abort exception
-    // @ts-ignore
     exception.code === 'ERR_ABORTED' ||
     // message contains aborted for bubbling through RPC
     // things we have seen that we want to catch here

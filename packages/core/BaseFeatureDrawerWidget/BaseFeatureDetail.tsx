@@ -10,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
+import SanitizedHTML from 'react-sanitized-html'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -122,7 +123,9 @@ const BaseCoreDetails = (props: BaseProps) => {
           value && (
             <div key={key} style={{ display: 'flex' }}>
               <div className={classes.fieldName}>{key}</div>
-              <div className={classes.fieldValue}>{String(value)}</div>
+              <div className={classes.fieldValue}>
+                <SanitizedHTML html={String(value)} />
+              </div>
             </div>
           )
         )
@@ -155,7 +158,9 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
     <div style={{ display: 'flex' }}>
       <div className={classes.fieldName}>{name}</div>
       <div className={classes.fieldValue}>
-        {isObject(value) ? JSON.stringify(value) : String(value)}
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
       </div>
     </div>
   )
@@ -164,7 +169,9 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
       <div className={classes.fieldName}>{name}</div>
       {value.map((val, i) => (
         <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-          {isObject(val) ? JSON.stringify(val) : String(val)}
+          <SanitizedHTML
+            html={isObject(value) ? JSON.stringify(value) : String(value)}
+          />
         </div>
       ))}
     </div>

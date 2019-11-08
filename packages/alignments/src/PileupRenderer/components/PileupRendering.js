@@ -1,41 +1,11 @@
-/* eslint-disable react/require-default-props */
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import { makeStyles } from '@material-ui/core/styles'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useEffect } from 'react'
 import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
 import runner from 'mobx-run-in-reactive-context'
-import useTimeout from 'use-timeout'
-
-const useStyles = makeStyles({
-  hoverLabel: {
-    border: '1px solid black',
-    position: 'absolute',
-    background: '#fffa',
-    pointerEvents: 'none',
-    zIndex: 10000,
-  },
-})
-
-function Tooltip({ offsetX, offsetY, feature, timeout = 300 }) {
-  const classes = useStyles()
-  const [hidden, setHidden] = useState(true)
-  useTimeout(() => setHidden(false), timeout)
-  return hidden ? null : (
-    <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
-      {feature.get('name')}
-    </div>
-  )
-}
-
-Tooltip.propTypes = {
-  offsetX: ReactPropTypes.number.isRequired,
-  offsetY: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
-  timeout: ReactPropTypes.number,
-}
+import Tooltip from '@gmod/jbrowse-core/ui/Tooltip'
 
 function PileupRendering(props) {
   const {
@@ -46,11 +16,17 @@ function PileupRendering(props) {
     bpPerPx,
     horizontallyFlipped,
   } = props
-  const { selectedFeatureId, layoutFeatures, features } = trackModel
+  const {
+    selectedFeatureId,
+    featureIdUnderMouse,
+    layoutFeatures,
+    features,
+    configuration,
+  } = trackModel
 
   const highlightOverlayCanvas = useRef()
-  const [featureIdUnderMouse, setFeatureIdUnderMouse] = useState()
   const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [localFeatureIdUnderMouse, setLocalFeatureIdUnderMouse] = useState()
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
@@ -60,32 +36,57 @@ function PileupRendering(props) {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    if (!selectedFeatureId) return
-    const rect = layoutFeatures.get(selectedFeatureId)
-    if (!rect) return
+    let rect
 
-    const [leftBp, topPx, rightBp, bottomPx] = rect
-    const leftPx = Math.round(
-      bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
-    )
-    const rightPx = Math.round(
-      bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
-    )
-    const rectTop = Math.round(topPx)
-    const rectHeight = Math.round(bottomPx - topPx)
-    ctx.shadowColor = '#222266'
-    ctx.shadowBlur = 10
-    ctx.lineJoin = 'bevel'
-    ctx.lineWidth = 2
-    ctx.strokeStyle = '#00b8ff'
-    ctx.strokeRect(
-      leftPx - 2,
-      rectTop - 2,
-      rightPx - leftPx + 4,
-      rectHeight + 4,
-    )
-    ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
-  }, [bpPerPx, horizontallyFlipped, region, selectedFeatureId, layoutFeatures])
+    if (selectedFeatureId && (rect = layoutFeatures.get(selectedFeatureId))) {
+      const [leftBp, topPx, rightBp, bottomPx] = rect
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
+      const rectTop = Math.round(topPx)
+      const rectHeight = Math.round(bottomPx - topPx)
+      ctx.shadowColor = '#222266'
+      ctx.shadowBlur = 10
+      ctx.lineJoin = 'bevel'
+      ctx.lineWidth = 2
+      ctx.strokeStyle = '#00b8ff'
+      ctx.strokeRect(
+        leftPx - 2,
+        rectTop - 2,
+        rightPx - leftPx + 4,
+        rectHeight + 4,
+      )
+      ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
+    }
+    if (
+      featureIdUnderMouse &&
+      (rect = layoutFeatures.get(featureIdUnderMouse))
+    ) {
+      const [leftBp, topPx, rightBp, bottomPx] = rect
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
+      const rectTop = Math.round(topPx)
+      const rectHeight = Math.round(bottomPx - topPx)
+      ctx.fillStyle = '#0003'
+      ctx.fillRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
+    }
+  }, [
+    bpPerPx,
+    horizontallyFlipped,
+    region,
+    selectedFeatureId,
+    layoutFeatures,
+    featureIdUnderMouse,
+  ])
 
   function onMouseDown(event) {
     setMouseIsDown(true)
@@ -100,7 +101,8 @@ function PileupRendering(props) {
   function onMouseOut(event) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    setFeatureIdUnderMouse()
+    trackModel.setFeatureIdUnderMouse(undefined)
+    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onMouseOver(event) {
@@ -119,7 +121,8 @@ function PileupRendering(props) {
   function onMouseLeave(event) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
-    setFeatureIdUnderMouse()
+    trackModel.setFeatureIdUnderMouse(undefined)
+    setLocalFeatureIdUnderMouse(undefined)
   }
 
   function onMouseMove(event) {
@@ -140,6 +143,8 @@ function PileupRendering(props) {
       ? feats[0].name
       : undefined
     setOffset([offsetX, offsetY])
+    setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
+    trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
 
     if (featureIdUnderMouse === featureIdCurrentlyUnderMouse) {
       callMouseHandler('MouseMove', event)
@@ -148,7 +153,6 @@ function PileupRendering(props) {
         callMouseHandler('MouseOut', event)
         callMouseHandler('MouseLeave', event)
       }
-      setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
       callMouseHandler('MouseOver', event)
       callMouseHandler('MouseEnter', event)
     }
@@ -197,9 +201,10 @@ function PileupRendering(props) {
         onFocus={() => {}}
         onBlur={() => {}}
       />
-      {featureIdUnderMouse ? (
+      {localFeatureIdUnderMouse ? (
         <Tooltip
-          feature={features.get(featureIdUnderMouse)}
+          configuration={configuration}
+          feature={features.get(localFeatureIdUnderMouse)}
           offsetX={offset[0]}
           offsetY={offset[1]}
         />
@@ -219,11 +224,13 @@ PileupRendering.propTypes = {
   horizontallyFlipped: ReactPropTypes.bool,
 
   trackModel: ReactPropTypes.shape({
-    /** id of the currently selected feature, if any */
+    configuration: ReactPropTypes.shape({}),
     selectedFeatureId: ReactPropTypes.string,
+    featureIdUnderMouse: ReactPropTypes.string,
     getFeatureOverlapping: ReactPropTypes.func,
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     layoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
+    setFeatureIdUnderMouse: ReactPropTypes.func,
   }),
 
   onFeatureMouseDown: ReactPropTypes.func,
@@ -250,7 +257,7 @@ PileupRendering.propTypes = {
 PileupRendering.defaultProps = {
   horizontallyFlipped: false,
 
-  trackModel: {},
+  trackModel: { configuration: {}, setFeatureIdUnderMouse: () => {} },
 
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,

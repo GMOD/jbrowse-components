@@ -6,12 +6,13 @@ import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
 
-import * as MUICore from '@material-ui/core'
 import * as MUIStyles from '@material-ui/core/styles'
 import MUITextField from '@material-ui/core/TextField'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
+import MUICard from '@material-ui/core/Card'
+import MUICardContent from '@material-ui/core/CardContent'
 import MUIGrid from '@material-ui/core/Grid'
 import MUIIcon from '@material-ui/core/Icon'
 import MUIIconButton from '@material-ui/core/IconButton'
@@ -21,6 +22,7 @@ import MUIFormControlLabel from '@material-ui/core/FormControlLabel'
 import MUIRadio from '@material-ui/core/Radio'
 import MUIRadioGroup from '@material-ui/core/RadioGroup'
 import MUIFormGroup from '@material-ui/core/FormGroup'
+import MUISelect from '@material-ui/core/Select'
 import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISnackbarContent from '@material-ui/core/SnackbarContent'
 import MUITypography from '@material-ui/core/Typography'
@@ -44,6 +46,7 @@ import BoxRendererType from './pluggableElementTypes/renderers/BoxRendererType'
 
 import * as Configuration from './configuration'
 import Plugin from './Plugin'
+import * as coreUi from './ui'
 import * as coreUtil from './util'
 import * as trackUtils from './util/tracks'
 import * as coreIo from './util/io'
@@ -62,7 +65,6 @@ export default {
   'mobx-react': mxreact,
   'prop-types': PropTypes,
 
-  '@material-ui/core': MUICore,
   '@material-ui/core/styles': MUIStyles,
   '@material-ui/core/Button': MUIButton,
   '@material-ui/core/ButtonGroup': MUIButtonGroup,
@@ -70,11 +72,14 @@ export default {
   '@material-ui/core/FormLabel': MUIFormLabel,
   '@material-ui/core/FormControl': MUIFormControl,
   '@material-ui/core/FormControlLabel': MUIFormControlLabel,
+  '@material-ui/core/Card': MUICard,
+  '@material-ui/core/CardContent': MUICardContent,
   '@material-ui/core/Grid': MUIGrid,
   '@material-ui/core/Box': MUIBox,
   '@material-ui/core/TextField': MUITextField,
   '@material-ui/core/Icon': MUIIcon,
   '@material-ui/core/IconButton': MUIIconButton,
+  '@material-ui/core/Select': MUISelect,
   '@material-ui/core/Snackbar': MUISnackbar,
   '@material-ui/core/SnackbarContent': MUISnackbarContent,
   '@material-ui/core/Typography': MUITypography,
@@ -101,6 +106,7 @@ export default {
   '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
   '@gmod/jbrowse-core/configuration': Configuration,
   '@gmod/jbrowse-core/mst-types': mstTypes,
+  '@gmod/jbrowse-core/ui': coreUi,
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/io': coreIo,

@@ -101,7 +101,7 @@ export default class extends BoxRendererType {
     const getCoord = (coord: number): number =>
       bpToPx(coord, region, bpPerPx, horizontallyFlipped)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
-    const minFeatWidth = 0.7
+    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const w = Math.max(minFeatWidth, pxPerBp)
 
     const layoutRecords = iterMap(

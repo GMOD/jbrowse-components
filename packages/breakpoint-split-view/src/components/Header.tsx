@@ -10,16 +10,14 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = React
-  const {
-    Checkbox,
-    FormControlLabel,
-    Icon,
-    IconButton,
-    Menu,
-    MenuItem,
-    TextField,
-    Typography,
-  } = jbrequire('@material-ui/core')
+  const Checkbox = jbrequire('@material-ui/core/Checkbox')
+  const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
+  const Icon = jbrequire('@material-ui/core/Icon')
+  const IconButton = jbrequire('@material-ui/core/IconButton')
+  const Menu = jbrequire('@material-ui/core/Menu')
+  const MenuItem = jbrequire('@material-ui/core/MenuItem')
+  const TextField = jbrequire('@material-ui/core/TextField')
+  const Typography = jbrequire('@material-ui/core/Typography')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

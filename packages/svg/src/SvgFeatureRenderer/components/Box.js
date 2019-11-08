@@ -24,7 +24,6 @@ function Box(props) {
   // renders -50000 to screenwidth (up to 100000) +50000
   return (
     <rect
-      title={feature.id()}
       data-testid={feature.id()}
       x={Math.max(left, -50000)}
       y={top}

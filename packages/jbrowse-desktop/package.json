@@ -1,6 +1,6 @@
 {
   "name": "jbrowse-desktop",
-  "version": "2.0.0",
+  "version": "2.0.0-alpha.2",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "private": false,
   "main": "public/electron.js",
@@ -34,6 +34,7 @@
     "@material-ui/styles": "^4.0.0",
     "clsx": "^1.0.4",
     "electron-better-ipc-extra": "garrettjstevens/electron-better-ipc-extra#c8648bdea088312107ffc4d176cc5e6ae67a7cfd",
+    "electron-debug": "^3.0.1",
     "electron-is-dev": "^1.1.0",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
@@ -50,12 +51,58 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
-    "develop": "electron .",
+    "develop": "ELECTRON_ENABLE_LOGGING=1 electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
-    "eject": "rescripts eject"
+    "build": "rescripts build",
+    "build-electron": "yarn build && electron-builder build --windows --mac --linux",
+    "build-electron:win": "yarn build && electron-builder build --windows",
+    "build-electron:mac": "yarn build && electron-builder build --mac",
+    "build-electron:linux": "yarn build && electron-builder build --linux",
+    "build-electron-unpacked": "yarn build && electron-builder build --windows --mac --linux --dir",
+    "build-electron-unpacked:win": "yarn build && electron-builder build --windows --dir",
+    "build-electron-unpacked:mac": "yarn build && electron-builder build --mac --dir",
+    "build-electron-unpacked:linux": "yarn build && electron-builder build --linux --dir",
+    "build-electron-prepackaged": "yarn build-electron-prepackaged:win && yarn build-electron-prepackaged:mac && yarn build-electron-prepackaged:linux",
+    "build-electron-prepackaged:win": "electron-builder build --windows --prepackaged dist/win-unpacked",
+    "build-electron-prepackaged:mac": "electron-builder build --mac --prepackaged dist/mac/",
+    "build-electron-prepackaged:linux": "electron-builder build --linux --prepackaged dist/linux-unpacked/",
+    "build-electron-only": "electron-builder build --windows --mac --linux",
+    "build-electron-only:win": "electron-builder build --windows",
+    "build-electron-only:mac": "electron-builder build --mac",
+    "build-electron-only:linux": "electron-builder build --linux",
+    "build-electron-only-unpacked": "electron-builder build -wml --dir",
+    "build-electron-only-unpacked:win": "electron-builder build -w --dir",
+    "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
+    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
   },
-  "homepage": "."
+  "homepage": "./",
+  "build": {
+    "electronVersion": "7.0.0",
+    "extraMetadata": {
+      "main": "build/electron.js"
+    },
+    "appId": "com.my-website.my-app",
+    "productName": "JBrowse Desktop",
+    "copyright": "Copyright © 2019",
+    "win": {
+      "target": "zip"
+    },
+    "linux": {
+      "target": "zip"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "zip"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
 }

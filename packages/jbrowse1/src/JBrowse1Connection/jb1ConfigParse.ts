@@ -339,7 +339,7 @@ function synthesizeTrackStoreConfig(
   ) {
     storeConf.name = 'refseqs'
   } else {
-    storeConf.name = `store${Math.abs(objectFingerprint(storeConf))}`
+    storeConf.name = `store${objectFingerprint(storeConf)}`
   }
   // record it
   if (!mainConf.stores) mainConf.stores = {}

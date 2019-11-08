@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { LinearProgress } from '@material-ui/core'
+import LinearProgress from '@material-ui/core/LinearProgress'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
@@ -55,7 +55,8 @@ BlockMessage.propTypes = {
 }
 
 const ServerSideRenderedBlockContent = observer(({ model }) => {
-  if (model.error) return <BlockError error={model.error} />
+  if (model.error)
+    return <BlockError error={model.error} reload={model.reload} />
   if (model.message) return <BlockMessage messageText={model.message} />
   if (!model.filled) return <LoadingMessage />
   return <ServerSideRenderedContent model={model} />

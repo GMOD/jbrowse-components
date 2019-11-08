@@ -7,7 +7,6 @@ import {
 } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
-import fetchMock from 'fetch-mock'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
@@ -17,7 +16,6 @@ import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
-fetchMock.config.sendAsJson = false
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => cb()
@@ -33,33 +31,35 @@ Storage.prototype.clear = jest.fn()
 const getFile = url => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
 const readBuffer = async (url, args) => {
-  let file
   try {
-    file = getFile(url)
-  } catch (e) {
-    return { status: 404 }
-  }
-  const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
-  if (args.headers.range) {
-    const range = rangeParser(maxRangeRequest, args.headers.range)
-    const { start, end } = range[0]
-    const len = end - start
-    const buf = Buffer.alloc(len)
-    const { bytesRead } = await file.read(buf, 0, len, start)
-    const stat = await file.stat()
-    return {
-      status: 206,
-      body: buf.slice(0, bytesRead),
-      headers: { 'Content-Range': `${start}-${end}/${stat.size}` },
+    const file = getFile(url)
+    const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
+    if (args.headers.range) {
+      const range = rangeParser(maxRangeRequest, args.headers.range)
+      const { start, end } = range[0]
+      const len = end - start
+      const buf = Buffer.alloc(len)
+      const { bytesRead } = await file.read(buf, 0, len, start)
+      const stat = await file.stat()
+      return {
+        status: 206,
+        buffer: () => buf.slice(0, bytesRead),
+        arrayBuffer: () => buf.slice(0, bytesRead),
+        text: () => buf.slice(0, bytesRead),
+        headers: new Map([['content-range', `${start}-${end}/${stat.size}`]]),
+      }
     }
+    const body = await file.readFile()
+    return { status: 200, text: () => body, buffer: () => body }
+  } catch (e) {
+    console.error(e)
+    return { status: 404, buffer: () => {} }
   }
-  const body = await file.readFile()
-  return { status: 200, body }
 }
 
 afterEach(cleanup)
 
-fetchMock.mock('*', readBuffer)
+jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {

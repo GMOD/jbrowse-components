@@ -863,6 +863,40 @@
           }
         },
         {
+          "configId": "clinvar_cnv_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "ngmlr",
           "type": "AlignmentsTrack",
           "name": "Breast cancer pacbio (NGMLR)",
@@ -878,6 +912,21 @@
               "location": {
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
               }
+            }
+          }
+        },
+        {
+          "configId": "ngmlr_cov",
+          "type": "WiggleTrack",
+          "name": "Breast cancer pacbio coverage (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
             }
           }
         },
@@ -1045,6 +1094,20 @@
               "labels": {
                 "configId": "NG04oARDu88"
               }
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong_cram_coverage",
+          "type": "WiggleTrack",
+          "name": "HG002 Nanopore ultralong coverage",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.regions.bw"
             }
           }
         },
@@ -1596,6 +1659,40 @@
             "labels": {
               "description": "function(feature) { return feature.get('gene_name') }"
             }
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
           }
         },
         {

@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { CardContent } from '@material-ui/core'
+import CardContent from '@material-ui/core/CardContent'
 import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card'
 import FormControl from '@material-ui/core/FormControl'
@@ -71,6 +71,12 @@ const emptySessionSnapshot = {
               icon: 'arrow_back',
               callback:
                 'function(session) {session.activateSession(undefined)}',
+            },
+            {
+              name: 'Import tabular data',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
             },
           ],
         },

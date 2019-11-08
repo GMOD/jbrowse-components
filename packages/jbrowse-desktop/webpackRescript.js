@@ -4,8 +4,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   webpack: config => {
-    // Get rid fo the webpackHotDevClient entry
-    config.entry.shift()
+    const isDev = config.mode !== 'production'
+    // Get rid of the webpackHotDevClient entry
+    if (isDev) config.entry.shift()
     // Specify two entry points, a main one and one for the window worker
     const main = config.entry.pop()
     config.entry = {
@@ -13,7 +14,7 @@ module.exports = {
       rpc: path.join(path.dirname(main), 'rpcMethods.js'),
     }
     config.plugins[0].options.chunks = ['main']
-    // Generate an HTML file for out window workers to load
+    // Generate an HTML file for window workers to load
     config.plugins.unshift(
       new HtmlWebpackPlugin({
         template: path.join(

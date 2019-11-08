@@ -100,7 +100,12 @@ function AddTrackDrawerWidget({ model }) {
   function isNextDisabled() {
     switch (activeStep) {
       case 0:
-        return !(trackData.uri || trackData.localPath || trackData.config)
+        return !(
+          trackData.uri ||
+          trackData.localPath ||
+          trackData.blob ||
+          trackData.config
+        )
       case 1:
         return !(trackName && trackType && trackAdapter.type && datasetName)
       default:

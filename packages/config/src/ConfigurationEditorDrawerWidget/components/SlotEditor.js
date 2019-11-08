@@ -1,3 +1,4 @@
+import FileSelector from '@gmod/jbrowse-core/ui/FileSelector'
 import {
   getPropertyType,
   getSubType,
@@ -18,8 +19,6 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
-import Radio from '@material-ui/core/Radio'
-import RadioGroup from '@material-ui/core/RadioGroup'
 import { makeStyles } from '@material-ui/core/styles'
 import SvgIcon from '@material-ui/core/SvgIcon'
 import TextField from '@material-ui/core/TextField'
@@ -283,41 +282,6 @@ const IntegerEditor = observer(({ slot }) => {
   )
 })
 
-export const FileLocationEditor = observer(({ slot }) => {
-  // TODO: this can only edit URIs right now, need to make this an actual
-  // good file selector
-  const { value } = slot
-  return (
-    <>
-      <FormControl component="fieldset">
-        <RadioGroup
-          value={value.uri === undefined ? 'localPath' : 'uri'}
-          onChange={event => {
-            if (event.target.value === 'uri') slot.set({ uri: '' })
-            else slot.set({ localPath: '' })
-          }}
-        >
-          <FormControlLabel value="uri" control={<Radio />} label="URL" />
-          <FormControlLabel
-            disabled
-            value="localPath"
-            control={<Radio />}
-            label="Local File"
-          />
-        </RadioGroup>
-      </FormControl>
-      <TextField
-        value={value.uri === undefined ? value.localPath : value.uri}
-        label={slot.name}
-        // error={filterError}
-        helperText={slot.description}
-        fullWidth
-        onChange={evt => slot.set({ uri: evt.target.value })}
-      />
-    </>
-  )
-})
-
 const booleanEditor = observer(({ slot }) => (
   <FormControl>
     <FormControlLabel
@@ -358,10 +322,21 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
+const FileSelectorWrapper = observer(({ slot }) => {
+  return (
+    <FileSelector
+      location={slot.value}
+      setLocation={slot.set}
+      name={slot.name}
+      description={slot.description}
+    />
+  )
+})
+
 const valueComponents = {
   string: StringEditor,
   text: TextEditor,
-  fileLocation: FileLocationEditor,
+  fileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,

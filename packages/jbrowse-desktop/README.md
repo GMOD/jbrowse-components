@@ -1,44 +1,59 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# JBrowse Desktop
 
-## Available Scripts
+## Development environment
 
-In the project directory, you can run:
+### Developing
 
-### `npm start`
+While in the jbrowse-desktop directory, you can run `yarn start` to start a
+development build of JBrowse Desktop. This both starts the development server and opens the Electron window when the server is ready.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+For more control over the development, you can run the server and the electron
+window separately. Just run `yarn serve` to start the server, and once the
+server is ready run `yarn develop` to open the Electron window.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+The Electron process can also take a custom server URL in case you run the dev
+server on another machine, e.g. `DEV_SERVER_URL=http://some.url yarn develop`.
 
-### `npm test`
+### Packaging
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+You will need some development libraries installed to be able to package the
+application, since native dependencies have to be rebuilt.
 
-### `npm run build`
+#### Linux
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To install the development libraries:
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+```sh
+# To build for Linux and Mac
+sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+# To build for Windows, you additionally need
+sudo apt install -y wine-stable
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+`yarn build` will then build and package the application for Linux, Mac, and
+Windows. You can also use `yarn build:win`, `yarn build:linux`, or
+`yarn build:mac` to build and package for a specific platform.
 
-### `npm run eject`
+#### Windows
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Only the Windows application can be packaged when developing on a Windows
+machine. Trying to package the Linux or Mac applications will fail. To install
+the development libraries:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```pwsh
+# Run in an elevated PowerShell window (i.e. use "Run as administrator")
+# Most of these instructions come from https://github.com/Automattic/node-canvas/wiki/Installation:-Windows#install-manually
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+npm install --global --production windows-build-tools
+cd C:\
+# If you have 32bit, use this below instead: http://ftp.gnome.org/pub/GNOME/binaries/win32/gtk+/2.24/gtk+-bundle_2.24.10-20120208_win32.zip
+Invoke-WebRequest -Uri http://ftp.gnome.org/pub/GNOME/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip -OutFile .\gtk+-bundle_2.22.1-20101229_win64.zip
+Expand-Archive .\gtk+-bundle_2.22.1-20101229_win64.zip -DestinationPath .\GTK
+Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+# Next part has to be done in the GUI
+# Go to http://sourceforge.net/projects/libjpeg-turbo/files/ and download latest VC (64bit or 32bit) exe (e.g. libjpeg-turbo-2.0.3-vc64.exe)
+# Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
+```
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Then you can run `yarn build:win` to build and package the Windows application.

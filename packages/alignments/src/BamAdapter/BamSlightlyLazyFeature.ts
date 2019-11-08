@@ -29,15 +29,15 @@ export default class implements Feature {
   }
 
   _get_name(): string {
-    return this.record._get('name')
+    return this.record.get('name')
   }
 
   _get_start(): number {
-    return this.record._get('start')
+    return this.record.get('start')
   }
 
   _get_end(): number {
-    return this.record._get('end')
+    return this.record.get('end')
   }
 
   _get_type(): string {
@@ -45,7 +45,7 @@ export default class implements Feature {
   }
 
   _get_score(): number {
-    return this.record._get('mq')
+    return this.record.get('mq')
   }
 
   _get_mapping_quality(): number {
@@ -65,11 +65,11 @@ export default class implements Feature {
   }
 
   _get_qual(): string {
-    return this.record._get('qual')
+    return this.record.get('qual')
   }
 
   _get_cigar(): string {
-    return this.record._get('cigar')
+    return this.record.get('cigar')
   }
 
   _get_refname(): string | undefined {
@@ -145,7 +145,7 @@ export default class implements Feature {
   }
 
   _get_md(): string | undefined {
-    return this.record._get('md')
+    return this.record.get('md')
   }
 
   set(): void {}
@@ -155,7 +155,7 @@ export default class implements Feature {
   }
 
   id(): string {
-    return this.record.get('id')
+    return this.record.id()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
