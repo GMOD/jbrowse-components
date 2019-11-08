@@ -32,9 +32,9 @@ function About() {
       </Typography>
       <br />
       <Typography align="center">
-        © 2007-2017 The Evolutionary Software Foundation
+        © 2019 The Evolutionary Software Foundation
       </Typography>
-      <br />
+      {/* <br />
       <Typography align="center">
         JBrowse is funded by the{' '}
         <Link
@@ -44,7 +44,7 @@ function About() {
         >
           NHGRI
         </Link>
-      </Typography>
+      </Typography> */}
     </div>
   )
 }
