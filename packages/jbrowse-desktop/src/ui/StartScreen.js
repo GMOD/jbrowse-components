@@ -1,3 +1,4 @@
+import { inDevelopment } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
@@ -17,6 +18,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
+import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import {
   NewEmptySession,
@@ -43,13 +45,23 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function StartScreen({ root }) {
+export default function StartScreen({ root, bypass }) {
   const [sessions, setSessions] = useState()
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
   const [newSessionName, setNewSessionName] = useState('')
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
   const [reset, setReset] = useState(false)
+
+  const sortedSessions =
+    sessions &&
+    Object.entries(sessions)
+      .filter(([, sessionData]) => sessionData.stats)
+      .sort((a, b) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
+
+  if (bypass && inDevelopment && sortedSessions) {
+    onCardClick(sortedSessions[0][0])
+  }
 
   const classes = useStyles()
 
@@ -124,6 +136,7 @@ export default function StartScreen({ root }) {
       />
     )
 
+  const sessionNames = Object.keys(sessions)
   let DialogComponent = <></>
   if (sessionNameToDelete)
     DialogComponent = (
@@ -159,6 +172,11 @@ export default function StartScreen({ root }) {
           <DialogContentText id="alert-dialog-description">
             Please enter a new name for the session:
           </DialogContentText>
+          {sessionNames.includes(newSessionName) ? (
+            <DialogContentText color="error">
+              There is already a session named "{newSessionName}"
+            </DialogContentText>
+          ) : null}
           <Input
             autoFocus
             value={newSessionName}
@@ -173,7 +191,7 @@ export default function StartScreen({ root }) {
             onClick={() => handleDialogClose('rename')}
             color="primary"
             variant="contained"
-            disabled={!newSessionName}
+            disabled={!newSessionName || sessionNames.includes(newSessionName)}
           >
             OK
           </Button>
@@ -231,21 +249,18 @@ export default function StartScreen({ root }) {
           Recent sessions
         </Typography>
         <Grid container spacing={4}>
-          {Object.entries(sessions)
-            .filter(([, sessionData]) => sessionData.stats)
-            .sort((a, b) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
-            .map(([sessionName, sessionData]) => (
-              <Grid item key={sessionName}>
-                <RecentSessionCard
-                  sessionName={sessionName}
-                  sessionStats={sessionData.stats}
-                  sessionScreenshot={sessionData.screenshot}
-                  onClick={onCardClick}
-                  onDelete={onDelete}
-                  onRename={onRename}
-                />
-              </Grid>
-            ))}
+          {sortedSessions.map(([sessionName, sessionData]) => (
+            <Grid item key={sessionName}>
+              <RecentSessionCard
+                sessionName={sessionName}
+                sessionStats={sessionData.stats}
+                sessionScreenshot={sessionData.screenshot}
+                onClick={onCardClick}
+                onDelete={onDelete}
+                onRename={onRename}
+              />
+            </Grid>
+          ))}
         </Grid>
       </Container>
       <Dialog
@@ -279,4 +294,5 @@ export default function StartScreen({ root }) {
 
 StartScreen.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
+  bypass: PropTypes.bool.isRequired,
 }

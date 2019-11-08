@@ -18,8 +18,10 @@ export default observer(() => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState({})
+  const [firstLoad, setFirstLoad] = useState(true)
 
   const { session, jbrowse } = root
+  if (firstLoad && session) setFirstLoad(false)
 
   useEffect(() => {
     async function loadConfig() {
@@ -85,7 +87,7 @@ export default observer(() => {
   if (status === 'error') DisplayComponent = <div>{message}</div>
   if (status === 'loaded') {
     if (session) DisplayComponent = <App session={session} />
-    else DisplayComponent = <StartScreen root={root} />
+    else DisplayComponent = <StartScreen root={root} bypass={firstLoad} />
   }
 
   return (
