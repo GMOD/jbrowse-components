@@ -101,7 +101,9 @@ describe('valid file tests', () => {
     fireEvent.click(getByText('Help'))
     fireEvent.click(getByText('About'))
 
-    const dlg = await waitForElement(() => getByText(/About JBrowse/))
+    const dlg = await waitForElement(() =>
+      getByText(/The Evolutionary Software Foundation/),
+    )
     expect(dlg).toBeTruthy()
   })
 

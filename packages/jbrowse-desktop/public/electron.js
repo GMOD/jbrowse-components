@@ -20,7 +20,7 @@ const fsStat = promisify(fs.stat)
 const fsUnlink = promisify(fs.unlink)
 const fsWriteFile = promisify(fs.writeFile)
 
-const { app, BrowserWindow, Menu } = electron
+const { app, shell, BrowserWindow, Menu } = electron
 
 debug()
 
@@ -55,6 +55,10 @@ function createWindow() {
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
+  mainWindow.webContents.on('new-window', (event, outboundUrl) => {
+    event.preventDefault()
+    shell.openExternal(outboundUrl)
+  })
   Menu.setApplicationMenu(null)
   // if (isDev) {
   // Open the DevTools.
