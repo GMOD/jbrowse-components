@@ -55,7 +55,8 @@ BlockMessage.propTypes = {
 }
 
 const ServerSideRenderedBlockContent = observer(({ model }) => {
-  if (model.error) return <BlockError error={model.error} />
+  if (model.error)
+    return <BlockError error={model.error} reload={model.reload} />
   if (model.message) return <BlockMessage messageText={model.message} />
   if (!model.filled) return <LoadingMessage />
   return <ServerSideRenderedContent model={model} />
