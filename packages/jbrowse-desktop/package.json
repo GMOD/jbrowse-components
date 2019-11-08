@@ -50,9 +50,9 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
-    "develop": "electron .",
+    "develop": "ELECTRON_ENABLE_LOGGING=1 electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
     "build": "rescripts build",

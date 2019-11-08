@@ -18,7 +18,10 @@ export default function(pluginManager) {
     'UCSCTrackHubConnection',
     connectionModelFactory(pluginManager),
     types
-      .model({ configuration: ConfigurationReference(configSchema) })
+      .model({
+        configuration: ConfigurationReference(configSchema),
+        type: types.literal('UCSCTrackHubConnection'),
+      })
       .actions(self => ({
         connect() {
           const connectionName = readConfObject(self.configuration, 'name')

@@ -9,7 +9,6 @@ import {
   blockBasedTrackModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import TrackControls from '../components/TrackControls'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -31,7 +30,6 @@ export default (pluginManager, configSchema) =>
       })
       .volatile(() => ({
         ReactComponent: BlockBasedTrack,
-        rendererTypeChoices: Array.from(rendererTypes.keys()),
       }))
       .actions(self => ({
         selectFeature(feature) {
@@ -54,16 +52,11 @@ export default (pluginManager, configSchema) =>
          * selected in the UI: pileup, coverage, etc
          */
         get rendererTypeName() {
-          const defaultRendering = getConf(self, 'defaultRendering')
-          const viewName = self.selectedRendering || defaultRendering
+          const viewName = getConf(self, 'defaultRendering')
           const rendererType = rendererTypes.get(viewName)
           if (!rendererType)
             throw new Error(`unknown alignments view name ${viewName}`)
           return rendererType
-        },
-
-        get ControlsComponent() {
-          return TrackControls
         },
 
         /**

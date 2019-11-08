@@ -34,7 +34,6 @@ function Segments(props) {
   return (
     <>
       <polyline
-        title={feature.id()}
         data-testid={feature.id()}
         transform={
           strand &&

@@ -6,12 +6,13 @@ import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
 
-import * as MUICore from '@material-ui/core'
 import * as MUIStyles from '@material-ui/core/styles'
 import MUITextField from '@material-ui/core/TextField'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
+import MUICard from '@material-ui/core/Card'
+import MUICardContent from '@material-ui/core/CardContent'
 import MUIGrid from '@material-ui/core/Grid'
 import MUIIcon from '@material-ui/core/Icon'
 import MUIIconButton from '@material-ui/core/IconButton'
@@ -62,7 +63,6 @@ export default {
   'mobx-react': mxreact,
   'prop-types': PropTypes,
 
-  '@material-ui/core': MUICore,
   '@material-ui/core/styles': MUIStyles,
   '@material-ui/core/Button': MUIButton,
   '@material-ui/core/ButtonGroup': MUIButtonGroup,
@@ -70,6 +70,8 @@ export default {
   '@material-ui/core/FormLabel': MUIFormLabel,
   '@material-ui/core/FormControl': MUIFormControl,
   '@material-ui/core/FormControlLabel': MUIFormControlLabel,
+  '@material-ui/core/Card': MUICard,
+  '@material-ui/core/CardContent': MUICardContent,
   '@material-ui/core/Grid': MUIGrid,
   '@material-ui/core/Box': MUIBox,
   '@material-ui/core/TextField': MUITextField,

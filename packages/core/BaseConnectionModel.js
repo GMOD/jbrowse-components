@@ -37,8 +37,6 @@ export default pluginManager => {
       setDefaultSequence(isDefault) {
         self.defaultSequence = isDefault
       },
-      // connect(connectionConf) {
-      //   // Add assemblies and tracks here
-      // },
+      clear() {},
     }))
 }

@@ -40,14 +40,10 @@ const useStyles = makeStyles({
   },
 })
 const RenderedBlocks = observer(
-  (props: {
-    model: Instance<BlockBasedTrackStateModel>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    blockState: Record<string, any>
-  }) => {
-    const { model, blockState } = props
+  (props: { model: Instance<BlockBasedTrackStateModel> }) => {
+    const { model } = props
     const classes = useStyles()
-    const { blockDefinitions } = model
+    const { blockDefinitions, blockState } = model
     return (
       <>
         {blockDefinitions.map((block: BaseBlock) => {
@@ -97,12 +93,9 @@ const RenderedBlocks = observer(
 function TrackBlocks({
   model,
   viewModel,
-  blockState,
 }: {
   model: Instance<BlockBasedTrackStateModel>
   viewModel: Instance<LinearGenomeViewStateModel>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  blockState: Record<string, any>
 }) {
   const classes = useStyles()
   const { blockDefinitions } = model
@@ -114,13 +107,12 @@ function TrackBlocks({
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
     >
-      <RenderedBlocks model={model} blockState={blockState} />
+      <RenderedBlocks model={model} />
     </div>
   )
 }
 
 TrackBlocks.propTypes = {
-  blockState: PropTypes.observableMap.isRequired,
   model: PropTypes.observableObject.isRequired,
   viewModel: PropTypes.observableObject.isRequired,
 }

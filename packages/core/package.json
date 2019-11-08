@@ -50,6 +50,7 @@
     "sanitize-html": "^1.20.1",
     "shortid": "^2.2.13",
     "tenacious-fetch": "^2.1.0",
+    "use-timeout": "^1.1.0",
     "util.promisify": "^1.0.0",
     "whatwg-fetch": "^3.0.0"
   },

@@ -1,42 +1,163 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`no features 1`] = `
-<svg
-  class="SvgFeatureRendering"
-  height="20px"
+<div
   style="position: relative;"
-  width="100px"
-/>
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="20px"
+    width="100px"
+  />
+</div>
 `;
 
 exports[`one feature 1`] = `
-<svg
-  class="SvgFeatureRendering"
-  height="25px"
+<div
   style="position: relative;"
-  width="333.3333333333333px"
 >
-  <g>
-    <title>
-      one
-    </title>
-    <rect
-      data-testid="one"
-      fill="goldenrod"
-      height="10"
-      title="one"
-      width="1"
-      x="0.3"
-      y="0"
-    />
-    <text
-      dominant-baseline="hanging"
-      style="font-size: 13px; fill: black; cursor: default;"
-      x="0.3"
-      y="12"
-    >
-      one
-    </text>
-  </g>
+  <svg
+    class="SvgFeatureRendering"
+    height="0px"
+    width="333.3333333333333px"
+  >
+    <g>
+      <rect
+        data-testid="one"
+        fill="goldenrod"
+        height="10"
+        width="1"
+        x="0.3"
+        y="0"
+      />
+      <text
+        dominant-baseline="hanging"
+        style="font-size: 13px; fill: black; cursor: default;"
+        x="0.3"
+        y="12"
+      >
+        one
+      </text>
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`processed transcript 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="0px"
+    width="333.3333333333333px"
+  >
+    <g>
+      <polyline
+        data-testid="one"
+        points="1991.7,5,3248.0333333333333,5,3245.5333333333333,2.5,3245.5333333333333,7.5,3248.0333333333333,5"
+        stroke="black"
+      />
+      <polygon
+        data-testid="one-0"
+        fill="#357089"
+        points="1991.7,1.75,2033.1166666666668,1.75,2036.3666666666668,5,2033.1166666666668,8.25,1991.7,8.25"
+      />
+      <polygon
+        data-testid="one-2"
+        fill="goldenrod"
+        points="2036.7,0,2044.3666666666668,0,2049.366666666667,5,2044.3666666666668,10,2036.7,10"
+      />
+      <polygon
+        data-testid="one-3"
+        fill="goldenrod"
+        points="2205.0333333333333,0,2222.7,0,2227.7,5,2222.7,10,2205.0333333333333,10"
+      />
+      <polygon
+        data-testid="one-4"
+        fill="goldenrod"
+        points="2252.7,0,2341.7,0,2346.7,5,2341.7,10,2252.7,10"
+      />
+      <polygon
+        data-testid="one-5"
+        fill="goldenrod"
+        points="2380.7,0,2434.7,0,2439.7,5,2434.7,10,2380.7,10"
+      />
+      <polygon
+        data-testid="one-6"
+        fill="goldenrod"
+        points="2470.366666666667,0,2557.366666666667,0,2562.366666666667,5,2557.366666666667,10,2470.366666666667,10"
+      />
+      <polygon
+        data-testid="one-7"
+        fill="goldenrod"
+        points="2582.7,0,2611.7,0,2616.7,5,2611.7,10,2582.7,10"
+      />
+      <polygon
+        data-testid="one-8"
+        fill="goldenrod"
+        points="2651.0333333333333,0,2694.366666666667,0,2699.366666666667,5,2694.366666666667,10,2651.0333333333333,10"
+      />
+      <polygon
+        data-testid="one-9"
+        fill="goldenrod"
+        points="2722.0333333333333,0,2768.366666666667,0,2773.366666666667,5,2768.366666666667,10,2722.0333333333333,10"
+      />
+      <polygon
+        data-testid="one-10"
+        fill="goldenrod"
+        points="2806.366666666667,0,2866.366666666667,0,2871.366666666667,5,2866.366666666667,10,2806.366666666667,10"
+      />
+      <polygon
+        data-testid="one-11"
+        fill="goldenrod"
+        points="2902.7,0,2932.0333333333333,0,2937.0333333333333,5,2932.0333333333333,10,2902.7,10"
+      />
+      <polygon
+        data-testid="one-12"
+        fill="goldenrod"
+        points="2975.7,0,3074.7,0,3079.7,5,3074.7,10,2975.7,10"
+      />
+      <polygon
+        data-testid="one-13"
+        fill="goldenrod"
+        points="3138.0333333333333,0,3159.7,0,3164.7,5,3159.7,10,3138.0333333333333,10"
+      />
+      <polygon
+        data-testid="one-15"
+        fill="#357089"
+        points="3165.0333333333333,1.75,3244.7833333333333,1.75,3248.0333333333333,5,3244.7833333333333,8.25,3165.0333333333333,8.25"
+      />
+      <text
+        dominant-baseline="hanging"
+        style="font-size: 13px; fill: black; cursor: default;"
+        x="1991.7"
+        y="12"
+      >
+        au9.g1002.t1
+      </text>
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`svg selected 1`] = `
+<svg>
+  <rect
+    fill="#000"
+    fill-opacity="0.2"
+    height="14"
+    width="7"
+    x="-2"
+    y="-2"
+  />
+  <rect
+    fill="none"
+    height="14"
+    stroke="#00b8ff"
+    width="7"
+    x="-2"
+    y="-2"
+  />
 </svg>
 `;
