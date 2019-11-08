@@ -14,7 +14,10 @@ export default function(pluginManager) {
     'JBrowse1Connection',
     connectionModelFactory(pluginManager),
     types
-      .model({ configuration: ConfigurationReference(configSchema) })
+      .model({
+        configuration: ConfigurationReference(configSchema),
+        type: types.literal('JBrowse1Connection'),
+      })
       .actions(self => ({
         connect() {
           const dataDirLocation = readConfObject(
