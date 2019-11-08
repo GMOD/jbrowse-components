@@ -9,10 +9,13 @@ import { generateTracks } from './tracks'
 
 export default function(pluginManager) {
   return types.compose(
-    'UCSCTrackHubConnection',
+    'UCSCTrackHubRegistryConnection',
     connectionModelFactory(pluginManager),
     types
-      .model({ configuration: ConfigurationReference(configSchema) })
+      .model({
+        type: types.literal('UCSCTrackHubRegistryConnection'),
+        configuration: ConfigurationReference(configSchema),
+      })
       .actions(self => ({
         connect(connectionConf) {
           self.clear()

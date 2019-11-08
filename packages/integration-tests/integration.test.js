@@ -5,6 +5,12 @@ if (process.env.BUILT_TESTS) {
     expect(fs.existsSync('packages/jbrowse-web/build/index.html')).toBeTruthy()
   })
 
+  test('JBrowse Desktop built', () => {
+    expect(
+      fs.existsSync('packages/jbrowse-desktop/build/index.html'),
+    ).toBeTruthy()
+  })
+
   test('Protein Widget built', () => {
     expect(
       fs.existsSync('packages/protein-widget/umd/jbrowse-protein-viewer.js'),

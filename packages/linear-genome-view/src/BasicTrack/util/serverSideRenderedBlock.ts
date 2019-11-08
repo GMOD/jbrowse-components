@@ -127,6 +127,20 @@ const blockState = types
         self.renderProps = undefined
         renderInProgress = undefined
       },
+      reload() {
+        self.renderInProgress = undefined
+        self.filled = false
+        self.data = undefined
+        self.html = ''
+        self.error = undefined
+        self.message = undefined
+        self.maxHeightReached = false
+        self.ReactComponent = ServerSideRenderedBlockContent
+        self.renderingComponent = undefined
+        self.renderProps = undefined
+        const data = renderBlockData(self as any)
+        renderBlockEffect(cast(self), data)
+      },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()

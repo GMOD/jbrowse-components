@@ -8,7 +8,7 @@ export default class extends Plugin {
     pluginManager.addConnectionType(
       () =>
         new ConnectionType({
-          name: 'TrackHubRegistryConnection',
+          name: 'UCSCTrackHubRegistryConnection',
           configSchema,
           configEditorComponent: TrackHubRegistrySelect,
           stateModel: modelFactory(pluginManager),

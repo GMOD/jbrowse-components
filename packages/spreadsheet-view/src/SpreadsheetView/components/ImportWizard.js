@@ -3,8 +3,10 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState, useEffect } = React
+  const { FileSelector } = jbrequire('@gmod/jbrowse-core/ui')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const { Card, CardContent } = jbrequire('@material-ui/core')
+  const Card = jbrequire('@material-ui/core/Card')
+  const CardContent = jbrequire('@material-ui/core/CardContent')
   const FormControl = jbrequire('@material-ui/core/FormControl')
   const FormGroup = jbrequire('@material-ui/core/FormGroup')
   const FormLabel = jbrequire('@material-ui/core/FormLabel')
@@ -17,9 +19,6 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const Typography = jbrequire('@material-ui/core/Typography')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const { red } = jbrequire('@material-ui/core/colors')
-
-  const FileSelector = jbrequire(require('./FileSelector'))
 
   const useStyles = makeStyles(theme => {
     return {
@@ -31,10 +30,7 @@ export default pluginManager => {
       errorCard: {
         width: '50%',
         margin: [[theme.spacing(2), 'auto']],
-        border: [['2px', 'solid', red[200]]],
-      },
-      errorMessage: {
-        color: red[400],
+        border: [['2px', 'solid', theme.palette.error.main]],
       },
     }
   })
@@ -79,8 +75,8 @@ export default pluginManager => {
               <FormLabel component="legend">Tabular file</FormLabel>
               <FormGroup>
                 <FileSelector
-                  fileRecord={model.fileSource}
-                  onChange={model.setFileSource}
+                  location={model.fileSource}
+                  setLocation={model.setFileSource}
                 />
               </FormGroup>
             </FormControl>
@@ -169,7 +165,7 @@ export default pluginManager => {
     return (
       <Card className={classes.errorCard}>
         <CardContent>
-          <Typography variant="h6" className={classes.errorMessage}>
+          <Typography variant="h6" color="error">
             {String(errorMessage)}
           </Typography>
         </CardContent>

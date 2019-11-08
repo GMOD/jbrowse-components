@@ -1,6 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { bpToPx, bpSpanPx } from '@gmod/jbrowse-core/util'
 import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -28,15 +28,13 @@ export const SvgSelected = observer(
       (rect = layoutFeatures.get(selectedFeatureId))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      let leftPx = Math.round(
-        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
       )
-      let rightPx = Math.round(
-        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
-      )
-      if (rightPx < leftPx) {
-        ;[rightPx, leftPx] = [leftPx, rightPx]
-      }
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
 
@@ -69,15 +67,13 @@ export const SvgMouseover = observer(
       (rect = layoutFeatures.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      let leftPx = Math.round(
-        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
       )
-      let rightPx = Math.round(
-        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
-      )
-      if (rightPx < leftPx) {
-        ;[rightPx, leftPx] = [leftPx, rightPx]
-      }
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
       return (

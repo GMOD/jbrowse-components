@@ -916,6 +916,21 @@
           }
         },
         {
+          "configId": "ngmlr_cov",
+          "type": "WiggleTrack",
+          "name": "Breast cancer pacbio coverage (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
+            }
+          }
+        },
+        {
           "configId": "illumina_hg002",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.2x250",
@@ -1079,6 +1094,20 @@
               "labels": {
                 "configId": "NG04oARDu88"
               }
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong_cram_coverage",
+          "type": "WiggleTrack",
+          "name": "HG002 Nanopore ultralong coverage",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.regions.bw"
             }
           }
         },

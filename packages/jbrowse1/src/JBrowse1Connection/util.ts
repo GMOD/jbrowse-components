@@ -1,5 +1,5 @@
-import crc32 from 'crc-32'
 import getValue from 'get-value'
+import objectHash from 'object-hash'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
@@ -43,17 +43,8 @@ export function deepUpdate(
  * @returns {Number}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function objectFingerprint(obj: Record<string, any> | string): number {
-  let crc = 0
-  if (typeof obj === 'object') {
-    for (const prop of Object.keys(obj)) {
-      crc = crc32.str(`${objectFingerprint(prop)}`, crc)
-      crc = crc32.str(`${objectFingerprint(obj[prop])}`, crc)
-    }
-  } else {
-    crc = crc32.str(`${obj}`, crc)
-  }
-  return crc
+export function objectFingerprint(obj: Record<string, any>) {
+  return objectHash(obj)
 }
 
 /**
@@ -187,20 +178,22 @@ function mixin(
 }
 
 export function evalHooks(conf: Config): Config {
-  for (const x of Object.keys(conf)) {
-    // @ts-ignore
-    if (typeof conf[x] === 'object')
-      // recur
+  if (conf) {
+    for (const x of Object.keys(conf)) {
       // @ts-ignore
-      conf[x] = evalHooks(conf[x])
-    // @ts-ignore
-    else if (typeof conf[x] === 'string') {
-      // compile
-      // @ts-ignore
-      const spec = conf[x]
-      if (/^\s*function\s*\(/.test(spec)) {
+      if (typeof conf[x] === 'object')
+        // recur
         // @ts-ignore
-        conf[x] = evalHook(spec)
+        conf[x] = evalHooks(conf[x])
+      // @ts-ignore
+      else if (typeof conf[x] === 'string') {
+        // compile
+        // @ts-ignore
+        const spec = conf[x]
+        if (/^\s*function\s*\(/.test(spec)) {
+          // @ts-ignore
+          conf[x] = evalHook(spec)
+        }
       }
     }
   }

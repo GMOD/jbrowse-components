@@ -2,7 +2,7 @@ import {
   readConfObject,
   ConfigurationSchema,
 } from '@gmod/jbrowse-core/configuration'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { getScale } from '../util'
 
 import ConfigSchema from '../configSchema'
@@ -43,13 +43,12 @@ export default class extends WiggleBaseRenderer {
     }
 
     for (const feature of features.values()) {
-      const s = feature.get('start')
-      const e = feature.get('end')
-      let leftPx = bpToPx(s, region, bpPerPx, horizontallyFlipped)
-      let rightPx = bpToPx(e, region, bpPerPx, horizontallyFlipped)
-      if (horizontallyFlipped) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
+      const [leftPx, rightPx] = featureSpanPx(
+        feature,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       ctx.fillStyle = colorCallback(feature)
       ctx.fillRect(leftPx, 0, w, height)

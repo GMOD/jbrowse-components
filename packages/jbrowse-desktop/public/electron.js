@@ -1,10 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
 const { ipcMain } = require('electron-better-ipc-extra')
+const debug = require('electron-debug')
+const isDev = require('electron-is-dev')
 const fs = require('fs')
-const { promisify } = require('util')
-const url = require('url')
 const fetch = require('node-fetch')
+const path = require('path')
+const url = require('url')
+const { promisify } = require('util')
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
@@ -17,11 +20,9 @@ const fsStat = promisify(fs.stat)
 const fsUnlink = promisify(fs.unlink)
 const fsWriteFile = promisify(fs.writeFile)
 
-const { app, shell } = electron
-const { BrowserWindow } = electron
+const { app, shell, BrowserWindow, Menu } = electron
 
-const path = require('path')
-const isDev = require('electron-is-dev')
+debug()
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
@@ -46,7 +47,7 @@ function createWindow() {
     webPreferences: {
       preload: isDev
         ? path.join(app.getAppPath(), 'public', 'preload.js')
-        : `file://${path.join(app.getAppPath(), 'build', 'preload.js')}`,
+        : `${path.join(app.getAppPath(), 'build', 'preload.js')}`,
     },
   })
   mainWindow.loadURL(
@@ -54,16 +55,16 @@ function createWindow() {
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
-  mainWindow.setMenuBarVisibility(false)
-  if (isDev) {
-    // Open the DevTools.
-    // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
-    // mainWindow.webContents.openDevTools()
-  }
   mainWindow.webContents.on('new-window', (event, outboundUrl) => {
     event.preventDefault()
     shell.openExternal(outboundUrl)
   })
+  Menu.setApplicationMenu(null)
+  // if (isDev) {
+  // Open the DevTools.
+  // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
+  // mainWindow.webContents.openDevTools()
+  // }
   mainWindow.on('closed', () => {
     BrowserWindow.getAllWindows().forEach(win => win.close())
     mainWindow = null
@@ -88,9 +89,10 @@ ipcMain.on('createWindowWorker', event => {
   const workerWindow = new BrowserWindow({
     show: false,
     webPreferences: {
+      webSecurity: false,
       preload: isDev
         ? path.join(app.getAppPath(), 'public', 'preload.js')
-        : `file://${path.join(app.getAppPath(), 'build', 'preload.js')}`,
+        : `${path.join(app.getAppPath(), 'build', 'preload.js')}`,
     },
   })
   workerWindow.loadURL(
@@ -111,12 +113,7 @@ ipcMain.answerRenderer('loadConfig', async () => {
       // make a config file since one does not exist yet
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
-        : `file://${path.join(
-            app.getAppPath(),
-            'build',
-            'test_data',
-            'config.json',
-          )}`
+        : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
       await fsCopyFile(configTemplateLocation, configLocation)
       configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
     } else throw error
@@ -125,7 +122,7 @@ ipcMain.answerRenderer('loadConfig', async () => {
 })
 
 ipcMain.answerRenderer('saveConfig', async configSnapshot => {
-  return fsWriteFile(configLocation, JSON.stringify(configSnapshot))
+  return fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
 })
 
 ipcMain.answerRenderer('listSessions', async () => {
@@ -182,7 +179,7 @@ ipcMain.answerRenderer(
         sessionDirectory,
         `${encodeURIComponent(sessionSnapshot.name)}.json`,
       ),
-      JSON.stringify(sessionSnapshot),
+      JSON.stringify(sessionSnapshot, null, 2),
     )
   },
 )
@@ -204,13 +201,8 @@ ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
 
 ipcMain.answerRenderer('reset', async () => {
   const configTemplateLocation = isDev
-    ? path.join(app.getAppPath(), 'public/test_data/config.json')
-    : `file://${path.join(
-        app.getAppPath(),
-        'build',
-        'test_data',
-        'config.json',
-      )}`
+    ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
+    : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
   await fsCopyFile(configTemplateLocation, configLocation)
   const sessionFiles = await fsReaddir(sessionDirectory)
   const unlinkCommands = []
@@ -252,6 +244,7 @@ ipcMain.answerRenderer('read', async (...args) => {
 })
 
 ipcMain.answerRenderer('readFile', async (...args) => {
+  args[0] = path.resolve(app.getAppPath(), isDev ? 'public' : 'build', args[0])
   return fsReadFile(...args)
 })
 
@@ -260,5 +253,6 @@ ipcMain.answerRenderer('stat', async (...args) => {
 })
 
 ipcMain.answerRenderer('open', async (...args) => {
+  args[0] = path.resolve(app.getAppPath(), isDev ? 'public' : 'build', args[0])
   return fsOpen(...args)
 })

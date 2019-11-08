@@ -212,7 +212,7 @@ export function guessAdapter(fileName, protocol) {
       type: UNSUPPORTED,
     }
 
-  if (/\/trackData.json$/i.test(fileName))
+  if (/\/trackData.jsonz?$/i.test(fileName))
     return {
       type: 'NCListAdapter',
       rootUrlTemplate: fileName,

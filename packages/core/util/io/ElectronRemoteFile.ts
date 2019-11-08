@@ -111,6 +111,7 @@ export default class ElectronRemoteFile implements GenericFilehandle {
       throw new Error(
         'a fetch function must be available unless using a file:// url',
       )
+    if (!this.url) throw new Error('no URL specified')
     const fetch = this.nodeFetchFallback ? this.nodeFetch : this.fetch
     const { headers = {}, signal, overrides = {} } = opts
     const requestOptions = {
