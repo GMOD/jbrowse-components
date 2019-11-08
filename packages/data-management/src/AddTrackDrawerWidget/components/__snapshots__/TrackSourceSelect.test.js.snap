@@ -124,140 +124,80 @@ exports[`<TrackSourceSelect /> renders 1`] = `
   <div
     class="MuiPaper-root MuiPaper-elevation1 makeStyles-paper MuiPaper-rounded"
   >
-    <fieldset
-      class="MuiFormControl-root"
+    <label
+      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
+      data-shrink="true"
+      for="callback-editor"
+    >
+      dataSourceLocation
+    </label>
+    <div
+      class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
     >
       <div
-        class="MuiFormGroup-root"
-        role="radiogroup"
+        class="MuiGrid-root MuiGrid-item"
       >
-        <label
-          class="MuiFormControlLabel-root"
+        <div
+          aria-label="file or url picker"
+          class="MuiToggleButtonGroup-root"
+          role="group"
         >
-          <span
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-checked MuiRadio-checked MuiIconButton-colorSecondary"
+          <button
+            aria-label="local file"
+            aria-pressed="false"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+            disabled=""
+            tabindex="-1"
+            type="button"
+            value="file"
           >
             <span
-              class="MuiIconButton-label"
+              class="MuiToggleButton-label"
             >
-              <input
-                checked=""
-                class="PrivateSwitchBase-input"
-                type="radio"
-                value="uri"
-              />
-              <div
-                class="PrivateRadioButtonIcon-root PrivateRadioButtonIcon-checked"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                  />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
-                  focusable="false"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
-                  />
-                </svg>
-              </div>
+              File
+            </span>
+          </button>
+          <button
+            aria-label="url"
+            aria-pressed="true"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedSizeSmall MuiToggleButton-selected MuiToggleButton-sizeSmall"
+            tabindex="0"
+            type="button"
+            value="url"
+          >
+            <span
+              class="MuiToggleButton-label"
+            >
+              Url
             </span>
             <span
               class="MuiTouchRipple-root"
             />
-          </span>
-          <span
-            class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
-          >
-            URL
-          </span>
-        </label>
-        <label
-          class="MuiFormControlLabel-root MuiFormControlLabel-disabled"
-        >
-          <span
-            aria-disabled="true"
-            class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-disabled MuiRadio-disabled MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-            tabindex="-1"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <input
-                class="PrivateSwitchBase-input"
-                disabled=""
-                type="radio"
-                value="localPath"
-              />
-              <div
-                class="PrivateRadioButtonIcon-root"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                  />
-                </svg>
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root PrivateRadioButtonIcon-layer"
-                  focusable="false"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"
-                  />
-                </svg>
-              </div>
-            </span>
-          </span>
-          <span
-            class="MuiTypography-root MuiFormControlLabel-label MuiFormControlLabel-disabled MuiTypography-body1"
-          >
-            Local File
-          </span>
-        </label>
+          </button>
+        </div>
       </div>
-    </fieldset>
-    <div
-      class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-    >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-        data-shrink="false"
-      >
-        dataSourceLocation
-      </label>
       <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+        class="MuiGrid-root MuiGrid-item"
       >
-        <input
-          aria-invalid="false"
-          class="MuiInputBase-input MuiInput-input"
-          type="text"
-          value=""
-        />
+        <div
+          class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
+        >
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense"
+          >
+            <input
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
       </div>
-      
     </div>
+    <p
+      class="MuiFormHelperText-root"
+    />
   </div>
 </div>
 `;
