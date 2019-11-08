@@ -191,9 +191,18 @@ ipcMain.handle('renameSession', async (event, oldName, newName) => {
   } catch {
     // ignore
   }
-  await fsRename(
+  const sessionJson = await fsReadFile(
     path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
+    { encoding: 'utf8' },
+  )
+  const sessionSnapshot = JSON.parse(sessionJson)
+  sessionSnapshot.name = newName
+  await fsUnlink(
+    path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
+  )
+  await fsWriteFile(
     path.join(sessionDirectory, `${encodeURIComponent(newName)}.json`),
+    JSON.stringify(sessionSnapshot, null, 2),
   )
 })
 
