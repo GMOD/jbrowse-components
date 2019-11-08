@@ -7,6 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
+import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
@@ -58,31 +59,34 @@ function RecentSessionCard({
         onClick={() => onClick(sessionName)}
         raised={Boolean(hovered)}
       >
-        <CardMedia
-          className={classes.media}
-          image={sessionScreenshot}
-          title={sessionName}
-        />
+        <CardMedia className={classes.media} image={sessionScreenshot} />
         <CardHeader
           action={
             <IconButton onClick={onMenuClick}>
               <Icon>more_vert</Icon>
             </IconButton>
           }
-          title={sessionName}
-          titleTypographyProps={{
-            variant: 'body2',
-            noWrap: true,
-            style: { width: 178 },
-          }}
-          subheader={`Last modified ${new Date(
-            sessionStats.mtimeMs,
-          ).toLocaleDateString(undefined, { dateStyle: 'medium' })}`}
-          subheaderTypographyProps={{
-            variant: 'body2',
-            noWrap: true,
-            style: { width: 178 },
-          }}
+          disableTypography
+          title={
+            <Tooltip title={sessionName} enterDelay={300}>
+              <Typography variant="body2" noWrap style={{ width: 178 }}>
+                {sessionName}
+              </Typography>
+            </Tooltip>
+          }
+          subheader={
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              noWrap
+              style={{ width: 178 }}
+            >
+              Last modified{' '}
+              {new Date(sessionStats.mtimeMs).toLocaleDateString(undefined, {
+                dateStyle: 'medium',
+              })}
+            </Typography>
+          }
         />
       </Card>
       <Menu
