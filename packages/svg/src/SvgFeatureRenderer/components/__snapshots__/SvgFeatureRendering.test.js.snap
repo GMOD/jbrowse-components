@@ -147,7 +147,7 @@ exports[`svg selected 1`] = `
     fill="#000"
     fill-opacity="0.2"
     height="14"
-    width="7"
+    width="7.3"
     x="-2"
     y="-2"
   />
@@ -155,7 +155,7 @@ exports[`svg selected 1`] = `
     fill="none"
     height="14"
     stroke="#00b8ff"
-    width="7"
+    width="7.3"
     x="-2"
     y="-2"
   />

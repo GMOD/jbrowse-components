@@ -1,5 +1,5 @@
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useEffect } from 'react'
@@ -40,11 +40,12 @@ function PileupRendering(props) {
 
     if (selectedFeatureId && (rect = layoutFeatures.get(selectedFeatureId))) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const leftPx = Math.round(
-        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
-      )
-      const rightPx = Math.round(
-        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
       )
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
@@ -66,11 +67,12 @@ function PileupRendering(props) {
       (rect = layoutFeatures.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
-      const leftPx = Math.round(
-        bpToPx(leftBp, region, bpPerPx, horizontallyFlipped),
-      )
-      const rightPx = Math.round(
-        bpToPx(rightBp, region, bpPerPx, horizontallyFlipped),
+      const [leftPx, rightPx] = bpSpanPx(
+        leftBp,
+        rightBp,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
       )
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)

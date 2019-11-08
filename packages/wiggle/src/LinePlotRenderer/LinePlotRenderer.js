@@ -1,5 +1,5 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
@@ -29,16 +29,15 @@ export default class extends WiggleBaseRenderer {
     } else {
       colorCallback = feature => readConfObject(config, 'color', [feature])
     }
-    const getCoord = coord =>
-      bpToPx(coord, region, bpPerPx, horizontallyFlipped)
     let lastVal
 
     for (const feature of features.values()) {
-      let leftPx = getCoord(feature.get('start'))
-      let rightPx = getCoord(feature.get('end'))
-      if (horizontallyFlipped) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
+      const [leftPx, rightPx] = featureSpanPx(
+        feature,
+        region,
+        bpPerPx,
+        horizontallyFlipped,
+      )
       const score = feature.get('score')
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
