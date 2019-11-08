@@ -11,9 +11,8 @@ import App from './ui/App'
 import StartScreen from './ui/StartScreen'
 import Theme from './ui/theme'
 
-const { electronBetterIpc = {}, electron = {} } = window
-const { ipcRenderer } = electronBetterIpc
-const { desktopCapturer } = electron
+const { electron = {} } = window
+const { desktopCapturer, ipcRenderer } = electron
 
 export default observer(() => {
   const [status, setStatus] = useState('loading')
@@ -25,7 +24,7 @@ export default observer(() => {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const configSnapshot = await ipcRenderer.callMain('loadConfig')
+        const configSnapshot = await ipcRenderer.invoke('loadConfig')
         const r = rootModel.create({ jbrowse: configSnapshot })
 
         // poke some things for testing (this stuff will eventually be removed)
@@ -53,7 +52,7 @@ export default observer(() => {
         })
         const jbWindow = sources.find(source => source.name === 'JBrowse')
         const screenshot = jbWindow.thumbnail.toDataURL()
-        ipcRenderer.callMain('saveSession', snapshot, screenshot)
+        ipcRenderer.send('saveSession', snapshot, screenshot)
       })
     }
 
@@ -64,7 +63,7 @@ export default observer(() => {
     let disposer = () => {}
     if (jbrowse) {
       disposer = onSnapshot(jbrowse, snapshot => {
-        ipcRenderer.callMain('saveConfig', snapshot)
+        ipcRenderer.send('saveConfig', snapshot)
       })
     }
 

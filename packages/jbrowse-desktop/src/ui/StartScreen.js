@@ -54,7 +54,7 @@ export default function StartScreen({ root }) {
   const classes = useStyles()
 
   async function getSessions() {
-    setSessions(await ipcRenderer.callMain('listSessions'))
+    setSessions(await ipcRenderer.invoke('listSessions'))
   }
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function StartScreen({ root }) {
   }, [])
 
   async function onCardClick(sessionName) {
-    const sessionJSON = await ipcRenderer.callMain('loadSession', sessionName)
+    const sessionJSON = await ipcRenderer.invoke('loadSession', sessionName)
     const sessionSnapshot = JSON.parse(sessionJSON)
     root.activateSession(sessionSnapshot)
   }
@@ -77,17 +77,17 @@ export default function StartScreen({ root }) {
 
   async function handleDialogClose(action) {
     if (action === 'delete') {
-      await ipcRenderer.callMain('deleteSession', sessionNameToDelete)
+      await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
       getSessions()
     } else if (action === 'rename') {
-      await ipcRenderer.callMain(
+      await ipcRenderer.invoke(
         'renameSession',
         sessionNameToRename,
         newSessionName,
       )
       getSessions()
     } else if (action === 'reset') {
-      await ipcRenderer.callMain('reset')
+      await ipcRenderer.invoke('reset')
       window.location.reload()
     }
     setNewSessionName('')

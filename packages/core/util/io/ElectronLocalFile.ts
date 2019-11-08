@@ -2,13 +2,10 @@ import { GenericFilehandle, FilehandleOptions } from 'generic-filehandle'
 
 declare global {
   interface Window {
-    electronBetterIpc: {
-      ipcRenderer?: import('electron-better-ipc-extra').RendererProcessIpc
-    }
+    electron?: import('electron').AllElectron
   }
 }
-const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
+const { electron } = window
 
 type PathLike = import('fs').PathLike
 type Stats = import('fs').Stats
@@ -18,12 +15,14 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   private fd?: Promise<number>
 
-  private ipcRenderer: import('electron-better-ipc-extra').RendererProcessIpc
+  private ipcRenderer: import('electron').IpcRenderer
 
   constructor(source: PathLike) {
+    let ipcRenderer
+    if (electron) ipcRenderer = electron.ipcRenderer
     if (!ipcRenderer)
       throw new Error(
-        'Cannot use ElectronLocalFile without ipcRenderer from electron-better-ipc-extra',
+        'Cannot use ElectronLocalFile without ipcRenderer from electron',
       )
     this.ipcRenderer = ipcRenderer
     this.filename = source
@@ -32,11 +31,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
   private async getFd(): Promise<number> {
     if (!this.filename) throw new Error('no file path specified')
     if (!this.fd)
-      this.fd = this.ipcRenderer.callMain(
-        'open',
-        this.filename,
-        'r',
-      ) as Promise<number>
+      this.fd = this.ipcRenderer.invoke('open', this.filename, 'r') as Promise<
+        number
+      >
     return this.fd as Promise<number>
   }
 
@@ -48,7 +45,7 @@ export default class ElectronLocalFile implements GenericFilehandle {
   ): Promise<{ buffer: Buffer; bytesRead: number }> {
     const fetchLength = Math.min(buffer.length - offset, length)
     const fd = await this.getFd()
-    const res = (await this.ipcRenderer.callMain(
+    const res = (await this.ipcRenderer.invoke(
       'read',
       fd,
       buffer,
@@ -66,7 +63,7 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   async readFile(options: FilehandleOptions): Promise<Buffer | string> {
     if (!this.filename) throw new Error('no file path specified')
-    return this.ipcRenderer.callMain(
+    return this.ipcRenderer.invoke(
       'readFile',
       this.filename,
       options,
@@ -75,8 +72,6 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   // todo memoize
   async stat(): Promise<Stats> {
-    return this.ipcRenderer.callMain('stat', await this.getFd()) as Promise<
-      Stats
-    >
+    return this.ipcRenderer.invoke('stat', await this.getFd()) as Promise<Stats>
   }
 }
