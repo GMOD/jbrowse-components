@@ -84,6 +84,7 @@ ipcMain.on('createWindowWorker', event => {
   const workerWindow = new BrowserWindow({
     show: false,
     webPreferences: {
+      webSecurity: false,
       preload: isDev
         ? path.join(app.getAppPath(), 'public', 'preload.js')
         : `file://${path.join(app.getAppPath(), 'build', 'preload.js')}`,
