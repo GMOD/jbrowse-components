@@ -11,6 +11,8 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import DropDownMenu from './DropDownMenu'
 
+const isElectron = !!window.electron
+
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
@@ -83,9 +85,11 @@ function MainMenuBar(props) {
         <div className={classes.grow} />
         {sessionNameComponent}
         <div className={classes.grow}>
-          <IconButton onClick={handleEditToggle}>
-            <Icon className={classes.icon}>{editing ? 'check' : 'edit'}</Icon>
-          </IconButton>{' '}
+          {isElectron ? null : (
+            <IconButton onClick={handleEditToggle}>
+              <Icon className={classes.icon}>{editing ? 'check' : 'edit'}</Icon>
+            </IconButton>
+          )}{' '}
         </div>
         <Typography variant="h6" color="inherit">
           JBrowse
