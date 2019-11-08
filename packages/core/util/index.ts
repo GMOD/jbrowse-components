@@ -221,8 +221,8 @@ export function featureSpanPx(
   flipped = false,
 ): [number, number] {
   return bpSpanPx(
-    feature.get('left'),
-    feature.get('right'),
+    feature.get('start'),
+    feature.get('end'),
     region,
     bpPerPx,
     flipped,
