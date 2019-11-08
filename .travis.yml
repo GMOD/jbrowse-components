@@ -14,7 +14,7 @@ script:
   - yarn test-ci
   - yarn tsc --noEmit
   - |
-    if [[ $TRAVIS_BRANCH = "master"]]; then
+    if [[ $TRAVIS_BRANCH == "master" ]]; then
       yarn build
       BUILT_TESTS=1 yarn built-test-ci
     fi
