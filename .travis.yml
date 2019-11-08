@@ -13,8 +13,11 @@ script:
   - yarn lint
   - yarn test-ci
   - yarn tsc --noEmit
-  - yarn build
-  - BUILT_TESTS=1 yarn built-test-ci
+  - |
+    if [[ $TRAVIS_BRANCH = "master"]]; then
+      yarn build
+      BUILT_TESTS=1 yarn built-test-ci
+    fi
   # - if .travis/build-condition.sh $TRAVIS_COMMIT_RANGE $PROJECT; then cd $PROJECT && . .travis.sh; else echo "$PROJECT is NOT being built"; fi
 after_success:
   - bash <(curl -s https://codecov.io/bash)
