@@ -104,6 +104,8 @@ ipcMain.on('createWindowWorker', event => {
   event.returnValue = workerWindow.id
 })
 
+ipcMain.handle('getMainWindowId', async () => mainWindow.id)
+
 ipcMain.answerRenderer('loadConfig', async () => {
   let configJSON
   try {

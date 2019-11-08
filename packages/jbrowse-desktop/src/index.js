@@ -2,7 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import JBrowse from './JBrowse'
 
-const { BrowserWindow, getCurrentWindow } = window.electron.remote
+const { electron } = window
+const { ipcRenderer, remote } = electron
+const { BrowserWindow, getCurrentWindow } = remote
 
 window.onbeforeunload = () => {
   const thisWindowId = getCurrentWindow().id
@@ -10,6 +12,19 @@ window.onbeforeunload = () => {
     if (win.id !== thisWindowId) win.close()
   })
 }
+
+ipcRenderer.on('consoleLog', async (event, ...args) => {
+  // eslint-disable-next-line no-console
+  console.log(`windowWorker-${event.senderId}-log`, ...args)
+})
+
+ipcRenderer.on('consoleWarn', async (event, ...args) => {
+  console.warn(`windowWorker-${event.senderId}-warn`, ...args)
+})
+
+ipcRenderer.on('consoleError', async (event, ...args) => {
+  console.error(`windowWorker-${event.senderId}-error`, ...args)
+})
 
 const app = <JBrowse />
 
