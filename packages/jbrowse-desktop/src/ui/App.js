@@ -6,6 +6,7 @@ import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
+import { inDevelopment } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
@@ -155,7 +156,7 @@ function App({ size, session }) {
               />
             )
           })}
-          <DevTools session={session} />
+          {inDevelopment ? <DevTools session={session} /> : null}
         </div>
       </div>
 
