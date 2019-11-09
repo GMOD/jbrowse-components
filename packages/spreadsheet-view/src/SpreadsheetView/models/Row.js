@@ -11,6 +11,7 @@ export default pluginManager => {
     .model('SpreadsheetRow', {
       id: types.identifier,
       cells: types.array(CellModel),
+      extendedData: types.maybe(types.frozen()),
       isSelected: false,
     })
     .actions(self => ({

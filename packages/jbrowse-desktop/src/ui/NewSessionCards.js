@@ -182,6 +182,29 @@ NewLinearGenomeViewSession.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export function NewSVInspectorSession() {
-  return <NewSessionCard name={'SV Inspector'}>{''}</NewSessionCard>
+export function NewSVInspectorSession({ root }) {
+  const launchSVSession = () => {
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New SV Inspector Session ${new Date(Date.now()).toISOString()}`,
+      views: [
+        {
+          type: 'SvInspectorView',
+        },
+      ],
+    }
+    root.activateSession(snapshot)
+  }
+  return (
+    <NewSessionCard
+      name="Structural Variant Inspector"
+      onClick={launchSVSession}
+    >
+      {''}
+    </NewSessionCard>
+  )
+}
+
+NewSVInspectorSession.propTypes = {
+  root: MobxPropTypes.objectOrObservableObject.isRequired,
 }

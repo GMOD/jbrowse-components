@@ -9,6 +9,10 @@ export const configSchema = ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
+    featureClass: {
+      type: 'string',
+      defaultValue: 'SimpleFeature',
+    },
   },
   { explicitlyTyped: true },
 )

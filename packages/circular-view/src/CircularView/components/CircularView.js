@@ -144,19 +144,22 @@ export default pluginManager => {
           <Icon fontSize="small">rotate_right</Icon>
         </IconButton>
 
-        <ToggleButton
-          onClick={model.activateTrackSelector}
-          title="select tracks"
-          selected={
-            rootModel.visibleDrawerWidget &&
-            rootModel.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-            rootModel.visibleDrawerWidget.view.id === model.id
-          }
-          value="track_select"
-          data-testid="circular_track_select"
-        >
-          <Icon fontSize="small">line_style</Icon>
-        </ToggleButton>
+        {model.hideTrackSelectorButton ? null : (
+          <ToggleButton
+            onClick={model.activateTrackSelector}
+            title="select tracks"
+            selected={
+              rootModel.visibleDrawerWidget &&
+              rootModel.visibleDrawerWidget.id ===
+                'hierarchicalTrackSelector' &&
+              rootModel.visibleDrawerWidget.view.id === model.id
+            }
+            value="track_select"
+            data-testid="circular_track_select"
+          >
+            <Icon fontSize="small">line_style</Icon>
+          </ToggleButton>
+        )}
       </div>
     )
   })

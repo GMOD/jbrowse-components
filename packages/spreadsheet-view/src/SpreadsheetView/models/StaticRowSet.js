@@ -26,6 +26,15 @@ export default pluginManager => {
         return self.rows.filter(r => r.isSelected)
       },
 
+      get selectedFilteredRows() {
+        const sheet = getParent(self)
+        const view = getParent(sheet)
+        const { filterControls } = view
+        return self.selectedRows.filter(row =>
+          filterControls.rowPassesFilters(sheet, row),
+        )
+      },
+
       // the set of all rows that pass the filters, sorted
       get sortedFilteredRows() {
         const sheet = getParent(self)

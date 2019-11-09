@@ -60,8 +60,13 @@ export default pluginManager => {
         return !!getEnv(self).hideRowSelection
       },
 
-      get selectedRows() {
-        return self.rowSet.selectedRows
+      get outputRows() {
+        if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
+          const selected = self.spreadsheet.rowSet.selectedFilteredRows
+          if (selected.length) return selected
+          return self.spreadsheet.rowSet.sortedFilteredRows
+        }
+        return undefined
       },
 
       get dataset() {

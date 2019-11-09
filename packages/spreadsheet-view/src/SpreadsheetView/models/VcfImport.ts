@@ -1,4 +1,5 @@
 import VCF from '@gmod/vcf'
+import VcfFeature from '@gmod/jbrowse-plugin-variants/src/VcfTabixAdapter/VcfFeature'
 import {
   bufferToString,
   Row,
@@ -6,6 +7,7 @@ import {
   Column,
   ParseOptions,
 } from './ImportUtils'
+
 
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
@@ -21,7 +23,12 @@ const vcfCoreColumns: { name: string; type: string }[] = [
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
-  // const record = vcfParser.parseLine(line)
+  const vcfVariant = vcfParser.parseLine(line)
+  const vcfFeature = new VcfFeature({
+    variant: vcfVariant,
+    parser: vcfParser,
+    id: `vcf-${lineNumber}`,
+  })
   // if (!record) console.log(`no parse for "${line}"`)
   // const cells = [
   //   ...vcfCoreColumns.map((colName, columnNumber) => {
@@ -41,6 +48,7 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
     id: data[2] || String(lineNumber),
+    extendedData: { vcfFeature: vcfFeature.toJSON() },
     cells: data.map((text, columnNumber) => {
       return {
         columnNumber,

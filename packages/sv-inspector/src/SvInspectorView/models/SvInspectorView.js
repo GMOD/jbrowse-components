@@ -1,6 +1,8 @@
+import { getConf } from '@gmod/jbrowse-core/configuration'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { autorun } = jbrequire('mobx')
+  const { autorun, reaction } = jbrequire('mobx')
   const { types, getParent, addDisposer } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema, readConfObject } = jbrequire(
@@ -53,6 +55,7 @@ export default pluginManager => {
           type: 'CircularView',
           hideCloseButton: true,
           hideVerticalResizeHandle: true,
+          hideTrackSelectorButton: true,
         }),
       ),
     })
@@ -72,8 +75,39 @@ export default pluginManager => {
         return undefined
       },
 
+      get assemblyName() {
+        const { dataset } = self.spreadsheetView
+        if (dataset) return readConfObject(dataset, ['assembly', 'name'])
+        return undefined
+      },
+
       get showCircularView() {
         return self.spreadsheetView.mode === 'display'
+      },
+
+      get featuresAdapterConfigSnapshot() {
+        const features = (self.spreadsheetView.outputRows || [])
+          .map(row => {
+            if (row.extendedData && row.extendedData.vcfFeature) {
+              return row.extendedData.vcfFeature
+            }
+            return undefined
+          })
+          .filter(f => Boolean(f))
+        return {
+          type: 'FromConfigAdapter',
+          features,
+        }
+      },
+
+      get featuresCircularTrackConfiguration() {
+        const configuration = {
+          type: 'StructuralVariantChordTrack',
+          name: 'features from tabular data',
+          renderer: { type: 'StructuralVariantChordRenderer' },
+          adapter: self.featuresAdapterConfigSnapshot,
+        }
+        return configuration
       },
     }))
     .volatile(() => ({
@@ -85,40 +119,75 @@ export default pluginManager => {
         // synchronize subview widths
         addDisposer(
           self,
-          autorun(() => {
-            const borderWidth = 1
-            if (self.showCircularView) {
-              const spreadsheetWidth = Math.round(self.width * 0.66)
-              const circularViewWidth = self.width - spreadsheetWidth
-              self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
-              self.circularView.setWidth(circularViewWidth)
-            } else {
-              self.spreadsheetView.setWidth(self.width)
-            }
-          }),
+          autorun(
+            () => {
+              const borderWidth = 1
+              if (self.showCircularView) {
+                const spreadsheetWidth = Math.round(self.width * 0.66)
+                const circularViewWidth = self.width - spreadsheetWidth
+                self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
+                self.circularView.setWidth(circularViewWidth)
+              } else {
+                self.spreadsheetView.setWidth(self.width)
+              }
+            },
+            { name: 'SvInspectorView width binding' },
+          ),
         )
         // synchronize subview heights
         addDisposer(
           self,
-          autorun(() => {
-            self.spreadsheetView.setHeight(self.height - headerHeight)
-            self.circularView.setHeight(self.height - headerHeight)
-          }),
+          autorun(
+            () => {
+              self.spreadsheetView.setHeight(self.height - headerHeight)
+              self.circularView.setHeight(self.height - headerHeight)
+            },
+            { name: 'SvInspectorView height binding' },
+          ),
         )
         // bind circularview displayedRegions to spreadsheet dataset
         addDisposer(
           self,
-          autorun(() => {
-            const { dataset } = self.spreadsheetView
-            if (dataset) {
-              const assemblyName = readConfObject(dataset, ['assembly', 'name'])
-              self.circularView.setDisplayedRegionsFromAssemblyName(
-                assemblyName,
-              )
-            } else {
-              self.circularView.setDisplayedRegions([])
-            }
-          }),
+          autorun(
+            () => {
+              if (self.assemblyName) {
+                self.circularView.setDisplayedRegionsFromAssemblyName(
+                  self.assemblyName,
+                )
+              } else {
+                self.circularView.setDisplayedRegions([])
+              }
+            },
+            { name: 'SvInspectorView displayed regions bind' },
+          ),
+        )
+        // bind circularview tracks to our track snapshot view
+        addDisposer(
+          self,
+          reaction(
+            () => ({
+              generatedTrackConf: self.featuresCircularTrackConfiguration,
+              assemblyName: self.assemblyName,
+            }),
+            ({ assemblyName, generatedTrackConf }) => {
+              // hide any visible tracks
+              if (self.circularView.tracks.length) {
+                self.circularView.tracks.forEach(track => {
+                  self.circularView.hideTrack(track.configuration)
+                })
+              }
+
+              // put our track in as the only track
+              if (assemblyName) {
+                self.circularView.showTrack(generatedTrackConf, {
+                  assemblyName,
+                })
+              }
+            },
+            {
+              name: 'SvInspectorView track configuration binding',
+            },
+          ),
         )
       },
       setWidth(newWidth) {
