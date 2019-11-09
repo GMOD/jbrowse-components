@@ -61,7 +61,7 @@ export default abstract class BaseRpcDriver {
         .filter(isClonable)
         .map(t => this.filterArgs(t, pluginManager, stateGroupName))
     }
-    if (typeof thing === 'object') {
+    if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
         return serializeAbortSignal(
@@ -72,6 +72,7 @@ export default abstract class BaseRpcDriver {
 
       if (isStateTreeNode(thing) && !isAlive(thing))
         throw new Error('dead state tree node passed to RPC call')
+
       const newobj = objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
@@ -80,6 +81,9 @@ export default abstract class BaseRpcDriver {
             this.filterArgs(v, pluginManager, stateGroupName),
           ]),
       )
+      if (thing === null) {
+        console.warn(`received a null thing from ${stateGroupName}`)
+      }
       return newobj
     }
     return thing
