@@ -72,13 +72,15 @@ export default observer(() => {
 
   useEffect(() => {
     ;(async () => {
-      const sources = await desktopCapturer.getSources({
-        types: ['window'],
-        thumbnailSize: { width: 500, height: 500 },
-      })
-      const jbWindow = sources.find(source => source.name === 'JBrowse')
-      const screenshot = jbWindow.thumbnail.toDataURL()
-      ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
+      if (debouncedSessionSnapshot) {
+        const sources = await desktopCapturer.getSources({
+          types: ['window'],
+          thumbnailSize: { width: 500, height: 500 },
+        })
+        const jbWindow = sources.find(source => source.name === 'JBrowse')
+        const screenshot = jbWindow.thumbnail.toDataURL()
+        ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
+      }
     })()
     return () => {}
   }, [debouncedSessionSnapshot])
