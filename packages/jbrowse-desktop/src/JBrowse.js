@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
+import { useDebounce } from '@gmod/jbrowse-core/util'
 import rootModel from './rootModel'
 import App from './ui/App'
 import StartScreen from './ui/StartScreen'
@@ -19,6 +20,10 @@ export default observer(() => {
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState({})
   const [firstLoad, setFirstLoad] = useState(true)
+  const [sessionSnapshot, setSessionSnapshot] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState()
+  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, 5000)
+  const debouncedConfigSnapshot = useDebounce(configSnapshot, 5000)
 
   const { session, jbrowse } = root
   if (firstLoad && session) setFirstLoad(false)
@@ -26,8 +31,8 @@ export default observer(() => {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const configSnapshot = await ipcRenderer.invoke('loadConfig')
-        const r = rootModel.create({ jbrowse: configSnapshot })
+        const config = await ipcRenderer.invoke('loadConfig')
+        const r = rootModel.create({ jbrowse: config })
 
         // poke some things for testing (this stuff will eventually be removed)
         window.ROOTMODEL = r
@@ -46,31 +51,45 @@ export default observer(() => {
 
   useEffect(() => {
     let disposer = () => {}
-    if (session) {
-      disposer = onSnapshot(session, async snapshot => {
-        const sources = await desktopCapturer.getSources({
-          types: ['window'],
-          thumbnailSize: { width: 500, height: 500 },
-        })
-        const jbWindow = sources.find(source => source.name === 'JBrowse')
-        const screenshot = jbWindow.thumbnail.toDataURL()
-        ipcRenderer.send('saveSession', snapshot, screenshot)
-      })
-    }
-
-    return disposer
-  }, [session, jbrowse])
-
-  useEffect(() => {
-    let disposer = () => {}
     if (jbrowse) {
-      disposer = onSnapshot(jbrowse, snapshot => {
-        ipcRenderer.send('saveConfig', snapshot)
+      disposer = onSnapshot(jbrowse, snap => {
+        setConfigSnapshot(snap)
       })
     }
 
     return disposer
   }, [jbrowse])
+  useEffect(() => {
+    let disposer = () => {}
+    if (session) {
+      disposer = onSnapshot(session, snap => {
+        setSessionSnapshot(snap)
+      })
+    }
+
+    return disposer
+  }, [session])
+
+  useEffect(() => {
+    ;(async () => {
+      const sources = await desktopCapturer.getSources({
+        types: ['window'],
+        thumbnailSize: { width: 500, height: 500 },
+      })
+      const jbWindow = sources.find(source => source.name === 'JBrowse')
+      const screenshot = jbWindow.thumbnail.toDataURL()
+      ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
+    })()
+    return () => {}
+  }, [debouncedSessionSnapshot])
+
+  useEffect(() => {
+    if (debouncedConfigSnapshot) {
+      ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
+    }
+
+    return () => {}
+  }, [debouncedConfigSnapshot])
 
   let DisplayComponent = (
     <CircularProgress
