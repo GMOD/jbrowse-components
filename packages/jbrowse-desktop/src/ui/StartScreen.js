@@ -53,13 +53,16 @@ export default function StartScreen({ root, bypass }) {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
   const [reset, setReset] = useState(false)
 
+  const sessionNames = sessions && Object.keys(sessions)
+  if (sessionNames) root.setSavedSessionNames(sessionNames)
+
   const sortedSessions =
     sessions &&
     Object.entries(sessions)
       .filter(([, sessionData]) => sessionData.stats)
       .sort((a, b) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
 
-  if (bypass && inDevelopment && sortedSessions) {
+  if (bypass && inDevelopment && sortedSessions && sortedSessions.length) {
     onCardClick(sortedSessions[0][0])
   }
 
@@ -136,7 +139,6 @@ export default function StartScreen({ root, bypass }) {
       />
     )
 
-  const sessionNames = Object.keys(sessions)
   let DialogComponent = <></>
   if (sessionNameToDelete)
     DialogComponent = (
