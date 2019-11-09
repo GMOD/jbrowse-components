@@ -66,7 +66,7 @@ exports[`<MainMenuBar /> renders 1`] = `
     />
     <div
       class="MuiInputBase-root makeStyles-inputRoot makeStyles-input"
-      style="width: 32px;"
+      style="width: 28.5px;"
       title="Rename"
     >
       <input
