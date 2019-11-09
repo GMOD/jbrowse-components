@@ -81,7 +81,7 @@ function MainMenuBar(props) {
   }, [session.name])
 
   const scrollWidth = sizerNode && sizerNode.scrollWidth
-  const padding = 32
+  const padding = 12 + 1.5 * editedName.length
   if (scrollWidth + padding !== width) setWidth(scrollWidth + padding)
 
   const sizerRef = node => {
@@ -94,12 +94,25 @@ function MainMenuBar(props) {
 
   function handleBlur() {
     if (editedName !== session.name) {
-      if (session.savedSessionNames.includes(editedName)) {
+      if (
+        session.savedSessionNames &&
+        session.savedSessionNames.includes(editedName)
+      ) {
         setEditedName(session.name)
         console.error(
           `Cannot rename session to ${editedName}, a saved session with that name already exists`,
         )
       } else session.renameCurrentSession(editedName)
+    }
+  }
+
+  function handleKeyDown(event) {
+    // "Enter"
+    if (event.keyCode === 13) inputNode.blur()
+    // "Esc"
+    else if (event.keyCode === 27) {
+      setEditedName(session.name)
+      inputNode.blur()
     }
   }
 
@@ -117,10 +130,7 @@ function MainMenuBar(props) {
           classes={{ root: classes.inputRoot, focused: classes.inputFocused }}
           value={editedName}
           onChange={handleChange}
-          // Remove focus on pressing "Esc" or "Enter"
-          onKeyDown={event => {
-            if ([13, 27].includes(event.keyCode)) inputNode.blur()
-          }}
+          onKeyDown={handleKeyDown}
           onBlur={handleBlur}
         />
       </Tooltip>
