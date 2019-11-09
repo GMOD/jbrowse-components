@@ -40,6 +40,7 @@ const stateModelFactory = (configSchema: any) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           stats: undefined as undefined | any,
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
