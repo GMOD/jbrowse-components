@@ -86,7 +86,7 @@ export default class extends WiggleBaseRenderer {
       if (highClipping) {
         ctx.fillStyle = clipColor
         ctx.fillRect(leftPx, 0, w, 4)
-      } else if (lowClipping) {
+      } else if (lowClipping && scaleOpts.scaleType !== 'log') {
         ctx.fillStyle = clipColor
         ctx.fillRect(leftPx, height - 4, w, height)
       }
