@@ -2,6 +2,7 @@ import './Loading.scss'
 
 export default ({ jbrequire }) => {
   const React = jbrequire('react')
+  const { useState, useEffect } = React
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { observer } = jbrequire('mobx-react')
 
@@ -14,7 +15,15 @@ export default ({ jbrequire }) => {
   // 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
   const Loading = observer(({ model: { renderProps: { radius } } }) => {
     const classes = useStyles()
-    return (
+
+    // only show the loading message after 400ms to prevent excessive flickering
+    const [shown, setShown] = useState(false)
+    useEffect(() => {
+      const timeout = setTimeout(() => setShown(true), 400)
+      return () => clearTimeout(timeout)
+    })
+
+    return !shown ? null : (
       <>
         <g className={classes.loadingMessage}>
           <defs>
