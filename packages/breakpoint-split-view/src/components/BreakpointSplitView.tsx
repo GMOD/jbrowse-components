@@ -14,6 +14,7 @@ export default (pluginManager: any) => {
   const AlignmentSplines = jbrequire(require('./AlignmentSplines'))
   const BreakendLines = jbrequire(require('./BreakendLines'))
   const Header = jbrequire(require('./Header'))
+  const { grey } = jbrequire('@material-ui/core/colors')
 
   const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
     return {
@@ -21,7 +22,6 @@ export default (pluginManager: any) => {
         position: 'relative',
         marginBottom: theme.spacing(1),
         overflow: 'hidden',
-        background: '#e8e8e8',
       },
       breakpointMarker: {
         position: 'absolute',
@@ -35,6 +35,7 @@ export default (pluginManager: any) => {
       },
       container: {
         display: 'grid',
+        background: grey[300],
       },
       overlay: {
         gridArea: '1/1',
