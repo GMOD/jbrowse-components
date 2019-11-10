@@ -1,26 +1,35 @@
 import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
-import { generateLocString } from '@gmod/jbrowse-core/util'
+import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 // material ui things
 import { makeStyles } from '@material-ui/core/styles'
+import Button from '@material-ui/core/Button'
 import Checkbox from '@material-ui/core/Checkbox'
+import Container from '@material-ui/core/Container'
+import FormControl from '@material-ui/core/FormControl'
+import FormLabel from '@material-ui/core/FormLabel'
+import FormGroup from '@material-ui/core/FormGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
+import LinearProgress from '@material-ui/core/LinearProgress'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import Select from '@material-ui/core/Select'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+
+// misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-
-import { Instance } from 'mobx-state-tree'
+import { Instance, getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useState, CSSProperties } from 'react'
+import React, { useEffect, useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
@@ -366,62 +375,176 @@ const Controls = observer(({ model }) => {
   )
 })
 
-function LinearGenomeView(props: { model: LGV }) {
+const ImportForm = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
+  const [selectedAssembly, setSelectedAssembly] = useState()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState()
+  const datasets = getRoot(model).jbrowse.datasets.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (dataset: any, idx: number) => readConfObject(dataset, 'name'),
+  )
+
+  useEffect(() => {
+    let finished = false
+    async function updateAssembly() {
+      setLoading(true)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const session = getSession(model) as any
+      const displayedRegions = await session.getRegionsForAssembly(
+        selectedAssembly,
+        session.assemblyData,
+      )
+      // note: we cannot just use setDisplayRegionsFromAssemblyName because
+      // it uses an autorun that does not respond to updates to
+      // the displayRegionsFromAssembly name (only to changes to the self.views array)
+      // see sessionModelFactory
+      if (!finished) {
+        model.setDisplayedRegions(displayedRegions || [], true)
+        model.setDisplayName(selectedAssembly)
+      }
+    }
+    try {
+      if (selectedAssembly) {
+        updateAssembly()
+      }
+    } catch (e) {
+      if (!finished) {
+        setError(e.message)
+      }
+    }
+    return () => {
+      finished = true
+    }
+  }, [model, selectedAssembly])
+  return (
+    <>
+      <div style={{ height: HEADER_BAR_HEIGHT }}>
+        <IconButton
+          onClick={model.closeView}
+          className={classes.iconButton}
+          title="close this view"
+        >
+          <Icon fontSize="small">close</Icon>
+        </IconButton>
+      </div>
+      <Container>
+        {error ? (
+          <Typography style={{ color: 'red' }}>{error}</Typography>
+        ) : null}
+        {loading ? <LinearProgress /> : null}
+        <Grid
+          style={{ width: '25rem', margin: '0 auto' }}
+          container
+          spacing={1}
+          direction="row"
+          alignItems="flex-start"
+        >
+          <Grid item>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Select dataset to view</FormLabel>
+              <FormGroup>
+                <Select
+                  value={selectedDatasetIdx}
+                  onChange={event => {
+                    setSelectedDatasetIdx(String(event.target.value))
+                  }}
+                >
+                  {datasets.map((name: string, idx: number) => (
+                    <MenuItem key={name} value={idx}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormGroup>
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <Button
+              disabled={selectedDatasetIdx === undefined}
+              onClick={event => {
+                const assemblyName = readConfObject(
+                  getRoot(model).jbrowse.datasets[Number(selectedDatasetIdx)]
+                    .assembly,
+                  'name',
+                )
+                setSelectedAssembly(assemblyName)
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Open
+            </Button>
+          </Grid>
+        </Grid>
+      </Container>
+    </>
+  )
+})
+
+const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, controlsWidth } = model
   const classes = useStyles()
 
-  /*
-   * NOTE: offsetPx is the total offset in px of the viewing window into the
-   * whole set of concatenated regions. this number is often quite large.
-   */
-  const style = {
-    display: 'grid',
-    position: 'relative',
-    gridTemplateRows: `${
-      !model.hideHeader ? '[header] auto ' : ''
-    } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
-      .map(
-        t =>
-          `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
-      )
-      .join(' ')}`,
-    gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
-  } as CSSProperties
+  const initialized =
+    !!model.displayedRegions.length || !!model.displayRegionsFromAssemblyName
+  const style = (initialized
+    ? {
+        display: 'grid',
+        position: 'relative',
+        gridTemplateRows: `${
+          !model.hideHeader ? '[header] auto ' : ''
+        } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
+          .map(
+            t =>
+              `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
+          )
+          .join(' ')}`,
+        gridTemplateColumns: `[controls] ${controlsWidth}px [blocks] auto`,
+      }
+    : {}) as React.CSSProperties
 
   return (
     <div className={classes.root}>
       <div className={classes.linearGenomeView} style={style}>
-        {!model.hideHeader ? <Header model={model} /> : null}
-        <div
-          className={clsx(classes.controls, classes.viewControls)}
-          style={{ gridRow: 'scale-bar' }}
-        >
-          {model.hideControls || !model.hideHeader ? null : (
-            <Controls model={model} />
-          )}
-        </div>
+        {!initialized ? (
+          <ImportForm model={model} />
+        ) : (
+          <>
+            {!model.hideHeader ? <Header model={model} /> : null}
+            <div
+              className={clsx(classes.controls, classes.viewControls)}
+              style={{ gridRow: 'scale-bar' }}
+            >
+              {model.hideControls || !model.hideHeader ? null : (
+                <Controls model={model} />
+              )}
+            </div>
 
-        <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
-          <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
-        </Rubberband>
+            <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
+              <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
+            </Rubberband>
 
-        {model.hideHeader ? (
-          <div
-            className={classes.zoomControls}
-            style={{
-              right: 4,
-              zIndex: 1000,
-            }}
-          >
-            <ZoomControls model={model} />
-          </div>
-        ) : null}
-        {tracks.map(track => (
-          <TrackContainer key={track.id} model={model} track={track} />
-        ))}
+            {model.hideHeader ? (
+              <div
+                className={classes.zoomControls}
+                style={{
+                  right: 4,
+                  zIndex: 1000,
+                }}
+              >
+                <ZoomControls model={model} />
+              </div>
+            ) : null}
+            {tracks.map(track => (
+              <TrackContainer key={track.id} model={model} track={track} />
+            ))}
+          </>
+        )}
       </div>
     </div>
   )
-}
-export default observer(LinearGenomeView)
+})
+export default LinearGenomeView
