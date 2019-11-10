@@ -25,8 +25,8 @@ const RootModel = types
         const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
         const oldName = snapshot.name
         snapshot.name = sessionName
-        this.setSession(snapshot)
         self.jbrowse.replaceSavedSession(oldName, snapshot)
+        this.setSession(snapshot)
       }
     },
     duplicateCurrentSession() {

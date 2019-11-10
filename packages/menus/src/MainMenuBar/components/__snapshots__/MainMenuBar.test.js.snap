@@ -64,35 +64,25 @@ exports[`<MainMenuBar /> renders 1`] = `
     <div
       class="makeStyles-grow"
     />
-    <p
-      class="MuiTypography-root MuiTypography-body1"
+    <div
+      class="MuiInputBase-root makeStyles-inputRoot makeStyles-input"
+      style="width: 28.5px;"
+      title="Rename"
+    >
+      <input
+        class="MuiInputBase-input"
+        type="text"
+        value="testSession"
+      />
+    </div>
+    <div
+      class="makeStyles-sizer"
     >
       testSession
-    </p>
+    </div>
     <div
       class="makeStyles-grow"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root"
-        tabindex="0"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <span
-            aria-hidden="true"
-            class="material-icons MuiIcon-root makeStyles-icon"
-          >
-            edit
-          </span>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-       
-    </div>
+    />
     <h6
       class="MuiTypography-root MuiTypography-h6 MuiTypography-colorInherit"
     >

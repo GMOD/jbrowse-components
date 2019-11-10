@@ -73,10 +73,20 @@ const emptySessionSnapshot = {
                 'function(session) {session.activateSession(undefined)}',
             },
             {
-              name: 'Import tabular data',
+              name: 'Create new spreadsheet',
               icon: 'table_chart',
               callback:
                 "function(session) { session.addView('SpreadsheetView', {})}",
+            },
+            {
+              name: 'Create new linear genome view',
+              callback:
+                "function(session) { session.addView('LinearGenomeView', {})}",
+            },
+            {
+              name: 'Create new circular view',
+              callback:
+                "function(session) { session.addView('CircularView', {})}",
             },
           ],
         },

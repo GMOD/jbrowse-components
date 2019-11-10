@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
-const { ipcMain } = require('electron-better-ipc-extra')
 const debug = require('electron-debug')
 const isDev = require('electron-is-dev')
 const fs = require('fs')
@@ -20,7 +19,7 @@ const fsStat = promisify(fs.stat)
 const fsUnlink = promisify(fs.unlink)
 const fsWriteFile = promisify(fs.writeFile)
 
-const { app, BrowserWindow, Menu } = electron
+const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
 debug()
 
@@ -55,6 +54,10 @@ function createWindow() {
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
+  mainWindow.webContents.on('new-window', (event, outboundUrl) => {
+    event.preventDefault()
+    shell.openExternal(outboundUrl)
+  })
   Menu.setApplicationMenu(null)
   // if (isDev) {
   // Open the DevTools.
@@ -100,7 +103,9 @@ ipcMain.on('createWindowWorker', event => {
   event.returnValue = workerWindow.id
 })
 
-ipcMain.answerRenderer('loadConfig', async () => {
+ipcMain.handle('getMainWindowId', async () => mainWindow.id)
+
+ipcMain.handle('loadConfig', async () => {
   let configJSON
   try {
     configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
@@ -117,11 +122,11 @@ ipcMain.answerRenderer('loadConfig', async () => {
   return JSON.parse(configJSON)
 })
 
-ipcMain.answerRenderer('saveConfig', async configSnapshot => {
-  return fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
+ipcMain.on('saveConfig', async (event, configSnapshot) => {
+  fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
 })
 
-ipcMain.answerRenderer('listSessions', async () => {
+ipcMain.handle('listSessions', async () => {
   const sessionFiles = await fsReaddir(sessionDirectory)
   const sessionFilesData = []
   for (const sessionFile of sessionFiles) {
@@ -153,34 +158,31 @@ ipcMain.answerRenderer('listSessions', async () => {
   return sessions
 })
 
-ipcMain.answerRenderer('loadSession', async sessionName => {
+ipcMain.handle('loadSession', async (event, sessionName) => {
   return fsReadFile(
     path.join(sessionDirectory, `${encodeURIComponent(sessionName)}.json`),
     { encoding: 'utf8' },
   )
 })
 
-ipcMain.answerRenderer(
-  'saveSession',
-  async (sessionSnapshot, sessionScreenshot) => {
-    await fsWriteFile(
-      path.join(
-        sessionDirectory,
-        `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
-      ),
-      sessionScreenshot,
-    )
-    return fsWriteFile(
-      path.join(
-        sessionDirectory,
-        `${encodeURIComponent(sessionSnapshot.name)}.json`,
-      ),
-      JSON.stringify(sessionSnapshot, null, 2),
-    )
-  },
-)
+ipcMain.on('saveSession', async (event, sessionSnapshot, sessionScreenshot) => {
+  fsWriteFile(
+    path.join(
+      sessionDirectory,
+      `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
+    ),
+    sessionScreenshot,
+  )
+  fsWriteFile(
+    path.join(
+      sessionDirectory,
+      `${encodeURIComponent(sessionSnapshot.name)}.json`,
+    ),
+    JSON.stringify(sessionSnapshot, null, 2),
+  )
+})
 
-ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
+ipcMain.handle('renameSession', async (event, oldName, newName) => {
   try {
     await fsRename(
       path.join(sessionDirectory, `${encodeURIComponent(oldName)}.thumbnail`),
@@ -189,13 +191,22 @@ ipcMain.answerRenderer('renameSession', async (oldName, newName) => {
   } catch {
     // ignore
   }
-  await fsRename(
+  const sessionJson = await fsReadFile(
     path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
+    { encoding: 'utf8' },
+  )
+  const sessionSnapshot = JSON.parse(sessionJson)
+  sessionSnapshot.name = newName
+  await fsUnlink(
+    path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
+  )
+  await fsWriteFile(
     path.join(sessionDirectory, `${encodeURIComponent(newName)}.json`),
+    JSON.stringify(sessionSnapshot, null, 2),
   )
 })
 
-ipcMain.answerRenderer('reset', async () => {
+ipcMain.handle('reset', async () => {
   const configTemplateLocation = isDev
     ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
     : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
@@ -208,7 +219,7 @@ ipcMain.answerRenderer('reset', async () => {
   await Promise.all(unlinkCommands)
 })
 
-ipcMain.answerRenderer('deleteSession', async sessionName => {
+ipcMain.handle('deleteSession', async (event, sessionName) => {
   try {
     await fsUnlink(
       path.join(
@@ -224,7 +235,7 @@ ipcMain.answerRenderer('deleteSession', async sessionName => {
   )
 })
 
-ipcMain.answerRenderer('fetch', async (...args) => {
+ipcMain.handle('fetch', async (event, ...args) => {
   const response = await fetch(...args)
   const serializableResponse = {}
   serializableResponse.headers = Array.from(response.headers)
@@ -235,20 +246,20 @@ ipcMain.answerRenderer('fetch', async (...args) => {
   return serializableResponse
 })
 
-ipcMain.answerRenderer('read', async (...args) => {
+ipcMain.handle('read', async (event, ...args) => {
   return fsRead(...args)
 })
 
-ipcMain.answerRenderer('readFile', async (...args) => {
+ipcMain.handle('readFile', async (event, ...args) => {
   args[0] = path.resolve(app.getAppPath(), isDev ? 'public' : 'build', args[0])
   return fsReadFile(...args)
 })
 
-ipcMain.answerRenderer('stat', async (...args) => {
+ipcMain.handle('stat', async (event, ...args) => {
   return fsFStat(...args)
 })
 
-ipcMain.answerRenderer('open', async (...args) => {
+ipcMain.handle('open', async (event, ...args) => {
   args[0] = path.resolve(app.getAppPath(), isDev ? 'public' : 'build', args[0])
   return fsOpen(...args)
 })

@@ -1,20 +1,19 @@
 import { getConf } from '@gmod/jbrowse-core/configuration'
-import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import BlockBasedTrack from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/components/BlockBasedTrack'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
+import { WiggleTrackModel } from '../model'
 
-const powersOfTen = []
+const powersOfTen: number[] = []
 for (let i = -20; i < 20; i += 1) {
   powersOfTen.push(10 ** i)
 }
-
-function WiggleTrackComponent(props) {
-  const { model } = props
-  const { domain, ready, height } = model
-
-  const getYScaleBar = () => {
+const YScaleBar = observer(
+  ({ model }: { model: Instance<WiggleTrackModel> }) => {
+    const { domain, height } = model
     const scaleType = getConf(model, 'scaleType')
     const scale = getScale({
       scaleType,
@@ -29,7 +28,7 @@ function WiggleTrackComponent(props) {
     const axisProps = axisPropsFromTickScale(scale, 4)
     const values =
       scaleType === 'log'
-        ? axisProps.values.filter(s => powersOfTen.includes(s))
+        ? axisProps.values.filter((s: number) => powersOfTen.includes(s))
         : axisProps.values
     return (
       <svg
@@ -44,12 +43,16 @@ function WiggleTrackComponent(props) {
         <Axis
           {...axisProps}
           values={values}
-          format={n => n}
+          format={(n: number) => n}
           style={{ orient: RIGHT }}
         />
       </svg>
     )
-  }
+  },
+)
+function WiggleTrackComponent(props: { model: Instance<WiggleTrackModel> }) {
+  const { model } = props
+  const { ready } = model
 
   const needsScalebar =
     model.rendererTypeName === 'XYPlotRenderer' ||
@@ -57,7 +60,7 @@ function WiggleTrackComponent(props) {
 
   return (
     <BlockBasedTrack {...props}>
-      {ready && needsScalebar ? getYScaleBar(model) : null}
+      {ready && needsScalebar ? <YScaleBar model={model} /> : null}
     </BlockBasedTrack>
   )
 }

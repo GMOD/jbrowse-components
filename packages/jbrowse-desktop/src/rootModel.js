@@ -2,12 +2,19 @@ import { getSnapshot, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import JBrowseWeb, { Session } from './jbrowseModel'
 
+const { electronBetterIpc = {} } = window
+const { ipcRenderer } = electronBetterIpc
+
 const RootModel = types
   .model('Root', {
     jbrowse: JBrowseWeb,
     session: types.maybe(Session),
+    savedSessionNames: types.maybe(types.array(types.string)),
   })
   .actions(self => ({
+    setSavedSessionNames(sessionNames) {
+      self.savedSessionNames = sessionNames
+    },
     setSession(sessionSnapshot) {
       self.session = sessionSnapshot
     },
@@ -24,7 +31,7 @@ const RootModel = types
       const oldName = snapshot.name
       snapshot.name = sessionName
       self.setSession(snapshot)
-      self.jbrowse.replaceSavedSession(oldName, snapshot)
+      ipcRenderer.invoke('renameSession', oldName, sessionName)
     },
     duplicateCurrentSession() {
       const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))

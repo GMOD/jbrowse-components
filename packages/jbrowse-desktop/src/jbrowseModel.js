@@ -1,7 +1,12 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
+import {
+  getSnapshot,
+  resolveIdentifier,
+  types,
+  getParent,
+} from 'mobx-state-tree'
 import assemblyManager from './assemblyManager'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
@@ -98,7 +103,7 @@ const JBrowseWeb = types
   }))
   .views(self => ({
     get savedSessionNames() {
-      return self.savedSessions.map(sessionSnap => sessionSnap.name)
+      return getParent(self).savedSessionNames
     },
   }))
   // Grouping the "assembly manager" stuff under an `extend` just for

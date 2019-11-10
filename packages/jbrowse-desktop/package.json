@@ -53,7 +53,7 @@
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
-    "develop": "ELECTRON_ENABLE_LOGGING=1 electron .",
+    "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
     "build": "rescripts build",
