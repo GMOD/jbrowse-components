@@ -182,7 +182,7 @@ export default pluginManager => {
     const [selectedAssembly, setSelectedAssembly] = useState()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState()
-    const datasets = getRoot(model).jbrowse.datasets.map((dataset) =>
+    const datasets = getRoot(model).jbrowse.datasets.map(dataset =>
       readConfObject(dataset, 'name'),
     )
 
@@ -249,7 +249,7 @@ export default pluginManager => {
                       setSelectedDatasetIdx(String(event.target.value))
                     }}
                   >
-                    {datasets.map((name: string, idx: number) => (
+                    {datasets.map((name, idx) => (
                       <MenuItem key={name} value={idx}>
                         {name}
                       </MenuItem>
