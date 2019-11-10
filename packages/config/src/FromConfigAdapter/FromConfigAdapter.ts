@@ -63,7 +63,7 @@ export default class FromConfigAdapter extends BaseAdapter {
         // get refNames of generic "mate" records
         let mate
         if ((mate = feature.get('mate')) && mate.refName) {
-          refNames.add(refName)
+          refNames.add(mate.refName)
         }
         // get refNames of VCF BND and TRA records
         const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
