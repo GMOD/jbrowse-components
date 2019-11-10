@@ -1,4 +1,9 @@
-import { parseCsvBuffer, parseTsvBuffer, parseBedBuffer } from './ImportUtils'
+import {
+  parseCsvBuffer,
+  parseTsvBuffer,
+  parseBedBuffer,
+  parseBedPEBuffer,
+} from './ImportUtils'
 
 import { parseVcfBuffer } from './VcfImport'
 
@@ -10,12 +15,13 @@ export default pluginManager => {
   const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED']
+  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE']
   const fileTypeParsers = {
     CSV: parseCsvBuffer,
     TSV: parseTsvBuffer,
     VCF: parseVcfBuffer,
     BED: parseBedBuffer,
+    BEDPE: parseBedPEBuffer,
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(

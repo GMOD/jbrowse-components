@@ -88,8 +88,10 @@ export default pluginManager => {
       get featuresAdapterConfigSnapshot() {
         const features = (self.spreadsheetView.outputRows || [])
           .map(row => {
-            if (row.extendedData && row.extendedData.vcfFeature) {
-              return row.extendedData.vcfFeature
+            if (row.extendedData) {
+              if (row.extendedData.vcfFeature)
+                return row.extendedData.vcfFeature
+              if (row.extendedData.feature) return row.extendedData.feature
             }
             return undefined
           })

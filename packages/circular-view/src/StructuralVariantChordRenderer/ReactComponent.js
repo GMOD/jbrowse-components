@@ -32,18 +32,31 @@ export default ({ jbrequire }) => {
     if (!startBlock) {
       return null
     }
-    const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
+    let svType
+    if (feature.get('INFO')) {
+      ;[svType] = feature.get('INFO').SVTYPE || []
+    } else if (feature.get('mate')) {
+      svType = 'mate'
+    }
     let endPosition
     let endBlock
     if (svType === 'BND') {
+      // VCF BND
       const breakendSpecification = (feature.get('ALT') || [])[0]
       const matePosition = breakendSpecification.MatePosition.split(':')
       endPosition = parseInt(matePosition[1], 10)
       endBlock = blocksForRefs[matePosition[0]]
     } else if (svType === 'TRA') {
+      // VCF TRA
       const chr2 = ((feature.get('INFO') || {}).CHR2 || [])[0]
       const end = ((feature.get('INFO') || {}).END || [])[0]
       endPosition = parseInt(end, 10)
+      endBlock = blocksForRefs[chr2]
+    } else if (svType === 'mate') {
+      // generic simplefeatures arcs
+      const mate = feature.get('mate')
+      const chr2 = mate.refName
+      endPosition = mate.start
       endBlock = blocksForRefs[chr2]
     }
     if (endBlock) {

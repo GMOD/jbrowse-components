@@ -18,33 +18,41 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       endRegion: IRegion,
     ) {
       const breakendSpecification = (feature.get('ALT') || [])[0]
-      let endPos
-      if (breakendSpecification === '<TRA>') {
-        const INFO = feature.get('INFO') || []
-        endPos = INFO.END[0] - 1
-      } else {
-        const matePosition = breakendSpecification.MatePosition.split(':')
-        endPos = parseInt(matePosition[1], 10) - 1
-      }
       const startPos = feature.get('start')
-
+      let endPos
       const bpPerPx = 10
-
       const topRegions = [{ ...startRegion }, { ...startRegion }]
-      if (breakendSpecification.Join === 'left') {
-        topRegions[0].end = startPos - 1
-        topRegions[1].start = startPos - 1
-      } else {
+      const bottomRegions = [{ ...endRegion }, { ...endRegion }]
+      if (breakendSpecification) {
+        // a VCF breakend feature
+        if (breakendSpecification === '<TRA>') {
+          const INFO = feature.get('INFO') || []
+          endPos = INFO.END[0] - 1
+        } else {
+          const matePosition = breakendSpecification.MatePosition.split(':')
+          endPos = parseInt(matePosition[1], 10) - 1
+        }
+        if (breakendSpecification.Join === 'left') {
+          topRegions[0].end = startPos - 1
+          topRegions[1].start = startPos - 1
+        } else {
+          topRegions[0].end = startPos
+          topRegions[1].start = startPos
+        }
+        if (breakendSpecification.MateDirection === 'left') {
+          bottomRegions[0].end = endPos - 1
+          bottomRegions[1].start = endPos - 1
+        } else {
+          bottomRegions[0].end = endPos
+          bottomRegions[1].start = endPos
+        }
+      } else if (feature.get('mate')) {
+        // a generic 'mate' feature
+        const mate = feature.get('mate')
         topRegions[0].end = startPos
         topRegions[1].start = startPos
-      }
-      const bottomRegions = [{ ...endRegion }, { ...endRegion }]
-      if (breakendSpecification.MateDirection === 'left') {
-        bottomRegions[0].end = endPos - 1
-        bottomRegions[1].start = endPos - 1
-      } else {
-        bottomRegions[0].end = endPos
-        bottomRegions[1].start = endPos
+        bottomRegions[0].end = mate.start
+        bottomRegions[1].start = mate.start
       }
 
       const snapshot = {
