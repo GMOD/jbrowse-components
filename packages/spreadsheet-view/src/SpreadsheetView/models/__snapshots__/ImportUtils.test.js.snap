@@ -223,6 +223,7 @@ Object {
       "name": undefined,
     },
   ],
+  "datasetName": undefined,
   "hasColumnNames": true,
   "rowSet": Object {
     "isLoaded": true,
