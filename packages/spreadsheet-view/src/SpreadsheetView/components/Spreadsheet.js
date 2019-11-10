@@ -356,6 +356,7 @@ export default pluginManager => {
                   <IconButton
                     className={classes.unselectAllButton}
                     onClick={model.unselectAll}
+                    disabled={!model.rowSet.selectedCount}
                     size="small"
                   >
                     <Icon className={classes.columnButtonIcon}>crop_free</Icon>

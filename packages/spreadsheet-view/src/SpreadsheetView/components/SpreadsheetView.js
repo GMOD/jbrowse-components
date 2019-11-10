@@ -105,7 +105,7 @@ export default pluginManager => {
     return (
       <div className={classes.filterControls}>
         <TextField
-          label="filter"
+          label="text filter"
           value={textFilterValue}
           onChange={evt => setTextFilterValue(evt.target.value)}
           className={classes.textFilterControl}
