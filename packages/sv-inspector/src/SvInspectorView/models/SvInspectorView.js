@@ -1,5 +1,3 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
-
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = jbrequire('mobx')

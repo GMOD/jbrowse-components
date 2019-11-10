@@ -181,6 +181,7 @@ export function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
 
     // decorate each row with a feature object in its extendedData
     data.rowSet.rows.forEach((row, rowNumber) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const featureData: Record<string, any> = {}
       row.cells.forEach(({ text }, columnNumber) => {
         const bedColumn = bedColumns[columnNumber]

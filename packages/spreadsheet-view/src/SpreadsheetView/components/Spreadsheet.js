@@ -353,14 +353,18 @@ export default pluginManager => {
             <tr>
               <th className={classes.topLeftCorner}>
                 <Tooltip title="Unselect all" placement="right">
-                  <IconButton
-                    className={classes.unselectAllButton}
-                    onClick={model.unselectAll}
-                    disabled={!model.rowSet.selectedCount}
-                    size="small"
-                  >
-                    <Icon className={classes.columnButtonIcon}>crop_free</Icon>
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      className={classes.unselectAllButton}
+                      onClick={model.unselectAll}
+                      disabled={!model.rowSet.selectedCount}
+                      size="small"
+                    >
+                      <Icon className={classes.columnButtonIcon}>
+                        crop_free
+                      </Icon>
+                    </IconButton>
+                  </span>
                 </Tooltip>
               </th>
               {columnDisplayOrder.map(colNumber => (

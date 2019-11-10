@@ -8,7 +8,6 @@ import {
   ParseOptions,
 } from './ImportUtils'
 
-
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
   { name: 'POS', type: 'Number' }, // 1

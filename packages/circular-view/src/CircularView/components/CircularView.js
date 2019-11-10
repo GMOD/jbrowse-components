@@ -330,20 +330,20 @@ export default pluginManager => {
 
             <Controls model={model} />
 
-{model.hideVerticalResizeHandle ? null : (
-            <ResizeHandle
-              onDrag={model.resizeHeight}
-              objectId={model.id}
-              style={{
-                height: dragHandleHeight,
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                background: '#ccc',
-                boxSizing: 'border-box',
-                borderTop: '1px solid #fafafa',
-              }}
-            />
+            {model.hideVerticalResizeHandle ? null : (
+              <ResizeHandle
+                onDrag={model.resizeHeight}
+                objectId={model.id}
+                style={{
+                  height: dragHandleHeight,
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  background: '#ccc',
+                  boxSizing: 'border-box',
+                  borderTop: '1px solid #fafafa',
+                }}
+              />
             )}
           </>
         )}

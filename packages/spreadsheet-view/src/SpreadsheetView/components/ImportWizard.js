@@ -71,8 +71,6 @@ export default pluginManager => {
       fileType,
       fileTypes,
       setFileType,
-      fileSource,
-      setFileSource,
       hasColumnNameLine,
       toggleHasColumnNameLine,
       datasetChoices,

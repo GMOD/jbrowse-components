@@ -5,9 +5,7 @@ export default pluginManager => {
 
   const { makeAbortableReaction } = jbrequire(require('./util'))
 
-  const { getTrackAssemblyName, getContainingView } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
-  )
+  const { getTrackAssemblyName } = jbrequire('@gmod/jbrowse-core/util/tracks')
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const model = types
