@@ -375,6 +375,9 @@ const Controls = observer(({ model }) => {
   )
 })
 
+// note: as of writing, this is identifical (except with typescript) to circularview's copy
+// if modified, consider refactoring or updating circularview's copy
+// not extracted to a separate component just yet...
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
