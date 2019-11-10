@@ -30,6 +30,7 @@ export default pluginManager => {
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
   const ListItemText = jbrequire('@material-ui/core/ListItemText')
+  const Tooltip = jbrequire('@material-ui/core/Tooltip')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
   const useStyles = makeStyles(theme => {
@@ -37,7 +38,7 @@ export default pluginManager => {
       root: {
         position: 'relative',
         marginBottom: theme.spacing(1),
-        background: 'white',
+        background: grey[500],
         overflow: 'auto',
       },
       dataTable: {
@@ -53,7 +54,9 @@ export default pluginManager => {
           overflow: 'auto',
         },
       },
-      dataTableBody: {},
+      dataTableBody: {
+        background: 'white',
+      },
       rowNumCell: {
         background: grey[200],
         textAlign: 'right',
@@ -108,6 +111,7 @@ export default pluginManager => {
         top: '-1px',
         zIndex: 2,
         minWidth: theme.spacing(2),
+        textAlign: 'left',
       },
       dataRowSelected: {
         background: indigo[100],
@@ -347,7 +351,17 @@ export default pluginManager => {
         <table className={classes.dataTable}>
           <thead>
             <tr>
-              <th className={classes.topLeftCorner}></th>
+              <th className={classes.topLeftCorner}>
+                <Tooltip title="Unselect all" placement="right">
+                  <IconButton
+                    className={classes.unselectAllButton}
+                    onClick={model.unselectAll}
+                    size="small"
+                  >
+                    <Icon className={classes.columnButtonIcon}>crop_free</Icon>
+                  </IconButton>
+                </Tooltip>
+              </th>
               {columnDisplayOrder.map(colNumber => (
                 <th
                   className={classes.columnHead}

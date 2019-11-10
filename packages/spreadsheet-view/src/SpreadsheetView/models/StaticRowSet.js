@@ -17,6 +17,14 @@ export default pluginManager => {
         return self.sortedFilteredRows.length
       },
 
+      get selectedCount() {
+        return self.selectedRows.length
+      },
+
+      get selectedAndPassingFiltersCount() {
+        return self.selectedFilteredRows.length
+      },
+
       get sortedRows() {
         const parent = getParent(self)
         return self.rows.slice().sort(parent.rowSortingComparisonFunction)
@@ -43,6 +51,11 @@ export default pluginManager => {
         return self.rows
           .filter(row => filterControls.rowPassesFilters(sheet, row))
           .sort(sheet.rowSortingComparisonFunction)
+      },
+    }))
+    .actions(self => ({
+      unselectAll() {
+        self.rows.forEach(row => row.unSelect())
       },
     }))
 }

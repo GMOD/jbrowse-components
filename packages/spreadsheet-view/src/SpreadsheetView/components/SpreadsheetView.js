@@ -133,13 +133,31 @@ export default pluginManager => {
 
   const RowCountMessage = observer(({ spreadsheet }) => {
     if (spreadsheet && spreadsheet.rowSet.isLoaded) {
-      const passing = spreadsheet.rowSet.passingFiltersCount
-      const total = spreadsheet.rowSet.count
-      if (passing !== total) {
-        return `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
-      }
+      const {
+        passingFiltersCount,
+        count,
+        selectedCount,
+        selectedAndPassingFiltersCount,
+      } = spreadsheet.rowSet
 
-      return `${spreadsheet.rowSet.count} rows`
+      let rowMessage
+      if (passingFiltersCount !== count) {
+        rowMessage = `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
+        if (selectedCount) {
+          rowMessage += `, ${selectedAndPassingFiltersCount} selected`
+          const selectedAndNotPassingFiltersCount =
+            selectedCount - selectedAndPassingFiltersCount
+          if (selectedAndNotPassingFiltersCount) {
+            rowMessage += ` (${selectedAndNotPassingFiltersCount} selected rows do not pass filters)`
+          }
+        }
+      } else {
+        rowMessage = `${spreadsheet.rowSet.count} rows`
+        if (selectedCount) {
+          rowMessage += `, ${selectedCount} selected`
+        }
+      }
+      return rowMessage
     }
     return null
   })

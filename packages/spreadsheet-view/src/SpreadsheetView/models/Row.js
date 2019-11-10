@@ -18,6 +18,12 @@ export default pluginManager => {
       toggleSelect() {
         self.isSelected = !self.isSelected
       },
+      unSelect() {
+        self.isSelected = false
+      },
+      select() {
+        self.isSelected = true
+      },
     }))
 
   return RowModel

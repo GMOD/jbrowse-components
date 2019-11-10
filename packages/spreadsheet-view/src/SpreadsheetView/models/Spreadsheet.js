@@ -95,6 +95,9 @@ export default pluginManager => {
       setColumnType(columnNumber, newTypeName) {
         self.columns[columnNumber].dataType = { type: newTypeName }
       },
+      unselectAll() {
+        return self.rowSet.unselectAll()
+      },
     }))
 
   return stateModel
