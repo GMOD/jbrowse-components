@@ -5,7 +5,7 @@ export default pluginManager => {
   const { getRoot } = jbrequire('mobx-state-tree')
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState, useEffect } = jbrequire('react')
+  const { useState } = jbrequire('react')
 
   // material-ui stuff
   const Button = jbrequire('@material-ui/core/Button')
@@ -16,15 +16,13 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const Icon = jbrequire('@material-ui/core/Icon')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const LinearProgress = jbrequire('@material-ui/core/LinearProgress')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const Select = jbrequire('@material-ui/core/Select')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
-  const Typography = jbrequire('@material-ui/core/Typography')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
 
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
-  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const Ruler = jbrequire(require('./Ruler'))
 
@@ -60,21 +58,9 @@ export default pluginManager => {
         left: 0,
         top: 0,
       },
-      // viewControls: {
-      //   height: '100%',
-      //   borderBottom: '1px solid #9e9e9e',
-      //   boxSizing: 'border-box',
-      // },
-      // trackControls: {
-      //   whiteSpace: 'normal',
-      // },
-      // zoomControls: {
-      //   position: 'absolute',
-      //   top: '0px',
-      // },
-      // iconButton: {
-      //   padding: theme.spacing.unit / 2,
-      // },
+      importFormContainer: {
+        marginBottom: theme.spacing(4),
+      },
     }
   })
 
@@ -179,43 +165,28 @@ export default pluginManager => {
   const ImportForm = observer(({ model }) => {
     const classes = useStyles()
     const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
-    const [selectedAssembly, setSelectedAssembly] = useState()
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState()
-    const datasets = getRoot(model).jbrowse.datasets.map(dataset =>
+    const { datasets } = getRoot(model).jbrowse
+    const datasetChoices = datasets.map(dataset =>
       readConfObject(dataset, 'name'),
     )
+    function openButton() {
+      if (parseInt(selectedDatasetIdx, 10) >= 0) {
+        const dataset = datasets[Number(selectedDatasetIdx)]
+        if (dataset) {
+          const assemblyName = readConfObject(dataset.assembly, 'name')
+          if (
+            assemblyName &&
+            assemblyName !== model.displayRegionsFromAssemblyName
+          ) {
+            model.setDisplayedRegionsFromAssemblyName(assemblyName)
+            return
+          }
+        }
+      }
+      model.setDisplayedRegions([])
+      model.setDisplayedRegionsFromAssemblyName(undefined)
+    }
 
-    useEffect(() => {
-      let finished = false
-      async function updateAssembly() {
-        setLoading(true)
-        const session = getSession(model)
-        const displayedRegions = await session.getRegionsForAssembly(
-          selectedAssembly,
-          session.assemblyData,
-        )
-        // note: we cannot just use setDisplayRegionsFromAssemblyName because
-        // it uses an autorun that does not respond to updates to
-        // the displayRegionsFromAssembly name (only to changes to the self.views array)
-        // see sessionModelFactory
-        if (!finished) {
-          model.setDisplayedRegions(displayedRegions || [], true)
-        }
-      }
-      try {
-        if (selectedAssembly) {
-          updateAssembly()
-        }
-      } catch (e) {
-        if (!finished) {
-          setError(e.message)
-        }
-      }
-      return () => {
-        finished = true
-      }
-    }, [model, selectedAssembly])
     return (
       <>
         <div style={{ height: 40 }}>
@@ -224,14 +195,10 @@ export default pluginManager => {
             className={classes.iconButton}
             title="close this view"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon>close</Icon>
           </IconButton>
         </div>
-        <Container>
-          {error ? (
-            <Typography style={{ color: 'red' }}>{error}</Typography>
-          ) : null}
-          {loading ? <LinearProgress /> : null}
+        <Container className={classes.importFormContainer}>
           <Grid
             style={{ width: '25rem', margin: '0 auto' }}
             container
@@ -249,7 +216,7 @@ export default pluginManager => {
                       setSelectedDatasetIdx(String(event.target.value))
                     }}
                   >
-                    {datasets.map((name, idx) => (
+                    {datasetChoices.map((name, idx) => (
                       <MenuItem key={name} value={idx}>
                         {name}
                       </MenuItem>
@@ -261,14 +228,7 @@ export default pluginManager => {
             <Grid item>
               <Button
                 disabled={selectedDatasetIdx === undefined}
-                onClick={() => {
-                  const assemblyName = readConfObject(
-                    getRoot(model).jbrowse.datasets[Number(selectedDatasetIdx)]
-                      .assembly,
-                    'name',
-                  )
-                  setSelectedAssembly(assemblyName)
-                }}
+                onClick={openButton}
                 variant="contained"
                 color="primary"
               >

@@ -87,33 +87,40 @@ export default pluginManager => {
     }))
     .actions(self => ({
       afterCreate() {
-        const disposer = autorun(() => {
-          self.views.forEach(view => {
-            view.setWidth(self.viewsWidth)
-          })
-        })
-        addDisposer(self, disposer)
+        addDisposer(
+          self,
+          autorun(() => {
+            self.views.forEach(view => {
+              view.setWidth(self.viewsWidth)
+            })
+          }),
+        )
 
-        const displayedRegionsDisposer = autorun(async () => {
-          for (const view of self.views) {
-            const assemblyName = view.displayRegionsFromAssemblyName
-            if (
-              assemblyName &&
-              self.assemblyData.get(assemblyName) &&
-              self.assemblyData.get(assemblyName).sequence
-            ) {
-              // eslint-disable-next-line no-await-in-loop
-              const displayedRegions = await self.getRegionsForAssembly(
-                assemblyName,
-                self.assemblyData,
-              )
-              getParent(self).history.withoutUndo(() =>
-                view.setDisplayedRegions(displayedRegions || [], true),
-              )
-            }
-          }
-        })
-        addDisposer(self, displayedRegionsDisposer)
+        addDisposer(
+          self,
+          autorun(() => {
+            self.views.forEach(view => {
+              const assemblyName = view.displayRegionsFromAssemblyName
+              if (
+                assemblyName &&
+                self.assemblyData.get(assemblyName) &&
+                self.assemblyData.get(assemblyName).sequence
+              ) {
+                const session = getParent(self)
+                self
+                  .getRegionsForAssembly(assemblyName, self.assemblyData)
+                  .then(displayedRegions => {
+                    // remember nothing inside here is tracked by the autorun
+                    session.history.withoutUndo(() =>
+                      view.setDisplayedRegions(displayedRegions || [], true),
+                    )
+                  })
+
+                // TODO: this needs some error handling
+              }
+            })
+          }),
+        )
       },
 
       getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
