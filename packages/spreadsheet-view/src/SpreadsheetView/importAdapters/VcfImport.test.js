@@ -3,7 +3,9 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 
 const pluginManager = new PluginManager()
-const SpreadsheetModel = pluginManager.jbrequire(require('../models/Spreadsheet'))
+const SpreadsheetModel = pluginManager.jbrequire(
+  require('../models/Spreadsheet'),
+)
 
 describe('vcf file splitter', () => {
   const cases = [
