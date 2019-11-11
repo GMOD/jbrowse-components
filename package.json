@@ -54,6 +54,7 @@
         "core-js": "^3.2.1",
         "cross-env": "^6.0.3",
         "css-loader": "^2.1.0",
+        "devtron": "^1.4.0",
         "electron": "^7.1.0",
         "electron-builder": "^22.1.0",
         "eslint-config-airbnb": "^18.0.0",
