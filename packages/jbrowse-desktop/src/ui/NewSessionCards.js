@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function NewSessionCard({ name, onClick, children, style = {} }) {
+function NewSessionCard({ name, onClick, children }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
   return (
