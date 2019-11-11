@@ -1,11 +1,7 @@
-import {
-  parseCsvBuffer,
-  parseTsvBuffer,
-  parseBedBuffer,
-  parseBedPEBuffer,
-} from './ImportUtils'
-
-import { parseVcfBuffer } from './VcfImport'
+import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
+import { parseVcfBuffer } from '../importAdapters/VcfImport'
+import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
+import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
 const IMPORT_SIZE_LIMIT = 300000
 
@@ -15,13 +11,14 @@ export default pluginManager => {
   const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE']
+  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: parseCsvBuffer,
     TSV: parseTsvBuffer,
     VCF: parseVcfBuffer,
     BED: parseBedBuffer,
     BEDPE: parseBedPEBuffer,
+    'STAR-Fusion': parseSTARFusionBuffer,
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(

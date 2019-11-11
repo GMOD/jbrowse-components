@@ -3,7 +3,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 
 const pluginManager = new PluginManager()
-const SpreadsheetModel = pluginManager.jbrequire(require('./Spreadsheet'))
+const SpreadsheetModel = pluginManager.jbrequire(require('../models/Spreadsheet'))
 
 describe('vcf file splitter', () => {
   const cases = [
@@ -28,7 +28,7 @@ describe('vcf file splitter', () => {
 })
 
 test('vcf file import', async () => {
-  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/models/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf`
+  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf`
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = await parseVcfBuffer(buf)
   expect(spreadsheetSnap).toMatchSnapshot()
