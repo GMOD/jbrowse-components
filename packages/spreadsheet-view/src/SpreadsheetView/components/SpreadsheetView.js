@@ -179,9 +179,11 @@ export default pluginManager => {
               <ViewControls model={model} />
             </Grid>
           )}
-          <Grid item>
-            <FilterControls model={model} />
-          </Grid>
+          {model.mode !== 'display' || model.hideFilterControls ? null : (
+            <Grid item>
+              <FilterControls model={model} />
+            </Grid>
+          )}
         </Grid>
 
         <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>

@@ -36,6 +36,7 @@ export default pluginManager => {
 
       hideViewControls: false,
       hideVerticalResizeHandle: false,
+      hideFilterControls: false,
 
       filterControls: types.optional(FilterControlsModel, () =>
         FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
