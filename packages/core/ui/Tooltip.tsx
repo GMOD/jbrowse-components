@@ -1,9 +1,8 @@
 /* eslint-disable react/require-default-props */
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactPropTypes from 'prop-types'
-import useTimeout from 'use-timeout'
 import Feature from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
 
@@ -32,10 +31,14 @@ const Tooltip = ({
   timeout: number
 }) => {
   const classes = useStyles()
-  const [hidden, setHidden] = useState(true)
+  // only show the loading message after 400ms to prevent excessive flickering
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const handle = setTimeout(() => setShown(true), timeout)
+    return () => clearTimeout(handle)
+  })
   const text = readConfObject(configuration, 'mouseover', [feature])
-  useTimeout(() => setHidden(false), timeout)
-  return text && !hidden ? (
+  return text && shown ? (
     <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
       {text}
     </div>
