@@ -73,20 +73,28 @@ const emptySessionSnapshot = {
                 'function(session) {session.activateSession(undefined)}',
             },
             {
-              name: 'Create new spreadsheet',
-              icon: 'table_chart',
-              callback:
-                "function(session) { session.addView('SpreadsheetView', {})}",
-            },
-            {
-              name: 'Create new linear genome view',
+              name: 'New linear genome view',
+              icon: 'line_style',
               callback:
                 "function(session) { session.addView('LinearGenomeView', {})}",
             },
             {
-              name: 'Create new circular view',
+              name: 'New circular view',
+              icon: 'data_usage',
               callback:
                 "function(session) { session.addView('CircularView', {})}",
+            },
+            {
+              name: 'New SV inspector',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SvInspectorView', {})}",
+            },
+            {
+              name: 'Open tabular data',
+              icon: 'view_comfy',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
             },
           ],
         },
