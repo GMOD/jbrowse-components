@@ -52,7 +52,7 @@ async function dataToSpreadsheetSnapshot(
     rows: rows.map((row, rowNumber) => {
       if (row.length > maxCols) maxCols = row.length
       return {
-        id: String(rowNumber),
+        id: String(rowNumber + 1),
         cells: row.map((text, columnNumber) => {
           return { columnNumber, text }
         }),

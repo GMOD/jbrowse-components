@@ -196,7 +196,7 @@ Object {
             "uniqueId": "vcf-0",
           },
         },
-        "id": "rs144271100",
+        "id": "1",
       },
       Object {
         "cells": Array [
@@ -364,7 +364,7 @@ Object {
             "uniqueId": "vcf-1",
           },
         },
-        "id": "rs6337",
+        "id": "2",
       },
       Object {
         "cells": Array [
@@ -538,7 +538,7 @@ Object {
             "uniqueId": "vcf-2",
           },
         },
-        "id": "rs1126497",
+        "id": "3",
       },
       Object {
         "cells": Array [
@@ -706,7 +706,7 @@ Object {
             "uniqueId": "vcf-3",
           },
         },
-        "id": "rs2303426",
+        "id": "4",
       },
       Object {
         "cells": Array [
@@ -834,7 +834,7 @@ Object {
             "uniqueId": "vcf-4",
           },
         },
-        "id": "rs768805063",
+        "id": "5",
       },
       Object {
         "cells": Array [
@@ -1008,7 +1008,7 @@ Object {
             "uniqueId": "vcf-5",
           },
         },
-        "id": "rs3732183",
+        "id": "6",
       },
       Object {
         "cells": Array [
@@ -1182,7 +1182,7 @@ Object {
             "uniqueId": "vcf-6",
           },
         },
-        "id": "rs1042820",
+        "id": "7",
       },
       Object {
         "cells": Array [
@@ -1350,7 +1350,7 @@ Object {
             "uniqueId": "vcf-7",
           },
         },
-        "id": "rs55927047",
+        "id": "8",
       },
       Object {
         "cells": Array [
@@ -1518,7 +1518,7 @@ Object {
             "uniqueId": "vcf-8",
           },
         },
-        "id": "rs1800931",
+        "id": "9",
       },
       Object {
         "cells": Array [
@@ -1692,7 +1692,7 @@ Object {
             "uniqueId": "vcf-9",
           },
         },
-        "id": "rs1800932",
+        "id": "10",
       },
       Object {
         "cells": Array [
@@ -1866,7 +1866,7 @@ Object {
             "uniqueId": "vcf-10",
           },
         },
-        "id": "rs1800935",
+        "id": "11",
       },
       Object {
         "cells": Array [
@@ -2028,7 +2028,7 @@ Object {
             "uniqueId": "vcf-11",
           },
         },
-        "id": "rs2020911",
+        "id": "12",
       },
       Object {
         "cells": Array [
@@ -2199,7 +2199,7 @@ Object {
             "uniqueId": "vcf-12",
           },
         },
-        "id": "rs2234731;rs767177736",
+        "id": "13",
       },
       Object {
         "cells": Array [
@@ -2355,7 +2355,7 @@ Object {
             "uniqueId": "vcf-13",
           },
         },
-        "id": "rs3136367",
+        "id": "14",
       },
       Object {
         "cells": Array [
@@ -2478,7 +2478,7 @@ Object {
             "uniqueId": "vcf-14",
           },
         },
-        "id": "rs771393147",
+        "id": "15",
       },
       Object {
         "cells": Array [
@@ -2640,7 +2640,7 @@ Object {
             "uniqueId": "vcf-15",
           },
         },
-        "id": "rs2070093",
+        "id": "16",
       },
       Object {
         "cells": Array [
@@ -2808,7 +2808,7 @@ Object {
             "uniqueId": "vcf-16",
           },
         },
-        "id": "rs2070096",
+        "id": "17",
       },
       Object {
         "cells": Array [
@@ -2931,7 +2931,7 @@ Object {
             "uniqueId": "vcf-17",
           },
         },
-        "id": "rs56130510",
+        "id": "18",
       },
       Object {
         "cells": Array [
@@ -3093,7 +3093,7 @@ Object {
             "uniqueId": "vcf-18",
           },
         },
-        "id": "rs35933323",
+        "id": "19",
       },
       Object {
         "cells": Array [
@@ -3255,7 +3255,7 @@ Object {
             "uniqueId": "vcf-19",
           },
         },
-        "id": "rs1129804",
+        "id": "20",
       },
       Object {
         "cells": Array [
@@ -3417,7 +3417,7 @@ Object {
             "uniqueId": "vcf-20",
           },
         },
-        "id": "rs17489363",
+        "id": "21",
       },
       Object {
         "cells": Array [
@@ -3539,7 +3539,7 @@ Object {
             "uniqueId": "vcf-21",
           },
         },
-        "id": "21",
+        "id": "22",
       },
       Object {
         "cells": Array [
@@ -3707,7 +3707,7 @@ Object {
             "uniqueId": "vcf-22",
           },
         },
-        "id": "rs9876116",
+        "id": "23",
       },
       Object {
         "cells": Array [
@@ -3866,7 +3866,7 @@ Object {
             "uniqueId": "vcf-23",
           },
         },
-        "id": "23",
+        "id": "24",
       },
       Object {
         "cells": Array [
@@ -4034,7 +4034,7 @@ Object {
             "uniqueId": "vcf-24",
           },
         },
-        "id": "rs2229992",
+        "id": "25",
       },
       Object {
         "cells": Array [
@@ -4202,7 +4202,7 @@ Object {
             "uniqueId": "vcf-25",
           },
         },
-        "id": "rs351771",
+        "id": "26",
       },
       Object {
         "cells": Array [
@@ -4370,7 +4370,7 @@ Object {
             "uniqueId": "vcf-26",
           },
         },
-        "id": "rs41115",
+        "id": "27",
       },
       Object {
         "cells": Array [
@@ -4538,7 +4538,7 @@ Object {
             "uniqueId": "vcf-27",
           },
         },
-        "id": "rs42427",
+        "id": "28",
       },
       Object {
         "cells": Array [
@@ -4706,7 +4706,7 @@ Object {
             "uniqueId": "vcf-28",
           },
         },
-        "id": "rs866006",
+        "id": "29",
       },
       Object {
         "cells": Array [
@@ -4886,7 +4886,7 @@ Object {
             "uniqueId": "vcf-29",
           },
         },
-        "id": "rs459552",
+        "id": "30",
       },
       Object {
         "cells": Array [
@@ -5060,7 +5060,7 @@ Object {
             "uniqueId": "vcf-30",
           },
         },
-        "id": "rs465899",
+        "id": "31",
       },
       Object {
         "cells": Array [
@@ -5240,7 +5240,7 @@ Object {
             "uniqueId": "vcf-31",
           },
         },
-        "id": "rs2229995",
+        "id": "32",
       },
       Object {
         "cells": Array [
@@ -5396,7 +5396,7 @@ Object {
             "uniqueId": "vcf-32",
           },
         },
-        "id": "rs4526098",
+        "id": "33",
       },
       Object {
         "cells": Array [
@@ -5566,7 +5566,7 @@ Object {
             "uniqueId": "vcf-33",
           },
         },
-        "id": "rs1805326",
+        "id": "34",
       },
       Object {
         "cells": Array [
@@ -5740,7 +5740,7 @@ Object {
             "uniqueId": "vcf-34",
           },
         },
-        "id": "rs2228006",
+        "id": "35",
       },
       Object {
         "cells": Array [
@@ -5914,7 +5914,7 @@ Object {
             "uniqueId": "vcf-35",
           },
         },
-        "id": "rs1805321",
+        "id": "36",
       },
       Object {
         "cells": Array [
@@ -6082,7 +6082,7 @@ Object {
             "uniqueId": "vcf-36",
           },
         },
-        "id": "rs1805319",
+        "id": "37",
       },
       Object {
         "cells": Array [
@@ -6205,7 +6205,7 @@ Object {
             "uniqueId": "vcf-37",
           },
         },
-        "id": "rs60794673",
+        "id": "38",
       },
       Object {
         "cells": Array [
@@ -6373,7 +6373,7 @@ Object {
             "uniqueId": "vcf-38",
           },
         },
-        "id": "rs62456182",
+        "id": "39",
       },
       Object {
         "cells": Array [
@@ -6496,7 +6496,7 @@ Object {
             "uniqueId": "vcf-39",
           },
         },
-        "id": "rs112241458",
+        "id": "40",
       },
       Object {
         "cells": Array [
@@ -6624,7 +6624,7 @@ Object {
             "uniqueId": "vcf-40",
           },
         },
-        "id": "rs753027677",
+        "id": "41",
       },
       Object {
         "cells": Array [
@@ -6786,7 +6786,7 @@ Object {
             "uniqueId": "vcf-41",
           },
         },
-        "id": "rs11515",
+        "id": "42",
       },
       Object {
         "cells": Array [
@@ -6948,7 +6948,7 @@ Object {
             "uniqueId": "vcf-42",
           },
         },
-        "id": "rs4647534",
+        "id": "43",
       },
       Object {
         "cells": Array [
@@ -7110,7 +7110,7 @@ Object {
             "uniqueId": "vcf-43",
           },
         },
-        "id": "rs2236406",
+        "id": "44",
       },
       Object {
         "cells": Array [
@@ -7272,7 +7272,7 @@ Object {
             "uniqueId": "vcf-44",
           },
         },
-        "id": "rs2066829",
+        "id": "45",
       },
       Object {
         "cells": Array [
@@ -7440,7 +7440,7 @@ Object {
             "uniqueId": "vcf-45",
           },
         },
-        "id": "rs2066836",
+        "id": "46",
       },
       Object {
         "cells": Array [
@@ -7569,7 +7569,7 @@ Object {
             "uniqueId": "vcf-46",
           },
         },
-        "id": "rs587780530",
+        "id": "47",
       },
       Object {
         "cells": Array [
@@ -7743,7 +7743,7 @@ Object {
             "uniqueId": "vcf-47",
           },
         },
-        "id": "rs1800858",
+        "id": "48",
       },
       Object {
         "cells": Array [
@@ -7923,7 +7923,7 @@ Object {
             "uniqueId": "vcf-48",
           },
         },
-        "id": "rs1800860",
+        "id": "49",
       },
       Object {
         "cells": Array [
@@ -8091,7 +8091,7 @@ Object {
             "uniqueId": "vcf-49",
           },
         },
-        "id": "rs760466",
+        "id": "50",
       },
       Object {
         "cells": Array [
@@ -8271,7 +8271,7 @@ Object {
             "uniqueId": "vcf-50",
           },
         },
-        "id": "rs1800861",
+        "id": "51",
       },
       Object {
         "cells": Array [
@@ -8445,7 +8445,7 @@ Object {
             "uniqueId": "vcf-51",
           },
         },
-        "id": "rs2075912",
+        "id": "52",
       },
       Object {
         "cells": Array [
@@ -8568,7 +8568,7 @@ Object {
             "uniqueId": "vcf-52",
           },
         },
-        "id": "rs771859047",
+        "id": "53",
       },
       Object {
         "cells": Array [
@@ -8736,7 +8736,7 @@ Object {
             "uniqueId": "vcf-53",
           },
         },
-        "id": "rs555895",
+        "id": "54",
       },
       Object {
         "cells": Array [
@@ -8910,7 +8910,7 @@ Object {
             "uniqueId": "vcf-54",
           },
         },
-        "id": "rs2959656",
+        "id": "55",
       },
       Object {
         "cells": Array [
@@ -9078,7 +9078,7 @@ Object {
             "uniqueId": "vcf-55",
           },
         },
-        "id": "rs540012",
+        "id": "56",
       },
       Object {
         "cells": Array [
@@ -9252,7 +9252,7 @@ Object {
             "uniqueId": "vcf-56",
           },
         },
-        "id": "rs2071313",
+        "id": "57",
       },
       Object {
         "cells": Array [
@@ -9414,7 +9414,7 @@ Object {
             "uniqueId": "vcf-57",
           },
         },
-        "id": "rs509606",
+        "id": "58",
       },
       Object {
         "cells": Array [
@@ -9582,7 +9582,7 @@ Object {
             "uniqueId": "vcf-58",
           },
         },
-        "id": "rs641936",
+        "id": "59",
       },
       Object {
         "cells": Array [
@@ -9744,7 +9744,7 @@ Object {
             "uniqueId": "vcf-59",
           },
         },
-        "id": "rs497763",
+        "id": "60",
       },
       Object {
         "cells": Array [
@@ -9903,7 +9903,7 @@ Object {
             "uniqueId": "vcf-60",
           },
         },
-        "id": "rs2066734;rs766396464",
+        "id": "61",
       },
       Object {
         "cells": Array [
@@ -10026,7 +10026,7 @@ Object {
             "uniqueId": "vcf-61",
           },
         },
-        "id": "rs779838075",
+        "id": "62",
       },
       Object {
         "cells": Array [
@@ -10149,7 +10149,7 @@ Object {
             "uniqueId": "vcf-62",
           },
         },
-        "id": "rs34325032",
+        "id": "63",
       },
       Object {
         "cells": Array [
@@ -10272,7 +10272,7 @@ Object {
             "uniqueId": "vcf-63",
           },
         },
-        "id": "rs373881770",
+        "id": "64",
       },
       Object {
         "cells": Array [
@@ -10389,7 +10389,7 @@ Object {
             "uniqueId": "vcf-64",
           },
         },
-        "id": "rs3218681",
+        "id": "65",
       },
       Object {
         "cells": Array [
@@ -10551,7 +10551,7 @@ Object {
             "uniqueId": "vcf-65",
           },
         },
-        "id": "rs659243",
+        "id": "66",
       },
       Object {
         "cells": Array [
@@ -10713,7 +10713,7 @@ Object {
             "uniqueId": "vcf-66",
           },
         },
-        "id": "rs2069502",
+        "id": "67",
       },
       Object {
         "cells": Array [
@@ -10881,7 +10881,7 @@ Object {
             "uniqueId": "vcf-67",
           },
         },
-        "id": "rs1799943",
+        "id": "68",
       },
       Object {
         "cells": Array [
@@ -11061,7 +11061,7 @@ Object {
             "uniqueId": "vcf-68",
           },
         },
-        "id": "rs144848",
+        "id": "69",
       },
       Object {
         "cells": Array [
@@ -11235,7 +11235,7 @@ Object {
             "uniqueId": "vcf-69",
           },
         },
-        "id": "rs1801406",
+        "id": "70",
       },
       Object {
         "cells": Array [
@@ -11403,7 +11403,7 @@ Object {
             "uniqueId": "vcf-70",
           },
         },
-        "id": "rs206075",
+        "id": "71",
       },
       Object {
         "cells": Array [
@@ -11565,7 +11565,7 @@ Object {
             "uniqueId": "vcf-71",
           },
         },
-        "id": "rs206076",
+        "id": "72",
       },
       Object {
         "cells": Array [
@@ -11739,7 +11739,7 @@ Object {
             "uniqueId": "vcf-72",
           },
         },
-        "id": "rs169547",
+        "id": "73",
       },
       Object {
         "cells": Array [
@@ -11901,7 +11901,7 @@ Object {
             "uniqueId": "vcf-73",
           },
         },
-        "id": "rs3743674",
+        "id": "74",
       },
       Object {
         "cells": Array [
@@ -12075,7 +12075,7 @@ Object {
             "uniqueId": "vcf-74",
           },
         },
-        "id": "rs35187787",
+        "id": "75",
       },
       Object {
         "cells": Array [
@@ -12243,7 +12243,7 @@ Object {
             "uniqueId": "vcf-75",
           },
         },
-        "id": "rs1042522",
+        "id": "76",
       },
       Object {
         "cells": Array [
@@ -12417,7 +12417,7 @@ Object {
             "uniqueId": "vcf-76",
           },
         },
-        "id": "rs1642785",
+        "id": "77",
       },
       Object {
         "cells": Array [
@@ -12540,7 +12540,7 @@ Object {
             "uniqueId": "vcf-77",
           },
         },
-        "id": "rs765008499",
+        "id": "78",
       },
       Object {
         "cells": Array [
@@ -12702,7 +12702,7 @@ Object {
             "uniqueId": "vcf-78",
           },
         },
-        "id": "rs2285892",
+        "id": "79",
       },
       Object {
         "cells": Array [
@@ -12858,7 +12858,7 @@ Object {
             "uniqueId": "vcf-79",
           },
         },
-        "id": "rs2066736",
+        "id": "80",
       },
       Object {
         "cells": Array [
@@ -13014,7 +13014,7 @@ Object {
             "uniqueId": "vcf-80",
           },
         },
-        "id": "rs59745739",
+        "id": "81",
       },
       Object {
         "cells": Array [
@@ -13173,7 +13173,7 @@ Object {
             "uniqueId": "vcf-81",
           },
         },
-        "id": "rs56874702;rs72813695",
+        "id": "82",
       },
       Object {
         "cells": Array [
@@ -13332,7 +13332,7 @@ Object {
             "uniqueId": "vcf-82",
           },
         },
-        "id": "rs553817239;rs7406039",
+        "id": "83",
       },
       Object {
         "cells": Array [
@@ -13488,7 +13488,7 @@ Object {
             "uniqueId": "vcf-83",
           },
         },
-        "id": "rs7405740",
+        "id": "84",
       },
       Object {
         "cells": Array [
@@ -13668,7 +13668,7 @@ Object {
             "uniqueId": "vcf-84",
           },
         },
-        "id": "rs1799966",
+        "id": "85",
       },
       Object {
         "cells": Array [
@@ -13842,7 +13842,7 @@ Object {
             "uniqueId": "vcf-85",
           },
         },
-        "id": "rs1060915",
+        "id": "86",
       },
       Object {
         "cells": Array [
@@ -14022,7 +14022,7 @@ Object {
             "uniqueId": "vcf-86",
           },
         },
-        "id": "rs16942",
+        "id": "87",
       },
       Object {
         "cells": Array [
@@ -14202,7 +14202,7 @@ Object {
             "uniqueId": "vcf-87",
           },
         },
-        "id": "rs16941",
+        "id": "88",
       },
       Object {
         "cells": Array [
@@ -14382,7 +14382,7 @@ Object {
             "uniqueId": "vcf-88",
           },
         },
-        "id": "rs799917",
+        "id": "89",
       },
       Object {
         "cells": Array [
@@ -14556,7 +14556,7 @@ Object {
             "uniqueId": "vcf-89",
           },
         },
-        "id": "rs16940",
+        "id": "90",
       },
       Object {
         "cells": Array [
@@ -14730,7 +14730,7 @@ Object {
             "uniqueId": "vcf-90",
           },
         },
-        "id": "rs1799949",
+        "id": "91",
       },
       Object {
         "cells": Array [
@@ -14910,7 +14910,7 @@ Object {
             "uniqueId": "vcf-91",
           },
         },
-        "id": "rs4986850",
+        "id": "92",
       },
       Object {
         "cells": Array [
@@ -15033,7 +15033,7 @@ Object {
             "uniqueId": "vcf-92",
           },
         },
-        "id": "rs373413425",
+        "id": "93",
       },
       Object {
         "cells": Array [
@@ -15195,7 +15195,7 @@ Object {
             "uniqueId": "vcf-93",
           },
         },
-        "id": "rs28363318",
+        "id": "94",
       },
       Object {
         "cells": Array [
@@ -15357,7 +15357,7 @@ Object {
             "uniqueId": "vcf-94",
           },
         },
-        "id": "rs4986763",
+        "id": "95",
       },
       Object {
         "cells": Array [
@@ -15525,7 +15525,7 @@ Object {
             "uniqueId": "vcf-95",
           },
         },
-        "id": "rs4986764",
+        "id": "96",
       },
       Object {
         "cells": Array [
@@ -15687,7 +15687,7 @@ Object {
             "uniqueId": "vcf-96",
           },
         },
-        "id": "rs4986765",
+        "id": "97",
       },
       Object {
         "cells": Array [
@@ -15849,7 +15849,7 @@ Object {
             "uniqueId": "vcf-97",
           },
         },
-        "id": "rs4988351",
+        "id": "98",
       },
       Object {
         "cells": Array [
@@ -15972,7 +15972,7 @@ Object {
             "uniqueId": "vcf-98",
           },
         },
-        "id": "rs760402978",
+        "id": "99",
       },
       Object {
         "cells": Array [
@@ -16140,7 +16140,7 @@ Object {
             "uniqueId": "vcf-99",
           },
         },
-        "id": "rs34928889",
+        "id": "100",
       },
       Object {
         "cells": Array [
@@ -16308,7 +16308,7 @@ Object {
             "uniqueId": "vcf-100",
           },
         },
-        "id": "rs2075607",
+        "id": "101",
       },
     ],
   },

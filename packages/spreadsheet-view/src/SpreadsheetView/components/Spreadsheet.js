@@ -70,6 +70,7 @@ export default pluginManager => {
         display: 'flex',
         textAlign: 'right',
         margin: 0,
+        whiteSpace: 'nowrap',
       },
       rowSelector: {
         position: 'relative',
@@ -134,7 +135,7 @@ export default pluginManager => {
     return cell.text
   })
 
-  const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
+  const DataRow = observer(({ rowModel, spreadsheetModel }) => {
     const classes = useStyles()
     const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
     let rowClass = classes.dataRow
@@ -161,7 +162,7 @@ export default pluginManager => {
                 />
               )
             }
-            label={rowNumber + 1}
+            label={rowModel.id}
           />
         </th>
         {columnDisplayOrder.map(colNumber => (
@@ -229,6 +230,18 @@ export default pluginManager => {
       (currentColumnMenu && model.columns[columnNumber].dataType.displayName) ||
       ''
 
+    const isSorting = Boolean(
+      model.sortColumns.length &&
+        currentColumnMenu &&
+        model.sortColumns.find(
+          col => col.columnNumber === currentColumnMenu.colNumber,
+        ),
+    )
+    function stopSortingClick() {
+      columnMenuClose()
+      model.setSortColumns([])
+    }
+
     return (
       <>
         <Menu
@@ -247,6 +260,14 @@ export default pluginManager => {
             horizontal: 'right',
           }}
         >
+          {!isSorting ? null : (
+            <MenuItem onClick={stopSortingClick}>
+              <ListItemIcon>
+                <Icon fontSize="small">clear</Icon>
+              </ListItemIcon>
+              <ListItemText primary="Stop sorting" />
+            </MenuItem>
+          )}
           <MenuItem onClick={sortMenuClick.bind(null, false)}>
             <ListItemIcon>
               <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
@@ -402,13 +423,8 @@ export default pluginManager => {
             </tr>
           </thead>
           <tbody className={classes.dataTableBody}>
-            {rows.map((row, rowNumber) => (
-              <DataRow
-                key={row.id}
-                rowNumber={rowNumber}
-                spreadsheetModel={model}
-                rowModel={row}
-              />
+            {rows.map(row => (
+              <DataRow key={row.id} spreadsheetModel={model} rowModel={row} />
             ))}
           </tbody>
           {!rows.length ? (

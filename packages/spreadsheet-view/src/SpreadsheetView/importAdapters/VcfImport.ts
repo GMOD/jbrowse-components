@@ -46,7 +46,7 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   // ]
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
-    id: `vcf-${lineNumber}`,
+    id: String(lineNumber + 1),
     extendedData: { vcfFeature: vcfFeature.toJSON() },
     cells: data.map((text, columnNumber) => {
       return {
