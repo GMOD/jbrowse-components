@@ -62,9 +62,6 @@ export default abstract class BaseRpcDriver {
         .map(t => this.filterArgs(t, pluginManager, stateGroupName))
     }
     if (typeof thing === 'object' && thing !== null) {
-      // null is special of course
-      if (thing === null) return null
-
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
         return serializeAbortSignal(

@@ -48,7 +48,7 @@ export default pluginManager => {
         '& td': {
           border: `1px solid ${grey[300]}`,
           padding: '0.2rem',
-          maxWidth: 200,
+          maxWidth: 2000,
           maxHeight: 200,
           overflowWrap: 'break-word',
           overflow: 'auto',
