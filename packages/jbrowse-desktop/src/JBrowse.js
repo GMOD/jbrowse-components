@@ -41,9 +41,6 @@ export default observer(() => {
         })
         const r = rootModel.create({ jbrowse: config })
 
-        // poke some things for testing (this stuff will eventually be removed)
-        window.ROOTMODEL = r
-        window.MODEL = r.session
         setRoot(r)
         setStatus('loaded')
       } catch (error) {
@@ -99,6 +96,13 @@ export default observer(() => {
 
     return () => {}
   }, [debouncedConfigSnapshot])
+
+  useEffect(() => {
+    if (root) {
+      window.MODEL = root.session
+      window.ROOTMODEL = root
+    }
+  }, [root, root.session])
 
   let DisplayComponent = (
     <CircularProgress

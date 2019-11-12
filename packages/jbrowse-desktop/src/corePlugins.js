@@ -37,4 +37,5 @@ export default [
   Wiggle,
   SpreadsheetViewPlugin,
   BreakpointSplitView,
+  SvInspectorPlugin,
 ]
