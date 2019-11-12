@@ -1,5 +1,12 @@
 import VCF from '@gmod/vcf'
-import { bufferToString, Row, RowSet, Column } from './ImportUtils'
+import VcfFeature from '@gmod/jbrowse-plugin-variants/src/VcfTabixAdapter/VcfFeature'
+import {
+  bufferToString,
+  Row,
+  RowSet,
+  Column,
+  ParseOptions,
+} from './ImportUtils'
 
 const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'CHROM', type: 'Text' }, // 0
@@ -15,7 +22,12 @@ const vcfCoreColumns: { name: string; type: string }[] = [
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
-  // const record = vcfParser.parseLine(line)
+  const vcfVariant = vcfParser.parseLine(line)
+  const vcfFeature = new VcfFeature({
+    variant: vcfVariant,
+    parser: vcfParser,
+    id: `vcf-${lineNumber}`,
+  })
   // if (!record) console.log(`no parse for "${line}"`)
   // const cells = [
   //   ...vcfCoreColumns.map((colName, columnNumber) => {
@@ -34,7 +46,8 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   // ]
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
   const row: Row = {
-    id: data[2] || String(lineNumber),
+    id: String(lineNumber + 1),
+    extendedData: { vcfFeature: vcfFeature.toJSON() },
     cells: data.map((text, columnNumber) => {
       return {
         columnNumber,
@@ -45,7 +58,10 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   return row
 }
 
-export function parseVcfBuffer(buffer: Buffer) {
+export function parseVcfBuffer(
+  buffer: Buffer,
+  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 0 },
+) {
   let { header, body } = splitVcfFileHeaderAndBody(bufferToString(buffer))
   const rows: Row[] = []
   const vcfParser = new VCF({ header })
@@ -92,6 +108,7 @@ export function parseVcfBuffer(buffer: Buffer) {
     columnDisplayOrder,
     hasColumnNames: true,
     columns,
+    datasetName: options.selectedDatasetName,
   }
 }
 

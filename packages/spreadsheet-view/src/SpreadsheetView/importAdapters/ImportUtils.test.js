@@ -3,10 +3,12 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { parseCsvBuffer } from './ImportUtils'
 
 const pluginManager = new PluginManager()
-const SpreadsheetModel = pluginManager.jbrequire(require('./Spreadsheet'))
+const SpreadsheetModel = pluginManager.jbrequire(
+  require('../models/Spreadsheet'),
+)
 
 test('csv to spreadsheet snapshot', async () => {
-  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/models/test_data/breast_cancer.subset.csv`
+  const filepath = `${process.cwd()}/packages/spreadsheet-view/src/SpreadsheetView/test_data/breast_cancer.subset.csv`
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = await parseCsvBuffer(buf, {
     hasColumnNameLine: true,

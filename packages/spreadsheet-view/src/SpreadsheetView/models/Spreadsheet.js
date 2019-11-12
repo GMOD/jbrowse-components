@@ -52,6 +52,8 @@ export default pluginManager => {
             },
           })),
       ),
+
+      datasetName: types.maybe(types.string),
     })
     .volatile(() => ({
       defaultDataType: DataTypes.Text,
@@ -92,6 +94,9 @@ export default pluginManager => {
       },
       setColumnType(columnNumber, newTypeName) {
         self.columns[columnNumber].dataType = { type: newTypeName }
+      },
+      unselectAll() {
+        return self.rowSet.unselectAll()
       },
     }))
 

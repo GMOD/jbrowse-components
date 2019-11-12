@@ -1,0 +1,7 @@
+The BAM files that were used to generate "pe.pos_sorted.pesr.bedpe" and
+"pe.pos_sorted.pesr.vcf" can be found at:
+
+https://jbrowse.org.s3.amazonaws.com/genomes/hg19/lumpy_test_data/pe.pos_sorted.bam
+https://jbrowse.org.s3.amazonaws.com/genomes/hg19/lumpy_test_data/pe.pos_sorted.bam.bai
+https://jbrowse.org.s3.amazonaws.com/genomes/hg19/lumpy_test_data/sr.pos_sorted.bam
+https://jbrowse.org.s3.amazonaws.com/genomes/hg19/lumpy_test_data/sr.pos_sorted.bam.bai

@@ -1,3 +1,5 @@
+import { readConfObject } from '@gmod/jbrowse-core/configuration'
+
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent, getRoot, getEnv } = jbrequire('mobx-state-tree')
@@ -32,6 +34,10 @@ export default pluginManager => {
       ),
       configuration: configSchema,
 
+      hideViewControls: false,
+      hideVerticalResizeHandle: false,
+      hideFilterControls: false,
+
       filterControls: types.optional(FilterControlsModel, () =>
         FilterControlsModel.create({ filters: [{ type: 'Text' }] }),
       ),
@@ -55,8 +61,26 @@ export default pluginManager => {
         return !!getEnv(self).hideRowSelection
       },
 
-      get selectedRows() {
-        return self.rowSet.selectedRows
+      get outputRows() {
+        if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
+          const selected = self.spreadsheet.rowSet.selectedFilteredRows
+          if (selected.length) return selected
+          return self.spreadsheet.rowSet.sortedFilteredRows
+        }
+        return undefined
+      },
+
+      get dataset() {
+        if (self.spreadsheet && self.spreadsheet.datasetName) {
+          const { datasets } = getRoot(self).jbrowse
+          const dataset = (datasets || []).find(
+            ds => readConfObject(ds, 'name') === self.spreadsheet.datasetName,
+          )
+          if (dataset) {
+            return dataset
+          }
+        }
+        return undefined
       },
     }))
     .actions(self => ({

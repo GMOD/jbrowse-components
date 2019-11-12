@@ -14,16 +14,24 @@ export function getContainingView(node) {
 }
 
 export function getTrackAssemblyName(track) {
+  // if the track has an assemblyName for some reason, just use that
+  if (track.assemblyName) return track.assemblyName
+
+  // otherwise use the assembly from the dataset that it is part of
   const trackConf = track.configuration
   let trackConfParent = trackConf
   do {
     trackConfParent = getParent(trackConfParent)
-  } while (!(trackConfParent.assembly || 'defaultSequence' in trackConfParent))
+  } while (
+    !(trackConfParent.assembly || 'defaultSequence' in trackConfParent) &&
+    !isRoot(trackConfParent)
+  )
+
   if ('defaultSequence' in trackConfParent) {
     trackConfParent = trackConfParent.configuration
     do {
       trackConfParent = getParent(trackConfParent)
-    } while (!trackConfParent.assembly)
+    } while (!trackConfParent.assembly && !isRoot(trackConfParent))
   }
   const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
   return assemblyName

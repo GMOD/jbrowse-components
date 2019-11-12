@@ -57,6 +57,7 @@ export default pluginManager => {
       type: types.literal('ChordTrack'),
       configuration: ConfigurationReference(configSchema),
       bezierRadiusRatio: 0.1,
+      assemblyName: types.maybe(types.string),
     })
     .volatile((/* self */) => ({
       refNameMap: undefined,

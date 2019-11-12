@@ -20,6 +20,7 @@ export default pluginManager => {
   const Select = jbrequire('@material-ui/core/Select')
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
+  const { grey } = jbrequire('@material-ui/core/colors')
 
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
   const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
@@ -51,7 +52,7 @@ export default pluginManager => {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         position: 'absolute',
-        background: '#eee',
+        background: grey[200],
         boxSizing: 'border-box',
         borderRight: '1px solid #a2a2a2',
         borderBottom: '1px solid #a2a2a2',
@@ -101,14 +102,16 @@ export default pluginManager => {
 
     return (
       <div className={classes.controls}>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-          data-testid="circular_view_close"
-        >
-          <Icon fontSize="small">close</Icon>
-        </IconButton>
+        {model.hideCloseButton ? null : (
+          <IconButton
+            onClick={model.closeView}
+            className={classes.iconButton}
+            title="close this view"
+            data-testid="circular_view_close"
+          >
+            <Icon fontSize="small">close</Icon>
+          </IconButton>
+        )}
 
         <IconButton
           onClick={model.zoomOutButton}
@@ -142,19 +145,22 @@ export default pluginManager => {
           <Icon fontSize="small">rotate_right</Icon>
         </IconButton>
 
-        <ToggleButton
-          onClick={model.activateTrackSelector}
-          title="select tracks"
-          selected={
-            rootModel.visibleDrawerWidget &&
-            rootModel.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
-            rootModel.visibleDrawerWidget.view.id === model.id
-          }
-          value="track_select"
-          data-testid="circular_track_select"
-        >
-          <Icon fontSize="small">line_style</Icon>
-        </ToggleButton>
+        {model.hideTrackSelectorButton ? null : (
+          <ToggleButton
+            onClick={model.activateTrackSelector}
+            title="select tracks"
+            selected={
+              rootModel.visibleDrawerWidget &&
+              rootModel.visibleDrawerWidget.id ===
+                'hierarchicalTrackSelector' &&
+              rootModel.visibleDrawerWidget.view.id === model.id
+            }
+            value="track_select"
+            data-testid="circular_track_select"
+          >
+            <Icon fontSize="small">line_style</Icon>
+          </ToggleButton>
+        )}
       </div>
     )
   })
@@ -253,8 +259,8 @@ export default pluginManager => {
             <div
               className={classes.scroller}
               style={{
-                width: '100%',
-                height: `${model.height}px`,
+                width: model.width,
+                height: model.height,
               }}
             >
               <div
@@ -285,19 +291,21 @@ export default pluginManager => {
 
             <Controls model={model} />
 
-            <ResizeHandle
-              onDrag={model.resizeHeight}
-              objectId={model.id}
-              style={{
-                height: dragHandleHeight,
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                background: '#ccc',
-                boxSizing: 'border-box',
-                borderTop: '1px solid #fafafa',
-              }}
-            />
+            {model.hideVerticalResizeHandle ? null : (
+              <ResizeHandle
+                onDrag={model.resizeHeight}
+                objectId={model.id}
+                style={{
+                  height: dragHandleHeight,
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  background: '#ccc',
+                  boxSizing: 'border-box',
+                  borderTop: '1px solid #fafafa',
+                }}
+              />
+            )}
           </>
         )}
       </div>

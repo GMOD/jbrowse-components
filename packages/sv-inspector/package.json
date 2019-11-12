@@ -1,0 +1,21 @@
+{
+  "name": "@gmod/jbrowse-plugin-sv-inspector",
+  "version": "2.0.0",
+  "description": "JBrowse 2 SV inspector view",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/sv-inspector"
+  },
+  "author": "Robert Buels",
+  "license": "MIT",
+  "dependencies": {
+    "classnames": "^2.2.6"
+  },
+  "peerDependencies": {
+    "@gmod/jbrowse-core": "^2.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0"
+  }
+}
