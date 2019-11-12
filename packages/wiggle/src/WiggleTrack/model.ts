@@ -34,6 +34,7 @@ const stateModelFactory = (configSchema: any) =>
         .model({
           type: types.literal('WiggleTrack'),
           configuration: ConfigurationReference(configSchema),
+          selectedRendering: types.optional(types.string, ''),
         })
         .volatile(() => ({
           // avoid circular reference since WiggleTrackComponent receives this model
@@ -81,11 +82,9 @@ const stateModelFactory = (configSchema: any) =>
           : undefined
       },
       get renderProps() {
-        const config = self.rendererType.configSchema.create({
-          ...getConf(self, ['renderers', this.rendererTypeName]),
-          configId: `${self.id}-renderer`,
-        })
-        console.log('hi1', config.configId, self.id)
+        const config = self.rendererType.configSchema.create(
+          getConf(self, ['renderers', this.rendererTypeName]) || {},
+        )
         return {
           ...getParentRenderProps(self),
           notReady: !self.ready,
