@@ -20,6 +20,44 @@ window.rpcStuff = {
   corePlugins,
 }
 
+const { electron, electronBetterIpc } = window
+
+const { ipcRenderer } = electronBetterIpc
+
+let mainWindow
+
+// eslint-disable-next-line no-console
+const originalConsoleLog = console.log.bind(console)
+// eslint-disable-next-line no-console
+console.log = async (...args) => {
+  if (!mainWindow) {
+    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
+    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
+  }
+  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleLog', ...args)
+  originalConsoleLog(...args)
+}
+
+const originalConsoleWarn = console.warn.bind(console)
+console.warn = async (...args) => {
+  if (!mainWindow) {
+    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
+    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
+  }
+  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleWarn', ...args)
+  originalConsoleWarn(...args)
+}
+
+const originalConsoleError = console.error.bind(console)
+console.error = async (...args) => {
+  if (!mainWindow) {
+    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
+    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
+  }
+  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleError', ...args)
+  originalConsoleError(...args)
+}
+
 async function getGlobalStats(
   pluginManager,
   { adapterType, adapterConfig, signal, sessionId },
