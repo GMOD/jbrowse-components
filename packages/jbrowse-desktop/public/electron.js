@@ -9,11 +9,6 @@ const url = require('url')
 const { promisify } = require('util')
 const merge = require('merge-objects')
 
-const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
 const fsOpen = promisify(fs.open)
@@ -127,7 +122,7 @@ ipcMain.handle('loadConfig', async () => {
   }
 
   const ret = JSON.parse(configJSON)
-  if (inDevelopment) {
+  if (isDev) {
     const volvoxConfig = await fsReadFile('./test_data/config_volvox.json', {
       encoding: 'utf8',
     })
