@@ -17,9 +17,9 @@ export default class NCListFeature implements Feature {
   private uniqueId: string
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(ncFeature: any, parent?: Feature) {
+  constructor(ncFeature: any, parent?: Feature, id?: string) {
     this.ncFeature = ncFeature
-    this.uniqueId = ncFeature.id()
+    this.uniqueId = id || ncFeature.id()
     this.parentHandle = parent
   }
 
