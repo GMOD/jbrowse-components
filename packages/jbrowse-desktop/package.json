@@ -47,6 +47,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-sizeme": "^2.6.7",
+    "react-use": "^13.6.3",
     "rxjs": "6.5.2",
     "typeface-roboto": "^0.0.54"
   },

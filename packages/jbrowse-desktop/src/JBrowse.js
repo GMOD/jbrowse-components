@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
-import { useDebounce } from '@gmod/jbrowse-core/util'
+import { useThrottle } from 'react-use'
 import rootModel from './rootModel'
 import App from './ui/App'
 import StartScreen from './ui/StartScreen'
@@ -15,6 +15,7 @@ import Theme from './ui/theme'
 const { electron = {} } = window
 const { desktopCapturer, ipcRenderer } = electron
 
+const throttleMs = 4000
 export default observer(() => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
@@ -22,8 +23,8 @@ export default observer(() => {
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
   const [configSnapshot, setConfigSnapshot] = useState()
-  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, 5000)
-  const debouncedConfigSnapshot = useDebounce(configSnapshot, 5000)
+  const throttledSessionSnapshot = useThrottle(sessionSnapshot, throttleMs)
+  const throttledConfigSnapshot = useThrottle(configSnapshot, throttleMs)
 
   const { session, jbrowse } = root
   if (firstLoad && session) setFirstLoad(false)
@@ -76,26 +77,27 @@ export default observer(() => {
 
   useEffect(() => {
     ;(async () => {
-      if (debouncedSessionSnapshot) {
+      if (throttledSessionSnapshot) {
         const sources = await desktopCapturer.getSources({
           types: ['window'],
           thumbnailSize: { width: 500, height: 500 },
         })
         const jbWindow = sources.find(source => source.name === 'JBrowse')
         const screenshot = jbWindow.thumbnail.toDataURL()
-        ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
+        console.log('writing session')
+        ipcRenderer.send('saveSession', throttledSessionSnapshot, screenshot)
       }
     })()
     return () => {}
-  }, [debouncedSessionSnapshot])
+  }, [throttledSessionSnapshot])
 
   useEffect(() => {
-    if (debouncedConfigSnapshot) {
-      ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
+    if (throttledConfigSnapshot) {
+      ipcRenderer.send('saveConfig', throttledConfigSnapshot)
     }
 
     return () => {}
-  }, [debouncedConfigSnapshot])
+  }, [throttledConfigSnapshot])
 
   useEffect(() => {
     if (root) {
