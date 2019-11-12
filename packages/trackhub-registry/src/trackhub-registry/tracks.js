@@ -1,13 +1,16 @@
+import objectHash from 'object-hash'
 import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
 
 export function generateTracks(trackDb) {
   // eslint-disable-next-line no-underscore-dangle
   const { configuration } = trackDb._source
   const subTracks = getSubtracks({ members: configuration })
-  return subTracks.map(subTrack =>
+  return subTracks.map(subTrack => {
     // eslint-disable-next-line no-underscore-dangle
-    makeTrackConfig(subTrack, trackDb._source.hub.url),
-  )
+    const ret = makeTrackConfig(subTrack, trackDb._source.hub.url)
+    ret.configId = `trackhub-registry-${objectHash(ret)}`
+    return ret
+  })
 
   function getSubtracks(track, trackPath = []) {
     if (track.members)

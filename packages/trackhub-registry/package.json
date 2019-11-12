@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/ucsc-hub": "^0.1.2",
+    "object-hash": "^2.0.0",
     "sanitize-html": "^1.20.0"
   },
   "peerDependencies": {

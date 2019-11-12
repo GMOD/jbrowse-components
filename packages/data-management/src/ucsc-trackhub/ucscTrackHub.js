@@ -51,7 +51,7 @@ export function generateTracks(trackDb, trackDbFileLocation) {
       parentTrack.get('shortLabel'),
     )
     const res = makeTrackConfig(track, categories, trackDbFileLocation, trackDb)
-    res.configId = objectHash(res)
+    res.configId = `ucsc-trackhub-${objectHash(res)}`
     tracks.push(res)
   })
 
