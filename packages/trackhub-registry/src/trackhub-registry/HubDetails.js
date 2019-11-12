@@ -1,3 +1,4 @@
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { HubFile } from '@gmod/ucsc-hub'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'
@@ -21,32 +22,22 @@ function HubDetails(props) {
 
   useEffect(() => {
     async function getHubTxt() {
-      let response
+      let hubTxt
       try {
-        response = await fetch(hubUrl)
+        const hubHandle = openLocation({ uri: hubUrl })
+        hubTxt = await hubHandle.readFile('utf8')
       } catch (error) {
         setErrorMessage(
           <span>
-            <strong>Network error.</strong> {error.message} <br />
+            <strong>Error retrieving hub</strong> {error.message} <br />
             {hubUrl}
           </span>,
         )
         return
       }
-      if (!response.ok) {
-        setErrorMessage(
-          <span>
-            <strong>Could not access hub.txt file:</strong> <br />
-            {hubUrl} <br />
-            {response.status}: {response.statusText}
-          </span>,
-        )
-        return
-      }
-      const responseText = await response.text()
-      let newHubFile = hubFile
       try {
-        newHubFile = new HubFile(responseText)
+        const newHubFile = new HubFile(hubTxt)
+        setHubFile(newHubFile)
       } catch (error) {
         setErrorMessage(
           <span>
@@ -55,13 +46,11 @@ function HubDetails(props) {
             {hubUrl}
           </span>,
         )
-        return
       }
-      setHubFile(newHubFile)
     }
 
     getHubTxt()
-  }, [hubFile, hubUrl])
+  }, [hubUrl])
 
   const allowedHtml = {
     allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],

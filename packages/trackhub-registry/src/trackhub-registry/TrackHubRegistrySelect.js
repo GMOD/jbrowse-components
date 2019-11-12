@@ -96,18 +96,16 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     )
     if (response) {
       for (const item of response.items) {
-        if (item.hub.url.startsWith('ftp'))
-          item.error = 'JBrowse web cannot add connections from FTP sources'
+        if (item.hub.url.startsWith('ftp://'))
+          item.error = 'JBrowse cannot add connections from FTP sources'
         else {
-          let rawResponse
+          const hub = openLocation({ uri: item.hub.url })
           try {
             // eslint-disable-next-line no-await-in-loop
-            rawResponse = await fetch(item.hub.url, { method: 'HEAD' })
+            await hub.stat()
           } catch (error) {
             item.error = error.message
           }
-          if (rawResponse && !rawResponse.ok)
-            item.error = `${response.status}: ${response.statusText}`
         }
         newHubs.set(item.id, item)
       }
