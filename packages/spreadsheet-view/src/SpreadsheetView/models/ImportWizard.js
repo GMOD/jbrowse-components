@@ -1,20 +1,24 @@
-import { parseCsvBuffer, parseTsvBuffer, parseBedBuffer } from './ImportUtils'
-
-import { parseVcfBuffer } from './VcfImport'
+import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
+import { parseVcfBuffer } from '../importAdapters/VcfImport'
+import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
+import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
 const IMPORT_SIZE_LIMIT = 300000
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { types, getParent } = jbrequire('mobx-state-tree')
+  const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { openLocation } = jbrequire('@gmod/jbrowse-core/util/io')
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
 
-  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED']
+  const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: parseCsvBuffer,
     TSV: parseTsvBuffer,
     VCF: parseVcfBuffer,
     BED: parseBedBuffer,
+    BEDPE: parseBedPEBuffer,
+    'STAR-Fusion': parseSTARFusionBuffer,
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(
@@ -31,6 +35,7 @@ export default pluginManager => {
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
 
+      selectedDatasetIdx: 0,
       error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
@@ -48,6 +53,16 @@ export default pluginManager => {
       },
       get canCancel() {
         return getParent(self).readyToDisplay
+      },
+      get datasetChoices() {
+        return getRoot(self).jbrowse.datasets
+      },
+      get selectedDatasetName() {
+        const ds = getRoot(self).jbrowse.datasets[self.selectedDatasetIdx]
+        if (ds) {
+          return readConfObject(ds, 'name')
+        }
+        return undefined
       },
     }))
     .actions(self => ({
@@ -68,6 +83,10 @@ export default pluginManager => {
             }
           }
         }
+      },
+
+      setSelectedDatasetIdx(idx) {
+        self.selectedDatasetIdx = idx
       },
 
       toggleHasColumnNameLine() {

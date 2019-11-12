@@ -4,6 +4,7 @@ export default pluginManager => {
   const React = jbrequire('react')
   const { useState, useEffect } = React
   const { FileSelector } = jbrequire('@gmod/jbrowse-core/ui')
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Card = jbrequire('@material-ui/core/Card')
   const CardContent = jbrequire('@material-ui/core/CardContent')
@@ -19,6 +20,8 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const Typography = jbrequire('@material-ui/core/Typography')
   const TextField = jbrequire('@material-ui/core/TextField')
+  const MenuItem = jbrequire('@material-ui/core/MenuItem')
+  const Select = jbrequire('@material-ui/core/Select')
 
   const useStyles = makeStyles(theme => {
     return {
@@ -32,6 +35,7 @@ export default pluginManager => {
         margin: [[theme.spacing(2), 'auto']],
         border: [['2px', 'solid', theme.palette.error.main]],
       },
+      buttonContainer: { marginTop: theme.spacing(1) },
     }
   })
 
@@ -61,6 +65,17 @@ export default pluginManager => {
     const showColumnNameRowControls =
       model.fileType === 'CSV' || model.fileType === 'TSV'
 
+    const {
+      selectedDatasetIdx,
+      setSelectedDatasetIdx,
+      fileType,
+      fileTypes,
+      setFileType,
+      hasColumnNameLine,
+      toggleHasColumnNameLine,
+      datasetChoices,
+    } = model
+
     return (
       <Container>
         <Grid
@@ -84,19 +99,15 @@ export default pluginManager => {
           <Grid item>
             <FormControl component="fieldset" className={classes.formControl}>
               <FormLabel component="legend">File Type</FormLabel>
-              <RadioGroup
-                aria-label="file type"
-                name="type"
-                value={model.fileType}
-              >
+              <RadioGroup aria-label="file type" name="type" value={fileType}>
                 <Grid container spacing={1} direction="row">
-                  {model.fileTypes.map(fileTypeName => {
+                  {fileTypes.map(fileTypeName => {
                     return (
                       <Grid item key={fileTypeName}>
                         <FormControlLabel
-                          checked={model.fileType === fileTypeName}
+                          checked={fileType === fileTypeName}
                           value={fileTypeName}
-                          onClick={() => model.setFileType(fileTypeName)}
+                          onClick={() => setFileType(fileTypeName)}
                           control={<Radio />}
                           label={fileTypeName}
                         />
@@ -118,16 +129,14 @@ export default pluginManager => {
                     labelPlacement="end"
                     control={
                       <Checkbox
-                        checked={model.hasColumnNameLine}
-                        onClick={model.toggleHasColumnNameLine}
+                        checked={hasColumnNameLine}
+                        onClick={toggleHasColumnNameLine}
                       />
                     }
                   />
                   <NumberEditor
                     model={model}
-                    disabled={
-                      !showColumnNameRowControls || !model.hasColumnNameLine
-                    }
+                    disabled={!showColumnNameRowControls || !hasColumnNameLine}
                     modelPropName="columnNameLineNumber"
                     modelSetterName="setColumnNameLineNumber"
                   />
@@ -136,6 +145,24 @@ export default pluginManager => {
             </Grid>
           ) : null}
           <Grid item>
+            <FormControl fullWidth>
+              <FormLabel component="legend">Associated with dataset</FormLabel>
+              <Select
+                value={selectedDatasetIdx}
+                onChange={evt => setSelectedDatasetIdx(evt.target.value)}
+              >
+                {datasetChoices.map((dataset, idx) => {
+                  const name = readConfObject(dataset, 'name')
+                  return (
+                    <MenuItem key={name} value={idx}>
+                      {name}
+                    </MenuItem>
+                  )
+                })}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item className={classes.buttonContainer}>
             {model.canCancel ? (
               <Button
                 variant="contained"

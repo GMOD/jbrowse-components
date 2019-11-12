@@ -20,17 +20,21 @@ export default pluginManager => {
           'loadAssemblyRefNameMap',
           () => ({
             assemblyName: getTrackAssemblyName(self),
+            adapter: getConf(self, 'adapter'),
           }),
-          ({ assemblyName }, signal) => {
+          ({ assemblyName, adapter }, signal) => {
             return getRoot(self).jbrowse.getRefNameMapForAdapter(
-              getConf(self, 'adapter'),
+              adapter,
               assemblyName,
-              { signal },
+              {
+                signal,
+              },
             )
           },
           {
             fireImmediately: true,
             delay: 300,
+            name: 'refNameMapKeeper ref name fetching',
           },
         )
       },

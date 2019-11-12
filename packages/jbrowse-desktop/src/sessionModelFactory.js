@@ -123,6 +123,21 @@ export default pluginManager => {
         )
       },
 
+      getRegionsForAssemblyName(assemblyName, opts = {}) {
+        if (
+          assemblyName &&
+          self.assemblyData.get(assemblyName) &&
+          self.assemblyData.get(assemblyName).sequence
+        ) {
+          return self.getRegionsForAssembly(
+            assemblyName,
+            self.assemblyData,
+            opts,
+          )
+        }
+        return Promise.resolve(undefined)
+      },
+
       getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {

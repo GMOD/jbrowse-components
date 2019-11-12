@@ -30,6 +30,7 @@ export default pluginManager => {
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const ListItemIcon = jbrequire('@material-ui/core/ListItemIcon')
   const ListItemText = jbrequire('@material-ui/core/ListItemText')
+  const Tooltip = jbrequire('@material-ui/core/Tooltip')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
   const useStyles = makeStyles(theme => {
@@ -37,7 +38,7 @@ export default pluginManager => {
       root: {
         position: 'relative',
         marginBottom: theme.spacing(1),
-        background: 'white',
+        background: grey[500],
         overflow: 'auto',
       },
       dataTable: {
@@ -47,9 +48,15 @@ export default pluginManager => {
         '& td': {
           border: `1px solid ${grey[300]}`,
           padding: '0.2rem',
+          maxWidth: 2000,
+          maxHeight: 200,
+          overflowWrap: 'break-word',
+          overflow: 'auto',
         },
       },
-      dataTableBody: {},
+      dataTableBody: {
+        background: 'white',
+      },
       rowNumCell: {
         background: grey[200],
         textAlign: 'right',
@@ -63,6 +70,7 @@ export default pluginManager => {
         display: 'flex',
         textAlign: 'right',
         margin: 0,
+        whiteSpace: 'nowrap',
       },
       rowSelector: {
         position: 'relative',
@@ -104,6 +112,7 @@ export default pluginManager => {
         top: '-1px',
         zIndex: 2,
         minWidth: theme.spacing(2),
+        textAlign: 'left',
       },
       dataRowSelected: {
         background: indigo[100],
@@ -126,7 +135,7 @@ export default pluginManager => {
     return cell.text
   })
 
-  const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
+  const DataRow = observer(({ rowModel, spreadsheetModel }) => {
     const classes = useStyles()
     const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
     let rowClass = classes.dataRow
@@ -153,7 +162,7 @@ export default pluginManager => {
                 />
               )
             }
-            label={rowNumber + 1}
+            label={rowModel.id}
           />
         </th>
         {columnDisplayOrder.map(colNumber => (
@@ -221,6 +230,18 @@ export default pluginManager => {
       (currentColumnMenu && model.columns[columnNumber].dataType.displayName) ||
       ''
 
+    const isSorting = Boolean(
+      model.sortColumns.length &&
+        currentColumnMenu &&
+        model.sortColumns.find(
+          col => col.columnNumber === currentColumnMenu.colNumber,
+        ),
+    )
+    function stopSortingClick() {
+      columnMenuClose()
+      model.setSortColumns([])
+    }
+
     return (
       <>
         <Menu
@@ -239,6 +260,14 @@ export default pluginManager => {
             horizontal: 'right',
           }}
         >
+          {!isSorting ? null : (
+            <MenuItem onClick={stopSortingClick}>
+              <ListItemIcon>
+                <Icon fontSize="small">clear</Icon>
+              </ListItemIcon>
+              <ListItemText primary="Stop sorting" />
+            </MenuItem>
+          )}
           <MenuItem onClick={sortMenuClick.bind(null, false)}>
             <ListItemIcon>
               <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
@@ -343,7 +372,22 @@ export default pluginManager => {
         <table className={classes.dataTable}>
           <thead>
             <tr>
-              <th className={classes.topLeftCorner}></th>
+              <th className={classes.topLeftCorner}>
+                <Tooltip title="Unselect all" placement="right">
+                  <span>
+                    <IconButton
+                      className={classes.unselectAllButton}
+                      onClick={model.unselectAll}
+                      disabled={!model.rowSet.selectedCount}
+                      size="small"
+                    >
+                      <Icon className={classes.columnButtonIcon}>
+                        crop_free
+                      </Icon>
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </th>
               {columnDisplayOrder.map(colNumber => (
                 <th
                   className={classes.columnHead}
@@ -379,13 +423,8 @@ export default pluginManager => {
             </tr>
           </thead>
           <tbody className={classes.dataTableBody}>
-            {rows.map((row, rowNumber) => (
-              <DataRow
-                key={row.id}
-                rowNumber={rowNumber}
-                spreadsheetModel={model}
-                rowModel={row}
-              />
+            {rows.map(row => (
+              <DataRow key={row.id} spreadsheetModel={model} rowModel={row} />
             ))}
           </tbody>
           {!rows.length ? (

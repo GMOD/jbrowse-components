@@ -13,6 +13,8 @@ function parseWith(buffer: Buffer, options = {}) {
 
 export interface Row {
   id: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  extendedData?: any
   cells: {
     text?: string
   }[]
@@ -23,9 +25,10 @@ export interface RowSet {
   rows: Row[]
 }
 
-interface ParseOptions {
+export interface ParseOptions {
   hasColumnNameLine: boolean
   columnNameLineNumber: number
+  selectedDatasetName?: string
 }
 
 export interface Column {
@@ -36,7 +39,10 @@ export interface Column {
 
 async function dataToSpreadsheetSnapshot(
   rows: string[][],
-  options: ParseOptions = { hasColumnNameLine: false, columnNameLineNumber: 1 },
+  options: ParseOptions = {
+    hasColumnNameLine: false,
+    columnNameLineNumber: 1,
+  },
 ) {
   // rows is an array of row objects and columnNames
   // is an array of column names (in import order)
@@ -46,7 +52,7 @@ async function dataToSpreadsheetSnapshot(
     rows: rows.map((row, rowNumber) => {
       if (row.length > maxCols) maxCols = row.length
       return {
-        id: String(rowNumber),
+        id: String(rowNumber + 1),
         cells: row.map((text, columnNumber) => {
           return { columnNumber, text }
         }),
@@ -81,6 +87,7 @@ async function dataToSpreadsheetSnapshot(
     columnDisplayOrder,
     hasColumnNames: !!options.hasColumnNameLine,
     columns,
+    datasetName: options.selectedDatasetName,
   }
 }
 
@@ -100,26 +107,4 @@ export function parseTsvBuffer(
   return parseWith(buffer, { delimiter: '\t' }).then(rows =>
     dataToSpreadsheetSnapshot(rows, options),
   )
-}
-
-export function parseBedBuffer(buffer: Buffer) {
-  return parseTsvBuffer(buffer).then(data => {
-    const bedColumns = [
-      { name: 'chrom', dataType: { type: 'Text' } },
-      { name: 'chromStart', dataType: { type: 'Number' } },
-      { name: 'chromEnd', dataType: { type: 'Number' } },
-      { name: 'name', dataType: { type: 'Text' } },
-      { name: 'score', dataType: { type: 'Number' } },
-      { name: 'strand', dataType: { type: 'Text' } },
-    ]
-    data.columns.forEach((col, colNumber) => {
-      const bedColumn = bedColumns[colNumber]
-      if (bedColumn) {
-        col.name = bedColumn.name
-        col.dataType = bedColumn.dataType
-      }
-    })
-    data.hasColumnNames = true
-    return data
-  })
 }

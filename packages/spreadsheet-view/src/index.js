@@ -1,7 +1,7 @@
-export default class CircularViewPlugin {
+export default class SpreadsheetViewPlugin {
   install(pluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./SpreadsheetView/SpreadsheetView')),
+      pluginManager.jbrequire(require('./SpreadsheetView/SpreadsheetViewType')),
     )
   }
 

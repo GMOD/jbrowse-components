@@ -33,6 +33,7 @@ export default pluginManager => {
         height: headerHeight,
         // background: '#eee',
         // borderBottom: '1px solid #a2a2a2',
+        paddingLeft: theme.spacing(1),
       },
       viewControls: {
         margin: 0,
@@ -104,7 +105,7 @@ export default pluginManager => {
     return (
       <div className={classes.filterControls}>
         <TextField
-          label="filter"
+          label="text filter"
           value={textFilterValue}
           onChange={evt => setTextFilterValue(evt.target.value)}
           className={classes.textFilterControl}
@@ -132,13 +133,31 @@ export default pluginManager => {
 
   const RowCountMessage = observer(({ spreadsheet }) => {
     if (spreadsheet && spreadsheet.rowSet.isLoaded) {
-      const passing = spreadsheet.rowSet.passingFiltersCount
-      const total = spreadsheet.rowSet.count
-      if (passing !== total) {
-        return `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
-      }
+      const {
+        passingFiltersCount,
+        count,
+        selectedCount,
+        selectedAndPassingFiltersCount,
+      } = spreadsheet.rowSet
 
-      return `${spreadsheet.rowSet.count} rows`
+      let rowMessage
+      if (passingFiltersCount !== count) {
+        rowMessage = `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
+        if (selectedCount) {
+          rowMessage += `, ${selectedAndPassingFiltersCount} selected`
+          const selectedAndNotPassingFiltersCount =
+            selectedCount - selectedAndPassingFiltersCount
+          if (selectedAndNotPassingFiltersCount) {
+            rowMessage += ` (${selectedAndNotPassingFiltersCount} selected rows do not pass filters)`
+          }
+        }
+      } else {
+        rowMessage = `${spreadsheet.rowSet.count} rows`
+        if (selectedCount) {
+          rowMessage += `, ${selectedCount} selected`
+        }
+      }
+      return rowMessage
     }
     return null
   })
@@ -155,12 +174,16 @@ export default pluginManager => {
         data-testid={model.configuration.configId}
       >
         <Grid container direction="row" className={classes.header}>
-          <Grid item>
-            <ViewControls model={model} />
-          </Grid>
-          <Grid item>
-            <FilterControls model={model} />
-          </Grid>
+          {model.hideViewControls ? null : (
+            <Grid item>
+              <ViewControls model={model} />
+            </Grid>
+          )}
+          {model.mode !== 'display' || model.hideFilterControls ? null : (
+            <Grid item>
+              <FilterControls model={model} />
+            </Grid>
+          )}
         </Grid>
 
         <span style={{ display: model.mode === 'import' ? undefined : 'none' }}>
@@ -184,19 +207,21 @@ export default pluginManager => {
         >
           <RowCountMessage spreadsheet={spreadsheet} />
         </div>
-        <ResizeHandle
-          onDrag={model.resizeHeight}
-          objectId={model.id}
-          style={{
-            height: model.dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
-        />
+        {model.hideVerticalResizeHandle ? null : (
+          <ResizeHandle
+            onDrag={model.resizeHeight}
+            objectId={model.id}
+            style={{
+              height: model.dragHandleHeight,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              background: '#ccc',
+              boxSizing: 'border-box',
+              borderTop: '1px solid #fafafa',
+            }}
+          />
+        )}
       </div>
     )
   }

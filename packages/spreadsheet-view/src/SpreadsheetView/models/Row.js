@@ -11,11 +11,18 @@ export default pluginManager => {
     .model('SpreadsheetRow', {
       id: types.identifier,
       cells: types.array(CellModel),
+      extendedData: types.maybe(types.frozen()),
       isSelected: false,
     })
     .actions(self => ({
       toggleSelect() {
         self.isSelected = !self.isSelected
+      },
+      unSelect() {
+        self.isSelected = false
+      },
+      select() {
+        self.isSelected = true
       },
     }))
 

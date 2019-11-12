@@ -31,10 +31,11 @@ import MUIMenu from '@material-ui/core/Menu'
 import MUIMenuItem from '@material-ui/core/MenuItem'
 import MUIRadio from '@material-ui/core/Radio'
 import MUIRadioGroup from '@material-ui/core/RadioGroup'
-import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISelect from '@material-ui/core/Select'
+import MUISnackbar from '@material-ui/core/Snackbar'
 import MUISnackbarContent from '@material-ui/core/SnackbarContent'
 import MUITextField from '@material-ui/core/TextField'
+import MUITooltip from '@material-ui/core/Tooltip'
 import MUITypography from '@material-ui/core/Typography'
 
 // material-ui lab
@@ -99,6 +100,7 @@ export default {
   '@material-ui/core/Snackbar': MUISnackbar,
   '@material-ui/core/SnackbarContent': MUISnackbarContent,
   '@material-ui/core/TextField': MUITextField,
+  '@material-ui/core/Tooltip': MUITooltip,
   '@material-ui/core/Typography': MUITypography,
 
   // @material-ui lab

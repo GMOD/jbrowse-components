@@ -2,6 +2,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import CardContent from '@material-ui/core/CardContent'
 import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card'
+import Container from '@material-ui/core/Container'
 import FormControl from '@material-ui/core/FormControl'
 import Icon from '@material-ui/core/Icon'
 import InputLabel from '@material-ui/core/InputLabel'
@@ -12,6 +13,7 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
+import svInspectorIcon from './sv inspector icon.png'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -21,6 +23,8 @@ const useStyles = makeStyles(theme => ({
   },
   name: {
     marginTop: theme.spacing(),
+    textAlign: 'center',
+    maxWidth: 150,
   },
 }))
 
@@ -28,7 +32,7 @@ function NewSessionCard({ name, onClick, children }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
   return (
-    <div>
+    <Container>
       <Card
         className={classes.card}
         onMouseOver={() => setHovered(true)}
@@ -36,14 +40,16 @@ function NewSessionCard({ name, onClick, children }) {
         onClick={onClick}
         raised={Boolean(hovered)}
       >
-        <CardContent style={{ textAlign: 'center', margin: 'auto' }}>
+        <CardContent
+          style={{ textAlign: 'center', margin: 'auto', padding: 0 }}
+        >
           {children}
         </CardContent>
       </Card>
       <Typography variant="subtitle2" className={classes.name}>
         {name}
       </Typography>
-    </div>
+    </Container>
   )
 }
 
@@ -51,10 +57,12 @@ NewSessionCard.propTypes = {
   name: PropTypes.string.isRequired,
   onClick: PropTypes.func,
   children: PropTypes.node.isRequired,
+  style: PropTypes.shape({}),
 }
 
 NewSessionCard.defaultProps = {
   onClick: () => {},
+  style: {},
 }
 
 const emptySessionSnapshot = {
@@ -73,20 +81,28 @@ const emptySessionSnapshot = {
                 'function(session) {session.activateSession(undefined)}',
             },
             {
-              name: 'Create new spreadsheet',
-              icon: 'table_chart',
-              callback:
-                "function(session) { session.addView('SpreadsheetView', {})}",
-            },
-            {
-              name: 'Create new linear genome view',
+              name: 'New linear genome view',
+              icon: 'line_style',
               callback:
                 "function(session) { session.addView('LinearGenomeView', {})}",
             },
             {
-              name: 'Create new circular view',
+              name: 'New circular view',
+              icon: 'data_usage',
               callback:
                 "function(session) { session.addView('CircularView', {})}",
+            },
+            {
+              name: 'New SV inspector',
+              icon: 'table_chart',
+              callback:
+                "function(session) { session.addView('SvInspectorView', {})}",
+            },
+            {
+              name: 'Open tabular data',
+              icon: 'view_comfy',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
             },
           ],
         },
@@ -162,28 +178,30 @@ export function NewLinearGenomeViewSession({ root }) {
 
   return (
     <NewSessionCard name={'Linear Genome View'}>
-      <FormControl fullWidth>
-        <InputLabel htmlFor="age-simple">Dataset</InputLabel>
-        <Select value={selectedDatasetIdx} onChange={selectDataset}>
-          {root.jbrowse.datasets.map((dataset, idx) => {
-            const name = readConfObject(dataset, 'name')
-            return (
-              <MenuItem key={name} value={idx}>
-                {name}
-              </MenuItem>
-            )
-          })}
-        </Select>
-      </FormControl>
-      <Button
-        disabled={selectedDatasetIdx === ''}
-        onClick={createLGVSessionOfDatasetIdx}
-        variant="contained"
-        color="primary"
-        className={classes.button}
-      >
-        Open
-      </Button>
+      <Container>
+        <FormControl fullWidth>
+          <InputLabel htmlFor="age-simple">Dataset</InputLabel>
+          <Select value={selectedDatasetIdx} onChange={selectDataset}>
+            {root.jbrowse.datasets.map((dataset, idx) => {
+              const name = readConfObject(dataset, 'name')
+              return (
+                <MenuItem key={name} value={idx}>
+                  {name}
+                </MenuItem>
+              )
+            })}
+          </Select>
+        </FormControl>
+        <Button
+          disabled={selectedDatasetIdx === ''}
+          onClick={createLGVSessionOfDatasetIdx}
+          variant="contained"
+          color="primary"
+          className={classes.button}
+        >
+          Open
+        </Button>
+      </Container>
     </NewSessionCard>
   )
 }
@@ -192,6 +210,30 @@ NewLinearGenomeViewSession.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
-export function NewSVInspectorSession() {
-  return <NewSessionCard name={'SV Inspector'}>{''}</NewSessionCard>
+export function NewSVInspectorSession({ root }) {
+  const launchSVSession = () => {
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New SV Inspector Session ${new Date(Date.now()).toISOString()}`,
+      views: [
+        {
+          type: 'SvInspectorView',
+        },
+      ],
+    }
+    root.activateSession(snapshot)
+  }
+  return (
+    <NewSessionCard
+      name="Structural Variant Inspector"
+      onClick={launchSVSession}
+      style={{ padding: 0 }}
+    >
+      <img alt="" src={svInspectorIcon} />
+    </NewSessionCard>
+  )
+}
+
+NewSVInspectorSession.propTypes = {
+  root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
