@@ -80,11 +80,15 @@ export function guessAdapter(fileName, protocol) {
 
   if (/\.cram$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'CramAdapter',
+      cramLocation: { [protocol]: fileName },
+      craiLocation: { [protocol]: `${fileName}.crai` },
     }
   if (/\.crai$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'CramAdapter',
+      cramLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
+      craiLocation: { [protocol]: fileName },
     }
 
   if (/\.gff3?$/i.test(fileName))

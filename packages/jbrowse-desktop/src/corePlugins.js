@@ -11,12 +11,12 @@ import Menus from '@gmod/jbrowse-plugin-menus'
 import RDF from '@gmod/jbrowse-plugin-rdf'
 import Sequence from '@gmod/jbrowse-plugin-sequence'
 import SVG from '@gmod/jbrowse-plugin-svg'
+import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 import Variants from '@gmod/jbrowse-plugin-variants'
 import Wiggle from '@gmod/jbrowse-plugin-wiggle'
 import SpreadsheetViewPlugin from '@gmod/jbrowse-plugin-spreadsheet-view'
 import BreakpointSplitView from '@gmod/jbrowse-plugin-breakpoint-split-view'
 import SvInspectorPlugin from '@gmod/jbrowse-plugin-sv-inspector'
-// import TrackHubRegistry from '@gmod/jbrowse-plugin-trackhub-registry'
 
 export default [
   Alignments,
@@ -32,10 +32,9 @@ export default [
   RDF,
   Sequence,
   SVG,
+  TrackHubRegistry,
   Variants,
   Wiggle,
   SpreadsheetViewPlugin,
   BreakpointSplitView,
-  SvInspectorPlugin,
-  // TrackHubRegistry,
 ]
