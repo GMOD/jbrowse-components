@@ -84,7 +84,6 @@ export default observer(() => {
         })
         const jbWindow = sources.find(source => source.name === 'JBrowse')
         const screenshot = jbWindow.thumbnail.toDataURL()
-        console.log('writing session')
         ipcRenderer.send('saveSession', throttledSessionSnapshot, screenshot)
       }
     })()
