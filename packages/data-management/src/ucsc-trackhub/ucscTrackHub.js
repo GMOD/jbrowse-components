@@ -1,3 +1,4 @@
+import objectHash from 'object-hash'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
@@ -49,9 +50,9 @@ export function generateTracks(trackDb, trackDbFileLocation) {
     const categories = parentTracks.map(parentTrack =>
       parentTrack.get('shortLabel'),
     )
-    tracks.push(
-      makeTrackConfig(track, categories, trackDbFileLocation, trackDb),
-    )
+    const res = makeTrackConfig(track, categories, trackDbFileLocation, trackDb)
+    res.configId = objectHash(res)
+    tracks.push(res)
   })
 
   return tracks
