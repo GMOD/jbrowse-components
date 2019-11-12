@@ -4,19 +4,38 @@ import {
   toUrlSafeB64,
   fromUrlSafeB64,
   useDebounce,
+  inDevelopment,
 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+
+// material-ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
+
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
+import mixin from 'merge-objects'
+
 import rootModel from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
+
+async function parseConfig(configLoc) {
+  const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
+  if (inDevelopment) {
+    const volvoxConfig = JSON.parse(
+      await openLocation({ uri: 'test_data/config_volvox.json' }).readFile(
+        'utf8',
+      ),
+    )
+    mixin(config, volvoxConfig)
+  }
+  return config
+}
 
 export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
@@ -55,8 +74,7 @@ export default observer(({ config, initialState }) => {
           if (localStorageConfig)
             configSnapshot = JSON.parse(localStorageConfig)
           if (configSnapshot.uri || configSnapshot.localPath) {
-            const configText = await openLocation(config).readFile('utf8')
-            configSnapshot = JSON.parse(configText)
+            configSnapshot = await parseConfig(config)
           }
           try {
             r = rootModel.create({ jbrowse: configSnapshot })

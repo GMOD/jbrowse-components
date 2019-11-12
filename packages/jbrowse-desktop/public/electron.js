@@ -7,6 +7,12 @@ const fetch = require('node-fetch')
 const path = require('path')
 const url = require('url')
 const { promisify } = require('util')
+const merge = require('merge-objects')
+
+const inDevelopment =
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_ENV === 'development'
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
@@ -119,7 +125,15 @@ ipcMain.handle('loadConfig', async () => {
       configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
     } else throw error
   }
-  return JSON.parse(configJSON)
+
+  const ret = JSON.parse(configJSON)
+  if (inDevelopment) {
+    const volvoxConfig = await fsReadFile('./test_data/config_volvox.json', {
+      encoding: 'utf8',
+    })
+    merge(ret, JSON.parse(volvoxConfig))
+  }
+  return ret
 })
 
 ipcMain.on('saveConfig', async (event, configSnapshot) => {

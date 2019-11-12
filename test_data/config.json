@@ -1,0 +1,1200 @@
+{
+  "datasets": [
+    {
+      "configId": "GbR-gJfAC9M",
+      "name": "Homo sapiens",
+      "assembly": {
+        "configId": "LxT4lkflYm1",
+        "name": "hg19",
+        "aliases": [
+          "GRCh37"
+        ],
+        "sequence": {
+          "configId": "Pd8Wh30ei9R",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "configId": "YK3RiyLKJq4",
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz"
+            },
+            "faiLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fasta.gz.gzi"
+            }
+          },
+          "rendering": {
+            "configId": "_Ta2aorot0V",
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "configId": "hg19_aliases",
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/hg19_aliases.txt"
+            }
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "human_chord_test",
+          "type": "StructuralVariantChordTrack",
+          "name": "HG002 PacBio PBSV BND",
+          "configRelationships": [
+            {
+              "type": "AlignmentEvidence",
+              "target": "pacbio_hg002"
+            },
+            {
+              "target": "pacbio_sv_vcf",
+              "type": "VariantCalls"
+            }
+          ],
+          "adapter": {
+            "configId": "JjSnfYk0a",
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "configId": "WGiJIFVWgx",
+              "location": {
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "configId": "cnlG3T7NSc",
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "configId": "breast_cancer_hg19_chords",
+          "type": "StructuralVariantChordTrack",
+          "name": "SKBR3 Sniffles TRA",
+          "configRelationships": [
+            {
+              "type": "AlignmentEvidence",
+              "target": "ngmlr"
+            },
+            {
+              "target": "breast_cancer_sniffles_hg19",
+              "type": "VariantCalls"
+            }
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "configId": "cnlG3T7NSc",
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "ngmlr",
+          "type": "AlignmentsTrack",
+          "name": "Breast cancer pacbio (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "ngmlr_cov",
+          "type": "WiggleTrack",
+          "name": "Breast cancer pacbio coverage (NGMLR)",
+          "category": [
+            "SKBR3"
+          ],
+          "autoscale": "local",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
+            }
+          }
+        },
+        {
+          "configId": "illumina_hg002",
+          "type": "AlignmentsTrack",
+          "name": "HG002.hs37d5.2x250",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
+          "configId": "pacbio_hg002",
+          "type": "AlignmentsTrack",
+          "name": "HG002.hs37d5.11kb",
+          "category": [
+            "PacBio",
+            "BAM"
+          ],
+          "adapter": {
+            "configId": "yqdN4rtSSS",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
+            },
+            "index": {
+              "configId": "z0jYC37_2h",
+              "location": {
+                "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "XKcazRjYUO",
+            "PileupRenderer": {
+              "configId": "G71Pm63GoW",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "r7zVi_Jgrt",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "tVwnQLG0u4"
+              }
+            }
+          }
+        },
+        {
+          "configId": "na12878_exome",
+          "type": "AlignmentsTrack",
+          "name": "NA12878 Exome",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "configId": "OTDepV9NVQj",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+            },
+            "index": {
+              "configId": "cS35TbI08yD",
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "YiOyYnupJa8",
+            "PileupRenderer": {
+              "configId": "Lhb2lIWJnTd",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "s8YU2XWWehv",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "743qj43cJrD"
+              }
+            }
+          }
+        },
+        {
+          "configId": "chm1_pacbio",
+          "type": "AlignmentsTrack",
+          "name": "CHM1 pacbio",
+          "category": [
+            "PacBio",
+            "BAM"
+          ],
+          "adapter": {
+            "configId": "fA7-Knm3_z",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
+            },
+            "index": {
+              "configId": "mOiFQ3uzLT",
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "UuqCkHFZ5t",
+            "PileupRenderer": {
+              "configId": "8macjrkylb",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "-Yj1bHW27k",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "Bt9BQUTZ4J"
+              }
+            }
+          }
+        },
+        {
+          "configId": "hg00096_highcov",
+          "type": "AlignmentsTrack",
+          "name": "HG00096 Illumina high coverage",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "configId": "EwF71672lBA",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+            },
+            "index": {
+              "configId": "OR-n1OqwE3X",
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "wa7xGT9bmhU",
+            "PileupRenderer": {
+              "configId": "6OSKh0L8UMC",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "ZM4tP6_Qbcw",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "NG04oARDu88"
+              }
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong_cram_coverage",
+          "type": "WiggleTrack",
+          "name": "HG002 Nanopore ultralong coverage",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.regions.bw"
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong_cram",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong (CRAM)",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram"
+            },
+            "craiLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "nanopore_ultralong",
+          "type": "AlignmentsTrack",
+          "name": "HG002 Nanopore ultralong (BAM)",
+          "category": [
+            "GIAB"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "rJxR1X2T0yu",
+          "type": "AlignmentsTrack",
+          "name": "HG00096 Illumina low coverage",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "configId": "BWBdaUrgsOP",
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+            },
+            "index": {
+              "configId": "Wo7_uXtLj-L",
+              "location": {
+                "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "l6ri1CJuYRh",
+            "PileupRenderer": {
+              "configId": "mjcRxahq0QK",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "SiP2Xpddy3_",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "8OxyEW_afFb"
+              }
+            }
+          }
+        },
+        {
+          "configId": "wiggle_global_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode global autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "adapter": {
+            "configId": "8L8nA9qpjRe",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          },
+          "renderers": {
+            "configId": "Q6WzvBzOnbL",
+            "DensityRenderer": {
+              "configId": "j7Hr8HSBoh_",
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "configId": "YtuFWYpGQlt",
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "configId": "YYY_eV2iQ7S",
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "configId": "wiggle_local_autoscale",
+          "type": "WiggleTrack",
+          "name": "Encode local autoscale",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "autoscale": "local",
+          "adapter": {
+            "configId": "vARzwjicxgq",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+            }
+          },
+          "renderers": {
+            "configId": "Hu3KQHJ-RLX",
+            "DensityRenderer": {
+              "configId": "Nrh4xydmujo",
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "configId": "QRAw8coHW1i",
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "configId": "aazgDbgS8qm",
+              "type": "LinePlotRenderer"
+            }
+          }
+        },
+        {
+          "configId": "nclist_genes_hg19",
+          "type": "BasicTrack",
+          "name": "Gencode v19",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "repeats_hg19",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "bigbed_peaks",
+          "type": "BasicTrack",
+          "name": "Encode peaks",
+          "category": [
+            "ENCODE bigWigs"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "breast_cancer_sniffles_hg19",
+          "type": "VariantTrack",
+          "name": "Breast cancer pacbio (sniffles VCF)",
+          "category": [
+            "SKBR3"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "configId": "1000genomes_indels",
+          "type": "VariantTrack",
+          "name": "InDels",
+          "category": [
+            "1000 genomes"
+          ],
+          "adapter": {
+            "configId": "5cVzXc0r4sO",
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+            },
+            "index": {
+              "configId": "bmWtGbNWnlD",
+              "location": {
+                "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "configId": "GXEKwN52kO0",
+            "PileupRenderer": {
+              "configId": "Oz9nuyem1z2",
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "configId": "7wSZSPLj8Kn",
+              "type": "SvgFeatureRenderer",
+              "labels": {
+                "configId": "TFb1J4Uz4gH"
+              }
+            }
+          }
+        },
+        {
+          "configId": "pacbio_sv_vcf",
+          "type": "VariantTrack",
+          "name": "hs37d5.HG002-SequelII-CCS",
+          "category": [
+            "PacBio",
+            "VCF"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "configId": "chm_variants",
+          "type": "VariantTrack",
+          "name": "chm.full.37d5.vcf.gz",
+          "category": [
+            "PacBio",
+            "VCF"
+          ],
+          "adapter": {
+            "configId": "Wd1VtBmf9Ms",
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
+            },
+            "index": {
+              "configId": "9Z6Sihn9Hwx",
+              "location": {
+                "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
+              }
+            }
+          }
+        },
+        {
+          "configId": "sparql_togogenome",
+          "type": "BasicTrack",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "ALCFDT789I",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\n\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nPREFIX obo: <http://purl.obolibrary.org/obo/>\nPREFIX sio: <http://semanticscience.org/resource/>\nPREFIX faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX so: <http://purl.obolibrary.org/obo/so#>\n\nSELECT DISTINCT ?uniqueId ?type ?start ?end ?sub_uniqueId ?sub_type ?sub_start ?sub_end ?sub_sub_uniqueId ?sub_sub_type ?sub_sub_start ?sub_sub_end ?strand ?name ?description ?sub_name ?sub_description ?sub_class ?sub_sub_name\nFROM <http://togovar.biosciencedbc.jp/graph/ensembl37>\nWHERE {\n  VALUES ?region_start { {start} }\n  VALUES ?region_end { {end} }\n  VALUES ?chr_id { <http://identifiers.org/hco/{refName}#GRCh37> }\n\n  # gene\n  BIND (\"gene\" AS ?type)\n  ?uniqueId so:part_of ?chr_id .\n  ?uniqueId faldo:location ?loc .\n  ?loc faldo:begin/rdf:type ?faldo_type .\n  ?loc faldo:begin/faldo:position ?start_pos .\n  ?loc faldo:end/faldo:position ?end_pos .\n\n  FILTER (?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition))\n  BIND (IF (?faldo_type = faldo:ForwardStrandPosition, 1, IF (?faldo_type = faldo:ReverseStrandPosition, -1, 0)) AS ?strand)\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?end_pos, ?start_pos) AS ?start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?end_pos, ?start_pos) AS ?end)\n\n  FILTER (!(?start > ?region_end || ?end < ?region_start))\n\n  # transcript\n  BIND (\"mRNA\" AS ?sub_type)\n  ?sub_uniqueId so:part_of ?uniqueId .\n  ?sub_uniqueId rdf:type ?sub_class_orig .\n  FILTER (!strstarts(str(?sub_class_orig), \"http://rdf.ebi.ac.uk/terms/ensembl/\"))\n  BIND (IF (?sub_class_orig = obo:SO_0001217, obo:SO_0000316, ?sub_class_orig) AS ?sub_class)\n\n  ?sub_uniqueId faldo:location ?sub_loc .\n  ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n  ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_end_pos, ?sub_start_pos) AS ?sub_end)\n\n  # sub_sub_\n  BIND (\"CDS\" AS ?sub_sub_type)\n  ?sub_uniqueId so:has_part ?sub_sub_uniqueId .\n\n  ?sub_sub_uniqueId faldo:location ?sub_sub_loc .\n  ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n  ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_end)\n\n  OPTIONAL { ?uniqueId dct:identifier ?name . }\n  OPTIONAL { ?uniqueId rdfs:label ?description . }\n  OPTIONAL { ?sub_uniqueId dct:identifier ?sub_name . }\n  OPTIONAL { ?sub_uniqueId so:translates_to/dct:identifier ?sub_description . }\n  OPTIONAL { ?sub_sub_uniqueId dct:identifier ?sub_sub_name . }\n}",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "lu4lp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "9m6o3wEqAf"
+            }
+          }
+        },
+        {
+          "configId": "sparql_togovar",
+          "type": "BasicTrack",
+          "name": "TogoVar SPARQL Variants",
+          "category": [
+            "Variants"
+          ],
+          "adapter": {
+            "configId": "JOaFDT74Jk",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://togovar.biosciencedbc.jp/sparql"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  m2r:  <http://med2rdf.org/ontology/med2rdf#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\nPREFIX  dct: <http://purl.org/dc/terms/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nSELECT DISTINCT  (?variant as ?uniqueId) ?hgvs ?name ?variant_type ?so_type ?start ?stop ?end ?ref ?alt\nFROM <http://togovar.biosciencedbc.jp/graph/variant>\nFROM <http://togovar.biosciencedbc.jp/graph/so>\nWHERE\n  { ?variant  a                     ?_vt ;\n              rdfs:label            ?hgvs ;\n              faldo:location        ?_loc ;\n              dct:identifier        ?name\n    VALUES ?_vt { obo:SO_0001483 obo:SO_0000667 obo:SO_0000159 obo:SO_1000032 obo:SO_1000002 }\n    ?_vt  rdfs:label  ?variant_type\n      { ?_loc_begin  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n                  faldo:position   ?start .\n        ?_loc     faldo:begin      ?_loc_begin .\n        ?_loc faldo:end/faldo:position ?stop .\n      }\n    UNION\n      { ?_loc  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n               faldo:position   ?start\n      }\n    FILTER ( ( ( ?start > {start} ) && ( ?start < {end} ) ) )\n    OPTIONAL\n      { ?variant  m2r:reference_allele  ?ref }\n    OPTIONAL\n      { ?variant  m2r:alternative_allele  ?alt }\n    BIND(replace(str(?_vt), \".*/\", \"\") AS ?so_type)\n    BIND(IF(?stop, ?stop, ?start + 1) AS ?end)\n  }",
+            "refNames": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "X",
+              "Y",
+              "MT"
+            ],
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "ad4lp9S_S0",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "4g3o3wEqAl"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "configId": "VkIXFcSSJ",
+      "name": "Homo sapiens (GRCh38)",
+      "assembly": {
+        "configId": "ZcKi-0FaG9",
+        "name": "GRCh38",
+        "aliases": [
+          "hg38"
+        ],
+        "sequence": {
+          "configId": "P6R5xbRqRr",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "configId": "BY0uXnap-Z",
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz"
+            },
+            "faiLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi"
+            }
+          },
+          "rendering": {
+            "configId": "FVLPrs1AWM",
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "configId": "hg38_aliases",
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/GRCh38_RefSeq2UCSC.txt"
+            }
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "sparql_ensembl",
+          "type": "BasicTrack",
+          "name": "Ensembl SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "AOaFDTivyl",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "https://www.ebi.ac.uk/rdf/services/sparql"
+            },
+            "queryTemplate": "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\n\nSELECT DISTINCT  ?gene (?id AS ?uniqueId) (?label AS ?name) (?desc AS ?note) ?strand ?start ?end\nWHERE\n  { VALUES ?location_type { faldo:ForwardStrandPosition faldo:ReverseStrandPosition faldo:BothStrandsPosition }\n    ?location  faldo:begin     _:b0 .\n    _:b0      rdf:type         ?location_type ;\n              faldo:position   ?faldo_begin .\n    ?location  faldo:end       _:b1 .\n    _:b1      rdf:type         ?location_type ;\n              faldo:position   ?faldo_end .\n    ?location  faldo:reference  <http://rdf.ebi.ac.uk/resource/ensembl/97/homo_sapiens/GRCh38/{refName}> .\n    ?gene     rdf:type         ?type ;\n              rdfs:label       ?label ;\n              dc:description   ?desc ;\n              dc:identifier    ?id ;\n              faldo:location   ?location\n    BIND(if(( ?location_type = faldo:ForwardStrandPosition ), 1, if(( ?location_type = faldo:ReverseStrandPosition ), -1, 0)) AS ?strand)\n    BIND(if(( ?strand = -1 ), ?faldo_end, ?faldo_begin) AS ?start)\n    BIND(if(( ?strand = -1 ), ?faldo_begin, ?faldo_end) AS ?end)\n    FILTER ( ( ?start >= {start} ) && ( ?end <= {end} ) )\n  }",
+            "additionalQueryParams": [
+              "format=JSON"
+            ]
+          },
+          "renderer": {
+            "configId": "lIylp9S_S6",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "t43o3wEqG9"
+            }
+          }
+        },
+        {
+          "configId": "repeats_hg38",
+          "type": "BasicTrack",
+          "name": "UCSC",
+          "category": [
+            "UCSC RepeatMasker"
+          ],
+          "adapter": {
+            "configId": "wCI0N1qJgMe",
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
+            }
+          },
+          "renderer": {
+            "configId": "lqGk6Jefctk",
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "sparql_togo",
+          "type": "BasicTrack",
+          "name": "TogoGenome SPARQL Genes",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "configId": "DOaFDTivy3",
+            "type": "SPARQLAdapter",
+            "endpoint": {
+              "uri": "http://togogenome.org/sparql-app"
+            },
+            "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX  sio:  <http://semanticscience.org/resource/>\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\n\nSELECT DISTINCT ?uniqueId (\"gene\" AS ?type) ?start ?end ?sub_uniqueId (\"mRNA\" AS ?sub_type) ?sub_start ?sub_end ?sub_sub_uniqueId (\"CDS\" AS ?sub_sub_type) ?sub_sub_start ?sub_sub_end ?faldo_type ?strand (?strand AS ?sub_strand) (?strand AS ?sub_sub_strand) ?name ?description ?sub_name ?sub_description ?sub_class\nFROM <http://togogenome.org/graph/refseq>\nFROM <http://togogenome.org/graph/so>\nFROM <http://togogenome.org/graph/faldo>\nWHERE\n  { VALUES ?sub_class { obo:SO_0000316 obo:SO_0000253 obo:SO_0000252 }\n    ?refseq_id  insdc:sequence_version  \"{refName}\" ;\n              insdc:sequence        ?seq_id .\n    ?uniqueId  obo:so_part_of        ?seq_id ;\n              rdfs:subClassOf       obo:SO_0000704 ;\n              faldo:location        ?loc .\n    ?loc  faldo:begin          ?begin .\n    ?begin    faldo:position        ?start_pos .\n    ?loc faldo:end/faldo:position ?end_pos\n      { BIND(faldo:ForwardStrandPosition AS ?faldo_type)\n        BIND(1 AS ?strand)\n        ?begin  rdf:type  faldo:ForwardStrandPosition\n      }\n    UNION\n      { BIND(faldo:ReverseStrandPosition AS ?faldo_type)\n        BIND(-1 AS ?strand)\n        ?begin  rdf:type  faldo:ReverseStrandPosition\n      }\n    UNION\n      { BIND(faldo:BothStrandPosition AS ?faldo_type)\n        BIND(0 AS ?strand)\n        ?begin  rdf:type  faldo:BothStrandPosition\n      }\n    FILTER ( ! ( ( ?start_pos > {end} ) || ( ?end_pos < {start} ) ) )\n    ?sub_uniqueId  obo:so_part_of   ?uniqueId ;\n              rdfs:subClassOf  ?sub_class ;\n              faldo:location   ?sub_loc .\n    ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n    ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n    ?sub_uniqueId  obo:so_has_part  ?sub_sub_uri ;\n              sio:SIO_000974   ?uuid .\n    ?uuid     sio:SIO_000628   ?sub_sub_uri .\n    ?sub_sub_uri  rdfs:subClassOf  obo:SO_0000147 ;\n              faldo:location   ?sub_sub_loc .\n    ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n    ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos\n    OPTIONAL\n      { ?uniqueId  rdfs:label  ?name }\n    OPTIONAL\n      { ?uniqueId  insdc:product  ?product }\n    OPTIONAL\n      { ?uniqueId  insdc:note  ?note }\n    OPTIONAL\n      { ?sub_uniqueId  rdfs:label  ?sub_name }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:product  ?sub_product }\n    OPTIONAL\n      { ?sub_uniqueId  insdc:note  ?sub_note }\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_sub_start_pos, ?sub_sub_end_pos) AS ?sub_sub_end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?end_pos, ?start_pos) AS ?start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?start_pos, ?end_pos) AS ?end)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n    BIND(if(( ?faldo_type = faldo:ReverseStrandPosition ), ?sub_start_pos, ?sub_end_pos) AS ?sub_end)\n    BIND(iri(concat(str(?sub_sub_uri), \"-\", str(?uuid))) AS ?sub_sub_uniqueId)\n    BIND(coalesce(?product, ?note, \"\") AS ?description)\n    BIND(coalesce(?sub_product, ?sub_note, \"\") AS ?sub_description)\n  }",
+            "refNamesQueryTemplate": "PREFIX  insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\n\nSELECT DISTINCT  ?refName\nWHERE\n  { ?refseq_id  insdc:sequence_version  ?refName }",
+            "additionalQueryParams": [
+              "format=application%2Fsparql-results%2Bjson"
+            ]
+          },
+          "renderer": {
+            "configId": "eIylp9S_S9",
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "configId": "b43o3wEqG4"
+            }
+          }
+        },
+        {
+          "configId": "gencode_nclist_hg38",
+          "type": "BasicTrack",
+          "name": "Gencode v32 NCList (compressed)",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+            "refNames": [
+              "chr1",
+              "chr2",
+              "chr3",
+              "chr4",
+              "chr5",
+              "chr6",
+              "chr7",
+              "chr8",
+              "chr9",
+              "chr10",
+              "chr11",
+              "chr12",
+              "chr13",
+              "chr14",
+              "chr15",
+              "chr16",
+              "chr17",
+              "chr18",
+              "chr19",
+              "chr20",
+              "chr21",
+              "chr22",
+              "chr23",
+              "chrX",
+              "chrY",
+              "chrMT"
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "gencode_bigbed_hg38",
+          "type": "BasicTrack",
+          "name": "Gencode v32 BigBed",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "updateUrl": true
+  },
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Human Example (hg19)",
+      "width": 1192,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "Cma34s8JJ",
+          "type": "LinearGenomeView",
+          "offsetPx": 835,
+          "bpPerPx": 50,
+          "displayRegionsFromAssemblyName": "hg19",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "8fmNOg8Mt",
+              "type": "WiggleTrack",
+              "height": 100,
+              "configuration": "wiggle_global_autoscale",
+              "selectedRendering": ""
+            },
+            {
+              "id": "PbHbhnr6Vn",
+              "type": "WiggleTrack",
+              "height": 100,
+              "configuration": "wiggle_local_autoscale",
+              "selectedRendering": ""
+            },
+            {
+              "id": "co9dWzCnSq",
+              "type": "BasicTrack",
+              "height": 100,
+              "configuration": "bigbed_peaks"
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 1192,
+          "hideControls": false,
+          "hideHeader": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "KiRG5qjrcS",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "Cma34s8JJ"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    },
+    {
+      "name": "Human Example (GRCh38)",
+      "width": 1260,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "id": "Cma34s8JJ",
+          "type": "LinearGenomeView",
+          "offsetPx": 69300,
+          "bpPerPx": 150,
+          "displayRegionsFromAssemblyName": "GRCh38",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "xwPzCDv22",
+              "type": "BasicTrack",
+              "height": 400,
+              "configuration": "sparql_togo"
+            },
+            {
+              "id": "alksdAD23",
+              "type": "BasicTrack",
+              "height": 100,
+              "configuration": "sparql_ensembl"
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 1260,
+          "hideControls": false,
+          "hideHeader": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {},
+      "activeDrawerWidgets": {},
+      "menuBars": [
+        {
+          "id": "aU_iMpOUx4",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                }
+              ]
+            },
+            {
+              "name": "Admin",
+              "menuItems": [
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "connections": {}
+    }
+  ]
+}

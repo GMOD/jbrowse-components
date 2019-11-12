@@ -32,6 +32,13 @@ export default observer(() => {
     async function loadConfig() {
       try {
         const config = await ipcRenderer.invoke('loadConfig')
+        Object.assign(config, {
+          configuration: {
+            rpc: {
+              defaultDriver: 'ElectronRpcDriver',
+            },
+          },
+        })
         const r = rootModel.create({ jbrowse: config })
 
         // poke some things for testing (this stuff will eventually be removed)

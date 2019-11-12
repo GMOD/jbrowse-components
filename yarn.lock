@@ -10421,6 +10421,11 @@ merge-descriptors@1.0.1:
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
   integrity sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E=
 
+merge-objects@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/merge-objects/-/merge-objects-1.0.5.tgz#ad923ff3910091acc1438f53eb75b8f37d862a86"
+  integrity sha1-rZI/85EAkazBQ49T63W4832GKoY=
+
 merge-stream@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/merge-stream/-/merge-stream-2.0.0.tgz#52823629a14dd00c9770fb6ad47dc6310f2c1f60"
