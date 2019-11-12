@@ -22,6 +22,7 @@ export default pluginManager => {
   const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const Typography = jbrequire('@material-ui/core/Typography')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
+  const { grey } = jbrequire('@material-ui/core/colors')
 
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
   const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
@@ -53,7 +54,7 @@ export default pluginManager => {
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         position: 'absolute',
-        background: '#eee',
+        background: grey[200],
         boxSizing: 'border-box',
         borderRight: '1px solid #a2a2a2',
         borderBottom: '1px solid #a2a2a2',

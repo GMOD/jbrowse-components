@@ -6,6 +6,8 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
+  const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
+  const Checkbox = jbrequire('@material-ui/core/Checkbox')
   const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -31,11 +33,15 @@ export default pluginManager => {
         margin: 0,
       },
       spreadsheetViewContainer: {
-        borderRight: [['1px', 'solid', grey[300]]],
+        borderRight: [['1px', 'solid', grey[400]]],
         display: 'inline-block',
       },
       circularViewContainer: {
         display: 'inline-block',
+      },
+      circularViewOptions: {
+        padding: theme.spacing(1),
+        background: grey[200],
       },
     }
   })
@@ -73,6 +79,37 @@ export default pluginManager => {
     )
   })
 
+  const CircularViewOptions = observer(({ svInspector }) => {
+    const classes = useStyles()
+
+    return (
+      <Grid
+        container
+        className={classes.circularViewOptions}
+        style={{ height: svInspector.circularViewOptionsBarHeight }}
+      >
+        <Grid item>
+          <FormControlLabel
+            // className={classes.rowNumber}
+            control={
+              <Checkbox
+                className={classes.rowSelector}
+                checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
+                onClick={evt =>
+                  svInspector.setOnlyDisplayRelevantRegionsInCircularView(
+                    evt.target.checked,
+                  )
+                }
+                size="small"
+              />
+            }
+            label="show only regions with data"
+          />
+        </Grid>
+      </Grid>
+    )
+  })
+
   function SvInspectorView({ model }) {
     const classes = useStyles()
 
@@ -104,6 +141,7 @@ export default pluginManager => {
           </div>
           {showCircularView ? (
             <div className={classes.circularViewContainer}>
+              <CircularViewOptions svInspector={model} />
               <CircularViewReactComponent model={model.circularView} />
             </div>
           ) : null}

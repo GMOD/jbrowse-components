@@ -1,9 +1,12 @@
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = jbrequire('mobx')
-  const { types, getParent, addDisposer } = jbrequire('mobx-state-tree')
+  const { types, getParent, addDisposer, getRoot } = jbrequire(
+    'mobx-state-tree',
+  )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema, readConfObject } = jbrequire(
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { ConfigurationSchema, getConf, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
   )
 
@@ -19,6 +22,8 @@ export default pluginManager => {
   const minHeight = 40
   const defaultHeight = 500
   const headerHeight = 52
+  const circularViewOptionsBarHeight = 52
+
   const stateModel = types
     .model('SvInspectorView', {
       id: ElementId,
@@ -33,6 +38,8 @@ export default pluginManager => {
         defaultHeight,
       ),
       configuration: configSchema,
+
+      onlyDisplayRelevantRegionsInCircularView: false,
 
       // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
       mode: types.optional(
@@ -65,6 +72,8 @@ export default pluginManager => {
       // this is to support the session model automatically pushing displayed regions
       // from the relevant assembly into this model
       get displayRegionsFromAssemblyName() {
+        if (self.onlyDisplayRelevantRegionsInCircularView) return undefined
+
         // the assembly name comes from the selected dataset in the spreadsheet view
         const { dataset } = self.spreadsheetView
         if (dataset) {
@@ -113,6 +122,7 @@ export default pluginManager => {
     .volatile(() => ({
       SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
       CircularViewReactComponent: CircularViewType.ReactComponent,
+      circularViewOptionsBarHeight,
     }))
     .actions(self => ({
       afterAttach() {
@@ -140,27 +150,62 @@ export default pluginManager => {
           autorun(
             () => {
               self.spreadsheetView.setHeight(self.height - headerHeight)
-              self.circularView.setHeight(self.height - headerHeight)
+              self.circularView.setHeight(
+                self.height - headerHeight - circularViewOptionsBarHeight,
+              )
             },
             { name: 'SvInspectorView height binding' },
           ),
         )
-        // bind circularview displayedRegions to spreadsheet dataset
+        // bind circularview displayedRegions to spreadsheet dataset, mediated by
+        // the onlyRelevantRegions toggle
         addDisposer(
           self,
           autorun(
             () => {
-              if (self.assemblyName) {
-                self.circularView.setDisplayedRegionsFromAssemblyName(
-                  self.assemblyName,
-                )
+              const {
+                assemblyName,
+                onlyDisplayRelevantRegionsInCircularView,
+                circularView,
+              } = self
+              const { tracks } = circularView
+              const session = getSession(self)
+              if (assemblyName) {
+                if (onlyDisplayRelevantRegionsInCircularView) {
+                  if (tracks.length === 1) {
+                    const adapter = getConf(tracks[0], 'adapter')
+                    const featuresRefNamesP = getRoot(self)
+                      .jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
+                      .then(refNameMap => {
+                        return new Set(refNameMap.keys())
+                      })
+
+                    const regionsP = session.getRegionsForAssemblyName(
+                      assemblyName,
+                    )
+
+                    Promise.all([featuresRefNamesP, regionsP]).then(
+                      ([refNames, assemblyRegions]) => {
+                        const displayedRegions = assemblyRegions.filter(r =>
+                          refNames.has(r.refName),
+                        )
+                        circularView.setDisplayedRegions(
+                          JSON.parse(JSON.stringify(displayedRegions)),
+                        )
+                      },
+                    )
+                  }
+                } else {
+                  circularView.setDisplayedRegionsFromAssemblyName(assemblyName)
+                }
               } else {
-                self.circularView.setDisplayedRegions([])
+                circularView.setDisplayedRegions([])
               }
             },
             { name: 'SvInspectorView displayed regions bind' },
           ),
         )
+
         // bind circularview tracks to our track snapshot view
         addDisposer(
           self,
@@ -217,14 +262,14 @@ export default pluginManager => {
       },
 
       setDisplayedRegions(regions, isFromAssemblyName = false) {
-        return self.circularView.setDisplayedRegions(
-          regions,
-          isFromAssemblyName,
-        )
+        // can only set displayed regions from the fromAssemblyName path.  this kind of sucks
+
+        self.circularView.setDisplayedRegions(regions, isFromAssemblyName)
       },
-      // activateConfigurationUI() {
-      //   getRoot(self).editConfiguration(self.configuration)
-      // },
+
+      setOnlyDisplayRelevantRegionsInCircularView(val) {
+        self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
+      },
     }))
 
   return { stateModel, configSchema }
