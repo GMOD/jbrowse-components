@@ -40,6 +40,16 @@
           }
         }
       },
+      "connections": [
+        {
+          "configId": "COSMIC_connection_grch37",
+          "type": "JBrowse1Connection",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+          },
+          "name": "COSMIC (GRCh37)"
+        }
+      ],
       "tracks": [
         {
           "configId": "nclist_genes_hg19",
@@ -177,6 +187,16 @@
           }
         }
       },
+      "connections": [
+        {
+          "configId": "COSMIC_connection_grch38",
+          "type": "JBrowse1Connection",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
+          },
+          "name": "COSMIC (GRCh38)"
+        }
+      ],
       "tracks": [
         {
           "configId": "gencode_nclist_hg38",
@@ -357,8 +377,7 @@
           "view": "Cma34s8JJ"
         }
       },
-      "activeDrawerWidgets": {},
-      "connections": {}
+      "activeDrawerWidgets": {}
     },
     {
       "name": "Human Example (GRCh38)",
