@@ -122,11 +122,12 @@ ipcMain.handle('loadConfig', async () => {
   }
 
   const ret = JSON.parse(configJSON)
-  if (isDev) {
+  if (isDev && !ret.mergedDevResources) {
     const volvoxConfig = await fsReadFile('./test_data/config_volvox.json', {
       encoding: 'utf8',
     })
     merge(ret, JSON.parse(volvoxConfig))
+    ret.mergedDevResources = true
   }
   return ret
 })

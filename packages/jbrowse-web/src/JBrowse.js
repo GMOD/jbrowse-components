@@ -26,13 +26,15 @@ import Theme from './ui/theme'
 
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
-  if (inDevelopment) {
+
+  if (inDevelopment && !config.mergedDevResources) {
     const volvoxConfig = JSON.parse(
       await openLocation({ uri: 'test_data/config_volvox.json' }).readFile(
         'utf8',
       ),
     )
     mixin(config, volvoxConfig)
+    config.mergedDevResources = true
   }
   return config
 }
