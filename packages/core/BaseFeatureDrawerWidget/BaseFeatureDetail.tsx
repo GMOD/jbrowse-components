@@ -41,7 +41,9 @@ export const useStyles = makeStyles(theme => ({
     // empty block needed to keep small
   },
   fieldName: {
+    wordBreak: 'break-all',
     minWidth: '90px',
+    maxWidth: '150px',
     borderBottom: '1px solid #0003',
     backgroundColor: theme.palette.grey[200],
     marginRight: theme.spacing(1),
@@ -145,6 +147,7 @@ const omit = [
   'position',
   'subfeatures',
   'uniqueId',
+  'exonFrames',
 ]
 
 interface AttributeProps {

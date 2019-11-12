@@ -1274,10 +1274,10 @@
     quick-lru "^4.0.0"
     rxjs "^6.5.2"
 
-"@gmod/bed@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.1.tgz#57f169c50fcc5d2137359251248a26697308f835"
-  integrity sha512-VFfxcvlQ4mH7QKqN/KaBiLiHKGJwirx3v6bxtjZWARXC4ArDclne6IDtBQl09023fpvmUUCO8ADZtDfj1mjzwg==
+"@gmod/bed@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.2.tgz#67ba1826cd146a118dd9a8277176d1e6a1a540e7"
+  integrity sha512-+KBlCgTfYZgx8sm5xdN0cfvc4qQwj4XBgw+t4oPlcrxwK2tnQWrF2MUTSxJ+prYeWfU1HincPRcl6MJKTqE0BA==
   dependencies:
     pegjs "^0.10.0"
     snake-case "^2.1.0"

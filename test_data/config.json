@@ -181,7 +181,7 @@
         {
           "configId": "gencode_nclist_hg38",
           "type": "BasicTrack",
-          "name": "Gencode v32 NCList (compressed)",
+          "name": "Gencode v32",
           "category": [
             "Genes"
           ],
@@ -242,23 +242,6 @@
           }
         },
         {
-          "configId": "crispr_hg19",
-          "type": "BasicTrack",
-          "name": "CRISPR sites",
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/crispr/crispr.bb"
-            }
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
           "configId": "clinvar_hg38",
           "type": "BasicTrack",
           "name": "Clinvar variants",
@@ -280,12 +263,32 @@
           "type": "BasicTrack",
           "name": "MANE 0.6",
           "category": [
-            "Annotation"
+            "Genes"
           ],
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
               "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.6.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('geneName2') }"
+            }
+          }
+        },
+        {
+          "configId": "gdc_features",
+          "type": "BasicTrack",
+          "name": "GDC Cancer",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
             }
           },
           "renderer": {
