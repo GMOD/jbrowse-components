@@ -1,3 +1,4 @@
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormLabel from '@material-ui/core/FormLabel'
@@ -221,7 +222,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     return <div>{renderItems}</div>
   }
 
-  const speciesList = Object.keys(assemblies).sort()
+  const speciesList = Object.keys(assemblies)
+    .sort()
+    .filter(item => item.toLowerCase().includes('sapiens'))
 
   renderItems.push(
     <SelectBox
