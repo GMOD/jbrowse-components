@@ -8,7 +8,7 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const headerHeight = 52

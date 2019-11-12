@@ -22,7 +22,7 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
   const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const Ruler = jbrequire(require('./Ruler'))

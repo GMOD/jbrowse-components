@@ -1,4 +1,4 @@
-import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
+import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'

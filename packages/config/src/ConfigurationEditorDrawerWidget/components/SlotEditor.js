@@ -1,4 +1,4 @@
-import FileSelector from '@gmod/jbrowse-core/ui/FileSelector'
+import { FileSelector } from '@gmod/jbrowse-core/ui'
 import {
   getPropertyType,
   getSubType,

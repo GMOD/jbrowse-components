@@ -10,7 +10,7 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
   const Grid = jbrequire('@material-ui/core/Grid')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
 
   const ImportWizard = jbrequire(require('./ImportWizard'))
   const Spreadsheet = jbrequire(require('./Spreadsheet'))

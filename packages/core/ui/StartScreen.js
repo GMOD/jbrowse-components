@@ -1,4 +1,3 @@
-import { inDevelopment } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
@@ -20,6 +19,7 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import { inDevelopment } from '../util'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,

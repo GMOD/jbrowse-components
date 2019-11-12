@@ -3,7 +3,6 @@ import Icon from '@material-ui/core/Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
-
 import SessionMenu from './DevTools/SessionMenu'
 import ViewMenu from './DevTools/ViewMenu'
 

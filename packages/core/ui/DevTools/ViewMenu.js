@@ -1,4 +1,3 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -6,6 +5,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { PropTypes } from 'mobx-react'
 import React, { useState } from 'react'
+import { readConfObject } from '../../configuration'
 
 /**
  * Button-menu for opening different types of new top-level views
