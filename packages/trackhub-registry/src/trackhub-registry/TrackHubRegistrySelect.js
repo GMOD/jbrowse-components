@@ -44,7 +44,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TrackHubRegistrySelect({ model }) {
+function TrackHubRegistrySelect({ model, setModelReady }) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [assemblies, setAssemblies] = useState(null)
   const [selectedSpecies, setSelectedSpecies] = useState('')
@@ -53,6 +53,11 @@ function TrackHubRegistrySelect({ model }) {
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
   const classes = useStyles()
+
+  useEffect(() => {
+    if (selectedHub) setModelReady(true)
+    else setModelReady(false)
+  }, [selectedHub, setModelReady])
 
   useEffect(() => {
     async function getAssemblies() {
@@ -320,6 +325,7 @@ function TrackHubRegistrySelect({ model }) {
 
 TrackHubRegistrySelect.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
+  setModelReady: PropTypes.func.isRequired,
 }
 
 export default TrackHubRegistrySelect

@@ -20,7 +20,7 @@ export default pluginManager => {
     }))
     .actions(self => ({
       afterAttach() {
-        self.connect()
+        self.connect(self.configuration)
       },
       addTrackConf(trackConf) {
         const length = self.tracks.push(trackConf)
