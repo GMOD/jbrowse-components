@@ -84,7 +84,7 @@ function DropDownMenu({ menuTitle, menuItems, session }) {
                       >
                         {menuItem.icon ? (
                           <ListItemIcon key={menuItem.name}>
-                            <Icon>{menuItem.icon}</Icon>
+                            <Icon color="secondary">{menuItem.icon}</Icon>
                           </ListItemIcon>
                         ) : null}
                         <ListItemText

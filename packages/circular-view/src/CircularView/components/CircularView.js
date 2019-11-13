@@ -22,7 +22,7 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
   const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const Ruler = jbrequire(require('./Ruler'))
@@ -109,7 +109,9 @@ export default pluginManager => {
             title="close this view"
             data-testid="circular_view_close"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon color="secondary" fontSize="small">
+              close
+            </Icon>
           </IconButton>
         )}
 
@@ -119,7 +121,9 @@ export default pluginManager => {
           title="zoom out"
           disabled={!showingFigure}
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <Icon color="secondary" fontSize="small">
+            zoom_out
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -128,7 +132,9 @@ export default pluginManager => {
           title="zoom in"
           disabled={!showingFigure}
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <Icon color="secondary" fontSize="small">
+            zoom_in
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -137,7 +143,9 @@ export default pluginManager => {
           title="rotate counter-clockwise"
           disabled={!showingFigure}
         >
-          <Icon fontSize="small">rotate_left</Icon>
+          <Icon color="secondary" fontSize="small">
+            rotate_left
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -146,7 +154,9 @@ export default pluginManager => {
           title="rotate clockwise"
           disabled={!showingFigure}
         >
-          <Icon fontSize="small">rotate_right</Icon>
+          <Icon color="secondary" fontSize="small">
+            rotate_right
+          </Icon>
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
@@ -162,7 +172,9 @@ export default pluginManager => {
             value="track_select"
             data-testid="circular_track_select"
           >
-            <Icon fontSize="small">line_style</Icon>
+            <Icon color="secondary" fontSize="small">
+              line_style
+            </Icon>
           </ToggleButton>
         )}
       </div>
@@ -206,7 +218,7 @@ export default pluginManager => {
               className={classes.iconButton}
               title="close this view"
             >
-              <Icon>close</Icon>
+              <Icon color="secondary">close</Icon>
             </IconButton>
           </div>
         )}

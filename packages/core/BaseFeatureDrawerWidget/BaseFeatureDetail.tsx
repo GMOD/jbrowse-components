@@ -17,28 +17,8 @@ export const useStyles = makeStyles(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
-  content: {
-    '&$expanded': {
-      margin: theme.spacing(1, 0),
-    },
-    margin: theme.spacing(1, 0),
-  },
   paperRoot: {
     background: theme.palette.grey[100],
-  },
-  root: {
-    background: theme.palette.grey[300],
-    '&$expanded': {
-      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
-      minHeight: 0,
-      margin: 0,
-    },
-    margin: 0,
-    minHeight: 0,
-    padding: theme.spacing(0, 1),
-  },
-  expanded: {
-    // empty block needed to keep small
   },
   fieldName: {
     wordBreak: 'break-all',
@@ -83,12 +63,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   return (
     <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={true}>
       <ExpansionPanelSummary
-        classes={{
-          root: classes.root,
-          expanded: classes.expanded,
-          content: classes.content,
-        }}
-        expandIcon={<Icon>expand_more</Icon>}
+        expandIcon={<Icon color="secondary">expand_more</Icon>}
       >
         <Typography variant="button"> {title}</Typography>
       </ExpansionPanelSummary>

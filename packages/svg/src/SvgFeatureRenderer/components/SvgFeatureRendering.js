@@ -5,7 +5,7 @@ import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useCallback } from 'react'
-import Tooltip from '@gmod/jbrowse-core/ui/Tooltip'
+import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 

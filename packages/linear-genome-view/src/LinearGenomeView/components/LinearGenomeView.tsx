@@ -1,4 +1,4 @@
-import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
+import { ResizeHandle } from '@gmod/jbrowse-core/ui'
 import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
   },
   linearGenomeView: {
-    background: '#eee',
+    background: '#D9D9D9',
     // background: theme.palette.background.paper,
     boxSizing: 'content-box',
   },
@@ -68,7 +68,7 @@ const useStyles = makeStyles(theme => ({
   viewControls: {
     height: '100%',
     zIndex: 10,
-    background: '#eee',
+    background: '#D9D9D9',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
   },
@@ -79,6 +79,9 @@ const useStyles = makeStyles(theme => ({
     gridArea: '1/1/auto/span 2',
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
+    background: '#F2F2F2',
+    borderTop: '1px solid #9D9D9D',
+    borderBottom: '1px solid #9D9D9D',
   },
   spacer: {
     flexGrow: 1,
@@ -87,7 +90,7 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(1),
   },
   emphasis: {
-    background: '#dddd',
+    background: theme.palette.secondary.main,
     padding: theme.spacing(1),
   },
   searchRoot: {
@@ -102,13 +105,14 @@ const useStyles = makeStyles(theme => ({
     top: 0,
   },
   hovered: {
-    border: '1px solid grey',
+    background: theme.palette.secondary.light,
   },
   input: {
     width: 300,
     error: {
       backgroundColor: 'red',
     },
+    padding: theme.spacing(0, 1),
   },
   ...buttonStyles(theme),
 }))
@@ -181,7 +185,7 @@ const LongMenu = observer(
           className={className}
           onClick={handleClick}
         >
-          <Icon>more_vert</Icon>
+          <Icon color="secondary">more_vert</Icon>
         </IconButton>
         <Menu
           id="long-menu"
@@ -254,6 +258,7 @@ const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
         onClick={() => setEdit(true)}
         onMouseOver={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        style={{ color: '#FFFFFF' }}
       >
         {name}
       </Typography>
@@ -291,7 +296,7 @@ function Search({
           className={classes.iconButton}
           aria-label="search"
         >
-          <Icon>search</Icon>
+          <Icon color="secondary">search</Icon>
         </IconButton>
       </form>
     </Paper>
@@ -360,7 +365,9 @@ const Controls = observer(({ model }) => {
         className={classes.iconButton}
         title="close this view"
       >
-        <Icon fontSize="small">close</Icon>
+        <Icon color="secondary" fontSize="small">
+          close
+        </Icon>
       </IconButton>
 
       <IconButton
@@ -368,7 +375,9 @@ const Controls = observer(({ model }) => {
         title="select tracks"
         value="track_select"
       >
-        <Icon fontSize="small">line_style</Icon>
+        <Icon color="secondary" fontSize="small">
+          line_style
+        </Icon>
       </IconButton>
       <LongMenu className={classes.iconButton} model={model} />
     </>
@@ -429,7 +438,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           className={classes.iconButton}
           title="close this view"
         >
-          <Icon fontSize="small">close</Icon>
+          <Icon color="secondary" fontSize="small">
+            close
+          </Icon>
         </IconButton>
       </div>
       <Container>

@@ -1,4 +1,3 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import Button from '@material-ui/core/Button'
 import Icon from '@material-ui/core/Icon'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -6,6 +5,7 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { PropTypes } from 'mobx-react'
 import React, { useState } from 'react'
+import { readConfObject } from '../../configuration'
 
 /**
  * Button-menu for opening different types of new top-level views
@@ -54,7 +54,7 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon>calendar_view_day</Icon>
+            <Icon color="secondary">calendar_view_day</Icon>
           </ListItemIcon>
           Linear
         </MenuItem>
@@ -64,15 +64,19 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon>blur_circular</Icon>
+            <Icon color="secondary">blur_circular</Icon>
           </ListItemIcon>
           Circular
         </MenuItem>
       </Menu>
 
-      <Button aria-haspopup="true" onClick={handleViewMenuClick}>
+      <Button
+        aria-haspopup="true"
+        onClick={handleViewMenuClick}
+        color="secondary"
+      >
         Add View
-        <Icon>more_vert</Icon>
+        <Icon color="secondary">more_vert</Icon>
       </Button>
     </>
   )

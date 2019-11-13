@@ -1,5 +1,6 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { useDebounce } from '@gmod/jbrowse-core/util'
+import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
@@ -9,7 +10,6 @@ import React, { useEffect, useState } from 'react'
 import rootModel from './rootModel'
 import App from './ui/App'
 import StartScreen from './ui/StartScreen'
-import Theme from './ui/theme'
 import 'typeface-roboto'
 
 const { electron = {} } = window
@@ -124,7 +124,7 @@ export default observer(() => {
   }
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {DisplayComponent}
     </ThemeProvider>

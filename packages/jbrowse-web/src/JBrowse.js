@@ -1,5 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
+import { App, theme } from '@gmod/jbrowse-core/ui'
 import {
   toUrlSafeB64,
   fromUrlSafeB64,
@@ -21,8 +22,6 @@ import 'typeface-roboto'
 import merge from 'deepmerge'
 
 import rootModel from './rootModel'
-import App from './ui/App'
-import Theme from './ui/theme'
 
 // similar to electron.js
 function mergeConfigs(A, B) {
@@ -212,7 +211,7 @@ export default observer(({ config, initialState }) => {
     DisplayComponent = <App session={root.session} />
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {DisplayComponent}
     </ThemeProvider>

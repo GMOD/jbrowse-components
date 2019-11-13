@@ -16,7 +16,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
         >
           close
         </span>
@@ -30,6 +30,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     >
       <p
         class="MuiTypography-root MuiTypography-body1"
+        style="color: rgb(255, 255, 255);"
       >
         breakpoint detail
       </p>
@@ -47,7 +48,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
         >
           more_vert
         </span>
@@ -92,7 +93,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
                     >
                       close
                     </span>
@@ -202,7 +203,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
                     >
                       close
                     </span>

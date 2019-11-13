@@ -130,7 +130,7 @@ function HierarchicalTrackSelector({ model }) {
           endAdornment: (
             <InputAdornment position="end">
               <IconButton onClick={model.clearFilterText}>
-                <Icon>clear</Icon>
+                <Icon color="secondary">clear</Icon>
               </IconButton>
             </InputAdornment>
           ),

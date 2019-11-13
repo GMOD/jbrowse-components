@@ -63,7 +63,7 @@ function RecentSessionCard({
         <CardHeader
           action={
             <IconButton onClick={onMenuClick}>
-              <Icon>more_vert</Icon>
+              <Icon color="secondary">more_vert</Icon>
             </IconButton>
           }
           disableTypography
@@ -98,13 +98,17 @@ function RecentSessionCard({
       >
         <MenuItem onClick={() => handleMenuClose('rename')}>
           <ListItemIcon>
-            <Icon fontSize="small">text_fields</Icon>
+            <Icon color="secondary" fontSize="small">
+              text_fields
+            </Icon>
           </ListItemIcon>
           <Typography variant="inherit">Rename</Typography>
         </MenuItem>
         <MenuItem onClick={() => handleMenuClose('delete')}>
           <ListItemIcon>
-            <Icon fontSize="small">delete</Icon>
+            <Icon color="secondary" fontSize="small">
+              delete
+            </Icon>
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>

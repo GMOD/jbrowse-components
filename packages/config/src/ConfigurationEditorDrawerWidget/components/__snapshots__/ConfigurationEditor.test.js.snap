@@ -51,7 +51,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -159,7 +159,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -212,7 +212,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                     >
                       delete
                     </span>
@@ -253,7 +253,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                     >
                       delete
                     </span>
@@ -296,7 +296,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                     >
                       add
                     </span>
@@ -327,7 +327,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -377,7 +377,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               >
                 <span
                   aria-hidden="true"
-                  class="material-icons MuiIcon-root"
+                  class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                 >
                   delete
                 </span>
@@ -422,7 +422,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                         >
                           delete
                         </span>
@@ -463,7 +463,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                         >
                           delete
                         </span>
@@ -506,7 +506,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root"
+                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                         >
                           add
                         </span>
@@ -560,7 +560,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                       >
                         add
                       </span>
@@ -592,7 +592,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -649,7 +649,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -706,7 +706,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -764,7 +764,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -844,7 +844,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -909,7 +909,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -966,7 +966,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -1021,7 +1021,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root"
+                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                     >
                       add
                     </span>
@@ -1052,7 +1052,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -1335,7 +1335,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -1503,7 +1503,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                class="material-icons MuiIcon-root"
+                class="material-icons MuiIcon-root MuiIcon-colorSecondary"
               >
                 radio_button_unchecked
               </span>
@@ -1585,7 +1585,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -1691,7 +1691,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -1766,7 +1766,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>
@@ -2078,7 +2078,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2135,7 +2135,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2192,7 +2192,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2263,7 +2263,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2321,7 +2321,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2379,7 +2379,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2436,7 +2436,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -2707,7 +2707,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                       >
                         radio_button_unchecked
                       </span>
@@ -2967,7 +2967,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                       >
                         radio_button_unchecked
                       </span>
@@ -3024,7 +3024,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                       >
                         radio_button_unchecked
                       </span>
@@ -3083,7 +3083,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -3140,7 +3140,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root"
+                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                   >
                     radio_button_unchecked
                   </span>
@@ -3205,7 +3205,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             radio_button_unchecked
           </span>

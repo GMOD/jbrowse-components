@@ -158,7 +158,11 @@ function ImportConfiguration(props) {
       <Paper className={classes.paper}>
         <div {...getRootProps({ className: classes.dropZone })}>
           <input {...getInputProps()} />
-          <Icon fontSize="large" className={classes.uploadIcon}>
+          <Icon
+            color="secondary"
+            fontSize="large"
+            className={classes.uploadIcon}
+          >
             cloud_upload
           </Icon>
           <Typography color="textSecondary" align="center" variant="body1">
@@ -178,7 +182,9 @@ function ImportConfiguration(props) {
             {acceptedFilesParsed.map((file, idx) => (
               <ListItem key={file.path}>
                 <ListItemIcon>
-                  <Icon>{file.config.error ? 'error' : 'check_circle'}</Icon>
+                  <Icon color="secondary">
+                    {file.config.error ? 'error' : 'check_circle'}
+                  </Icon>
                 </ListItemIcon>
                 {file.config.error ? (
                   <Typography color="error" className={classes.listItem}>
@@ -203,7 +209,7 @@ function ImportConfiguration(props) {
                       setAcceptedFilesParsed(acceptedFilesParsed.map(e => e))
                     }}
                   >
-                    <Icon>delete</Icon>
+                    <Icon color="secondary">delete</Icon>
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
@@ -231,7 +237,9 @@ function ImportConfiguration(props) {
           </div>
           <div>
             <ExpansionPanel style={{ marginTop: 4 }}>
-              <ExpansionPanelSummary expandIcon={<Icon>expand_more</Icon>}>
+              <ExpansionPanelSummary
+                expandIcon={<Icon color="secondary">expand_more</Icon>}
+              >
                 <Typography color="error" align="center">
                   {acceptedFilesParsed.length === 1
                     ? 'Import error: File does not appear to be a valid configuration'

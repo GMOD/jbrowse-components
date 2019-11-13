@@ -25,17 +25,19 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     headerBar: {
       gridArea: '1/1/auto/span 2',
       display: 'flex',
-      background: '#eee',
+      background: '#F2F2F2',
+      borderTop: '1px solid #9D9D9D',
+      borderBottom: '1px solid #9D9D9D',
     },
     spacer: {
       flexGrow: 1,
     },
     emphasis: {
-      background: '#dddd',
+      background: theme.palette.secondary.main,
       padding: theme.spacing(1),
     },
     hovered: {
-      border: '1px solid grey',
+      background: theme.palette.secondary.light,
     },
   }))
 
@@ -48,7 +50,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           className={classes.iconButton}
           title="close this view"
         >
-          <Icon fontSize="small">close</Icon>
+          <Icon color="secondary" fontSize="small">
+            close
+          </Icon>
         </IconButton>
       </>
     )
@@ -89,6 +93,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           onClick={() => setEdit(true)}
           onMouseOver={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
+          style={{ color: '#FFFFFF' }}
         >
           {name}
         </Typography>
@@ -121,7 +126,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
             className={className}
             onClick={handleClick}
           >
-            <Icon>more_vert</Icon>
+            <Icon color="secondary">more_vert</Icon>
           </IconButton>
           <Menu
             id="long-menu"
@@ -173,7 +178,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         className={classes.iconButton}
         title={title}
       >
-        <Icon fontSize="small">{title}</Icon>
+        <Icon color="secondary" fontSize="small">
+          {title}
+        </Icon>
       </IconButton>
     )
   })

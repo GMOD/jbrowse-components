@@ -43,11 +43,10 @@ interface AlnInputProps extends AlnCardProps {
 }
 
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
-  const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
-    <Paper className={classes.root} data-testid="alignment-side-drawer">
+    <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails {...props} />
       <AlignmentFlags feature={feat} {...props} />
     </Paper>

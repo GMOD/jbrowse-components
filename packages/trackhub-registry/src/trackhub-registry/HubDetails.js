@@ -85,7 +85,7 @@ function HubDetails(props) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            <Icon>email</Icon>
+            <Icon color="secondary">email</Icon>
           </IconButton>
           {hubFile.get('descriptionUrl') ? (
             <IconButton
@@ -95,7 +95,7 @@ function HubDetails(props) {
               rel="noopener noreferrer"
               target="_blank"
             >
-              <Icon>open_in_new</Icon>
+              <Icon color="secondary">open_in_new</Icon>
             </IconButton>
           ) : null}
         </CardActions>
