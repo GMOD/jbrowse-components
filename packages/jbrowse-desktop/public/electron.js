@@ -107,29 +107,33 @@ ipcMain.on('createWindowWorker', event => {
 ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 
 ipcMain.handle('loadConfig', async () => {
-  let configJSON
   try {
-    configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
+    return JSON.parse(await fsReadFile(configLocation, { encoding: 'utf8' }))
   } catch (error) {
     if (error.code === 'ENOENT') {
       // make a config file since one does not exist yet
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
-        : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
-      await fsCopyFile(configTemplateLocation, configLocation)
-      configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
-    } else throw error
+        : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
+      const config = JSON.parse(
+        await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
+      )
+      console.log('testestestes', isDev)
+      if (isDev) {
+        merge(
+          config,
+          JSON.parse(
+            await fsReadFile('./test_data/config_volvox.json', {
+              encoding: 'utf8',
+            }),
+          ),
+        )
+      }
+      await fsWriteFile(configLocation, JSON.stringify(config, null, 2))
+      return config
+    }
+    throw error
   }
-
-  const ret = JSON.parse(configJSON)
-  if (isDev && !ret.mergedDevResources) {
-    const volvoxConfig = await fsReadFile('./test_data/config_volvox.json', {
-      encoding: 'utf8',
-    })
-    merge(ret, JSON.parse(volvoxConfig))
-    ret.mergedDevResources = true
-  }
-  return ret
 })
 
 ipcMain.on('saveConfig', async (event, configSnapshot) => {
