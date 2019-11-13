@@ -3,7 +3,6 @@ import Icon from '@material-ui/core/Icon'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
-
 import SessionMenu from './DevTools/SessionMenu'
 import ViewMenu from './DevTools/ViewMenu'
 
@@ -23,17 +22,19 @@ function DeveloperTools({ session }) {
       <ViewMenu session={session} />
 
       <Button
+        color="secondary"
         disabled={!session.history.canUndo}
         onClick={() => session.history.undo()}
       >
         undo
-        <Icon>undo</Icon>
+        <Icon color="secondary">undo</Icon>
       </Button>
       <Button
+        color="secondary"
         disabled={!session.history.canRedo}
         onClick={() => session.history.redo()}
       >
-        <Icon>redo</Icon>
+        <Icon color="secondary">redo</Icon>
         redo
       </Button>
 

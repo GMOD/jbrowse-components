@@ -1,11 +1,10 @@
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
+import { PrerenderedCanvas, Tooltip } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useState, useEffect } from 'react'
-import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
 import runner from 'mobx-run-in-reactive-context'
-import Tooltip from '@gmod/jbrowse-core/ui/Tooltip'
 
 function PileupRendering(props) {
   const {

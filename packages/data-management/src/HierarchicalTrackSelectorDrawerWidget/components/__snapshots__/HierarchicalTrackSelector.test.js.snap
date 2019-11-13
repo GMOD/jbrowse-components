@@ -38,7 +38,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root"
+              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
             >
               clear
             </span>
@@ -108,7 +108,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -132,30 +132,30 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
     <div
       aria-disabled="false"
       aria-expanded="true"
-      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+        class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
       >
-        <span
-          class="MuiTypography-root MuiTypography-button"
+        <p
+          class="MuiTypography-root MuiTypography-body2"
         >
           Foo Category (1)
-        </span>
+        </p>
       </div>
       <div
         aria-disabled="false"
         aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
       >
         <span
           class="MuiIconButton-label"
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             expand_more
           </span>
@@ -239,7 +239,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
                       >
                         settings
                       </span>
@@ -257,30 +257,30 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                 <div
                   aria-disabled="false"
                   aria-expanded="true"
-                  class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+                  class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
                   role="button"
                   tabindex="0"
                 >
                   <div
-                    class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+                    class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
                   >
-                    <span
-                      class="MuiTypography-root MuiTypography-button"
+                    <p
+                      class="MuiTypography-root MuiTypography-body2"
                     >
                       Bar Category (1)
-                    </span>
+                    </p>
                   </div>
                   <div
                     aria-disabled="false"
                     aria-hidden="true"
-                    class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+                    class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
                   >
                     <span
                       class="MuiIconButton-label"
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root"
+                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
                       >
                         expand_more
                       </span>
@@ -364,7 +364,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                 >
                                   <span
                                     aria-hidden="true"
-                                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+                                    class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
                                   >
                                     settings
                                   </span>
@@ -448,7 +448,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root"
+              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
             >
               clear
             </span>
@@ -518,7 +518,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -590,7 +590,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -655,7 +655,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>

@@ -1,4 +1,3 @@
-import { inDevelopment } from '@gmod/jbrowse-core/util'
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
@@ -20,6 +19,8 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import LogoFull from './LogoFull'
+import { inDevelopment } from '../util'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
@@ -34,6 +35,7 @@ const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette.grey['300'],
     padding: theme.spacing(2),
+    marginTop: theme.spacing(6),
   },
   header: {
     margin: theme.spacing(2),
@@ -228,9 +230,7 @@ export default function StartScreen({ root, bypass }) {
   return (
     <>
       <Container maxWidth="md">
-        <Typography variant="h1" align="center" className={classes.header}>
-          Welcome to JBrowse
-        </Typography>
+        <LogoFull />
         <div className={classes.newSession}>
           <Typography variant="h5" className={classes.header}>
             Start a new session
@@ -273,7 +273,7 @@ export default function StartScreen({ root, bypass }) {
         {DialogComponent}
       </Dialog>
       <IconButton className={classes.settings} onClick={handleSettingsClick}>
-        <Icon>settings</Icon>
+        <Icon color="secondary">settings</Icon>
       </IconButton>
       <Menu
         id="simple-menu"
@@ -285,7 +285,9 @@ export default function StartScreen({ root, bypass }) {
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem onClick={() => handleFactoryReset()}>
           <ListItemIcon>
-            <Icon fontSize="small">warning</Icon>
+            <Icon color="secondary" fontSize="small">
+              warning
+            </Icon>
           </ListItemIcon>
           <Typography variant="inherit">Factory Reset</Typography>
         </MenuItem>

@@ -19,7 +19,7 @@ export default pluginManager => {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 
-  const minHeight = 40
+  const minHeight = 500
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
@@ -61,6 +61,7 @@ export default pluginManager => {
           hideCloseButton: true,
           hideVerticalResizeHandle: true,
           hideTrackSelectorButton: true,
+          disableImportForm: true,
         }),
       ),
     })
@@ -107,6 +108,17 @@ export default pluginManager => {
           type: 'FromConfigAdapter',
           features,
         }
+      },
+
+      // Promise<string[]> of refnames
+      get featuresRefNamesP() {
+        const {
+          AdapterClass: FromConfigAdapter,
+        } = pluginManager.getAdapterType('FromConfigAdapter')
+        const adapter = new FromConfigAdapter(
+          self.featuresAdapterConfigSnapshot,
+        )
+        return adapter.getRefNames()
       },
 
       get featuresCircularTrackConfiguration() {
@@ -167,6 +179,7 @@ export default pluginManager => {
                 assemblyName,
                 onlyDisplayRelevantRegionsInCircularView,
                 circularView,
+                featuresRefNamesP,
               } = self
               const { tracks } = circularView
               const session = getSession(self)
@@ -174,26 +187,31 @@ export default pluginManager => {
                 if (onlyDisplayRelevantRegionsInCircularView) {
                   if (tracks.length === 1) {
                     const adapter = getConf(tracks[0], 'adapter')
-                    const featuresRefNamesP = getRoot(self)
-                      .jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
-                      .then(refNameMap => {
-                        return new Set(refNameMap.keys())
-                      })
+                    const refNameMapP = getRoot(
+                      self,
+                    ).jbrowse.getRefNameMapForAdapter(adapter, assemblyName)
 
                     const regionsP = session.getRegionsForAssemblyName(
                       assemblyName,
                     )
 
-                    Promise.all([featuresRefNamesP, regionsP]).then(
-                      ([refNames, assemblyRegions]) => {
+                    Promise.all([refNameMapP, featuresRefNamesP, regionsP])
+                      .then(([refNameMap, refNames, assemblyRegions]) => {
+                        // console.log(refNameMap, refNames, assemblyRegions)
+                        // canonicalize the store's ref names if necessary
+                        const canonicalRefNames = new Set(
+                          refNames.map(
+                            refName => refNameMap.get(refName) || refName,
+                          ),
+                        )
                         const displayedRegions = assemblyRegions.filter(r =>
-                          refNames.has(r.refName),
+                          canonicalRefNames.has(r.refName),
                         )
                         circularView.setDisplayedRegions(
                           JSON.parse(JSON.stringify(displayedRegions)),
                         )
-                      },
-                    )
+                      })
+                      .catch(e => console.error(e))
                   }
                 } else {
                   circularView.setDisplayedRegionsFromAssemblyName(assemblyName)

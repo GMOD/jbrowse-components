@@ -6,11 +6,11 @@ import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-import { inDevelopment } from '@gmod/jbrowse-core/util'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
+import { inDevelopment } from '../util'
 import DevTools from './DevTools'
 import Drawer from './Drawer'
 
@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     height: '100vh',
     display: 'flex',
     overflow: 'hidden',
-    background: '#808080',
+    // background: '#808080',
   },
   menuBars: {
     display: 'block',
@@ -68,7 +68,7 @@ const DrawerWidget = observer(props => {
     <Drawer session={session} open={Boolean(session.activeDrawerWidgets.size)}>
       <Slide direction="left" in>
         <div className={classes.defaultDrawer}>
-          <AppBar position="static">
+          <AppBar position="static" color="secondary">
             <Toolbar
               variant="dense"
               disableGutters

@@ -4,10 +4,7 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  BlockBasedTrack,
-  blockBasedTrackModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 // using a map because it preserves order
@@ -24,13 +21,7 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('AlignmentsTrack'),
         configuration: ConfigurationReference(configSchema),
-        // the renderer that the user has selected in the UI, empty string
-        // if they have not made any selection
-        selectedRendering: types.optional(types.string, ''),
       })
-      .volatile(() => ({
-        ReactComponent: BlockBasedTrack,
-      }))
       .actions(self => ({
         selectFeature(feature) {
           const session = getSession(self)
@@ -41,9 +32,6 @@ export default (pluginManager, configSchema) =>
           )
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
-        },
-        setRenderer(newRenderer) {
-          self.selectedRendering = newRenderer
         },
       }))
       .views(self => ({

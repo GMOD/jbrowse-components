@@ -8,7 +8,7 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const headerHeight = 52
@@ -32,12 +32,19 @@ export default pluginManager => {
       viewControls: {
         margin: 0,
       },
+      viewsContainer: {
+        position: 'relative',
+      },
       spreadsheetViewContainer: {
         borderRight: [['1px', 'solid', grey[400]]],
-        display: 'inline-block',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
       },
       circularViewContainer: {
-        display: 'inline-block',
+        position: 'absolute',
+        top: 0,
+        height: '100%',
       },
       circularViewOptions: {
         padding: theme.spacing(1),
@@ -63,7 +70,9 @@ export default pluginManager => {
             title="close this view"
             data-testid="sv_inspector_view_close"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon color="secondary" fontSize="small">
+              close
+            </Icon>
           </IconButton>
 
           <IconButton
@@ -72,7 +81,9 @@ export default pluginManager => {
             title="open a tabular file"
             data-testid="sv_inspector_view_open"
           >
-            <Icon fontSize="small">folder_open</Icon>
+            <Icon color="secondary" fontSize="small">
+              folder_open
+            </Icon>
           </IconButton>
         </Grid>
       </Grid>
@@ -136,11 +147,14 @@ export default pluginManager => {
           </Grid>
         </Grid>
         <div className={classes.viewsContainer}>
-          <div className={classes.spreadsheetViewContainer}>
+          <div className={classes.spreadsheetViewContainer} style={{ left: 0 }}>
             <SpreadsheetViewReactComponent model={model.spreadsheetView} />
           </div>
           {showCircularView ? (
-            <div className={classes.circularViewContainer}>
+            <div
+              className={classes.circularViewContainer}
+              style={{ left: model.spreadsheetView.width }}
+            >
               <CircularViewOptions svInspector={model} />
               <CircularViewReactComponent model={model.circularView} />
             </div>
