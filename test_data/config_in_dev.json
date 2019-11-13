@@ -474,40 +474,6 @@
           }
         },
         {
-          "configId": "nclist_genes_hg19",
-          "type": "BasicTrack",
-          "name": "Gencode v19",
-          "category": [
-            "Genes"
-          ],
-          "adapter": {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
-          "configId": "repeats_hg19",
-          "type": "BasicTrack",
-          "name": "UCSC",
-          "category": [
-            "UCSC RepeatMasker"
-          ],
-          "adapter": {
-            "configId": "wCI0N1qJgMe",
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
-            }
-          },
-          "renderer": {
-            "configId": "lqGk6Jefctk",
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
           "configId": "bigbed_peaks",
           "type": "BasicTrack",
           "name": "Encode peaks",

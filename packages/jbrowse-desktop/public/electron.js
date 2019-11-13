@@ -137,7 +137,7 @@ ipcMain.handle('loadConfig', async () => {
         config.datasets = mergeConfigs(
           config,
           JSON.parse(
-            await fsReadFile('./test_data/config_volvox.json', {
+            await fsReadFile('./test_data/config_in_dev.json', {
               encoding: 'utf8',
             }),
           ),

@@ -52,6 +52,23 @@
       ],
       "tracks": [
         {
+          "configId": "repeats_hg19",
+          "type": "BasicTrack",
+          "name": "Repeats",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
           "configId": "nclist_genes_hg19",
           "type": "BasicTrack",
           "name": "Gencode v19",
@@ -198,6 +215,23 @@
         }
       ],
       "tracks": [
+        {
+          "configId": "repeats_hg38",
+          "type": "BasicTrack",
+          "name": "Repeats",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/hg38/repeats.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
         {
           "configId": "gencode_nclist_hg38",
           "type": "BasicTrack",

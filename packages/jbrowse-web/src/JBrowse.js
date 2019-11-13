@@ -24,17 +24,31 @@ import rootModel from './rootModel'
 import App from './ui/App'
 import Theme from './ui/theme'
 
+// similar to electron.js
+function mergeConfigs(A, B) {
+  const X = {}
+  const Y = {}
+  A.datasets.forEach(a => {
+    X[a.assembly.name] = a
+  })
+  B.datasets.forEach(b => {
+    Y[b.assembly.name] = b
+  })
+  console.log(B)
+  return Object.values(merge(X, Y))
+}
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
 
-  if (inDevelopment && !config.mergedDevResources) {
-    const volvoxConfig = JSON.parse(
-      await openLocation({ uri: 'test_data/config_volvox.json' }).readFile(
-        'utf8',
+  if (inDevelopment) {
+    mergeConfigs(
+      config,
+      JSON.parse(
+        await openLocation({ uri: 'test_data/config_in_dev.json' }).readFile(
+          'utf8',
+        ),
       ),
     )
-    merge(config, volvoxConfig)
-    config.mergedDevResources = true
   }
   return config
 }
