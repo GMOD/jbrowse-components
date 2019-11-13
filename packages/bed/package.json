@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@gmod/bbi": "^1.0.26",
-    "@gmod/bed": "^2.0.1"
+    "@gmod/bed": "^2.0.2"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^2.0.0",
