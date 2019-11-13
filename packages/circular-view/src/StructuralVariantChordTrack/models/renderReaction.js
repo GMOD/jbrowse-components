@@ -19,10 +19,10 @@ export default ({ jbrequire }) => {
       renderArgs: {
         assemblyName,
         adapterType: track.adapterType.name,
-        adapterConfig: getConf(track, 'adapter'),
+        adapterConfig: JSON.parse(JSON.stringify(getConf(track, 'adapter'))),
         rendererType: rendererType.name,
         renderProps,
-        regions: view.displayedRegions,
+        regions: JSON.parse(JSON.stringify(view.displayedRegions)),
         blockDefinitions: view.blockDefinitions,
         sessionId: track.id,
         timeout: 1000000, // 10000,
