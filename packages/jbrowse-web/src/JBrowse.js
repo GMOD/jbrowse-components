@@ -18,7 +18,7 @@ import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
-import mixin from 'merge-objects'
+import merge from 'merge-deep'
 
 import rootModel from './rootModel'
 import App from './ui/App'
@@ -33,7 +33,7 @@ async function parseConfig(configLoc) {
         'utf8',
       ),
     )
-    mixin(config, volvoxConfig)
+    merge(config, volvoxConfig)
     config.mergedDevResources = true
   }
   return config

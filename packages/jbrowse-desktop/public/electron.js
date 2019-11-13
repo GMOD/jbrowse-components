@@ -7,7 +7,7 @@ const fetch = require('node-fetch')
 const path = require('path')
 const url = require('url')
 const { promisify } = require('util')
-const merge = require('merge-objects')
+const merge = require('merge-deep')
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
@@ -118,7 +118,6 @@ ipcMain.handle('loadConfig', async () => {
       const config = JSON.parse(
         await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
       )
-      console.log('testestestes', isDev)
       if (isDev) {
         merge(
           config,
