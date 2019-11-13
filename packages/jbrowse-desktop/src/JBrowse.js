@@ -1,21 +1,21 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
+import { useDebounce } from '@gmod/jbrowse-core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
-import 'typeface-roboto'
-import { useThrottle } from 'react-use'
 import rootModel from './rootModel'
 import App from './ui/App'
 import StartScreen from './ui/StartScreen'
 import Theme from './ui/theme'
+import 'typeface-roboto'
 
 const { electron = {} } = window
 const { desktopCapturer, ipcRenderer } = electron
 
-const throttleMs = 4000
+const debounceMs = 1000
 export default observer(() => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
@@ -23,8 +23,8 @@ export default observer(() => {
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
   const [configSnapshot, setConfigSnapshot] = useState()
-  const throttledSessionSnapshot = useThrottle(sessionSnapshot, throttleMs)
-  const throttledConfigSnapshot = useThrottle(configSnapshot, throttleMs)
+  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, debounceMs)
+  const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
 
   const { session, jbrowse } = root
   if (firstLoad && session) setFirstLoad(false)
@@ -77,26 +77,26 @@ export default observer(() => {
 
   useEffect(() => {
     ;(async () => {
-      if (throttledSessionSnapshot) {
+      if (debouncedSessionSnapshot) {
         const sources = await desktopCapturer.getSources({
           types: ['window'],
           thumbnailSize: { width: 500, height: 500 },
         })
         const jbWindow = sources.find(source => source.name === 'JBrowse')
         const screenshot = jbWindow.thumbnail.toDataURL()
-        ipcRenderer.send('saveSession', throttledSessionSnapshot, screenshot)
+        ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
       }
     })()
     return () => {}
-  }, [throttledSessionSnapshot])
+  }, [debouncedSessionSnapshot])
 
   useEffect(() => {
-    if (throttledConfigSnapshot) {
-      ipcRenderer.send('saveConfig', throttledConfigSnapshot)
+    if (debouncedConfigSnapshot) {
+      ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
 
     return () => {}
-  }, [throttledConfigSnapshot])
+  }, [debouncedConfigSnapshot])
 
   useEffect(() => {
     if (root) {
