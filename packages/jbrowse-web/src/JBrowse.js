@@ -34,6 +34,7 @@ function mergeConfigs(A, B) {
   B.datasets.forEach(b => {
     Y[b.assembly.name] = b
   })
+  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
   return Object.values(merge(X, Y))
 }
 async function parseConfig(configLoc) {

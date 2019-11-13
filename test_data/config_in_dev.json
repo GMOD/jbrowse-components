@@ -1424,5 +1424,120 @@
         }
       ]
     }
+  ],
+  "savedSessions": [
+    {
+      "name": "Volvox Example",
+      "width": 1192,
+      "drawerWidth": 384,
+      "connections": {},
+      "views": [
+        {
+          "id": "volvox_example",
+          "type": "LinearGenomeView",
+          "offsetPx": 2000,
+          "bpPerPx": 0.05,
+          "displayRegionsFromAssemblyName": "volvox",
+          "reversed": false,
+          "tracks": [
+            {
+              "id": "X6rIl1kHuP",
+              "type": "ReferenceSequenceTrack",
+              "height": 80,
+              "configuration": "volvox_refseq_track"
+            },
+            {
+              "id": "Uz2i0KbGEL",
+              "type": "AlignmentsTrack",
+              "height": 200,
+              "configuration": "volvox_bam",
+              "selectedRendering": ""
+            },
+            {
+              "id": "07cHDos6N9",
+              "type": "BasicTrack",
+              "height": 80,
+              "configuration": "bigbed_genes"
+            }
+          ],
+          "controlsWidth": 120,
+          "width": 808,
+          "hideControls": false,
+          "hideHeader": false,
+          "trackSelectorType": "hierarchical",
+          "minimumBlockWidth": 20
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "volvox_example"
+        }
+      },
+      "activeDrawerWidgets": {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      },
+      "menuBars": [
+        {
+          "id": "83YVdWHrWt",
+          "type": "MainMenuBar",
+          "menus": [
+            {
+              "name": "File",
+              "menuItems": [
+                {
+                  "name": "New Session",
+                  "icon": "add",
+                  "callback": "function(session) {session.setDefaultSession();}"
+                },
+                {
+                  "name": "Open Session...",
+                  "icon": "folder_open",
+                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
+                },
+                {
+                  "name": "Duplicate Session",
+                  "icon": "file_copy",
+                  "callback": "function(session) {session.duplicateCurrentSession();}"
+                },
+                {
+                  "name": "divider",
+                  "icon": "",
+                  "callback": "function(model){console.log(model)}"
+                },
+                {
+                  "name": "Export configuration",
+                  "icon": "cloud_download",
+                  "callback": "exportConfiguration"
+                },
+                {
+                  "name": "Import configuration",
+                  "icon": "cloud_upload",
+                  "callback": "importConfiguration"
+                }
+              ]
+            },
+            {
+              "name": "Help",
+              "menuItems": [
+                {
+                  "name": "About",
+                  "icon": "info",
+                  "callback": "openAbout"
+                },
+                {
+                  "name": "Help",
+                  "icon": "help",
+                  "callback": "openHelp"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
