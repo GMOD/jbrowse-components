@@ -77,39 +77,39 @@
           ],
           "adapter": {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+            "refNames": [
+              "chr1",
+              "chr2",
+              "chr3",
+              "chr4",
+              "chr5",
+              "chr6",
+              "chr7",
+              "chr8",
+              "chr9",
+              "chr10",
+              "chr11",
+              "chr12",
+              "chr13",
+              "chr14",
+              "chr15",
+              "chr16",
+              "chr17",
+              "chr18",
+              "chr19",
+              "chr20",
+              "chr21",
+              "chr22",
+              "chr23",
+              "chrX",
+              "chrY",
+              "chrMT"
+            ]
           },
           "renderer": {
             "type": "SvgFeatureRenderer"
-          },
-          "refNames": [
-            "chr1",
-            "chr2",
-            "chr3",
-            "chr4",
-            "chr5",
-            "chr6",
-            "chr7",
-            "chr8",
-            "chr9",
-            "chr10",
-            "chr11",
-            "chr12",
-            "chr13",
-            "chr14",
-            "chr15",
-            "chr16",
-            "chr17",
-            "chr18",
-            "chr19",
-            "chr20",
-            "chr21",
-            "chr22",
-            "chr23",
-            "chrX",
-            "chrY",
-            "chrMT"
-          ]
+          }
         },
         {
           "configId": "hg19_gaps",
@@ -390,16 +390,6 @@
                 "name": "New circular view",
                 "icon": "data_usage",
                 "callback": "function(session) { session.addView('CircularView', {})}"
-              },
-              {
-                "name": "New SV inspector",
-                "icon": "table_chart",
-                "callback": "function(session) { session.addView('SvInspectorView', {})}"
-              },
-              {
-                "name": "Open tabular data",
-                "icon": "view_comfy",
-                "callback": "function(session) { session.addView('SpreadsheetView', {})}"
               }
             ]
           },
