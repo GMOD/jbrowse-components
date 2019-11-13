@@ -8,8 +8,6 @@ import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import rootModel from './rootModel'
-import App from './ui/App'
-import StartScreen from './ui/StartScreen'
 import 'typeface-roboto'
 
 const { electron = {} } = window
