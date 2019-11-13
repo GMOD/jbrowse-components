@@ -1,10 +1,10 @@
+import { LogoFull } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import AppBar from '@material-ui/core/AppBar'
 import InputBase from '@material-ui/core/InputBase'
 import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
 import { values } from 'mobx'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
@@ -131,9 +131,9 @@ function MainMenuBar(props) {
           {editedName}
         </div>
         <div className={classes.grow} />
-        <Typography variant="h6" color="inherit">
-          JBrowse
-        </Typography>
+        <div style={{ width: 150, maxHeight: 48 }}>
+          <LogoFull variant="white" />
+        </div>
       </Toolbar>
     </AppBar>
   )
