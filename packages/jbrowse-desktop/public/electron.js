@@ -106,6 +106,21 @@ ipcMain.on('createWindowWorker', event => {
 
 ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 
+// merge function to get stuff from a development config into a production one
+// limited functionality, difficult to use existing merge-deep/mixin-deep type
+// things for this
+function mergeConfigs(A, B) {
+  const X = {}
+  const Y = {}
+  A.datasets.forEach(a => {
+    X[a.assembly.name] = a
+  })
+  B.datasets.forEach(b => {
+    Y[b.assembly.name] = b
+  })
+  return Object.values(merge(X, Y))
+}
+
 ipcMain.handle('loadConfig', async () => {
   try {
     return JSON.parse(await fsReadFile(configLocation, { encoding: 'utf8' }))
@@ -119,7 +134,7 @@ ipcMain.handle('loadConfig', async () => {
         await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
       )
       if (isDev) {
-        merge(
+        config.datasets = mergeConfigs(
           config,
           JSON.parse(
             await fsReadFile('./test_data/config_volvox.json', {

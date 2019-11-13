@@ -4,10 +4,7 @@ import {
 } from '@gmod/jbrowse-core/configuration'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { getSession } from '@gmod/jbrowse-core/util'
-import {
-  BlockBasedTrack,
-  blockBasedTrackModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 // using a map because it preserves order
