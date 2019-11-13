@@ -731,7 +731,7 @@
             "configId": "Rzzq0j7cBQ",
             "type": "TwoBitAdapter",
             "twoBitLocation": {
-              "localPath": "test_data/volvox.2bit"
+              "uri": "test_data/volvox.2bit"
             }
           },
           "rendering": {
@@ -774,12 +774,12 @@
             "configId": "vfwu9uSr4",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "localPath": "test_data/volvox.dup.vcf.gz"
+              "uri": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
               "configId": "igopEZIOv6",
               "location": {
-                "localPath": "test_data/volvox.dup.vcf.gz.tbi"
+                "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
@@ -853,12 +853,12 @@
             "configId": "_m5epcAGu6",
             "type": "BamAdapter",
             "bamLocation": {
-              "localPath": "test_data/volvox-long-reads.fastq.sorted.bam"
+              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
             "index": {
               "configId": "-bETsJYDd9",
               "location": {
-                "localPath": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
+                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
           },
@@ -888,12 +888,12 @@
             "configId": "9puQ7cL6Ao",
             "type": "BamAdapter",
             "bamLocation": {
-              "localPath": "test_data/volvox-samspec.bam"
+              "uri": "test_data/volvox-samspec.bam"
             },
             "index": {
               "configId": "SmWNBY459d",
               "location": {
-                "localPath": "test_data/volvox-samspec.bam.bai"
+                "uri": "test_data/volvox-samspec.bam.bai"
               }
             }
           },
@@ -923,12 +923,12 @@
             "configId": "l3uGL_uWAg",
             "type": "BamAdapter",
             "bamLocation": {
-              "localPath": "test_data/volvox-sv.bam"
+              "uri": "test_data/volvox-sv.bam"
             },
             "index": {
               "configId": "vEh5DFl9jN",
               "location": {
-                "localPath": "test_data/volvox-sv.bam.bai"
+                "uri": "test_data/volvox-sv.bam.bai"
               }
             }
           },
@@ -958,12 +958,12 @@
             "configId": "PphRAaR1y4_",
             "type": "BamAdapter",
             "bamLocation": {
-              "localPath": "test_data/volvox-sorted.bam"
+              "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
               "configId": "PB2zR_KB-RN",
               "location": {
-                "localPath": "test_data/volvox-sorted.bam.bai"
+                "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
           },
@@ -993,12 +993,12 @@
             "configId": "bzyhJPlur4p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
-              "localPath": "test_data/volvox.filtered.vcf.gz"
+              "uri": "test_data/volvox.filtered.vcf.gz"
             },
             "index": {
               "configId": "5c3arnyCBht",
               "location": {
-                "localPath": "test_data/volvox.filtered.vcf.gz.tbi"
+                "uri": "test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
           },
@@ -1028,7 +1028,7 @@
             "configId": "JxEowEEheuJ",
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "localPath": "test_data/volvox.bb"
+              "uri": "test_data/volvox.bb"
             }
           },
           "renderer": {
@@ -1113,7 +1113,7 @@
             "configId": "DB-sDX31tgH",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "line",
@@ -1165,7 +1165,7 @@
             "configId": "ex8Em3Ozuno",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "defaultRendering": "density",
@@ -1197,7 +1197,7 @@
             "configId": "26uNqVISq5X",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray.bw"
+              "uri": "test_data/volvox_microarray.bw"
             }
           },
           "renderers": {
@@ -1228,7 +1228,7 @@
             "configId": "M_yb4o2pnJQ",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray_negative.bw"
+              "uri": "test_data/volvox_microarray_negative.bw"
             }
           },
           "defaultRendering": "density",
@@ -1260,7 +1260,7 @@
             "configId": "mvznsyIjAbx",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray_negative.bw"
+              "uri": "test_data/volvox_microarray_negative.bw"
             }
           },
           "renderers": {
@@ -1291,7 +1291,7 @@
             "configId": "deTs4XSQOI6",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray_posneg.bw"
+              "uri": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "defaultRendering": "line",
@@ -1323,7 +1323,7 @@
             "configId": "cRHHbdsiAPC",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox_microarray_posneg.bw"
+              "uri": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "renderers": {
@@ -1354,7 +1354,7 @@
             "configId": "tti4u-USnnP",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox-sorted.bam.coverage.bw"
+              "uri": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "defaultRendering": "line",
@@ -1385,7 +1385,7 @@
             "configId": "LqumLPc7aJg",
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "localPath": "test_data/volvox-sorted.bam.coverage.bw"
+              "uri": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "renderers": {

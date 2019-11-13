@@ -34,14 +34,12 @@ function mergeConfigs(A, B) {
   B.datasets.forEach(b => {
     Y[b.assembly.name] = b
   })
-  console.log(B)
   return Object.values(merge(X, Y))
 }
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
-
   if (inDevelopment) {
-    mergeConfigs(
+    config.datasets = mergeConfigs(
       config,
       JSON.parse(
         await openLocation({ uri: 'test_data/config_in_dev.json' }).readFile(
@@ -87,8 +85,9 @@ export default observer(({ config, initialState }) => {
         else {
           let configSnapshot = config || {}
           const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-          if (localStorageConfig)
+          if (localStorageConfig) {
             configSnapshot = JSON.parse(localStorageConfig)
+          }
           if (configSnapshot.uri || configSnapshot.localPath) {
             configSnapshot = await parseConfig(config)
           }
