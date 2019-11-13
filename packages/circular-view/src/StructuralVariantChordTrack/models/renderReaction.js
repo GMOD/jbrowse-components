@@ -38,7 +38,6 @@ export default ({ jbrequire }) => {
 
     const {
       rendererType,
-      // renderProps,
       rpcManager,
       cannotBeRenderedReason,
       renderArgs,
@@ -46,6 +45,15 @@ export default ({ jbrequire }) => {
 
     if (cannotBeRenderedReason) {
       return { message: cannotBeRenderedReason }
+    }
+
+    // don't try to render 0 or NaN radius or no regions
+    if (
+      !props.renderProps.radius ||
+      !props.renderArgs.regions ||
+      !props.renderArgs.regions.length
+    ) {
+      return { message: 'Skipping render' }
     }
 
     // check renderertype compatibility
