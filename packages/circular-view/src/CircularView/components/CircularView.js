@@ -96,7 +96,7 @@ export default pluginManager => {
     )
   })
 
-  const Controls = observer(({ model }) => {
+  const Controls = observer(({ model, showingFigure }) => {
     const classes = useStyles()
     const rootModel = getRoot(model)
 
@@ -117,6 +117,7 @@ export default pluginManager => {
           onClick={model.zoomOutButton}
           className={classes.iconButton}
           title="zoom out"
+          disabled={!showingFigure}
         >
           <Icon fontSize="small">zoom_out</Icon>
         </IconButton>
@@ -125,6 +126,7 @@ export default pluginManager => {
           onClick={model.zoomInButton}
           className={classes.iconButton}
           title="zoom in"
+          disabled={!showingFigure}
         >
           <Icon fontSize="small">zoom_in</Icon>
         </IconButton>
@@ -133,6 +135,7 @@ export default pluginManager => {
           onClick={model.rotateCounterClockwiseButton}
           className={classes.iconButton}
           title="rotate counter-clockwise"
+          disabled={!showingFigure}
         >
           <Icon fontSize="small">rotate_left</Icon>
         </IconButton>
@@ -141,6 +144,7 @@ export default pluginManager => {
           onClick={model.rotateClockwiseButton}
           className={classes.iconButton}
           title="rotate clockwise"
+          disabled={!showingFigure}
         >
           <Icon fontSize="small">rotate_right</Icon>
         </IconButton>
@@ -195,15 +199,17 @@ export default pluginManager => {
 
     return (
       <>
-        <div style={{ height: 40 }}>
-          <IconButton
-            onClick={model.closeView}
-            className={classes.iconButton}
-            title="close this view"
-          >
-            <Icon>close</Icon>
-          </IconButton>
-        </div>
+        {model.hideCloseButton ? null : (
+          <div style={{ height: 40 }}>
+            <IconButton
+              onClick={model.closeView}
+              className={classes.iconButton}
+              title="close this view"
+            >
+              <Icon>close</Icon>
+            </IconButton>
+          </div>
+        )}
         <Container className={classes.importFormContainer}>
           <Grid
             style={{ width: '25rem', margin: '0 auto' }}
@@ -248,14 +254,24 @@ export default pluginManager => {
   })
   function CircularView({ model }) {
     const classes = useStyles()
-    const initialized = !!model.displayedRegions.length
+    const initialized =
+      !!model.displayedRegions.length && model.figureWidth && model.figureHeight
+
+    const showImportForm = !initialized && !model.disableImportForm
+    const showFigure = initialized && !showImportForm
 
     return (
-      <div className={classes.root} data-testid={model.configuration.configId}>
-        {!initialized ? (
-          <ImportForm model={model} />
-        ) : (
-          <>
+      <div
+        className={classes.root}
+        style={{
+          width: model.width,
+          height: model.height,
+        }}
+        data-testid={model.configuration.configId}
+      >
+        {showImportForm ? <ImportForm model={model} /> : null}
+        <>
+          {!showFigure ? null : (
             <div
               className={classes.scroller}
               style={{
@@ -288,25 +304,24 @@ export default pluginManager => {
                 </svg>
               </div>
             </div>
-
-            <Controls model={model} />
-
-            {model.hideVerticalResizeHandle ? null : (
-              <ResizeHandle
-                onDrag={model.resizeHeight}
-                objectId={model.id}
-                style={{
-                  height: dragHandleHeight,
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  background: '#ccc',
-                  boxSizing: 'border-box',
-                  borderTop: '1px solid #fafafa',
-                }}
-              />
-            )}
-          </>
+          )}
+          <Controls model={model} showingFigure={showFigure} />
+          {model.hideVerticalResizeHandle ? null : (
+            <ResizeHandle
+              onDrag={model.resizeHeight}
+              objectId={model.id}
+              style={{
+                height: dragHandleHeight,
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                background: '#ccc',
+                boxSizing: 'border-box',
+                borderTop: '1px solid #fafafa',
+              }}
+            />
+          )}
+        </>
         )}
       </div>
     )

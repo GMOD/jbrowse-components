@@ -32,12 +32,19 @@ export default pluginManager => {
       viewControls: {
         margin: 0,
       },
+      viewsContainer: {
+        position: 'relative',
+      },
       spreadsheetViewContainer: {
         borderRight: [['1px', 'solid', grey[400]]],
-        display: 'inline-block',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
       },
       circularViewContainer: {
-        display: 'inline-block',
+        position: 'absolute',
+        top: 0,
+        height: '100%',
       },
       circularViewOptions: {
         padding: theme.spacing(1),
@@ -136,11 +143,14 @@ export default pluginManager => {
           </Grid>
         </Grid>
         <div className={classes.viewsContainer}>
-          <div className={classes.spreadsheetViewContainer}>
+          <div className={classes.spreadsheetViewContainer} style={{ left: 0 }}>
             <SpreadsheetViewReactComponent model={model.spreadsheetView} />
           </div>
           {showCircularView ? (
-            <div className={classes.circularViewContainer}>
+            <div
+              className={classes.circularViewContainer}
+              style={{ left: model.spreadsheetView.width }}
+            >
               <CircularViewOptions svInspector={model} />
               <CircularViewReactComponent model={model.circularView} />
             </div>
