@@ -25,6 +25,8 @@ export default class CramAdapter extends BaseAdapter {
 
   private refNames: string[] | undefined
 
+  private refNameMap: { [key: number]: string } = {}
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: {
@@ -58,7 +60,7 @@ export default class CramAdapter extends BaseAdapter {
 
     const refSeqStore = this.sequenceAdapter
     if (!refSeqStore) return undefined
-    const refName = this.refIdToName(seqId)
+    const refName = this.refIdToOriginalName(seqId)
     if (!refName) return undefined
 
     const features = await refSeqStore.getFeatures({
@@ -156,6 +158,13 @@ export default class CramAdapter extends BaseAdapter {
     return undefined
   }
 
+  // use info from the SAM header if possible, but fall back to using
+  // the ref seq order from when the browser's refseqs were loaded
+  refIdToOriginalName(refId: number) {
+    console.log(this.refNameMap)
+    return this.refNameMap[refId]
+  }
+
   /**
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
    * want to verify that the store has features for the given reference sequence
@@ -174,6 +183,7 @@ export default class CramAdapter extends BaseAdapter {
         this.refNames = await this.sequenceAdapter.getRefNames(opts)
       }
       const refId = this.refNameToId(refName)
+      this.refNameMap[refId] = opts.originalRegion.refName
       const records = await this.cram.getRecordsForRange(
         refId,
         start,

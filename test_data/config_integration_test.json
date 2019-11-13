@@ -65,6 +65,30 @@
           }
         },
         {
+          "configId": "volvox_cram_alignments",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted.cram (contigA)",
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sorted-altname.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-sorted-altname.cram.crai"
+            }
+          },
+          "defaultRendering": "svg",
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer",
+              "labels": {}
+            }
+          }
+        },
+        {
           "configId": "volvox_alignments",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (ctgA)",
