@@ -225,7 +225,7 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://jbrowse.org/genomes/hg38/repeats.bb"
+              "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
             }
           },
           "renderer": {
@@ -359,7 +359,7 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://jbrowse.org/genomes/hg38/gaps.bb"
+              "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
             }
           },
           "renderer": {

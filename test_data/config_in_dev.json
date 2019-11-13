@@ -643,23 +643,6 @@
           }
         },
         {
-          "configId": "mane_hg38",
-          "type": "BasicTrack",
-          "name": "MANE 0.6",
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.6.bb"
-            }
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
           "configId": "sparql_togovar",
           "type": "BasicTrack",
           "name": "TogoVar SPARQL Variants",
