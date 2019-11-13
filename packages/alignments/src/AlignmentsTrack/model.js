@@ -24,13 +24,7 @@ export default (pluginManager, configSchema) =>
       .model({
         type: types.literal('AlignmentsTrack'),
         configuration: ConfigurationReference(configSchema),
-        // the renderer that the user has selected in the UI, empty string
-        // if they have not made any selection
-        selectedRendering: types.optional(types.string, ''),
       })
-      .volatile(() => ({
-        ReactComponent: BlockBasedTrack,
-      }))
       .actions(self => ({
         selectFeature(feature) {
           const session = getSession(self)
@@ -41,9 +35,6 @@ export default (pluginManager, configSchema) =>
           )
           session.showDrawerWidget(featureWidget)
           session.setSelection(feature)
-        },
-        setRenderer(newRenderer) {
-          self.selectedRendering = newRenderer
         },
       }))
       .views(self => ({
