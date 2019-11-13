@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
 export default ConfigurationSchema(
-  'UCSCTrackHubRegistryConnection',
+  'TheTrackHubRegistryConnection',
   {
     name: {
       type: 'string',

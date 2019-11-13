@@ -21,7 +21,7 @@ const fsWriteFile = promisify(fs.writeFile)
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
-debug()
+debug({ showDevTools: false })
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',

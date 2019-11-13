@@ -197,11 +197,33 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
         categories,
       )
     case 'cram':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      if (trackDbFileLocation.uri)
+        bigDataIndexLocation = track.get('bigDataIndex')
+          ? {
+              uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
+                .href,
+            }
+          : {
+              uri: new URL(
+                `${track.get('bigDataUrl')}.crai`,
+                trackDbFileLocation.uri,
+              ).href,
+            }
+      else
+        bigDataIndexLocation = track.get('bigDataIndex')
+          ? { localPath: track.get('bigDataIndex') }
+          : { localPath: `${track.get('bigDataUrl')}.crai` }
+      return {
+        type: 'AlignmentsTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'CramAdapter',
+          cramLocation: bigDataLocation,
+          craiLocation: bigDataIndexLocation,
+        },
+      }
     case 'gvf':
       return generateUnsupportedTrackConf(
         track.get('shortLabel'),
@@ -227,11 +249,35 @@ function makeTrackConfig(track, categories, trackDbFileLocation, trackDb) {
         categories,
       )
     case 'vcfTabix':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      if (trackDbFileLocation.uri)
+        bigDataIndexLocation = track.get('bigDataIndex')
+          ? {
+              uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
+                .href,
+            }
+          : {
+              uri: new URL(
+                `${track.get('bigDataUrl')}.tbi`,
+                trackDbFileLocation.uri,
+              ).href,
+            }
+      else
+        bigDataIndexLocation = track.get('bigDataIndex')
+          ? { localPath: track.get('bigDataIndex') }
+          : { localPath: `${track.get('bigDataUrl')}.tbi` }
+      return {
+        type: 'VariantTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: bigDataLocation,
+          index: {
+            location: bigDataIndexLocation,
+          },
+        },
+      }
     case 'wig':
       return generateUnsupportedTrackConf(
         track.get('shortLabel'),

@@ -1,10 +1,12 @@
 import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
 
 export function generateTracks(trackDb) {
-  const { configuration } = trackDb
+  // eslint-disable-next-line no-underscore-dangle
+  const { configuration } = trackDb._source
   const subTracks = getSubtracks({ members: configuration })
   return subTracks.map(subTrack =>
-    makeTrackConfig(subTrack, trackDb.source.url),
+    // eslint-disable-next-line no-underscore-dangle
+    makeTrackConfig(subTrack, trackDb._source.hub.url),
   )
 
   function getSubtracks(track, trackPath = []) {
