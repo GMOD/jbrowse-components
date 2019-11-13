@@ -20,6 +20,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   await fsPromises.stat(rootTemplate.replace('{refseq}', 21)) // will throw if doesnt exist
   const adapter = new Adapter({
     rootUrlTemplate: decodeURI(new URL(`file://${rootTemplate}`).href),
+    configId: 'test_adapter',
   })
 
   const features = await adapter.getFeatures({
@@ -30,7 +31,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray[0].get('refName')).toBe('21')
-  expect(featuresArray[0].id()).toBe('0,0,19,22,0')
+  expect(featuresArray[0].id()).toBe('test_adapter-0,0,19,22,0')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(94)
   expect(featuresJsonArray).toMatchSnapshot()

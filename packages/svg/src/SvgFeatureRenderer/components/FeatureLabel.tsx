@@ -20,7 +20,7 @@ export default function Label(props: {
     featureWidth,
     horizontallyFlipped,
     allowedWidthExpansion,
-    fontWidthScaleFactor = 0.55,
+    fontWidthScaleFactor = 0.6,
   } = props
 
   const fontWidth = fontHeight * fontWidthScaleFactor

@@ -334,7 +334,6 @@ export default pluginManager => {
             />
           )}
         </>
-        )}
       </div>
     )
   }

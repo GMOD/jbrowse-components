@@ -21,7 +21,11 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
     })
     if (hasSubSub) return Subfeatures
     const type = feature.get('type')
-    if (['mRNA', 'transcript'].includes(type)) return ProcessedTranscript
+    if (
+      ['mRNA', 'transcript'].includes(type) &&
+      subfeatures.find((f: Feature) => f.get('type') === 'CDS')
+    )
+      return ProcessedTranscript
     return Segments
   }
   const strand = feature.get('strand')

@@ -9,7 +9,7 @@ import { Tooltip } from '@gmod/jbrowse-core/ui'
 import FeatureGlyph from './FeatureGlyph'
 import { chooseGlyphComponent, layOut } from './util'
 
-const fontWidthScaleFactor = 0.55
+const fontWidthScaleFactor = 0.6
 const renderingStyle = {
   position: 'relative',
 }

@@ -193,7 +193,7 @@ describe('some error state', () => {
     await expect(
       waitForElement(() =>
         getAllByText(
-          'HTTP 404 fetching /test_data/volvox-sorted.bam.bai.nonexist',
+          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
         ),
       ),
     ).resolves.toBeTruthy()
@@ -275,7 +275,7 @@ describe('nclist track test with long name', () => {
     await expect(
       waitForElement(() =>
         getByText(
-          'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz12345678...',
+          'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
         ),
       ),
     ).resolves.toBeTruthy()
