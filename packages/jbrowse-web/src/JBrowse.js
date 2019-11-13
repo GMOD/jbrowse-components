@@ -18,7 +18,7 @@ import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
-import merge from 'merge-deep'
+import merge from 'deepmerge'
 
 import rootModel from './rootModel'
 import App from './ui/App'

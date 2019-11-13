@@ -7,7 +7,7 @@ const fetch = require('node-fetch')
 const path = require('path')
 const url = require('url')
 const { promisify } = require('util')
-const merge = require('merge-deep')
+const merge = require('deepmerge')
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
