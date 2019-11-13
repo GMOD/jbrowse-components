@@ -342,67 +342,50 @@
     "name": "New Session",
     "menuBars": [
       {
-        "type": "MainMenuBar"
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "File",
+            "menuItems": [
+              {
+                "name": "New linear genome view",
+                "icon": "line_style",
+                "callback": "function(session) { session.addView('LinearGenomeView', {})}"
+              },
+              {
+                "name": "New circular view",
+                "icon": "data_usage",
+                "callback": "function(session) { session.addView('CircularView', {})}"
+              },
+              {
+                "name": "New SV inspector",
+                "icon": "table_chart",
+                "callback": "function(session) { session.addView('SvInspectorView', {})}"
+              },
+              {
+                "name": "Open tabular data",
+                "icon": "view_comfy",
+                "callback": "function(session) { session.addView('SpreadsheetView', {})}"
+              }
+            ]
+          },
+          {
+            "name": "Help",
+            "menuItems": [
+              {
+                "name": "About",
+                "icon": "info",
+                "callback": "openAbout"
+              },
+              {
+                "name": "Help",
+                "icon": "help",
+                "callback": "openHelp"
+              }
+            ]
+          }
+        ]
       }
     ]
-  },
-  "savedSessions": [
-    {
-      "name": "Human Example (hg19)",
-      "width": 1192,
-      "drawerWidth": 384,
-      "views": [
-        {
-          "id": "Cma34s8JJ",
-          "type": "LinearGenomeView",
-          "offsetPx": 835,
-          "bpPerPx": 50,
-          "displayRegionsFromAssemblyName": "hg19",
-          "reversed": false,
-          "tracks": [],
-          "controlsWidth": 120,
-          "width": 1192,
-          "hideControls": false,
-          "hideHeader": false,
-          "trackSelectorType": "hierarchical",
-          "minimumBlockWidth": 20
-        }
-      ],
-      "drawerWidgets": {
-        "hierarchicalTrackSelector": {
-          "id": "KiRG5qjrcS",
-          "type": "HierarchicalTrackSelectorDrawerWidget",
-          "collapsed": {},
-          "filterText": "",
-          "view": "Cma34s8JJ"
-        }
-      },
-      "activeDrawerWidgets": {}
-    },
-    {
-      "name": "Human Example (GRCh38)",
-      "width": 1260,
-      "drawerWidth": 384,
-      "views": [
-        {
-          "id": "Cma34s8JJ",
-          "type": "LinearGenomeView",
-          "offsetPx": 69300,
-          "bpPerPx": 150,
-          "displayRegionsFromAssemblyName": "GRCh38",
-          "reversed": false,
-          "tracks": [],
-          "controlsWidth": 120,
-          "width": 1260,
-          "hideControls": false,
-          "hideHeader": false,
-          "trackSelectorType": "hierarchical",
-          "minimumBlockWidth": 20
-        }
-      ],
-      "drawerWidgets": {},
-      "activeDrawerWidgets": {},
-      "connections": {}
-    }
-  ]
+  }
 }
