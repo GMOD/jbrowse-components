@@ -26,7 +26,9 @@ function ZoomControls({ model }) {
           model.zoomTo(model.bpPerPx * 2)
         }}
       >
-        <Icon fontSize="small">zoom_out</Icon>
+        <Icon color="secondary" fontSize="small">
+          zoom_out
+        </Icon>
       </IconButton>
       <Slider
         className={classes.slider}
@@ -41,7 +43,9 @@ function ZoomControls({ model }) {
           model.zoomTo(model.bpPerPx / 2)
         }}
       >
-        <Icon fontSize="small">zoom_in</Icon>
+        <Icon color="secondary" fontSize="small">
+          zoom_in
+        </Icon>
       </IconButton>
     </div>
   )

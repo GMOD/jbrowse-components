@@ -21,7 +21,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -131,7 +131,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -152,7 +152,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             line_style
           </span>
@@ -174,7 +174,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             more_vert
           </span>
@@ -188,6 +188,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <p
           class="MuiTypography-root makeStyles-viewName MuiTypography-body1"
+          style="color: rgb(255, 255, 255);"
         />
       </div>
       <div
@@ -219,7 +220,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             >
               <span
                 aria-hidden="true"
-                class="material-icons MuiIcon-root"
+                class="material-icons MuiIcon-root MuiIcon-colorSecondary"
               >
                 search
               </span>
@@ -276,7 +277,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+              class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
             >
               zoom_out
             </span>
@@ -320,7 +321,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+              class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
             >
               zoom_in
             </span>
@@ -478,7 +479,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -500,7 +501,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -570,7 +571,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -592,7 +593,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -672,7 +673,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
           >
             close
           </span>
