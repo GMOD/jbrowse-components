@@ -63,7 +63,9 @@ export default pluginManager => {
             title="close this view"
             data-testid="sv_inspector_view_close"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon color="secondary" fontSize="small">
+              close
+            </Icon>
           </IconButton>
 
           <IconButton
@@ -72,7 +74,9 @@ export default pluginManager => {
             title="open a tabular file"
             data-testid="sv_inspector_view_open"
           >
-            <Icon fontSize="small">folder_open</Icon>
+            <Icon color="secondary" fontSize="small">
+              folder_open
+            </Icon>
           </IconButton>
         </Grid>
       </Grid>

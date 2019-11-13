@@ -46,7 +46,9 @@ function TrackControls({ track, view, onConfigureClick }) {
         className={classes.iconButton}
         title="close this track"
       >
-        <Icon fontSize="small">close</Icon>
+        <Icon color="secondary" fontSize="small">
+          close
+        </Icon>
       </IconButton>
       {track.showConfigurationButton ? (
         <ToggleButton
@@ -64,7 +66,9 @@ function TrackControls({ track, view, onConfigureClick }) {
           value="configure"
           onClick={onConfigureClick}
         >
-          <Icon fontSize="small">settings</Icon>
+          <Icon color="secondary" fontSize="small">
+            settings
+          </Icon>
         </ToggleButton>
       ) : null}
       <Typography variant="body1" className={classes.trackName}>

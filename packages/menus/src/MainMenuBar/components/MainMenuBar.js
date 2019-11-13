@@ -11,10 +11,6 @@ import React, { useEffect, useState } from 'react'
 import DropDownMenu from './DropDownMenu'
 
 const useStyles = makeStyles(theme => {
-  const light = theme.palette.type === 'light'
-  const backgroundColor = light
-    ? 'rgba(0, 0, 0, 0.09)'
-    : 'rgba(255, 255, 255, 0.09)'
   return {
     root: {
       flexGrow: 1,
@@ -40,18 +36,7 @@ const useStyles = makeStyles(theme => {
     inputRoot: {
       padding: theme.spacing(0.5),
       '&:hover': {
-        backgroundColor: light
-          ? 'rgba(0, 0, 0, 0.13)'
-          : 'rgba(255, 255, 255, 0.13)',
-        // Reset on touch devices, it doesn't add specificity
-        '@media (hover: none)': {
-          backgroundColor,
-        },
-      },
-      '&$focused': {
-        backgroundColor: light
-          ? 'rgba(0, 0, 0, 0.09)'
-          : 'rgba(255, 255, 255, 0.09)',
+        backgroundColor: theme.palette.primary.light,
       },
     },
     inputFocused: {
@@ -59,9 +44,7 @@ const useStyles = makeStyles(theme => {
       borderRadius: theme.shape.borderRadius,
       borderColor: theme.palette.secondary.main,
       borderWidth: 2,
-      backgroundColor: light
-        ? 'rgba(0, 0, 0, 0.09)'
-        : 'rgba(255, 255, 255, 0.09)',
+      backgroundColor: theme.palette.primary.light,
     },
   }
 })
@@ -120,26 +103,6 @@ function MainMenuBar(props) {
     setEditedName(event.target.value)
   }
 
-  const sessionNameComponent = (
-    <>
-      <Tooltip title="Rename">
-        <InputBase
-          inputRef={inputRef}
-          className={classes.input}
-          style={{ width }}
-          classes={{ root: classes.inputRoot, focused: classes.inputFocused }}
-          value={editedName}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-        />
-      </Tooltip>
-      <div ref={sizerRef} className={classes.sizer}>
-        {editedName}
-      </div>
-    </>
-  )
-
   return (
     <AppBar className={classes.root} position="static">
       <Toolbar variant="dense">
@@ -152,7 +115,21 @@ function MainMenuBar(props) {
           />
         ))}
         <div className={classes.grow} />
-        {sessionNameComponent}
+        <Tooltip title="Rename Session">
+          <InputBase
+            inputRef={inputRef}
+            className={classes.input}
+            style={{ width }}
+            classes={{ root: classes.inputRoot, focused: classes.inputFocused }}
+            value={editedName}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+          />
+        </Tooltip>
+        <div ref={sizerRef} className={classes.sizer}>
+          {editedName}
+        </div>
         <div className={classes.grow} />
         <Typography variant="h6" color="inherit">
           JBrowse

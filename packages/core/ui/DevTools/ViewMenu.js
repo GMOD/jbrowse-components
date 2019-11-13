@@ -54,7 +54,7 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon>calendar_view_day</Icon>
+            <Icon color="secondary">calendar_view_day</Icon>
           </ListItemIcon>
           Linear
         </MenuItem>
@@ -64,15 +64,19 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon>blur_circular</Icon>
+            <Icon color="secondary">blur_circular</Icon>
           </ListItemIcon>
           Circular
         </MenuItem>
       </Menu>
 
-      <Button aria-haspopup="true" onClick={handleViewMenuClick}>
+      <Button
+        aria-haspopup="true"
+        onClick={handleViewMenuClick}
+        color="secondary"
+      >
         Add View
-        <Icon>more_vert</Icon>
+        <Icon color="secondary">more_vert</Icon>
       </Button>
     </>
   )

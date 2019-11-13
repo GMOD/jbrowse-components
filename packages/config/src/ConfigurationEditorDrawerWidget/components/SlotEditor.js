@@ -73,7 +73,7 @@ const StringArrayEditor = observer(({ slot }) => {
                 endAdornment: (
                   <InputAdornment>
                     <IconButton onClick={() => slot.removeAtIndex(idx)}>
-                      <Icon>delete</Icon>
+                      <Icon color="secondary">delete</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -96,7 +96,7 @@ const StringArrayEditor = observer(({ slot }) => {
                     }}
                     disabled={value === ''}
                   >
-                    <Icon>add</Icon>
+                    <Icon color="secondary">add</Icon>
                   </IconButton>
                 </InputAdornment>
               ),
@@ -127,7 +127,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
             title={key}
             action={
               <IconButton onClick={() => slot.remove(key)}>
-                <Icon>delete</Icon>
+                <Icon color="secondary">delete</Icon>
               </IconButton>
             }
           />
@@ -169,7 +169,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
                         setValue('')
                       }}
                     >
-                      <Icon>add</Icon>
+                      <Icon color="secondary">add</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -195,7 +195,7 @@ const NumberMapEditor = observer(({ slot }) => {
             title={key}
             action={
               <IconButton onClick={() => slot.remove(key)}>
-                <Icon>delete</Icon>
+                <Icon color="secondary">delete</Icon>
               </IconButton>
             }
           />
@@ -228,7 +228,7 @@ const NumberMapEditor = observer(({ slot }) => {
                         setValue('')
                       }}
                     >
-                      <Icon>add</Icon>
+                      <Icon color="secondary">add</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -394,7 +394,7 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
           title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
         >
           {!slot.isCallback ? (
-            <Icon>radio_button_unchecked</Icon>
+            <Icon color="secondary">radio_button_unchecked</Icon>
           ) : (
             <SvgCheckbox />
           )}

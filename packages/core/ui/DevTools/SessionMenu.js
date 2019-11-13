@@ -47,13 +47,13 @@ function SessionMenu({ session }) {
       >
         <MenuItem onClick={clearSession}>
           <ListItemIcon>
-            <Icon>clear</Icon>
+            <Icon color="secondary">clear</Icon>
           </ListItemIcon>
           Clear session
         </MenuItem>
         <MenuItem onClick={toggleUpdateUrl}>
           <ListItemIcon>
-            <Icon>
+            <Icon color="secondary">
               {readConfObject(rootConfig, 'updateUrl')
                 ? 'check_box'
                 : 'check_box_outline_blank'}
@@ -63,7 +63,7 @@ function SessionMenu({ session }) {
         </MenuItem>
         <MenuItem onClick={toggleUseLocalStorage}>
           <ListItemIcon>
-            <Icon>
+            <Icon color="secondary">
               {readConfObject(rootConfig, 'useLocalStorage')
                 ? 'check_box'
                 : 'check_box_outline_blank'}
@@ -73,9 +73,13 @@ function SessionMenu({ session }) {
         </MenuItem>
       </Menu>
 
-      <Button aria-haspopup="true" onClick={handleSessionMenuClick}>
+      <Button
+        aria-haspopup="true"
+        onClick={handleSessionMenuClick}
+        color="secondary"
+      >
         Session
-        <Icon>more_vert</Icon>
+        <Icon color="secondary">more_vert</Icon>
       </Button>
     </>
   )

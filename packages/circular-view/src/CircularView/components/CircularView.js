@@ -109,7 +109,9 @@ export default pluginManager => {
             title="close this view"
             data-testid="circular_view_close"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon color="secondary" fontSize="small">
+              close
+            </Icon>
           </IconButton>
         )}
 
@@ -118,7 +120,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="zoom out"
         >
-          <Icon fontSize="small">zoom_out</Icon>
+          <Icon color="secondary" fontSize="small">
+            zoom_out
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -126,7 +130,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="zoom in"
         >
-          <Icon fontSize="small">zoom_in</Icon>
+          <Icon color="secondary" fontSize="small">
+            zoom_in
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -134,7 +140,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="rotate counter-clockwise"
         >
-          <Icon fontSize="small">rotate_left</Icon>
+          <Icon color="secondary" fontSize="small">
+            rotate_left
+          </Icon>
         </IconButton>
 
         <IconButton
@@ -142,7 +150,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="rotate clockwise"
         >
-          <Icon fontSize="small">rotate_right</Icon>
+          <Icon color="secondary" fontSize="small">
+            rotate_right
+          </Icon>
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
@@ -158,7 +168,9 @@ export default pluginManager => {
             value="track_select"
             data-testid="circular_track_select"
           >
-            <Icon fontSize="small">line_style</Icon>
+            <Icon color="secondary" fontSize="small">
+              line_style
+            </Icon>
           </ToggleButton>
         )}
       </div>
@@ -201,7 +213,7 @@ export default pluginManager => {
             className={classes.iconButton}
             title="close this view"
           >
-            <Icon>close</Icon>
+            <Icon color="secondary">close</Icon>
           </IconButton>
         </div>
         <Container className={classes.importFormContainer}>

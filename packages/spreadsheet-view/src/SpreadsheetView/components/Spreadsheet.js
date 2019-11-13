@@ -263,14 +263,20 @@ export default pluginManager => {
           {!isSorting ? null : (
             <MenuItem onClick={stopSortingClick}>
               <ListItemIcon>
-                <Icon fontSize="small">clear</Icon>
+                <Icon color="secondary" fontSize="small">
+                  clear
+                </Icon>
               </ListItemIcon>
               <ListItemText primary="Stop sorting" />
             </MenuItem>
           )}
           <MenuItem onClick={sortMenuClick.bind(null, false)}>
             <ListItemIcon>
-              <Icon style={{ transform: 'scale(1,-1)' }} fontSize="small">
+              <Icon
+                color="secondary"
+                style={{ transform: 'scale(1,-1)' }}
+                fontSize="small"
+              >
                 sort
               </Icon>
             </ListItemIcon>
@@ -278,7 +284,9 @@ export default pluginManager => {
           </MenuItem>
           <MenuItem onClick={sortMenuClick.bind(null, true)}>
             <ListItemIcon>
-              <Icon fontSize="small">sort</Icon>
+              <Icon color="secondary" fontSize="small">
+                sort
+              </Icon>
             </ListItemIcon>
             <ListItemText primary="Sort descending" />
           </MenuItem>
@@ -289,11 +297,15 @@ export default pluginManager => {
             }}
           >
             <ListItemIcon>
-              <Icon fontSize="small">perm_data_setting</Icon>
+              <Icon color="secondary" fontSize="small">
+                perm_data_setting
+              </Icon>
             </ListItemIcon>
             <ListItemText primary={`Type: ${dataTypeDisplayName}`} />
             <ListItemIcon>
-              <Icon fontSize="small">arrow_right</Icon>
+              <Icon color="secondary" fontSize="small">
+                arrow_right
+              </Icon>
             </ListItemIcon>
           </MenuItem>
         </Menu>
@@ -324,7 +336,7 @@ export default pluginManager => {
                 }}
               >
                 <ListItemIcon>
-                  <Icon fontSize="small">
+                  <Icon color="secondary" fontSize="small">
                     {dataTypeName === typeName ? 'check' : 'blank'}
                   </Icon>
                 </ListItemIcon>
@@ -381,7 +393,10 @@ export default pluginManager => {
                       disabled={!model.rowSet.selectedCount}
                       size="small"
                     >
-                      <Icon className={classes.columnButtonIcon}>
+                      <Icon
+                        color="secondary"
+                        className={classes.columnButtonIcon}
+                      >
                         crop_free
                       </Icon>
                     </IconButton>
@@ -413,7 +428,10 @@ export default pluginManager => {
                       className={classes.columnButton}
                       onClick={columnButtonClick.bind(null, colNumber)}
                     >
-                      <Icon className={classes.columnButtonIcon}>
+                      <Icon
+                        color="secondary"
+                        className={classes.columnButtonIcon}
+                      >
                         arrow_drop_down
                       </Icon>
                     </IconButton>
