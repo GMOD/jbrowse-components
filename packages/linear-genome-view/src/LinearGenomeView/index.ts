@@ -168,8 +168,9 @@ export function stateModelFactory(pluginManager: any) {
         const px = coord / self.bpPerPx
         let offsetPx = 0
         const index = this.displayedRegionsInOrder.findIndex(r => {
+          console.log(r, refName)
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetPx += (r.end - (coord - r.start)) / self.bpPerPx
+            offsetPx += (coord - r.start) / self.bpPerPx
             return true
           }
           offsetPx += (r.end - r.start) / self.bpPerPx
