@@ -164,6 +164,27 @@ export function stateModelFactory(pluginManager: any) {
         }
       },
 
+      bpToPx({ refName, coord }: { refName: string; coord: number }) {
+        const px = coord / self.bpPerPx
+        let offsetPx = 0
+        const index = this.displayedRegionsInOrder.findIndex(r => {
+          if (refName === r.refName && coord >= r.start && coord <= r.end) {
+            offsetPx += (r.end - (coord - r.start)) / self.bpPerPx
+            return true
+          }
+          offsetPx += (r.end - r.start) / self.bpPerPx
+          return false
+        })
+        const foundRegion = self.displayedRegions[index]
+        offsetPx = Math.round(offsetPx)
+        if (foundRegion) {
+          return {
+            index,
+            offsetPx,
+          }
+        }
+        return undefined
+      },
       /**
        *
        * @param {number} px px in the view area, return value is the displayed regions

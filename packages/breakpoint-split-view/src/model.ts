@@ -174,7 +174,10 @@ export default function stateModelFactory(pluginManager: any) {
           ret = this.getMatchedAlignmentsInLayout(trackConfigId, features)
         } else if (type === 'Breakends') {
           ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
+        } else if (type === 'Translocations') {
+          ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
         }
+
         return { type, features: ret }
       },
 

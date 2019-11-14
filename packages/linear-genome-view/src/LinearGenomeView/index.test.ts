@@ -243,4 +243,14 @@ test('can instantiate a model that >2 regions', () => {
   model.showAllRegions()
   expect(model.bpPerPx).toEqual(30000 / 800)
   expect(model.offsetPx).toEqual(0)
+
+  expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
+    index: 0,
+    offsetPx: 264,
+  })
+
+  expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
+    index: 1,
+    offsetPx: 531,
+  })
 })
