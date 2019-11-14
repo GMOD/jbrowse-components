@@ -165,7 +165,6 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
-        const px = coord / self.bpPerPx
         let offsetPx = 0
         const index = this.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {

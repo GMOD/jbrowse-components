@@ -43,7 +43,7 @@ export function yPos(
   trackConfigId: string,
   level: number,
   views: Instance<LinearGenomeViewStateModel>[],
-  tracks: any[],
+  tracks: { height: number; scrollTop: number }[], // basic track requirements
   c: LayoutRecord,
 ) {
   const min = 0

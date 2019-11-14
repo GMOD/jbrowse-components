@@ -1,8 +1,6 @@
 import Path from 'svg-path-generator'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel, LayoutRecord } from '../model'
 import { yPos, getPxFromCoordinate } from '../util'
 
@@ -23,7 +21,7 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
-  const [LEFT, TOP, , BOTTOM] = [0, 1, 2, 3]
+  const [LEFT] = [0, 1, 2, 3]
 
   const VariantInfo = observer(
     ({
