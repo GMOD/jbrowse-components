@@ -155,7 +155,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root makeStyles-expandIcon"
           >
             expand_more
           </span>
@@ -280,7 +280,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                        class="material-icons MuiIcon-root makeStyles-expandIcon"
                       >
                         expand_more
                       </span>

@@ -17,6 +17,9 @@ export const useStyles = makeStyles(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
+  expandIcon: {
+    color: '#FFFFFF',
+  },
   paperRoot: {
     background: theme.palette.grey[100],
   },
@@ -63,7 +66,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   return (
     <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<Icon color="secondary">expand_more</Icon>}
+        expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
       >
         <Typography variant="button"> {title}</Typography>
       </ExpansionPanelSummary>

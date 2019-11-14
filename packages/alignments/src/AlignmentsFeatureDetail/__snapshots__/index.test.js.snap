@@ -40,7 +40,7 @@ exports[`open up a drawer widget 1`] = `
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+              class="material-icons MuiIcon-root makeStyles-expandIcon"
             >
               expand_more
             </span>
@@ -170,7 +170,7 @@ exports[`open up a drawer widget 1`] = `
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+              class="material-icons MuiIcon-root makeStyles-expandIcon"
             >
               expand_more
             </span>
@@ -442,7 +442,7 @@ exports[`open up a drawer widget 1`] = `
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root makeStyles-expandIcon"
           >
             expand_more
           </span>

@@ -15,6 +15,9 @@ const useStyles = makeStyles(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
+  expandIcon: {
+    color: '#FFFFFF',
+  },
 }))
 
 function Category({
@@ -36,7 +39,7 @@ function Category({
       onChange={() => model.toggleCategory(pathName)}
     >
       <ExpansionPanelSummary
-        expandIcon={<Icon color="secondary">expand_more</Icon>}
+        expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
       >
         <Typography variant="body2">{`${name} (${
           Object.keys(

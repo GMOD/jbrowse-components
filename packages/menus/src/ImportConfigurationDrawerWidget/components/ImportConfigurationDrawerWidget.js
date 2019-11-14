@@ -67,6 +67,9 @@ const useStyles = makeStyles(theme => ({
   listItem: {
     padding: theme.spacing(0, 4),
   },
+  expandIcon: {
+    color: '#FFFFFF',
+  },
 }))
 
 function ImportConfiguration(props) {
@@ -238,7 +241,9 @@ function ImportConfiguration(props) {
           <div>
             <ExpansionPanel style={{ marginTop: 4 }}>
               <ExpansionPanelSummary
-                expandIcon={<Icon color="secondary">expand_more</Icon>}
+                expandIcon={
+                  <Icon className={classes.expandIcon}>expand_more</Icon>
+                }
               >
                 <Typography color="error" align="center">
                   {acceptedFilesParsed.length === 1
