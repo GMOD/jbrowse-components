@@ -27,7 +27,7 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('CircularView'),
       offsetRadians: -Math.PI / 2,
-      bpPerPx: 2000000,
+      bpPerPx: 2000000, 
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -35,6 +35,7 @@ export default pluginManager => {
       hideCloseButton: false,
       hideVerticalResizeHandle: false,
       hideTrackSelectorButton: false,
+      lockedFitToWindow: true,
 
       width: 800,
       height: types.optional(
@@ -55,6 +56,8 @@ export default pluginManager => {
       trackSelectorType: 'hierarchical',
     })
     .views(self => ({
+      //BpPerPx be a view (currently a mobx state tree) and depending on what state the toggle is in, conditional returns
+      //in locked state, calculate bp per px, in unlocked return regular bpperpx
       get staticSlices() {
         return calculateStaticSlices(self)
       },
@@ -105,6 +108,10 @@ export default pluginManager => {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
         return self.totalBp / minCircumferencePx
       },
+      get maxBpPerPxWhenLocked(){
+        const maxZoomWhenLocked = Math.floor(self.height / 100) - 1;
+        return maxZoomWhenLocked > 0 ? self.maxBpPerPx / (maxZoomWhenLocked * 1.4) : self.maxBpPerPx
+      },
       get figureDimensions() {
         return [
           self.radiusPx * 2 + 2 * self.paddingPx,
@@ -153,8 +160,15 @@ export default pluginManager => {
         }
         return visible
       },
+
+      //conditionals here, learn more about 
+      get statusFitToWindowLock() {
+        return self.lockedFitToWindow
+      },
+
     }))
     .actions(self => ({
+      //toggle action with a flag stating which mode it's in
       setWidth(newWidth) {
         self.width = newWidth
       },
@@ -168,7 +182,7 @@ export default pluginManager => {
         const newHeight = self.setHeight(self.height + distance)
         return newHeight - oldHeight
       },
-
+      
       rotateClockwiseButton() {
         self.rotateClockwise()
       },
@@ -187,6 +201,10 @@ export default pluginManager => {
 
       zoomInButton() {
         self.setBpPerPx(self.bpPerPx / 1.4)
+        console.log(self.height)
+        if(self.lockedFitToWindow && self.bpPerPx < self.maxBpPerPxWhenLocked){
+          self.setBpPerPx(self.maxBpPerPxWhenLocked)
+        }
       },
 
       zoomOutButton() {
@@ -265,6 +283,14 @@ export default pluginManager => {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
+
+      toggleFitToWindowLock() {
+        if(!self.lockedFitToWindow){
+          self.setBpPerPx(self.maxBpPerPxWhenLocked);
+        }
+        //toggles from locking to unlocking (starts at true)
+        return self.lockedFitToWindow = !self.lockedFitToWindow
+      }
     }))
 
   return { stateModel, configSchema }

@@ -144,7 +144,17 @@ export default pluginManager => {
         >
           <Icon fontSize="small">rotate_right</Icon>
         </IconButton>
-
+        
+        <IconButton
+          onClick={model.toggleFitToWindowLock}
+          className={classes.iconButton}
+          title="fit to window lock"  
+        >
+          {model.lockedFitToWindow ? <Icon fontSize="small">lock_outline</Icon> : 
+            <Icon fontSize="small">lock_open</Icon>}
+          
+        </IconButton>
+          
         {model.hideTrackSelectorButton ? null : (
           <ToggleButton
             onClick={model.activateTrackSelector}
@@ -161,6 +171,7 @@ export default pluginManager => {
             <Icon fontSize="small">line_style</Icon>
           </ToggleButton>
         )}
+
       </div>
     )
   })
