@@ -81,7 +81,7 @@
   },
   "homepage": "./",
   "build": {
-    "electronVersion": "7.0.0",
+    "electronVersion": "7.1.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },
