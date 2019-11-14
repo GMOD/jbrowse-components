@@ -4,6 +4,7 @@ import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel, LayoutRecord } from '../model'
+import { yPos, getPxFromCoordinate } from '../util'
 
 interface Chunk {
   feature: Feature
@@ -24,17 +25,6 @@ export default (pluginManager: any) => {
 
   const [LEFT, TOP, , BOTTOM] = [0, 1, 2, 3]
 
-  function calc(
-    view: Instance<typeof LinearGenomeViewStateModel>,
-    coord: number,
-  ) {
-    const region = { start: 0, end: view.totalBp }
-    const { bpPerPx, horizontallyFlipped, offsetPx } = view
-    return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
-  }
-  function cheight(chunk: LayoutRecord) {
-    return chunk[BOTTOM] - chunk[TOP]
-  }
   const VariantInfo = observer(
     ({
       model,
@@ -54,8 +44,8 @@ export default (pluginManager: any) => {
           <svg
             data-testid={
               alignmentChunks.length
-                ? `${trackConfigId}-vcfbreakends-loaded`
-                : `${trackConfigId}-vcfbreakends`
+                ? `${trackConfigId}-vcftranslocations-loaded`
+                : `${trackConfigId}-vcftranslocations`
             }
             style={{
               width: '100%',
@@ -81,47 +71,16 @@ export default (pluginManager: any) => {
 
                 const r = views[level2].bpToPx({ refName: chr2, coord: end2 })
                 if (r) {
-                  console.log(
-                    chr2,
-                    end2,
-                    r,
-                    r.offsetPx - views[level2].offsetPx,
-                  )
                   const left = r.offsetPx - views[1].offsetPx
                   const c2: LayoutRecord = [left, 0, left + 1, 0]
 
-                  const x1 = calc(views[level1], c1[LEFT])
-                  const x2 = calc(
-                    views[level2],
-                    r.offsetPx - views[level2].offsetPx,
-                  )
+                  const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
+                  const x2 = left
 
                   const tracks = views.map(v => v.getTrack(trackConfigId))
-                  const added = (level: number) => {
-                    const heightUpUntilThisPoint = views
-                      .slice(0, level)
-                      .map(v => v.height + 7)
-                      .reduce((a, b) => a + b, 0)
-                    return (
-                      heightUpUntilThisPoint +
-                      views[level].headerHeight +
-                      views[level].scaleBarHeight +
-                      views[level].getTrackPos(trackConfigId) +
-                      model.headerHeight +
-                      3
-                    )
-                  }
+                  const y1 = yPos(trackConfigId, level1, views, tracks, c1)
+                  const y2 = yPos(trackConfigId, level2, views, tracks, c2)
 
-                  // calculate the yPos, but clamp to the visible scroll region of the track
-                  const yPos = (level: number, c: LayoutRecord) =>
-                    clamp(
-                      c[TOP] - tracks[level].scrollTop + cheight(c1),
-                      0,
-                      tracks[level].height,
-                    ) + added(level)
-
-                  const y1 = yPos(level1, c1)
-                  const y2 = yPos(level2, c2)
                   const path = Path()
                     .moveTo(
                       x1 -
