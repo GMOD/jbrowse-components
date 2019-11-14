@@ -8,7 +8,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
     class="makeStyles-linearGenomeView"
   >
     <div
-      style="height: 50px;"
+      style="height: 40px;"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
@@ -21,7 +21,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             close
           </span>
@@ -32,7 +32,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       </button>
     </div>
     <div
-      class="MuiContainer-root MuiContainer-maxWidthLg"
+      class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
     >
       <div
         class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-flex-start"
@@ -660,7 +660,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
     class="makeStyles-linearGenomeView"
   >
     <div
-      style="height: 50px;"
+      style="height: 40px;"
     >
       <button
         class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
@@ -673,7 +673,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
           >
             close
           </span>
@@ -684,7 +684,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       </button>
     </div>
     <div
-      class="MuiContainer-root MuiContainer-maxWidthLg"
+      class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
     >
       <div
         class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-flex-start"
