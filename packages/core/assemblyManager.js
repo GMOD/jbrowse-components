@@ -1,10 +1,11 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { observable } from 'mobx'
 import { getParent } from 'mobx-state-tree'
+import { readConfObject } from './configuration'
 
 export default self => ({
   views: {
     get assemblyData() {
-      const assemblyData = new Map()
+      const assemblyData = observable.map({})
       for (const datasetConfig of self.datasets) {
         const assemblyConfig = datasetConfig.assembly
         const assemblyName = readConfObject(assemblyConfig, 'name')
@@ -101,7 +102,7 @@ export default self => ({
     async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
       const adapterConfigId = readConfObject(adapterConf, 'configId')
-      const refNameMap = new Map()
+      const refNameMap = observable.map({})
 
       const refNames = await self.rpcManager.call(
         readConfObject(adapterConf, 'configId'),

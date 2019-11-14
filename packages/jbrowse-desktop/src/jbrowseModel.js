@@ -7,7 +7,7 @@ import {
   types,
   getParent,
 } from 'mobx-state-tree'
-import assemblyManager from './assemblyManager'
+import assemblyManager from '@gmod/jbrowse-core/assemblyManager'
 import AssemblyConfigSchemasFactory from './assemblyConfigSchemas'
 import corePlugins from './corePlugins'
 import sessionModelFactory from './sessionModelFactory'
