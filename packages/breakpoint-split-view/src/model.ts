@@ -109,7 +109,9 @@ export default function stateModelFactory(pluginManager: any) {
       // if relevant too
       getMatchedVariantFeatures(features: CompositeMap<string, Feature>) {
         const candidates: Record<string, Feature[]> = {}
+        const feats: Feature[][] = []
         const alreadySeen = new Set<string>()
+        let tra = false
 
         for (const f of features.values()) {
           if (!alreadySeen.has(f.id())) {
@@ -125,14 +127,19 @@ export default function stateModelFactory(pluginManager: any) {
                   }
                 }
               })
+            } else if (f.get('ALT')[0] === '<TRA>') {
+              tra = true // assume we aren't mixing BND and TRA...
+              feats.push([f])
             }
           }
           alreadySeen.add(f.id())
         }
 
         return {
-          features: Object.values(candidates).filter(v => v.length > 1),
-          type: 'Breakends',
+          features: tra
+            ? feats
+            : Object.values(candidates).filter(v => v.length > 1),
+          type: tra ? 'Translocations' : 'Breakends',
         }
       },
 
@@ -167,7 +174,10 @@ export default function stateModelFactory(pluginManager: any) {
           ret = this.getMatchedAlignmentsInLayout(trackConfigId, features)
         } else if (type === 'Breakends') {
           ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
+        } else if (type === 'Translocations') {
+          ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
         }
+
         return { type, features: ret }
       },
 

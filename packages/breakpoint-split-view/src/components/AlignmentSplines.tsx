@@ -1,9 +1,10 @@
 import Path from 'svg-path-generator'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { clamp, bpToPx } from '@gmod/jbrowse-core/util'
 import { BreakpointViewStateModel, LayoutRecord } from '../model'
+import { yPos, getPxFromCoordinate } from '../util'
+
+const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 interface Chunk {
   feature: Feature
@@ -17,19 +18,6 @@ export default (pluginManager: any) => {
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
 
-  const [LEFT, TOP, RIGHT, BOTTOM] = [0, 1, 2, 3]
-
-  function calc(
-    view: Instance<typeof LinearGenomeViewStateModel>,
-    coord: number,
-  ) {
-    const region = { start: 0, end: view.totalBp }
-    const { bpPerPx, horizontallyFlipped, offsetPx } = view
-    return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
-  }
-  function cheight(chunk: LayoutRecord) {
-    return chunk[BOTTOM] - chunk[TOP]
-  }
   const AlignmentInfo = observer(
     ({
       model,
@@ -81,40 +69,19 @@ export default (pluginManager: any) => {
                   const flipMultipliers = views.map(v =>
                     v.horizontallyFlipped ? -1 : 1,
                   )
-                  const x1 = calc(
+                  const x1 = getPxFromCoordinate(
                     views[level1],
                     c1[f1.get('strand') === -1 ? LEFT : RIGHT],
                   )
-                  const x2 = calc(
+                  const x2 = getPxFromCoordinate(
                     views[level2],
                     c2[f2.get('strand') === -1 ? RIGHT : LEFT],
                   )
 
                   const tracks = views.map(v => v.getTrack(trackConfigId))
-                  const added = (level: number) => {
-                    const heightUpUntilThisPoint = views
-                      .slice(0, level)
-                      .map(v => v.height + 7)
-                      .reduce((a, b) => a + b, 0)
-                    return (
-                      heightUpUntilThisPoint +
-                      views[level].headerHeight +
-                      views[level].scaleBarHeight +
-                      views[level].getTrackPos(trackConfigId) +
-                      1
-                    )
-                  }
 
-                  // calculate the yPos, but clamp to the visible scroll region of the track
-                  const yPos = (level: number, c: LayoutRecord) =>
-                    clamp(
-                      c[TOP] - tracks[level].scrollTop + cheight(c) / 2,
-                      0,
-                      tracks[level].height,
-                    ) + added(level)
-
-                  const y1 = yPos(level1, c1)
-                  const y2 = yPos(level2, c2)
+                  const y1 = yPos(trackConfigId, level1, views, tracks, c1)
+                  const y2 = yPos(trackConfigId, level2, views, tracks, c2)
 
                   // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
                   const path = Path()

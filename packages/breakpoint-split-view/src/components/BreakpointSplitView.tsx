@@ -13,6 +13,7 @@ export default (pluginManager: any) => {
 
   const AlignmentSplines = jbrequire(require('./AlignmentSplines'))
   const BreakendLines = jbrequire(require('./BreakendLines'))
+  const Translocations = jbrequire(require('./Translocations'))
   const Header = jbrequire(require('./Header'))
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -104,6 +105,19 @@ export default (pluginManager: any) => {
                 return (
                   <div className={classes.overlay} key={`overlay-${m}`}>
                     <BreakendLines
+                      trackConfigId={m}
+                      model={model}
+                      alignmentChunks={features}
+                      className={classes.root}
+                      data-testid={model.configuration.configId}
+                    />
+                  </div>
+                )
+              }
+              if (type === 'Translocations') {
+                return (
+                  <div className={classes.overlay} key={`overlay-${m}`}>
+                    <Translocations
                       trackConfigId={m}
                       model={model}
                       alignmentChunks={features}

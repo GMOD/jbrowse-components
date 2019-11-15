@@ -4,8 +4,6 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { BreakpointViewStateModel, LayoutRecord } from '../model'
 import { yPos, getPxFromCoordinate } from '../util'
 
-const [LEFT] = [0, 1, 2, 3]
-
 interface Chunk {
   feature: Feature
   layout: LayoutRecord
@@ -17,23 +15,18 @@ interface Breakend {
   Replacement: string
   MatePosition: string
 }
-function findMatchingAlt(feat1: Feature, feat2: Feature) {
-  const candidates: Record<string, Breakend> = {}
-  feat1.get('ALT').forEach((alt: Breakend) => {
-    candidates[alt.MatePosition] = alt
-  })
-  return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
-}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
+  const [LEFT] = [0, 1, 2, 3]
+
   const VariantInfo = observer(
     ({
       model,
-      alignmentChunks,
+      alignmentChunks = [],
       height,
       trackConfigId,
     }: {
@@ -49,8 +42,8 @@ export default (pluginManager: any) => {
           <svg
             data-testid={
               alignmentChunks.length
-                ? `${trackConfigId}-vcfbreakends-loaded`
-                : `${trackConfigId}-vcfbreakends`
+                ? `${trackConfigId}-vcftranslocations-loaded`
+                : `${trackConfigId}-vcftranslocations`
             }
             style={{
               width: '100%',
@@ -59,33 +52,38 @@ export default (pluginManager: any) => {
             }}
           >
             {alignmentChunks.map(chunk => {
-              const ret = []
               // we follow a path in the list of chunks, not from top to bottom, just in series
               // following x1,y1 -> x2,y2
-              for (let i = 0; i < chunk.length - 1; i += 1) {
+              const ret = []
+              for (let i = 0; i < chunk.length; i += 1) {
                 const { layout: c1, feature: f1, level: level1 } = chunk[i]
-                const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+                const level2 = level1 === 0 ? 1 : 0
+
                 const flipMultipliers = views.map(v =>
                   v.horizontallyFlipped ? -1 : 1,
                 )
-                const relevantAlt = findMatchingAlt(f1, f2)
+                const info = f1.get('INFO')
+                const chr2 = info.CHR2[0]
+                const end2 = info.END[0]
+                const [myDirection, mateDirection] = info.STRANDS[0].split('')
 
-                const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
-                const x2 = getPxFromCoordinate(views[level2], c2[LEFT])
+                const r = views[level2].bpToPx({ refName: chr2, coord: end2 })
+                if (r) {
+                  const left = r.offsetPx - views[1].offsetPx
+                  const c2: LayoutRecord = [left, 0, left + 1, 0]
 
-                const tracks = views.map(v => v.getTrack(trackConfigId))
-                const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-                const y2 = yPos(trackConfigId, level2, views, tracks, c2)
-                if (!relevantAlt) {
-                  console.warn(
-                    'the relevant ALT allele was not found, cannot render',
-                  )
-                } else {
+                  const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
+                  const x2 = left
+
+                  const tracks = views.map(v => v.getTrack(trackConfigId))
+                  const y1 = yPos(trackConfigId, level1, views, tracks, c1)
+                  const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+
                   const path = Path()
                     .moveTo(
                       x1 -
                         20 *
-                          (relevantAlt.Join === 'left' ? -1 : 1) *
+                          (myDirection === '+' ? -1 : 1) *
                           flipMultipliers[level1],
                       y1,
                     )
@@ -94,7 +92,7 @@ export default (pluginManager: any) => {
                     .lineTo(
                       x2 -
                         20 *
-                          (relevantAlt.MateDirection === 'left' ? 1 : -1) *
+                          (mateDirection === '+' ? 1 : -1) *
                           flipMultipliers[level2],
                       y2,
                     )
