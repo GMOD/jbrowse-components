@@ -83,7 +83,7 @@ export default (pluginManager: any) => {
                     .moveTo(
                       x1 -
                         20 *
-                          (myDirection === '+' ? -1 : 1) *
+                          (myDirection === '+' ? 1 : -1) *
                           flipMultipliers[level1],
                       y1,
                     )
