@@ -232,18 +232,9 @@ export default class implements Feature {
   }
 
   _get_clippos() {
-    const mismatches = this.get('mismatches')
-    if (mismatches.length) {
-      const record =
-        this.get('strand') === -1
-          ? mismatches[mismatches.length - 1]
-          : mismatches[0]
-      const { type, cliplen } = record
-      if (type === 'softclip' || type === 'hardclip') {
-        return cliplen
-      }
-    }
-    return 0
+    return this.get('strand') === -1
+      ? +(this.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
+      : +(this.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0
   }
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {
