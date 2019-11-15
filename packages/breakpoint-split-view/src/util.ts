@@ -49,7 +49,7 @@ export function yPos(
   const min = 0
   const max = tracks[level].height
   return (
-    clamp(c[TOP] - tracks[level].scrollTop + cheight(c), min, max) +
+    clamp(c[TOP] - tracks[level].scrollTop + cheight(c) / 2, min, max) +
     heightFromSpecificLevel(views, trackConfigId, level)
   )
 }
