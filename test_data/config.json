@@ -108,7 +108,10 @@
             ]
           },
           "renderer": {
-            "type": "SvgFeatureRenderer"
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
           }
         },
         {
