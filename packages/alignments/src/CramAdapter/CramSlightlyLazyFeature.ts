@@ -177,7 +177,13 @@ export default class CramSlightlyLazyFeature implements Feature {
       CramSlightlyLazyFeature.prototype,
     )
     return properties
-      .filter(prop => /^_get_/.test(prop))
+      .filter(
+        prop =>
+          /^_get_/.test(prop) &&
+          prop !== '_get_mismatches' &&
+          prop !== '_get_skips_and_dels' &&
+          prop !== '_get_cram_read_features',
+      )
       .map(methodName => methodName.replace('_get_', ''))
   }
 
@@ -240,9 +246,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     plain.type = this.get('type')
     plain.uniqueId = this.id()
     plain.clipPos = this._get_clipPos()
-    const { cram_read_features, mismatches, ...rest } = plain
 
-    return rest
+    return plain
   }
 
   _get_mismatches(): Mismatch[] {
