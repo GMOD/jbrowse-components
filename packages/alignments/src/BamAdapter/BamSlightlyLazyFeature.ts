@@ -196,8 +196,31 @@ export default class implements Feature {
     return plain
   }
 
+  _get_skips_and_dels(
+    opts: {
+      cigarAttributeName: string
+    } = {
+      cigarAttributeName: 'cigar',
+    },
+  ): Mismatch[] {
+    const { cigarAttributeName } = opts
+    let mismatches: Mismatch[] = []
+    let cigarOps: CigarOp[] = []
+
+    // parse the CIGAR tag if it has one
+    const cigarString = this.get(cigarAttributeName)
+    if (cigarString) {
+      cigarOps = this.parseCigar(cigarString)
+      mismatches = mismatches.concat(this.cigarToMismatches(cigarOps))
+    }
+    return mismatches
+  }
+
   _get_mismatches(
-    opts: { cigarAttributeName: string; mdAttributeName: string } = {
+    opts: {
+      cigarAttributeName: string
+      mdAttributeName: string
+    } = {
       cigarAttributeName: 'cigar',
       mdAttributeName: 'md',
     },

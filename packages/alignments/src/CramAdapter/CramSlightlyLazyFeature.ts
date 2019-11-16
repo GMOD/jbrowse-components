@@ -343,4 +343,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     )
     return mismatches
   }
+
+  _get_skips_and_dels(): Mismatch[] {
+    return this._get_mismatches()
+  }
 }

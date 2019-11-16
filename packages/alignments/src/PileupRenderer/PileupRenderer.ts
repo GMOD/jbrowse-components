@@ -140,7 +140,8 @@ export default class extends BoxRendererType {
       const { feature, startPx, endPx, topPx, heightPx } = feat
       ctx.fillStyle = readConfObject(config, 'alignmentColor', [feature])
       ctx.fillRect(startPx, topPx, endPx - startPx, heightPx)
-      const mismatches: Mismatch[] = feature.get('mismatches')
+      const mismatches: Mismatch[] =
+        bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {
           A: '#00bf00',
