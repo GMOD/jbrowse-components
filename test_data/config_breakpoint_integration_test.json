@@ -50,7 +50,7 @@
                 {
                   "type": "AlignmentsTrack",
                   "height": 100,
-                  "configuration": "pacbio_hg002",
+                  "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
                 },
                 {
@@ -92,7 +92,7 @@
                 {
                   "type": "AlignmentsTrack",
                   "height": 100,
-                  "configuration": "pacbio_hg002",
+                  "configuration": "pacbio_hg002_breakpoints",
                   "selectedRendering": ""
                 },
                 {
@@ -246,7 +246,7 @@
           }
         },
         {
-          "configId": "pacbio_hg002",
+          "configId": "pacbio_hg002_breakpoints",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.11kb",
           "category": [

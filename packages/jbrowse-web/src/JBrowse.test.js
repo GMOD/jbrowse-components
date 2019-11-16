@@ -413,17 +413,16 @@ describe('breakpoint split view', () => {
     mockConsole()
     const state = rootModel.create({ jbrowse: breakpointConfig })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    // wait for the UI to be loaded
     await waitForElement(() => getByText('Help'))
 
     expect(
       await waitForElement(() =>
-        getByTestId('pacbio_hg002-breakpoints-loaded'),
+        getByTestId('pacbio_hg002_breakpoints-loaded'),
       ),
     ).toMatchSnapshot()
 
     expect(
-      await waitForElement(() => getByTestId('pacbio_vcf-vcfbreakends-loaded')),
+      await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
     ).toMatchSnapshot()
   })
 })

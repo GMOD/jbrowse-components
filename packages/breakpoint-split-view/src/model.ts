@@ -6,19 +6,11 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
 
-interface Breakend {
+export interface Breakend {
   MateDirection: string
   Join: string
   Replacement: string
   MatePosition: string
-}
-
-export interface BSVMenuOption {
-  title: string
-  key: string
-  callback: Function
-  checked?: boolean
-  isCheckbox: boolean
 }
 
 export type LayoutRecord = [number, number, number, number]
@@ -84,34 +76,44 @@ export default function stateModelFactory(pluginManager: any) {
           .filter(f => !!f)
       },
 
-      // returns a list of features that "match" across views,
-      // applies to a specific trackId
-      getMatchedFeatures(trackConfigId: string) {
-        // TODO: extend to handle different trackIds e.g.
-        // in a synteny scenario with different tracks
+      hasTranslocations(trackConfigId: string) {
+        return this.getTrackFeatures(trackConfigId).find(
+          f => f.get('type') === 'translocation',
+        )
+      },
+
+      getTrackFeatures(trackConfigId: string) {
         const tracks = this.getMatchedTracks(trackConfigId)
         if (tracks.length) {
-          const features = new CompositeMap<string, Feature>(
-            tracks.map(t => t.features),
-          )
-          if (tracks[0].type === 'AlignmentsTrack')
-            return this.getMatchedAlignmentFeatures(features)
-          if (tracks[0].type === 'VariantTrack') {
-            return this.getMatchedVariantFeatures(features)
+          return new CompositeMap<string, Feature>(tracks.map(t => t.features))
+        }
+        return new CompositeMap<string, Feature>([])
+      },
+
+      getMatchedTranslocationFeatures(trackId: string) {
+        const features = this.getTrackFeatures(trackId)
+        const feats: Feature[][] = []
+        const alreadySeen = new Set<string>()
+
+        for (const f of features.values()) {
+          if (!alreadySeen.has(f.id())) {
+            if (f.get('ALT')[0] === '<TRA>') {
+              feats.push([f])
+            }
           }
+          alreadySeen.add(f.id())
         }
 
-        return { features: [], type: 'None' }
+        return feats
       },
 
       // this finds candidate variant features to plot,
       // currently only breakends (could do intrachromosomal deletions, insertions, other SV
       // if relevant too
-      getMatchedVariantFeatures(features: CompositeMap<string, Feature>) {
+      getMatchedBreakendFeatures(trackId: string) {
+        const features = this.getTrackFeatures(trackId)
         const candidates: Record<string, Feature[]> = {}
-        const feats: Feature[][] = []
         const alreadySeen = new Set<string>()
-        let tra = false
 
         for (const f of features.values()) {
           if (!alreadySeen.has(f.id())) {
@@ -127,25 +129,18 @@ export default function stateModelFactory(pluginManager: any) {
                   }
                 }
               })
-            } else if (f.get('ALT')[0] === '<TRA>') {
-              tra = true // assume we aren't mixing BND and TRA...
-              feats.push([f])
             }
           }
           alreadySeen.add(f.id())
         }
 
-        return {
-          features: tra
-            ? feats
-            : Object.values(candidates).filter(v => v.length > 1),
-          type: tra ? 'Translocations' : 'Breakends',
-        }
+        return Object.values(candidates).filter(v => v.length > 1)
       },
 
       // this finds candidate alignment features, aimed at plotting split reads
       // from BAM/CRAM files
-      getMatchedAlignmentFeatures(features: CompositeMap<string, Feature>) {
+      getMatchedAlignmentFeatures(trackId: string) {
+        const features = this.getTrackFeatures(trackId)
         const candidates: Record<string, Feature[]> = {}
         const alreadySeen = new Set<string>()
 
@@ -161,33 +156,13 @@ export default function stateModelFactory(pluginManager: any) {
           alreadySeen.add(feature.id())
         }
 
-        return {
-          features: Object.values(candidates).filter(v => v.length > 1),
-          type: 'Alignments',
-        }
+        return Object.values(candidates).filter(v => v.length > 1)
       },
 
-      getMatchedFeaturesInLayout(trackConfigId: string) {
-        const { features, type } = this.getMatchedFeatures(trackConfigId)
-        let ret
-        if (type === 'Alignments') {
-          ret = this.getMatchedAlignmentsInLayout(trackConfigId, features)
-        } else if (type === 'Breakends') {
-          ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
-        } else if (type === 'Translocations') {
-          ret = this.getMatchedBreakendsInLayout(trackConfigId, features)
-        }
-
-        return { type, features: ret }
-      },
-
-      getMatchedBreakendsInLayout(
-        trackConfigId: string,
-        features: Feature[][],
-      ) {
+      getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         const tracks = this.getMatchedTracks(trackConfigId)
-        return features.map(c => {
-          return c.map((feature: Feature) => {
+        return features.map(c =>
+          c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
             const level = tracks.findIndex(track => {
               layout = track.layoutFeatures.get(feature.id())
@@ -198,32 +173,7 @@ export default function stateModelFactory(pluginManager: any) {
               layout,
               level,
             }
-          })
-        })
-      },
-
-      getMatchedAlignmentsInLayout(
-        trackConfigId: string,
-        features: Feature[][],
-      ) {
-        const tracks = this.getMatchedTracks(trackConfigId)
-        return features.map(c =>
-          c
-            .map((feature: Feature) => {
-              let layout: LayoutRecord | undefined
-              const level = tracks.findIndex(track => {
-                layout = track.layoutFeatures.get(feature.id())
-                return layout
-              })
-              const clipPos = feature.get('clipPos')
-              return {
-                feature,
-                layout,
-                level,
-                clipPos,
-              }
-            })
-            .sort((a, b) => a.clipPos - b.clipPos),
+          }),
         )
       },
     }))
@@ -304,29 +254,10 @@ export default function stateModelFactory(pluginManager: any) {
         self.linkViews = !self.linkViews
       },
     }))
-    .views(self => ({
-      get menuOptions(): BSVMenuOption[] {
-        return [
-          {
-            title: 'Link views',
-            key: 'flip',
-            callback: self.toggleLinkViews,
-            checked: self.linkViews,
-            isCheckbox: true,
-          },
-          {
-            title: 'Interact with overlap',
-            key: 'interact',
-            callback: self.toggleInteract,
-            checked: self.interactToggled,
-            isCheckbox: true,
-          },
-        ]
-      },
-    }))
 
   return { stateModel, configSchema }
 }
 
 export type BreakpointView = ReturnType<typeof stateModelFactory>
 export type BreakpointViewStateModel = BreakpointView['stateModel']
+export type BreakpointViewModel = Instance<BreakpointViewStateModel>

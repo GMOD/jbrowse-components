@@ -27,7 +27,6 @@ module.exports = {
     'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
     'no-restricted-syntax': 'off',
     'no-underscore-dangle': 'warn',
-    'no-unused-vars': 'warn',
     'no-use-before-define': 'off',
     'prettier/prettier': [
       'error',

@@ -36,11 +36,9 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       </p>
     </div>
     <button
-      aria-controls="long-menu"
-      aria-haspopup="true"
-      aria-label="more"
       class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
+      title="link_off"
       type="button"
     >
       <span
@@ -48,9 +46,29 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
         >
-          more_vert
+          link_off
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      class="MuiButtonBase-root MuiIconButton-root"
+      tabindex="0"
+      title="Toggle interacting with the overlay"
+      type="button"
+    >
+      <span
+        class="MuiIconButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+        >
+          location_disabled
         </span>
       </span>
       <span
@@ -291,6 +309,16 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           </div>
         </div>
       </div>
+    </div>
+    <div
+      class="makeStyles-overlay"
+    >
+      <div
+        style="width: 120px; flex-shrink: 0;"
+      />
+      <svg
+        style="width: 100%; z-index: 10; pointer-events: none;"
+      />
     </div>
   </div>
 </div>
