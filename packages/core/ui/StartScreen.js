@@ -27,6 +27,7 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
+import FactoryResetDialog from './FactoryResetDialog'
 
 const { electronBetterIpc = {} } = window
 const { ipcRenderer } = electronBetterIpc
@@ -103,14 +104,10 @@ export default function StartScreen({ root, bypass }) {
         newSessionName,
       )
       getSessions()
-    } else if (action === 'reset') {
-      await ipcRenderer.invoke('reset')
-      window.location.reload()
     }
     setNewSessionName('')
     setSessionNameToDelete()
     setSessionNameToRename()
-    setReset(false)
   }
 
   function handleSettingsClick(event) {
@@ -141,7 +138,15 @@ export default function StartScreen({ root, bypass }) {
       />
     )
 
-  let DialogComponent = <></>
+  let DialogComponent
+  if (reset)
+    DialogComponent = (
+      <FactoryResetDialog
+        onClose={() => {
+          setReset(false)
+        }}
+      />
+    )
   if (sessionNameToDelete)
     DialogComponent = (
       <>

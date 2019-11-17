@@ -1,9 +1,15 @@
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
+import Icon from '@material-ui/core/Icon'
+import IconButton from '@material-ui/core/IconButton'
 import Snackbar from '@material-ui/core/Snackbar'
 import React, { useState } from 'react'
 
-function SimpleDialog({
+import FactoryResetDialog from './FactoryResetDialog'
+
+const isElectron = !!window.electron
+
+function StackTraceDialog({
   onClose,
   open,
   error,
@@ -14,12 +20,8 @@ function SimpleDialog({
   error?: Error
   componentStack?: string
 }) {
-  const handleClose = () => {
-    onClose()
-  }
-
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog onClose={() => onClose()} open={open}>
       <pre>{error ? error.toString() : null}</pre>
       <pre>{componentStack}</pre>
     </Dialog>
@@ -35,6 +37,7 @@ export default function ErrorSnackbar({
 }) {
   const [open, setOpen] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [factoryResetDialogOpen, setFactoryResetDialogOpen] = useState(false)
 
   return (
     <Snackbar
@@ -53,20 +56,36 @@ export default function ErrorSnackbar({
             >
               Stacktrace
             </Button>
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={() => setOpen(false)}
-            >
-              Close
-            </Button>
-            <SimpleDialog
+            {isElectron ? (
+              <Button
+                variant="contained"
+                onClick={() => setFactoryResetDialogOpen(true)}
+              >
+                <Icon color="secondary" fontSize="small">
+                  warning
+                </Icon>
+                Factory reset
+              </Button>
+            ) : null}
+            <FactoryResetDialog
+              onClose={() => setFactoryResetDialogOpen(false)}
+              open={factoryResetDialogOpen}
+            />
+            <StackTraceDialog
               componentStack={componentStack}
               error={error}
               open={dialogOpen}
               onClose={() => setDialogOpen(false)}
             />
           </div>
+          <IconButton
+            key="close"
+            aria-label="close"
+            color="inherit"
+            onClick={() => setOpen(false)}
+          >
+            <Icon>close</Icon>
+          </IconButton>
         </span>
       }
     />

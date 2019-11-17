@@ -100,9 +100,6 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const InteractWithSquiggles = observer(
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
-      const title = model.interactToggled
-        ? 'location_searching'
-        : 'location_disabled'
       return (
         <IconButton
           onClick={model.toggleInteract}
@@ -110,7 +107,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           title="Toggle interacting with the overlay"
         >
           <Icon color="secondary" fontSize="small">
-            {title}
+            {model.interactToggled ? 'location_searching' : 'location_disabled'}
           </Icon>
         </IconButton>
       )
