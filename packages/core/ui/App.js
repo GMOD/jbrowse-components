@@ -3,16 +3,20 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import Slide from '@material-ui/core/Slide'
-import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/core/styles'
+
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
+import ErrorBoundary from 'react-error-boundary'
+
 import { inDevelopment } from '../util'
 import DevTools from './DevTools'
 import Drawer from './Drawer'
+import ErrorSnackbar from './ErrorSnackbar'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -111,7 +115,6 @@ const DrawerWidget = observer(props => {
 DrawerWidget.propTypes = {
   session: PropTypes.observableObject.isRequired,
 }
-
 function App({ contentRect, measureRef, session }) {
   const classes = useStyles()
   const { pluginManager } = session
@@ -123,45 +126,48 @@ function App({ contentRect, measureRef, session }) {
   }, [session, contentRect])
 
   const { visibleDrawerWidget } = session
+
   return (
     <div ref={measureRef} className={classes.root}>
-      <div className={classes.menuBarsAndComponents}>
-        <div className={classes.menuBars}>
-          {session.menuBars.map(menuBar => {
-            const {
-              LazyReactComponent: MenuBarLazyReactComponent,
-            } = pluginManager.getMenuBarType(menuBar.type)
-            return (
-              <React.Suspense
-                key={`view-${menuBar.id}`}
-                fallback={<div>Loading...</div>}
-              >
-                <MenuBarLazyReactComponent
+      <ErrorBoundary FallbackComponent={ErrorSnackbar}>
+        <div className={classes.menuBarsAndComponents}>
+          <div className={classes.menuBars}>
+            {session.menuBars.map(menuBar => {
+              const {
+                LazyReactComponent: MenuBarLazyReactComponent,
+              } = pluginManager.getMenuBarType(menuBar.type)
+              return (
+                <React.Suspense
                   key={`view-${menuBar.id}`}
-                  model={menuBar}
+                  fallback={<div>Loading...</div>}
+                >
+                  <MenuBarLazyReactComponent
+                    key={`view-${menuBar.id}`}
+                    model={menuBar}
+                    session={session}
+                  />
+                </React.Suspense>
+              )
+            })}
+          </div>
+          <div className={classes.components}>
+            {session.views.map(view => {
+              const { ReactComponent } = pluginManager.getViewType(view.type)
+              return (
+                <ReactComponent
+                  key={`view-${view.id}`}
+                  model={view}
                   session={session}
+                  getTrackType={pluginManager.getTrackType}
                 />
-              </React.Suspense>
-            )
-          })}
+              )
+            })}
+            {inDevelopment ? <DevTools session={session} /> : null}
+          </div>
         </div>
-        <div className={classes.components}>
-          {session.views.map(view => {
-            const { ReactComponent } = pluginManager.getViewType(view.type)
-            return (
-              <ReactComponent
-                key={`view-${view.id}`}
-                model={view}
-                session={session}
-                getTrackType={pluginManager.getTrackType}
-              />
-            )
-          })}
-          {inDevelopment ? <DevTools session={session} /> : null}
-        </div>
-      </div>
 
-      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
+        {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
+      </ErrorBoundary>
     </div>
   )
 }

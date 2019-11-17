@@ -6,7 +6,9 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
+import ErrorBoundary from 'react-error-boundary'
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import rootModel from './rootModel'
 import 'typeface-roboto'
 
@@ -14,9 +16,8 @@ const { electron = {} } = window
 const { desktopCapturer, ipcRenderer } = electron
 
 const debounceMs = 1000
-export default observer(() => {
-  const [status, setStatus] = useState('loading')
-  const [message, setMessage] = useState('')
+const JBrowse = observer(() => {
+  const [loaded, setLoaded] = useState(false)
   const [root, setRoot] = useState({})
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
@@ -38,14 +39,14 @@ export default observer(() => {
             },
           },
         })
-        const r = rootModel.create({ jbrowse: config })
 
-        setRoot(r)
-        setStatus('loaded')
-      } catch (error) {
-        setStatus('error')
-        setMessage(String(error))
-        console.error(error)
+        setRoot(rootModel.create({ jbrowse: config }))
+        setLoaded(true)
+      } catch (e) {
+        setLoaded(() => {
+          // throw to error component
+          throw e
+        })
       }
     }
 
@@ -85,15 +86,12 @@ export default observer(() => {
         ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
       }
     })()
-    return () => {}
   }, [debouncedSessionSnapshot])
 
   useEffect(() => {
     if (debouncedConfigSnapshot) {
       ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
-
-    return () => {}
   }, [debouncedConfigSnapshot])
 
   useEffect(() => {
@@ -103,7 +101,14 @@ export default observer(() => {
     }
   }, [root, root.session])
 
-  let DisplayComponent = (
+  if (loaded) {
+    return session ? (
+      <App session={session} />
+    ) : (
+      <StartScreen root={root} bypass={firstLoad} />
+    )
+  }
+  return (
     <CircularProgress
       style={{
         position: 'fixed',
@@ -115,16 +120,33 @@ export default observer(() => {
       size={50}
     />
   )
-  if (status === 'error') DisplayComponent = <div>{message}</div>
-  if (status === 'loaded') {
-    if (session) DisplayComponent = <App session={session} />
-    else DisplayComponent = <StartScreen root={root} bypass={firstLoad} />
-  }
+})
 
+const FatalError = ({ componentStack, error }) => (
+  <div style={{ backgroundColor: '#b99' }}>
+    <p>
+      <strong>Fatal error</strong>
+    </p>
+    <p>
+      <strong>Error:</strong> {error.toString()}
+    </p>
+    <strong>Stacktrace:</strong>
+    <pre> {componentStack}</pre>
+  </div>
+)
+
+FatalError.propTypes = {
+  componentStack: PropTypes.string.isRequired,
+  error: PropTypes.shape({}).isRequired,
+}
+
+export default () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {DisplayComponent}
+      <ErrorBoundary FallbackComponent={FatalError}>
+        <JBrowse />
+      </ErrorBoundary>
     </ThemeProvider>
   )
-})
+}
