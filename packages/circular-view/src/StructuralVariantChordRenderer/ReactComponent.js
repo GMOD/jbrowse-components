@@ -4,15 +4,6 @@ export default ({ jbrequire }) => {
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const useStyles = makeStyles({
-    mouseoverCrosshair: {
-      '& path': {
-        fill: 'none',
-        cursor: 'crosshair',
-      },
-    },
-  })
 
   const { PropTypes: CommonPropTypes } = jbrequire(
     '@gmod/jbrowse-core/mst-types',
@@ -120,7 +111,6 @@ export default ({ jbrequire }) => {
 
       onChordClick,
     } = props
-    const classes = useStyles()
     // make a map of refName -> blockDefinition
     const blocksForRefsMemo = useMemo(() => {
       const blocksForRefs = {}
@@ -152,7 +142,22 @@ export default ({ jbrequire }) => {
         />,
       )
     }
-    return <g className={classes.crosshairMouseover}>{chords}</g>
+    const trackStyleId = `chords-${trackModel.id}`
+    return (
+      <g id={trackStyleId}>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          #${trackStyleId} > path {
+            cursor: crosshair;
+            fill: none;
+          }
+`,
+          }}
+        />
+        {chords}
+      </g>
+    )
   }
 
   StructuralVariantChords.propTypes = {
