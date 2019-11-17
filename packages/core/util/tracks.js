@@ -245,6 +245,7 @@ export function guessTrackType(adapterType) {
   return (
     {
       BamAdapter: 'AlignmentsTrack',
+      CramAdapter: 'AlignmentsTrack',
       BgzipFastaAdapter: 'SequenceTrack',
       BigWigAdapter: 'WiggleTrack',
       IndexedFastaAdapter: 'SequenceTrack',

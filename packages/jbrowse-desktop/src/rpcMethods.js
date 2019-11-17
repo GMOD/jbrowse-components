@@ -202,6 +202,8 @@ async function render(
     adapterConfig,
     rendererType,
     renderProps,
+    sequenceAdapterType,
+    sequenceAdapterConfig,
     signal,
   },
 ) {
@@ -217,6 +219,8 @@ async function render(
     sessionId,
     adapterType,
     adapterConfig,
+    sequenceAdapterType,
+    sequenceAdapterConfig,
   )
 
   const RendererType = pluginManager.getRendererType(rendererType)
