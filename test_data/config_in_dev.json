@@ -826,7 +826,60 @@
           }
         },
         {
-          "configId": "OOv_Iwf5no",
+          "configId": "volvox-long-reads-sv-bam",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads with SV",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-long-reads-sv.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-long-reads-sv.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox-long-reads-sv-cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads with SV (cram)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-long-reads-sv.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox-long-reads-cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-long reads (cram)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-long-reads.fastq.sorted.cram"
+            },
+            "craiLocation": {
+              "uri": "test_data/volvox-long-reads.fastq.sorted.cram.crai"
+            }
+          }
+        },
+        {
+          "configId": "volvox-long-reads-bam",
           "type": "AlignmentsTrack",
           "name": "volvox-long reads",
           "category": [
@@ -844,19 +897,22 @@
                 "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "configId": "cfV-sEuwTS",
-            "PileupRenderer": {
-              "configId": "Syc-_K0qM5",
-              "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "volvox_samspec_cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-samspec (cram)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-samspec.cram"
             },
-            "SvgFeatureRenderer": {
-              "configId": "Ain_GttdTR",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "JbwBsHdbnP"
-              }
+            "craiLocation": {
+              "uri": "test_data/volvox-samspec.cram.crai"
             }
           }
         },
@@ -879,19 +935,22 @@
                 "uri": "test_data/volvox-samspec.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "configId": "2Il3gFxzof",
-            "PileupRenderer": {
-              "configId": "PetWNu7Y57",
-              "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "volvox_sv_cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sv (cram)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sv.cram"
             },
-            "SvgFeatureRenderer": {
-              "configId": "croGEp6g25",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "D2ZxxTyfYa"
-              }
+            "craiLocation": {
+              "uri": "test_data/volvox-sv.cram.crai"
             }
           }
         },
@@ -903,30 +962,31 @@
             "Alignments"
           ],
           "adapter": {
-            "configId": "l3uGL_uWAg",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-sv.bam"
             },
             "index": {
-              "configId": "vEh5DFl9jN",
               "location": {
                 "uri": "test_data/volvox-sv.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "configId": "Aidrc-V_53",
-            "PileupRenderer": {
-              "configId": "ut3yE_Yyk0",
-              "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "volvox_cram",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (CRAM)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "type": "CramAdapter",
+            "cramLocation": {
+              "uri": "test_data/volvox-sorted.cram"
             },
-            "SvgFeatureRenderer": {
-              "configId": "5vKaB0aVjb",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "xd603hF5yI"
-              }
+            "craiLocation": {
+              "uri": "test_data/volvox-sorted.cram.crai"
             }
           }
         },
@@ -949,20 +1009,6 @@
                 "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
-          },
-          "renderers": {
-            "configId": "NGINUnvvMqj",
-            "PileupRenderer": {
-              "configId": "oO78CJInOtk",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "1am8PdZjPfJ",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "cH9mZmuv1Fq"
-              }
-            }
           }
         },
         {
@@ -982,20 +1028,6 @@
               "configId": "5c3arnyCBht",
               "location": {
                 "uri": "test_data/volvox.filtered.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderers": {
-            "configId": "HtjPFEcXEfe",
-            "PileupRenderer": {
-              "configId": "7T0cius845q",
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "configId": "Kl-C1CPbPUE",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "egu03dn9JAj"
               }
             }
           }
