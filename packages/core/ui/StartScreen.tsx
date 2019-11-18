@@ -193,9 +193,7 @@ export default function StartScreen({
           : sessionNameToLoad
       if (load) {
         root.activateSession(
-          JSON.parse(
-            await ipcRenderer.invoke('loadSession', sessionNameToLoad),
-          ),
+          JSON.parse(await ipcRenderer.invoke('loadSession', load)),
         )
       }
     })()
