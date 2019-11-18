@@ -1,5 +1,4 @@
 import { makeStyles } from '@material-ui/core/styles'
-import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 import { observer, PropTypes } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -13,7 +12,7 @@ import DrawerWidget from './DrawerWidget'
 import DevTools from './DevTools'
 import ErrorSnackbar from './ErrorSnackbar'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   '@global': {
     html: {
       'font-family': 'Roboto',
