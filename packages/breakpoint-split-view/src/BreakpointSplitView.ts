@@ -1,7 +1,7 @@
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
 export default ({ jbrequire }: { jbrequire: Function }) => {
+  const { getRoot } = jbrequire('mobx-state-tree')
   const ViewType = jbrequire(
     '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
   )
@@ -10,67 +10,100 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
   const { stateModel, configSchema } = jbrequire(require('./model'))
 
   class BreakpointSplitViewType extends ViewType {
-    snapshotFromBreakendFeature(
+    async snapshotFromBreakendFeature(
       feature: Feature,
-      startRegion: IRegion,
-      endRegion: IRegion,
+      view: {
+        displayRegionsFromAssemblyName?: string
+        displayedRegions: [{ start: number; end: number; refName: string }]
+      },
     ) {
       const breakendSpecification = (feature.get('ALT') || [])[0]
       const startPos = feature.get('start')
       let endPos
       const bpPerPx = 10
-      const topRegions = [{ ...startRegion }, { ...startRegion }]
-      const bottomRegions = [{ ...endRegion }, { ...endRegion }]
+      const asm = view.displayRegionsFromAssemblyName
+
+      const getCanonicalRefName = (ref: string) => {
+        if (asm) {
+          const session = getRoot(view).jbrowse
+          return session.getCanonicalRefName(ref, asm)
+        }
+        return ref
+      }
+      const featureRefName = await getCanonicalRefName(feature.get('refName'))
+
+      const topRegion = view.displayedRegions.find(
+        (f: { refName: string }) => f.refName === String(featureRefName),
+      )
+
+      let mateRefName: string | undefined
+
       if (breakendSpecification) {
         // a VCF breakend feature
         if (breakendSpecification === '<TRA>') {
           const INFO = feature.get('INFO') || []
           endPos = INFO.END[0] - 1
+          mateRefName = await getCanonicalRefName(INFO.CHR2[0])
         } else {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
+          mateRefName = await getCanonicalRefName(matePosition[0])
         }
-        if (breakendSpecification.Join === 'left') {
-          topRegions[0].end = startPos - 1
-          topRegions[1].start = startPos - 1
-        } else {
-          topRegions[0].end = startPos
-          topRegions[1].start = startPos
-        }
-        if (breakendSpecification.MateDirection === 'left') {
-          bottomRegions[0].end = endPos - 1
-          bottomRegions[1].start = endPos - 1
-        } else {
-          bottomRegions[0].end = endPos
-          bottomRegions[1].start = endPos
-        }
+
+        // if (breakendSpecification.Join === 'left') {
+        // marker -1, else 0
+
+        // if (breakendSpecification.MateDirection === 'left') {
+        // marker -1, else 0
       } else if (feature.get('mate')) {
         // a generic 'mate' feature
         const mate = feature.get('mate')
-        topRegions[0].end = startPos
-        topRegions[1].start = startPos
-        bottomRegions[0].end = mate.start
-        bottomRegions[1].start = mate.start
+        mateRefName = await getCanonicalRefName(mate.refName)
+        endPos = mate.start
       }
 
+      if (!mateRefName) {
+        console.warn(
+          `unable to resolve mate refName ${mateRefName} in reference genome`,
+        )
+        return {}
+      }
+
+      const bottomRegion = view.displayedRegions.find(
+        f => f.refName === String(mateRefName),
+      )
+
+      if (!topRegion || !bottomRegion) {
+        console.warn(
+          `unable to find the refName for the top or bottom of the breakpoint view`,
+        )
+        return {}
+      }
+
+      const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
+      const bottomMarkedRegion = [{ ...bottomRegion }, { ...bottomRegion }]
+      topMarkedRegion[0].end = startPos
+      topMarkedRegion[1].start = startPos
+      bottomMarkedRegion[0].end = endPos
+      bottomMarkedRegion[1].start = endPos
       const snapshot = {
         type: 'BreakpointSplitView',
         views: [
           {
             type: 'LinearGenomeView',
-            displayedRegions: topRegions,
+            displayedRegions: topMarkedRegion,
             hideCloseButton: true,
             hideHeader: true,
             bpPerPx,
-            offsetPx: (topRegions[0].end - topRegions[0].start) / bpPerPx,
+            offsetPx: (topRegion.start + feature.get('start')) / bpPerPx,
           },
           {
             type: 'LinearGenomeView',
-            displayedRegions: bottomRegions,
+            displayedRegions: bottomMarkedRegion,
             hideHeader: true,
             hideCloseButton: true,
             bpPerPx,
-            offsetPx: (bottomRegions[0].end - bottomRegions[0].start) / bpPerPx,
+            offsetPx: (bottomRegion.start + endPos) / bpPerPx,
           },
         ],
         displayName: `${feature.get('name') ||

@@ -4,6 +4,16 @@ import { readConfObject } from './configuration'
 
 export default self => ({
   views: {
+    async getCanonicalRefName(refName, assemblyName) {
+      const refNameAliases = await self.getRefNameAliases(assemblyName)
+      const aliasesToCanonical = {}
+      Object.entries(refNameAliases).forEach(([ref, aliases]) => {
+        aliases.forEach(alias => {
+          aliasesToCanonical[alias] = ref
+        })
+      })
+      return aliasesToCanonical[refName]
+    },
     get assemblyData() {
       const assemblyData = observable.map({})
       for (const datasetConfig of self.datasets) {
