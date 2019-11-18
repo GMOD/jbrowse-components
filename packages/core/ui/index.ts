@@ -1,4 +1,4 @@
-export { default as theme } from './theme'
+export { default as useTheme } from './theme'
 export { default as LogoFull } from './LogoFull'
 export { default as App } from './App'
 export { default as FileSelector } from './FileSelector'

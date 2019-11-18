@@ -4,7 +4,7 @@ import {
   App,
   FactoryResetDialog,
   StartScreen,
-  theme,
+  useTheme,
 } from '@gmod/jbrowse-core/ui'
 
 import Button from '@material-ui/core/Button'
@@ -173,7 +173,7 @@ FatalError.propTypes = {
 
 export default () => {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={useTheme()}>
       <CssBaseline />
       <ErrorBoundary FallbackComponent={FatalError}>
         <JBrowse />
