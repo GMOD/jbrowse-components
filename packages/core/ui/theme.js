@@ -1,12 +1,14 @@
 import { createMuiTheme } from '@material-ui/core/styles'
-// import useMediaQuery from '@material-ui/core/useMediaQuery'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 export default function useTheme() {
   // current themes are not that good but we should support dark theme
-  // let prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+  const prefersDarkMode =
+    (useMediaQuery('(prefers-color-scheme: dark)') && window.ALLOW_DARK_MODE) ||
+    window.FORCE_DARK
   return createMuiTheme({
     palette: {
-      // type: prefersDarkMode ? 'dark' : 'light',
+      type: prefersDarkMode ? 'dark' : 'light',
       primary: { main: '#0D233F' },
       secondary: { main: '#721E63' },
     },
