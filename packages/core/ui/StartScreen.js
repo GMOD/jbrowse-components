@@ -47,14 +47,93 @@ const useStyles = makeStyles(theme => ({
     left: 'calc(100% - 56px)',
   },
 }))
+const DeleteSessionDialog = ({ sessionNameToDelete, onClose }) => {
+  return (
+    <Dialog open={!!sessionNameToDelete} onClose={onClose}>
+      <DialogTitle id="alert-dialog-title">
+        {`Delete session "${sessionNameToDelete}"?`}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          This action cannot be undone
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose()} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={async () => {
+            await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
+            onClose(true)
+          }}
+          color="primary"
+          variant="contained"
+          autoFocus
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
+const RenameSessionDialog = ({
+  sessionNames,
+  sessionNameToRename,
+  onClose,
+}) => {
+  const [newSessionName, setNewSessionName] = useState()
+  return (
+    <Dialog open={!!sessionNameToRename} onClose={onClose}>
+      <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Please enter a new name for the session:
+        </DialogContentText>
+        {sessionNames.includes(newSessionName) ? (
+          <DialogContentText color="error">
+            There is already a session named "{newSessionName}"
+          </DialogContentText>
+        ) : null}
+        <Input
+          autoFocus
+          value={newSessionName}
+          onChange={event => {
+            setNewSessionName(event.target.value)
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={async () => {
+            await ipcRenderer.invoke(
+              'renameSession',
+              sessionNameToRename,
+              newSessionName,
+            )
+          }}
+          color="primary"
+          variant="contained"
+          disabled={!newSessionName || sessionNames.includes(newSessionName)}
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 export default function StartScreen({ root, bypass }) {
   const [sessions, setSessions] = useState()
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
-  const [newSessionName, setNewSessionName] = useState('')
+  const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
   const [reset, setReset] = useState(false)
+  const classes = useStyles()
 
   const sessionNames = sessions && Object.keys(sessions)
   if (sessionNames) root.setSavedSessionNames(sessionNames)
@@ -69,46 +148,20 @@ export default function StartScreen({ root, bypass }) {
     onCardClick(sortedSessions[0][0])
   }
 
-  const classes = useStyles()
-
-  async function getSessions() {
-    setSessions(await ipcRenderer.invoke('listSessions'))
-  }
-
-  useEffect(() => {
-    getSessions()
-  }, [])
-
   async function onCardClick(sessionName) {
     const sessionJSON = await ipcRenderer.invoke('loadSession', sessionName)
     const sessionSnapshot = JSON.parse(sessionJSON)
     root.activateSession(sessionSnapshot)
   }
 
-  function onDelete(sessionName) {
-    setSessionNameToDelete(sessionName)
-  }
-
-  function onRename(sessionName) {
-    setSessionNameToRename(sessionName)
-  }
-
-  async function handleDialogClose(action) {
-    if (action === 'delete') {
-      await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
-      getSessions()
-    } else if (action === 'rename') {
-      await ipcRenderer.invoke(
-        'renameSession',
-        sessionNameToRename,
-        newSessionName,
-      )
-      getSessions()
-    }
-    setNewSessionName('')
-    setSessionNameToDelete()
-    setSessionNameToRename()
-  }
+  useEffect(() => {
+    ;(async () => {
+      if (updateSessionsList) {
+        setSessions(await ipcRenderer.invoke('listSessions'))
+        setUpdateSessionsList(false)
+      }
+    })()
+  }, [updateSessionsList])
 
   function handleSettingsClick(event) {
     event.stopPropagation()
@@ -120,9 +173,7 @@ export default function StartScreen({ root, bypass }) {
     handleMenuClose()
   }
 
-  function handleMenuClose() {
-    setMenuAnchorEl(null)
-  }
+  function handleMenuClose() {}
 
   if (!sessions)
     return (
@@ -138,102 +189,29 @@ export default function StartScreen({ root, bypass }) {
       />
     )
 
-  let DialogComponent
-  if (reset)
-    DialogComponent = (
+  return (
+    <>
       <FactoryResetDialog
+        open={reset}
         onClose={() => {
           setReset(false)
         }}
       />
-    )
-  if (sessionNameToDelete)
-    DialogComponent = (
-      <>
-        <DialogTitle id="alert-dialog-title">
-          {`Delete session "${sessionNameToDelete}"?`}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            This action cannot be undone
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleDialogClose()} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleDialogClose('delete')}
-            color="primary"
-            variant="contained"
-            autoFocus
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </>
-    )
-  else if (sessionNameToRename)
-    DialogComponent = (
-      <>
-        <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Please enter a new name for the session:
-          </DialogContentText>
-          {sessionNames.includes(newSessionName) ? (
-            <DialogContentText color="error">
-              There is already a session named "{newSessionName}"
-            </DialogContentText>
-          ) : null}
-          <Input
-            autoFocus
-            value={newSessionName}
-            onChange={event => setNewSessionName(event.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleDialogClose()} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleDialogClose('rename')}
-            color="primary"
-            variant="contained"
-            disabled={!newSessionName || sessionNames.includes(newSessionName)}
-          >
-            OK
-          </Button>
-        </DialogActions>
-      </>
-    )
-  else if (reset)
-    DialogComponent = (
-      <>
-        <DialogTitle id="alert-dialog-title">Reset</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to reset? This will restore the default
-            configuration and remove all sessions.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleDialogClose()} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleDialogClose('reset')}
-            color="primary"
-            variant="contained"
-          >
-            OK
-          </Button>
-        </DialogActions>
-      </>
-    )
-
-  return (
-    <>
+      <RenameSessionDialog
+        open={sessionNameToRename}
+        sessionNames={sessionNames}
+        onClose={update => {
+          setSessionNameToRename(undefined)
+          setUpdateSessionsList(update)
+        }}
+      />
+      <DeleteSessionDialog
+        open={sessionNameToDelete}
+        onClose={update => {
+          setSessionNameToDelete(undefined)
+          setUpdateSessionsList(update)
+        }}
+      />
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
@@ -263,20 +241,18 @@ export default function StartScreen({ root, bypass }) {
                 sessionStats={sessionData.stats}
                 sessionScreenshot={sessionData.screenshot}
                 onClick={onCardClick}
-                onDelete={onDelete}
-                onRename={onRename}
+                onDelete={() => {
+                  setSessionNameToDelete(sessionName)
+                }}
+                onRename={() => {
+                  setSessionNameToRename(sessionName)
+                }}
               />
             </Grid>
           ))}
         </Grid>
       </Container>
-      <Dialog
-        open={Boolean(sessionNameToRename || sessionNameToDelete || reset)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        {DialogComponent}
-      </Dialog>
+
       <IconButton className={classes.settings} onClick={handleSettingsClick}>
         <Icon color="secondary">settings</Icon>
       </IconButton>
@@ -285,10 +261,17 @@ export default function StartScreen({ root, bypass }) {
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={handleMenuClose}
+        onClose={() => {
+          setMenuAnchorEl(null)
+        }}
       >
         <ListSubheader>Advanced Settings</ListSubheader>
-        <MenuItem onClick={() => handleFactoryReset()}>
+        <MenuItem
+          onClick={() => {
+            setReset(true)
+            setMenuAnchorEl(null)
+          }}
+        >
           <ListItemIcon>
             <Icon color="secondary" fontSize="small">
               warning
