@@ -44,16 +44,17 @@ const JBrowse = observer(() => {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const config = await ipcRenderer.invoke('loadConfig')
-        Object.assign(config, {
-          configuration: {
-            rpc: {
-              defaultDriver: 'ElectronRpcDriver',
-            },
-          },
-        })
-
-        setRoot(rootModel.create({ jbrowse: config }))
+        setRoot(
+          rootModel.create({
+            jbrowse: Object.assign(await ipcRenderer.invoke('loadConfig'), {
+              configuration: {
+                rpc: {
+                  defaultDriver: 'ElectronRpcDriver',
+                },
+              },
+            }),
+          }),
+        )
         setLoaded(true)
       } catch (e) {
         setLoaded(() => {
@@ -67,24 +68,18 @@ const JBrowse = observer(() => {
   }, [])
 
   useEffect(() => {
-    let disposer = () => {}
-    if (jbrowse) {
-      disposer = onSnapshot(jbrowse, snap => {
-        setConfigSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return jbrowse
+      ? onSnapshot(jbrowse, snap => {
+          setConfigSnapshot(snap)
+        })
+      : () => {}
   }, [jbrowse])
   useEffect(() => {
-    let disposer = () => {}
-    if (session) {
-      disposer = onSnapshot(session, snap => {
-        setSessionSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return session
+      ? onSnapshot(session, snap => {
+          setSessionSnapshot(snap)
+        })
+      : () => {}
   }, [session])
 
   useEffect(() => {
@@ -143,15 +138,9 @@ const FatalError = ({ componentStack, error }) => {
       <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <p>Received a fatal error</p>
-          <p>
-            <strong>Message:</strong> {error.toString()}
-          </p>
-          <p>
-            <strong>Stacktrace:</strong>
-          </p>
-          <pre> {componentStack}</pre>
+          <strong>{error.toString()}</strong>
         </DialogContentText>
+        <pre>{componentStack}</pre>
       </DialogContent>
       <DialogActions>
         <Button

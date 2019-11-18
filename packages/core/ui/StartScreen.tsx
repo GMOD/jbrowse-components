@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
@@ -30,7 +31,7 @@ import RecentSessionCard from './RecentSessionCard'
 import FactoryResetDialog from './FactoryResetDialog'
 
 const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
+const { ipcRenderer = { invoke: () => {} } } = electronBetterIpc
 
 const useStyles = makeStyles(theme => ({
   newSession: {
@@ -47,9 +48,27 @@ const useStyles = makeStyles(theme => ({
     left: 'calc(100% - 56px)',
   },
 }))
-const DeleteSessionDialog = ({ sessionNameToDelete, onClose }) => {
+
+const DeleteSessionDialog = ({
+  sessionNameToDelete,
+  onClose,
+}: {
+  sessionNameToDelete?: string
+  onClose: (arg0: boolean) => void
+}) => {
+  const [deleteSession, setDeleteSession] = useState(false)
+  useEffect(() => {
+    ;(async () => {
+      if (deleteSession) {
+        setDeleteSession(false)
+        await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
+        onClose(true)
+      }
+    })()
+  }, [deleteSession, onClose, sessionNameToDelete])
+
   return (
-    <Dialog open={!!sessionNameToDelete} onClose={onClose}>
+    <Dialog open={!!sessionNameToDelete} onClose={() => onClose(false)}>
       <DialogTitle id="alert-dialog-title">
         {`Delete session "${sessionNameToDelete}"?`}
       </DialogTitle>
@@ -59,13 +78,12 @@ const DeleteSessionDialog = ({ sessionNameToDelete, onClose }) => {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()} color="primary">
+        <Button onClick={() => onClose(false)} color="primary">
           Cancel
         </Button>
         <Button
-          onClick={async () => {
-            await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
-            onClose(true)
+          onClick={() => {
+            setDeleteSession(true)
           }}
           color="primary"
           variant="contained"
@@ -82,10 +100,29 @@ const RenameSessionDialog = ({
   sessionNames,
   sessionNameToRename,
   onClose,
+}: {
+  sessionNames: string[]
+  sessionNameToRename?: string
+  onClose: (arg0: boolean) => void
 }) => {
   const [newSessionName, setNewSessionName] = useState()
+  const [renameSession, setRenameSession] = useState()
+  useEffect(() => {
+    ;(async () => {
+      if (renameSession) {
+        setRenameSession(false)
+        await ipcRenderer.invoke(
+          'renameSession',
+          sessionNameToRename,
+          newSessionName,
+        )
+        onClose(true)
+      }
+    })()
+  }, [newSessionName, onClose, renameSession, sessionNameToRename])
+
   return (
-    <Dialog open={!!sessionNameToRename} onClose={onClose}>
+    <Dialog open={!!sessionNameToRename} onClose={() => onClose(false)}>
       <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
@@ -98,23 +135,19 @@ const RenameSessionDialog = ({
         ) : null}
         <Input
           autoFocus
-          value={newSessionName}
+          defaultValue={sessionNameToRename}
           onChange={event => {
             setNewSessionName(event.target.value)
           }}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={() => onClose(false)} color="primary">
           Cancel
         </Button>
         <Button
-          onClick={async () => {
-            await ipcRenderer.invoke(
-              'renameSession',
-              sessionNameToRename,
-              newSessionName,
-            )
+          onClick={() => {
+            setRenameSession(true)
           }}
           color="primary"
           variant="contained"
@@ -126,12 +159,20 @@ const RenameSessionDialog = ({
     </Dialog>
   )
 }
-export default function StartScreen({ root, bypass }) {
+
+export default function StartScreen({
+  root,
+  bypass,
+}: {
+  root: any
+  bypass: boolean
+}) {
   const [sessions, setSessions] = useState()
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
+  const [sessionNameToLoad, setSessionNameToLoad] = useState()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
-  const [menuAnchorEl, setMenuAnchorEl] = useState(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
   const classes = useStyles()
 
@@ -141,39 +182,33 @@ export default function StartScreen({ root, bypass }) {
   const sortedSessions =
     sessions &&
     Object.entries(sessions)
-      .filter(([, sessionData]) => sessionData.stats)
-      .sort((a, b) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
+      .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
+      .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
 
-  if (bypass && inDevelopment && sortedSessions && sortedSessions.length) {
-    onCardClick(sortedSessions[0][0])
-  }
-
-  async function onCardClick(sessionName) {
-    const sessionJSON = await ipcRenderer.invoke('loadSession', sessionName)
-    const sessionSnapshot = JSON.parse(sessionJSON)
-    root.activateSession(sessionSnapshot)
-  }
+  useEffect(() => {
+    ;(async () => {
+      const load =
+        bypass && inDevelopment && sortedSessions && sortedSessions.length
+          ? sortedSessions[0][0]
+          : sessionNameToLoad
+      if (load) {
+        root.activateSession(
+          JSON.parse(
+            await ipcRenderer.invoke('loadSession', sessionNameToLoad),
+          ),
+        )
+      }
+    })()
+  }, [bypass, root, sessionNameToLoad, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
       if (updateSessionsList) {
-        setSessions(await ipcRenderer.invoke('listSessions'))
         setUpdateSessionsList(false)
+        setSessions(await ipcRenderer.invoke('listSessions'))
       }
     })()
   }, [updateSessionsList])
-
-  function handleSettingsClick(event) {
-    event.stopPropagation()
-    setMenuAnchorEl(event.currentTarget)
-  }
-
-  function handleFactoryReset() {
-    setReset(true)
-    handleMenuClose()
-  }
-
-  function handleMenuClose() {}
 
   if (!sessions)
     return (
@@ -198,15 +233,15 @@ export default function StartScreen({ root, bypass }) {
         }}
       />
       <RenameSessionDialog
-        open={sessionNameToRename}
+        sessionNameToRename={sessionNameToRename}
         sessionNames={sessionNames}
-        onClose={update => {
+        onClose={(update: boolean) => {
           setSessionNameToRename(undefined)
           setUpdateSessionsList(update)
         }}
       />
       <DeleteSessionDialog
-        open={sessionNameToDelete}
+        sessionNameToDelete={sessionNameToDelete}
         onClose={update => {
           setSessionNameToDelete(undefined)
           setUpdateSessionsList(update)
@@ -234,13 +269,15 @@ export default function StartScreen({ root, bypass }) {
           Recent sessions
         </Typography>
         <Grid container spacing={4}>
-          {sortedSessions.map(([sessionName, sessionData]) => (
+          {sortedSessions.map(([sessionName, sessionData]: [string, any]) => (
             <Grid item key={sessionName}>
               <RecentSessionCard
                 sessionName={sessionName}
                 sessionStats={sessionData.stats}
                 sessionScreenshot={sessionData.screenshot}
-                onClick={onCardClick}
+                onClick={() => {
+                  setSessionNameToLoad(sessionName)
+                }}
                 onDelete={() => {
                   setSessionNameToDelete(sessionName)
                 }}
@@ -253,7 +290,13 @@ export default function StartScreen({ root, bypass }) {
         </Grid>
       </Container>
 
-      <IconButton className={classes.settings} onClick={handleSettingsClick}>
+      <IconButton
+        className={classes.settings}
+        onClick={event => {
+          event.stopPropagation()
+          setMenuAnchorEl(event.currentTarget)
+        }}
+      >
         <Icon color="secondary">settings</Icon>
       </IconButton>
       <Menu

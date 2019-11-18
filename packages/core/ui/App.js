@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { observer, PropTypes } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
@@ -121,7 +122,9 @@ function App({ contentRect, measureRef, session }) {
 
   useEffect(() => {
     if (contentRect.bounds.width) {
-      session.updateWidth(contentRect.bounds.width)
+      if (isAlive(session)) {
+        session.updateWidth(contentRect.bounds.width)
+      }
     }
   }, [session, contentRect])
 
