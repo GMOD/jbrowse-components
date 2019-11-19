@@ -6,6 +6,7 @@ import {
   fromUrlSafeB64,
   useDebounce,
   inDevelopment,
+  mergeConfigs,
 } from '@gmod/jbrowse-core/util'
 import ErrorBoundary from 'react-error-boundary'
 
@@ -21,23 +22,9 @@ import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
-import merge from 'deepmerge'
 
 import rootModel from './rootModel'
 
-// similar to electron.js
-function mergeConfigs(A, B) {
-  const X = {}
-  const Y = {}
-  A.datasets.forEach(a => {
-    X[a.assembly.name] = a
-  })
-  B.datasets.forEach(b => {
-    Y[b.assembly.name] = b
-  })
-  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
-  return Object.values(merge(X, Y))
-}
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
   if (inDevelopment) {
@@ -53,13 +40,14 @@ async function parseConfig(configLoc) {
   return config
 }
 
-const JBrowse = observer(({ config, initialState }) => {
-  const [status, setStatus] = useState('loading')
-  const [message, setMessage] = useState('')
+function useJBrowseWeb(config, initialState) {
+  const [loaded, setLoaded] = useState(false)
   const [root, setRoot] = useState(initialState || {})
   const [urlSnapshot, setUrlSnapshot] = useState()
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
+  const debouncedLoaded = useDebounce(loaded, 400)
 
+  // This serializes the session to URL
   useEffect(() => {
     if (debouncedUrlSnapshot) {
       const { origin, pathname } = document.location
@@ -73,20 +61,30 @@ const JBrowse = observer(({ config, initialState }) => {
     }
   }, [debouncedUrlSnapshot])
 
+  // This updates savedSession list on the rootModel
   useEffect(() => {
     if (root && root.session && debouncedUrlSnapshot) {
       root.jbrowse.updateSavedSession(debouncedUrlSnapshot)
     }
   }, [debouncedUrlSnapshot, root])
 
+  const { session, jbrowse } = root || {}
+
+  const useLocalStorage = jbrowse
+    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
+    : false
+
+  // This loads a config from localStorage or a configSnapshot or a config.json file
   useEffect(() => {
     async function loadConfig() {
       try {
         let r
-        if (initialState) r = initialState
-        else {
+        if (initialState) {
+          r = initialState
+        } else {
           let configSnapshot = config || {}
-          const localStorageConfig = localStorage.getItem('jbrowse-web-data')
+          const localStorageConfig =
+            useLocalStorage && localStorage.getItem('jbrowse-web-data')
           if (localStorageConfig) {
             configSnapshot = JSON.parse(localStorageConfig)
           }
@@ -121,12 +119,8 @@ const JBrowse = observer(({ config, initialState }) => {
           const localStorageSession = localStorage.getItem(
             'jbrowse-web-session',
           )
-          try {
-            const parsedSession = JSON.parse(localStorageSession)
-            if (parsedSession) r.setSession(parsedSession)
-          } catch (error) {
-            console.error('could not load session from local storage', error)
-          }
+          const parsedSession = JSON.parse(localStorageSession)
+          if (parsedSession) r.setSession(parsedSession)
         }
         if (!r.session) {
           if (r.jbrowse.savedSessions.length) {
@@ -138,19 +132,21 @@ const JBrowse = observer(({ config, initialState }) => {
         }
 
         r.setHistory(UndoManager.create({}, { targetStore: r.session }))
-        // poke some things for testing (this stuff will eventually be removed)
         setRoot(r)
-        setStatus('loaded')
-      } catch (error) {
-        setStatus('error')
-        setMessage(String(error))
-        console.error(error)
+        setLoaded(true)
+      } catch (e) {
+        setLoaded(() => {
+          // throw to error boundary
+          throw e
+        })
       }
     }
 
     loadConfig()
-  }, [config, initialState])
+  }, [config, initialState, useLocalStorage])
 
+  // make some things available globally for testing
+  // e.g. window.MODEL.views[0] in devtools
   useEffect(() => {
     if (root) {
       window.MODEL = root.session
@@ -158,45 +154,52 @@ const JBrowse = observer(({ config, initialState }) => {
     }
   }, [root, root.session])
 
-  const { session, jbrowse } = root || {}
-  const useLocalStorage = jbrowse
-    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
-    : false
-  useEffect(() => {
-    let localStorageSessionDisposer = () => {}
-    let localStorageDataDisposer = () => {}
-    if (useLocalStorage && status === 'loaded') {
-      localStorageSessionDisposer = onSnapshot(root.session, snapshot => {
-        localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
-      })
-      localStorageDataDisposer = onSnapshot(root.jbrowse, snapshot => {
-        localStorage.setItem('jbrowse-web-data', JSON.stringify(snapshot))
-      })
-    }
+  // set session in localstorage
+  useEffect(
+    () =>
+      useLocalStorage && loaded
+        ? onSnapshot(root.session, snapshot => {
+            localStorage.setItem(
+              'jbrowse-web-session',
+              JSON.stringify(snapshot),
+            )
+          })
+        : () => {},
+    [loaded, root.session, useLocalStorage],
+  )
 
-    return () => {
-      localStorageSessionDisposer()
-      localStorageDataDisposer()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [root && root.session && root.session.name, status, useLocalStorage])
+  // set jbrowse-web data in localstorage
+  useEffect(
+    () =>
+      useLocalStorage && loaded
+        ? onSnapshot(root.jbrowse, snapshot => {
+            localStorage.setItem('jbrowse-web-data', JSON.stringify(snapshot))
+          })
+        : () => {},
+    [loaded, root.jbrowse, useLocalStorage],
+  )
 
   const updateUrl = jbrowse
     ? readConfObject(jbrowse.configuration, 'updateUrl')
     : false
-  useEffect(() => {
-    let urlDisposer = () => {}
-    if (session) {
-      if (updateUrl)
-        urlDisposer = onSnapshot(session, snapshot => {
-          setUrlSnapshot(snapshot)
-        })
-    }
+  useEffect(
+    () =>
+      session && updateUrl
+        ? onSnapshot(session, snapshot => {
+            setUrlSnapshot(snapshot)
+          })
+        : () => {},
+    [updateUrl, session],
+  )
 
-    return urlDisposer
-  }, [updateUrl, session])
+  // debouncedLoaded for making the loading spinner a little longer
+  // on the screen (just for looks)
+  return [debouncedLoaded, root]
+}
 
-  return status === 'loading' ? (
+const JBrowse = observer(({ config, initialState }) => {
+  const [loaded, root] = useJBrowseWeb(config, initialState)
+  return !loaded ? (
     <CircularProgress
       style={{
         position: 'fixed',

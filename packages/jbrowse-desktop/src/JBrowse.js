@@ -53,7 +53,7 @@ const JBrowse = observer(() => {
         setLoaded(true)
       } catch (e) {
         setLoaded(() => {
-          // throw to error component
+          // throw to error boundary
           throw e
         })
       }
