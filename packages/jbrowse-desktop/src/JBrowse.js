@@ -5,10 +5,10 @@ import {
   FatalErrorDialog,
   FactoryResetDialog,
   StartScreen,
-  theme,
+  useTheme,
 } from '@gmod/jbrowse-core/ui'
 
-import Button from '@material-ui/core/CircularProgress'
+import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 

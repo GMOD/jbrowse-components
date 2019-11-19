@@ -2,10 +2,9 @@ import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React from 'react'
 
 const FatalErrorDialog = ({ componentStack, error, ResetComponent }) => {
   return (
@@ -32,13 +31,15 @@ const FatalErrorDialog = ({ componentStack, error, ResetComponent }) => {
 }
 
 FatalErrorDialog.propTypes = {
-  componentStack: PropTypes.string.isRequired,
-  error: PropTypes.shape({}).isRequired,
-  ResetDialog: PropTypes.node,
+  componentStack: PropTypes.string,
+  error: PropTypes.shape({}),
+  ResetComponent: PropTypes.func,
 }
 
 FatalErrorDialog.defaultProps = {
-  ResetDialog: null,
+  ResetComponent: null,
+  error: { message: 'No error message provided' },
+  componentStack: '',
 }
 
 export default FatalErrorDialog
