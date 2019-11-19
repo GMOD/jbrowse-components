@@ -432,17 +432,19 @@ describe('cause an exception in the jbrowse module loading', () => {
   it('exception from mocked jbrowse component', async () => {
     mockConsole()
     const mockError = jest.fn()
-    render(
-      <ErrorBoundary onError={mockError}>
-        <JBrowse
-          config={{
-            // causes error, configuration should be an object
-            configuration: [],
-          }}
-        />
-        ,
-      </ErrorBoundary>,
-    )
+    try {
+      render(
+        <ErrorBoundary onError={mockError}>
+          <JBrowse
+            config={{
+              // causes error, configuration should be an object
+              configuration: [],
+            }}
+          />
+          ,
+        </ErrorBoundary>,
+      )
+    } catch (e) {}
     expect(mockError).toHaveBeenCalled()
   })
 })
