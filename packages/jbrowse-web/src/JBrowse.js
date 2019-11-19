@@ -1,6 +1,6 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
-import { App, theme, FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import { App, useTheme, FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import {
   toUrlSafeB64,
   fromUrlSafeB64,
@@ -219,7 +219,7 @@ export { JBrowse }
 
 export default props => {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={useTheme()}>
       <CssBaseline />
       <ErrorBoundary FallbackComponent={FatalErrorDialog}>
         <JBrowse {...props} />

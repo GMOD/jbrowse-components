@@ -40,16 +40,17 @@ const JBrowse = observer(() => {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const config = await ipcRenderer.invoke('loadConfig')
-        Object.assign(config, {
-          configuration: {
-            rpc: {
-              defaultDriver: 'ElectronRpcDriver',
-            },
-          },
-        })
-
-        setRoot(rootModel.create({ jbrowse: config }))
+        setRoot(
+          rootModel.create({
+            jbrowse: Object.assign(await ipcRenderer.invoke('loadConfig'), {
+              configuration: {
+                rpc: {
+                  defaultDriver: 'ElectronRpcDriver',
+                },
+              },
+            }),
+          }),
+        )
         setLoaded(true)
       } catch (e) {
         setLoaded(() => {
@@ -63,24 +64,18 @@ const JBrowse = observer(() => {
   }, [])
 
   useEffect(() => {
-    let disposer = () => {}
-    if (jbrowse) {
-      disposer = onSnapshot(jbrowse, snap => {
-        setConfigSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return jbrowse
+      ? onSnapshot(jbrowse, snap => {
+          setConfigSnapshot(snap)
+        })
+      : () => {}
   }, [jbrowse])
   useEffect(() => {
-    let disposer = () => {}
-    if (session) {
-      disposer = onSnapshot(session, snap => {
-        setSessionSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return session
+      ? onSnapshot(session, snap => {
+          setSessionSnapshot(snap)
+        })
+      : () => {}
   }, [session])
 
   useEffect(() => {
@@ -151,7 +146,7 @@ const ResetComponent = props => {
 }
 export default props => {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={useTheme()}>
       <CssBaseline />
       <ErrorBoundary
         FallbackComponent={<FatalErrorDialog ResetComponent={ResetComponent} />}
