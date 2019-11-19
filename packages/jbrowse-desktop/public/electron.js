@@ -235,12 +235,8 @@ ipcMain.handle('renameSession', async (event, oldName, newName) => {
 })
 
 ipcMain.handle('reset', async () => {
-  const configTemplateLocation = isDev
-    ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
-    : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
-  await fsCopyFile(configTemplateLocation, configLocation)
   const sessionFiles = await fsReaddir(sessionDirectory)
-  const unlinkCommands = []
+  const unlinkCommands = [fsUnlink(configLocation)]
   for (const sessionFile of sessionFiles) {
     unlinkCommands.push(fsUnlink(path.join(sessionDirectory, sessionFile)))
   }
