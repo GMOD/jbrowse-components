@@ -1,12 +1,14 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
-import { App, theme } from '@gmod/jbrowse-core/ui'
+import { App, theme, FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import {
   toUrlSafeB64,
   fromUrlSafeB64,
   useDebounce,
   inDevelopment,
 } from '@gmod/jbrowse-core/util'
+import ErrorBoundary from 'react-error-boundary'
+
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
 // material-ui
@@ -51,7 +53,7 @@ async function parseConfig(configLoc) {
   return config
 }
 
-export default observer(({ config, initialState }) => {
+const JBrowse = observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [root, setRoot] = useState(initialState || {})
@@ -193,8 +195,9 @@ export default observer(({ config, initialState }) => {
 
     return urlDisposer
   }, [updateUrl, session])
+  throw new Error('test')
 
-  let DisplayComponent = (
+  return status === 'loading' ? (
     <CircularProgress
       style={{
         position: 'fixed',
@@ -205,15 +208,18 @@ export default observer(({ config, initialState }) => {
       }}
       size={50}
     />
+  ) : (
+    <App session={root.session} />
   )
-  if (status === 'error') DisplayComponent = <div>{message}</div>
-  if (status === 'loaded' && root.session)
-    DisplayComponent = <App session={root.session} />
+})
 
+export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {DisplayComponent}
+      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
+        <JBrowse {...props} />
+      </ErrorBoundary>
     </ThemeProvider>
   )
-})
+}

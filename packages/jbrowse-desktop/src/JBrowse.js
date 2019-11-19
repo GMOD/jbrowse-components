@@ -2,26 +2,22 @@ import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { useDebounce } from '@gmod/jbrowse-core/util'
 import {
   App,
+  FatalErrorDialog,
   FactoryResetDialog,
   StartScreen,
   theme,
 } from '@gmod/jbrowse-core/ui'
 
-import Button from '@material-ui/core/Button'
+import Button from '@material-ui/core/CircularProgress'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
+
 import { ThemeProvider } from '@material-ui/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import ErrorBoundary from 'react-error-boundary'
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import rootModel from './rootModel'
 import 'typeface-roboto'
 
@@ -134,60 +130,33 @@ const JBrowse = observer(() => {
     />
   )
 })
-
-const FatalError = ({ componentStack, error }) => {
+const ResetComponent = props => {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <Dialog open={true}>
-      <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          <p>Received a fatal error</p>
-          <p>
-            <strong>Message:</strong> {error.toString()}
-          </p>
-          <p>
-            <strong>Stacktrace:</strong>
-          </p>
-          <pre> {componentStack}</pre>
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={() => setDialogOpen(true)}
-        >
-          Factory reset
-        </Button>
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => window.location.reload()}
-        >
-          Refresh
-        </Button>
-        <FactoryResetDialog
-          onClose={() => setDialogOpen(false)}
-          open={dialogOpen}
-        />
-      </DialogActions>
-    </Dialog>
+    <>
+      <Button
+        color="primary"
+        variant="contained"
+        onClick={() => setDialogOpen(true)}
+      >
+        Factory reset
+      </Button>
+      <FactoryResetDialog
+        onClose={() => setDialogOpen(false)}
+        open={dialogOpen}
+      />
+    </>
   )
 }
-
-FatalError.propTypes = {
-  componentStack: PropTypes.string.isRequired,
-  error: PropTypes.shape({}).isRequired,
-}
-
-export default () => {
+export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={FatalError}>
-        <JBrowse />
+      <ErrorBoundary
+        FallbackComponent={<FatalErrorDialog ResetComponent={ResetComponent} />}
+      >
+        <JBrowse {...props} />
       </ErrorBoundary>
     </ThemeProvider>
   )
