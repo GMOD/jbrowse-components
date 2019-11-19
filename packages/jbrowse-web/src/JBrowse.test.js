@@ -11,7 +11,8 @@ import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
 import mockConsole from 'jest-mock-console'
-import JBrowse from './JBrowse'
+import ErrorBoundary from 'react-error-boundary'
+import { JBrowse } from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
@@ -424,5 +425,18 @@ describe('breakpoint split view', () => {
     expect(
       await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
     ).toMatchSnapshot()
+  })
+})
+
+describe('cause an exception in the jbrowse module loading', () => {
+  it('exception from mocked jbrowse component', async () => {
+    mockConsole()
+    const mockError = jest.fn()
+    render(
+      <ErrorBoundary onError={mockError}>
+        <JBrowse initialState={{ hello: 'world, causing an error' }} />,
+      </ErrorBoundary>,
+    )
+    expect(mockError).toHaveBeenCalled()
   })
 })

@@ -195,7 +195,6 @@ const JBrowse = observer(({ config, initialState }) => {
 
     return urlDisposer
   }, [updateUrl, session])
-  throw new Error('test')
 
   return status === 'loading' ? (
     <CircularProgress
@@ -212,6 +211,8 @@ const JBrowse = observer(({ config, initialState }) => {
     <App session={root.session} />
   )
 })
+
+export { JBrowse }
 
 export default props => {
   return (
