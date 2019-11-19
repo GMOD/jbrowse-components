@@ -1,5 +1,12 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
+import {
+  getParent,
+  isAlive,
+  isStateTreeNode,
+  getSnapshot,
+  IAnyStateTreeNode,
+  getType,
+} from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
@@ -334,6 +341,7 @@ export function isAbortException(exception: AbortError): boolean {
 interface Dataset {
   assembly: {
     name: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
   }
 }
@@ -355,10 +363,8 @@ export function mergeConfigs(A: Config, B: Config) {
   return Object.values(merge(X, Y))
 }
 
-// export function getSnapshotIfNode(thing: Node): Record<string, any> {
-//   if (isStateTreeNode(thing)) return getSnapshot(thing)
-//   return thing
-// }
-//
-//
-//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getSnapshotIfNode(thing: Node): Record<string, any> {
+  if (isStateTreeNode(thing)) return getSnapshot(thing)
+  return thing
+}

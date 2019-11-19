@@ -434,7 +434,13 @@ describe('cause an exception in the jbrowse module loading', () => {
     const mockError = jest.fn()
     render(
       <ErrorBoundary onError={mockError}>
-        <JBrowse initialState={{ hello: 'world, causing an error' }} />,
+        <JBrowse
+          config={{
+            // causes error, configuration should be an object
+            configuration: [],
+          }}
+        />
+        ,
       </ErrorBoundary>,
     )
     expect(mockError).toHaveBeenCalled()

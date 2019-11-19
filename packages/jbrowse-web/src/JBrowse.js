@@ -85,6 +85,7 @@ function useJBrowseWeb(config, initialState) {
           let configSnapshot = config || {}
           const localStorageConfig =
             useLocalStorage && localStorage.getItem('jbrowse-web-data')
+
           if (localStorageConfig) {
             configSnapshot = JSON.parse(localStorageConfig)
           }
@@ -100,20 +101,17 @@ function useJBrowseWeb(config, initialState) {
             r = rootModel.create({ jbrowse: configSnapshot })
           }
         }
+
         const params = new URL(document.location).searchParams
         const urlSession = params.get('session')
         if (urlSession) {
-          try {
-            const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
-              urlSession,
-            )
-            if (savedSessionIndex !== -1) {
-              r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
-            } else {
-              r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
-            }
-          } catch (error) {
-            console.error('could not load session from URL', error)
+          const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
+            urlSession,
+          )
+          if (savedSessionIndex !== -1) {
+            r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
+          } else {
+            r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
           }
         } else {
           const localStorageSession = localStorage.getItem(
@@ -123,7 +121,7 @@ function useJBrowseWeb(config, initialState) {
           if (parsedSession) r.setSession(parsedSession)
         }
         if (!r.session) {
-          if (r.jbrowse.savedSessions.length) {
+          if (r.jbrowse && r.jbrowse.savedSessions.length) {
             const { name } = r.jbrowse.savedSessions[0]
             r.activateSession(name)
           } else {

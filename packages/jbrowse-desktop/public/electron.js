@@ -9,7 +9,6 @@ const url = require('url')
 const { promisify } = require('util')
 const merge = require('deepmerge')
 
-const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
 const fsOpen = promisify(fs.open)
 const fsRead = promisify(fs.read)

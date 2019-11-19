@@ -125,7 +125,8 @@ const JBrowse = observer(() => {
     />
   )
 })
-const ResetComponent = props => {
+
+const ResetComponent = () => {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -144,6 +145,7 @@ const ResetComponent = props => {
     </>
   )
 }
+
 export default props => {
   return (
     <ThemeProvider theme={useTheme()}>
