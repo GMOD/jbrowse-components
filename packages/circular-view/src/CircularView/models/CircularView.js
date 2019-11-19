@@ -108,8 +108,9 @@ export default pluginManager => {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
         return self.totalBp / minCircumferencePx
       },
-      get maxBpPerPxWhenLocked(){
-        const maxZoomWhenLocked = Math.floor(self.height / 100) - 1;
+      get minBpPerPxWhenLocked(){
+        //calculate the smallest BpPerPx before circle is cut off in viewport using # of zooms
+        const maxZoomWhenLocked = Math.floor(self.height / 100) - 1; //rough formula
         return maxZoomWhenLocked > 0 ? self.maxBpPerPx / (maxZoomWhenLocked * 1.4) : self.maxBpPerPx
       },
       get figureDimensions() {
@@ -160,12 +161,6 @@ export default pluginManager => {
         }
         return visible
       },
-
-      //conditionals here, learn more about 
-      get statusFitToWindowLock() {
-        return self.lockedFitToWindow
-      },
-
     }))
     .actions(self => ({
       //toggle action with a flag stating which mode it's in
@@ -180,6 +175,7 @@ export default pluginManager => {
       resizeHeight(distance) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
+        self.lockedFitToWindowMaxModelSize(self.lockedFitToWindow);
         return newHeight - oldHeight
       },
       
@@ -200,11 +196,11 @@ export default pluginManager => {
       },
 
       zoomInButton() {
+        console.log(self.height/1.4);
         self.setBpPerPx(self.bpPerPx / 1.4)
-        console.log(self.height)
-        if(self.lockedFitToWindow && self.bpPerPx < self.maxBpPerPxWhenLocked){
-          self.setBpPerPx(self.maxBpPerPxWhenLocked)
-        }
+        //on zoom in if locked, if zoom in would make circle cut off by viewport, set to minBpPerPx 
+        //that still shows the whole circle in viewport
+        self.lockedFitToWindowMaxModelSize(self.lockedFitToWindow);
       },
 
       zoomOutButton() {
@@ -284,10 +280,15 @@ export default pluginManager => {
         return shownTracks.length
       },
 
-      toggleFitToWindowLock() {
-        if(!self.lockedFitToWindow){
-          self.setBpPerPx(self.maxBpPerPxWhenLocked);
+      lockedFitToWindowMaxModelSize(toggleStatusCondition) { //probably need to rename
+        if(toggleStatusCondition && self.bpPerPx < self.minBpPerPxWhenLocked){
+            self.setBpPerPx(self.minBpPerPxWhenLocked);
         }
+      },
+
+      toggleFitToWindowLock() {
+        //when going unlocked -> locked and circle is cut off, set to the locked maxBpPerPx
+        self.lockedFitToWindowMaxModelSize(!self.lockedFitToWindow);
         //toggles from locking to unlocking (starts at true)
         return self.lockedFitToWindow = !self.lockedFitToWindow
       }
