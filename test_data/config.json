@@ -1,0 +1,418 @@
+{
+  "datasets": [
+    {
+      "configId": "GbR-gJfAC9M",
+      "name": "Human (hg19)",
+      "assembly": {
+        "configId": "LxT4lkflYm1",
+        "name": "hg19",
+        "aliases": [
+          "GRCh37"
+        ],
+        "sequence": {
+          "configId": "Pd8Wh30ei9R",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "configId": "YK3RiyLKJq4",
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            },
+            "faiLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            }
+          },
+          "rendering": {
+            "configId": "_Ta2aorot0V",
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "configId": "hg19_aliases",
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/hg19_aliases.txt"
+            }
+          }
+        }
+      },
+      "connections": [
+        {
+          "configId": "COSMIC_connection_grch37",
+          "type": "JBrowse1Connection",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+          },
+          "name": "COSMIC (GRCh37)"
+        }
+      ],
+      "tracks": [
+        {
+          "configId": "repeats_hg19",
+          "type": "BasicTrack",
+          "name": "Repeats",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "nclist_genes_hg19",
+          "type": "BasicTrack",
+          "name": "Gencode v19",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+            "refNames": [
+              "chr1",
+              "chr2",
+              "chr3",
+              "chr4",
+              "chr5",
+              "chr6",
+              "chr7",
+              "chr8",
+              "chr9",
+              "chr10",
+              "chr11",
+              "chr12",
+              "chr13",
+              "chr14",
+              "chr15",
+              "chr16",
+              "chr17",
+              "chr18",
+              "chr19",
+              "chr20",
+              "chr21",
+              "chr22",
+              "chr23",
+              "chrX",
+              "chrY",
+              "chrMT"
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        },
+        {
+          "configId": "hg19_gaps",
+          "type": "BasicTrack",
+          "name": "Gaps",
+          "category": [
+            "Assembly"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/hg19/gaps.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg19",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "configId": "VkIXFcSSJ",
+      "name": "Human (hg38)",
+      "assembly": {
+        "configId": "ZcKi-0FaG9",
+        "name": "hg38",
+        "aliases": [
+          "GRCh38"
+        ],
+        "sequence": {
+          "configId": "P6R5xbRqRr",
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "configId": "BY0uXnap-Z",
+            "type": "BgzipFastaAdapter",
+            "fastaLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            },
+            "faiLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            },
+            "gziLocation": {
+              "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            }
+          },
+          "rendering": {
+            "configId": "FVLPrs1AWM",
+            "type": "DivSequenceRenderer"
+          }
+        },
+        "refNameAliases": {
+          "configId": "hg38_aliases",
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/GRCh38_RefSeq2UCSC.txt"
+            }
+          }
+        }
+      },
+      "connections": [
+        {
+          "configId": "COSMIC_connection_grch38",
+          "type": "JBrowse1Connection",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
+          },
+          "name": "COSMIC (GRCh38)"
+        }
+      ],
+      "tracks": [
+        {
+          "configId": "repeats_hg38",
+          "type": "BasicTrack",
+          "name": "Repeats",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "gencode_nclist_hg38",
+          "type": "BasicTrack",
+          "name": "Gencode v32",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+            "refNames": [
+              "chr1",
+              "chr2",
+              "chr3",
+              "chr4",
+              "chr5",
+              "chr6",
+              "chr7",
+              "chr8",
+              "chr9",
+              "chr10",
+              "chr11",
+              "chr12",
+              "chr13",
+              "chr14",
+              "chr15",
+              "chr16",
+              "chr17",
+              "chr18",
+              "chr19",
+              "chr20",
+              "chr21",
+              "chr22",
+              "chr23",
+              "chrX",
+              "chrY",
+              "chrMT"
+            ]
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        },
+        {
+          "configId": "clinvar_cnv_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar CNV",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "clinvar_hg38",
+          "type": "BasicTrack",
+          "name": "Clinvar variants",
+          "category": [
+            "Clinvar"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "mane_hg38",
+          "type": "BasicTrack",
+          "name": "MANE 0.6",
+          "category": [
+            "Genes"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.6.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('geneName2') }"
+            }
+          }
+        },
+        {
+          "configId": "gdc_features",
+          "type": "BasicTrack",
+          "name": "GDC Cancer",
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        },
+        {
+          "configId": "hg38_gaps",
+          "type": "BasicTrack",
+          "name": "Gaps",
+          "category": [
+            "Assembly"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+            }
+          },
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "updateUrl": true
+  },
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar",
+        "menus": [
+          {
+            "name": "File",
+            "menuItems": [
+              {
+                "name": "New linear genome view",
+                "icon": "line_style",
+                "callback": "function(session) { session.addView('LinearGenomeView', {})}"
+              },
+              {
+                "name": "New circular view",
+                "icon": "data_usage",
+                "callback": "function(session) { session.addView('CircularView', {})}"
+              }
+            ]
+          },
+          {
+            "name": "Help",
+            "menuItems": [
+              {
+                "name": "About",
+                "icon": "info",
+                "callback": "openAbout"
+              },
+              {
+                "name": "Help",
+                "icon": "help",
+                "callback": "openHelp"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

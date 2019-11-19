@@ -1,20 +1,19 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
+import { useDebounce } from '@gmod/jbrowse-core/util'
+import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
-import 'typeface-roboto'
-import { useDebounce } from '@gmod/jbrowse-core/util'
 import rootModel from './rootModel'
-import App from './ui/App'
-import StartScreen from './ui/StartScreen'
-import Theme from './ui/theme'
+import 'typeface-roboto'
 
 const { electron = {} } = window
 const { desktopCapturer, ipcRenderer } = electron
 
+const debounceMs = 1000
 export default observer(() => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
@@ -22,8 +21,8 @@ export default observer(() => {
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
   const [configSnapshot, setConfigSnapshot] = useState()
-  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, 5000)
-  const debouncedConfigSnapshot = useDebounce(configSnapshot, 5000)
+  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, debounceMs)
+  const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
 
   const { session, jbrowse } = root
   if (firstLoad && session) setFirstLoad(false)
@@ -32,11 +31,15 @@ export default observer(() => {
     async function loadConfig() {
       try {
         const config = await ipcRenderer.invoke('loadConfig')
+        Object.assign(config, {
+          configuration: {
+            rpc: {
+              defaultDriver: 'ElectronRpcDriver',
+            },
+          },
+        })
         const r = rootModel.create({ jbrowse: config })
 
-        // poke some things for testing (this stuff will eventually be removed)
-        window.ROOTMODEL = r
-        window.MODEL = r.session
         setRoot(r)
         setStatus('loaded')
       } catch (error) {
@@ -93,6 +96,13 @@ export default observer(() => {
     return () => {}
   }, [debouncedConfigSnapshot])
 
+  useEffect(() => {
+    if (root) {
+      window.MODEL = root.session
+      window.ROOTMODEL = root
+    }
+  }, [root, root.session])
+
   let DisplayComponent = (
     <CircularProgress
       style={{
@@ -112,7 +122,7 @@ export default observer(() => {
   }
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {DisplayComponent}
     </ThemeProvider>

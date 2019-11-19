@@ -17,31 +17,16 @@ export const useStyles = makeStyles(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
-  content: {
-    '&$expanded': {
-      margin: theme.spacing(1, 0),
-    },
-    margin: theme.spacing(1, 0),
+  expandIcon: {
+    color: '#FFFFFF',
   },
   paperRoot: {
     background: theme.palette.grey[100],
   },
-  root: {
-    background: theme.palette.grey[300],
-    '&$expanded': {
-      // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
-      minHeight: 0,
-      margin: 0,
-    },
-    margin: 0,
-    minHeight: 0,
-    padding: theme.spacing(0, 1),
-  },
-  expanded: {
-    // empty block needed to keep small
-  },
   fieldName: {
+    wordBreak: 'break-all',
     minWidth: '90px',
+    maxWidth: '150px',
     borderBottom: '1px solid #0003',
     backgroundColor: theme.palette.grey[200],
     marginRight: theme.spacing(1),
@@ -81,12 +66,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   return (
     <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={true}>
       <ExpansionPanelSummary
-        classes={{
-          root: classes.root,
-          expanded: classes.expanded,
-          content: classes.content,
-        }}
-        expandIcon={<Icon>expand_more</Icon>}
+        expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
       >
         <Typography variant="button"> {title}</Typography>
       </ExpansionPanelSummary>
@@ -145,6 +125,7 @@ const omit = [
   'position',
   'subfeatures',
   'uniqueId',
+  'exonFrames',
 ]
 
 interface AttributeProps {

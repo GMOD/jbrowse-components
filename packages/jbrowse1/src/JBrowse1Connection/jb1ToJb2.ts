@@ -1,4 +1,5 @@
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+import objectHash from 'object-hash'
 import {
   generateUnknownTrackConf,
   generateUnsupportedTrackConf,
@@ -29,6 +30,7 @@ interface Jb2Adapter {
 
 interface Jb2Renderer {
   type: string
+  configId: string
 }
 
 interface Jb2Feature {
@@ -81,31 +83,41 @@ export function convertTrackConfig(
     .replace(/%7B/gi, '{')
     .replace(/%7D/gi, '}')
   jb2TrackConfig.adapter = guessAdapter(urlTemplate, 'uri')
-  if (!jb2TrackConfig.adapter) throw new Error('Could not determine adapter')
+  if (!jb2TrackConfig.adapter) {
+    throw new Error('Could not determine adapter')
+  }
 
-  if (jb2TrackConfig.adapter.type === UNSUPPORTED)
+  if (jb2TrackConfig.adapter.type === UNSUPPORTED) {
     return generateUnsupportedTrackConf(
       jb2TrackConfig.name,
       urlTemplate,
       jb2TrackConfig.category,
     )
-  if (jb2TrackConfig.adapter.type === UNKNOWN)
+  }
+  if (jb2TrackConfig.adapter.type === UNKNOWN) {
     return generateUnknownTrackConf(
       jb2TrackConfig.name,
       urlTemplate,
       jb2TrackConfig.category,
     )
+  }
 
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
   if (jb2TrackConfig.type === 'WiggleTrack') {
-    if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot'))
+    if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
       jb2TrackConfig.defaultRendering = 'xyplot'
-    else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density'))
+    } else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density')) {
       jb2TrackConfig.defaultRendering = 'density'
-  } else if (jb2TrackConfig.type === 'BasicTrack')
-    jb2TrackConfig.renderer = { type: 'SvgFeatureRenderer' }
+    }
+  } else if (jb2TrackConfig.type === 'BasicTrack') {
+    jb2TrackConfig.renderer = {
+      configId: `${objectHash(jb2TrackConfig)}-renderer`,
+      type: 'SvgFeatureRenderer',
+    }
+  }
 
+  jb2TrackConfig.configId = objectHash(jb2TrackConfig)
   return jb2TrackConfig
 }
 
@@ -129,7 +141,11 @@ function generateFromConfigTrackConfig(
     features: jb2Features,
   }
   jb2TrackConfig.type = 'BasicTrack'
-  jb2TrackConfig.renderer = { type: 'SvgFeatureRenderer' }
+  jb2TrackConfig.renderer = {
+    configId: `${objectHash(jb2TrackConfig)}-renderer`,
+    type: 'SvgFeatureRenderer',
+  }
+  jb2TrackConfig.configId = objectHash(jb2TrackConfig)
   return jb2TrackConfig
 }
 

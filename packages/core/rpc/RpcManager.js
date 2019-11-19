@@ -52,6 +52,10 @@ class RpcManager {
         throw new Error(
           `requested RPC driver "${backendName}" is not installed`,
         )
+      } else if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
       }
 
       this.driverObjects[backendName] = new DriverClass(backendConfiguration)

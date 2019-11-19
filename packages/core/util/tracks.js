@@ -80,11 +80,15 @@ export function guessAdapter(fileName, protocol) {
 
   if (/\.cram$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'CramAdapter',
+      cramLocation: { [protocol]: fileName },
+      craiLocation: { [protocol]: `${fileName}.crai` },
     }
   if (/\.crai$/i.test(fileName))
     return {
-      type: UNSUPPORTED,
+      type: 'CramAdapter',
+      cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },
+      craiLocation: { [protocol]: fileName },
     }
 
   if (/\.gff3?$/i.test(fileName))
@@ -241,6 +245,7 @@ export function guessTrackType(adapterType) {
   return (
     {
       BamAdapter: 'AlignmentsTrack',
+      CramAdapter: 'AlignmentsTrack',
       BgzipFastaAdapter: 'SequenceTrack',
       BigWigAdapter: 'WiggleTrack',
       IndexedFastaAdapter: 'SequenceTrack',

@@ -18,7 +18,7 @@ export default pluginManager => {
     {
       autoscale: {
         type: 'stringEnum',
-        defaultValue: 'global',
+        defaultValue: 'local',
         model: types.enumeration('Autoscale type', ['global', 'local']),
         description: 'performs local or global autoscaling',
       },

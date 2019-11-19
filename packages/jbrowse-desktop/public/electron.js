@@ -7,6 +7,7 @@ const fetch = require('node-fetch')
 const path = require('path')
 const url = require('url')
 const { promisify } = require('util')
+const merge = require('deepmerge')
 
 const fsCopyFile = promisify(fs.copyFile)
 const fsFStat = promisify(fs.fstat)
@@ -21,7 +22,7 @@ const fsWriteFile = promisify(fs.writeFile)
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
-debug()
+debug({ showDevTools: false })
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
@@ -105,21 +106,48 @@ ipcMain.on('createWindowWorker', event => {
 
 ipcMain.handle('getMainWindowId', async () => mainWindow.id)
 
+// merge function to get stuff from a development config into a production one
+// limited functionality, difficult to use existing merge-deep/mixin-deep type
+// things for this
+function mergeConfigs(A, B) {
+  const X = {}
+  const Y = {}
+  A.datasets.forEach(a => {
+    X[a.assembly.name] = a
+  })
+  B.datasets.forEach(b => {
+    Y[b.assembly.name] = b
+  })
+  return Object.values(merge(X, Y))
+}
+
 ipcMain.handle('loadConfig', async () => {
-  let configJSON
   try {
-    configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
+    return JSON.parse(await fsReadFile(configLocation, { encoding: 'utf8' }))
   } catch (error) {
     if (error.code === 'ENOENT') {
       // make a config file since one does not exist yet
       const configTemplateLocation = isDev
         ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
-        : `${path.join(app.getAppPath(), 'build', 'test_data', 'config.json')}`
-      await fsCopyFile(configTemplateLocation, configLocation)
-      configJSON = await fsReadFile(configLocation, { encoding: 'utf8' })
-    } else throw error
+        : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
+      const config = JSON.parse(
+        await fsReadFile(configTemplateLocation, { encoding: 'utf8' }),
+      )
+      if (isDev) {
+        config.datasets = mergeConfigs(
+          config,
+          JSON.parse(
+            await fsReadFile('./test_data/config_in_dev.json', {
+              encoding: 'utf8',
+            }),
+          ),
+        )
+      }
+      await fsWriteFile(configLocation, JSON.stringify(config, null, 2))
+      return config
+    }
+    throw error
   }
-  return JSON.parse(configJSON)
 })
 
 ipcMain.on('saveConfig', async (event, configSnapshot) => {

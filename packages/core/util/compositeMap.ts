@@ -29,6 +29,18 @@ export default class CompositeMap<T, U> {
     }
   }
 
+  find<V>(f: (arg0: U) => V) {
+    for (const submap of this.submaps.values()) {
+      for (const value of submap.values()) {
+        const found = f(value)
+        if (found) {
+          return value
+        }
+      }
+    }
+    return undefined
+  }
+
   *[Symbol.iterator]() {
     for (const submap of this.submaps.values()) {
       for (const e of submap) {

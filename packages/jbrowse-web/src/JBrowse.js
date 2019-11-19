@@ -1,22 +1,55 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import '@gmod/jbrowse-core/fonts/material-icons.css'
+import { App, theme } from '@gmod/jbrowse-core/ui'
 import {
   toUrlSafeB64,
   fromUrlSafeB64,
   useDebounce,
+  inDevelopment,
 } from '@gmod/jbrowse-core/util'
 import { openLocation } from '@gmod/jbrowse-core/util/io'
+
+// material-ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/styles'
+
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
+import merge from 'deepmerge'
+
 import rootModel from './rootModel'
-import App from './ui/App'
-import Theme from './ui/theme'
+
+// similar to electron.js
+function mergeConfigs(A, B) {
+  const X = {}
+  const Y = {}
+  A.datasets.forEach(a => {
+    X[a.assembly.name] = a
+  })
+  B.datasets.forEach(b => {
+    Y[b.assembly.name] = b
+  })
+  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
+  return Object.values(merge(X, Y))
+}
+async function parseConfig(configLoc) {
+  const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
+  if (inDevelopment) {
+    config.datasets = mergeConfigs(
+      config,
+      JSON.parse(
+        await openLocation({ uri: 'test_data/config_in_dev.json' }).readFile(
+          'utf8',
+        ),
+      ),
+    )
+  }
+  return config
+}
 
 export default observer(({ config, initialState }) => {
   const [status, setStatus] = useState('loading')
@@ -52,11 +85,11 @@ export default observer(({ config, initialState }) => {
         else {
           let configSnapshot = config || {}
           const localStorageConfig = localStorage.getItem('jbrowse-web-data')
-          if (localStorageConfig)
+          if (localStorageConfig) {
             configSnapshot = JSON.parse(localStorageConfig)
+          }
           if (configSnapshot.uri || configSnapshot.localPath) {
-            const configText = await openLocation(config).readFile('utf8')
-            configSnapshot = JSON.parse(configText)
+            configSnapshot = await parseConfig(config)
           }
           try {
             r = rootModel.create({ jbrowse: configSnapshot })
@@ -178,7 +211,7 @@ export default observer(({ config, initialState }) => {
     DisplayComponent = <App session={root.session} />
 
   return (
-    <ThemeProvider theme={Theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {DisplayComponent}
     </ThemeProvider>

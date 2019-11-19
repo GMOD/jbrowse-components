@@ -1,3 +1,4 @@
+import { openLocation } from '@gmod/jbrowse-core/util/io'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormLabel from '@material-ui/core/FormLabel'
@@ -44,7 +45,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TrackHubRegistrySelect({ model }) {
+function TrackHubRegistrySelect({ model, setModelReady }) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [assemblies, setAssemblies] = useState(null)
   const [selectedSpecies, setSelectedSpecies] = useState('')
@@ -53,6 +54,11 @@ function TrackHubRegistrySelect({ model }) {
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
   const classes = useStyles()
+
+  useEffect(() => {
+    if (selectedHub) setModelReady(true)
+    else setModelReady(false)
+  }, [selectedHub, setModelReady])
 
   useEffect(() => {
     async function getAssemblies() {
@@ -91,18 +97,16 @@ function TrackHubRegistrySelect({ model }) {
     )
     if (response) {
       for (const item of response.items) {
-        if (item.hub.url.startsWith('ftp'))
-          item.error = 'JBrowse web cannot add connections from FTP sources'
+        if (item.hub.url.startsWith('ftp://'))
+          item.error = 'JBrowse cannot add connections from FTP sources'
         else {
-          let rawResponse
+          const hub = openLocation({ uri: item.hub.url })
           try {
             // eslint-disable-next-line no-await-in-loop
-            rawResponse = await fetch(item.hub.url, { method: 'HEAD' })
+            await hub.stat()
           } catch (error) {
             item.error = error.message
           }
-          if (rawResponse && !rawResponse.ok)
-            item.error = `${response.status}: ${response.statusText}`
         }
         newHubs.set(item.id, item)
       }
@@ -218,7 +222,9 @@ function TrackHubRegistrySelect({ model }) {
     return <div>{renderItems}</div>
   }
 
-  const speciesList = Object.keys(assemblies).sort()
+  const speciesList = Object.keys(assemblies)
+    .sort()
+    .filter(item => item.toLowerCase().includes('sapiens'))
 
   renderItems.push(
     <SelectBox
@@ -320,6 +326,7 @@ function TrackHubRegistrySelect({ model }) {
 
 TrackHubRegistrySelect.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
+  setModelReady: PropTypes.func.isRequired,
 }
 
 export default TrackHubRegistrySelect

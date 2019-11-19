@@ -17,15 +17,17 @@ export default class extends BaseAdapter {
 
   static capabilities = ['getFeatures']
 
-  constructor({
-    refNames,
-    rootUrlTemplate,
-  }: {
+  private configId: string
+
+  constructor(args: {
+    configId: string
     refNames?: string[]
     rootUrlTemplate: string
   }) {
     super()
+    const { configId, refNames, rootUrlTemplate } = args
     this.configRefNames = refNames
+    this.configId = configId
 
     this.nclist = new NCListStore({
       baseUrl: '',
@@ -55,7 +57,11 @@ export default class extends BaseAdapter {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wrapFeature(ncFeature: any): NCListFeature {
-    return new NCListFeature(ncFeature)
+    return new NCListFeature(
+      ncFeature,
+      undefined,
+      `${this.configId}-${ncFeature.id()}`,
+    )
   }
 
   async hasDataForRefName(refName: string) {

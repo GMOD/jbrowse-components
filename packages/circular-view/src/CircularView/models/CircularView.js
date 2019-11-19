@@ -36,6 +36,7 @@ export default pluginManager => {
       hideVerticalResizeHandle: false,
       hideTrackSelectorButton: false,
       lockedFitToWindow: true,
+      disableImportForm: false,
 
       width: 800,
       height: types.optional(

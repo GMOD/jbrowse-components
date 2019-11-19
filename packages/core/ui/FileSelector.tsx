@@ -89,25 +89,25 @@ const FileLocationEditor = observer(
   },
 )
 
-const UrlChooser = observer(
-  (props: { location?: IFileLocation; setLocation: Function }) => {
-    const { location, setLocation } = props
-    const handleChange = (
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => {
-      setLocation({ uri: event.target.value })
-    }
-    return (
-      <TextField
-        key={location && isUriLocation(location) ? location.uri : 'none'}
-        margin="dense"
-        fullWidth
-        defaultValue={location && isUriLocation(location) && location.uri}
-        onChange={handleChange}
-      />
-    )
-  },
-)
+const UrlChooser = (props: {
+  location?: IFileLocation
+  setLocation: Function
+}) => {
+  const { location, setLocation } = props
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setLocation({ uri: event.target.value })
+  }
+  return (
+    <TextField
+      margin="dense"
+      fullWidth
+      defaultValue={location && isUriLocation(location) && location.uri}
+      onChange={handleChange}
+    />
+  )
+}
 
 const LocalFileChooser = observer(
   (props: { location?: IFileLocation; setLocation: Function }) => {

@@ -1,4 +1,4 @@
-const { electronBetterIpc, rpcMethods, rpcStuff, electron } = window
+const { electronBetterIpc, rpcMethods, rpcStuff } = window
 
 const { ipcRenderer } = electronBetterIpc
 
@@ -12,40 +12,6 @@ const {
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useStaticRendering(true)
-
-let mainWindow
-
-// eslint-disable-next-line no-console
-const originalConsoleLog = console.log.bind(console)
-// eslint-disable-next-line no-console
-console.log = async (...args) => {
-  if (!mainWindow) {
-    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
-    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
-  }
-  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleLog', ...args)
-  originalConsoleLog(...args)
-}
-
-const originalConsoleWarn = console.warn.bind(console)
-console.warn = async (...args) => {
-  if (!mainWindow) {
-    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
-    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
-  }
-  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleWarn', ...args)
-  originalConsoleWarn(...args)
-}
-
-const originalConsoleError = console.error.bind(console)
-console.error = async (...args) => {
-  if (!mainWindow) {
-    const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
-    mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
-  }
-  ipcRenderer.sendTo(mainWindow.webContents.id, 'consoleError', ...args)
-  originalConsoleError(...args)
-}
 
 const jbPluginManager = new PluginManager(corePlugins.map(P => new P()))
 jbPluginManager.configure()

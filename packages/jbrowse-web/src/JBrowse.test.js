@@ -64,19 +64,19 @@ jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
     const { getByText } = render(<JBrowse config={{}} />)
-    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+    expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
   it('renders with an initialState', async () => {
     const state = rootModel.create({ jbrowse: config })
     const { getByText } = render(<JBrowse initialState={state} />)
-    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+    expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
 
   it('can use config from a url', async () => {
     const { getByText } = render(
       <JBrowse config={{ uri: 'test_data/config_integration_test.json' }} />,
     )
-    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+    expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
 
   it('can use config from a local file', async () => {
@@ -89,7 +89,7 @@ describe('<JBrowse />', () => {
         }}
       />,
     )
-    expect(await waitForElement(() => getByText('JBrowse'))).toBeTruthy()
+    expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
 })
 
@@ -97,7 +97,7 @@ describe('valid file tests', () => {
   it('access about menu', async () => {
     const { getByText } = render(<JBrowse config={config} />)
     await waitForElement(() => getByText('ctgA'))
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     fireEvent.click(getByText('Help'))
     fireEvent.click(getByText('About'))
 
@@ -193,7 +193,7 @@ describe('some error state', () => {
     await expect(
       waitForElement(() =>
         getAllByText(
-          'HTTP 404 fetching /test_data/volvox-sorted.bam.bai.nonexist',
+          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
         ),
       ),
     ).resolves.toBeTruthy()
@@ -234,7 +234,7 @@ test('lollipop track test', async () => {
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
-  await waitForElement(() => getByText('JBrowse'))
+  await waitForElement(() => getByText('Help'))
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-lollipop_track')),
@@ -249,7 +249,7 @@ test('variant track test - opens feature detail view', async () => {
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
-  await waitForElement(() => getByText('JBrowse'))
+  await waitForElement(() => getByText('Help'))
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(
     await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
@@ -267,7 +267,7 @@ describe('nclist track test with long name', () => {
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(1, -539)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-nclist_long_names')),
@@ -275,7 +275,7 @@ describe('nclist track test with long name', () => {
     await expect(
       waitForElement(() =>
         getByText(
-          'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz12345678...',
+          'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
         ),
       ),
     ).resolves.toBeTruthy()
@@ -290,7 +290,7 @@ describe('test configuration editor', () => {
       getByTitle,
       getByDisplayValue,
     } = render(<JBrowse initialState={state} />)
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_filtered_vcf')),
@@ -316,7 +316,7 @@ describe('bigwig', () => {
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray')),
@@ -330,7 +330,7 @@ describe('bigwig', () => {
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() => byId('htsTrackEntry-volvox_microarray_line')),
@@ -344,7 +344,7 @@ describe('bigwig', () => {
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() =>
@@ -360,7 +360,7 @@ describe('bigwig', () => {
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(
       await waitForElement(() =>
@@ -381,7 +381,7 @@ describe('circular views', () => {
       <JBrowse initialState={state} />,
     )
     // wait for the UI to be loaded
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
 
     // open a new circular view on the same dataset as the test linear view
     state.session.addViewFromAnotherView('CircularView', state.session.views[0])
@@ -413,17 +413,16 @@ describe('breakpoint split view', () => {
     mockConsole()
     const state = rootModel.create({ jbrowse: breakpointConfig })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    // wait for the UI to be loaded
-    await waitForElement(() => getByText('JBrowse'))
+    await waitForElement(() => getByText('Help'))
 
     expect(
       await waitForElement(() =>
-        getByTestId('pacbio_hg002-breakpoints-loaded'),
+        getByTestId('pacbio_hg002_breakpoints-loaded'),
       ),
     ).toMatchSnapshot()
 
     expect(
-      await waitForElement(() => getByTestId('pacbio_vcf-vcfbreakends-loaded')),
+      await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
     ).toMatchSnapshot()
   })
 })

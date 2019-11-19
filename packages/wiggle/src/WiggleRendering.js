@@ -1,5 +1,5 @@
 import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
-import PrerenderedCanvas from '@gmod/jbrowse-core/components/PrerenderedCanvas'
+import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { Component } from 'react'

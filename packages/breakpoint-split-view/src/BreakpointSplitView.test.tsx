@@ -152,8 +152,11 @@ test('BreakpointSplitView with soft clipping', () => {
   expect(model.views[1]).toBeTruthy()
   expect(model.trackSelectorType).toBe('hierarchical')
   expect(model.matchedTracks).toMatchSnapshot()
-  expect(model.getMatchedFeatures('pacbio_hg002')).toMatchSnapshot()
-  expect(model.getMatchedFeaturesInLayout('pacbio_hg002')).toMatchSnapshot()
+  const feats = model.getMatchedAlignmentFeatures('pacbio_hg002')
+  expect(feats).toMatchSnapshot()
+  expect(
+    model.getMatchedFeaturesInLayout('pacbio_hg002', feats),
+  ).toMatchSnapshot()
 })
 
 test('BreakpointSplitView with hard clipping', () => {
@@ -236,10 +239,10 @@ test('BreakpointSplitView with hard clipping', () => {
   expect(model.views[1]).toBeTruthy()
   expect(model.trackSelectorType).toBe('hierarchical')
   expect(model.matchedTracks).toMatchSnapshot()
-  expect(model.getMatchedFeatures('nonexist')).toEqual({
-    features: [],
-    type: 'None',
-  })
-  expect(model.getMatchedFeatures('volvox_samspec')).toMatchSnapshot()
-  expect(model.getMatchedFeaturesInLayout('volvox_samspec')).toMatchSnapshot()
+  expect(model.getMatchedAlignmentFeatures('nonexist')).toEqual([])
+  const feats = model.getMatchedAlignmentFeatures('volvox_samspec')
+  expect(feats).toMatchSnapshot()
+  expect(
+    model.getMatchedFeaturesInLayout('volvox_samspec', feats),
+  ).toMatchSnapshot()
 })

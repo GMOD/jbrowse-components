@@ -1,45 +1,32 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`breakpoint split view open a split view 1`] = `
-<svg
-  data-testid="pacbio_hg002-breakpoints-loaded"
-  style="width: 100%; z-index: 10; pointer-events: none;"
+<g
+  data-testid="pacbio_hg002_breakpoints-loaded"
+  fill="none"
+  stroke="#333"
 >
-  <g
-    id="alignmentsquiggles"
-  >
-    <style>
-      #alignmentsquiggles &gt; path {
-                    cursor: crosshair;
-                    fill: none;
-                  }
-    </style>
-    <path
-      d="M 407.99312656000257 72.5 C 607.9931265600026 72.5 203.41868021525443 335.5 403.4186802152544 335.5"
-      fill="none"
-      stroke="#333"
-      stroke-width="1"
-    />
-    <path
-      d="M 658.4186802152544 335.5 C 858.4186802152544 335.5 206.99312656000257 45.5 406.99312656000257 45.5"
-      fill="none"
-      stroke="#333"
-      stroke-width="1"
-    />
-  </g>
-</svg>
+  <path
+    d="M 407.99312656000257 72.5 C 607.9931265600026 72.5 203.41868021525443 335.5 403.4186802152544 335.5"
+    stroke-width="1"
+  />
+  <path
+    d="M 658.4186802152544 335.5 C 858.4186802152544 335.5 206.99312656000257 45.5 406.99312656000257 45.5"
+    stroke-width="1"
+  />
+</g>
 `;
 
 exports[`breakpoint split view open a split view 2`] = `
-<svg
-  data-testid="pacbio_vcf-vcfbreakends-loaded"
-  style="width: 100%; z-index: 10000; pointer-events: none;"
+<g
+  data-testid="pacbio_vcf-loaded"
+  fill="none"
+  stroke="green"
+  stroke-width="5"
 >
   <path
-    d="M 387.99312656000257 187 L 407.99312656000257 187 L 403.4186802152544 441 L 423.4186802152544 441"
-    fill="none"
-    stroke="green"
+    d="M 387.99312656000257 165 L 407.99312656000257 165 L 403.4186802152544 419 L 423.4186802152544 419"
     stroke-width="5"
   />
-</svg>
+</g>
 `;

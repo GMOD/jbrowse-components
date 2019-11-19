@@ -235,14 +235,21 @@ function regularizeIncludes(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fillTemplates<T extends any>(subconfig: T, config: Config): T {
-  if (Array.isArray(subconfig))
-    for (let i = 0; i < subconfig.length; i += 1)
+  if (!subconfig) {
+    return subconfig
+  }
+  if (Array.isArray(subconfig)) {
+    for (let i = 0; i < subconfig.length; i += 1) {
       subconfig[i] = fillTemplates(subconfig[i], config)
-  else if (typeof subconfig === 'object')
-    for (const name of Object.keys(subconfig))
+    }
+  } else if (typeof subconfig === 'object') {
+    for (const name of Object.keys(subconfig)) {
       subconfig[name] = fillTemplates(subconfig[name], config)
-  // @ts-ignore
-  else if (typeof subconfig === 'string') return fillTemplate(subconfig, config)
+    }
+  } else if (typeof subconfig === 'string') {
+    // @ts-ignore
+    return fillTemplate(subconfig, config)
+  }
 
   return subconfig
 }

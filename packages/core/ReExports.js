@@ -60,8 +60,6 @@ import * as MUIColors from './ReExports/material-ui-colors'
 
 import * as mstTypes from './mst-types'
 
-import ResizeHandle from './components/ResizeHandle'
-
 export default {
   mobx,
   'mobx-state-tree': mst,
@@ -120,5 +118,4 @@ export default {
   '@gmod/jbrowse-core/util': coreUtil,
   '@gmod/jbrowse-core/util/tracks': trackUtils,
   '@gmod/jbrowse-core/util/io': coreIo,
-  '@gmod/jbrowse-core/components/ResizeHandle': ResizeHandle,
 }

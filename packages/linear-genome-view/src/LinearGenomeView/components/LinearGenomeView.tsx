@@ -1,5 +1,5 @@
-import ResizeHandle from '@gmod/jbrowse-core/components/ResizeHandle'
-import { generateLocString, getSession } from '@gmod/jbrowse-core/util'
+import { ResizeHandle } from '@gmod/jbrowse-core/ui'
+import { generateLocString } from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
@@ -16,7 +16,6 @@ import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
-import LinearProgress from '@material-ui/core/LinearProgress'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
@@ -29,7 +28,7 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance, getRoot } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 // locals
 import buttonStyles from './buttonStyles'
@@ -55,7 +54,7 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
   },
   linearGenomeView: {
-    background: '#eee',
+    background: '#D9D9D9',
     // background: theme.palette.background.paper,
     boxSizing: 'content-box',
   },
@@ -68,7 +67,7 @@ const useStyles = makeStyles(theme => ({
   viewControls: {
     height: '100%',
     zIndex: 10,
-    background: '#eee',
+    background: '#D9D9D9',
     borderBottom: '1px solid #9e9e9e',
     boxSizing: 'border-box',
   },
@@ -79,6 +78,9 @@ const useStyles = makeStyles(theme => ({
     gridArea: '1/1/auto/span 2',
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
+    background: '#F2F2F2',
+    borderTop: '1px solid #9D9D9D',
+    borderBottom: '1px solid #9D9D9D',
   },
   spacer: {
     flexGrow: 1,
@@ -87,7 +89,7 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(1),
   },
   emphasis: {
-    background: '#dddd',
+    background: theme.palette.secondary.main,
     padding: theme.spacing(1),
   },
   searchRoot: {
@@ -102,13 +104,17 @@ const useStyles = makeStyles(theme => ({
     top: 0,
   },
   hovered: {
-    border: '1px solid grey',
+    background: theme.palette.secondary.light,
   },
   input: {
     width: 300,
     error: {
       backgroundColor: 'red',
     },
+    padding: theme.spacing(0, 1),
+  },
+  importFormContainer: {
+    marginBottom: theme.spacing(4),
   },
   ...buttonStyles(theme),
 }))
@@ -181,7 +187,7 @@ const LongMenu = observer(
           className={className}
           onClick={handleClick}
         >
-          <Icon>more_vert</Icon>
+          <Icon color="secondary">more_vert</Icon>
         </IconButton>
         <Menu
           id="long-menu"
@@ -254,6 +260,7 @@ const TextFieldOrTypography = observer(({ model }: { model: LGV }) => {
         onClick={() => setEdit(true)}
         onMouseOver={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        style={{ color: '#FFFFFF' }}
       >
         {name}
       </Typography>
@@ -291,7 +298,7 @@ function Search({
           className={classes.iconButton}
           aria-label="search"
         >
-          <Icon>search</Icon>
+          <Icon color="secondary">search</Icon>
         </IconButton>
       </form>
     </Paper>
@@ -360,7 +367,9 @@ const Controls = observer(({ model }) => {
         className={classes.iconButton}
         title="close this view"
       >
-        <Icon fontSize="small">close</Icon>
+        <Icon color="secondary" fontSize="small">
+          close
+        </Icon>
       </IconButton>
 
       <IconButton
@@ -368,7 +377,9 @@ const Controls = observer(({ model }) => {
         title="select tracks"
         value="track_select"
       >
-        <Icon fontSize="small">line_style</Icon>
+        <Icon color="secondary" fontSize="small">
+          line_style
+        </Icon>
       </IconButton>
       <LongMenu className={classes.iconButton} model={model} />
     </>
@@ -378,65 +389,46 @@ const Controls = observer(({ model }) => {
 // note: as of writing, this is identifical (except with typescript) to circularview's copy
 // if modified, consider refactoring or updating circularview's copy
 // not extracted to a separate component just yet...
-const ImportForm = observer(({ model }: { model: LGV }) => {
+const ImportForm = observer(({ model }) => {
   const classes = useStyles()
   const [selectedDatasetIdx, setSelectedDatasetIdx] = useState('')
-  const [selectedAssembly, setSelectedAssembly] = useState()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState()
-  const datasets = getRoot(model).jbrowse.datasets.map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (dataset: any, idx: number) => readConfObject(dataset, 'name'),
+  const { datasets } = getRoot(model).jbrowse
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const datasetChoices = datasets.map((dataset: any) =>
+    readConfObject(dataset, 'name'),
   )
+  function openButton() {
+    if (parseInt(selectedDatasetIdx, 10) >= 0) {
+      const dataset = datasets[Number(selectedDatasetIdx)]
+      if (dataset) {
+        const assemblyName = readConfObject(dataset.assembly, 'name')
+        if (
+          assemblyName &&
+          assemblyName !== model.displayRegionsFromAssemblyName
+        ) {
+          model.setDisplayedRegionsFromAssemblyName(assemblyName)
+          return
+        }
+      }
+    }
+    model.setDisplayedRegions([])
+    model.setDisplayedRegionsFromAssemblyName(undefined)
+  }
 
-  useEffect(() => {
-    let finished = false
-    async function updateAssembly() {
-      setLoading(true)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const session = getSession(model) as any
-      const displayedRegions = await session.getRegionsForAssembly(
-        selectedAssembly,
-        session.assemblyData,
-      )
-      // note: we cannot just use setDisplayRegionsFromAssemblyName because
-      // it uses an autorun that does not respond to updates to
-      // the displayRegionsFromAssembly name (only to changes to the self.views array)
-      // see sessionModelFactory
-      if (!finished) {
-        model.setDisplayedRegions(displayedRegions || [], true)
-        model.setDisplayName(selectedAssembly)
-      }
-    }
-    try {
-      if (selectedAssembly) {
-        updateAssembly()
-      }
-    } catch (e) {
-      if (!finished) {
-        setError(e.message)
-      }
-    }
-    return () => {
-      finished = true
-    }
-  }, [model, selectedAssembly])
   return (
     <>
-      <div style={{ height: HEADER_BAR_HEIGHT }}>
-        <IconButton
-          onClick={model.closeView}
-          className={classes.iconButton}
-          title="close this view"
-        >
-          <Icon fontSize="small">close</Icon>
-        </IconButton>
-      </div>
-      <Container>
-        {error ? (
-          <Typography style={{ color: 'red' }}>{error}</Typography>
-        ) : null}
-        {loading ? <LinearProgress /> : null}
+      {model.hideCloseButton ? null : (
+        <div style={{ height: 40 }}>
+          <IconButton
+            onClick={model.closeView}
+            className={classes.iconButton}
+            title="close this view"
+          >
+            <Icon color="secondary">close</Icon>
+          </IconButton>
+        </div>
+      )}
+      <Container className={classes.importFormContainer}>
         <Grid
           style={{ width: '25rem', margin: '0 auto' }}
           container
@@ -454,7 +446,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     setSelectedDatasetIdx(String(event.target.value))
                   }}
                 >
-                  {datasets.map((name: string, idx: number) => (
+                  {datasetChoices.map((name: string, idx: number) => (
                     <MenuItem key={name} value={idx}>
                       {name}
                     </MenuItem>
@@ -466,14 +458,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           <Grid item>
             <Button
               disabled={selectedDatasetIdx === undefined}
-              onClick={event => {
-                const assemblyName = readConfObject(
-                  getRoot(model).jbrowse.datasets[Number(selectedDatasetIdx)]
-                    .assembly,
-                  'name',
-                )
-                setSelectedAssembly(assemblyName)
-              }}
+              onClick={openButton}
               variant="contained"
               color="primary"
             >

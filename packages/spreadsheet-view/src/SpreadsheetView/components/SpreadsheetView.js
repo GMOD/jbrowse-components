@@ -10,7 +10,7 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
   const Grid = jbrequire('@material-ui/core/Grid')
-  const ResizeHandle = jbrequire('@gmod/jbrowse-core/components/ResizeHandle')
+  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
 
   const ImportWizard = jbrequire(require('./ImportWizard'))
   const Spreadsheet = jbrequire(require('./Spreadsheet'))
@@ -73,7 +73,9 @@ export default pluginManager => {
             title="close this view"
             data-testid="spreadsheet_view_close"
           >
-            <Icon fontSize="small">close</Icon>
+            <Icon color="secondary" fontSize="small">
+              close
+            </Icon>
           </IconButton>
 
           <IconButton
@@ -82,7 +84,9 @@ export default pluginManager => {
             title="open a tabular file"
             data-testid="spreadsheet_view_open"
           >
-            <Icon fontSize="small">folder_open</Icon>
+            <Icon color="secondary" fontSize="small">
+              folder_open
+            </Icon>
           </IconButton>
         </Grid>
       </Grid>
@@ -121,7 +125,7 @@ export default pluginManager => {
                   aria-label="clear filter"
                   onClick={() => setTextFilterValue('')}
                 >
-                  <Icon>clear</Icon>
+                  <Icon color="secondary">clear</Icon>
                 </IconButton>
               </InputAdornment>
             ),

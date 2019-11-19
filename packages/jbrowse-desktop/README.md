@@ -30,9 +30,10 @@ sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev li
 sudo apt install -y wine-stable
 ```
 
-`yarn build` will then build and package the application for Linux, Mac, and
-Windows. You can also use `yarn build:win`, `yarn build:linux`, or
-`yarn build:mac` to build and package for a specific platform.
+`yarn build-electron` will then build and package the application for Linux,
+Mac, and Windows. You can also use `yarn build-electron:win`,
+`yarn build-electron:linux`, or `yarn build-electron:mac` to build and package
+for a specific platform.
 
 #### Windows
 
@@ -56,4 +57,5 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 # Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
 ```
 
-Then you can run `yarn build:win` to build and package the Windows application.
+Then you can run `yarn build-electron:win` to build and package the Windows
+application.

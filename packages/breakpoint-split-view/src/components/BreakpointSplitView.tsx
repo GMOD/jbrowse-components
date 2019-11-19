@@ -1,7 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { Instance } from 'mobx-state-tree'
-import { BreakpointViewStateModel } from '../model'
-
+import { BreakpointViewModel } from '../model'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -11,8 +9,10 @@ export default (pluginManager: any) => {
     '@material-ui/core/styles',
   )
 
-  const AlignmentSplines = jbrequire(require('./AlignmentSplines'))
-  const BreakendLines = jbrequire(require('./BreakendLines'))
+  const AlignmentConnections = jbrequire(require('./AlignmentConnections'))
+  const Breakends = jbrequire(require('./Breakends'))
+  const Translocations = jbrequire(require('./Translocations'))
+
   const Header = jbrequire(require('./Header'))
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -38,7 +38,13 @@ export default (pluginManager: any) => {
         background: grey[300],
       },
       overlay: {
+        display: 'flex',
+        width: '100%',
         gridArea: '1/1',
+        '& path': {
+          cursor: 'crosshair',
+          fill: 'none',
+        },
       },
       content: {
         gridArea: '1/1',
@@ -46,27 +52,27 @@ export default (pluginManager: any) => {
     }
   })
 
-  // const BreakpointMarker = observer(function BreakpointMarker({
-  //   model,
-  // }: {
-  //   model: Instance<BreakpointViewStateModel>
-  // }) {
-  //   const classes = useStyles()
-
-  //   const leftRegion = model.topLGV.displayedRegions[0]
-  //   const leftWidthPx =
-  //     (leftRegion.end - leftRegion.start) / model.topLGV.bpPerPx
-  //   const offset =
-  //     leftWidthPx - model.topLGV.offsetPx + model.topLGV.controlsWidth - 2
-  //   const left = `${offset}px`
-  //   // TODO: draw little feet on the top and bottom of the marker line to show directionality
-  //   return <div className={classes.breakpointMarker} style={{ left }} />
-  // })
+  const Overlay = observer(
+    (props: { model: BreakpointViewModel; trackConfigId: string }) => {
+      const { model, trackConfigId } = props
+      const tracks = model.getMatchedTracks(trackConfigId)
+      if (tracks[0].type === 'AlignmentsTrack') {
+        return <AlignmentConnections {...props} />
+      }
+      if (tracks[0].type === 'VariantTrack') {
+        if (model.hasTranslocations(trackConfigId)) {
+          return <Translocations {...props} />
+        }
+        return <Breakends {...props} />
+      }
+      return null
+    },
+  )
 
   const BreakpointSplitView = observer(
-    ({ model }: { model: Instance<BreakpointViewStateModel> }) => {
+    ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
-      const { views } = model
+      const { views, controlsWidth } = model
       return (
         <div>
           <Header model={model} />
@@ -85,36 +91,20 @@ export default (pluginManager: any) => {
                 })}
               </div>
             </div>
-            {model.matchedTracks.map(m => {
-              const { features, type } = model.getMatchedFeaturesInLayout(m)
-              if (type === 'Alignments') {
-                return (
-                  <div className={classes.overlay} key={`overlay-${m}`}>
-                    <AlignmentSplines
-                      trackConfigId={m}
-                      model={model}
-                      alignmentChunks={features}
-                      className={classes.root}
-                      data-testid={model.configuration.configId}
-                    />
-                  </div>
-                )
-              }
-              if (type === 'Breakends') {
-                return (
-                  <div className={classes.overlay} key={`overlay-${m}`}>
-                    <BreakendLines
-                      trackConfigId={m}
-                      model={model}
-                      alignmentChunks={features}
-                      className={classes.root}
-                      data-testid={model.configuration.configId}
-                    />
-                  </div>
-                )
-              }
-              return null
-            })}
+            <div className={classes.overlay}>
+              <div style={{ width: controlsWidth, flexShrink: 0 }} />
+              <svg
+                style={{
+                  width: '100%',
+                  zIndex: 10,
+                  pointerEvents: model.interactToggled ? undefined : 'none',
+                }}
+              >
+                {model.matchedTracks.map(id => (
+                  <Overlay key={id} model={model} trackConfigId={id} />
+                ))}
+              </svg>
+            </div>
           </div>
         </div>
       )

@@ -33,6 +33,7 @@ const steps = ['Select a Connection Type', 'Configure Connection']
 function AddConnectionDrawerWidget({ model }) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
+  const [configModelReady, setConfigModelReady] = useState(true)
   const [datasetName, setDatasetName] = useState('')
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
@@ -68,6 +69,7 @@ function AddConnectionDrawerWidget({ model }) {
           <ConfigureConnection
             connectionType={connectionType}
             model={configModel}
+            setModelReady={setConfigModelReady}
           />
         )
 
@@ -95,7 +97,7 @@ function AddConnectionDrawerWidget({ model }) {
   function checkNextEnabled() {
     if (
       (activeStep === 0 && connectionType.name) ||
-      (activeStep === 1 && configModel)
+      (activeStep === 1 && configModel && configModelReady)
     )
       return true
     return false

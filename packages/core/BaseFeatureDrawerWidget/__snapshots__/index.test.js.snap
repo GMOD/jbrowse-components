@@ -12,12 +12,12 @@ exports[`open up a drawer widget 1`] = `
     <div
       aria-disabled="false"
       aria-expanded="true"
-      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+        class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
       >
         <span
           class="MuiTypography-root MuiTypography-button"
@@ -29,14 +29,14 @@ exports[`open up a drawer widget 1`] = `
       <div
         aria-disabled="false"
         aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
       >
         <span
           class="MuiIconButton-label"
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root makeStyles-expandIcon"
           >
             expand_more
           </span>
@@ -110,12 +110,12 @@ exports[`open up a drawer widget 1`] = `
     <div
       aria-disabled="false"
       aria-expanded="true"
-      class="MuiButtonBase-root MuiExpansionPanelSummary-root makeStyles-root MuiExpansionPanelSummary-expanded makeStyles-expanded"
+      class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiExpansionPanelSummary-content makeStyles-content MuiExpansionPanelSummary-expanded makeStyles-expanded"
+        class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
       >
         <span
           class="MuiTypography-root MuiTypography-button"
@@ -127,14 +127,14 @@ exports[`open up a drawer widget 1`] = `
       <div
         aria-disabled="false"
         aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded makeStyles-expanded MuiIconButton-edgeEnd"
+        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
       >
         <span
           class="MuiIconButton-label"
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root"
+            class="material-icons MuiIcon-root makeStyles-expandIcon"
           >
             expand_more
           </span>
