@@ -429,22 +429,20 @@ describe('breakpoint split view', () => {
 })
 
 describe('cause an exception in the jbrowse module loading', () => {
-  it('exception from mocked jbrowse component', async () => {
+  it('exception from mocked jbrowse component', () => {
     mockConsole()
     const mockError = jest.fn()
-    try {
-      render(
-        <ErrorBoundary onError={mockError}>
-          <JBrowse
-            config={{
-              // causes error, configuration should be an object
-              configuration: [],
-            }}
-          />
-          ,
-        </ErrorBoundary>,
-      )
-    } catch (e) {}
+    render(
+      <ErrorBoundary onError={mockError}>
+        <JBrowse
+          config={{
+            // causes error, configuration should be an object
+            configuration: [],
+          }}
+        />
+        ,
+      </ErrorBoundary>,
+    )
     expect(mockError).toHaveBeenCalled()
   })
 })

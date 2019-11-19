@@ -23,7 +23,7 @@ import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
 import 'typeface-roboto'
 
-import rootModel from './rootModel'
+import JBrowseRootModel from './rootModel'
 
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
@@ -42,10 +42,22 @@ async function parseConfig(configLoc) {
 
 function useJBrowseWeb(config, initialState) {
   const [loaded, setLoaded] = useState(false)
+  const [rootModel, setRootModel] = useState(initialState)
   const [root, setRoot] = useState(initialState || {})
+  const [loadAsyncConfig, setLoadAsyncConfig] = useState(false)
   const [urlSnapshot, setUrlSnapshot] = useState()
+  const [configSnapshot, setConfigSnapshot] = useState(config || {})
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
   const debouncedLoaded = useDebounce(loaded, 400)
+
+  const { session, jbrowse } = root || {}
+  const useLocalStorage = jbrowse
+    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
+    : false
+
+  const useUpdateUrl = jbrowse
+    ? readConfObject(jbrowse.configuration, 'updateUrl')
+    : false
 
   // This serializes the session to URL
   useEffect(() => {
@@ -68,70 +80,45 @@ function useJBrowseWeb(config, initialState) {
     }
   }, [debouncedUrlSnapshot, root])
 
-  const { session, jbrowse } = root || {}
+  useEffect(() => {
+    ;(async () => {
+      if (loadAsyncConfig) {
+        setConfigSnapshot(await parseConfig(config))
+      }
+    })()
+  }, [config, loadAsyncConfig])
 
-  const useLocalStorage = jbrowse
-    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
-    : false
+  useEffect(() => {
+    try {
+      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+    } catch (error) {
+      // if it failed to load, it's probably a problem with the saved sessions,
+      // so just delete them and try again
+      setRootModel(
+        JBrowseRootModel.create({
+          jbrowse: { ...configSnapshot, savedSessions: [] },
+        }),
+      )
+    }
+  }, [configSnapshot])
 
   // This loads a config from localStorage or a configSnapshot or a config.json file
   useEffect(() => {
     async function loadConfig() {
       try {
-        let r
         if (initialState) {
-          r = initialState
+          setRootModel(initialState)
         } else {
-          let configSnapshot = config || {}
           const localStorageConfig =
             useLocalStorage && localStorage.getItem('jbrowse-web-data')
 
           if (localStorageConfig) {
-            configSnapshot = JSON.parse(localStorageConfig)
+            setConfigSnapshot(JSON.parse(localStorageConfig))
           }
           if (configSnapshot.uri || configSnapshot.localPath) {
-            configSnapshot = await parseConfig(config)
-          }
-          try {
-            r = rootModel.create({ jbrowse: configSnapshot })
-          } catch (error) {
-            // if it failed to load, it's probably a problem with the saved sessions,
-            // so just delete them and try again
-            configSnapshot.savedSessions = []
-            r = rootModel.create({ jbrowse: configSnapshot })
+            setLoadAsyncConfig(true)
           }
         }
-
-        const params = new URL(document.location).searchParams
-        const urlSession = params.get('session')
-        if (urlSession) {
-          const savedSessionIndex = r.jbrowse.savedSessionNames.indexOf(
-            urlSession,
-          )
-          if (savedSessionIndex !== -1) {
-            r.setSession(r.jbrowse.savedSessions[savedSessionIndex])
-          } else {
-            r.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
-          }
-        } else {
-          const localStorageSession = localStorage.getItem(
-            'jbrowse-web-session',
-          )
-          const parsedSession = JSON.parse(localStorageSession)
-          if (parsedSession) r.setSession(parsedSession)
-        }
-        if (!r.session) {
-          if (r.jbrowse && r.jbrowse.savedSessions.length) {
-            const { name } = r.jbrowse.savedSessions[0]
-            r.activateSession(name)
-          } else {
-            r.setDefaultSession()
-          }
-        }
-
-        r.setHistory(UndoManager.create({}, { targetStore: r.session }))
-        setRoot(r)
-        setLoaded(true)
       } catch (e) {
         setLoaded(() => {
           // throw to error boundary
@@ -141,7 +128,51 @@ function useJBrowseWeb(config, initialState) {
     }
 
     loadConfig()
-  }, [config, initialState, useLocalStorage])
+  }, [
+    config,
+    configSnapshot.localPath,
+    configSnapshot.uri,
+    initialState,
+    useLocalStorage,
+  ])
+
+  // finalize rootModel
+  useEffect(() => {
+    const params = new URL(document.location).searchParams
+    const urlSession = params.get('session')
+    if (rootModel) {
+      if (urlSession) {
+        const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
+          urlSession,
+        )
+        if (savedSessionIndex !== -1) {
+          rootModel.setSession(
+            rootModel.jbrowse.savedSessions[savedSessionIndex],
+          )
+        } else {
+          rootModel.setSession(JSON.parse(fromUrlSafeB64(urlSession)))
+        }
+      } else {
+        const localStorageSession = localStorage.getItem('jbrowse-web-session')
+        const parsedSession = JSON.parse(localStorageSession)
+        if (parsedSession) rootModel.setSession(parsedSession)
+      }
+      if (!rootModel.session) {
+        if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
+          const { name } = rootModel.jbrowse.savedSessions[0]
+          rootModel.activateSession(name)
+        } else {
+          rootModel.setDefaultSession()
+        }
+      }
+
+      rootModel.setHistory(
+        UndoManager.create({}, { targetStore: rootModel.session }),
+      )
+      setRoot(rootModel)
+      setLoaded(true)
+    }
+  }, [rootModel])
 
   // make some things available globally for testing
   // e.g. window.MODEL.views[0] in devtools
@@ -177,17 +208,14 @@ function useJBrowseWeb(config, initialState) {
     [loaded, root.jbrowse, useLocalStorage],
   )
 
-  const updateUrl = jbrowse
-    ? readConfObject(jbrowse.configuration, 'updateUrl')
-    : false
   useEffect(
     () =>
-      session && updateUrl
+      session && useUpdateUrl
         ? onSnapshot(session, snapshot => {
             setUrlSnapshot(snapshot)
           })
         : () => {},
-    [updateUrl, session],
+    [useUpdateUrl, session],
   )
 
   // debouncedLoaded for making the loading spinner a little longer
