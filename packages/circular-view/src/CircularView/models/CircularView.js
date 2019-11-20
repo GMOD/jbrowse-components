@@ -47,7 +47,6 @@ export default pluginManager => {
       configuration: configSchema,
       spacingPx: 10,
       paddingPx: 80,
-      minBpPerPx: 0.01,
       minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
@@ -103,28 +102,38 @@ export default pluginManager => {
         }
         return total
       },
+
+      get maximumRadiusPx() {
+        return self.lockedFitToWindow
+          ? Math.min(self.width, self.height) / 2 - 100
+          : 1000000
+      },
       get maxBpPerPx() {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
         return self.totalBp / minCircumferencePx
       },
-      get minBpPerPxWhenLocked() {
-        // calculate the smallest BpPerPx before circle is cut off in viewport using # of zooms
-        // TODO: find Math.min of self.width and self.height, make circumference based off that, convert circumference to
-        // a minBpPerPxWhenLocked
-        const minCircumferencePx =
-          2 * Math.PI * Math.min(self.width, self.height)
-
-        /* old formula below */
-        const maxZoomWhenLocked = Math.floor(self.height / 100) - 1 // rough formula
-        return maxZoomWhenLocked > 0
-          ? self.maxBpPerPx / (maxZoomWhenLocked * 1.4)
-          : self.maxBpPerPx
+      get minBpPerPx() {
+        const maxCircumferencePx = 2 * Math.PI * self.maximumRadiusPx
+        return self.totalBp / maxCircumferencePx
       },
+      // get minBpPerPxWhenLocked() {
+      //   // calculate the smallest BpPerPx before circle is cut off in viewport using # of zooms
+      //   // TODO: find Math.min of self.width and self.height, make circumference based off that, convert circumference to
+      //   // a minBpPerPxWhenLocked
+      //   const minCircumferencePx =
+      //     2 * Math.PI * Math.min(self.width, self.height)
+
+      //   /* old formula below */
+      //   const maxZoomWhenLocked = Math.floor(self.height / 100) - 1 // rough formula
+      //   return maxZoomWhenLocked > 0
+      //     ? self.maxBpPerPx / (maxZoomWhenLocked * 1.4)
+      //     : self.maxBpPerPx
+      // },
       get atMaxBpPerPx() {
         return self.bpPerPx === self.maxBpPerPx
       },
       get atMinBpPerPxWhenLocked() {
-        return self.bpPerPx <= self.minBpPerPxWhenLocked
+        return self.bpPerPx <= self.minBpPerPx
       },
       get figureDimensions() {
         return [
@@ -218,9 +227,7 @@ export default pluginManager => {
 
       setBpPerPx(newVal) {
         // if locked, minBpPerPx is the lowest that full circle is still in viewport
-        self.bpPerPx = self.lockedFitToWindow
-          ? clamp(newVal, self.minBpPerPxWhenLocked, self.maxBpPerPx)
-          : clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
+        self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
 
       closeView() {
@@ -294,8 +301,8 @@ export default pluginManager => {
 
       toggleFitToWindowLock() {
         // when going unlocked -> locked and circle is cut off, set to the locked maxBpPerPx
-        if (!self.lockedFitToWindow && self.bpPerPx < self.minBpPerPxWhenLocked)
-          self.setBpPerPx(self.minBpPerPxWhenLocked)
+        if (!self.lockedFitToWindow && self.bpPerPx < self.minBpPerPx)
+          self.setBpPerPx(self.minBpPerPx)
         // toggles from locking to unlocking (starts at true)
         self.lockedFitToWindow = !self.lockedFitToWindow
         return self.lockedFitToWindow
