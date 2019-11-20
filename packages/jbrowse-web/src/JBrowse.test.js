@@ -60,18 +60,6 @@ afterEach(cleanup)
 
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
-// this is only here to make the error output not appear in the project's output
-// even though in the course we don't include this bit and leave it in it's incomplete state.
-beforeEach(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {})
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-})
-
-afterEach(() => {
-  console.error.mockRestore()
-  console.warn.mockRestore()
-})
-
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
     const { getByText } = render(<JBrowse config={{}} />)
@@ -191,6 +179,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
@@ -207,7 +196,8 @@ describe('some error state', () => {
         ),
       ),
     ).resolves.toBeTruthy()
-    expect(console.error).toBeCalled()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
@@ -436,6 +426,9 @@ describe('breakpoint split view', () => {
 })
 
 test('cause an exception in the jbrowse module loading', async () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { getByText } = render(<JBrowse config={{ configuration: [] }} />)
   expect(await getByText('Fatal error')).toBeTruthy()
+  expect(spy).toHaveBeenCalled()
+  spy.mockRestore()
 })
