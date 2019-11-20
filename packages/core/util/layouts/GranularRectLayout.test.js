@@ -1,4 +1,3 @@
-import mockConsole from 'jest-mock-console'
 import Layout from './GranularRectLayout'
 
 describe('GranularRectLayout', () => {
@@ -96,7 +95,7 @@ describe('GranularRectLayout', () => {
   })
 
   it('tests reinitializing layout due to throwing away old one', () => {
-    mockConsole()
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const l = new Layout({
       pitchX: 1,
       pitchY: 1,
@@ -107,7 +106,8 @@ describe('GranularRectLayout', () => {
     l.addRect('test2', 1000000, 1000100, 1)
     l.addRect('test3', 0, 10000, 1)
     expect(l.rectangles.size).toBe(3)
-    expect(console.warn).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
   })
 
   it('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {

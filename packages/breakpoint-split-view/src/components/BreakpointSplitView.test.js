@@ -2,14 +2,20 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
 import sizeMe from 'react-sizeme'
-import mockConsole from 'jest-mock-console'
 import BreakpointSplitView from './BreakpointSplitView'
 
 sizeMe.noPlaceholders = true
 
+// mock warnings to avoid unnecessary outputs
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  console.warn.mockRestore()
+})
 describe('BreakpointSplitView genome view component', () => {
   it('renders with an empty model', () => {
-    mockConsole()
     const session = createTestSession({
       views: [
         {
