@@ -4,6 +4,7 @@ import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
 import { useEffect, useState } from 'react'
+import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
 
@@ -330,8 +331,27 @@ export function isAbortException(exception: AbortError): boolean {
     !!exception.message.match(/\b(aborted|AbortError)\b/i)
   )
 }
-
-// export function getSnapshotIfNode(thing: Node): Record<string, any> {
-//   if (isStateTreeNode(thing)) return getSnapshot(thing)
-//   return thing
-// }
+interface Dataset {
+  assembly: {
+    name: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
+}
+interface Config {
+  savedSessions: unknown[]
+  datasets: Dataset[]
+}
+// similar to electron.js
+export function mergeConfigs(A: Config, B: Config) {
+  const X: { [key: string]: Dataset } = {}
+  const Y: { [key: string]: Dataset } = {}
+  A.datasets.forEach(a => {
+    X[a.assembly.name] = a
+  })
+  B.datasets.forEach(b => {
+    Y[b.assembly.name] = b
+  })
+  A.savedSessions = (A.savedSessions || []).concat(B.savedSessions)
+  return Object.values(merge(X, Y))
+}
