@@ -5,12 +5,10 @@ import { isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
-import ErrorBoundary from 'react-error-boundary'
 
 import { inDevelopment } from '../util'
 import DrawerWidget from './DrawerWidget'
 import DevTools from './DevTools'
-import ErrorSnackbar from './ErrorSnackbar'
 
 const useStyles = makeStyles(() => ({
   '@global': {
@@ -55,45 +53,43 @@ function App({ contentRect, measureRef, session }) {
 
   return (
     <div ref={measureRef} className={classes.root}>
-      <ErrorBoundary FallbackComponent={ErrorSnackbar}>
-        <div className={classes.menuBarsAndComponents}>
-          <div className={classes.menuBars}>
-            {session.menuBars.map(menuBar => {
-              const {
-                LazyReactComponent: MenuBarLazyReactComponent,
-              } = pluginManager.getMenuBarType(menuBar.type)
-              return (
-                <React.Suspense
+      <div className={classes.menuBarsAndComponents}>
+        <div className={classes.menuBars}>
+          {session.menuBars.map(menuBar => {
+            const {
+              LazyReactComponent: MenuBarLazyReactComponent,
+            } = pluginManager.getMenuBarType(menuBar.type)
+            return (
+              <React.Suspense
+                key={`view-${menuBar.id}`}
+                fallback={<div>Loading...</div>}
+              >
+                <MenuBarLazyReactComponent
                   key={`view-${menuBar.id}`}
-                  fallback={<div>Loading...</div>}
-                >
-                  <MenuBarLazyReactComponent
-                    key={`view-${menuBar.id}`}
-                    model={menuBar}
-                    session={session}
-                  />
-                </React.Suspense>
-              )
-            })}
-          </div>
-          <div className={classes.components}>
-            {session.views.map(view => {
-              const { ReactComponent } = pluginManager.getViewType(view.type)
-              return (
-                <ReactComponent
-                  key={`view-${view.id}`}
-                  model={view}
+                  model={menuBar}
                   session={session}
-                  getTrackType={pluginManager.getTrackType}
                 />
-              )
-            })}
-            {inDevelopment ? <DevTools session={session} /> : null}
-          </div>
+              </React.Suspense>
+            )
+          })}
         </div>
+        <div className={classes.components}>
+          {session.views.map(view => {
+            const { ReactComponent } = pluginManager.getViewType(view.type)
+            return (
+              <ReactComponent
+                key={`view-${view.id}`}
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            )
+          })}
+          {inDevelopment ? <DevTools session={session} /> : null}
+        </div>
+      </div>
 
-        {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
-      </ErrorBoundary>
+      {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
     </div>
   )
 }
