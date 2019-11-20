@@ -42,10 +42,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           onClick={model.closeView}
           className={classes.iconButton}
           title="close this view"
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            close
-          </Icon>
+          <Icon fontSize="small">close</Icon>
         </IconButton>
       </>
     )
@@ -108,10 +107,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           onClick={model.toggleInteract}
           className={classes.iconButton}
           title="Toggle interacting with the overlay"
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            {title}
-          </Icon>
+          <Icon fontSize="small">{title}</Icon>
         </IconButton>
       )
     },
@@ -127,10 +125,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         onClick={model.toggleLinkViews}
         className={classes.iconButton}
         title={title}
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          {title}
-        </Icon>
+        <Icon fontSize="small">{title}</Icon>
       </IconButton>
     )
   })

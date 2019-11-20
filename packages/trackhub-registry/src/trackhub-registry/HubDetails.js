@@ -84,8 +84,9 @@ function HubDetails(props) {
             href={`mailto:${hubFile.get('email')}`}
             rel="noopener noreferrer"
             target="_blank"
+            color="secondary"
           >
-            <Icon color="secondary">email</Icon>
+            <Icon>email</Icon>
           </IconButton>
           {hubFile.get('descriptionUrl') ? (
             <IconButton

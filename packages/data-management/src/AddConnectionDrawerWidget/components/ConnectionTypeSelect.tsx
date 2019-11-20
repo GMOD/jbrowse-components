@@ -72,8 +72,9 @@ function ConnectionTypeSelect(props: {
                   href={connectionType.url}
                   rel="noopener noreferrer"
                   target="_blank"
+                  color="secondary"
                 >
-                  <Icon color="secondary">open_in_new</Icon>
+                  <Icon>open_in_new</Icon>
                 </IconButton>
               ) : null}
             </>

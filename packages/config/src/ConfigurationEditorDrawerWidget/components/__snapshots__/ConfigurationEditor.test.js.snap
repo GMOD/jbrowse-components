@@ -41,7 +41,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -51,7 +51,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -149,7 +149,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -159,7 +159,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -203,7 +203,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 class="MuiInputAdornment-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                   tabindex="0"
                   type="button"
                 >
@@ -212,7 +212,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       delete
                     </span>
@@ -244,7 +244,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 class="MuiInputAdornment-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                   tabindex="0"
                   type="button"
                 >
@@ -253,7 +253,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       delete
                     </span>
@@ -286,7 +286,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                 class="MuiInputAdornment-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -296,7 +296,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       add
                     </span>
@@ -317,7 +317,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -327,7 +327,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -368,7 +368,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
             class="MuiCardHeader-action"
           >
             <button
-              class="MuiButtonBase-root MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
               tabindex="0"
               type="button"
             >
@@ -377,7 +377,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
               >
                 <span
                   aria-hidden="true"
-                  class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                  class="material-icons MuiIcon-root"
                 >
                   delete
                 </span>
@@ -413,7 +413,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     class="MuiInputAdornment-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                       tabindex="0"
                       type="button"
                     >
@@ -422,7 +422,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                          class="material-icons MuiIcon-root"
                         >
                           delete
                         </span>
@@ -454,7 +454,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     class="MuiInputAdornment-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                       tabindex="0"
                       type="button"
                     >
@@ -463,7 +463,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                          class="material-icons MuiIcon-root"
                         >
                           delete
                         </span>
@@ -496,7 +496,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     class="MuiInputAdornment-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-disabled MuiButtonBase-disabled"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -506,7 +506,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                       >
                         <span
                           aria-hidden="true"
-                          class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                          class="material-icons MuiIcon-root"
                         >
                           add
                         </span>
@@ -550,7 +550,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                   class="MuiInputAdornment-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-disabled MuiButtonBase-disabled"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -560,7 +560,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                        class="material-icons MuiIcon-root"
                       >
                         add
                       </span>
@@ -582,7 +582,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -592,7 +592,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -639,7 +639,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -649,7 +649,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -696,7 +696,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -706,7 +706,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -754,7 +754,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -764,7 +764,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -834,7 +834,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -844,7 +844,7 @@ exports[`ConfigurationEditor drawer widget renders all the different types of bu
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -899,7 +899,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -909,7 +909,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -956,7 +956,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -966,7 +966,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -1011,7 +1011,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 class="MuiInputAdornment-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -1021,7 +1021,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       add
                     </span>
@@ -1042,7 +1042,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -1052,7 +1052,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -1211,7 +1211,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to regular value"
         type="button"
@@ -1325,7 +1325,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -1335,7 +1335,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -1493,7 +1493,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
           class="makeStyles-slotModeSwitch"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
             tabindex="0"
             title="convert to callback"
             type="button"
@@ -1503,7 +1503,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
             >
               <span
                 aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                class="material-icons MuiIcon-root"
               >
                 radio_button_unchecked
               </span>
@@ -1575,7 +1575,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -1585,7 +1585,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -1681,7 +1681,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -1691,7 +1691,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -1756,7 +1756,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -1766,7 +1766,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>
@@ -2006,7 +2006,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to regular value"
                 type="button"
@@ -2068,7 +2068,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2078,7 +2078,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2125,7 +2125,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2135,7 +2135,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2182,7 +2182,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2192,7 +2192,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2253,7 +2253,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2263,7 +2263,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2311,7 +2311,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2321,7 +2321,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2369,7 +2369,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2379,7 +2379,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2426,7 +2426,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -2436,7 +2436,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -2634,7 +2634,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="makeStyles-slotModeSwitch"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                     tabindex="0"
                     title="convert to regular value"
                     type="button"
@@ -2697,7 +2697,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="makeStyles-slotModeSwitch"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                     tabindex="0"
                     title="convert to callback"
                     type="button"
@@ -2707,7 +2707,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                        class="material-icons MuiIcon-root"
                       >
                         radio_button_unchecked
                       </span>
@@ -2894,7 +2894,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="makeStyles-slotModeSwitch"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                     tabindex="0"
                     title="convert to regular value"
                     type="button"
@@ -2957,7 +2957,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="makeStyles-slotModeSwitch"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                     tabindex="0"
                     title="convert to callback"
                     type="button"
@@ -2967,7 +2967,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                        class="material-icons MuiIcon-root"
                       >
                         radio_button_unchecked
                       </span>
@@ -3014,7 +3014,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                   class="makeStyles-slotModeSwitch"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                     tabindex="0"
                     title="convert to callback"
                     type="button"
@@ -3024,7 +3024,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                        class="material-icons MuiIcon-root"
                       >
                         radio_button_unchecked
                       </span>
@@ -3073,7 +3073,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -3083,7 +3083,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -3130,7 +3130,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
               class="makeStyles-slotModeSwitch"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
                 tabindex="0"
                 title="convert to callback"
                 type="button"
@@ -3140,7 +3140,7 @@ exports[`ConfigurationEditor drawer widget renders with defaults of the Alignmen
                 >
                   <span
                     aria-hidden="true"
-                    class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                    class="material-icons MuiIcon-root"
                   >
                     radio_button_unchecked
                   </span>
@@ -3195,7 +3195,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
       class="makeStyles-slotModeSwitch"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="convert to callback"
         type="button"
@@ -3205,7 +3205,7 @@ exports[`ConfigurationEditor drawer widget renders with just the required model 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             radio_button_unchecked
           </span>

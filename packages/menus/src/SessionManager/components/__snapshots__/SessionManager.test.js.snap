@@ -26,7 +26,7 @@ exports[`<SessionManager /> renders 1`] = `
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             view_list
           </span>
@@ -61,7 +61,7 @@ exports[`<SessionManager /> renders 1`] = `
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+              class="material-icons MuiIcon-root"
             >
               delete
             </span>
