@@ -89,22 +89,24 @@ function useJBrowseWeb(config, initialState) {
   }, [config, loadAsyncConfig])
 
   useEffect(() => {
-    try {
-      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
-    } catch (error) {
-      // if it failed to load, it's probably a problem with the saved sessions,
-      // so just delete them and try again
-      setRootModel(
-        JBrowseRootModel.create({
-          jbrowse: { ...configSnapshot, savedSessions: [] },
-        }),
-      )
-    }
+    const failed = false
+    setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+    // try {
+    // } catch (error) {
+    //   // if it failed to load, it's probably a problem with the saved sessions,
+    //   // so just delete them and try again
+    //   // failed = true
+    //   // setRootModel(
+    //   //   JBrowseRootModel.create({
+    //   //     jbrowse: { ...configSnapshot, savedSessions: [] },
+    //   //   }),
+    //   // )
+    // }
   }, [configSnapshot])
 
   // This loads a config from localStorage or a configSnapshot or a config.json file
   useEffect(() => {
-    async function loadConfig() {
+    function loadConfig() {
       try {
         if (initialState) {
           setRootModel(initialState)
@@ -154,8 +156,9 @@ function useJBrowseWeb(config, initialState) {
         }
       } else {
         const localStorageSession = localStorage.getItem('jbrowse-web-session')
-        const parsedSession = JSON.parse(localStorageSession)
-        if (parsedSession) rootModel.setSession(parsedSession)
+        if (localStorageSession) {
+          rootModel.setSession(JSON.parse(localStorageSession))
+        }
       }
       if (!rootModel.session) {
         if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {

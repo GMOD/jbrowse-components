@@ -17,6 +17,8 @@ import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import rootModel from './rootModel'
 
+import JBrowseRootModel from './rootModel'
+
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => cb()
@@ -430,19 +432,21 @@ describe('breakpoint split view', () => {
 
 describe('cause an exception in the jbrowse module loading', () => {
   it('exception from mocked jbrowse component', () => {
-    mockConsole()
     const mockError = jest.fn()
+
     render(
       <ErrorBoundary onError={mockError}>
-        <JBrowse
-          config={{
-            // causes error, configuration should be an object
-            configuration: [],
-          }}
-        />
-        ,
+        <JBrowse config={{ configuration: [] }} />
       </ErrorBoundary>,
     )
     expect(mockError).toHaveBeenCalled()
   })
+})
+
+beforeEach(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  console.error.mockRestore()
 })
