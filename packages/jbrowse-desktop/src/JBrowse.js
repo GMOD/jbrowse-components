@@ -25,7 +25,8 @@ const { electron = {} } = window
 const { desktopCapturer, ipcRenderer } = electron
 
 const debounceMs = 1000
-const JBrowse = observer(() => {
+
+function useJBrowseDesktop() {
   const [loaded, setLoaded] = useState(false)
   const [root, setRoot] = useState({})
   const [firstLoad, setFirstLoad] = useState(true)
@@ -97,7 +98,11 @@ const JBrowse = observer(() => {
       ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
   }, [debouncedConfigSnapshot])
+  return [root, loaded, firstLoad]
+}
 
+const JBrowse = observer(() => {
+  const [root, loaded, firstLoad] = useJBrowseDesktop()
   useEffect(() => {
     if (root) {
       window.MODEL = root.session
@@ -106,8 +111,8 @@ const JBrowse = observer(() => {
   }, [root, root.session])
 
   if (loaded) {
-    return session ? (
-      <App session={session} />
+    return root.session ? (
+      <App session={root.session} />
     ) : (
       <StartScreen root={root} bypass={firstLoad} />
     )
