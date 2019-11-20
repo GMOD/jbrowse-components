@@ -375,6 +375,7 @@ describe('bigwig', () => {
 
 describe('circular views', () => {
   it('open a circular view', async () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
@@ -404,6 +405,8 @@ describe('circular views', () => {
     await expect(
       waitForElement(() => getByTestId('rpc-rendered-circular-chord-track')),
     ).resolves.toBeTruthy()
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
   })
 })
 
