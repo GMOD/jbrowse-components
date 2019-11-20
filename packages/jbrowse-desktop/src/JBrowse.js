@@ -10,9 +10,6 @@ import React, { useEffect, useState } from 'react'
 import rootModel from './rootModel'
 import 'typeface-roboto'
 
-const { electron = {} } = window
-const { desktopCapturer, ipcRenderer } = electron
-
 const debounceMs = 1000
 export default observer(() => {
   const [status, setStatus] = useState('loading')
@@ -23,7 +20,8 @@ export default observer(() => {
   const [configSnapshot, setConfigSnapshot] = useState()
   const debouncedSessionSnapshot = useDebounce(sessionSnapshot, debounceMs)
   const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
-
+  const { electron = {} } = window
+  const { desktopCapturer, ipcRenderer } = electron
   const { session, jbrowse } = root
   if (firstLoad && session) setFirstLoad(false)
 
@@ -50,7 +48,7 @@ export default observer(() => {
     }
 
     loadConfig()
-  }, [])
+  }, [ipcRenderer])
 
   useEffect(() => {
     let disposer = () => {}
@@ -86,7 +84,7 @@ export default observer(() => {
       }
     })()
     return () => {}
-  }, [debouncedSessionSnapshot])
+  }, [debouncedSessionSnapshot, desktopCapturer, ipcRenderer])
 
   useEffect(() => {
     if (debouncedConfigSnapshot) {
@@ -94,7 +92,7 @@ export default observer(() => {
     }
 
     return () => {}
-  }, [debouncedConfigSnapshot])
+  }, [debouncedConfigSnapshot, ipcRenderer])
 
   useEffect(() => {
     if (root) {
