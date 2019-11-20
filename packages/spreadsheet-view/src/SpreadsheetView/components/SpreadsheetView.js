@@ -72,10 +72,9 @@ export default pluginManager => {
             className={classes.iconButton}
             title="close this view"
             data-testid="spreadsheet_view_close"
+            color="secondary"
           >
-            <Icon color="secondary" fontSize="small">
-              close
-            </Icon>
+            <Icon fontSize="small">close</Icon>
           </IconButton>
 
           <IconButton
@@ -83,10 +82,9 @@ export default pluginManager => {
             className={classes.iconButton}
             title="open a tabular file"
             data-testid="spreadsheet_view_open"
+            color="secondary"
           >
-            <Icon color="secondary" fontSize="small">
-              folder_open
-            </Icon>
+            <Icon fontSize="small">folder_open</Icon>
           </IconButton>
         </Grid>
       </Grid>
@@ -124,8 +122,9 @@ export default pluginManager => {
                 <IconButton
                   aria-label="clear filter"
                   onClick={() => setTextFilterValue('')}
+                  color="secondary"
                 >
-                  <Icon color="secondary">clear</Icon>
+                  <Icon>clear</Icon>
                 </IconButton>
               </InputAdornment>
             ),

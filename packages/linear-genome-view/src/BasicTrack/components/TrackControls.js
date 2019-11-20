@@ -45,10 +45,9 @@ function TrackControls({ track, view, onConfigureClick }) {
         onClick={() => view.hideTrack(track.configuration)}
         className={classes.iconButton}
         title="close this track"
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          close
-        </Icon>
+        <Icon fontSize="small">close</Icon>
       </IconButton>
       {track.showConfigurationButton ? (
         <ToggleButton
@@ -66,7 +65,7 @@ function TrackControls({ track, view, onConfigureClick }) {
           value="configure"
           onClick={onConfigureClick}
         >
-          <Icon color="secondary" fontSize="small">
+          <Icon fontSize="small" style={{ color: '#135560' }}>
             settings
           </Icon>
         </ToggleButton>

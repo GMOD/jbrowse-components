@@ -186,8 +186,9 @@ const LongMenu = observer(
           aria-haspopup="true"
           className={className}
           onClick={handleClick}
+          color="secondary"
         >
-          <Icon color="secondary">more_vert</Icon>
+          <Icon>more_vert</Icon>
         </IconButton>
         <Menu
           id="long-menu"
@@ -297,8 +298,9 @@ function Search({
           onClick={() => onSubmit(value)}
           className={classes.iconButton}
           aria-label="search"
+          color="secondary"
         >
-          <Icon color="secondary">search</Icon>
+          <Icon>search</Icon>
         </IconButton>
       </form>
     </Paper>
@@ -366,20 +368,18 @@ const Controls = observer(({ model }) => {
         onClick={model.closeView}
         className={classes.iconButton}
         title="close this view"
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          close
-        </Icon>
+        <Icon fontSize="small">close</Icon>
       </IconButton>
 
       <IconButton
         onClick={model.activateTrackSelector}
         title="select tracks"
         value="track_select"
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          line_style
-        </Icon>
+        <Icon fontSize="small">line_style</Icon>
       </IconButton>
       <LongMenu className={classes.iconButton} model={model} />
     </>
@@ -423,8 +423,9 @@ const ImportForm = observer(({ model }) => {
             onClick={model.closeView}
             className={classes.iconButton}
             title="close this view"
+            color="secondary"
           >
-            <Icon color="secondary">close</Icon>
+            <Icon>close</Icon>
           </IconButton>
         </div>
       )}

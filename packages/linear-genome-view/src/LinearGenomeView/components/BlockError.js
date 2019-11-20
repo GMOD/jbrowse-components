@@ -22,7 +22,7 @@ function BlockError({ error, reload }) {
           onClick={reload}
           // variant="outlined"
           size="small"
-          startIcon={<Icon color="secondary">refresh</Icon>}
+          startIcon={<Icon>refresh</Icon>}
         >
           Reload
         </Button>

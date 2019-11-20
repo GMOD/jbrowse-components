@@ -6,7 +6,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     class="makeStyles-headerBar"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
       tabindex="0"
       title="close this view"
       type="button"
@@ -16,7 +16,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
         >
           close
         </span>
@@ -36,7 +36,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       </p>
     </div>
     <button
-      class="MuiButtonBase-root MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
       tabindex="0"
       title="link_off"
       type="button"
@@ -46,7 +46,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
         >
           link_off
         </span>
@@ -56,7 +56,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       />
     </button>
     <button
-      class="MuiButtonBase-root MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
       tabindex="0"
       title="Toggle interacting with the overlay"
       type="button"
@@ -66,7 +66,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
         >
           location_disabled
         </span>
@@ -101,7 +101,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 style="height: 40px;"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
                   tabindex="0"
                   title="close this view"
                   type="button"
@@ -111,7 +111,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       close
                     </span>
@@ -211,7 +211,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                 style="height: 40px;"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+                  class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
                   tabindex="0"
                   title="close this view"
                   type="button"
@@ -221,7 +221,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
                   >
                     <span
                       aria-hidden="true"
-                      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                      class="material-icons MuiIcon-root"
                     >
                       close
                     </span>

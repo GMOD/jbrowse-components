@@ -11,7 +11,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
       style="height: 40px;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         title="close this view"
         type="button"
@@ -21,7 +21,7 @@ exports[`LinearGenomeView genome view component renders one track, no blocks 1`]
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             close
           </span>
@@ -121,7 +121,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       class="makeStyles-headerBar"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         title="close this view"
         type="button"
@@ -131,7 +131,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -141,7 +141,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         />
       </button>
       <button
-        class="MuiButtonBase-root MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
         tabindex="0"
         title="select tracks"
         type="button"
@@ -152,7 +152,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             line_style
           </span>
@@ -165,7 +165,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         aria-controls="long-menu"
         aria-haspopup="true"
         aria-label="more"
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         type="button"
       >
@@ -174,7 +174,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             more_vert
           </span>
@@ -211,7 +211,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           </div>
           <button
             aria-label="search"
-            class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
             tabindex="0"
             type="button"
           >
@@ -220,7 +220,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
             >
               <span
                 aria-hidden="true"
-                class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+                class="material-icons MuiIcon-root"
               >
                 search
               </span>
@@ -267,7 +267,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         class="makeStyles-container"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
           data-testid="zoom_out"
           tabindex="0"
           type="button"
@@ -277,7 +277,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
               zoom_out
             </span>
@@ -311,7 +311,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           />
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
           data-testid="zoom_in"
           tabindex="0"
           type="button"
@@ -321,7 +321,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+              class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
             >
               zoom_in
             </span>
@@ -469,7 +469,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         title="close this track"
         type="button"
@@ -479,7 +479,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -501,7 +501,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            style="color: rgb(19, 85, 96);"
           >
             settings
           </span>
@@ -561,7 +562,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         title="close this track"
         type="button"
@@ -571,7 +572,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             close
           </span>
@@ -593,7 +594,8 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+            style="color: rgb(19, 85, 96);"
           >
             settings
           </span>
@@ -663,7 +665,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
       style="height: 40px;"
     >
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
         tabindex="0"
         title="close this view"
         type="button"
@@ -673,7 +675,7 @@ exports[`LinearGenomeView genome view component renders with an empty model 1`] 
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+            class="material-icons MuiIcon-root"
           >
             close
           </span>

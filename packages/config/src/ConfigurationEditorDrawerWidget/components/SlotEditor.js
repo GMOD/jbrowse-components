@@ -72,8 +72,11 @@ const StringArrayEditor = observer(({ slot }) => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment>
-                    <IconButton onClick={() => slot.removeAtIndex(idx)}>
-                      <Icon color="secondary">delete</Icon>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => slot.removeAtIndex(idx)}
+                    >
+                      <Icon>delete</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -95,8 +98,9 @@ const StringArrayEditor = observer(({ slot }) => {
                       setValue('')
                     }}
                     disabled={value === ''}
+                    color="secondary"
                   >
-                    <Icon color="secondary">add</Icon>
+                    <Icon>add</Icon>
                   </IconButton>
                 </InputAdornment>
               ),
@@ -126,8 +130,8 @@ const StringArrayMapEditor = observer(({ slot }) => {
           <CardHeader
             title={key}
             action={
-              <IconButton onClick={() => slot.remove(key)}>
-                <Icon color="secondary">delete</Icon>
+              <IconButton color="secondary" onClick={() => slot.remove(key)}>
+                <Icon>delete</Icon>
               </IconButton>
             }
           />
@@ -168,8 +172,9 @@ const StringArrayMapEditor = observer(({ slot }) => {
                         slot.add(value, [])
                         setValue('')
                       }}
+                      color="secondary"
                     >
-                      <Icon color="secondary">add</Icon>
+                      <Icon>add</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -194,8 +199,8 @@ const NumberMapEditor = observer(({ slot }) => {
           <CardHeader
             title={key}
             action={
-              <IconButton onClick={() => slot.remove(key)}>
-                <Icon color="secondary">delete</Icon>
+              <IconButton color="secondary" onClick={() => slot.remove(key)}>
+                <Icon>delete</Icon>
               </IconButton>
             }
           />
@@ -227,8 +232,9 @@ const NumberMapEditor = observer(({ slot }) => {
                         slot.add(value, 0)
                         setValue('')
                       }}
+                      color="secondary"
                     >
-                      <Icon color="secondary">add</Icon>
+                      <Icon>add</Icon>
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -392,9 +398,10 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
             slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
           }
           title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
+          color="secondary"
         >
           {!slot.isCallback ? (
-            <Icon color="secondary">radio_button_unchecked</Icon>
+            <Icon>radio_button_unchecked</Icon>
           ) : (
             <SvgCheckbox />
           )}

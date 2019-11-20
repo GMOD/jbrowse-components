@@ -272,8 +272,12 @@ export default function StartScreen({ root, bypass }) {
       >
         {DialogComponent}
       </Dialog>
-      <IconButton className={classes.settings} onClick={handleSettingsClick}>
-        <Icon color="secondary">settings</Icon>
+      <IconButton
+        color="secondary"
+        className={classes.settings}
+        onClick={handleSettingsClick}
+      >
+        <Icon>settings</Icon>
       </IconButton>
       <Menu
         id="simple-menu"
@@ -285,9 +289,7 @@ export default function StartScreen({ root, bypass }) {
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem onClick={() => handleFactoryReset()}>
           <ListItemIcon>
-            <Icon color="secondary" fontSize="small">
-              warning
-            </Icon>
+            <Icon fontSize="small">warning</Icon>
           </ListItemIcon>
           <Typography variant="inherit">Factory Reset</Typography>
         </MenuItem>

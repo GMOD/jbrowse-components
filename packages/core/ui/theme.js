@@ -7,7 +7,7 @@ export default createMuiTheme({
     secondary: { main: '#721E63' },
   },
   overrides: {
-    MuiIcon: {
+    MuiIconButton: {
       colorSecondary: {
         color: '#135560',
       },

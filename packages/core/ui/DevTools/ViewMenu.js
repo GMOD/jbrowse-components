@@ -54,7 +54,7 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon color="secondary">calendar_view_day</Icon>
+            <Icon>calendar_view_day</Icon>
           </ListItemIcon>
           Linear
         </MenuItem>
@@ -64,7 +64,7 @@ function ViewMenu({ session }) {
           }}
         >
           <ListItemIcon>
-            <Icon color="secondary">blur_circular</Icon>
+            <Icon>blur_circular</Icon>
           </ListItemIcon>
           Circular
         </MenuItem>
@@ -76,7 +76,7 @@ function ViewMenu({ session }) {
         color="secondary"
       >
         Add View
-        <Icon color="secondary">more_vert</Icon>
+        <Icon>more_vert</Icon>
       </Button>
     </>
   )

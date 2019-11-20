@@ -89,7 +89,7 @@ export default observer(({ session }) => {
                 key={sessionSnapshot.name}
               >
                 <ListItemIcon>
-                  <Icon color="secondary">view_list</Icon>
+                  <Icon>view_list</Icon>
                 </ListItemIcon>
                 <ListItemText
                   primary={sessionSnapshot.name}
@@ -106,7 +106,7 @@ export default observer(({ session }) => {
                     aria-label="Delete"
                     onClick={() => handleDialogOpen(idx)}
                   >
-                    <Icon color="secondary">delete</Icon>
+                    <Icon>delete</Icon>
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>

@@ -108,10 +108,9 @@ export default pluginManager => {
             className={classes.iconButton}
             title="close this view"
             data-testid="circular_view_close"
+            color="secondary"
           >
-            <Icon color="secondary" fontSize="small">
-              close
-            </Icon>
+            <Icon fontSize="small">close</Icon>
           </IconButton>
         )}
 
@@ -120,10 +119,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="zoom out"
           disabled={!showingFigure}
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            zoom_out
-          </Icon>
+          <Icon fontSize="small">zoom_out</Icon>
         </IconButton>
 
         <IconButton
@@ -131,10 +129,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="zoom in"
           disabled={!showingFigure}
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            zoom_in
-          </Icon>
+          <Icon fontSize="small">zoom_in</Icon>
         </IconButton>
 
         <IconButton
@@ -142,10 +139,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="rotate counter-clockwise"
           disabled={!showingFigure}
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            rotate_left
-          </Icon>
+          <Icon fontSize="small">rotate_left</Icon>
         </IconButton>
 
         <IconButton
@@ -153,10 +149,9 @@ export default pluginManager => {
           className={classes.iconButton}
           title="rotate clockwise"
           disabled={!showingFigure}
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            rotate_right
-          </Icon>
+          <Icon fontSize="small">rotate_right</Icon>
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
@@ -171,10 +166,9 @@ export default pluginManager => {
             }
             value="track_select"
             data-testid="circular_track_select"
+            color="secondary"
           >
-            <Icon color="secondary" fontSize="small">
-              line_style
-            </Icon>
+            <Icon fontSize="small">line_style</Icon>
           </ToggleButton>
         )}
       </div>
@@ -217,8 +211,9 @@ export default pluginManager => {
               onClick={model.closeView}
               className={classes.iconButton}
               title="close this view"
+              color="secondary"
             >
-              <Icon color="secondary">close</Icon>
+              <Icon>close</Icon>
             </IconButton>
           </div>
         )}
