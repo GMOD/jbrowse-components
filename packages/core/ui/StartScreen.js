@@ -28,9 +28,6 @@ import {
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
-const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
-
 const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette.grey['300'],
@@ -48,6 +45,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function StartScreen({ root, bypass }) {
+  const { electronBetterIpc = {} } = window
+  const { ipcRenderer } = electronBetterIpc
   const [sessions, setSessions] = useState()
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
@@ -56,7 +55,9 @@ export default function StartScreen({ root, bypass }) {
   const [reset, setReset] = useState(false)
 
   const sessionNames = sessions && Object.keys(sessions)
-  if (sessionNames) root.setSavedSessionNames(sessionNames)
+  if (sessionNames) {
+    root.setSavedSessionNames(sessionNames)
+  }
 
   const sortedSessions =
     sessions &&
@@ -70,13 +71,11 @@ export default function StartScreen({ root, bypass }) {
 
   const classes = useStyles()
 
-  async function getSessions() {
-    setSessions(await ipcRenderer.invoke('listSessions'))
-  }
-
   useEffect(() => {
-    getSessions()
-  }, [])
+    ;(async function getSessions() {
+      setSessions(await ipcRenderer.invoke('listSessions'))
+    })()
+  }, [ipcRenderer])
 
   async function onCardClick(sessionName) {
     const sessionJSON = await ipcRenderer.invoke('loadSession', sessionName)
@@ -95,14 +94,14 @@ export default function StartScreen({ root, bypass }) {
   async function handleDialogClose(action) {
     if (action === 'delete') {
       await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
-      getSessions()
+      setSessions(await ipcRenderer.invoke('listSessions'))
     } else if (action === 'rename') {
       await ipcRenderer.invoke(
         'renameSession',
         sessionNameToRename,
         newSessionName,
       )
-      getSessions()
+      setSessions(await ipcRenderer.invoke('listSessions'))
     } else if (action === 'reset') {
       await ipcRenderer.invoke('reset')
       window.location.reload()
