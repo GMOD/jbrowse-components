@@ -10,13 +10,10 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
-import mockConsole from 'jest-mock-console'
 import ErrorBoundary from 'react-error-boundary'
-import { JBrowse } from './JBrowse'
+import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
-import rootModel from './rootModel'
-
 import JBrowseRootModel from './rootModel'
 
 window.requestIdleCallback = cb => cb()
@@ -64,13 +61,25 @@ afterEach(cleanup)
 
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
+// this is only here to make the error output not appear in the project's output
+// even though in the course we don't include this bit and leave it in it's incomplete state.
+beforeEach(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  console.error.mockRestore()
+  console.warn.mockRestore()
+})
+
 describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
     const { getByText } = render(<JBrowse config={{}} />)
     expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
   it('renders with an initialState', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByText } = render(<JBrowse initialState={state} />)
     expect(await waitForElement(() => getByText('Help'))).toBeTruthy()
   })
@@ -111,7 +120,7 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to move sideways', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)
     fireEvent.click(
       await waitForElement(() =>
@@ -131,7 +140,7 @@ describe('valid file tests', () => {
   })
 
   it('click and drag to rubberband', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)
     const track = await waitForElement(() =>
       getByTestId('rubberband_container'),
@@ -145,7 +154,7 @@ describe('valid file tests', () => {
   })
 
   it('click and zoom in and back out', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId } = render(<JBrowse initialState={state} />)
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await waitForElement(() => byId('zoom_in')))
@@ -154,7 +163,7 @@ describe('valid file tests', () => {
   })
 
   it('opens track selector', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId } = render(<JBrowse initialState={state} />)
 
     await waitForElement(() => getByTestId('htsTrackEntry-volvox_alignments'))
@@ -168,7 +177,7 @@ describe('valid file tests', () => {
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getAllByText, getByTestId } = render(
       <JBrowse initialState={state} />,
     )
@@ -183,8 +192,7 @@ describe('valid file tests', () => {
 
 describe('some error state', () => {
   it('test that track with 404 file displays error', async () => {
-    mockConsole()
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -203,7 +211,7 @@ describe('some error state', () => {
     expect(console.error).toBeCalled()
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -217,7 +225,7 @@ describe('some error state', () => {
     ).resolves.toBeTruthy()
   })
   it('test that bam with small max height displays message', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -233,7 +241,7 @@ describe('some error state', () => {
 })
 
 test('lollipop track test', async () => {
-  const state = rootModel.create({ jbrowse: config })
+  const state = JBrowseRootModel.create({ jbrowse: config })
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
@@ -248,7 +256,7 @@ test('lollipop track test', async () => {
 })
 
 test('variant track test - opens feature detail view', async () => {
-  const state = rootModel.create({ jbrowse: config })
+  const state = JBrowseRootModel.create({ jbrowse: config })
   const { getByTestId: byId, getByText } = render(
     <JBrowse initialState={state} />,
   )
@@ -266,7 +274,7 @@ test('variant track test - opens feature detail view', async () => {
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -286,7 +294,7 @@ describe('nclist track test with long name', () => {
 })
 describe('test configuration editor', () => {
   it('change color on track', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const {
       getByTestId: byId,
       getByText,
@@ -315,7 +323,7 @@ describe('test configuration editor', () => {
 
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -329,7 +337,7 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
   it('open a bigwig line track', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -343,7 +351,7 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
   it('open a bigwig density track', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -359,7 +367,7 @@ describe('bigwig', () => {
     ).resolves.toBeTruthy()
   })
   it('open a bigwig with a renamed reference', async () => {
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
       <JBrowse initialState={state} />,
     )
@@ -378,8 +386,7 @@ describe('bigwig', () => {
 
 describe('circular views', () => {
   it('open a circular view', async () => {
-    mockConsole()
-    const state = rootModel.create({ jbrowse: config })
+    const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getByText, getAllByTestId } = render(
       <JBrowse initialState={state} />,
     )
@@ -413,8 +420,7 @@ describe('circular views', () => {
 
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
-    mockConsole()
-    const state = rootModel.create({ jbrowse: breakpointConfig })
+    const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('Help'))
 
@@ -430,23 +436,7 @@ describe('breakpoint split view', () => {
   })
 })
 
-describe('cause an exception in the jbrowse module loading', () => {
-  it('exception from mocked jbrowse component', () => {
-    const mockError = jest.fn()
-
-    render(
-      <ErrorBoundary onError={mockError}>
-        <JBrowse config={{ configuration: [] }} />
-      </ErrorBoundary>,
-    )
-    expect(mockError).toHaveBeenCalled()
-  })
-})
-
-beforeEach(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {})
-})
-
-afterEach(() => {
-  console.error.mockRestore()
+test('cause an exception in the jbrowse module loading', async () => {
+  const { getByText } = render(<JBrowse config={{ configuration: [] }} />)
+  expect(await getByText('Fatal error')).toBeTruthy()
 })
