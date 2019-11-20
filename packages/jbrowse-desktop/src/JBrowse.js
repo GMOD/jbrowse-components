@@ -100,6 +100,7 @@ function useJBrowseDesktop() {
 
 const JBrowse = observer(() => {
   const [root, loaded, firstLoad] = useJBrowseDesktop()
+  const debouncedLoaded = useDebounce(loaded, 400)
   useEffect(() => {
     if (root) {
       window.MODEL = root.session
@@ -107,7 +108,9 @@ const JBrowse = observer(() => {
     }
   }, [root, root.session])
 
-  if (loaded) {
+  // Use a debounce loaded here to let the circle spinner give a tiny more turn
+  // which looks better
+  if (debouncedLoaded) {
     return root.session ? (
       <App session={root.session} />
     ) : (

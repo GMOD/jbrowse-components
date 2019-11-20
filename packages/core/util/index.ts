@@ -1,12 +1,5 @@
 import { toByteArray, fromByteArray } from 'base64-js'
-import {
-  getParent,
-  isAlive,
-  isStateTreeNode,
-  getSnapshot,
-  IAnyStateTreeNode,
-  getType,
-} from 'mobx-state-tree'
+import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'

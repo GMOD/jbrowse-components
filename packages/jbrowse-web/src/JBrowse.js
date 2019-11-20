@@ -46,7 +46,6 @@ function useJBrowseWeb(config, initialState) {
   const [urlSnapshot, setUrlSnapshot] = useState()
   const [configSnapshot, setConfigSnapshot] = useState(config || {})
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
-  const debouncedLoaded = useDebounce(loaded, 400)
 
   const { session, jbrowse } = rootModel || {}
   const useLocalStorage = jbrowse
@@ -205,14 +204,15 @@ function useJBrowseWeb(config, initialState) {
     [useUpdateUrl, session],
   )
 
-  // debouncedLoaded for making the loading spinner a little longer
-  // on the screen (just for looks)
-  return [debouncedLoaded, rootModel]
+  return [loaded, rootModel]
 }
 
 const JBrowse = observer(({ config, initialState }) => {
   const [loaded, root] = useJBrowseWeb(config, initialState)
-  return !loaded ? (
+  const debouncedLoaded = useDebounce(loaded, 400)
+  // Use a debounce loaded here to let the circle spinner give a tiny more turn
+  // which looks better
+  return !debouncedLoaded ? (
     <CircularProgress
       style={{
         position: 'fixed',
