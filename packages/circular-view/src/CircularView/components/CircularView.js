@@ -119,7 +119,7 @@ export default pluginManager => {
           onClick={model.zoomOutButton}
           className={classes.iconButton}
           title="zoom out"
-          disabled={!showingFigure}
+          disabled={!showingFigure || model.atMaxBpPerPx}
         >
           <Icon color="secondary" fontSize="small">
             zoom_out
@@ -130,7 +130,10 @@ export default pluginManager => {
           onClick={model.zoomInButton}
           className={classes.iconButton}
           title="zoom in"
-          disabled={!showingFigure}
+          disabled={
+            !showingFigure ||
+            (model.lockedFitToWindow && model.atMinBpPerPxWhenLocked)
+          }
         >
           <Icon color="secondary" fontSize="small">
             zoom_in
@@ -158,17 +161,27 @@ export default pluginManager => {
             rotate_right
           </Icon>
         </IconButton>
-        
+
         <IconButton
           onClick={model.toggleFitToWindowLock}
           className={classes.iconButton}
-          title="fit to window lock"  
+          title={
+            model.lockedFitToWindow
+              ? 'lock model to window size'
+              : 'unlock model to zoom further'
+          }
         >
-          {model.lockedFitToWindow ? <Icon fontSize="small">lock_outline</Icon> : 
-            <Icon fontSize="small">lock_open</Icon>}
-          
+          {model.lockedFitToWindow ? (
+            <Icon color="secondary" fontSize="small">
+              lock_outline
+            </Icon>
+          ) : (
+            <Icon color="secondary" fontSize="small">
+              lock_open
+            </Icon>
+          )}
         </IconButton>
-          
+
         {model.hideTrackSelectorButton ? null : (
           <ToggleButton
             onClick={model.activateTrackSelector}
@@ -187,7 +200,6 @@ export default pluginManager => {
             </Icon>
           </ToggleButton>
         )}
-
       </div>
     )
   })
