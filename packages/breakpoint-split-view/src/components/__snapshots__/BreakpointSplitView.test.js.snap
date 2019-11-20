@@ -6,7 +6,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     class="makeStyles-headerBar"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+      class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
       title="close this view"
       type="button"
@@ -36,7 +36,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       </p>
     </div>
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+      class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
       title="link_off"
       type="button"
@@ -46,7 +46,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       >
         <span
           aria-hidden="true"
-          class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
         >
           link_off
         </span>
@@ -56,7 +56,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
       />
     </button>
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+      class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
       title="Toggle interacting with the overlay"
       type="button"

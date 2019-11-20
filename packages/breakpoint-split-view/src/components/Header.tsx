@@ -42,9 +42,10 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           onClick={model.closeView}
           className={classes.iconButton}
           title="close this view"
-          color="secondary"
         >
-          <Icon fontSize="small">close</Icon>
+          <Icon fontSize="small">
+            close
+          </Icon>
         </IconButton>
       </>
     )
@@ -99,17 +100,15 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   const InteractWithSquiggles = observer(
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
-      const title = model.interactToggled
-        ? 'location_searching'
-        : 'location_disabled'
       return (
         <IconButton
           onClick={model.toggleInteract}
           className={classes.iconButton}
           title="Toggle interacting with the overlay"
-          color="secondary"
         >
-          <Icon fontSize="small">{title}</Icon>
+          <Icon fontSize="small">
+            {model.interactToggled ? 'location_searching' : 'location_disabled'}
+          </Icon>
         </IconButton>
       )
     },
@@ -125,9 +124,10 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         onClick={model.toggleLinkViews}
         className={classes.iconButton}
         title={title}
-        color="secondary"
       >
-        <Icon fontSize="small">{title}</Icon>
+        <Icon color="secondary" fontSize="small">
+          {title}
+        </Icon>
       </IconButton>
     )
   })

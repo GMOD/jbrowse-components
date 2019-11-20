@@ -5,12 +5,20 @@ import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
 } from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
-import mockConsole from 'jest-mock-console'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from '../PileupRenderer'
 import configSchemaFactory from './configSchema'
+
+// mock warnings to avoid unnecessary outputs
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  console.warn.mockRestore()
+})
 
 class PileupRendererPlugin extends Plugin {
   install(pluginManager) {
@@ -39,7 +47,6 @@ class SvgFeatureRendererPlugin extends Plugin {
 }
 
 test('has a viewType attr', () => {
-  mockConsole()
   const configSchema = configSchemaFactory(
     new PluginManager([
       new PileupRendererPlugin(),
