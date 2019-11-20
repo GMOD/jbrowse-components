@@ -93,40 +93,6 @@
           }
         },
         {
-          "configId": "clinvar_cnv_hg19",
-          "type": "BasicTrack",
-          "name": "Clinvar CNV",
-          "category": [
-            "Clinvar"
-          ],
-          "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
-            }
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
-          "configId": "clinvar_hg19",
-          "type": "BasicTrack",
-          "name": "Clinvar variants",
-          "category": [
-            "Clinvar"
-          ],
-          "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
-            }
-          },
-          "renderer": {
-            "type": "SvgFeatureRenderer"
-          }
-        },
-        {
           "configId": "ngmlr",
           "type": "AlignmentsTrack",
           "name": "Breast cancer pacbio (NGMLR)",
