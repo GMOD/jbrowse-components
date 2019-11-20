@@ -89,19 +89,17 @@ function useJBrowseWeb(config, initialState) {
   }, [config, loadAsyncConfig])
 
   useEffect(() => {
-    const failed = false
-    setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
-    // try {
-    // } catch (error) {
-    //   // if it failed to load, it's probably a problem with the saved sessions,
-    //   // so just delete them and try again
-    //   // failed = true
-    //   // setRootModel(
-    //   //   JBrowseRootModel.create({
-    //   //     jbrowse: { ...configSnapshot, savedSessions: [] },
-    //   //   }),
-    //   // )
-    // }
+    try {
+      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+    } catch (error) {
+      // if it failed to load, it's probably a problem with the saved sessions,
+      // so just delete them and try again
+      setRootModel(
+        JBrowseRootModel.create({
+          jbrowse: { ...configSnapshot, savedSessions: [] },
+        }),
+      )
+    }
   }, [configSnapshot])
 
   // This loads a config from localStorage or a configSnapshot or a config.json file
@@ -243,8 +241,6 @@ const JBrowse = observer(({ config, initialState }) => {
     <App session={root.session} />
   )
 })
-
-export { JBrowse }
 
 export default props => {
   return (
