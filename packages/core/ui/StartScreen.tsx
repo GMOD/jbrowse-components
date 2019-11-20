@@ -30,9 +30,7 @@ import {
 import RecentSessionCard from './RecentSessionCard'
 import FactoryResetDialog from './FactoryResetDialog'
 
-const { electronBetterIpc = {} } = window
-const { ipcRenderer = { invoke: () => {} } } = electronBetterIpc
-
+const blankIpc = { invoke: () => {} }
 const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette.grey['300'],
@@ -56,6 +54,7 @@ const DeleteSessionDialog = ({
   sessionNameToDelete?: string
   onClose: (arg0: boolean) => void
 }) => {
+  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
     ;(async () => {
@@ -65,7 +64,7 @@ const DeleteSessionDialog = ({
         onClose(true)
       }
     })()
-  }, [deleteSession, onClose, sessionNameToDelete])
+  }, [deleteSession, ipcRenderer, onClose, sessionNameToDelete])
 
   return (
     <Dialog open={!!sessionNameToDelete} onClose={() => onClose(false)}>
@@ -105,6 +104,7 @@ const RenameSessionDialog = ({
   sessionNameToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
+  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [newSessionName, setNewSessionName] = useState()
   const [renameSession, setRenameSession] = useState()
   useEffect(() => {
@@ -119,7 +119,7 @@ const RenameSessionDialog = ({
         onClose(true)
       }
     })()
-  }, [newSessionName, onClose, renameSession, sessionNameToRename])
+  }, [ipcRenderer, newSessionName, onClose, renameSession, sessionNameToRename])
 
   return (
     <Dialog open={!!sessionNameToRename} onClose={() => onClose(false)}>
@@ -167,6 +167,7 @@ export default function StartScreen({
   root: any
   bypass: boolean
 }) {
+  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [sessions, setSessions] = useState()
   const [sessionNameToDelete, setSessionNameToDelete] = useState()
   const [sessionNameToRename, setSessionNameToRename] = useState()
@@ -197,7 +198,7 @@ export default function StartScreen({
         )
       }
     })()
-  }, [bypass, root, sessionNameToLoad, sortedSessions])
+  }, [bypass, ipcRenderer, root, sessionNameToLoad, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
@@ -206,7 +207,7 @@ export default function StartScreen({
         setSessions(await ipcRenderer.invoke('listSessions'))
       }
     })()
-  }, [updateSessionsList])
+  }, [ipcRenderer, updateSessionsList])
 
   if (!sessions)
     return (
