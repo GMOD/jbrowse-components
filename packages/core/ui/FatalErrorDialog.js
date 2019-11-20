@@ -4,9 +4,29 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState } from 'react'
+import FactoryResetDialog from './FactoryResetDialog'
 
-const FatalErrorDialog = ({ componentStack, error, ResetComponent }) => {
+const ResetComponent = () => {
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  return (
+    <>
+      <Button
+        color="primary"
+        variant="contained"
+        onClick={() => setDialogOpen(true)}
+      >
+        Factory reset
+      </Button>
+      <FactoryResetDialog
+        onClose={() => setDialogOpen(false)}
+        open={dialogOpen}
+      />
+    </>
+  )
+}
+const FatalErrorDialog = ({ componentStack, error }) => {
   return (
     <Dialog open={true}>
       <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>
@@ -24,7 +44,7 @@ const FatalErrorDialog = ({ componentStack, error, ResetComponent }) => {
         >
           Refresh
         </Button>
-        {ResetComponent ? <ResetComponent /> : null}
+        {window.electron ? <ResetComponent /> : null}
       </DialogActions>
     </Dialog>
   )
@@ -33,11 +53,9 @@ const FatalErrorDialog = ({ componentStack, error, ResetComponent }) => {
 FatalErrorDialog.propTypes = {
   componentStack: PropTypes.string,
   error: PropTypes.shape({}),
-  ResetComponent: PropTypes.func,
 }
 
 FatalErrorDialog.defaultProps = {
-  ResetComponent: null,
   error: { message: 'No error message provided' },
   componentStack: '',
 }

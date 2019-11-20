@@ -3,12 +3,10 @@ import { useDebounce } from '@gmod/jbrowse-core/util'
 import {
   App,
   FatalErrorDialog,
-  FactoryResetDialog,
   StartScreen,
   useTheme,
 } from '@gmod/jbrowse-core/ui'
 
-import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
@@ -131,33 +129,11 @@ const JBrowse = observer(() => {
   )
 })
 
-const ResetComponent = () => {
-  const [dialogOpen, setDialogOpen] = useState(false)
-
-  return (
-    <>
-      <Button
-        color="primary"
-        variant="contained"
-        onClick={() => setDialogOpen(true)}
-      >
-        Factory reset
-      </Button>
-      <FactoryResetDialog
-        onClose={() => setDialogOpen(false)}
-        open={dialogOpen}
-      />
-    </>
-  )
-}
-
 export default props => {
   return (
     <ThemeProvider theme={useTheme()}>
       <CssBaseline />
-      <ErrorBoundary
-        FallbackComponent={<FatalErrorDialog ResetComponent={ResetComponent} />}
-      >
+      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
         <JBrowse {...props} />
       </ErrorBoundary>
     </ThemeProvider>
