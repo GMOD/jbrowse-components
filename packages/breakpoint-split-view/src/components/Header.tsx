@@ -43,9 +43,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           className={classes.iconButton}
           title="close this view"
         >
-          <Icon fontSize="small">
-            close
-          </Icon>
+          <Icon fontSize="small">close</Icon>
         </IconButton>
       </>
     )
