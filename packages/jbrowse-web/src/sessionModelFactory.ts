@@ -56,6 +56,8 @@ export default function sessionModelFactory(pluginManager: any) {
        * { taskName: "configure", target: thing_being_configured }
        */
       task: undefined,
+
+      snackbarMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -131,6 +133,10 @@ export default function sessionModelFactory(pluginManager: any) {
           }
         })
         addDisposer(self, displayedRegionsDisposer)
+      },
+
+      setSnackbarMessage(str: string | undefined) {
+        self.snackbarMessage = str
       },
 
       getRegionsForAssembly(

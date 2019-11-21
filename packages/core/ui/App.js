@@ -9,6 +9,7 @@ import { withContentRect } from 'react-measure'
 import { inDevelopment } from '../util'
 import DrawerWidget from './DrawerWidget'
 import DevTools from './DevTools'
+import Snackbar from './Snackbar'
 
 const useStyles = makeStyles(() => ({
   '@global': {
@@ -90,6 +91,7 @@ function App({ contentRect, measureRef, session }) {
       </div>
 
       {visibleDrawerWidget ? <DrawerWidget session={session} /> : null}
+      {session.snackbarMessage ? <Snackbar session={session} /> : null}
     </div>
   )
 }

@@ -3,7 +3,8 @@ import IconButton from '@material-ui/core/IconButton'
 import Snackbar from '@material-ui/core/Snackbar'
 import React, { useState } from 'react'
 
-export default function ErrorSnackbar({ error }: { error?: Error }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function MessageSnackbar({ session }: { session?: any }) {
   const [open, setOpen] = useState(true)
 
   return (
@@ -11,10 +12,11 @@ export default function ErrorSnackbar({ error }: { error?: Error }) {
       open={open}
       onClose={() => {
         setOpen(false)
+        session.setSnackbarMessage(undefined)
       }}
       message={
         <span style={{ display: 'flex' }}>
-          <div>{error ? error.toString() : null} </div>
+          <div>{session.snackbarMessage}</div>
           <IconButton
             key="close"
             aria-label="close"
