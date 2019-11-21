@@ -48,6 +48,8 @@ export default pluginManager => {
        * { taskName: "configure", target: thing_being_configured }
        */
       task: undefined,
+
+      snackbarMessage: undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -121,6 +123,10 @@ export default pluginManager => {
             })
           }),
         )
+      },
+
+      setSnackbarMessage(str) {
+        self.snackbarMessage = str
       },
 
       getRegionsForAssemblyName(assemblyName, opts = {}) {
