@@ -29,7 +29,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
           tabindex="0"
           type="button"
         >
@@ -38,7 +38,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+              class="material-icons MuiIcon-root"
             >
               clear
             </span>
@@ -99,7 +99,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         </span>
       </label>
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
         tabindex="0"
         type="button"
       >
@@ -108,7 +108,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -230,7 +230,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                     </span>
                   </label>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+                    class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
                     tabindex="0"
                     type="button"
                   >
@@ -239,7 +239,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                     >
                       <span
                         aria-hidden="true"
-                        class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+                        class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                       >
                         settings
                       </span>
@@ -355,7 +355,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                 </span>
                               </label>
                               <button
-                                class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+                                class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
                                 tabindex="0"
                                 type="button"
                               >
@@ -364,7 +364,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of catego
                                 >
                                   <span
                                     aria-hidden="true"
-                                    class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+                                    class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
                                   >
                                     settings
                                   </span>
@@ -439,7 +439,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
           tabindex="0"
           type="button"
         >
@@ -448,7 +448,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
           >
             <span
               aria-hidden="true"
-              class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+              class="material-icons MuiIcon-root"
             >
               clear
             </span>
@@ -509,7 +509,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         </span>
       </label>
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
         tabindex="0"
         type="button"
       >
@@ -518,7 +518,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -581,7 +581,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         </span>
       </label>
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
         tabindex="0"
         type="button"
       >
@@ -590,7 +590,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             settings
           </span>
@@ -646,7 +646,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         </span>
       </label>
       <button
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
         tabindex="0"
         type="button"
       >
@@ -655,7 +655,7 @@ exports[`HierarchicalTrackSelector drawer widget renders with a couple of uncate
         >
           <span
             aria-hidden="true"
-            class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+            class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
           >
             settings
           </span>

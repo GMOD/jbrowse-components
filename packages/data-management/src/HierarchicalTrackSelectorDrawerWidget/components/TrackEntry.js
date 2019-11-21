@@ -77,10 +77,9 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
         <IconButton
           className={classes.configureButton}
           onClick={() => session.editConfiguration(trackConf)}
+          color="secondary"
         >
-          <Icon color="secondary" fontSize="small">
-            settings
-          </Icon>
+          <Icon fontSize="small">settings</Icon>
         </IconButton>
       </div>
     </Fade>

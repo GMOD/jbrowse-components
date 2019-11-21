@@ -255,9 +255,10 @@ export default class implements Feature {
   }
 
   _get_clippos() {
+    const cigar = this.get('cigar') || ''
     return this.get('strand') === -1
-      ? +(this.get('CIGAR').match(/(\d+)[SH]$/) || [])[1] || 0
-      : +(this.get('CIGAR').match(/^(\d+)([SH])/) || [])[1] || 0
+      ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
+      : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
   }
 
   private cigarToMismatches(ops: CigarOp[]): Mismatch[] {

@@ -27,14 +27,14 @@ function DeveloperTools({ session }) {
         onClick={() => session.history.undo()}
       >
         undo
-        <Icon color="secondary">undo</Icon>
+        <Icon>undo</Icon>
       </Button>
       <Button
         color="secondary"
         disabled={!session.history.canRedo}
         onClick={() => session.history.redo()}
       >
-        <Icon color="secondary">redo</Icon>
+        <Icon>redo</Icon>
         redo
       </Button>
 

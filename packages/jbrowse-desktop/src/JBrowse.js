@@ -1,22 +1,30 @@
 import '@gmod/jbrowse-core/fonts/material-icons.css'
 import { useDebounce } from '@gmod/jbrowse-core/util'
-import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
+import {
+  App,
+  FatalErrorDialog,
+  StartScreen,
+  theme,
+} from '@gmod/jbrowse-core/ui'
+
 import CircularProgress from '@material-ui/core/CircularProgress'
 import CssBaseline from '@material-ui/core/CssBaseline'
+
 import { ThemeProvider } from '@material-ui/styles'
+
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
+import ErrorBoundary from 'react-error-boundary'
 import React, { useEffect, useState } from 'react'
 import rootModel from './rootModel'
 import 'typeface-roboto'
 
-const { electron = {} } = window
-const { desktopCapturer, ipcRenderer } = electron
-
 const debounceMs = 1000
-export default observer(() => {
-  const [status, setStatus] = useState('loading')
-  const [message, setMessage] = useState('')
+
+function useJBrowseDesktop() {
+  const { electron = {} } = window
+  const { desktopCapturer, ipcRenderer } = electron
+  const [loaded, setLoaded] = useState(false)
   const [root, setRoot] = useState({})
   const [firstLoad, setFirstLoad] = useState(true)
   const [sessionSnapshot, setSessionSnapshot] = useState()
@@ -30,47 +38,42 @@ export default observer(() => {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const config = await ipcRenderer.invoke('loadConfig')
-        Object.assign(config, {
-          configuration: {
-            rpc: {
-              defaultDriver: 'ElectronRpcDriver',
-            },
-          },
+        setRoot(
+          rootModel.create({
+            jbrowse: Object.assign(await ipcRenderer.invoke('loadConfig'), {
+              configuration: {
+                rpc: {
+                  defaultDriver: 'ElectronRpcDriver',
+                },
+              },
+            }),
+          }),
+        )
+        setLoaded(true)
+      } catch (e) {
+        setLoaded(() => {
+          // throw to error boundary
+          throw e
         })
-        const r = rootModel.create({ jbrowse: config })
-
-        setRoot(r)
-        setStatus('loaded')
-      } catch (error) {
-        setStatus('error')
-        setMessage(String(error))
-        console.error(error)
       }
     }
 
     loadConfig()
-  }, [])
+  }, [ipcRenderer])
 
   useEffect(() => {
-    let disposer = () => {}
-    if (jbrowse) {
-      disposer = onSnapshot(jbrowse, snap => {
-        setConfigSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return jbrowse
+      ? onSnapshot(jbrowse, snap => {
+          setConfigSnapshot(snap)
+        })
+      : () => {}
   }, [jbrowse])
   useEffect(() => {
-    let disposer = () => {}
-    if (session) {
-      disposer = onSnapshot(session, snap => {
-        setSessionSnapshot(snap)
-      })
-    }
-
-    return disposer
+    return session
+      ? onSnapshot(session, snap => {
+          setSessionSnapshot(snap)
+        })
+      : () => {}
   }, [session])
 
   useEffect(() => {
@@ -85,17 +88,19 @@ export default observer(() => {
         ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
       }
     })()
-    return () => {}
-  }, [debouncedSessionSnapshot])
+  }, [debouncedSessionSnapshot, desktopCapturer, ipcRenderer])
 
   useEffect(() => {
     if (debouncedConfigSnapshot) {
       ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
     }
+  }, [debouncedConfigSnapshot, ipcRenderer])
+  return [root, loaded, firstLoad]
+}
 
-    return () => {}
-  }, [debouncedConfigSnapshot])
-
+const JBrowse = observer(() => {
+  const [root, loaded, firstLoad] = useJBrowseDesktop()
+  const debouncedLoaded = useDebounce(loaded, 400)
   useEffect(() => {
     if (root) {
       window.MODEL = root.session
@@ -103,7 +108,16 @@ export default observer(() => {
     }
   }, [root, root.session])
 
-  let DisplayComponent = (
+  // Use a debounce loaded here to let the circle spinner give a tiny more turn
+  // which looks better
+  if (debouncedLoaded) {
+    return root.session ? (
+      <App session={root.session} />
+    ) : (
+      <StartScreen root={root} bypass={firstLoad} />
+    )
+  }
+  return (
     <CircularProgress
       style={{
         position: 'fixed',
@@ -115,16 +129,15 @@ export default observer(() => {
       size={50}
     />
   )
-  if (status === 'error') DisplayComponent = <div>{message}</div>
-  if (status === 'loaded') {
-    if (session) DisplayComponent = <App session={session} />
-    else DisplayComponent = <StartScreen root={root} bypass={firstLoad} />
-  }
+})
 
+export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {DisplayComponent}
+      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
+        <JBrowse {...props} />
+      </ErrorBoundary>
     </ThemeProvider>
   )
-})
+}

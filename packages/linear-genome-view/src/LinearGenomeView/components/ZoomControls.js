@@ -25,10 +25,9 @@ function ZoomControls({ model }) {
         onClick={() => {
           model.zoomTo(model.bpPerPx * 2)
         }}
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          zoom_out
-        </Icon>
+        <Icon fontSize="small">zoom_out</Icon>
       </IconButton>
       <Slider
         className={classes.slider}
@@ -42,10 +41,9 @@ function ZoomControls({ model }) {
         onClick={() => {
           model.zoomTo(model.bpPerPx / 2)
         }}
+        color="secondary"
       >
-        <Icon color="secondary" fontSize="small">
-          zoom_in
-        </Icon>
+        <Icon fontSize="small">zoom_in</Icon>
       </IconButton>
     </div>
   )

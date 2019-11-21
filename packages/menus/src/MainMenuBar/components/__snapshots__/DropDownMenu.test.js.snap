@@ -13,7 +13,7 @@ exports[`<DropDownMenu /> opens a menu and selects a menu item 1`] = `
   >
     <span
       aria-hidden="true"
-      class="material-icons MuiIcon-root MuiIcon-colorSecondary"
+      class="material-icons MuiIcon-root"
     >
       info
     </span>
