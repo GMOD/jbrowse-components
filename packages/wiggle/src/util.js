@@ -95,10 +95,10 @@ export function getNiceDomain({ scaleType, domain, bounds }) {
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
   }
-  if (minScore !== undefined && minScore !== -Infinity) {
+  if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }
-  if (maxScore !== undefined && maxScore !== Infinity) {
+  if (maxScore !== undefined && maxScore !== Number.MAX_VALUE) {
     max = maxScore
   }
   const getScaleType = type => {
