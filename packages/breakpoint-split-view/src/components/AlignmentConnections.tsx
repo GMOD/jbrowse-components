@@ -22,7 +22,9 @@ export default (pluginManager: any) => {
       trackConfigId: string
     }) => {
       const { views } = model
-      const features = model.getMatchedAlignmentFeatures(trackConfigId)
+      const features = model.hasPairedReads(trackConfigId)
+        ? model.getBadlyPairedAlignments(trackConfigId)
+        : model.getMatchedAlignmentFeatures(trackConfigId)
       const layoutMatches = model.getMatchedFeaturesInLayout(
         trackConfigId,
         features,
