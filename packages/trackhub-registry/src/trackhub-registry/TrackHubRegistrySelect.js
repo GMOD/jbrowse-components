@@ -65,7 +65,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
       const pingResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/ping',
       )
-      if (!pingResponse) return
+      if (!pingResponse) {
+        return
+      }
       if (pingResponse.ping !== 1) {
         setErrorMessage('Registry is not available')
         return
@@ -73,7 +75,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
       const assembliesResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/assemblies',
       )
-      if (assembliesResponse) setAssemblies(assembliesResponse)
+      if (assembliesResponse) {
+        setAssemblies(assembliesResponse)
+      }
     }
 
     getAssemblies()
@@ -237,17 +241,21 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     />,
   )
 
-  if (selectedSpecies)
+  if (selectedSpecies) {
+    const ret = assemblies[selectedSpecies].filter(
+      s => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
+    )
     renderItems.push(
       <SelectBox
         key="assemblySelect"
-        selectList={assemblies[selectedSpecies]}
+        selectList={ret}
         selectedItem={selectedAssembly}
         handleSelect={handleSelectAssembly}
         label="Assembly"
         helpText="Select an assembly"
       />,
     )
+  }
 
   if (selectedAssembly) {
     renderItems.push(
