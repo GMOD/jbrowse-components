@@ -10,7 +10,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import Typography from '@material-ui/core/Typography'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import sanitizeHtml from 'sanitize-html'
+import SanitizedHTML from 'react-sanitized-html'
 
 function HubDetails(props) {
   const [hubFile, setHubFile] = useState(null)
@@ -51,14 +51,6 @@ function HubDetails(props) {
 
     getHubTxt()
   }, [hubUrl])
-
-  const allowedHtml = {
-    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
-    allowedAttributes: {
-      a: ['href'],
-    },
-  }
-
   if (errorMessage)
     return (
       <Card>
@@ -72,12 +64,7 @@ function HubDetails(props) {
       <Card>
         <CardHeader title={shortLabel} />
         <CardContent>
-          <div
-            // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-            dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(longLabel, allowedHtml),
-            }}
-          />
+          <SanitizedHTML html={longLabel} />
         </CardContent>
         <CardActions>
           <IconButton
