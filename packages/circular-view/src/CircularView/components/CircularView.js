@@ -130,10 +130,7 @@ export default pluginManager => {
           onClick={model.zoomInButton}
           className={classes.iconButton}
           title="zoom in"
-          disabled={
-            !showingFigure ||
-            (model.lockedFitToWindow && model.atMinBpPerPxWhenLocked)
-          }
+          disabled={!showingFigure || model.atMinBpPerPx}
         >
           <Icon color="secondary" fontSize="small">
             zoom_in
