@@ -57,7 +57,7 @@ export default (pluginManager: any) => {
 
               const r = views[level2].bpToPx({ refName: chr2, coord: end2 })
               if (r) {
-                const left = r.offsetPx - views[1].offsetPx
+                const left = r.offsetPx - views[level2].offsetPx
                 const c2: LayoutRecord = [left, 0, left + 1, 0]
 
                 const x1 = getPxFromCoordinate(views[level1], c1[LEFT])
