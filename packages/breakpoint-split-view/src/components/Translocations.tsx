@@ -28,6 +28,15 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      // we hardcode the TRA to go to the "other view" and
+      // if there is none, we just return null here
+      // note: would need to do processing of the INFO CHR2/END
+      // and see which view could contain those coordinates
+      // to really do it properly
+      if (views.length < 2) {
+        return null
+      }
       return (
         <g
           fill="none"
