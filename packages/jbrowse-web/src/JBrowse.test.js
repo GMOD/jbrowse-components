@@ -412,6 +412,7 @@ describe('circular views', () => {
 
 describe('breakpoint split view', () => {
   it('open a split view', async () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
     const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
     await waitForElement(() => getByText('Help'))
@@ -425,6 +426,7 @@ describe('breakpoint split view', () => {
     expect(
       await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
     ).toMatchSnapshot()
+    spy.mockRestore()
   })
 })
 
