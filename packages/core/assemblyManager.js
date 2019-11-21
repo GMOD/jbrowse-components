@@ -11,6 +11,7 @@ export default self => ({
         aliases.forEach(alias => {
           aliasesToCanonical[alias] = ref
         })
+        aliasesToCanonical[ref] = ref
       })
       return aliasesToCanonical[refName]
     },

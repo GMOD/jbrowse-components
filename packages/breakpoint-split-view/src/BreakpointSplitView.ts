@@ -37,6 +37,8 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
       )
 
       let mateRefName: string | undefined
+      let startMod = 0
+      let endMod = 0
 
       if (breakendSpecification) {
         // a VCF breakend feature
@@ -48,6 +50,8 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
           mateRefName = await getCanonicalRefName(matePosition[0])
+          if (breakendSpecification.Join === 'left') startMod = -1
+          if (breakendSpecification.MateDirection === 'left') endMod = -1
         }
 
         // if (breakendSpecification.Join === 'left') {
@@ -82,10 +86,10 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
 
       const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
       const bottomMarkedRegion = [{ ...bottomRegion }, { ...bottomRegion }]
-      topMarkedRegion[0].end = startPos
-      topMarkedRegion[1].start = startPos
-      bottomMarkedRegion[0].end = endPos
-      bottomMarkedRegion[1].start = endPos
+      topMarkedRegion[0].end = startPos + startMod
+      topMarkedRegion[1].start = startPos + startMod
+      bottomMarkedRegion[0].end = endPos + endMod
+      bottomMarkedRegion[1].start = endPos + endMod
       const snapshot = {
         type: 'BreakpointSplitView',
         views: [
