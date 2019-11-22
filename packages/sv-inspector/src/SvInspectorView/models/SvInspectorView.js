@@ -29,6 +29,7 @@ export default pluginManager => {
       id: ElementId,
       type: types.literal('SvInspectorView'),
       width: 800,
+      dragHandleHeight: 4,
       height: types.optional(
         types.refinement(
           'SvInspectorViewHeight',
