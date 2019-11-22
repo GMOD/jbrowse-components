@@ -47,6 +47,7 @@ export default pluginManager => {
       configuration: configSchema,
       spacingPx: 10,
       paddingPx: 80,
+      lockedPaddingPx: 100,
       minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
@@ -102,25 +103,32 @@ export default pluginManager => {
         }
         return total
       },
-
       get maximumRadiusPx() {
         return self.lockedFitToWindow
-          ? Math.min(self.width, self.height) / 2 - 100 // radius with window dimension, offset 100xp
-          : 1000000 // possible the second should match the old minBpPerPx of 0.01
+          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
+          : 1000000
       },
       get maxBpPerPx() {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
         return self.totalBp / minCircumferencePx
       },
       get minBpPerPx() {
+        // min depends on window dimensions, clamp between old min(0.01) and max
         const maxCircumferencePx = 2 * Math.PI * self.maximumRadiusPx
-        return self.totalBp / maxCircumferencePx
+        return clamp(
+          self.totalBp / maxCircumferencePx,
+          0.01,
+          self.maxBpPerPx - self.lockedPaddingPx,
+        )
       },
       get atMaxBpPerPx() {
-        return self.bpPerPx >= self.maxBpPerPx
+        return self.bpPerPx >= self.maxBpPerPx - self.lockedPaddingPx
       },
       get atMinBpPerPx() {
-        return self.bpPerPx <= self.minBpPerPx
+        return self.bpPerPx <= self.minBpPerPx + self.lockedPaddingPx
+      },
+      get tooSmallToLock() {
+        return self.minBpPerPx <= 0.01
       },
       get figureDimensions() {
         return [
@@ -184,7 +192,9 @@ export default pluginManager => {
       resizeHeight(distance) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
-        if (self.lockedFitToWindow) self.setBpPerPx(self.bpPerPx)
+        if (self.lockedFitToWindow) {
+          self.setBpPerPx(self.bpPerPx)
+        }
         return newHeight - oldHeight
       },
 
@@ -286,7 +296,6 @@ export default pluginManager => {
       },
 
       toggleFitToWindowLock() {
-        // toggles between locking and unlocking
         self.lockedFitToWindow = !self.lockedFitToWindow
         // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx
         if (self.lockedFitToWindow && self.atMinBpPerPx)

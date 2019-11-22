@@ -159,9 +159,10 @@ export default pluginManager => {
           className={classes.iconButton}
           title={
             model.lockedFitToWindow
-              ? 'lock model to window size'
-              : 'unlock model to zoom further'
+              ? 'locked model to window size'
+              : 'unlocked model to zoom further'
           }
+          disabled={model.tooSmallToLock}
           color="secondary"
         >
           {model.lockedFitToWindow ? (
