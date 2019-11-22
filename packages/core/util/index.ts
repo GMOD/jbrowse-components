@@ -121,14 +121,14 @@ export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
   return `${refName}:${start + 1}-${end}`
 }
 
-export function parseLocString(
-  locstring: string,
-): {
+export interface ParsedLocString {
   assemblyName?: string
   refName?: string
   start?: number
   end?: number
-} {
+}
+
+export function parseLocString(locstring: string): ParsedLocString {
   const ret = locstring.split(':')
   let refName
   let assemblyName
@@ -141,12 +141,23 @@ export function parseLocString(
     ;[refName] = ret
   }
   if (rest) {
-    const [start, end] = rest.split('..')
-    if (start !== undefined && end !== undefined) {
-      return { assemblyName, refName, start: +start, end: +end }
+    // remove any whitespace
+    rest = rest.replace(/\s/, '')
+    // see if it's a range
+    const rangeMatch = rest.match(/^(-?\d+)(\.\.|-)(-?\d+)$/)
+    if (rangeMatch) {
+      const [, start, , end] = rangeMatch
+      if (start !== undefined && end !== undefined) {
+        return { assemblyName, refName, start: +start, end: +end }
+      }
     }
-    if (start !== undefined) {
-      return { assemblyName, refName, start: +start }
+    // see if it's a single point
+    const singleMatch = rest.match(/^(-?\d+)$/)
+    if (singleMatch) {
+      const [, start] = singleMatch
+      if (start !== undefined) {
+        return { assemblyName, refName, start: +start, end: +start }
+      }
     }
   }
   return { assemblyName, refName }
