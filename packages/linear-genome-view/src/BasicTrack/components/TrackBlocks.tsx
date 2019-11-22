@@ -59,6 +59,7 @@ const RenderedBlocks = observer(
                     className={classes.heightOverflowed}
                     style={{
                       top: state.data.layout.totalHeight - 16,
+                      pointerEvents: 'none',
                       height: 16,
                     }}
                   >

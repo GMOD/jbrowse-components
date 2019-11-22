@@ -5,6 +5,7 @@ import { yPos, getPxFromCoordinate } from '../util'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
@@ -22,7 +23,9 @@ export default (pluginManager: any) => {
       trackConfigId: string
     }) => {
       const { views } = model
+      const session = getSession(model)
       const features = model.getMatchedTranslocationFeatures(trackConfigId)
+      const totalFeatures = model.getTrackFeatures(trackConfigId)
       const layoutMatches = model.getMatchedFeaturesInLayout(
         trackConfigId,
         features,
@@ -99,6 +102,18 @@ export default (pluginManager: any) => {
                     d={path}
                     key={JSON.stringify(path)}
                     strokeWidth={id === mouseoverElt ? 10 : 5}
+                    onClick={elt => {
+                      const featureWidget = session.addDrawerWidget(
+                        'VariantFeatureDrawerWidget',
+                        'variantFeature',
+                        {
+                          featureData: (
+                            totalFeatures.get(id) || { toJSON: () => {} }
+                          ).toJSON(),
+                        },
+                      )
+                      session.showDrawerWidget(featureWidget)
+                    }}
                     onMouseOver={elt => setMouseoverElt(id)}
                     onMouseOut={elt => setMouseoverElt(undefined)}
                   />,

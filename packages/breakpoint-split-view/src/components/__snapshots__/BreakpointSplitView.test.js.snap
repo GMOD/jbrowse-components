@@ -38,7 +38,7 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
     <button
       class="MuiButtonBase-root MuiIconButton-root"
       tabindex="0"
-      title="link_off"
+      title="Toggle linked scrolls and behavior across views"
       type="button"
     >
       <span
@@ -69,6 +69,26 @@ exports[`BreakpointSplitView genome view component renders with an empty model 1
           class="material-icons MuiIcon-root MuiIcon-fontSizeSmall"
         >
           location_disabled
+        </span>
+      </span>
+      <span
+        class="MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      class="MuiButtonBase-root MuiIconButton-root"
+      tabindex="0"
+      title="Toggle rendering intraview links"
+      type="button"
+    >
+      <span
+        class="MuiIconButton-label"
+      >
+        <span
+          aria-hidden="true"
+          class="material-icons MuiIcon-root MuiIcon-colorSecondary MuiIcon-fontSizeSmall"
+        >
+          leak_add
         </span>
       </span>
       <span

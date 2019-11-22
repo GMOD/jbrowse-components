@@ -7,6 +7,7 @@ const [LEFT, , RIGHT] = [0, 1, 2, 3]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
+  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
@@ -21,7 +22,9 @@ export default (pluginManager: any) => {
       height: number
       trackConfigId: string
     }) => {
-      const { views } = model
+      const { views, showIntraviewLinks } = model
+      const session = getSession(model)
+      const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.hasPairedReads(trackConfigId)
         ? model.getBadlyPairedAlignments(trackConfigId)
         : model.getMatchedAlignmentFeatures(trackConfigId)
@@ -48,10 +51,22 @@ export default (pluginManager: any) => {
             for (let i = 0; i < chunk.length - 1; i += 1) {
               const { layout: c1, feature: f1, level: level1 } = chunk[i]
               const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
-              if (!c1 || !c2) return null
+
+              if (!c1 || !c2) {
+                console.warn('received null layout for a overlay feature')
+                return null
+              }
+
+              // disable rendering connections in a single level
+              if (!showIntraviewLinks && level1 === level2) {
+                return null
+              }
+
+              // flipMultiplier combines with normal directionality of the curve
               const flipMultipliers = views.map(v =>
                 v.horizontallyFlipped ? -1 : 1,
               )
+
               const x1 = getPxFromCoordinate(
                 views[level1],
                 c1[f1.get('strand') === -1 ? LEFT : RIGHT],
@@ -83,13 +98,24 @@ export default (pluginManager: any) => {
                 <path
                   d={path}
                   key={id}
-                  strokeWidth={mouseoverElt === id ? 3 : 1}
-                  onClick={evt =>
-                    // eslint-disable-next-line no-console
-                    console.log(
-                      'add more information context for this alignment squiggle onClick',
+                  strokeWidth={mouseoverElt === id ? 5 : 1}
+                  onClick={evt => {
+                    const featureWidget = session.addDrawerWidget(
+                      'BreakpointAlignmentsDrawerWidget',
+                      'breakpointAlignments',
+                      {
+                        featureData: {
+                          feature1: (
+                            totalFeatures.get(f1.id()) || { toJSON: () => {} }
+                          ).toJSON(),
+                          feature2: (
+                            totalFeatures.get(f2.id()) || { toJSON: () => {} }
+                          ).toJSON(),
+                        },
+                      },
                     )
-                  }
+                    session.showDrawerWidget(featureWidget)
+                  }}
                   onMouseOver={evt => setMouseoverElt(id)}
                   onMouseOut={evt => setMouseoverElt(undefined)}
                 />,

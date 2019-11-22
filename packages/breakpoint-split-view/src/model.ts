@@ -52,6 +52,7 @@ export default function stateModelFactory(pluginManager: any) {
       displayName: 'breakpoint detail',
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
+      showIntraviewLinks: true,
       linkViews: false,
       interactToggled: false,
       views: types.array(pluginManager.getViewType('LinearGenomeView')
@@ -230,10 +231,8 @@ export default function stateModelFactory(pluginManager: any) {
               args: any[]
             }) => {
               if (self.linkViews) {
-                if (name === 'horizontalScroll') {
-                  this.onSubviewHorizontalScroll(path, args)
-                } else if (name === 'zoomTo') {
-                  this.onSubviewZoom(path, args)
+                if (['horizontalScroll', 'zoomTo'].includes(name)) {
+                  this.onSubviewAction(name, path, args)
                 }
               }
             },
@@ -241,19 +240,12 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
 
-      onSubviewHorizontalScroll(path: string, args: any[]) {
+      onSubviewAction(actionName: string, path: string, args: any[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
-            view.horizontalScroll(args[0])
-          }
-        })
-      },
-      onSubviewZoom(path: string, args: any[]) {
-        self.views.forEach(view => {
-          const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
-            view.zoomTo(args[0])
+            // @ts-ignore
+            view[actionName](args[0])
           }
         })
       },
@@ -286,7 +278,9 @@ export default function stateModelFactory(pluginManager: any) {
       toggleInteract() {
         self.interactToggled = !self.interactToggled
       },
-
+      toggleIntraviewLinks() {
+        self.showIntraviewLinks = !self.showIntraviewLinks
+      },
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
