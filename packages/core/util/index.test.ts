@@ -35,6 +35,7 @@ describe('parseLocString', () => {
       'chr1:-100--1', // weird but valid
       { assemblyName: undefined, start: -100, end: -1, refName: 'chr1' },
     ],
+    ['chr2:1000-', { assemblyName: undefined, refName: 'chr2' }],
   ]
   cases.forEach(([input, output]) => {
     test(`${input}`, () => {

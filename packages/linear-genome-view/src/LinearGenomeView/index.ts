@@ -338,7 +338,8 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       navToLocstring(locstring: string) {
-        return this.navTo(parseLocString(locstring) as IRegion)
+        const parsed = parseLocString(locstring) as IRegion
+        return this.navTo(parsed)
       },
 
       /*
@@ -350,14 +351,14 @@ export function stateModelFactory(pluginManager: any) {
        * returns true if navigation was successful, false if not
        */
       navTo({
-        refName,
+        refName = '',
         start,
         end,
       }: {
         assemblyName?: string
         start?: number
         end?: number
-        refName: string
+        refName?: string
       }) {
         let s = start
         let e = end
@@ -376,10 +377,10 @@ export function stateModelFactory(pluginManager: any) {
           return false
         })
         if (s === undefined) {
-          throw new Error('start coordinate not found')
+          return false
         }
         if (e === undefined) {
-          throw new Error('end coordinate not found')
+          return false
         }
         const f = self.displayedRegionsInOrder[index]
         if (index !== -1) {

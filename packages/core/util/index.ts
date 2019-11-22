@@ -123,17 +123,17 @@ export function assembleLocString(region: IRegion | INoAssemblyRegion): string {
 
 export interface ParsedLocString {
   assemblyName?: string
-  refName?: string
+  refName: string
   start?: number
   end?: number
 }
 
 export function parseLocString(locstring: string): ParsedLocString {
   const ret = locstring.split(':')
-  let refName
+  let refName = ''
   let assemblyName
   let rest
-  if (ret.length === 3) {
+  if (ret.length >= 3) {
     ;[assemblyName, refName, rest] = ret
   } else if (ret.length === 2) {
     ;[refName, rest] = ret
