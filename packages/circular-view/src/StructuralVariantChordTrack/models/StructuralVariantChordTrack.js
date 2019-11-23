@@ -125,43 +125,40 @@ export default pluginManager => {
         self.renderingComponent = undefined
       },
 
-      onChordClick(feature, startRegion, endRegion) {
+      async onChordClick(feature) {
         const session = getSession(self)
         session.setSelection(feature)
         const view = getContainingView(self)
+        const viewType = pluginManager.getViewType('BreakpointSplitView')
+        const viewSnapshot = await viewType.snapshotFromBreakendFeature(
+          feature,
+          view,
+        )
+        const tracks = getConf(self, 'configRelationships')
+          .map(entry => {
+            const type = pluginManager.pluggableConfigSchemaType('track')
+            const trackConfig = resolveIdentifier(type, session, entry.target)
+            return trackConfig
+              ? {
+                  type: trackConfig.type,
+                  height: 100,
+                  configuration: trackConfig.configId,
+                  selectedRendering: '',
+                }
+              : null
+          })
+          .filter(f => !!f)
 
-        try {
-          const viewSnapshot = pluginManager
-            .getViewType('BreakpointSplitView')
-            .snapshotFromBreakendFeature(feature, startRegion, endRegion)
-          const tracks = getConf(self, 'configRelationships')
-            .map(entry => {
-              const type = pluginManager.pluggableConfigSchemaType('track')
-              const trackConfig = resolveIdentifier(type, session, entry.target)
-              return trackConfig
-                ? {
-                    type: trackConfig.type,
-                    height: 100,
-                    configuration: trackConfig.configId,
-                    selectedRendering: '',
-                  }
-                : null
-            })
-            .filter(f => !!f)
+        // add the specific evidence tracks to the LGVs in the split view
+        viewSnapshot.views[0].tracks = tracks
+        viewSnapshot.views[1].tracks = tracks
 
-          // add the specific evidence tracks to the LGVs in the split view
-          viewSnapshot.views[0].tracks = tracks
-          viewSnapshot.views[1].tracks = tracks
+        // try to center the offsetPx
+        viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+        viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+        viewSnapshot.featureData = feature.data
 
-          // try to center the offsetPx
-          viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-          viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-          viewSnapshot.featureData = feature.data
-
-          session.addView('BreakpointSplitView', viewSnapshot)
-        } catch (e) {
-          console.error(e)
-        }
+        session.addView('BreakpointSplitView', viewSnapshot)
       },
     }))
 

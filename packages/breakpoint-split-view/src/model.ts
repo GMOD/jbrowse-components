@@ -59,9 +59,10 @@ export default function stateModelFactory(pluginManager: any) {
     })
     .views(self => ({
       get controlsWidth() {
-        return self.views[0].controlsWidth
+        return self.views.length ? self.views[0].controlsWidth : 0
       },
 
+      // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
           view.tracks.map(t => t.configuration.configId),
@@ -69,27 +70,38 @@ export default function stateModelFactory(pluginManager: any) {
         return intersection(...viewTracks)
       },
 
-      // finds tracks with a given trackId across multiple views
+      // Get tracks with a given trackId across multiple views
       getMatchedTracks(trackConfigId: string) {
         return self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(f => !!f)
       },
 
+      // Paired reads are handled slightly differently than split reads
+      hasPairedReads(trackConfigId: string) {
+        return this.getTrackFeatures(trackConfigId).find(f =>
+          f.get('multi_segment_first'),
+        )
+      },
+
+      // Translocation features are handled differently
+      // since they do not have a mate e.g. they are one sided
       hasTranslocations(trackConfigId: string) {
         return this.getTrackFeatures(trackConfigId).find(
           f => f.get('type') === 'translocation',
         )
       },
 
+      // Get a composite map of featureId->feature map for a track
+      // across multiple views
       getTrackFeatures(trackConfigId: string) {
         const tracks = this.getMatchedTracks(trackConfigId)
-        if (tracks.length) {
-          return new CompositeMap<string, Feature>(tracks.map(t => t.features))
-        }
-        return new CompositeMap<string, Feature>([])
+        return new CompositeMap<string, Feature>(
+          (tracks || []).map(t => t.features),
+        )
       },
 
+      // Getting "matched" TRA means just return all TRA
       getMatchedTranslocationFeatures(trackId: string) {
         const features = this.getTrackFeatures(trackId)
         const feats: Feature[][] = []
@@ -107,9 +119,8 @@ export default function stateModelFactory(pluginManager: any) {
         return feats
       },
 
-      // this finds candidate variant features to plot,
-      // currently only breakends (could do intrachromosomal deletions, insertions, other SV
-      // if relevant too
+      // Returns paired BND features across multiple views by inspecting
+      // the ALT field to get exact coordinate matches
       getMatchedBreakendFeatures(trackId: string) {
         const features = this.getTrackFeatures(trackId)
         const candidates: Record<string, Feature[]> = {}
@@ -146,7 +157,33 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          if (!alreadySeen.has(feature.id())) {
+          if (!alreadySeen.has(feature.id()) && !feature.get('unmapped')) {
+            const n = feature.get('name')
+            if (!candidates[n]) {
+              candidates[n] = []
+            }
+            candidates[n].push(feature)
+          }
+          alreadySeen.add(feature.id())
+        }
+
+        return Object.values(candidates).filter(v => v.length > 1)
+      },
+
+      // this finds candidate alignment features, aimed at plotting split reads
+      // from BAM/CRAM files
+      getBadlyPairedAlignments(trackId: string) {
+        const features = this.getTrackFeatures(trackId)
+        const candidates: Record<string, Feature[]> = {}
+        const alreadySeen = new Set<string>()
+
+        // this finds candidate features that share the same name
+        for (const feature of features.values()) {
+          if (
+            !alreadySeen.has(feature.id()) &&
+            !feature.get('multi_segment_all_correctly_aligned') &&
+            !feature.get('unmapped')
+          ) {
             const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []

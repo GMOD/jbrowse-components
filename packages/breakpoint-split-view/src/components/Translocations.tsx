@@ -28,6 +28,15 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      // we hardcode the TRA to go to the "other view" and
+      // if there is none, we just return null here
+      // note: would need to do processing of the INFO CHR2/END
+      // and see which view could contain those coordinates
+      // to really do it properly
+      if (views.length < 2) {
+        return null
+      }
       return (
         <g
           fill="none"
@@ -57,7 +66,7 @@ export default (pluginManager: any) => {
 
               const r = views[level2].bpToPx({ refName: chr2, coord: end2 })
               if (r) {
-                const left = r.offsetPx - views[1].offsetPx
+                const left = r.offsetPx - views[level2].offsetPx
                 const c2: LayoutRecord = [left, 0, left + 1, 0]
 
                 const x1 = getPxFromCoordinate(views[level1], c1[LEFT])

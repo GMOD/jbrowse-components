@@ -104,6 +104,26 @@ const emptySessionSnapshot = {
               callback:
                 "function(session) { session.addView('SpreadsheetView', {})}",
             },
+            {
+              name: 'Open new track',
+              icon: 'note_add',
+              callback: `function(session) {
+const drawerWidget = session.addDrawerWidget(
+      'AddTrackDrawerWidget',
+      'addTrackDrawerWidget',
+    )
+    session.showDrawerWidget(drawerWidget)`,
+            },
+            {
+              name: 'Open new connection',
+              icon: 'input',
+              callback: `function(session) {
+const drawerWidget = session.addDrawerWidget(
+      'AddConnectionDrawerWidget',
+      'addConnectionDrawerWidget',
+    )
+    session.showDrawerWidget(drawerWidget)`,
+            },
           ],
         },
         {

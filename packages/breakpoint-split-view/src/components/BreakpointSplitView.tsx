@@ -60,10 +60,11 @@ export default (pluginManager: any) => {
         return <AlignmentConnections {...props} />
       }
       if (tracks[0].type === 'VariantTrack') {
-        if (model.hasTranslocations(trackConfigId)) {
-          return <Translocations {...props} />
-        }
-        return <Breakends {...props} />
+        return model.hasTranslocations(trackConfigId) ? (
+          <Translocations {...props} />
+        ) : (
+          <Breakends {...props} />
+        )
       }
       return null
     },

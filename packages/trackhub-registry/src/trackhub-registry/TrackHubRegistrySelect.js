@@ -11,7 +11,7 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import sanitizeHtml from 'sanitize-html'
+import SanitizedHTML from 'react-sanitized-html'
 import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
 
@@ -65,7 +65,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
       const pingResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/ping',
       )
-      if (!pingResponse) return
+      if (!pingResponse) {
+        return
+      }
       if (pingResponse.ping !== 1) {
         setErrorMessage('Registry is not available')
         return
@@ -73,7 +75,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
       const assembliesResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/assemblies',
       )
-      if (assembliesResponse) setAssemblies(assembliesResponse)
+      if (assembliesResponse) {
+        setAssemblies(assembliesResponse)
+      }
     }
 
     getAssemblies()
@@ -237,17 +241,21 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     />,
   )
 
-  if (selectedSpecies)
+  if (selectedSpecies) {
+    const ret = assemblies[selectedSpecies].filter(
+      s => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
+    )
     renderItems.push(
       <SelectBox
         key="assemblySelect"
-        selectList={assemblies[selectedSpecies]}
+        selectList={ret}
         selectedItem={selectedAssembly}
         handleSelect={handleSelectAssembly}
         label="Assembly"
         helpText="Select an assembly"
       />,
     )
+  }
 
   if (selectedAssembly) {
     renderItems.push(
@@ -264,27 +272,11 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
                 )
                 .map(hub => {
                   const disabled = Boolean(hub.error)
-                  const allowedHtml = {
-                    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p'],
-                    allowedAttributes: {
-                      a: ['href'],
-                    },
-                  }
                   const cleanShortLabel = (
-                    <div
-                      // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(hub.hub.shortLabel, allowedHtml),
-                      }}
-                    />
+                    <SanitizedHTML html={hub.hub.shortLabel} />
                   )
                   const cleanLongLabel = (
-                    <div
-                      // It's sanitized, so should be fine to use dangerouslySetInnerHTML
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(hub.hub.longLabel, allowedHtml),
-                      }}
-                    />
+                    <SanitizedHTML html={hub.hub.longLabel} />
                   )
                   return (
                     <Wire key={hub.id} value={hub.id}>

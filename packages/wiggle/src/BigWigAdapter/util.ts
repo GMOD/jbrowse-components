@@ -110,8 +110,8 @@ export function scoresToStats(
   feats: BBIFeature[],
 ): FeatureStats {
   const { start, end } = region
-  let scoreMax = -Infinity
-  let scoreMin = Infinity
+  let scoreMax = Number.MIN_VALUE
+  let scoreMin = Number.MAX_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
 

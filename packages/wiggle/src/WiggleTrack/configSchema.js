@@ -24,13 +24,13 @@ export default pluginManager => {
       },
       minScore: {
         type: 'number',
-        defaultValue: -Infinity,
+        defaultValue: Number.MIN_VALUE,
         description: 'minimum value for the y-scale',
       },
       maxScore: {
         type: 'number',
         description: 'maximum value for the y-scale',
-        defaultValue: Infinity,
+        defaultValue: Number.MAX_VALUE,
       },
       scaleType: {
         type: 'stringEnum',
