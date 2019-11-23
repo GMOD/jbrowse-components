@@ -27,7 +27,7 @@ const Tooltip = ({
   offsetY: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configuration: any
-  feature: Feature
+  feature?: Feature
   timeout: number
 }) => {
   const classes = useStyles()
@@ -37,12 +37,18 @@ const Tooltip = ({
     const handle = setTimeout(() => setShown(true), timeout)
     return () => clearTimeout(handle)
   })
-  const text = readConfObject(configuration, 'mouseover', [feature])
-  return text && shown ? (
-    <div className={classes.hoverLabel} style={{ left: offsetX, top: offsetY }}>
-      {text}
-    </div>
-  ) : null
+  if (feature && shown) {
+    const text = readConfObject(configuration, 'mouseover', [feature])
+    return (
+      <div
+        className={classes.hoverLabel}
+        style={{ left: offsetX, top: offsetY }}
+      >
+        {text}
+      </div>
+    )
+  }
+  return null
 }
 
 Tooltip.propTypes = {
