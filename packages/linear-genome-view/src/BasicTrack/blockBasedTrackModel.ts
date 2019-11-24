@@ -60,10 +60,13 @@ const blockBasedTrack = types
       },
 
       /**
-       * a CompositeMap of featureId -> feature obj that
-       * just looks in all the block data for that feature
+       * returns per-base block layouts as the data structure
+       * Map<blockKey, Map<featureId, LayoutRecord>>
+       *
+       * this per-block is needed to avoid cross-contamination of
+       * layouts across blocks especially when building the rtree
        */
-      get layoutFeatures() {
+      get blockLayoutFeatures() {
         const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
         for (const block of self.blockState.values()) {
           if (block.data && block.data.layout && block.data.layout.rectangles) {
@@ -74,10 +77,30 @@ const blockBasedTrack = types
         return layoutMaps
       },
 
+      /**
+       * a CompositeMap of featureId -> feature obj that
+       * just looks in all the block data for that feature
+       *
+       * when you are not using the rtree you can use this
+       * method because it still provides a stable reference
+       * of a featureId to a layout record (when using the
+       * rtree, you cross contaminate the coordinates)
+       */
+      get layoutFeatures() {
+        const layoutMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.layout && block.data.layout.rectangles) {
+            layoutMaps.push(block.data.layout.rectangles)
+          }
+        }
+        stale = true // make rtree refresh
+        return new CompositeMap<string, LayoutRecord>(layoutMaps)
+      },
+
       get rtree() {
         if (stale) {
           rbush = {}
-          for (const [blockKey, layoutFeatures] of this.layoutFeatures) {
+          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
             rbush[blockKey] = new RBush()
             const r = rbush[blockKey]
             for (const [key, layout] of layoutFeatures) {

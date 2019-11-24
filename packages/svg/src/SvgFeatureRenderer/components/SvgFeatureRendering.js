@@ -17,15 +17,15 @@ const renderingStyle = {
 export const SvgSelected = observer(
   ({
     region,
-    trackModel: { layoutFeatures, selectedFeatureId },
+    trackModel: { blockLayoutFeatures, selectedFeatureId },
     bpPerPx,
     horizontallyFlipped,
     blockKey,
   }) => {
-    if (selectedFeatureId && layoutFeatures) {
-      const blockLayoutFeatures = layoutFeatures.get(blockKey)
-      if (blockLayoutFeatures) {
-        const rect = blockLayoutFeatures.get(selectedFeatureId)
+    if (selectedFeatureId && blockLayoutFeatures) {
+      const blockLayout = blockLayoutFeatures.get(blockKey)
+      if (blockLayout) {
+        const rect = blockLayout.get(selectedFeatureId)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
           const [leftPx, rightPx] = bpSpanPx(
@@ -57,16 +57,16 @@ export const SvgSelected = observer(
 
 export const SvgMouseover = observer(
   ({
-    trackModel: { layoutFeatures, featureIdUnderMouse },
+    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
     region,
     bpPerPx,
     horizontallyFlipped,
     blockKey,
   }) => {
-    if (featureIdUnderMouse && layoutFeatures) {
-      const blockLayoutFeatures = layoutFeatures.get(blockKey)
-      if (blockLayoutFeatures) {
-        const rect = blockLayoutFeatures.get(featureIdUnderMouse)
+    if (featureIdUnderMouse && blockLayoutFeatures) {
+      const blockLayout = blockLayoutFeatures.get(blockKey)
+      if (blockLayout) {
+        const rect = blockLayout.get(featureIdUnderMouse)
         if (rect) {
           const [leftBp, topPx, rightBp, bottomPx] = rect
           const [leftPx, rightPx] = bpSpanPx(
