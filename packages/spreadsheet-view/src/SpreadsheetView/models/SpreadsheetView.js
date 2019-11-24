@@ -86,6 +86,7 @@ export default pluginManager => {
     .actions(self => ({
       setWidth(newWidth) {
         self.width = newWidth
+        return self.width
       },
       setHeight(newHeight) {
         if (newHeight > minHeight) self.height = newHeight
