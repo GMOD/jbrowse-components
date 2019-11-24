@@ -17,37 +17,39 @@ const renderingStyle = {
 export const SvgSelected = observer(
   ({
     region,
-    trackModel: { layoutFeatures, selectedFeatureId },
+    trackModel: { blockLayoutFeatures, selectedFeatureId },
     bpPerPx,
     horizontallyFlipped,
+    blockKey,
   }) => {
-    let rect
-    if (
-      selectedFeatureId &&
-      layoutFeatures &&
-      (rect = layoutFeatures.get(selectedFeatureId))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
-      const rectTop = Math.round(topPx)
-      const rectHeight = Math.round(bottomPx - topPx)
+    if (selectedFeatureId && blockLayoutFeatures) {
+      const blockLayout = blockLayoutFeatures.get(blockKey)
+      if (blockLayout) {
+        const rect = blockLayout.get(selectedFeatureId)
+        if (rect) {
+          const [leftBp, topPx, rightBp, bottomPx] = rect
+          const [leftPx, rightPx] = bpSpanPx(
+            leftBp,
+            rightBp,
+            region,
+            bpPerPx,
+            horizontallyFlipped,
+          )
+          const rectTop = Math.round(topPx)
+          const rectHeight = Math.round(bottomPx - topPx)
 
-      return (
-        <rect
-          x={leftPx - 2}
-          y={rectTop - 2}
-          width={rightPx - leftPx + 4}
-          height={rectHeight + 4}
-          stroke="#00b8ff"
-          fill="none"
-        />
-      )
+          return (
+            <rect
+              x={leftPx - 2}
+              y={rectTop - 2}
+              width={rightPx - leftPx + 4}
+              height={rectHeight + 4}
+              stroke="#00b8ff"
+              fill="none"
+            />
+          )
+        }
+      }
     }
     return null
   },
@@ -55,37 +57,39 @@ export const SvgSelected = observer(
 
 export const SvgMouseover = observer(
   ({
-    trackModel: { layoutFeatures, featureIdUnderMouse },
+    trackModel: { blockLayoutFeatures, featureIdUnderMouse },
     region,
     bpPerPx,
     horizontallyFlipped,
+    blockKey,
   }) => {
-    let rect
-    if (
-      featureIdUnderMouse &&
-      layoutFeatures &&
-      (rect = layoutFeatures.get(featureIdUnderMouse))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
-      const [leftPx, rightPx] = bpSpanPx(
-        leftBp,
-        rightBp,
-        region,
-        bpPerPx,
-        horizontallyFlipped,
-      )
-      const rectTop = Math.round(topPx)
-      const rectHeight = Math.round(bottomPx - topPx)
-      return (
-        <rect
-          x={leftPx - 2}
-          y={rectTop - 2}
-          width={rightPx - leftPx + 4}
-          height={rectHeight + 4}
-          fill="#000"
-          fillOpacity="0.2"
-        />
-      )
+    if (featureIdUnderMouse && blockLayoutFeatures) {
+      const blockLayout = blockLayoutFeatures.get(blockKey)
+      if (blockLayout) {
+        const rect = blockLayout.get(featureIdUnderMouse)
+        if (rect) {
+          const [leftBp, topPx, rightBp, bottomPx] = rect
+          const [leftPx, rightPx] = bpSpanPx(
+            leftBp,
+            rightBp,
+            region,
+            bpPerPx,
+            horizontallyFlipped,
+          )
+          const rectTop = Math.round(topPx)
+          const rectHeight = Math.round(bottomPx - topPx)
+          return (
+            <rect
+              x={leftPx - 2}
+              y={rectTop - 2}
+              width={rightPx - leftPx + 4}
+              height={rectHeight + 4}
+              fill="#000"
+              fillOpacity="0.2"
+            />
+          )
+        }
+      }
     }
     return null
   },
@@ -234,7 +238,14 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const { region, bpPerPx, horizontallyFlipped, features, trackModel } = props
+  const {
+    blockKey,
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    features,
+    trackModel,
+  } = props
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
 
@@ -244,7 +255,7 @@ function SvgFeatureRendering(props) {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
-  const [offset, setOffset] = useState([0, 0])
+  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
   const [height, setHeight] = useState(0)
   const {
     onMouseOut,
@@ -331,11 +342,15 @@ function SvgFeatureRendering(props) {
       const px = horizontallyFlipped ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
-      const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+      const feats = trackModel.getFeatureOverlapping(
+        blockKey,
+        clientBp,
+        offsetY,
+      )
       const featureIdCurrentlyUnderMouse = feats.length
         ? feats[0].name
         : undefined
-      setOffset([offsetX, offsetY])
+      setTooltipCoord([offsetX, offsetY])
       setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
       trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
 
@@ -343,6 +358,7 @@ function SvgFeatureRendering(props) {
       return handler(event)
     },
     [
+      blockKey,
       bpPerPx,
       horizontallyFlipped,
       mouseIsDown,
@@ -393,8 +409,8 @@ function SvgFeatureRendering(props) {
         <Tooltip
           configuration={configuration}
           feature={features.get(localFeatureIdUnderMouse)}
-          offsetX={offset[0]}
-          offsetY={offset[1]}
+          offsetX={tooltipCoord[0]}
+          offsetY={tooltipCoord[1]}
         />
       ) : null}
     </div>
@@ -432,6 +448,7 @@ SvgFeatureRendering.propTypes = {
   onMouseMove: ReactPropTypes.func,
   onClick: ReactPropTypes.func,
   onFeatureClick: ReactPropTypes.func,
+  blockKey: ReactPropTypes.string,
 }
 
 SvgFeatureRendering.defaultProps = {
@@ -440,6 +457,7 @@ SvgFeatureRendering.defaultProps = {
   trackModel: {},
 
   features: new Map(),
+  blockKey: undefined,
 
   onMouseDown: undefined,
   onMouseUp: undefined,

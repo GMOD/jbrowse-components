@@ -14,6 +14,7 @@ import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
 import BlockBasedTrack from './components/BlockBasedTrack'
 
+type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
   .compose(
     'BlockBasedTrackState',
@@ -23,13 +24,13 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        rbush: new RBush(),
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
   )
   .views(self => {
     let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
+    let rbush: { [key: string]: typeof RBush | undefined } = {}
 
     return {
       get blockType() {
@@ -59,8 +60,31 @@ const blockBasedTrack = types
       },
 
       /**
+       * returns per-base block layouts as the data structure
+       * Map<blockKey, Map<featureId, LayoutRecord>>
+       *
+       * this per-block is needed to avoid cross-contamination of
+       * layouts across blocks especially when building the rtree
+       */
+      get blockLayoutFeatures() {
+        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.layout && block.data.layout.rectangles) {
+            layoutMaps.set(block.key, block.data.layout.rectangles)
+          }
+        }
+        stale = true // make rtree refresh
+        return layoutMaps
+      },
+
+      /**
        * a CompositeMap of featureId -> feature obj that
        * just looks in all the block data for that feature
+       *
+       * when you are not using the rtree you can use this
+       * method because it still provides a stable reference
+       * of a featureId to a layout record (when using the
+       * rtree, you cross contaminate the coordinates)
        */
       get layoutFeatures() {
         const layoutMaps = []
@@ -70,39 +94,34 @@ const blockBasedTrack = types
           }
         }
         stale = true // make rtree refresh
-        return new CompositeMap<string, [number, number, number, number]>(
-          layoutMaps,
-        )
+        return new CompositeMap<string, LayoutRecord>(layoutMaps)
       },
 
       get rtree() {
         if (stale) {
-          self.rbush.clear()
-          for (const [key, item] of this.features) {
-            const layout = this.layoutFeatures.get(key) || []
-            self.rbush.insert({
-              minX: item.get('start'),
-              minY: layout[1],
-              maxX: item.get('end'),
-              maxY: layout[3],
-              name: key,
-            })
+          rbush = {}
+          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
+            rbush[blockKey] = new RBush()
+            const r = rbush[blockKey]
+            for (const [key, layout] of layoutFeatures) {
+              r.insert({
+                minX: layout[0],
+                minY: layout[1],
+                maxX: layout[2],
+                maxY: layout[3],
+                name: key,
+              })
+            }
           }
           stale = false
         }
-        return self.rbush
+        return rbush
       },
-      getFeatureOverlapping(x: number, y: number) {
+
+      getFeatureOverlapping(blockKey: string, x: number, y: number) {
         const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        if (this.rtree.collides(rect)) {
-          return this.rtree.search({
-            minX: x,
-            minY: y,
-            maxX: x + 1,
-            maxY: y + 1,
-          })
-        }
-        return []
+        const rtree = this.rtree[blockKey]
+        return rtree && rtree.collides(rect) ? rtree.search(rect) : []
       },
 
       get blockDefinitions() {

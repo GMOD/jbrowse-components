@@ -420,6 +420,7 @@
           "configId": "wiggle_global_autoscale",
           "type": "WiggleTrack",
           "name": "Encode global autoscale",
+          "autoscale": "global",
           "category": [
             "ENCODE bigWigs"
           ],

@@ -199,24 +199,28 @@ test('processed transcript', () => {
 })
 
 test('svg selected', () => {
-  const layoutFeatures = new Map()
-  layoutFeatures.set('one', [0, 0, 10, 10])
+  const blockLayoutFeatures = new Map()
+  const layout = new Map()
+  layout.set('one', [0, 0, 10, 10])
+  blockLayoutFeatures.set('block1', layout)
 
   const { container } = render(
     <svg>
       <SvgMouseover
         width={500}
         height={500}
+        blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{ layoutFeatures, featureIdUnderMouse: 'one' }}
+        trackModel={{ blockLayoutFeatures, featureIdUnderMouse: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
       />
       <SvgSelected
         width={500}
         height={500}
+        blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{ layoutFeatures, selectedFeatureId: 'one' }}
+        trackModel={{ blockLayoutFeatures, selectedFeatureId: 'one' }}
         config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
       />

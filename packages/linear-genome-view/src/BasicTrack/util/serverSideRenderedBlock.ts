@@ -165,13 +165,9 @@ export type BlockStateModel = typeof blockState
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
+  const { assemblyData, rpcManager } = getSession(self) as any
   const track = getParent(self, 2)
-  const view = getContainingView(track)
-  const { rpcManager } = getSession(view) as any
-
   const assemblyName = getTrackAssemblyName(track)
-
-  const { assemblyData } = getSession(self) as any
   const trackAssemblyData =
     (assemblyData && assemblyData.get(assemblyName)) || {}
   const trackAssemblyAliases = trackAssemblyData.aliases || []
@@ -212,6 +208,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,
+      blockKey: self.key,
       timeout: 1000000, // 10000,
     },
   }
