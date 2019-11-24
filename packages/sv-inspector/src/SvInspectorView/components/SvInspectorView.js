@@ -143,7 +143,11 @@ export default pluginManager => {
           {showCircularView ? (
             <>
               <ResizeHandle
-                onDrag={model.spreadsheetView.resizeWidth}
+                onDrag={distance => {
+                  model.spreadsheetView.resizeWidth(distance)
+                  model.circularView.resizeWidth(-distance)
+                  return distance
+                }}
                 vertical
                 flexbox
                 style={style}

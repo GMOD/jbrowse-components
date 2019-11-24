@@ -158,6 +158,7 @@ export default pluginManager => {
     .actions(self => ({
       setWidth(newWidth) {
         self.width = newWidth
+        return self.width
       },
       setHeight(newHeight) {
         if (newHeight > minHeight) self.height = newHeight
@@ -169,7 +170,11 @@ export default pluginManager => {
         const newHeight = self.setHeight(self.height + distance)
         return newHeight - oldHeight
       },
-
+      resizeWidth(distance) {
+        const oldWidth = self.width
+        const newWidth = self.setWidth(self.width + distance)
+        return newWidth - oldWidth
+      },
       rotateClockwiseButton() {
         self.rotateClockwise()
       },
