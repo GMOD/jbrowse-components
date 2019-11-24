@@ -30,7 +30,7 @@ const blockBasedTrack = types
   )
   .views(self => {
     let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: { [key: string]: typeof RBush } = {}
+    let rbush: { [key: string]: typeof RBush | undefined } = {}
 
     return {
       get blockType() {
@@ -97,16 +97,8 @@ const blockBasedTrack = types
 
       getFeatureOverlapping(blockKey: string, x: number, y: number) {
         const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        const rtree = this.rtree.get(blockKey)
-        if (rtree && rtree.collides(rect)) {
-          return rtree.search({
-            minX: x,
-            minY: y,
-            maxX: x + 1,
-            maxY: y + 1,
-          })
-        }
-        return []
+        const rtree = this.rtree[blockKey]
+        return rtree && rtree.collides(rect) ? rtree.search(rect) : []
       },
 
       get blockDefinitions() {
