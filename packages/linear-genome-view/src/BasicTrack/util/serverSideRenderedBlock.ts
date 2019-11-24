@@ -212,6 +212,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       rendererType: rendererType.name,
       renderProps,
       sessionId: track.id,
+      blockKey: self.key,
       timeout: 1000000, // 10000,
     },
   }

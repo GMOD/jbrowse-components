@@ -234,7 +234,14 @@ RenderedFeatures.defaultProps = {
 }
 
 function SvgFeatureRendering(props) {
-  const { region, bpPerPx, horizontallyFlipped, features, trackModel } = props
+  const {
+    blockKey,
+    region,
+    bpPerPx,
+    horizontallyFlipped,
+    features,
+    trackModel,
+  } = props
   const { configuration } = trackModel
   const width = (region.end - region.start) / bpPerPx
 
@@ -331,7 +338,11 @@ function SvgFeatureRendering(props) {
       const px = horizontallyFlipped ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
-      const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+      const feats = trackModel.getFeatureOverlapping(
+        blockKey,
+        clientBp,
+        offsetY,
+      )
       const featureIdCurrentlyUnderMouse = feats.length
         ? feats[0].name
         : undefined
@@ -343,6 +354,7 @@ function SvgFeatureRendering(props) {
       return handler(event)
     },
     [
+      blockKey,
       bpPerPx,
       horizontallyFlipped,
       mouseIsDown,

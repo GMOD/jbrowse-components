@@ -14,6 +14,7 @@ import baseTrack from './baseTrackModel'
 import { BaseBlock, ContentBlock } from './util/blockTypes'
 import BlockBasedTrack from './components/BlockBasedTrack'
 
+type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
   .compose(
     'BlockBasedTrackState',
@@ -23,13 +24,13 @@ const blockBasedTrack = types
         blockState: types.map(BlockState),
       })
       .volatile(() => ({
-        rbush: new RBush(),
         featureIdUnderMouse: undefined as undefined | string,
         ReactComponent: BlockBasedTrack,
       })),
   )
   .views(self => {
     let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
+    let rbush: { [key: string]: typeof RBush } = {}
 
     return {
       get blockType() {
@@ -63,38 +64,42 @@ const blockBasedTrack = types
        * just looks in all the block data for that feature
        */
       get layoutFeatures() {
-        const layoutMaps = []
+        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
         for (const block of self.blockState.values()) {
           if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.push(block.data.layout.rectangles)
+            layoutMaps.set(block.key, block.data.layout.rectangles)
           }
         }
         stale = true // make rtree refresh
-        return new CompositeMap<string, [number, number, number, number]>(
-          layoutMaps,
-        )
+        return layoutMaps
       },
 
       get rtree() {
         if (stale) {
-          self.rbush.clear()
-          for (const [key, layout] of this.layoutFeatures) {
-            self.rbush.insert({
-              minX: layout[0],
-              minY: layout[1],
-              maxX: layout[2],
-              maxY: layout[3],
-              name: key,
-            })
+          rbush = {}
+          for (const [blockKey, layoutFeatures] of this.layoutFeatures) {
+            rbush[blockKey] = new RBush()
+            const r = rbush[blockKey]
+            for (const [key, layout] of layoutFeatures) {
+              r.insert({
+                minX: layout[0],
+                minY: layout[1],
+                maxX: layout[2],
+                maxY: layout[3],
+                name: key,
+              })
+            }
           }
           stale = false
         }
-        return self.rbush
+        return rbush
       },
-      getFeatureOverlapping(x: number, y: number) {
+
+      getFeatureOverlapping(blockKey: string, x: number, y: number) {
         const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        if (this.rtree.collides(rect)) {
-          return this.rtree.search({
+        const rtree = this.rtree.get(blockKey)
+        if (rtree && rtree.collides(rect)) {
+          return rtree.search({
             minX: x,
             minY: y,
             maxX: x + 1,

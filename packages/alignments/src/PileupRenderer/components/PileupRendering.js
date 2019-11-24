@@ -8,6 +8,7 @@ import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
   const {
+    blockKey,
     trackModel,
     width,
     height,
@@ -137,7 +138,7 @@ function PileupRendering(props) {
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+    const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
     const featureIdCurrentlyUnderMouse = feats.length
       ? feats[0].name
       : undefined
