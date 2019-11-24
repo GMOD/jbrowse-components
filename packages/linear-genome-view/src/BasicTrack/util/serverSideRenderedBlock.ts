@@ -167,11 +167,8 @@ export type BlockStateModel = typeof blockState
 function renderBlockData(self: Instance<BlockStateModel>) {
   const track = getParent(self, 2)
   const view = getContainingView(track)
-  const { rpcManager } = getSession(view) as any
-
+  const { assemblyData, rpcManager } = getSession(self) as any
   const assemblyName = getTrackAssemblyName(track)
-
-  const { assemblyData } = getSession(self) as any
   const trackAssemblyData =
     (assemblyData && assemblyData.get(assemblyName)) || {}
   const trackAssemblyAliases = trackAssemblyData.aliases || []

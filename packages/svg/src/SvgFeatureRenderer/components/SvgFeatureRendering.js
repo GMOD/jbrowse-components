@@ -251,7 +251,7 @@ function SvgFeatureRendering(props) {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
     false,
   )
-  const [offset, setOffset] = useState([0, 0])
+  const [tooltipCoord, setTooltipCoord] = useState([0, 0])
   const [height, setHeight] = useState(0)
   const {
     onMouseOut,
@@ -346,7 +346,7 @@ function SvgFeatureRendering(props) {
       const featureIdCurrentlyUnderMouse = feats.length
         ? feats[0].name
         : undefined
-      setOffset([offsetX, offsetY])
+      setTooltipCoord([offsetX, offsetY])
       setLocalFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
       trackModel.setFeatureIdUnderMouse(featureIdCurrentlyUnderMouse)
 
@@ -405,8 +405,8 @@ function SvgFeatureRendering(props) {
         <Tooltip
           configuration={configuration}
           feature={features.get(localFeatureIdUnderMouse)}
-          offsetX={offset[0]}
-          offsetY={offset[1]}
+          offsetX={tooltipCoord[0]}
+          offsetY={tooltipCoord[1]}
         />
       ) : null}
     </div>
