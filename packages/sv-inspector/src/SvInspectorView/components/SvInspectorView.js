@@ -144,15 +144,18 @@ export default pluginManager => {
             <>
               <ResizeHandle
                 onDrag={distance => {
-                  model.spreadsheetView.resizeWidth(distance)
-                  model.circularView.resizeWidth(-distance)
-                  return distance
+                  const ret1 = model.circularView.resizeWidth(-distance)
+                  const ret2 = model.spreadsheetView.resizeWidth(-ret1)
+                  return ret2
                 }}
                 vertical
                 flexbox
                 style={style}
               />
-              <div className={classes.circularViewContainer}>
+              <div
+                className={classes.circularViewContainer}
+                style={{ width: model.circularView.width }}
+              >
                 <CircularViewOptions svInspector={model} />
                 <CircularViewReactComponent model={model.circularView} />
               </div>
