@@ -165,9 +165,8 @@ export type BlockStateModel = typeof blockState
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
-  const track = getParent(self, 2)
-  const view = getContainingView(track)
   const { assemblyData, rpcManager } = getSession(self) as any
+  const track = getParent(self, 2)
   const assemblyName = getTrackAssemblyName(track)
   const trackAssemblyData =
     (assemblyData && assemblyData.get(assemblyName)) || {}
