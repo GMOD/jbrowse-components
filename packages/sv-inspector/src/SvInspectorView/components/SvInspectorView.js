@@ -13,6 +13,12 @@ export default pluginManager => {
 
   const headerHeight = 52
 
+  const style = {
+    width: 4,
+    background: '#ccc',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  }
   const useStyles = makeStyles(theme => {
     return {
       root: {
@@ -138,15 +144,9 @@ export default pluginManager => {
             <>
               <ResizeHandle
                 onDrag={model.spreadsheetView.resizeWidth}
-                objectId={model.id}
                 vertical
                 flexbox
-                style={{
-                  width: 4,
-                  background: '#ccc',
-                  boxSizing: 'border-box',
-                  borderTop: '1px solid #fafafa',
-                }}
+                style={style}
               />
               <div className={classes.circularViewContainer}>
                 <CircularViewOptions svInspector={model} />
@@ -157,7 +157,6 @@ export default pluginManager => {
         </div>
         <ResizeHandle
           onDrag={resizeHeight}
-          objectId={model.id}
           style={{
             height: dragHandleHeight,
             background: '#ccc',
