@@ -78,12 +78,11 @@ const blockBasedTrack = types
       get rtree() {
         if (stale) {
           self.rbush.clear()
-          for (const [key, item] of this.features) {
-            const layout = this.layoutFeatures.get(key) || []
+          for (const [key, layout] of this.layoutFeatures) {
             self.rbush.insert({
-              minX: item.get('start'),
+              minX: layout[0],
               minY: layout[1],
-              maxX: item.get('end'),
+              maxX: layout[2],
               maxY: layout[3],
               name: key,
             })
