@@ -36,6 +36,7 @@ export default pluginManager => {
       },
       spreadsheetViewContainer: {
         borderRight: [['1px', 'solid', grey[400]]],
+        overflow: 'hidden',
       },
       circularViewOptions: {
         padding: theme.spacing(1),
@@ -132,11 +133,26 @@ export default pluginManager => {
           <div className={classes.spreadsheetViewContainer}>
             <SpreadsheetViewReactComponent model={model.spreadsheetView} />
           </div>
+
           {showCircularView ? (
-            <div className={classes.circularViewContainer}>
-              <CircularViewOptions svInspector={model} />
-              <CircularViewReactComponent model={model.circularView} />
-            </div>
+            <>
+              <ResizeHandle
+                onDrag={model.spreadsheetView.resizeWidth}
+                objectId={model.id}
+                vertical
+                flexbox
+                style={{
+                  width: 4,
+                  background: '#ccc',
+                  boxSizing: 'border-box',
+                  borderTop: '1px solid #fafafa',
+                }}
+              />
+              <div className={classes.circularViewContainer}>
+                <CircularViewOptions svInspector={model} />
+                <CircularViewReactComponent model={model.circularView} />
+              </div>
+            </>
           ) : null}
         </div>
         <ResizeHandle
