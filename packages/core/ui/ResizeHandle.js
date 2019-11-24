@@ -88,8 +88,9 @@ ResizeHandle.propTypes = {
   style: ReactPropTypes.shape(),
   onDrag: ReactPropTypes.func.isRequired,
   vertical: ReactPropTypes.bool,
+  flexbox: ReactPropTypes.bool,
 }
 
-ResizeHandle.defaultProps = { style: {}, vertical: false }
+ResizeHandle.defaultProps = { style: {}, vertical: false, flexbox: false }
 
 export default ResizeHandle
