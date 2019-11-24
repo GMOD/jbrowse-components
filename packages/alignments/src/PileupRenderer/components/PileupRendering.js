@@ -37,8 +37,13 @@ function PileupRendering(props) {
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     let rect
+    let blockLayoutFeatures
 
-    if (selectedFeatureId && (rect = layoutFeatures.get(selectedFeatureId))) {
+    if (
+      selectedFeatureId &&
+      (blockLayoutFeatures = layoutFeatures.get(blockKey)) &&
+      (rect = blockLayoutFeatures.get(selectedFeatureId))
+    ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
       const [leftPx, rightPx] = bpSpanPx(
         leftBp,
@@ -64,7 +69,8 @@ function PileupRendering(props) {
     }
     if (
       featureIdUnderMouse &&
-      (rect = layoutFeatures.get(featureIdUnderMouse))
+      (blockLayoutFeatures = layoutFeatures.get(blockKey)) &&
+      (rect = blockLayoutFeatures.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
       const [leftPx, rightPx] = bpSpanPx(
@@ -86,6 +92,7 @@ function PileupRendering(props) {
     selectedFeatureId,
     layoutFeatures,
     featureIdUnderMouse,
+    blockKey,
   ])
 
   function onMouseDown(event) {
