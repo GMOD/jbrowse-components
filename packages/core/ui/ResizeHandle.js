@@ -11,9 +11,19 @@ const useStyles = makeStyles({
     cursor: 'col-resize',
     height: '100%',
   },
+  // eslint-disable-next-line @typescript-eslint/camelcase
+  flexbox_verticalHandle: {
+    cursor: 'col-resize',
+    alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
+  },
+  // eslint-disable-next-line @typescript-eslint/camelcase
+  flexbox_horizontalHandle: {
+    cursor: 'row-resize',
+    alignSelf: 'stretch', // similar to above
+  },
 })
 
-function ResizeHandle({ style, onDrag, vertical }) {
+function ResizeHandle({ style, onDrag, vertical, flexbox }) {
   const [mouseDragging, setMouseDragging] = useState(false)
   const prevPos = useRef()
   const classes = useStyles()
@@ -63,7 +73,12 @@ function ResizeHandle({ style, onDrag, vertical }) {
       onMouseDown={mouseDown}
       onMouseLeave={mouseLeave}
       role="presentation"
-      className={classes[vertical ? 'verticalHandle' : 'horizontalHandle']}
+      className={
+        classes[
+          (flexbox ? 'flexbox_' : '') +
+            (vertical ? 'verticalHandle' : 'horizontalHandle')
+        ]
+      }
       style={style}
     />
   )
@@ -73,8 +88,9 @@ ResizeHandle.propTypes = {
   style: ReactPropTypes.shape(),
   onDrag: ReactPropTypes.func.isRequired,
   vertical: ReactPropTypes.bool,
+  flexbox: ReactPropTypes.bool,
 }
 
-ResizeHandle.defaultProps = { style: {}, vertical: false }
+ResizeHandle.defaultProps = { style: {}, vertical: false, flexbox: false }
 
 export default ResizeHandle

@@ -21,6 +21,7 @@ export default pluginManager => {
   )
 
   const minHeight = 40
+  const minWidth = 100
   const defaultHeight = 400
   const stateModel = types
     .model('CircularView', {
@@ -157,11 +158,11 @@ export default pluginManager => {
     }))
     .actions(self => ({
       setWidth(newWidth) {
-        self.width = newWidth
+        self.width = Math.max(newWidth, minWidth)
+        return self.width
       },
       setHeight(newHeight) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
+        self.height = Math.max(newHeight, minHeight)
         return self.height
       },
       resizeHeight(distance) {
@@ -169,7 +170,11 @@ export default pluginManager => {
         const newHeight = self.setHeight(self.height + distance)
         return newHeight - oldHeight
       },
-
+      resizeWidth(distance) {
+        const oldWidth = self.width
+        const newWidth = self.setWidth(self.width + distance)
+        return newWidth - oldWidth
+      },
       rotateClockwiseButton() {
         self.rotateClockwise()
       },

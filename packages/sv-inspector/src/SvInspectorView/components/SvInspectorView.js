@@ -13,10 +13,15 @@ export default pluginManager => {
 
   const headerHeight = 52
 
+  const style = {
+    width: 4,
+    background: '#ccc',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  }
   const useStyles = makeStyles(theme => {
     return {
       root: {
-        position: 'relative',
         marginBottom: theme.spacing(1),
         background: 'white',
         overflow: 'hidden',
@@ -33,18 +38,11 @@ export default pluginManager => {
         margin: 0,
       },
       viewsContainer: {
-        position: 'relative',
+        display: 'flex',
       },
       spreadsheetViewContainer: {
         borderRight: [['1px', 'solid', grey[400]]],
-        height: '100%',
-        position: 'absolute',
-        top: 0,
-      },
-      circularViewContainer: {
-        position: 'absolute',
-        top: 0,
-        height: '100%',
+        overflow: 'hidden',
       },
       circularViewOptions: {
         padding: theme.spacing(1),
@@ -99,7 +97,6 @@ export default pluginManager => {
       >
         <Grid item>
           <FormControlLabel
-            // className={classes.rowNumber}
             control={
               <Checkbox
                 className={classes.rowSelector}
@@ -123,8 +120,6 @@ export default pluginManager => {
     const classes = useStyles()
 
     const {
-      height,
-      width,
       configuration,
       resizeHeight,
       dragHandleHeight,
@@ -134,38 +129,43 @@ export default pluginManager => {
     } = model
 
     return (
-      <div
-        className={classes.root}
-        style={{ height, width }}
-        data-testid={configuration.configId}
-      >
+      <div className={classes.root} data-testid={configuration.configId}>
         <Grid container direction="row" className={classes.header}>
           <Grid item>
             <ViewControls model={model} />
           </Grid>
         </Grid>
         <div className={classes.viewsContainer}>
-          <div className={classes.spreadsheetViewContainer} style={{ left: 0 }}>
+          <div className={classes.spreadsheetViewContainer}>
             <SpreadsheetViewReactComponent model={model.spreadsheetView} />
           </div>
+
           {showCircularView ? (
-            <div
-              className={classes.circularViewContainer}
-              style={{ left: model.spreadsheetView.width }}
-            >
-              <CircularViewOptions svInspector={model} />
-              <CircularViewReactComponent model={model.circularView} />
-            </div>
+            <>
+              <ResizeHandle
+                onDrag={distance => {
+                  const ret1 = model.circularView.resizeWidth(-distance)
+                  const ret2 = model.spreadsheetView.resizeWidth(-ret1)
+                  return ret2
+                }}
+                vertical
+                flexbox
+                style={style}
+              />
+              <div
+                className={classes.circularViewContainer}
+                style={{ width: model.circularView.width }}
+              >
+                <CircularViewOptions svInspector={model} />
+                <CircularViewReactComponent model={model.circularView} />
+              </div>
+            </>
           ) : null}
         </div>
         <ResizeHandle
           onDrag={resizeHeight}
-          objectId={model.id}
           style={{
             height: dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
             background: '#ccc',
             boxSizing: 'border-box',
             borderTop: '1px solid #fafafa',
