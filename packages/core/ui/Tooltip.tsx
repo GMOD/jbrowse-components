@@ -55,8 +55,12 @@ Tooltip.propTypes = {
   configuration: ReactPropTypes.shape({}).isRequired,
   offsetX: ReactPropTypes.number.isRequired,
   offsetY: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.shape({}).isRequired,
+  feature: ReactPropTypes.shape({}),
   timeout: ReactPropTypes.number,
+}
+
+Tooltip.defaultProps = {
+  feature: undefined,
 }
 
 export default observer(Tooltip)
