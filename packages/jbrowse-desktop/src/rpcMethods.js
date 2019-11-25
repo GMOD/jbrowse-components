@@ -192,9 +192,9 @@ function freeResources(pluginManager, specification) {
  * @param {object} args.renderProps
  * @param {AbortSignal} [args.signal]
  */
-async function render(
-  pluginManager,
-  {
+async function render(pluginManager, args) {
+  const {
+    blockKey,
     regions,
     region,
     sessionId,
@@ -204,16 +204,13 @@ async function render(
     renderProps,
     sequenceAdapterType,
     sequenceAdapterConfig,
-    signal,
-  },
-) {
+  } = args
   if (!sessionId) throw new Error('must pass a unique session id')
 
-  if (isRemoteAbortSignal(signal)) {
-    signal = deserializeAbortSignal(signal)
-  }
+  const signal = isRemoteAbortSignal(args.signal)
+    ? deserializeAbortSignal(args.signal)
+    : args.signal
   checkAbortSignal(signal)
-
   const { dataAdapter } = getAdapter(
     pluginManager,
     sessionId,
@@ -237,6 +234,7 @@ async function render(
     regions,
     region,
     signal,
+    blockKey,
   })
   checkAbortSignal(signal)
   return result

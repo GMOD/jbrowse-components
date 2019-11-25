@@ -91,14 +91,16 @@ const BaseCoreDetails = (props: BaseProps) => {
     '1': '+',
   }
   const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
-  feature.length = end - start
-
-  feature.position = `${refName}:${start + 1}..${end} ${strandStr}`
+  const displayedDetails: Record<string, any> = {
+    ...feature,
+    length: end - start,
+    position: `${refName}:${start + 1}..${end} ${strandStr}`,
+  }
 
   return (
     <BaseCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
-        const value = feature[key.toLowerCase()]
+        const value = displayedDetails[key.toLowerCase()]
         return (
           value && (
             <div key={key} style={{ display: 'flex' }}>
@@ -205,4 +207,5 @@ const BaseFeatureDetails = (props: BaseInputProps) => {
   )
 }
 
+export { BaseCoreDetails, BaseAttributes }
 export default observer(BaseFeatureDetails)

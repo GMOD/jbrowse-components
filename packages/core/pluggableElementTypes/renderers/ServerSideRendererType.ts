@@ -13,6 +13,7 @@ import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 
 interface RenderArgs {
+  blockKey: string
   sessionId: string
   signal?: AbortSignal
   regions?: any
@@ -41,6 +42,8 @@ export default class ServerSideRenderer extends RendererType {
     const { trackModel } = args.renderProps
     if (trackModel) {
       args.renderProps = {
+        // @ts-ignore
+        blockKey: args.blockKey,
         ...args.renderProps,
         trackModel: {
           id: trackModel.id,
@@ -63,6 +66,8 @@ export default class ServerSideRenderer extends RendererType {
       featuresMap.set(String(f.id()), f)
     })
     result.features = featuresMap
+    // @ts-ignore
+    result.blockKey = args.blockKey
     return result
   }
 

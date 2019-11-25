@@ -87,6 +87,7 @@ function App({ contentRect, measureRef, session }) {
             )
           })}
           {inDevelopment ? <DevTools session={session} /> : null}
+          <div style={{ height: 300 }} />
         </div>
       </div>
 

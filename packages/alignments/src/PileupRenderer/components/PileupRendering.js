@@ -8,6 +8,7 @@ import runner from 'mobx-run-in-reactive-context'
 
 function PileupRendering(props) {
   const {
+    blockKey,
     trackModel,
     width,
     height,
@@ -18,7 +19,7 @@ function PileupRendering(props) {
   const {
     selectedFeatureId,
     featureIdUnderMouse,
-    layoutFeatures,
+    blockLayoutFeatures,
     features,
     configuration,
   } = trackModel
@@ -36,8 +37,13 @@ function PileupRendering(props) {
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     let rect
+    let blockLayout
 
-    if (selectedFeatureId && (rect = layoutFeatures.get(selectedFeatureId))) {
+    if (
+      selectedFeatureId &&
+      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
+      (rect = blockLayout.get(selectedFeatureId))
+    ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
       const [leftPx, rightPx] = bpSpanPx(
         leftBp,
@@ -63,7 +69,8 @@ function PileupRendering(props) {
     }
     if (
       featureIdUnderMouse &&
-      (rect = layoutFeatures.get(featureIdUnderMouse))
+      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
+      (rect = blockLayout.get(featureIdUnderMouse))
     ) {
       const [leftBp, topPx, rightBp, bottomPx] = rect
       const [leftPx, rightPx] = bpSpanPx(
@@ -83,8 +90,9 @@ function PileupRendering(props) {
     horizontallyFlipped,
     region,
     selectedFeatureId,
-    layoutFeatures,
     featureIdUnderMouse,
+    blockKey,
+    blockLayoutFeatures,
   ])
 
   function onMouseDown(event) {
@@ -137,7 +145,7 @@ function PileupRendering(props) {
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = trackModel.getFeatureOverlapping(clientBp, offsetY)
+    const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
     const featureIdCurrentlyUnderMouse = feats.length
       ? feats[0].name
       : undefined
@@ -221,6 +229,7 @@ PileupRendering.propTypes = {
   region: CommonPropTypes.Region.isRequired,
   bpPerPx: ReactPropTypes.number.isRequired,
   horizontallyFlipped: ReactPropTypes.bool,
+  blockKey: ReactPropTypes.string,
 
   trackModel: ReactPropTypes.shape({
     configuration: ReactPropTypes.shape({}),
@@ -228,7 +237,7 @@ PileupRendering.propTypes = {
     featureIdUnderMouse: ReactPropTypes.string,
     getFeatureOverlapping: ReactPropTypes.func,
     features: ReactPropTypes.shape({ get: ReactPropTypes.func }),
-    layoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
+    blockLayoutFeatures: ReactPropTypes.shape({ get: ReactPropTypes.func }),
     setFeatureIdUnderMouse: ReactPropTypes.func,
   }),
 
@@ -249,15 +258,16 @@ PileupRendering.propTypes = {
   onMouseLeave: ReactPropTypes.func,
   onMouseOver: ReactPropTypes.func,
   onMouseOut: ReactPropTypes.func,
-
   onClick: ReactPropTypes.func,
 }
 
 PileupRendering.defaultProps = {
+  blockKey: undefined,
   horizontallyFlipped: false,
-
-  trackModel: { configuration: {}, setFeatureIdUnderMouse: () => {} },
-
+  trackModel: {
+    configuration: {},
+    setFeatureIdUnderMouse: () => {},
+  },
   onFeatureMouseDown: undefined,
   onFeatureMouseEnter: undefined,
   onFeatureMouseOut: undefined,
@@ -265,16 +275,13 @@ PileupRendering.defaultProps = {
   onFeatureMouseUp: undefined,
   onFeatureMouseLeave: undefined,
   onFeatureMouseMove: undefined,
-
   onFeatureClick: undefined,
-
   onMouseDown: undefined,
   onMouseUp: undefined,
   onMouseEnter: undefined,
   onMouseLeave: undefined,
   onMouseOver: undefined,
   onMouseOut: undefined,
-
   onClick: undefined,
 }
 

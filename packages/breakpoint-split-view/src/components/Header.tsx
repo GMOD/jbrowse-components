@@ -121,7 +121,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       <IconButton
         onClick={model.toggleLinkViews}
         className={classes.iconButton}
-        title={title}
+        title="Toggle linked scrolls and behavior across views"
       >
         <Icon color="secondary" fontSize="small">
           {title}
@@ -132,7 +132,24 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   LinkViews.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-
+  const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
+    const classes = useStyles()
+    const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
+    return (
+      <IconButton
+        onClick={model.toggleIntraviewLinks}
+        className={classes.iconButton}
+        title="Toggle rendering intraview links"
+      >
+        <Icon color="secondary" fontSize="small">
+          {title}
+        </Icon>
+      </IconButton>
+    )
+  })
+  Sync.propTypes = {
+    model: PropTypes.objectOrObservableObject.isRequired,
+  }
   const Header = observer(
     ({
       model,
@@ -150,6 +167,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           <TextFieldOrTypography model={model} />
           <LinkViews model={model} />
           <InteractWithSquiggles model={model} />
+          <Sync model={model} />
 
           <div className={classes.spacer} />
         </div>
