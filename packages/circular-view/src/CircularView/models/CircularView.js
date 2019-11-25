@@ -193,17 +193,13 @@ export default pluginManager => {
       resizeHeight(distance) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
-        if (self.lockedFitToWindow && !self.tooSmallToLock) {
-          self.setBpPerPx(self.minBpPerPx)
-        }
+        self.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newHeight - oldHeight
       },
       resizeWidth(distance) {
         const oldWidth = self.width
         const newWidth = self.setWidth(self.width + distance)
-        if (self.lockedFitToWindow && !self.tooSmallToLock) {
-          self.setBpPerPx(self.minBpPerPx)
-        }
+        self.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newWidth - oldWidth
       },
       rotateClockwiseButton() {
@@ -232,6 +228,12 @@ export default pluginManager => {
 
       setBpPerPx(newVal) {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
+      },
+
+      setModelViewWhenAdjust(secondCondition) {
+        if (self.lockedFitToWindow && secondCondition) {
+          self.setBpPerPx(self.minBpPerPx)
+        }
       },
 
       closeView() {
@@ -306,8 +308,7 @@ export default pluginManager => {
       toggleFitToWindowLock() {
         self.lockedFitToWindow = !self.lockedFitToWindow
         // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx
-        if (self.lockedFitToWindow && self.atMinBpPerPx)
-          self.setBpPerPx(self.minBpPerPx)
+        self.setModelViewWhenAdjust(self.atMinBpPerPx)
         return self.lockedFitToWindow
       },
     }))
