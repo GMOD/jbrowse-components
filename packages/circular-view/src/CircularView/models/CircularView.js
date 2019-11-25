@@ -36,6 +36,7 @@ export default pluginManager => {
       hideCloseButton: false,
       hideVerticalResizeHandle: false,
       hideTrackSelectorButton: false,
+      lockedFitToWindow: true,
       disableImportForm: false,
 
       width: 800,
@@ -47,7 +48,7 @@ export default pluginManager => {
       configuration: configSchema,
       spacingPx: 10,
       paddingPx: 80,
-      minBpPerPx: 0.01,
+      lockedPaddingPx: 100,
       minVisibleWidth: 6,
       minimumBlockWidth: 20,
       displayedRegions: types.array(Region),
@@ -103,9 +104,32 @@ export default pluginManager => {
         }
         return total
       },
+      get maximumRadiusPx() {
+        return self.lockedFitToWindow
+          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
+          : 1000000
+      },
       get maxBpPerPx() {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
         return self.totalBp / minCircumferencePx
+      },
+      get minBpPerPx() {
+        // min depends on window dimensions, clamp between old min(0.01) and max
+        const maxCircumferencePx = 2 * Math.PI * self.maximumRadiusPx
+        return clamp(
+          self.totalBp / maxCircumferencePx,
+          0.0000000001,
+          self.maxBpPerPx,
+        )
+      },
+      get atMaxBpPerPx() {
+        return self.bpPerPx >= self.maxBpPerPx
+      },
+      get atMinBpPerPx() {
+        return self.bpPerPx <= self.minBpPerPx
+      },
+      get tooSmallToLock() {
+        return self.minBpPerPx <= 0.0000000001
       },
       get figureDimensions() {
         return [
@@ -157,6 +181,7 @@ export default pluginManager => {
       },
     }))
     .actions(self => ({
+      // toggle action with a flag stating which mode it's in
       setWidth(newWidth) {
         self.width = Math.max(newWidth, minWidth)
         return self.width
@@ -168,11 +193,13 @@ export default pluginManager => {
       resizeHeight(distance) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
+        self.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newHeight - oldHeight
       },
       resizeWidth(distance) {
         const oldWidth = self.width
         const newWidth = self.setWidth(self.width + distance)
+        self.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newWidth - oldWidth
       },
       rotateClockwiseButton() {
@@ -203,6 +230,12 @@ export default pluginManager => {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
 
+      setModelViewWhenAdjust(secondCondition) {
+        if (self.lockedFitToWindow && secondCondition) {
+          self.setBpPerPx(self.minBpPerPx)
+        }
+      },
+
       closeView() {
         getParent(self, 2).removeView(self)
       },
@@ -213,7 +246,7 @@ export default pluginManager => {
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
 
-        if (previouslyEmpty) self.setBpPerPx(self.maxBpPerPx)
+        if (previouslyEmpty) self.setBpPerPx(self.minBpPerPx)
         else self.setBpPerPx(self.bpPerPx)
       },
 
@@ -270,6 +303,13 @@ export default pluginManager => {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+
+      toggleFitToWindowLock() {
+        self.lockedFitToWindow = !self.lockedFitToWindow
+        // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx
+        self.setModelViewWhenAdjust(self.atMinBpPerPx)
+        return self.lockedFitToWindow
       },
     }))
 
