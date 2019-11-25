@@ -201,6 +201,9 @@ export default pluginManager => {
       resizeWidth(distance) {
         const oldWidth = self.width
         const newWidth = self.setWidth(self.width + distance)
+        if (self.lockedFitToWindow && !self.tooSmallToLock) {
+          self.setBpPerPx(self.minBpPerPx)
+        }
         return newWidth - oldWidth
       },
       rotateClockwiseButton() {
