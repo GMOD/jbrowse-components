@@ -1,10 +1,10 @@
 {
   "name": "jbrowse-desktop",
-  "productName": "JBrowse",
+  "productName": "JBrowse 2",
   "version": "2.0.0-beta.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "author": {
-    "name": "JBrowse Developers",
+    "name": "JBrowse 2 Developers",
     "email": "jbrowse-dev@lists.berkeley.edu",
     "url": "https://jbrowse.org"
   },
@@ -92,7 +92,7 @@
     "extraMetadata": {
       "main": "build/electron.js"
     },
-    "appId": "org.jbrowse.app",
+    "appId": "org.jbrowse2.app",
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
