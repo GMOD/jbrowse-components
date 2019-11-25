@@ -117,18 +117,18 @@ export default pluginManager => {
         const maxCircumferencePx = 2 * Math.PI * self.maximumRadiusPx
         return clamp(
           self.totalBp / maxCircumferencePx,
-          0.01,
-          self.maxBpPerPx - self.lockedPaddingPx,
+          0.0000000001,
+          self.maxBpPerPx,
         )
       },
       get atMaxBpPerPx() {
-        return self.bpPerPx >= self.maxBpPerPx - self.lockedPaddingPx
+        return self.bpPerPx >= self.maxBpPerPx
       },
       get atMinBpPerPx() {
-        return self.bpPerPx <= self.minBpPerPx + self.lockedPaddingPx
+        return self.bpPerPx <= self.minBpPerPx
       },
       get tooSmallToLock() {
-        return self.minBpPerPx <= 0.01
+        return self.minBpPerPx <= 0.0000000001
       },
       get figureDimensions() {
         return [
@@ -192,8 +192,8 @@ export default pluginManager => {
       resizeHeight(distance) {
         const oldHeight = self.height
         const newHeight = self.setHeight(self.height + distance)
-        if (self.lockedFitToWindow) {
-          self.setBpPerPx(self.bpPerPx)
+        if (self.lockedFitToWindow && !self.tooSmallToLock) {
+          self.setBpPerPx(self.minBpPerPx)
         }
         return newHeight - oldHeight
       },
@@ -236,7 +236,7 @@ export default pluginManager => {
         if (!isFromAssemblyName)
           this.setDisplayedRegionsFromAssemblyName(undefined)
 
-        if (previouslyEmpty) self.setBpPerPx(self.maxBpPerPx)
+        if (previouslyEmpty) self.setBpPerPx(self.minBpPerPx)
         else self.setBpPerPx(self.bpPerPx)
       },
 

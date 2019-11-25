@@ -117,8 +117,10 @@ export default pluginManager => {
         <IconButton
           onClick={model.zoomOutButton}
           className={classes.iconButton}
-          title="zoom out"
-          disabled={!showingFigure || model.atMaxBpPerPx}
+          title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
+          disabled={
+            !showingFigure || model.atMaxBpPerPx || model.lockedFitToWindow
+          }
           color="secondary"
         >
           <Icon fontSize="small">zoom_out</Icon>
