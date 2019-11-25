@@ -235,6 +235,7 @@ export default pluginManager => {
           .get(assemblyName)
           .find(c => c.name === name)
         const callbacksToDereferenceTrack = []
+        const dereferenceTypeCount = {}
         connection.tracks.forEach(track => {
           const referring = self.getReferring(track)
           referring.forEach(([ref]) => {
@@ -242,19 +243,23 @@ export default pluginManager => {
             try {
               // If a view is referring to the track config, remove the track
               // from the view
+              const type = 'open track(s)'
               const view = getContainingView(ref)
               callbacksToDereferenceTrack.push(() => view.hideTrack(track))
               dereferenced = true
+              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+              dereferenceTypeCount[type] += 1
             } catch (err1) {
               // ignore
             }
-            try {
+            if (self.hasDrawerWidget(ref)) {
               // If a configuration editor drawer widget has the track config
               // open, close the drawer widget
+              const type = 'configuration editor drawer widget(s)'
               callbacksToDereferenceTrack.push(() => self.hideDrawerWidget(ref))
               dereferenced = true
-            } catch (err2) {
-              // ignore
+              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+              dereferenceTypeCount[type] += 1
             }
             if (!dereferenced)
               throw new Error(
@@ -268,7 +273,7 @@ export default pluginManager => {
           callbacksToDereferenceTrack.forEach(cb => cb())
           self.breakConnection(configuration)
         }
-        return safelyBreakConnection
+        return [safelyBreakConnection, dereferenceTypeCount]
       },
 
       breakConnection(configuration) {
@@ -397,6 +402,10 @@ export default pluginManager => {
         if (self.activeDrawerWidgets.has(drawerWidget.id))
           self.activeDrawerWidgets.delete(drawerWidget.id)
         self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
+      },
+
+      hasDrawerWidget(drawerWidget) {
+        return self.activeDrawerWidgets.has(drawerWidget.id)
       },
 
       hideDrawerWidget(drawerWidget) {

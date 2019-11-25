@@ -1,11 +1,19 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
+import Button from '@material-ui/core/Button'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
 import Fab from '@material-ui/core/Fab'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormGroup from '@material-ui/core/FormGroup'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
 import InputAdornment from '@material-ui/core/InputAdornment'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
@@ -46,6 +54,7 @@ const useStyles = makeStyles(theme => ({
 function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const [modalInfo, setModalInfo] = useState()
   const classes = useStyles()
 
   const session = getSession(model)
@@ -107,10 +116,16 @@ function HierarchicalTrackSelector({ model }) {
   }
 
   function breakConnection(connectionConf) {
-    const safelyBreakConnection = session.prepareToBreakConnection(
-      connectionConf,
-    )
-    safelyBreakConnection()
+    const name = readConfObject(connectionConf, 'name')
+    const [
+      safelyBreakConnection,
+      dereferenceTypeCount,
+    ] = session.prepareToBreakConnection(connectionConf)
+    if (Object.keys(dereferenceTypeCount).length > 0) {
+      setModalInfo({ safelyBreakConnection, dereferenceTypeCount, name })
+    } else {
+      safelyBreakConnection()
+    }
   }
 
   const { assemblyNames } = model
@@ -222,6 +237,54 @@ function HierarchicalTrackSelector({ model }) {
         <MenuItem onClick={addConnection}>Add connection</MenuItem>
         <MenuItem onClick={addTrack}>Add track</MenuItem>
       </Menu>
+      <Dialog
+        aria-labelledby="connection-modal-title"
+        aria-describedby="connection-modal-description"
+        open={Boolean(modalInfo)}
+      >
+        <DialogTitle>
+          Close connection "{modalInfo && modalInfo.name}"
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Closing this connection will close:
+          </DialogContentText>
+          {modalInfo ? (
+            <List>
+              {Object.entries(modalInfo.dereferenceTypeCount).map(
+                ([key, value]) => (
+                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
+                ),
+              )}
+            </List>
+          ) : null}
+          <DialogContentText>Are you sure you want to close?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setModalInfo()
+            }}
+            color="primary"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={
+              modalInfo
+                ? () => {
+                    modalInfo.safelyBreakConnection()
+                    setModalInfo()
+                  }
+                : () => {}
+            }
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }
