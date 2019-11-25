@@ -1,7 +1,13 @@
 {
   "name": "jbrowse-desktop",
-  "version": "2.0.0-alpha.2",
+  "productName": "JBrowse",
+  "version": "2.0.0-beta.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
+  "author": {
+    "name": "JBrowse Developers",
+    "email": "jbrowse-dev@lists.berkeley.edu",
+    "url": "https://jbrowse.org"
+  },
   "private": false,
   "main": "public/electron.js",
   "dir": "src",
@@ -86,14 +92,15 @@
     "extraMetadata": {
       "main": "build/electron.js"
     },
-    "appId": "com.my-website.my-app",
-    "productName": "JBrowse Desktop",
+    "appId": "org.jbrowse.app",
+    "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
       "target": "zip"
     },
     "linux": {
-      "target": "zip"
+      "target": "zip",
+      "executableName": "JBrowse 2"
     },
     "mac": {
       "category": "public.app-category.utilities",
@@ -104,7 +111,7 @@
       "node_modules/**/*"
     ],
     "directories": {
-      "buildResources": "assets"
+      "buildResources": "assets/"
     }
   }
 }
