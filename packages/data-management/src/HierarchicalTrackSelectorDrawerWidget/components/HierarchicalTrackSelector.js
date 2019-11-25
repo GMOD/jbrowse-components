@@ -91,6 +91,28 @@ function HierarchicalTrackSelector({ model }) {
     return name.toLowerCase().includes(model.filterText.toLowerCase())
   }
 
+  function handleConnectionToggle(connectionConf) {
+    const assemblyConnections = session.connections.get(assemblyName)
+    const existingConnection =
+      assemblyConnections &&
+      !!assemblyConnections.find(
+        connection =>
+          connection.name === readConfObject(connectionConf, 'name'),
+      )
+    if (existingConnection) {
+      breakConnection(connectionConf)
+    } else {
+      session.makeConnection(connectionConf)
+    }
+  }
+
+  function breakConnection(connectionConf) {
+    const safelyBreakConnection = session.prepareToBreakConnection(
+      connectionConf,
+    )
+    safelyBreakConnection()
+  }
+
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
   if (!assemblyName) return null
@@ -158,22 +180,7 @@ function HierarchicalTrackSelector({ model }) {
                         readConfObject(connectionConf, 'name'),
                     )
                 }
-                onChange={() => {
-                  if (
-                    !(
-                      session.connections.has(assemblyName) &&
-                      !!session.connections
-                        .get(assemblyName)
-                        .find(
-                          connection =>
-                            connection.name ===
-                            readConfObject(connectionConf, 'name'),
-                        )
-                    )
-                  )
-                    session.makeConnection(connectionConf)
-                  else session.breakConnection(connectionConf)
-                }}
+                onChange={() => handleConnectionToggle(connectionConf)}
                 // value="checkedA"
               />
             }

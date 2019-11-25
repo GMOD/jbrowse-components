@@ -1,8 +1,19 @@
-import { autorun } from 'mobx'
-import { types, getParent, addDisposer, isAlive } from 'mobx-state-tree'
-
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import { autorun } from 'mobx'
+import {
+  addDisposer,
+  getMembers,
+  getParent,
+  getType,
+  isAlive,
+  isModelType,
+  isReferenceType,
+  types,
+  walk,
+  getSnapshot,
+} from 'mobx-state-tree'
 
 export default pluginManager => {
   const minWidth = 384
@@ -85,6 +96,27 @@ export default pluginManager => {
             self.activeDrawerWidgets.size - 1
           ]
         return undefined
+      },
+      /**
+       * See if any MST nodes currently have a types.reference to this object.
+       * @param {MSTNode} object object
+       * @returns {Array} An array where the first element is the node referring
+       * to the object and the second element is they property name the node is
+       * using to refer to the object
+       */
+      getReferring(object) {
+        const refs = []
+        walk(getParent(self), node => {
+          if (isModelType(getType(node))) {
+            const members = getMembers(node)
+            Object.entries(members.properties).forEach(([key, value]) => {
+              if (isReferenceType(value) && node[key] === object) {
+                refs.push([node, key])
+              }
+            })
+          }
+        })
+        return refs
       },
     }))
     .actions(self => ({
@@ -190,6 +222,53 @@ export default pluginManager => {
         const assemblyConnections = self.connections.get(assemblyName)
         const length = assemblyConnections.push(connectionData)
         return assemblyConnections[length - 1]
+      },
+
+      prepareToBreakConnection(configuration) {
+        const name = readConfObject(configuration, 'name')
+        let confParent = configuration
+        do {
+          confParent = getParent(confParent)
+        } while (!confParent.assembly)
+        const assemblyName = readConfObject(confParent.assembly, 'name')
+        const connection = self.connections
+          .get(assemblyName)
+          .find(c => c.name === name)
+        const callbacksToDereferenceTrack = []
+        connection.tracks.forEach(track => {
+          const referring = self.getReferring(track)
+          referring.forEach(([ref]) => {
+            let dereferenced = false
+            try {
+              // If a view is referring to the track config, remove the track
+              // from the view
+              const view = getContainingView(ref)
+              callbacksToDereferenceTrack.push(() => view.hideTrack(track))
+              dereferenced = true
+            } catch (err1) {
+              // ignore
+            }
+            try {
+              // If a configuration editor drawer widget has the track config
+              // open, close the drawer widget
+              callbacksToDereferenceTrack.push(() => self.hideDrawerWidget(ref))
+              dereferenced = true
+            } catch (err2) {
+              // ignore
+            }
+            if (!dereferenced)
+              throw new Error(
+                `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
+                  getSnapshot(ref),
+                )}`,
+              )
+          })
+        })
+        const safelyBreakConnection = () => {
+          callbacksToDereferenceTrack.forEach(cb => cb())
+          self.breakConnection(configuration)
+        }
+        return safelyBreakConnection
       },
 
       breakConnection(configuration) {
