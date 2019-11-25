@@ -111,7 +111,7 @@ export default pluginManager => {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
               if (isReferenceType(value) && node[key] === object) {
-                refs.push([node, key])
+                refs.push({ node, key })
               }
             })
           }
@@ -238,13 +238,13 @@ export default pluginManager => {
         const dereferenceTypeCount = {}
         connection.tracks.forEach(track => {
           const referring = self.getReferring(track)
-          referring.forEach(([ref]) => {
+          referring.forEach(({ node }) => {
             let dereferenced = false
             try {
               // If a view is referring to the track config, remove the track
               // from the view
               const type = 'open track(s)'
-              const view = getContainingView(ref)
+              const view = getContainingView(node)
               callbacksToDereferenceTrack.push(() => view.hideTrack(track))
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
@@ -252,11 +252,13 @@ export default pluginManager => {
             } catch (err1) {
               // ignore
             }
-            if (self.hasDrawerWidget(ref)) {
+            if (self.hasDrawerWidget(node)) {
               // If a configuration editor drawer widget has the track config
               // open, close the drawer widget
               const type = 'configuration editor drawer widget(s)'
-              callbacksToDereferenceTrack.push(() => self.hideDrawerWidget(ref))
+              callbacksToDereferenceTrack.push(() =>
+                self.hideDrawerWidget(node),
+              )
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
               dereferenceTypeCount[type] += 1
@@ -264,7 +266,7 @@ export default pluginManager => {
             if (!dereferenced)
               throw new Error(
                 `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
-                  getSnapshot(ref),
+                  getSnapshot(node),
                 )}`,
               )
           })
