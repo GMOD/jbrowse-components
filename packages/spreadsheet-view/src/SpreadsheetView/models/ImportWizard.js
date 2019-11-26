@@ -75,7 +75,8 @@ export default pluginManager => {
           const name =
             self.fileSource.uri ||
             self.fileSource.localPath ||
-            self.fileSource.blob.name
+            (self.fileSource.blob && self.fileSource.blob.name)
+
           if (name) {
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {
