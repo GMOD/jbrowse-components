@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import { observer } from 'mobx-react'
-import React, { MouseEvent } from 'react'
+import React, { useState, MouseEvent } from 'react'
 import {
   IFileLocation,
   IUriLocation,
@@ -38,16 +38,19 @@ const FileLocationEditor = observer(
     name?: string
     description?: string
   }) => {
-    const { location, setLocation, name, description } = props
+    const { location, name, description } = props
     const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
+    const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     const handleFileOrUrlChange = (
       event: React.MouseEvent<HTMLElement>,
       newValue: string | null,
     ) => {
       if (newValue === 'url') {
-        setLocation({ uri: 'https://' })
-      } else if (newValue === 'file') setLocation({ localPath: '' })
+        setFileOrUrlState('url')
+      } else {
+        setFileOrUrlState('file')
+      }
     }
     return (
       <>
@@ -57,7 +60,7 @@ const FileLocationEditor = observer(
         <Grid container spacing={1} direction="row" alignItems="center">
           <Grid item>
             <ToggleButtonGroup
-              value={fileOrUrl}
+              value={fileOrUrlState}
               exclusive
               size="small"
               onChange={handleFileOrUrlChange}
@@ -76,7 +79,7 @@ const FileLocationEditor = observer(
             </ToggleButtonGroup>
           </Grid>
           <Grid item>
-            {fileOrUrl === 'url' ? (
+            {fileOrUrlState === 'url' ? (
               <UrlChooser {...props} />
             ) : (
               <LocalFileChooser {...props} />
@@ -103,7 +106,7 @@ const UrlChooser = (props: {
     <TextField
       margin="dense"
       fullWidth
-      defaultValue={location && isUriLocation(location) && location.uri}
+      defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={handleChange}
     />
   )
@@ -116,8 +119,11 @@ const LocalFileChooser = observer(
       const { target } = event
       const file = target && target.files && target.files[0]
       if (file) {
-        if (isElectron) setLocation({ localPath: file.path })
-        else setLocation({ blob: file })
+        if (isElectron) {
+          setLocation({ localPath: file.path })
+        } else {
+          setLocation({ blob: file })
+        }
       }
     }
 
