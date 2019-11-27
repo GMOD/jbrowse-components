@@ -24,7 +24,7 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': 'warn',
     'no-param-reassign': 'off',
-    'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
+    'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
     'no-restricted-syntax': 'off',
     'no-underscore-dangle': 'warn',
     'no-use-before-define': 'off',
@@ -43,7 +43,7 @@ module.exports = {
     'react/prefer-stateless-function': 'warn',
     'react/prop-types': 'warn',
     'react/require-default-props': 'warn',
-    'spaced-comment': ['error', 'always', { 'markers': ['/'] }],
+    'spaced-comment': ['error', 'always', { markers: ['/'] }],
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
@@ -60,11 +60,17 @@ module.exports = {
     },
   },
   overrides: [
+    {
+      files: ['*.tsx'],
+      rules: {
+        'react/prop-types': 'off',
+      },
+    },
     // {
-    //   "files": ["*.ts", "*.tsx"],
-    //   "rules": {
-    //     "@typescript-eslint/explicit-function-return-type": ["error"]
-    //   }
+    //   files: ['*.ts', '*.tsx'],
+    //   rules: {
+    //     '@typescript-eslint/explicit-function-return-type': ['error'],
+    //   },
     // },
     {
       files: ['**/*.test.[t,j]s'],

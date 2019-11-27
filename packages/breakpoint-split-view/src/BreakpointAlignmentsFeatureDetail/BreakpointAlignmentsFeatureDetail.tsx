@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
