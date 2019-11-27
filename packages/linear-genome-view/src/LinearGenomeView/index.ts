@@ -9,7 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, types, cast } from 'mobx-state-tree'
+import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -274,6 +274,14 @@ export function stateModelFactory(pluginManager: any) {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+
+      moveTrack(oldIndex: number, newIndex: number) {
+        if (oldIndex > self.tracks.length - 1)
+          throw new Error(`Cannot move track at index ${oldIndex}, none exists`)
+        const track = getSnapshot(self.tracks[oldIndex])
+        self.tracks.splice(oldIndex, 1)
+        self.tracks.splice(newIndex, 0, track)
       },
 
       closeView() {
