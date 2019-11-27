@@ -1,5 +1,4 @@
 import { makeStyles } from '@material-ui/core/styles'
-import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 const useStyles = makeStyles({
@@ -23,18 +22,31 @@ const useStyles = makeStyles({
   },
 })
 
-function ResizeHandle({ style, onDrag, vertical, flexbox }) {
+interface ResizeHandleProps {
+  onDrag: Function
+  vertical?: boolean
+  flexbox?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [props: string]: any
+}
+
+function ResizeHandle({
+  onDrag,
+  vertical = false,
+  flexbox = false,
+  ...props
+}: ResizeHandleProps) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevPos = useRef()
+  const prevPos: React.MutableRefObject<number | undefined> = useRef()
   const classes = useStyles()
 
   useEffect(() => {
     let cleanup = () => {}
 
-    function mouseMove(event) {
+    function mouseMove(event: MouseEvent) {
       event.preventDefault()
       const pos = event[vertical ? 'clientX' : 'clientY']
-      const distance = pos - prevPos.current
+      const distance = prevPos.current && pos - prevPos.current
       if (distance) {
         const actualDistance = onDrag(distance)
         prevPos.current += actualDistance
@@ -57,40 +69,33 @@ function ResizeHandle({ style, onDrag, vertical, flexbox }) {
     return cleanup
   }, [mouseDragging, onDrag, vertical])
 
-  function mouseDown(event) {
+  function mouseDown(event: React.MouseEvent) {
     event.preventDefault()
     const pos = event[vertical ? 'clientX' : 'clientY']
     prevPos.current = pos
     setMouseDragging(true)
   }
 
-  function mouseLeave(event) {
+  function mouseLeave(event: React.MouseEvent) {
     event.preventDefault()
   }
+
+  let className
+  if (flexbox) {
+    if (vertical) className = classes.flexbox_verticalHandle
+    else className = classes.flexbox_horizontalHandle
+  } else if (vertical) className = classes.verticalHandle
+  else className = classes.horizontalHandle
 
   return (
     <div
       onMouseDown={mouseDown}
       onMouseLeave={mouseLeave}
       role="presentation"
-      className={
-        classes[
-          (flexbox ? 'flexbox_' : '') +
-            (vertical ? 'verticalHandle' : 'horizontalHandle')
-        ]
-      }
-      style={style}
+      className={className}
+      {...props}
     />
   )
 }
-
-ResizeHandle.propTypes = {
-  style: ReactPropTypes.shape(),
-  onDrag: ReactPropTypes.func.isRequired,
-  vertical: ReactPropTypes.bool,
-  flexbox: ReactPropTypes.bool,
-}
-
-ResizeHandle.defaultProps = { style: {}, vertical: false, flexbox: false }
 
 export default ResizeHandle
