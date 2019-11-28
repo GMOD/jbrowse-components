@@ -120,11 +120,28 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const TrackContainer = observer(
-  (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
-    const { model, track } = props
+  (props: {
+    model: LGV
+    track: Instance<BaseTrackStateModel>
+    index: number
+  }) => {
+    const { model, track, index } = props
     const classes = useStyles()
-    const { bpPerPx, offsetPx } = model
+    const {
+      bpPerPx,
+      offsetPx,
+      horizontalScroll,
+      draggingTrackIdx,
+      targetDraggingTrackIdx,
+      setTargetDraggingTrackIdx,
+    } = model
     const { RenderingComponent, ControlsComponent } = track
+    const hovered =
+      targetDraggingTrackIdx !== undefined &&
+      draggingTrackIdx !== undefined &&
+      targetDraggingTrackIdx - 1 === index &&
+      targetDraggingTrackIdx !== draggingTrackIdx &&
+      targetDraggingTrackIdx !== draggingTrackIdx + 1
     return (
       <>
         <div
@@ -135,11 +152,12 @@ const TrackContainer = observer(
             track={track}
             view={model}
             onConfigureClick={track.activateConfigurationUI}
+            index={index}
           />
         </div>
         <TrackRenderingContainer
           trackId={track.id}
-          onHorizontalScroll={model.horizontalScroll}
+          onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
         >
           <RenderingComponent
@@ -147,7 +165,7 @@ const TrackContainer = observer(
             offsetPx={offsetPx}
             bpPerPx={bpPerPx}
             blockState={{}}
-            onHorizontalScroll={model.horizontalScroll}
+            onHorizontalScroll={horizontalScroll}
           />
         </TrackRenderingContainer>
         <ResizeHandle
@@ -155,9 +173,20 @@ const TrackContainer = observer(
           style={{
             gridRow: `resize-${track.id}`,
             gridColumn: 'span 2',
-            background: '#ccc',
+            background: hovered ? '#ffb11d' : '#ccc',
             boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
+            borderTop: `1px solid ${hovered ? '#ffb11d' : '#fafafa'}`,
+          }}
+          onDragEnter={() => {
+            if (draggingTrackIdx !== undefined) {
+              setTargetDraggingTrackIdx(index + 1)
+            }
+          }}
+          onDragLeave={() => {
+            if (draggingTrackIdx !== undefined) {
+              // console.log('unsetting')
+              // setTargetDraggingTrackIdx(undefined)
+            }
           }}
         />
       </>
@@ -527,8 +556,13 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 <ZoomControls model={model} />
               </div>
             ) : null}
-            {tracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
+            {tracks.map((track, idx) => (
+              <TrackContainer
+                key={track.id}
+                model={model}
+                track={track}
+                index={idx}
+              />
             ))}
           </>
         )}

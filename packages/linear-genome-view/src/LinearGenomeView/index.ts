@@ -97,6 +97,8 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      draggingTrackIdx: types.maybe(types.number),
+      targetDraggingTrackIdx: types.maybe(types.number),
       configuration: types.frozen(),
     })
     .views(self => ({
@@ -483,6 +485,14 @@ export function stateModelFactory(pluginManager: any) {
       showAllRegions() {
         self.bpPerPx = self.totalBp / self.viewingRegionWidth
         self.offsetPx = 0
+      },
+
+      setDraggingTrackIdx(idx?: number | undefined) {
+        self.draggingTrackIdx = idx
+      },
+
+      setTargetDraggingTrackIdx(idx?: number | undefined) {
+        self.targetDraggingTrackIdx = idx
       },
     }))
     .views(self => {
