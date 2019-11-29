@@ -74,6 +74,7 @@
         "file-loader": "^3.0.1",
         "identity-obj-proxy": "^3.0.0",
         "jest-environment-jsdom-fourteen": "^0.1.0",
+        "jest-image-snapshot": "^2.11.1",
         "jest-pnp-resolver": "^1.2.0",
         "lerna": "^3.4.1",
         "mobx": "^5.0.0",
