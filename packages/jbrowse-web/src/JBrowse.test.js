@@ -219,7 +219,10 @@ describe('some error state', () => {
     const img = canvas[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
-    expect(buf).toMatchImageSnapshot()
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.01,
+      failureThresholdType: 'percent',
+    })
     // var buf = new Buffer(data, 'base64');
     // fs.writeFile('image.png', buf);
 
