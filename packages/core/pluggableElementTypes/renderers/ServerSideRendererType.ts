@@ -146,7 +146,8 @@ export default class ServerSideRenderer extends RendererType {
    */
   async getFeatures(renderArgs: RenderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
-    let { regions, region, originalRegion, originalRegions } = renderArgs
+    let { regions } = renderArgs
+    const { region, originalRegion, originalRegions } = renderArgs
     const features = new Map()
     let featureObservable
 
@@ -156,10 +157,10 @@ export default class ServerSideRenderer extends RendererType {
 
     if (!regions || regions.length === 0) return features
 
-    const requestRegions = regions.map((region: IRegion) => {
+    const requestRegions = regions.map((r: IRegion) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
-      const requestRegion = { ...region }
+      const requestRegion = { ...r }
       if (requestRegion.start)
         requestRegion.start = Math.floor(requestRegion.start)
       if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)

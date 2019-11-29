@@ -8,6 +8,7 @@ import { Feature } from './util/simpleFeature'
 export interface BaseOptions {
   signal?: AbortSignal
   bpPerPx?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 

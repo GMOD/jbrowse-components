@@ -184,7 +184,7 @@ export default class CramAdapter extends BaseAdapter {
         this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
       }
       const refId = this.refNameToId(refName)
-      this.seqIdToOriginalRefName[refId] = opts.originalRegion.refName
+      this.seqIdToOriginalRefName[refId] = (opts.originalRegion || {}).refName
       const records = await this.cram.getRecordsForRange(
         refId,
         start,
