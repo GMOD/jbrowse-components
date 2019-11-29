@@ -77,7 +77,7 @@
               "uri": "test_data/volvox-sorted-altname.cram.crai"
             }
           },
-          "defaultRendering": "svg",
+          "defaultRendering": "pileup",
           "renderers": {
             "PileupRenderer": {
               "type": "PileupRenderer"
