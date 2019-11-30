@@ -23,7 +23,11 @@ export default class CramAdapter extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private samHeader: any
 
-  private refNames: string[] | undefined
+  // maps a refname to an id
+  private seqIdToRefName: string[] | undefined
+
+  // maps a seqId to original refname, passed specially to render args, to a seqid
+  private seqIdToOriginalRefName: string[] = []
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -58,7 +62,7 @@ export default class CramAdapter extends BaseAdapter {
 
     const refSeqStore = this.sequenceAdapter
     if (!refSeqStore) return undefined
-    const refName = this.refIdToName(seqId)
+    const refName = this.refIdToOriginalName(seqId)
     if (!refName) return undefined
 
     const features = await refSeqStore.getFeatures({
@@ -138,8 +142,8 @@ export default class CramAdapter extends BaseAdapter {
     if (this.samHeader.nameToId) {
       return this.samHeader.nameToId[refName]
     }
-    if (this.refNames) {
-      return this.refNames.indexOf(refName)
+    if (this.seqIdToRefName) {
+      return this.seqIdToRefName.indexOf(refName)
     }
     return undefined
   }
@@ -150,10 +154,16 @@ export default class CramAdapter extends BaseAdapter {
     if (this.samHeader.idToName) {
       return this.samHeader.idToName[refId]
     }
-    if (this.refNames) {
-      return this.refNames[refId]
+    if (this.seqIdToRefName) {
+      return this.seqIdToRefName[refId]
     }
     return undefined
+  }
+
+  // use info from the SAM header if possible, but fall back to using
+  // the ref seq order from when the browser's refseqs were loaded
+  refIdToOriginalName(refId: number) {
+    return this.seqIdToOriginalRefName[refId]
   }
 
   /**
@@ -170,10 +180,12 @@ export default class CramAdapter extends BaseAdapter {
   ): Observable<Feature> {
     return ObservableCreate(async (observer: Observer<Feature>) => {
       await this.setup(opts)
-      if (this.sequenceAdapter && !this.refNames) {
-        this.refNames = await this.sequenceAdapter.getRefNames(opts)
+      if (this.sequenceAdapter && !this.seqIdToRefName) {
+        this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
       }
       const refId = this.refNameToId(refName)
+      this.seqIdToOriginalRefName[refId] =
+        (opts.originalRegion || {}).refName || refName
       const records = await this.cram.getRecordsForRange(
         refId,
         start,
