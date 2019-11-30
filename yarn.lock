@@ -6193,10 +6193,10 @@ electron-localshortcut@^3.1.0:
     keyboardevent-from-electron-accelerator "^1.1.0"
     keyboardevents-areequal "^0.2.1"
 
-electron-mock-ipc@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.2.0.tgz#51356d777cbbd8888dd46057788798e75e591224"
-  integrity sha512-oEW4kS0W5ioQi5XprKXkBbD1zRINZk6AkGXsZD/mhgXaqTZuA0Qtsw1QoMWxykqnURVRl9plpmbHIvkYedsvNQ==
+electron-mock-ipc@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.1.tgz#f30c968d66a51b0e27e3ae1b8d92f44b4a6e6fca"
+  integrity sha512-hf7wGeUK30JkS6BEq4An1q4fz4VMcA7d0hdDsD7c7bpXyZUZz1JSQEXhSfyaptHCwFPyaMV2KajNwU+sdpsFcA==
   dependencies:
     typescript "^3.5.2"
 

@@ -57,7 +57,7 @@
         "devtron": "^1.4.0",
         "electron": "^7.1.0",
         "electron-builder": "^22.1.0",
-        "electron-mock-ipc": "^0.2.0",
+        "electron-mock-ipc": "^0.3.1",
         "eslint-config-airbnb": "^18.0.0",
         "eslint-config-airbnb-base": "^14.0.0",
         "eslint-config-prettier": "^6.0.0",
