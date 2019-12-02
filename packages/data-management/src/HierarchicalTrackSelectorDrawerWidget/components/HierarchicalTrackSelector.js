@@ -205,7 +205,7 @@ function HierarchicalTrackSelector({ model }) {
       </FormGroup>
       {session.connections.has(assemblyName) ? (
         <>
-          <Typography variant="h5">Connections:</Typography>
+          <Typography variant="h5">Connections</Typography>
           {session.connections.get(assemblyName).map(connection => (
             <Paper
               key={connection.name}
