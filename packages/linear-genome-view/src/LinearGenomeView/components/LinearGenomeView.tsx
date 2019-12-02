@@ -116,6 +116,13 @@ const useStyles = makeStyles(theme => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
+  noTracksMessage: {
+    gridArea: 'auto/1/auto/3',
+    background: theme.palette.background.default,
+    textAlign: 'center',
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
   ...buttonStyles(theme),
 }))
 
@@ -527,9 +534,18 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 <ZoomControls model={model} />
               </div>
             ) : null}
-            {tracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
-            ))}
+            {!tracks.length ? (
+              <Container className={classes.noTracksMessage}>
+                <Typography>
+                  No tracks active, click the "select tracks" button to choose
+                  some.
+                </Typography>
+              </Container>
+            ) : (
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))
+            )}
           </>
         )}
       </div>
