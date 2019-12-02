@@ -41,9 +41,7 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(2),
   },
   settings: {
-    position: 'fixed',
-    top: 8,
-    left: 'calc(100% - 56px)',
+    float: 'right',
   },
 }))
 
@@ -246,6 +244,15 @@ export default function StartScreen({
           setUpdateSessionsList(update)
         }}
       />
+      <IconButton
+        className={classes.settings}
+        onClick={event => {
+          event.stopPropagation()
+          setMenuAnchorEl(event.currentTarget)
+        }}
+      >
+        <Icon>settings</Icon>
+      </IconButton>
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
@@ -289,15 +296,6 @@ export default function StartScreen({
         </Grid>
       </Container>
 
-      <IconButton
-        className={classes.settings}
-        onClick={event => {
-          event.stopPropagation()
-          setMenuAnchorEl(event.currentTarget)
-        }}
-      >
-        <Icon>settings</Icon>
-      </IconButton>
       <Menu
         id="simple-menu"
         anchorEl={menuAnchorEl}
