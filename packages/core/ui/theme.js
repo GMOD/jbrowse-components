@@ -1,10 +1,14 @@
 import { createMuiTheme } from '@material-ui/core/styles'
+import { grey } from '@material-ui/core/colors'
 
 export default createMuiTheme({
   palette: {
     // type: 'dark',
     primary: { main: '#0D233F' },
     secondary: { main: '#721E63' },
+    background: {
+      mainApp: grey[700],
+    },
   },
   overrides: {
     MuiIconButton: {

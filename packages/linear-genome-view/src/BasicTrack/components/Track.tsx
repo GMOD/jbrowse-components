@@ -4,16 +4,16 @@ import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { ReactNode } from 'react'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   track: {
     position: 'relative',
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    background: '#555',
+    background: theme.palette.grey[600],
     minHeight: '100%',
   },
-})
+}))
 
 /**
  * mostly does UI gestures: drag scrolling, etc

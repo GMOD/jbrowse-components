@@ -3,7 +3,7 @@ import { PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   rubberband: {
     height: '10000px',
     background: '#aad8',
@@ -12,12 +12,12 @@ const useStyles = makeStyles({
     zIndex: 9999,
   },
   rubberBandContainer: {
-    background: '#555',
+    background: theme.palette.grey[600],
     cursor: 'crosshair',
     width: '100%',
     height: '100%',
   },
-})
+}))
 
 function getOffsetX(ref, clientX) {
   let offset = 0
