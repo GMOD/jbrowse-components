@@ -56,10 +56,16 @@ const DeleteSessionDialog = ({
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
     ;(async () => {
-      if (deleteSession) {
-        setDeleteSession(false)
-        await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
-        onClose(true)
+      try {
+        if (deleteSession) {
+          setDeleteSession(false)
+          await ipcRenderer.invoke('deleteSession', sessionNameToDelete)
+          onClose(true)
+        }
+      } catch (e) {
+        setDeleteSession(() => {
+          throw e
+        })
       }
     })()
   }, [deleteSession, ipcRenderer, onClose, sessionNameToDelete])
@@ -107,14 +113,20 @@ const RenameSessionDialog = ({
   const [renameSession, setRenameSession] = useState()
   useEffect(() => {
     ;(async () => {
-      if (renameSession) {
-        setRenameSession(false)
-        await ipcRenderer.invoke(
-          'renameSession',
-          sessionNameToRename,
-          newSessionName,
-        )
-        onClose(true)
+      try {
+        if (renameSession) {
+          setRenameSession(false)
+          await ipcRenderer.invoke(
+            'renameSession',
+            sessionNameToRename,
+            newSessionName,
+          )
+          onClose(true)
+        }
+      } catch (e) {
+        setRenameSession(() => {
+          throw e
+        })
       }
     })()
   }, [ipcRenderer, newSessionName, onClose, renameSession, sessionNameToRename])
@@ -186,23 +198,35 @@ export default function StartScreen({
 
   useEffect(() => {
     ;(async () => {
-      const load =
-        bypass && inDevelopment && sortedSessions && sortedSessions.length
-          ? sortedSessions[0][0]
-          : sessionNameToLoad
-      if (load) {
-        root.activateSession(
-          JSON.parse(await ipcRenderer.invoke('loadSession', load)),
-        )
+      try {
+        const load =
+          bypass && inDevelopment && sortedSessions && sortedSessions.length
+            ? sortedSessions[0][0]
+            : sessionNameToLoad
+        if (load) {
+          root.activateSession(
+            JSON.parse(await ipcRenderer.invoke('loadSession', load)),
+          )
+        }
+      } catch (e) {
+        setSessions(() => {
+          throw e
+        })
       }
     })()
   }, [bypass, ipcRenderer, root, sessionNameToLoad, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
-      if (updateSessionsList) {
-        setUpdateSessionsList(false)
-        setSessions(await ipcRenderer.invoke('listSessions'))
+      try {
+        if (updateSessionsList) {
+          setUpdateSessionsList(false)
+          setSessions(await ipcRenderer.invoke('listSessions'))
+        }
+      } catch (e) {
+        setSessions(() => {
+          throw e
+        })
       }
     })()
   }, [ipcRenderer, updateSessionsList])
