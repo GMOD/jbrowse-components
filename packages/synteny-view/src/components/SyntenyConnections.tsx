@@ -32,9 +32,6 @@ export default (pluginManager: any) => {
         trackConfigId,
         features,
       )
-      layoutMatches.forEach(m => {
-        m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
-      })
       const [mouseoverElt, setMouseoverElt] = useState()
       return (
         <g

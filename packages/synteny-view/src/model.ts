@@ -4,7 +4,6 @@ import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-v
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import intersection from 'array-intersection'
-import isObject from 'is-object'
 
 export type LayoutRecord = [number, number, number, number]
 
@@ -42,7 +41,7 @@ export default function stateModelFactory(pluginManager: any) {
         ),
         defaultHeight,
       ),
-      displayName: 'breakpoint detail',
+      displayName: 'synteny detail',
       configuration: configSchema,
       trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
@@ -71,21 +70,6 @@ export default function stateModelFactory(pluginManager: any) {
           .filter(f => !!f)
       },
 
-      // Paired reads are handled slightly differently than split reads
-      hasPairedReads(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(f =>
-          f.get('multi_segment_first'),
-        )
-      },
-
-      // Translocation features are handled differently
-      // since they do not have a mate e.g. they are one sided
-      hasTranslocations(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(
-          f => f.get('type') === 'translocation',
-        )
-      },
-
       // Get a composite map of featureId->feature map for a track
       // across multiple views
       getTrackFeatures(trackConfigId: string) {
@@ -95,89 +79,15 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
 
-      // Getting "matched" TRA means just return all TRA
-      getMatchedTranslocationFeatures(trackId: string) {
+      // This finds candidate syntenic connections
+      getMatchedSyntenyFeatures(trackId: string) {
         const features = this.getTrackFeatures(trackId)
-        const feats: Feature[][] = []
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('ALT')[0] === '<TRA>') {
-              feats.push([f])
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return feats
-      },
-
-      // Returns paired BND features across multiple views by inspecting
-      // the ALT field to get exact coordinate matches
-      getMatchedBreakendFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('type') === 'breakend') {
-              f.get('ALT').forEach((a: Breakend | string) => {
-                const cur = `${f.get('refName')}:${f.get('start') + 1}`
-                if (isObject(a)) {
-                  const alt = a as Breakend
-                  if (!candidates[cur]) {
-                    candidates[alt.MatePosition] = [f]
-                  } else {
-                    candidates[cur].push(f)
-                  }
-                }
-              })
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
-      },
-
-      // this finds candidate alignment features, aimed at plotting split reads
-      // from BAM/CRAM files
-      getMatchedAlignmentFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
+        const candidates: { [key: string]: Feature[] } = {}
         const alreadySeen = new Set<string>()
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          if (!alreadySeen.has(feature.id()) && !feature.get('unmapped')) {
-            const n = feature.get('name')
-            if (!candidates[n]) {
-              candidates[n] = []
-            }
-            candidates[n].push(feature)
-          }
-          alreadySeen.add(feature.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
-      },
-
-      // this finds candidate alignment features, aimed at plotting split reads
-      // from BAM/CRAM files
-      getBadlyPairedAlignments(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        // this finds candidate features that share the same name
-        for (const feature of features.values()) {
-          if (
-            !alreadySeen.has(feature.id()) &&
-            !feature.get('multi_segment_all_correctly_aligned') &&
-            !feature.get('unmapped')
-          ) {
+          if (!alreadySeen.has(feature.id())) {
             const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []
@@ -282,6 +192,6 @@ export default function stateModelFactory(pluginManager: any) {
   return { stateModel, configSchema }
 }
 
-export type BreakpointView = ReturnType<typeof stateModelFactory>
-export type BreakpointViewStateModel = BreakpointView['stateModel']
-export type BreakpointViewModel = Instance<BreakpointViewStateModel>
+export type SyntenyView = ReturnType<typeof stateModelFactory>
+export type SyntenyViewStateModel = SyntenyView['stateModel']
+export type SyntenyViewModel = Instance<SyntenyViewStateModel>
