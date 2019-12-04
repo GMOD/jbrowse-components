@@ -154,6 +154,7 @@ const TrackContainer = observer(
         />
         <TrackRenderingContainer
           trackId={track.id}
+          trackHeight={track.height}
           onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
           onDragEnter={() => {
@@ -162,6 +163,7 @@ const TrackContainer = observer(
               setDraggingTrackIdx(index)
             }
           }}
+          dimmed={draggingTrackIdx !== undefined && draggingTrackIdx !== index}
         >
           <RenderingComponent
             model={track}
