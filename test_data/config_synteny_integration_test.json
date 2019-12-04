@@ -9,7 +9,7 @@
   },
   "savedSessions": [
     {
-      "name": "Human Example (hg19)",
+      "name": "Human Example (hg38)",
       "width": 1850,
       "drawerWidth": 384,
       "views": [
@@ -33,7 +33,7 @@
                   "refName": "7",
                   "start": 0,
                   "end": 198022430,
-                  "assemblyName": "hg19"
+                  "assemblyName": "hg38"
                 }
               ],
               "reversed": false,
@@ -41,13 +41,13 @@
                 {
                   "type": "BasicTrack",
                   "height": 100,
-                  "configuration": "gencode_genes_hg19",
+                  "configuration": "gencode_genes_hg38",
                   "selectedRendering": ""
                 },
                 {
                   "type": "BasicTrack",
                   "height": 100,
-                  "configuration": "bigchain_hg19_to_mm10",
+                  "configuration": "bigchain_hg38_to_mm10",
                   "selectedRendering": ""
                 }
               ],
@@ -82,7 +82,7 @@
                 {
                   "type": "BasicTrack",
                   "height": 100,
-                  "configuration": "bigchain_mm10_to_hg19",
+                  "configuration": "bigchain_mm10_to_hg38",
                   "selectedRendering": ""
                 },
                 {
@@ -166,9 +166,9 @@
           }
         },
         {
-          "configId": "bigchain_mm10_to_hg19",
+          "configId": "bigchain_mm10_to_hg38",
           "type": "BasicTrack",
-          "name": "mm10ToHg19",
+          "name": "mm10ToHg38",
           "category": [
             "Annotation"
           ],
@@ -188,9 +188,9 @@
       ]
     },
     {
-      "name": "Human (hg19)",
+      "name": "Human (hg38)",
       "assembly": {
-        "name": "hg19",
+        "name": "hg38",
         "aliases": [
           "GRCh37"
         ],
@@ -199,13 +199,13 @@
           "adapter": {
             "type": "BgzipFastaAdapter",
             "fastaLocation": {
-              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
             },
             "faiLocation": {
-              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
             },
             "gziLocation": {
-              "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+              "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
             }
           },
           "rendering": {
@@ -213,26 +213,26 @@
           }
         },
         "refNameAliases": {
-          "configId": "hg19_aliases",
+          "configId": "hg38_aliases",
           "adapter": {
             "type": "RefNameAliasAdapter",
             "location": {
-              "uri": "test_data/hg19_aliases.txt"
+              "uri": "test_data/hg38_aliases.txt"
             }
           }
         }
       },
       "tracks": [
         {
-          "configId": "gencode_genes_hg19",
+          "configId": "gencode_genes_hg38",
           "type": "BasicTrack",
-          "name": "Gencode v19",
+          "name": "Gencode v32",
           "category": [
             "Annotation"
           ],
           "adapter": {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
             "refNames": [
               "chr1",
               "chr2",
@@ -270,9 +270,9 @@
           }
         },
         {
-          "configId": "bigchain_hg19_to_mm10",
+          "configId": "bigchain_hg38_to_mm10",
           "type": "BasicTrack",
-          "name": "hg19ToMm10",
+          "name": "hg38ToMm10",
           "category": [
             "Annotation"
           ],

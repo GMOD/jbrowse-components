@@ -193,7 +193,7 @@
           "adapter": {
             "type": "RefNameAliasAdapter",
             "location": {
-              "uri": "test_data/GRCh38_RefSeq2UCSC.txt"
+              "uri": "test_data/hg38_aliases.txt"
             }
           }
         }
