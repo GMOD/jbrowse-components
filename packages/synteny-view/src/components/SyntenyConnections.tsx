@@ -1,5 +1,5 @@
 import Path from 'svg-path-generator'
-import { SyntenyModel } from '../model'
+import { SyntenyViewModel } from '../model'
 import { yPos, getPxFromCoordinate } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -18,16 +18,14 @@ export default (pluginManager: any) => {
       height,
       trackConfigId,
     }: {
-      model: SyntenyModel
+      model: SyntenyViewModel
       height: number
       trackConfigId: string
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
       const totalFeatures = model.getTrackFeatures(trackConfigId)
-      const features = model.hasPairedReads(trackConfigId)
-        ? model.getBadlyPairedAlignments(trackConfigId)
-        : model.getMatchedAlignmentFeatures(trackConfigId)
+      const features = model.getMatchedSyntenyFeatures(trackConfigId)
       const layoutMatches = model.getMatchedFeaturesInLayout(
         trackConfigId,
         features,

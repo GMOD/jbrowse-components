@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { withSize } from 'react-sizeme'
-import { BreakpointViewModel } from '../model'
+import { SyntenyViewModel } from '../model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default ({ jbrequire }: { jbrequire: any }) => {
@@ -34,7 +34,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     },
   }))
 
-  const Controls = observer(({ model }: { model: BreakpointViewModel }) => {
+  const Controls = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     return (
       <>
@@ -53,7 +53,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
 
-  function TextFieldOrTypography({ model }: { model: BreakpointViewModel }) {
+  function TextFieldOrTypography({ model }: { model: SyntenyViewModel }) {
     const classes = useStyles()
     const [name, setName] = useState(model.displayName)
     const [edit, setEdit] = useState(false)
@@ -96,7 +96,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   }
 
   const InteractWithSquiggles = observer(
-    ({ model }: { model: BreakpointViewModel }) => {
+    ({ model }: { model: SyntenyViewModel }) => {
       const classes = useStyles()
       return (
         <IconButton
@@ -114,7 +114,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   InteractWithSquiggles.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const LinkViews = observer(({ model }: { model: BreakpointViewModel }) => {
+  const LinkViews = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     const title = model.linkViews ? 'link' : 'link_off'
     return (
@@ -132,7 +132,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
   LinkViews.propTypes = {
     model: PropTypes.objectOrObservableObject.isRequired,
   }
-  const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
+  const Sync = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     const title = model.showIntraviewLinks ? 'leak_add' : 'leak_remove'
     return (
@@ -155,7 +155,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
       model,
       size,
     }: {
-      model: BreakpointViewModel
+      model: SyntenyViewModel
       size: { height: number }
     }) => {
       const classes = useStyles()

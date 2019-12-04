@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles'
-import { BreakpointViewModel } from '../model'
+import { SyntenyViewModel } from '../model'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
@@ -51,14 +51,12 @@ export default (pluginManager: any) => {
   })
 
   const Overlay = observer(
-    (props: { model: BreakpointViewModel; trackConfigId: string }) => {
-      const { model, trackConfigId } = props
-      const tracks = model.getMatchedTracks(trackConfigId)
+    (props: { model: SyntenyViewModel; trackConfigId: string }) => {
       return <SyntenyConnections {...props} />
     },
   )
 
-  const SyntenyView = observer(({ model }: { model: BreakpointViewModel }) => {
+  const SyntenyView = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     const { views, controlsWidth } = model
     return (
