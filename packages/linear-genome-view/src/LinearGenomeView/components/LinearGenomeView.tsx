@@ -1,5 +1,8 @@
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import { generateLocString } from '@gmod/jbrowse-core/util'
+import {
+  generateLocString,
+  useDebouncedCallback,
+} from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
@@ -135,6 +138,13 @@ const TrackContainer = observer(
       setDraggingTrackIdx,
       moveTrack,
     } = model
+    function onDragEnter() {
+      if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
+        moveTrack(draggingTrackIdx, index)
+        setDraggingTrackIdx(index)
+      }
+    }
+    const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
     const { RenderingComponent, ControlsComponent } = track
     return (
       <>
@@ -145,24 +155,14 @@ const TrackContainer = observer(
           index={index}
           className={clsx(classes.controls, classes.trackControls)}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-          onDragEnter={() => {
-            if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
-              moveTrack(draggingTrackIdx, index)
-              setDraggingTrackIdx(index)
-            }
-          }}
+          onDragEnter={debouncedOnDragEnter}
         />
         <TrackRenderingContainer
           trackId={track.id}
           trackHeight={track.height}
           onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
-          onDragEnter={() => {
-            if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
-              moveTrack(draggingTrackIdx, index)
-              setDraggingTrackIdx(index)
-            }
-          }}
+          onDragEnter={debouncedOnDragEnter}
           dimmed={draggingTrackIdx !== undefined && draggingTrackIdx !== index}
         >
           <RenderingComponent

@@ -3,7 +3,7 @@ import { getParent, isAlive, IAnyStateTreeNode, getType } from 'mobx-state-tree'
 import { inflate, deflate } from 'pako'
 import { Observable, fromEvent } from 'rxjs'
 import fromEntries from 'object.fromentries'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import { IRegion, INoAssemblyRegion } from '../mst-types'
@@ -84,6 +84,41 @@ export function useDebounce<T>(value: T, delay: number): T {
   }, [value, delay])
 
   return debouncedValue
+}
+
+// https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useDebouncedCallback<A extends any[]>(
+  callback: (...args: A) => void,
+  wait = 400,
+) {
+  // track args & timeout handle between calls
+  const argsRef = useRef<A>()
+  const timeout = useRef<ReturnType<typeof setTimeout>>()
+
+  function cleanup() {
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
+  }
+
+  // make sure our timeout gets cleared if our consuming component gets unmounted
+  useEffect(() => cleanup, [])
+
+  return function debouncedCallback(...args: A) {
+    // capture latest args
+    argsRef.current = args
+
+    // clear debounce timer
+    cleanup()
+
+    // start waiting again
+    timeout.current = setTimeout(() => {
+      if (argsRef.current) {
+        callback(...argsRef.current)
+      }
+    }, wait)
+  }
 }
 
 export function getSession(node: IAnyStateTreeNode): IAnyStateTreeNode {
