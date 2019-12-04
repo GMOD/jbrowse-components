@@ -1,5 +1,5 @@
 import Path from 'svg-path-generator'
-import { BreakpointViewModel } from '../model'
+import { SyntenyModel } from '../model'
 import { yPos, getPxFromCoordinate } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -18,7 +18,7 @@ export default (pluginManager: any) => {
       height,
       trackConfigId,
     }: {
-      model: BreakpointViewModel
+      model: SyntenyModel
       height: number
       trackConfigId: string
     }) => {

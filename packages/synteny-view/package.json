@@ -1,10 +1,10 @@
 {
-  "name": "@gmod/jbrowse-plugin-breakpoint-split-view",
+  "name": "@gmod/jbrowse-plugin-synteny-view",
   "version": "2.0.0",
-  "description": "JBrowse 2 breakpoint detail split view",
+  "description": "JBrowse 2 synteny view",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/breakpoint-split-view"
+    "test": "cd ../..; jest packages/synteny-view"
   },
   "author": "Robert Buels",
   "license": "MIT",
