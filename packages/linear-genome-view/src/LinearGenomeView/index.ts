@@ -97,10 +97,11 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
-      draggingTrackIdx: types.maybe(types.number),
-      targetDraggingTrackIdx: types.maybe(types.number),
       configuration: types.frozen(),
     })
+    .volatile((): { draggingTrackIdx?: number } => ({
+      draggingTrackIdx: undefined,
+    }))
     .views(self => ({
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
@@ -489,10 +490,6 @@ export function stateModelFactory(pluginManager: any) {
 
       setDraggingTrackIdx(idx?: number | undefined) {
         self.draggingTrackIdx = idx
-      },
-
-      setTargetDraggingTrackIdx(idx?: number | undefined) {
-        self.targetDraggingTrackIdx = idx
       },
     }))
     .views(self => {

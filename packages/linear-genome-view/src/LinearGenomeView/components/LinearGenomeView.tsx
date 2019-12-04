@@ -132,33 +132,36 @@ const TrackContainer = observer(
       offsetPx,
       horizontalScroll,
       draggingTrackIdx,
-      targetDraggingTrackIdx,
-      setTargetDraggingTrackIdx,
+      setDraggingTrackIdx,
+      moveTrack,
     } = model
     const { RenderingComponent, ControlsComponent } = track
-    const hovered =
-      targetDraggingTrackIdx !== undefined &&
-      draggingTrackIdx !== undefined &&
-      targetDraggingTrackIdx - 1 === index &&
-      targetDraggingTrackIdx !== draggingTrackIdx &&
-      targetDraggingTrackIdx !== draggingTrackIdx + 1
     return (
       <>
-        <div
+        <ControlsComponent
+          track={track}
+          view={model}
+          onConfigureClick={track.activateConfigurationUI}
+          index={index}
           className={clsx(classes.controls, classes.trackControls)}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-        >
-          <ControlsComponent
-            track={track}
-            view={model}
-            onConfigureClick={track.activateConfigurationUI}
-            index={index}
-          />
-        </div>
+          onDragEnter={() => {
+            if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
+              moveTrack(draggingTrackIdx, index)
+              setDraggingTrackIdx(index)
+            }
+          }}
+        />
         <TrackRenderingContainer
           trackId={track.id}
           onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
+          onDragEnter={() => {
+            if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
+              moveTrack(draggingTrackIdx, index)
+              setDraggingTrackIdx(index)
+            }
+          }}
         >
           <RenderingComponent
             model={track}
@@ -173,20 +176,9 @@ const TrackContainer = observer(
           style={{
             gridRow: `resize-${track.id}`,
             gridColumn: 'span 2',
-            background: hovered ? '#ffb11d' : '#ccc',
+            background: '#ccc',
             boxSizing: 'border-box',
-            borderTop: `1px solid ${hovered ? '#ffb11d' : '#fafafa'}`,
-          }}
-          onDragEnter={() => {
-            if (draggingTrackIdx !== undefined) {
-              setTargetDraggingTrackIdx(index + 1)
-            }
-          }}
-          onDragLeave={() => {
-            if (draggingTrackIdx !== undefined) {
-              // console.log('unsetting')
-              // setTargetDraggingTrackIdx(undefined)
-            }
+            borderTop: '1px solid #fafafa',
           }}
         />
       </>

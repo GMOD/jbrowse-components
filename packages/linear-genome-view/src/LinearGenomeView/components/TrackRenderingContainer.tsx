@@ -21,8 +21,16 @@ const TrackRenderingContainer: React.FC<{
   setScrollTop: Function
   children?: ReactNode
   trackId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any
 }> = props => {
-  const { onHorizontalScroll, setScrollTop, trackId, children } = props
+  const {
+    onHorizontalScroll,
+    setScrollTop,
+    trackId,
+    children,
+    ...other
+  } = props
   const classes = useStyles()
   const [scheduled, setScheduled] = useState(false)
   const [delta, setDelta] = useState(0)
@@ -112,6 +120,7 @@ const TrackRenderingContainer: React.FC<{
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
       role="presentation"
+      {...other}
     >
       {children}
     </div>

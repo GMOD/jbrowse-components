@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   ...buttonStyles(theme),
 }))
 
-function TrackControls({ track, view, onConfigureClick, index }) {
+function TrackControls({ track, view, onConfigureClick, index, ...other }) {
   const classes = useStyles()
   let trackName = getConf(track, 'name') || track.id
   const session = getSession(track)
@@ -42,7 +42,7 @@ function TrackControls({ track, view, onConfigureClick, index }) {
     })
   }
   return (
-    <>
+    <div {...other}>
       <IconButton
         onClick={() => view.hideTrack(track.configuration)}
         className={classes.iconButton}
@@ -72,46 +72,30 @@ function TrackControls({ track, view, onConfigureClick, index }) {
           </Icon>
         </ToggleButton>
       ) : null}
-      <div
-        draggable
-        onDragStart={() => {
-          view.setDraggingTrackIdx(index)
-        }}
-        onDragEnd={() => {
-          if (
-            view.targetDraggingTrackIdx &&
-            view.draggingTrackIdx !== view.targetDraggingTrackIdx &&
-            view.draggingTrackIdx + 1 !== view.targetDraggingTrackIdx
-          ) {
-            if (view.draggingTrackIdx < view.targetDraggingTrackIdx)
-              view.moveTrack(
-                view.draggingTrackIdx,
-                view.targetDraggingTrackIdx - 1,
-              )
-            else
-              view.moveTrack(view.draggingTrackIdx, view.targetDraggingTrackIdx)
-          }
-          view.setDraggingTrackIdx(undefined)
-          view.setTargetDraggingTrackIdx(undefined)
-        }}
-      >
-        <Grid container wrap="nowrap" alignItems="center">
-          <Grid item>
-            <Icon className={classes.dragHandle} fontSize="small">
-              drag_indicator
-            </Icon>
-          </Grid>
-          <Grid item>
-            <Typography
-              // component="span"
-              variant="body1"
-              className={classes.trackName}
-            >
-              {trackName}
-            </Typography>
-          </Grid>
+      <Grid container wrap="nowrap" alignItems="center">
+        <Grid
+          draggable
+          onDragStart={event => {
+            event.dataTransfer.setDragImage(event.target.parentNode, 20, 20)
+            view.setDraggingTrackIdx(index)
+          }}
+          onDragEnd={() => view.setDraggingTrackIdx(undefined)}
+          item
+        >
+          <Icon className={classes.dragHandle} fontSize="small">
+            drag_indicator
+          </Icon>
         </Grid>
-      </div>
+        <Grid item>
+          <Typography
+            // component="span"
+            variant="body1"
+            className={classes.trackName}
+          >
+            {trackName}
+          </Typography>
+        </Grid>
+      </Grid>
       <Typography
         variant="body2"
         color="textSecondary"
@@ -119,7 +103,7 @@ function TrackControls({ track, view, onConfigureClick, index }) {
       >
         {getConf(track, 'description')}
       </Typography>
-    </>
+    </div>
   )
 }
 
