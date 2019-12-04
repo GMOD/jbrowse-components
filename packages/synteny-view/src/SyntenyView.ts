@@ -7,7 +7,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
   const { stateModel, configSchema } = jbrequire(require('./model'))
 
   return new ViewType({
-    name: 'BreakpointSplitView',
+    name: 'SyntenyView',
     stateModel,
     configSchema,
     ReactComponent,
