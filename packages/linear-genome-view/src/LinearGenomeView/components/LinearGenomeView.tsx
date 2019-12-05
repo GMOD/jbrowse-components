@@ -512,6 +512,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const style = (initialized
     ? {
         display: 'grid',
+        width: model.width,
         position: 'relative',
         gridTemplateRows: `${
           !model.hideHeader ? '[header] auto ' : ''

@@ -18,27 +18,42 @@ const useStyles = makeStyles(theme => ({
     },
   },
   root: {
+    display: 'grid',
     height: '100vh',
-    display: 'flex',
-    overflow: 'hidden',
-    // background: '#808080',
-  },
-  menuBars: {
-    display: 'block',
+    width: '100%',
   },
   menuBarsAndComponents: {
-    flex: '1 100%',
-    height: '100%',
-    overflowY: 'auto',
+    gridColumn: 'main',
+    display: 'grid',
+    gridTemplateRows: '[menubars] auto [components] auto',
+    height: '100vh',
   },
-  defaultDrawer: {
-    flex: '1 100%',
+  menuBars: {
+    gridRow: 'menubars',
   },
   components: {
-    display: 'block',
     background: theme.palette.background.mainApp,
+    overflowY: 'auto',
+    gridRow: 'components',
   },
 }))
+
+function ViewContainer({ session, view }) {
+  const { pluginManager } = session
+  const { ReactComponent } = pluginManager.getViewType(view.type)
+  return (
+    <ReactComponent
+      model={view}
+      session={session}
+      getTrackType={pluginManager.getTrackType}
+    />
+  )
+}
+
+ViewContainer.propTypes = {
+  session: PropTypes.observableObject.isRequired,
+  view: PropTypes.objectOrObservableObject.isRequired,
+}
 
 function App({ contentRect, measureRef, session }) {
   const classes = useStyles()
@@ -51,10 +66,18 @@ function App({ contentRect, measureRef, session }) {
     }
   }, [session, contentRect])
 
-  const { visibleDrawerWidget } = session
+  const { visibleDrawerWidget, viewsWidth, drawerWidth } = session
 
   return (
-    <div ref={measureRef} className={classes.root}>
+    <div
+      ref={measureRef}
+      className={classes.root}
+      style={{
+        gridTemplateColumns: `[main] ${viewsWidth}px${
+          visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
+        }`,
+      }}
+    >
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
@@ -76,17 +99,13 @@ function App({ contentRect, measureRef, session }) {
           })}
         </div>
         <div className={classes.components}>
-          {session.views.map(view => {
-            const { ReactComponent } = pluginManager.getViewType(view.type)
-            return (
-              <ReactComponent
-                key={`view-${view.id}`}
-                model={view}
-                session={session}
-                getTrackType={pluginManager.getTrackType}
-              />
-            )
-          })}
+          {session.views.map(view => (
+            <ViewContainer
+              key={`view-${view.id}`}
+              session={session}
+              view={view}
+            />
+          ))}
           {inDevelopment ? <DevTools session={session} /> : null}
           <div style={{ height: 300 }} />
         </div>
