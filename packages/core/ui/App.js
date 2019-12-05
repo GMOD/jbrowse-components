@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { withContentRect } from 'react-measure'
 
 import { inDevelopment } from '../util'
@@ -40,13 +40,25 @@ const useStyles = makeStyles(theme => ({
 
 function ViewContainer({ session, view }) {
   const { pluginManager } = session
+  const classes = useStyles()
   const { ReactComponent } = pluginManager.getViewType(view.type)
+  const containerNodeRef = useRef()
+
+  // scroll the view into view when first mounted
+  // note that this effect will run only once, because of
+  // the empty array second param
+  useEffect(() => {
+    containerNodeRef.current.scrollIntoView({ block: 'center' })
+  }, [])
+
   return (
-    <ReactComponent
-      model={view}
-      session={session}
-      getTrackType={pluginManager.getTrackType}
-    />
+    <div ref={containerNodeRef} className={classes.viewContainer}>
+      <ReactComponent
+        model={view}
+        session={session}
+        getTrackType={pluginManager.getTrackType}
+      />
+    </div>
   )
 }
 
