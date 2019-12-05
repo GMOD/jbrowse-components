@@ -12,6 +12,7 @@ describe('LinearGenomeView genome view component', () => {
       views: [
         {
           type: 'LinearGenomeView',
+          id: 'lgv',
           offsetPx: 0,
           bpPerPx: 1,
           tracks: [],
@@ -29,6 +30,7 @@ describe('LinearGenomeView genome view component', () => {
       views: [
         {
           type: 'LinearGenomeView',
+          id: 'lgv',
           offsetPx: 0,
           bpPerPx: 1,
           tracks: [
@@ -81,6 +83,7 @@ describe('LinearGenomeView genome view component', () => {
       views: [
         {
           type: 'LinearGenomeView',
+          id: 'lgv',
           offsetPx: 0,
           bpPerPx: 1,
           displayedRegions: [

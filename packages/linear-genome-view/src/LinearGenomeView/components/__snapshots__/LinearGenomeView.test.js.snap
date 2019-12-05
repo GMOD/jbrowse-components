@@ -466,7 +466,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     </div>
     <div
       class="makeStyles-controls makeStyles-trackControls"
-      data-testid="trackControls-h4luJ299zn-testConfig"
+      data-testid="trackControls-lgv-testConfig"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
@@ -516,7 +516,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           class="MuiGrid-root MuiGrid-item"
-          data-testid="dragHandle-h4luJ299zn-testConfig"
+          data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
           <span
@@ -579,7 +579,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     />
     <div
       class="makeStyles-controls makeStyles-trackControls"
-      data-testid="trackControls-h4luJ299zn-testConfig2"
+      data-testid="trackControls-lgv-testConfig2"
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
@@ -629,7 +629,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       >
         <div
           class="MuiGrid-root MuiGrid-item"
-          data-testid="dragHandle-h4luJ299zn-testConfig2"
+          data-testid="dragHandle-lgv-testConfig2"
           draggable="true"
         >
           <span
