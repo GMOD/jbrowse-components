@@ -511,13 +511,32 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           class="MuiTouchRipple-root"
         />
       </button>
-      <p
-        class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+      <div
+        class="MuiGrid-root MuiGrid-container MuiGrid-wrap-xs-nowrap MuiGrid-align-items-xs-center"
       >
-        Foo Track
-      </p>
-      <span
-        class="MuiTypography-root makeStyles-trackDescription MuiTypography-caption MuiTypography-colorTextSecondary"
+        <div
+          class="MuiGrid-root MuiGrid-item"
+          draggable="true"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          >
+            drag_indicator
+          </span>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item"
+        >
+          <p
+            class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+          >
+            Foo Track
+          </p>
+        </div>
+      </div>
+      <p
+        class="MuiTypography-root makeStyles-trackDescription MuiTypography-body2 MuiTypography-colorTextSecondary"
       />
     </div>
     <div
@@ -604,13 +623,32 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           class="MuiTouchRipple-root"
         />
       </button>
-      <p
-        class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+      <div
+        class="MuiGrid-root MuiGrid-container MuiGrid-wrap-xs-nowrap MuiGrid-align-items-xs-center"
       >
-        Bar Track
-      </p>
-      <span
-        class="MuiTypography-root makeStyles-trackDescription MuiTypography-caption MuiTypography-colorTextSecondary"
+        <div
+          class="MuiGrid-root MuiGrid-item"
+          draggable="true"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          >
+            drag_indicator
+          </span>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item"
+        >
+          <p
+            class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+          >
+            Bar Track
+          </p>
+        </div>
+      </div>
+      <p
+        class="MuiTypography-root makeStyles-trackDescription MuiTypography-body2 MuiTypography-colorTextSecondary"
       />
     </div>
     <div
