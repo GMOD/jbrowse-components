@@ -48,7 +48,8 @@ function ViewContainer({ session, view }) {
   // note that this effect will run only once, because of
   // the empty array second param
   useEffect(() => {
-    containerNodeRef.current.scrollIntoView({ block: 'center' })
+    if (containerNodeRef.current.scrollIntoView)
+      containerNodeRef.current.scrollIntoView({ block: 'center' })
   }, [])
 
   return (
