@@ -84,7 +84,7 @@ export default function stateModelFactory(pluginManager: any) {
         const tracks: any[] = []
         self.views.forEach(view => {
           trackConfigIds.forEach(trackConfigId => {
-            const t = view.getTrack(trackConfigId)
+            const t = this.findTrack(trackConfigId)
             if (t) tracks.push(t)
           })
         })
@@ -98,6 +98,15 @@ export default function stateModelFactory(pluginManager: any) {
         return new CompositeMap<string, Feature>(
           (tracks || []).map(t => t.features),
         )
+      },
+
+      findTrack(trackConfigId: string) {
+        let t: any
+        self.views.forEach(v => {
+          const ret = v.getTrack(trackConfigId)
+          if (ret) t = ret
+        })
+        return t
       },
 
       // This finds candidate syntenic connections

@@ -16,19 +16,19 @@ export default (pluginManager: any) => {
     ({
       model,
       height,
-      trackConfigId,
+      trackConfigIds,
     }: {
       model: SyntenyViewModel
       height: number
-      trackConfigId: string
+      trackConfigIds: string[]
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
-      const totalFeatures = model.getTrackFeatures(trackConfigId)
-      const features = model.getMatchedSyntenyFeatures(trackConfigId)
+      const totalFeatures = model.getTrackFeatures(trackConfigIds)
+      const features = model.getMatchedSyntenyFeatures(trackConfigIds)
       console.log(features)
       const layoutMatches = model.getMatchedFeaturesInLayout(
-        trackConfigId,
+        trackConfigIds,
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
@@ -37,7 +37,7 @@ export default (pluginManager: any) => {
           stroke="#333"
           fill="none"
           data-testid={
-            layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
+            layoutMatches.length ? `synteny-view-loaded` : 'synteny-view'
           }
         >
           {layoutMatches.map(chunk => {
@@ -72,7 +72,9 @@ export default (pluginManager: any) => {
                 c2[f2.get('strand') === -1 ? RIGHT : LEFT],
               )
 
-              const tracks = views.map(v => v.getTrack(trackConfigId))
+              const tracks = trackConfigIds.map(f => {
+                return model.findTrack(f)
+              })
 
               const y1 = yPos(trackConfigId, level1, views, tracks, c1)
               const y2 = yPos(trackConfigId, level2, views, tracks, c2)
