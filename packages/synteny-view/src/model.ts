@@ -3,6 +3,7 @@ import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { getConf } from '@gmod/jbrowse-core/configuration'
 import intersection from 'array-intersection'
 
 export type LayoutRecord = [number, number, number, number]
@@ -56,32 +57,52 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       // Find all track ids that match across multiple views
+      //
+      // trackConfigId -> [other trackConfigIds]
+      // find the ones that point at each other
       get matchedTracks(): string[] {
-        const viewTracks = self.views.map(view =>
-          view.tracks.map(t => t.configuration.configId),
+        const configRelationships = self.views.map(view =>
+          view.tracks.map(t =>
+            getConf(t, 'configRelationships').map(
+              (r: { type: string; target: string }) => r.target,
+            ),
+          ),
         )
-        return intersection(...viewTracks)
+        return [...configRelationships].flat(2)
+        // console.log(rels, configRelationships)
+        // const ret = self.views.map(view => {
+        //   return view.tracks.filter(t => {
+        //     return rels.includes(getConf(t, 'configId'))
+        //   })
+        // })
+        // console.log(ret)
+        // return intersection(...ret)
       },
 
       // Get tracks with a given trackId across multiple views
-      getMatchedTracks(trackConfigId: string) {
-        return self.views
-          .map(view => view.getTrack(trackConfigId))
-          .filter(f => !!f)
+      getMatchedTracks(trackConfigIds: string[]) {
+        const tracks: any[] = []
+        self.views.forEach(view => {
+          trackConfigIds.forEach(trackConfigId => {
+            const t = view.getTrack(trackConfigId)
+            if (t) tracks.push(t)
+          })
+        })
+        return tracks
       },
 
       // Get a composite map of featureId->feature map for a track
       // across multiple views
-      getTrackFeatures(trackConfigId: string) {
-        const tracks = this.getMatchedTracks(trackConfigId)
+      getTrackFeatures(trackConfigIds: string[]) {
+        const tracks = this.getMatchedTracks(trackConfigIds)
         return new CompositeMap<string, Feature>(
           (tracks || []).map(t => t.features),
         )
       },
 
       // This finds candidate syntenic connections
-      getMatchedSyntenyFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
+      getMatchedSyntenyFeatures(trackConfigIds: string[]) {
+        const features = this.getTrackFeatures(trackConfigIds)
         const candidates: { [key: string]: Feature[] } = {}
         const alreadySeen = new Set<string>()
 
@@ -100,8 +121,11 @@ export default function stateModelFactory(pluginManager: any) {
         return Object.values(candidates).filter(v => v.length > 1)
       },
 
-      getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
-        const tracks = this.getMatchedTracks(trackConfigId)
+      getMatchedFeaturesInLayout(
+        trackConfigIds: string[],
+        features: Feature[][],
+      ) {
+        const tracks = this.getMatchedTracks(trackConfigIds)
         return features.map(c =>
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined

@@ -169,13 +169,19 @@
           "configId": "bigchain_mm10_to_hg38",
           "type": "BasicTrack",
           "name": "mm10ToHg38",
+          "configRelationships": [
+            {
+              "type": "synteny",
+              "target": "bigchain_hg38_to_mm10"
+            }
+          ],
           "category": [
             "Annotation"
           ],
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.hg38.all.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.bigChain.bb"
             }
           },
           "renderer": {
@@ -273,13 +279,19 @@
           "configId": "bigchain_hg38_to_mm10",
           "type": "BasicTrack",
           "name": "hg38ToMm10",
+          "configRelationships": [
+            {
+              "type": "synteny",
+              "target": "bigchain_mm10_to_hg38"
+            }
+          ],
           "category": [
             "Annotation"
           ],
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38.mm10.all.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38.bigChain.bb"
             }
           },
           "renderer": {
@@ -296,6 +308,7 @@
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
     },
-    "updateUrl": false
+    "updateUrl": false,
+    "useLocalStorage": true
   }
 }

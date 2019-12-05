@@ -26,6 +26,7 @@ export default (pluginManager: any) => {
       const session = getSession(model)
       const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.getMatchedSyntenyFeatures(trackConfigId)
+      console.log(features)
       const layoutMatches = model.getMatchedFeaturesInLayout(
         trackConfigId,
         features,
