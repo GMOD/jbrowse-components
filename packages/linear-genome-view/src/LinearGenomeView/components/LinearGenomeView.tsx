@@ -153,6 +153,9 @@ const TrackContainer = observer(
     }
     const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
     const { RenderingComponent, ControlsComponent } = track
+    // Since the ControlsComponent and the TrackRenderingContainer are next to
+    // each other in a grid, we add `onDragEnter` to both of them so the user
+    // can drag the track on to the controls or the track itself.
     return (
       <>
         <ControlsComponent
