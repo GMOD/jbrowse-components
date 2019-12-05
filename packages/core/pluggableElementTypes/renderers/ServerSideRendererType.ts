@@ -23,6 +23,8 @@ interface RenderArgs {
   bpPerPx: number
   config: Record<string, any>
   renderProps: { trackModel: any }
+  originalRegion?: any
+  originalRegions?: any[]
 }
 export default class ServerSideRenderer extends RendererType {
   /**
@@ -145,19 +147,20 @@ export default class ServerSideRenderer extends RendererType {
   async getFeatures(renderArgs: RenderArgs) {
     const { dataAdapter, signal, bpPerPx } = renderArgs
     let { regions } = renderArgs
+    const { region, originalRegion, originalRegions } = renderArgs
     const features = new Map()
     let featureObservable
 
-    if (!regions && renderArgs.region) {
+    if (!regions && region) {
       regions = [renderArgs.region]
     }
 
     if (!regions || regions.length === 0) return features
 
-    const requestRegions = regions.map((region: IRegion) => {
+    const requestRegions = regions.map((r: IRegion) => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
-      const requestRegion = { ...region }
+      const requestRegion = { ...r }
       if (requestRegion.start)
         requestRegion.start = Math.floor(requestRegion.start)
       if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
@@ -170,6 +173,8 @@ export default class ServerSideRenderer extends RendererType {
         {
           signal,
           bpPerPx,
+          originalRegion,
+          originalRegions,
         },
       )
     } else {

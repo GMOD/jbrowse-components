@@ -197,6 +197,8 @@ async function render(pluginManager, args) {
     blockKey,
     regions,
     region,
+    originalRegion,
+    originalRegions,
     sessionId,
     adapterType,
     adapterConfig,
@@ -233,6 +235,8 @@ async function render(pluginManager, args) {
     dataAdapter,
     regions,
     region,
+    originalRegion,
+    originalRegions,
     signal,
     blockKey,
   })

@@ -26,7 +26,13 @@ const ResetComponent = () => {
     </>
   )
 }
-const FatalErrorDialog = ({ componentStack, error }) => {
+const FatalErrorDialog = ({
+  componentStack,
+  error,
+}: {
+  componentStack: string
+  error: Error
+}) => {
   return (
     <Dialog open={true}>
       <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>

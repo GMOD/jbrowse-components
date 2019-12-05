@@ -79,8 +79,11 @@ class RpcManager {
     }
     if (region && refNameMap && refNameMap.has(region.refName)) {
       // clone the region so we don't modify it
-      if (isStateTreeNode(region)) region = { ...getSnapshot(region) }
-      else region = { ...region }
+      if (isStateTreeNode(region)) {
+        region = { ...getSnapshot(region) }
+      } else {
+        region = { ...region }
+      }
 
       // modify it directly in the container
       region.refName = refNameMap.get(region.refName)
@@ -98,11 +101,13 @@ class RpcManager {
       )
 
       if (region) {
+        args.originalRegion = args.region
         args.region = this.renameRegionIfNeeded(refNameMap, args.region)
       }
 
       if (args.regions) {
         for (let i = 0; i < regions.length; i += 1) {
+          args.originalRegions = args.regions
           args.regions[i] = this.renameRegionIfNeeded(
             refNameMap,
             args.regions[i],

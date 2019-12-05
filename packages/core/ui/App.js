@@ -11,7 +11,7 @@ import DrawerWidget from './DrawerWidget'
 import DevTools from './DevTools'
 import Snackbar from './Snackbar'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   '@global': {
     html: {
       'font-family': 'Roboto',
@@ -36,6 +36,7 @@ const useStyles = makeStyles(() => ({
   },
   components: {
     display: 'block',
+    background: theme.palette.background.mainApp,
   },
 }))
 

@@ -147,6 +147,8 @@ export async function render(
   {
     regions,
     region,
+    originalRegion,
+    originalRegions,
     sessionId,
     adapterType,
     adapterConfig,
@@ -186,6 +188,8 @@ export async function render(
     dataAdapter,
     regions,
     region,
+    originalRegions,
+    originalRegion,
     signal,
   })
   checkAbortSignal(signal)

@@ -11,10 +11,13 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { TextEncoder, TextDecoder } from 'text-encoding-polyfill'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import JBrowse from './JBrowse'
 import config from '../test_data/config_integration_test.json'
 import breakpointConfig from '../test_data/config_breakpoint_integration_test.json'
 import JBrowseRootModel from './rootModel'
+
+expect.extend({ toMatchImageSnapshot })
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
@@ -37,7 +40,7 @@ const readBuffer = async (url, args) => {
     if (args.headers.range) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       const { start, end } = range[0]
-      const len = end - start
+      const len = end - start + 1
       const buf = Buffer.alloc(len)
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
@@ -234,6 +237,30 @@ describe('some error state', () => {
     ).resolves.toBeTruthy()
     expect(spy).toHaveBeenCalled()
     spy.mockRestore()
+  })
+
+  it('open a cram with alternate renamed ref', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() => byId('htsTrackEntry-volvox_cram_alignments')),
+    )
+    const canvas = await waitForElement(() =>
+      getAllByTestId('prerendered_canvas'),
+    )
+    const img = canvas[0].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.001,
+      failureThresholdType: 'percent',
+    })
   })
   it('test that bam with contigA instead of ctgA displays', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })

@@ -32,6 +32,18 @@ function Category({
   const pathName = path.join('|')
   const name = path[path.length - 1]
 
+  const allTracks = model.allTracksInCategoryPath(
+    path,
+    connection,
+    assemblyName,
+  )
+
+  const count = Object.keys(allTracks).length
+  const filteredCount = Object.values(allTracks).filter(filterPredicate).length
+
+  // don't categories that have all of their members filtered out
+  if (filteredCount === 0 && count !== 0) return null
+
   return (
     <ExpansionPanel
       style={{ marginTop: '4px' }}
@@ -41,11 +53,9 @@ function Category({
       <ExpansionPanelSummary
         expandIcon={<Icon className={classes.expandIcon}>expand_more</Icon>}
       >
-        <Typography variant="body2">{`${name} (${
-          Object.keys(
-            model.allTracksInCategoryPath(path, connection, assemblyName),
-          ).length
-        })`}</Typography>
+        <Typography variant="body2">{`${name}${
+          filteredCount ? ` (${filteredCount})` : ''
+        }`}</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.expansionPanelDetails}>
         <Contents

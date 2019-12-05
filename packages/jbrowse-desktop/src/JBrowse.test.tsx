@@ -17,38 +17,14 @@ declare global {
   }
 }
 
-ipcRenderer.invoke = async arg => {
-  if (arg === 'loadConfig') {
-    const config = fs.readFileSync(
-      'test_data/config_integration_test.json',
-      'utf8',
-    )
-    return JSON.parse(config)
-  }
-  console.warn(
-    `electron.ipcRenderer.invoke received unknown call for ${arg}, returning undefined`,
-  )
-  return undefined
-}
 window.electronBetterIpc = {
-  ipcRenderer: {
-    ...Object.create(ipcRenderer),
+  // @ts-ignore
+  ipcRenderer: Object.assign(ipcRenderer, {
     callMain: () => {},
     answerMain: () => {},
     callRenderer: () => {},
     answerRenderer: () => {},
-  },
-}
-
-// @ts-ignore
-window.electronBetterIpc.ipcRenderer.invoke = async arg => {
-  if (arg === 'listSessions') {
-    return {}
-  }
-  console.warn(
-    `electronBetterIpc.ipcRenderer.invoke received unknown ${arg}, returning undefined`,
-  )
-  return undefined
+  }),
 }
 
 window.electron = {
@@ -71,9 +47,16 @@ test('basic test of electron-mock-ipc', async () => {
 describe('main jbrowse app render', () => {
   it('renders empty', async () => {
     // we use preload script to load onto the window global
-    // ipcMain.handle('loadConfig', (ev: Event, obj: string) => {
-    //   return {}
-    // })
+    ipcMain.handle('loadConfig', (ev: Event, obj: string) => {
+      const config = fs.readFileSync(
+        'test_data/config_integration_test.json',
+        'utf8',
+      )
+      return JSON.parse(config)
+    })
+    ipcMain.handle('listSessions', (ev: Event, obj: string) => {
+      return {}
+    })
 
     const { getByText } = render(<JBrowse />)
     expect(
