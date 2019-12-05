@@ -55,7 +55,10 @@ function TrackControls({
     })
   }
   return (
-    <div {...other}>
+    <div
+      data-testid={`trackControls-${view.id}-${getConf(track, 'configId')}`}
+      {...other}
+    >
       <IconButton
         onClick={() => view.hideTrack(track.configuration)}
         className={classes.iconButton}
@@ -93,6 +96,7 @@ function TrackControls({
           }}
           onDragEnd={() => view.setDraggingTrackIdx(undefined)}
           item
+          data-testid={`dragHandle-${view.id}-${getConf(track, 'configId')}`}
         >
           <Icon className={classes.dragHandle} fontSize="small">
             drag_indicator
