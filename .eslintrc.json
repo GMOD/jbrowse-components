@@ -38,6 +38,7 @@
       }
     ],
     "no-debugger": "warn",
+    "no-undef": "error",
     "no-param-reassign": "off",
     "no-plusplus": [
       "error",
