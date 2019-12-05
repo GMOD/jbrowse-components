@@ -490,7 +490,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton MuiToggleButton-sizeSmall"
-        style="min-width: 0;"
         tabindex="0"
         title="configure track"
         type="button"
@@ -602,7 +601,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton MuiToggleButton-sizeSmall"
-        style="min-width: 0;"
         tabindex="0"
         title="configure track"
         type="button"

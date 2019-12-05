@@ -1,5 +1,3 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
 import Grid from '@material-ui/core/Grid'
 import Icon from '@material-ui/core/Icon'
 import IconButton from '@material-ui/core/IconButton'
@@ -9,7 +7,8 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer, PropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
-import buttonStyles from '../../LinearGenomeView/components/buttonStyles'
+import { getConf, readConfObject } from '../configuration'
+import { getSession } from '../util'
 
 const useStyles = makeStyles(theme => ({
   trackName: {
@@ -26,10 +25,24 @@ const useStyles = makeStyles(theme => ({
     cursor: 'grab',
     color: '#135560',
   },
-  ...buttonStyles(theme),
+  iconButton: {
+    padding: theme.spacing(0.5),
+  },
+  toggleButton: {
+    height: theme.spacing(4),
+    minWidth: 0,
+    border: 'none',
+  },
 }))
 
-function TrackControls({ track, view, onConfigureClick, index, ...other }) {
+function TrackControls({
+  track,
+  view,
+  onConfigureClick,
+  index,
+  children = null,
+  ...other
+}) {
   const classes = useStyles()
   let trackName = getConf(track, 'name') || track.id
   const session = getSession(track)
@@ -56,7 +69,6 @@ function TrackControls({ track, view, onConfigureClick, index, ...other }) {
           type="button"
           title="configure track"
           size="small"
-          style={{ minWidth: 0 }}
           className={classes.toggleButton}
           selected={
             session.visibleDrawerWidget &&
@@ -87,15 +99,12 @@ function TrackControls({ track, view, onConfigureClick, index, ...other }) {
           </Icon>
         </Grid>
         <Grid item>
-          <Typography
-            // component="span"
-            variant="body1"
-            className={classes.trackName}
-          >
+          <Typography variant="body1" className={classes.trackName}>
             {trackName}
           </Typography>
         </Grid>
       </Grid>
+      {children}
       <Typography
         variant="body2"
         color="textSecondary"
@@ -112,9 +121,11 @@ TrackControls.propTypes = {
   view: PropTypes.objectOrObservableObject.isRequired,
   onConfigureClick: ReactPropTypes.func,
   index: ReactPropTypes.number.isRequired,
+  children: ReactPropTypes.node,
 }
 TrackControls.defaultProps = {
   onConfigureClick: undefined,
+  children: null,
 }
 
 export default observer(TrackControls)

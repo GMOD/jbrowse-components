@@ -138,6 +138,7 @@ const TrackRenderingContainer: React.FC<{
             background: 'rgba(0, 0, 0, 0.4)',
             zIndex: 2,
           }}
+          {...other}
         />
       ) : null}
     </>
