@@ -23,7 +23,7 @@ export default pluginManager => {
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString } = jbrequire('@gmod/jbrowse-core/util')
+  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const Ruler = jbrequire(require('./Ruler'))
 
@@ -98,8 +98,7 @@ export default pluginManager => {
 
   const Controls = observer(({ model, showingFigure }) => {
     const classes = useStyles()
-    const rootModel = getRoot(model)
-
+    const session = getSession(model)
     return (
       <div className={classes.controls}>
         {model.hideCloseButton ? null : (
@@ -179,10 +178,9 @@ export default pluginManager => {
             onClick={model.activateTrackSelector}
             title="select tracks"
             selected={
-              rootModel.visibleDrawerWidget &&
-              rootModel.visibleDrawerWidget.id ===
-                'hierarchicalTrackSelector' &&
-              rootModel.visibleDrawerWidget.view.id === model.id
+              session.visibleDrawerWidget &&
+              session.visibleDrawerWidget.id === 'hierarchicalTrackSelector' &&
+              session.visibleDrawerWidget.view.id === model.id
             }
             value="track_select"
             data-testid="circular_track_select"
