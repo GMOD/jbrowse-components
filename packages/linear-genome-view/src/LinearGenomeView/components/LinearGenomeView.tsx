@@ -1,5 +1,8 @@
 import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import { generateLocString } from '@gmod/jbrowse-core/util'
+import {
+  generateLocString,
+  useDebouncedCallback,
+} from '@gmod/jbrowse-core/util'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 
@@ -26,7 +29,7 @@ import Typography from '@material-ui/core/Typography'
 // misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance, getRoot } from 'mobx-state-tree'
+import { Instance, getRoot, isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
@@ -130,31 +133,51 @@ const TrackContainer = observer(
   (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
     const { model, track } = props
     const classes = useStyles()
-    const { bpPerPx, offsetPx } = model
+    const {
+      bpPerPx,
+      offsetPx,
+      horizontalScroll,
+      draggingTrackId,
+      moveTrack,
+    } = model
+    function onDragEnter() {
+      if (
+        draggingTrackId !== undefined &&
+        isAlive(track) &&
+        draggingTrackId !== track.id
+      ) {
+        moveTrack(draggingTrackId, track.id)
+      }
+    }
+    const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
     const { RenderingComponent, ControlsComponent } = track
+    // Since the ControlsComponent and the TrackRenderingContainer are next to
+    // each other in a grid, we add `onDragEnter` to both of them so the user
+    // can drag the track on to the controls or the track itself.
     return (
       <>
-        <div
+        <ControlsComponent
+          track={track}
+          view={model}
+          onConfigureClick={track.activateConfigurationUI}
           className={clsx(classes.controls, classes.trackControls)}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
-        >
-          <ControlsComponent
-            track={track}
-            view={model}
-            onConfigureClick={track.activateConfigurationUI}
-          />
-        </div>
+          onDragEnter={debouncedOnDragEnter}
+        />
         <TrackRenderingContainer
           trackId={track.id}
-          onHorizontalScroll={model.horizontalScroll}
+          trackHeight={track.height}
+          onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
+          onDragEnter={debouncedOnDragEnter}
+          dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
         >
           <RenderingComponent
             model={track}
             offsetPx={offsetPx}
             bpPerPx={bpPerPx}
             blockState={{}}
-            onHorizontalScroll={model.horizontalScroll}
+            onHorizontalScroll={horizontalScroll}
           />
         </TrackRenderingContainer>
         <ResizeHandle

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
 import { ElementId } from '@gmod/jbrowse-core/mst-types'
+import { TrackControls } from '@gmod/jbrowse-core/ui'
 import { getSession } from '@gmod/jbrowse-core/util'
 import {
   getContainingView,
@@ -8,7 +9,6 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import { types } from 'mobx-state-tree'
 import React from 'react'
-import TrackControls from './components/TrackControls'
 
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have

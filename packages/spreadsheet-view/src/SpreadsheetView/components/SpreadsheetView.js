@@ -213,7 +213,6 @@ export default pluginManager => {
         {model.hideVerticalResizeHandle ? null : (
           <ResizeHandle
             onDrag={model.resizeHeight}
-            objectId={model.id}
             style={{
               height: model.dragHandleHeight,
               position: 'absolute',

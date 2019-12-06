@@ -64,9 +64,6 @@ export default class extends Plugin {
 }
 
 export {
-  default as BaseTrackControls,
-} from './BasicTrack/components/TrackControls'
-export {
   default as BaseTrack,
   BaseTrackConfig,
 } from './BasicTrack/baseTrackModel'
