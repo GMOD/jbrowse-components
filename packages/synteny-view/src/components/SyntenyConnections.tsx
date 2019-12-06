@@ -55,42 +55,35 @@ export default (pluginManager: any) => {
                 return null
               }
 
-              // flipMultiplier combines with normal directionality of the curve
-              const flipMultipliers = views.map(v =>
-                v.horizontallyFlipped ? -1 : 1,
-              )
-
               const x11 = getPxFromCoordinate(views[level1], c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], c1[RIGHT])
               const x21 = getPxFromCoordinate(views[level2], c2[LEFT])
               const x22 = getPxFromCoordinate(views[level2], c2[RIGHT])
 
-              const tracks = views.map(view =>
-                model.getSyntenyTrackFromView(view, syntenyGroup),
-              )
+              if (Math.abs(x11 - x12) < 3 || Math.abs(x21 - x22) < 3) {
+                // eslint-disable-next-line no-continue
+                continue
+              }
+
+              const tracks = views.map(view => ({
+                view,
+                track: model.getSyntenyTrackFromView(view, syntenyGroup),
+              }))
+              const nv = tracks.map(v => v.view)
+              const nt = tracks.map(v => v.track)
+              const nc = tracks.filter(f => !!f.track)
 
               const y1 =
-                yPos(
-                  getConf(tracks[0], 'configId'),
-                  level1,
-                  views,
-                  tracks,
-                  c1,
-                ) + (level1 < level2 ? cheight(c1) : 0)
+                yPos(getConf(nc[0].track, 'configId'), level1, nv, nt, c1) +
+                (level1 < level2 ? cheight(c1) : 0)
               const y2 =
-                yPos(
-                  getConf(tracks[1], 'configId'),
-                  level2,
-                  views,
-                  tracks,
-                  c2,
-                ) + (level2 < level1 ? cheight(c2) : 0)
-
+                yPos(getConf(nc[1].track, 'configId'), level2, nv, nt, c2) +
+                (level2 < level1 ? cheight(c2) : 0)
               ret.push(
                 <polygon
                   key={`${f1.id()}-${f2.id()}`}
                   points={`${x11},${y1} ${x12},${y1} ${x22},${y2}, ${x21},${y2}`}
-                  style={{ fill: 'rgba(255,100,100,0.5)' }}
+                  style={{ fill: 'rgba(255,100,100,0.3)' }}
                 />,
               )
             }

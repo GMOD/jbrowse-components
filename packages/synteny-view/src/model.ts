@@ -79,13 +79,11 @@ export default function stateModelFactory(pluginManager: any) {
 
       // Get tracks with a given syntenyGroup across multiple views
       getMatchedTracks(syntenyGroup: string) {
-        return self.views
-          .map(view =>
-            view.tracks.find(
-              track => this.getTrackSyntenyGroup(track) === syntenyGroup,
-            ),
-          )
-          .filter(f => !!f)
+        return self.views.map(view =>
+          view.tracks.find(
+            track => this.getTrackSyntenyGroup(track) === syntenyGroup,
+          ),
+        )
       },
 
       // Get tracks with a given syntenyGroup across multiple views
@@ -98,10 +96,8 @@ export default function stateModelFactory(pluginManager: any) {
       // Get a composite map of featureId->feature map for a track
       // across multiple views
       getTrackFeatures(syntenyGroup: string) {
-        const tracks = this.getMatchedTracks(syntenyGroup)
-        return new CompositeMap<string, Feature>(
-          (tracks || []).map(t => t.features),
-        )
+        const tracks = this.getMatchedTracks(syntenyGroup).filter(f => !!f)
+        return new CompositeMap<string, Feature>(tracks.map(t => t.features))
       },
 
       // This finds candidate syntenic connections
@@ -131,8 +127,10 @@ export default function stateModelFactory(pluginManager: any) {
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
             const level = tracks.findIndex(track => {
-              layout = track.layoutFeatures.get(feature.id())
-              return layout
+              if (track) {
+                layout = track.layoutFeatures.get(feature.id())
+                return layout
+              }
             })
             return {
               feature,

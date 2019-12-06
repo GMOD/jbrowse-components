@@ -17,6 +17,7 @@ function heightFromSpecificLevel(
     .slice(0, level)
     .map(v => v.height + 7)
     .reduce((a, b) => a + b, 0)
+  console.log(level, trackConfigId)
   return (
     heightUpUntilThisPoint +
     views[level].headerHeight +

@@ -26,8 +26,8 @@
           "views": [
             {
               "type": "LinearGenomeView",
-              "offsetPx": 18669656.00687344,
-              "bpPerPx": 10,
+              "offsetPx": 0,
+              "bpPerPx": 100000,
               "displayedRegions": [
                 {
                   "refName": "7",
@@ -38,12 +38,6 @@
               ],
               "reversed": false,
               "tracks": [
-                {
-                  "type": "BasicTrack",
-                  "height": 100,
-                  "configuration": "gencode_genes_hg38",
-                  "selectedRendering": ""
-                },
                 {
                   "type": "BasicTrack",
                   "height": 100,
@@ -61,18 +55,12 @@
             },
             {
               "type": "LinearGenomeView",
-              "offsetPx": 5675435.581319785,
-              "bpPerPx": 10,
+              "offsetPx": 0,
+              "bpPerPx": 100000,
               "displayedRegions": [
                 {
                   "refName": "chr6",
                   "start": 0,
-                  "end": 56758391,
-                  "assemblyName": "mm10"
-                },
-                {
-                  "refName": "chr6",
-                  "start": 56758391,
                   "end": 171115067,
                   "assemblyName": "mm10"
                 }
@@ -88,7 +76,36 @@
                 {
                   "type": "BasicTrack",
                   "height": 100,
-                  "configuration": "gencode_genes_mm10",
+                  "configuration": "bigchain_mm10_to_rn6",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "type": "LinearGenomeView",
+              "offsetPx": 0,
+              "bpPerPx": 100000,
+              "displayedRegions": [
+                {
+                  "refName": "chr4",
+                  "start": 0,
+                  "end": 171115067,
+                  "assemblyName": "rn6"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "bigchain_rn6_to_mm10",
                   "selectedRendering": ""
                 }
               ],
@@ -181,7 +198,30 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.hg38.bigChain.bb"
+            }
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        },
+        {
+          "configId": "bigchain_mm10_to_rn6",
+          "type": "BasicTrack",
+          "name": "mm10ToRn6",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group2"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.rn6.bigChain.bb"
             }
           },
           "renderer": {
@@ -288,7 +328,50 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38.mm10.bigChain.bb"
+            }
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rat (rn6)",
+      "assembly": {
+        "name": "rn6",
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "TwoBitAdapter",
+            "twoBitLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/gbdb/rn6/rn6.2bit"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "bigchain_rn6_to_mm10",
+          "type": "BasicTrack",
+          "name": "rn6ToMm10",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group2"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/rn6.mm10.bigChain.bb"
             }
           },
           "renderer": {
