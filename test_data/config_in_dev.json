@@ -905,6 +905,27 @@
           }
         },
         {
+          "configId": "volvox-long-reads-bam",
+          "type": "SNPTrack",
+          "name": "volvox-SNP (bam)",
+          "category": [
+            "Alignments"
+          ],
+          "adapter": {
+            "configId": "_m5epcAGu6",
+            "type": "SNPAdapter",
+            "bamLocation":{
+              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
+            },
+            "index": {
+              "configId": "-bETsJYDd9",
+              "location": {
+                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
           "configId": "volvox_samspec_cram",
           "type": "AlignmentsTrack",
           "name": "volvox-samspec (cram)",
