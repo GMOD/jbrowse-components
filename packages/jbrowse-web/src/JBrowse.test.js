@@ -1,5 +1,6 @@
 import {
   cleanup,
+  createEvent,
   fireEvent,
   render,
   wait,
@@ -141,6 +142,41 @@ describe('valid file tests', () => {
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
+  })
+
+  it('click and drag to reorder tracks', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId } = render(<JBrowse initialState={state} />)
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_alignments'),
+      ),
+    )
+    fireEvent.click(
+      await waitForElement(() =>
+        getByTestId('htsTrackEntry-volvox_filtered_vcf'),
+      ),
+    )
+
+    const trackId1 = state.session.views[0].tracks[1].id
+    const dragHandle0 = await waitForElement(() =>
+      getByTestId('dragHandle-integration_test-volvox_alignments'),
+    )
+    const trackControls1 = await waitForElement(() =>
+      getByTestId('trackControls-integration_test-volvox_filtered_vcf'),
+    )
+    const dragStartEvent = createEvent.dragStart(dragHandle0)
+    // Have to mock 'dataTransfer' because it's not supported in jsdom
+    Object.defineProperty(dragStartEvent, 'dataTransfer', {
+      value: { setDragImage: () => {} },
+    })
+    fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
+    fireEvent(dragHandle0, dragStartEvent)
+    fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
+    fireEvent.dragEnter(trackControls1)
+    fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
+    fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
+    await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
   })
 
   it('click and zoom in and back out', async () => {

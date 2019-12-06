@@ -466,6 +466,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     </div>
     <div
       class="makeStyles-controls makeStyles-trackControls"
+      data-testid="trackControls-lgv-testConfig"
       style="grid-row: track-foo; grid-column: controls;"
     >
       <button
@@ -490,7 +491,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton MuiToggleButton-sizeSmall"
-        style="min-width: 0;"
         tabindex="0"
         title="configure track"
         type="button"
@@ -511,13 +511,33 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           class="MuiTouchRipple-root"
         />
       </button>
-      <p
-        class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+      <div
+        class="MuiGrid-root MuiGrid-container MuiGrid-wrap-xs-nowrap MuiGrid-align-items-xs-center"
       >
-        Foo Track
-      </p>
-      <span
-        class="MuiTypography-root makeStyles-trackDescription MuiTypography-caption MuiTypography-colorTextSecondary"
+        <div
+          class="MuiGrid-root MuiGrid-item"
+          data-testid="dragHandle-lgv-testConfig"
+          draggable="true"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          >
+            drag_indicator
+          </span>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item"
+        >
+          <p
+            class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+          >
+            Foo Track
+          </p>
+        </div>
+      </div>
+      <p
+        class="MuiTypography-root makeStyles-trackDescription MuiTypography-body2 MuiTypography-colorTextSecondary"
       />
     </div>
     <div
@@ -559,6 +579,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
     />
     <div
       class="makeStyles-controls makeStyles-trackControls"
+      data-testid="trackControls-lgv-testConfig2"
       style="grid-row: track-bar; grid-column: controls;"
     >
       <button
@@ -583,7 +604,6 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
       </button>
       <button
         class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton MuiToggleButton-sizeSmall"
-        style="min-width: 0;"
         tabindex="0"
         title="configure track"
         type="button"
@@ -604,13 +624,33 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
           class="MuiTouchRipple-root"
         />
       </button>
-      <p
-        class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+      <div
+        class="MuiGrid-root MuiGrid-container MuiGrid-wrap-xs-nowrap MuiGrid-align-items-xs-center"
       >
-        Bar Track
-      </p>
-      <span
-        class="MuiTypography-root makeStyles-trackDescription MuiTypography-caption MuiTypography-colorTextSecondary"
+        <div
+          class="MuiGrid-root MuiGrid-item"
+          data-testid="dragHandle-lgv-testConfig2"
+          draggable="true"
+        >
+          <span
+            aria-hidden="true"
+            class="material-icons MuiIcon-root makeStyles-dragHandle MuiIcon-fontSizeSmall"
+          >
+            drag_indicator
+          </span>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item"
+        >
+          <p
+            class="MuiTypography-root makeStyles-trackName MuiTypography-body1"
+          >
+            Bar Track
+          </p>
+        </div>
+      </div>
+      <p
+        class="MuiTypography-root makeStyles-trackDescription MuiTypography-body2 MuiTypography-colorTextSecondary"
       />
     </div>
     <div

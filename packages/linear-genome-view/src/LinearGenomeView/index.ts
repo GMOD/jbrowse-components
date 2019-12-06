@@ -9,7 +9,7 @@ import {
 } from '@gmod/jbrowse-core/util'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { transaction } from 'mobx'
-import { getParent, types, cast } from 'mobx-state-tree'
+import { getParent, getSnapshot, types, cast } from 'mobx-state-tree'
 import { BlockSet } from '../BasicTrack/util/blockTypes'
 import calculateDynamicBlocks from '../BasicTrack/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '../BasicTrack/util/calculateStaticBlocks'
@@ -99,6 +99,9 @@ export function stateModelFactory(pluginManager: any) {
       minimumBlockWidth: 20,
       configuration: types.frozen(),
     })
+    .volatile((): { draggingTrackId?: string } => ({
+      draggingTrackId: undefined,
+    }))
     .views(self => ({
       get viewingRegionWidth() {
         return self.width - self.controlsWidth
@@ -274,6 +277,22 @@ export function stateModelFactory(pluginManager: any) {
         )
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+
+      moveTrack(movingTrackId: string, targetTrackId: string) {
+        const oldIndex = self.tracks.findIndex(
+          track => track.id === movingTrackId,
+        )
+        if (oldIndex === -1)
+          throw new Error(`Track ID ${movingTrackId} not found`)
+        const newIndex = self.tracks.findIndex(
+          track => track.id === targetTrackId,
+        )
+        if (newIndex === -1)
+          throw new Error(`Track ID ${targetTrackId} not found`)
+        const track = getSnapshot(self.tracks[oldIndex])
+        self.tracks.splice(oldIndex, 1)
+        self.tracks.splice(newIndex, 0, track)
       },
 
       closeView() {
@@ -475,6 +494,10 @@ export function stateModelFactory(pluginManager: any) {
       showAllRegions() {
         self.bpPerPx = self.totalBp / self.viewingRegionWidth
         self.offsetPx = 0
+      },
+
+      setDraggingTrackId(idx?: string | undefined) {
+        self.draggingTrackId = idx
       },
     }))
     .views(self => {

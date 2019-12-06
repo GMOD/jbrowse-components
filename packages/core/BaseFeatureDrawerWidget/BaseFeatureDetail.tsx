@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -8,6 +8,7 @@ import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
+import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from 'react-sanitized-html'
@@ -76,6 +77,11 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
     </ExpansionPanel>
   )
 }
+BaseCard.propTypes = {
+  // @ts-ignore
+  children: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+}
 
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any>
@@ -131,7 +137,7 @@ const omit = [
 ]
 
 interface AttributeProps {
-  attributes: any
+  attributes: Record<string, any>
 }
 
 const Attributes: FunctionComponent<AttributeProps> = props => {
@@ -166,6 +172,7 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
         .filter(([k, v]) => v !== undefined && !omit.includes(k))
         .map(([key, value]) => {
           if (Array.isArray(value)) {
+            // eslint-disable-next-line react/prop-types
             return value.length === 1 ? (
               <SimpleValue key={key} name={key} value={value[0]} />
             ) : (
@@ -180,6 +187,9 @@ const Attributes: FunctionComponent<AttributeProps> = props => {
         })}
     </>
   )
+}
+Attributes.propTypes = {
+  attributes: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 const BaseAttributes = (props: BaseProps) => {
   const { feature } = props

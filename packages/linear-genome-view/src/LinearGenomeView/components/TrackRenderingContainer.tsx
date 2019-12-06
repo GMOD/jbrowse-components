@@ -21,8 +21,20 @@ const TrackRenderingContainer: React.FC<{
   setScrollTop: Function
   children?: ReactNode
   trackId: string
+  trackHeight: number
+  dimmed?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any
 }> = props => {
-  const { onHorizontalScroll, setScrollTop, trackId, children } = props
+  const {
+    onHorizontalScroll,
+    setScrollTop,
+    trackId,
+    trackHeight,
+    children,
+    dimmed,
+    ...other
+  } = props
   const classes = useStyles()
   const [scheduled, setScheduled] = useState(false)
   const [delta, setDelta] = useState(0)
@@ -84,37 +96,52 @@ const TrackRenderingContainer: React.FC<{
     event.preventDefault()
   }
   return (
-    <div
-      className={classes.trackRenderingContainer}
-      onWheel={({ deltaX }) => {
-        if (scheduled) {
-          setDelta(delta + deltaX)
-        } else {
-          // use rAF to make it so multiple event handlers aren't fired per-frame
-          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-          window.requestAnimationFrame(() => {
-            onHorizontalScroll(delta + deltaX)
-            setScheduled(false)
-          })
-          setScheduled(true)
-          setDelta(0)
-        }
-      }}
-      style={{
-        gridRow: `track-${trackId}`,
-        gridColumn: 'blocks',
-      }}
-      onScroll={event => {
-        const target = event.target as HTMLDivElement
-        setScrollTop(target.scrollTop, target.clientHeight)
-      }}
-      onMouseDown={mouseDown}
-      onMouseUp={mouseUp}
-      onMouseLeave={mouseLeave}
-      role="presentation"
-    >
-      {children}
-    </div>
+    <>
+      <div
+        className={classes.trackRenderingContainer}
+        onWheel={({ deltaX }) => {
+          if (scheduled) {
+            setDelta(delta + deltaX)
+          } else {
+            // use rAF to make it so multiple event handlers aren't fired per-frame
+            // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+            window.requestAnimationFrame(() => {
+              onHorizontalScroll(delta + deltaX)
+              setScheduled(false)
+            })
+            setScheduled(true)
+            setDelta(0)
+          }
+        }}
+        style={{
+          gridRow: `track-${trackId}`,
+          gridColumn: 'blocks',
+        }}
+        onScroll={event => {
+          const target = event.target as HTMLDivElement
+          setScrollTop(target.scrollTop, target.clientHeight)
+        }}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
+        onMouseLeave={mouseLeave}
+        role="presentation"
+        {...other}
+      >
+        {children}
+      </div>
+      {dimmed ? (
+        <div
+          style={{
+            gridRow: `track-${trackId}`,
+            gridColumn: 'blocks',
+            height: trackHeight,
+            background: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 2,
+          }}
+          {...other}
+        />
+      ) : null}
+    </>
   )
 }
 
@@ -123,6 +150,8 @@ TrackRenderingContainer.propTypes = {
   children: PropTypes.node,
   setScrollTop: PropTypes.func.isRequired,
   onHorizontalScroll: PropTypes.func.isRequired,
+  trackHeight: PropTypes.number.isRequired,
+  dimmed: PropTypes.bool.isRequired,
 }
 
 export default observer(TrackRenderingContainer)
