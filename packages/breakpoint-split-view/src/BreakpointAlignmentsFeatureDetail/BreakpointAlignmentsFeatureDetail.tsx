@@ -1,5 +1,5 @@
 import Paper from '@material-ui/core/Paper'
-import { observer } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { FunctionComponent } from 'react'
 import {
   BaseCoreDetails,
@@ -29,6 +29,9 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
       <BaseAttributes title="Feature 2 attributes" feature={feature2} />
     </Paper>
   )
+}
+AlignmentFeatureDetails.propTypes = {
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(AlignmentFeatureDetails)

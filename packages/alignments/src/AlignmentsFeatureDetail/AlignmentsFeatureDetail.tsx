@@ -1,5 +1,6 @@
 import Paper from '@material-ui/core/Paper'
-import { observer } from 'mobx-react'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import PropTypes from 'prop-types'
 import React, { FunctionComponent } from 'react'
 import BaseFeatureDetails, {
   BaseCard,
@@ -36,6 +37,9 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
     </BaseCard>
   )
 }
+AlignmentFlags.propTypes = {
+  feature: PropTypes.objectOf(PropTypes.any).isRequired,
+}
 
 interface AlnInputProps extends AlnCardProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -50,6 +54,9 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
       <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
+}
+AlignmentFeatureDetails.propTypes = {
+  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(AlignmentFeatureDetails)

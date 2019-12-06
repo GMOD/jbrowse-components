@@ -150,6 +150,8 @@ TrackRenderingContainer.propTypes = {
   children: PropTypes.node,
   setScrollTop: PropTypes.func.isRequired,
   onHorizontalScroll: PropTypes.func.isRequired,
+  trackHeight: PropTypes.number.isRequired,
+  dimmed: PropTypes.bool.isRequired,
 }
 
 export default observer(TrackRenderingContainer)
