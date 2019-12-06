@@ -51,7 +51,7 @@ export default (pluginManager: any) => {
   })
 
   const Overlay = observer(
-    (props: { model: SyntenyViewModel; trackConfigId: string }) => {
+    (props: { model: SyntenyViewModel; syntenyGroup: string }) => {
       return <SyntenyConnections {...props} />
     },
   )
@@ -59,6 +59,7 @@ export default (pluginManager: any) => {
   const SyntenyView = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     const { views, controlsWidth } = model
+    console.log(model.syntenyGroups)
     return (
       <div>
         <Header model={model} />
@@ -84,8 +85,8 @@ export default (pluginManager: any) => {
                 pointerEvents: model.interactToggled ? undefined : 'none',
               }}
             >
-              {model.matchedTracks.map(id => (
-                <Overlay key={id} model={model} trackConfigId={id} />
+              {model.syntenyGroups.map(id => (
+                <Overlay key={id} model={model} syntenyGroup={id} />
               ))}
             </svg>
           </div>

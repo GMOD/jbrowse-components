@@ -1,13 +1,13 @@
 import Path from 'svg-path-generator'
 import { SyntenyViewModel } from '../model'
-import { yPos, getPxFromCoordinate } from '../util'
+import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
@@ -16,19 +16,16 @@ export default (pluginManager: any) => {
     ({
       model,
       height,
-      trackConfigIds,
+      syntenyGroup,
     }: {
       model: SyntenyViewModel
       height: number
-      trackConfigIds: string[]
+      syntenyGroup: string
     }) => {
       const { views, showIntraviewLinks } = model
-      const session = getSession(model)
-      const totalFeatures = model.getTrackFeatures(trackConfigIds)
-      const features = model.getMatchedSyntenyFeatures(trackConfigIds)
-      console.log(features)
+      const features = model.getMatchedSyntenyFeatures(syntenyGroup)
       const layoutMatches = model.getMatchedFeaturesInLayout(
-        trackConfigIds,
+        syntenyGroup,
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
@@ -63,59 +60,37 @@ export default (pluginManager: any) => {
                 v.horizontallyFlipped ? -1 : 1,
               )
 
-              const x1 = getPxFromCoordinate(
-                views[level1],
-                c1[f1.get('strand') === -1 ? LEFT : RIGHT],
+              const x11 = getPxFromCoordinate(views[level1], c1[LEFT])
+              const x12 = getPxFromCoordinate(views[level1], c1[RIGHT])
+              const x21 = getPxFromCoordinate(views[level2], c2[LEFT])
+              const x22 = getPxFromCoordinate(views[level2], c2[RIGHT])
+
+              const tracks = views.map(view =>
+                model.getSyntenyTrackFromView(view, syntenyGroup),
               )
-              const x2 = getPxFromCoordinate(
-                views[level2],
-                c2[f2.get('strand') === -1 ? RIGHT : LEFT],
-              )
 
-              const tracks = trackConfigIds.map(f => {
-                return model.findTrack(f)
-              })
+              const y1 =
+                yPos(
+                  getConf(tracks[0], 'configId'),
+                  level1,
+                  views,
+                  tracks,
+                  c1,
+                ) + (level1 < level2 ? cheight(c1) : 0)
+              const y2 =
+                yPos(
+                  getConf(tracks[1], 'configId'),
+                  level2,
+                  views,
+                  tracks,
+                  c2,
+                ) + (level2 < level1 ? cheight(c2) : 0)
 
-              const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-              const y2 = yPos(trackConfigId, level2, views, tracks, c2)
-
-              // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
-              const path = Path()
-                .moveTo(x1, y1)
-                .curveTo(
-                  x1 + 200 * f1.get('strand') * flipMultipliers[level1],
-                  y1,
-                  x2 - 200 * f2.get('strand') * flipMultipliers[level2],
-                  y2,
-                  x2,
-                  y2,
-                )
-                .end()
-              const id = `${f1.id()}-${f2.id()}`
               ret.push(
-                <path
-                  d={path}
-                  key={id}
-                  strokeWidth={mouseoverElt === id ? 5 : 1}
-                  onClick={evt => {
-                    const featureWidget = session.addDrawerWidget(
-                      'BreakpointAlignmentsDrawerWidget',
-                      'breakpointAlignments',
-                      {
-                        featureData: {
-                          feature1: (
-                            totalFeatures.get(f1.id()) || { toJSON: () => {} }
-                          ).toJSON(),
-                          feature2: (
-                            totalFeatures.get(f2.id()) || { toJSON: () => {} }
-                          ).toJSON(),
-                        },
-                      },
-                    )
-                    session.showDrawerWidget(featureWidget)
-                  }}
-                  onMouseOver={evt => setMouseoverElt(id)}
-                  onMouseOut={evt => setMouseoverElt(undefined)}
+                <polygon
+                  key={`${f1.id()}-${f2.id()}`}
+                  points={`${x11},${y1} ${x12},${y1} ${x22},${y2}, ${x21},${y2}`}
+                  style={{ fill: 'rgba(255,100,100,0.5)' }}
                 />,
               )
             }

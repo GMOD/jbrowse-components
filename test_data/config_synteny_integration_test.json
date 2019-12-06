@@ -171,8 +171,8 @@
           "name": "mm10ToHg38",
           "configRelationships": [
             {
-              "type": "synteny",
-              "target": "bigchain_hg38_to_mm10"
+              "type": "syntenyGroup",
+              "target": "group1"
             }
           ],
           "category": [
@@ -185,10 +185,7 @@
             }
           },
           "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
-            }
+            "type": "PileupRenderer"
           }
         }
       ]
@@ -281,8 +278,8 @@
           "name": "hg38ToMm10",
           "configRelationships": [
             {
-              "type": "synteny",
-              "target": "bigchain_mm10_to_hg38"
+              "type": "syntenyGroup",
+              "target": "group1"
             }
           ],
           "category": [
@@ -295,10 +292,7 @@
             }
           },
           "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
-            }
+            "type": "PileupRenderer"
           }
         }
       ]

@@ -5,7 +5,7 @@ import { LayoutRecord } from './model'
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
-function cheight(chunk: LayoutRecord) {
+export function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 function heightFromSpecificLevel(
@@ -49,7 +49,7 @@ export function yPos(
   const min = 0
   const max = tracks[level].height
   return (
-    clamp(c[TOP] - tracks[level].scrollTop + cheight(c) / 2, min, max) +
+    clamp(c[TOP] - tracks[level].scrollTop, min, max) +
     heightFromSpecificLevel(views, trackConfigId, level)
   )
 }

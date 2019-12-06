@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 import intersection from 'array-intersection'
 
 export type LayoutRecord = [number, number, number, number]
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
@@ -56,62 +59,54 @@ export default function stateModelFactory(pluginManager: any) {
         return self.views.length ? self.views[0].controlsWidth : 0
       },
 
-      // Find all track ids that match across multiple views
-      //
-      // trackConfigId -> [other trackConfigIds]
-      // find the ones that point at each other
-      get matchedTracks(): string[] {
-        const configRelationships = self.views.map(view =>
-          view.tracks.map(t =>
-            getConf(t, 'configRelationships').map(
-              (r: { type: string; target: string }) => r.target,
-            ),
-          ),
+      getTrackSyntenyGroup(track: Instance<BaseTrackStateModel>) {
+        const rels = getConf(track, 'configRelationships')
+        const t = rels.find(
+          (f: { type: string; target: string }) => f.type === 'syntenyGroup',
         )
-        return [...configRelationships].flat(2)
-        // console.log(rels, configRelationships)
-        // const ret = self.views.map(view => {
-        //   return view.tracks.filter(t => {
-        //     return rels.includes(getConf(t, 'configId'))
-        //   })
-        // })
-        // console.log(ret)
-        // return intersection(...ret)
+        return t ? t.target : undefined
       },
 
-      // Get tracks with a given trackId across multiple views
-      getMatchedTracks(trackConfigIds: string[]) {
-        const tracks: any[] = []
+      get syntenyGroups(): string[] {
+        const groups = new Set<string>()
         self.views.forEach(view => {
-          trackConfigIds.forEach(trackConfigId => {
-            const t = this.findTrack(trackConfigId)
-            if (t) tracks.push(t)
+          view.tracks.forEach(track => {
+            groups.add(this.getTrackSyntenyGroup(track))
           })
         })
-        return tracks
+        return Array.from(groups).filter(f => !!f)
+      },
+
+      // Get tracks with a given syntenyGroup across multiple views
+      getMatchedTracks(syntenyGroup: string) {
+        return self.views
+          .map(view =>
+            view.tracks.find(
+              track => this.getTrackSyntenyGroup(track) === syntenyGroup,
+            ),
+          )
+          .filter(f => !!f)
+      },
+
+      // Get tracks with a given syntenyGroup across multiple views
+      getSyntenyTrackFromView(view: LGV, syntenyGroup: string) {
+        return view.tracks.find(
+          track => this.getTrackSyntenyGroup(track) === syntenyGroup,
+        )
       },
 
       // Get a composite map of featureId->feature map for a track
       // across multiple views
-      getTrackFeatures(trackConfigIds: string[]) {
-        const tracks = this.getMatchedTracks(trackConfigIds)
+      getTrackFeatures(syntenyGroup: string) {
+        const tracks = this.getMatchedTracks(syntenyGroup)
         return new CompositeMap<string, Feature>(
           (tracks || []).map(t => t.features),
         )
       },
 
-      findTrack(trackConfigId: string) {
-        let t: any
-        self.views.forEach(v => {
-          const ret = v.getTrack(trackConfigId)
-          if (ret) t = ret
-        })
-        return t
-      },
-
       // This finds candidate syntenic connections
-      getMatchedSyntenyFeatures(trackConfigIds: string[]) {
-        const features = this.getTrackFeatures(trackConfigIds)
+      getMatchedSyntenyFeatures(syntenyGroup: string) {
+        const features = this.getTrackFeatures(syntenyGroup)
         const candidates: { [key: string]: Feature[] } = {}
         const alreadySeen = new Set<string>()
 
@@ -130,11 +125,8 @@ export default function stateModelFactory(pluginManager: any) {
         return Object.values(candidates).filter(v => v.length > 1)
       },
 
-      getMatchedFeaturesInLayout(
-        trackConfigIds: string[],
-        features: Feature[][],
-      ) {
-        const tracks = this.getMatchedTracks(trackConfigIds)
+      getMatchedFeaturesInLayout(syntenyGroup: string, features: Feature[][]) {
+        const tracks = this.getMatchedTracks(syntenyGroup)
         return features.map(c =>
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
@@ -195,7 +187,7 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: Instance<LinearGenomeViewStateModel>) {
+      removeView(view: LGV) {
         self.views.remove(view)
       },
 
