@@ -1,5 +1,5 @@
 import Path from 'svg-path-generator'
-import { SyntenyViewModel } from '../model'
+import { SyntenyViewModel, LayoutRecord } from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -54,11 +54,47 @@ export default (pluginManager: any) => {
               if (!showIntraviewLinks && level1 === level2) {
                 return null
               }
+              // const process = (
+              //   f: {,
+              //   c: LayoutRecord,
+              //   l: number,
+              //   t: number,
+              // ) => {
+              //   return (
+              //     (
+              //       views[l].bpToPx({
+              //         refName: f.get('refName'),
+              //         coord: c[t],
+              //       }) || {}
+              //     ).offsetPx || 0
+              //   )
+              // }
+              const r1 = f1.get('refName')
+              const r2 = f2.get('refName')
 
-              const x11 = getPxFromCoordinate(views[level1], c1[LEFT])
-              const x12 = getPxFromCoordinate(views[level1], c1[RIGHT])
-              const x21 = getPxFromCoordinate(views[level2], c2[LEFT])
-              const x22 = getPxFromCoordinate(views[level2], c2[RIGHT])
+              const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
+              const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])
+              const x21 = getPxFromCoordinate(views[level2], r2, c2[LEFT])
+              const x22 = getPxFromCoordinate(views[level2], r2, c2[RIGHT])
+              // views[level1].bpToPx({
+              //   refName: r1,
+              //   coord: c1[LEFT],
+              // }) || 0
+              // const x12 =
+              // views[level1].bpToPx({
+              //   refName: r1,
+              //   coord: c1[RIGHT],
+              // }) || 0
+              // const x21 =
+              // views[level2].bpToPx({
+              //   refName: r2,
+              //   coord: c2[LEFT],
+              // }) || {}
+              // const x22 =
+              // views[level2].bpToPx({
+              //   refName: r2,
+              //   coord: c2[RIGHT],
+              // }).offsetPx || {}
 
               if (Math.abs(x11 - x12) < 3 || Math.abs(x21 - x22) < 3) {
                 // eslint-disable-next-line no-continue

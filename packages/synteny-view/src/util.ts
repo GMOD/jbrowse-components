@@ -17,7 +17,6 @@ function heightFromSpecificLevel(
     .slice(0, level)
     .map(v => v.height + 7)
     .reduce((a, b) => a + b, 0)
-  console.log(level, trackConfigId)
   return (
     heightUpUntilThisPoint +
     views[level].headerHeight +
@@ -32,11 +31,10 @@ function heightFromSpecificLevel(
 // need to update to use a proper bpToPx which is in dev
 export function getPxFromCoordinate(
   view: Instance<LinearGenomeViewStateModel>,
+  refName: string,
   coord: number,
 ) {
-  const region = { start: 0, end: view.totalBp }
-  const { bpPerPx, horizontallyFlipped, offsetPx } = view
-  return bpToPx(coord, region, bpPerPx, horizontallyFlipped) - offsetPx
+  return ((view.bpToPx({ refName, coord }) || {}).offsetPx || 0) - view.offsetPx
 }
 
 // get's the yposition of a layout record in a track
