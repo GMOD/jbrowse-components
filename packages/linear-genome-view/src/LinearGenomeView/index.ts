@@ -99,8 +99,8 @@ export function stateModelFactory(pluginManager: any) {
       minimumBlockWidth: 20,
       configuration: types.frozen(),
     })
-    .volatile((): { draggingTrackIdx?: number } => ({
-      draggingTrackIdx: undefined,
+    .volatile((): { draggingTrackId?: string } => ({
+      draggingTrackId: undefined,
     }))
     .views(self => ({
       get viewingRegionWidth() {
@@ -279,9 +279,17 @@ export function stateModelFactory(pluginManager: any) {
         return shownTracks.length
       },
 
-      moveTrack(oldIndex: number, newIndex: number) {
-        if (oldIndex > self.tracks.length - 1)
-          throw new Error(`Cannot move track at index ${oldIndex}, none exists`)
+      moveTrack(movingTrackId: string, targetTrackId: string) {
+        const oldIndex = self.tracks.findIndex(
+          track => track.id === movingTrackId,
+        )
+        if (oldIndex === -1)
+          throw new Error(`Track ID ${movingTrackId} not found`)
+        const newIndex = self.tracks.findIndex(
+          track => track.id === targetTrackId,
+        )
+        if (newIndex === -1)
+          throw new Error(`Track ID ${targetTrackId} not found`)
         const track = getSnapshot(self.tracks[oldIndex])
         self.tracks.splice(oldIndex, 1)
         self.tracks.splice(newIndex, 0, track)
@@ -488,8 +496,8 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = 0
       },
 
-      setDraggingTrackIdx(idx?: number | undefined) {
-        self.draggingTrackIdx = idx
+      setDraggingTrackId(idx?: string | undefined) {
+        self.draggingTrackId = idx
       },
     }))
     .views(self => {

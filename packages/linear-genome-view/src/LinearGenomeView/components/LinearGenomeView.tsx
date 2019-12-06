@@ -29,7 +29,7 @@ import Typography from '@material-ui/core/Typography'
 // misc
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance, getRoot } from 'mobx-state-tree'
+import { Instance, getRoot, isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useState } from 'react'
 
@@ -130,25 +130,23 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const TrackContainer = observer(
-  (props: {
-    model: LGV
-    track: Instance<BaseTrackStateModel>
-    index: number
-  }) => {
-    const { model, track, index } = props
+  (props: { model: LGV; track: Instance<BaseTrackStateModel> }) => {
+    const { model, track } = props
     const classes = useStyles()
     const {
       bpPerPx,
       offsetPx,
       horizontalScroll,
-      draggingTrackIdx,
-      setDraggingTrackIdx,
+      draggingTrackId,
       moveTrack,
     } = model
     function onDragEnter() {
-      if (draggingTrackIdx !== undefined && draggingTrackIdx !== index) {
-        moveTrack(draggingTrackIdx, index)
-        setDraggingTrackIdx(index)
+      if (
+        draggingTrackId !== undefined &&
+        isAlive(track) &&
+        draggingTrackId !== track.id
+      ) {
+        moveTrack(draggingTrackId, track.id)
       }
     }
     const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
@@ -162,7 +160,6 @@ const TrackContainer = observer(
           track={track}
           view={model}
           onConfigureClick={track.activateConfigurationUI}
-          index={index}
           className={clsx(classes.controls, classes.trackControls)}
           style={{ gridRow: `track-${track.id}`, gridColumn: 'controls' }}
           onDragEnter={debouncedOnDragEnter}
@@ -173,7 +170,7 @@ const TrackContainer = observer(
           onHorizontalScroll={horizontalScroll}
           setScrollTop={track.setScrollTop}
           onDragEnter={debouncedOnDragEnter}
-          dimmed={draggingTrackIdx !== undefined && draggingTrackIdx !== index}
+          dimmed={draggingTrackId !== undefined && draggingTrackId !== track.id}
         >
           <RenderingComponent
             model={track}
@@ -568,13 +565,8 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                 </Typography>
               </Container>
             ) : (
-              tracks.map((track, idx) => (
-                <TrackContainer
-                  key={track.id}
-                  model={model}
-                  track={track}
-                  index={idx}
-                />
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
               ))
             )}
           </>

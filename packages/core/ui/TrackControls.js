@@ -39,7 +39,6 @@ function TrackControls({
   track,
   view,
   onConfigureClick,
-  index,
   children = null,
   ...other
 }) {
@@ -92,9 +91,9 @@ function TrackControls({
           draggable
           onDragStart={event => {
             event.dataTransfer.setDragImage(event.target.parentNode, 20, 20)
-            view.setDraggingTrackIdx(index)
+            view.setDraggingTrackId(track.id)
           }}
-          onDragEnd={() => view.setDraggingTrackIdx(undefined)}
+          onDragEnd={() => view.setDraggingTrackId(undefined)}
           item
           data-testid={`dragHandle-${view.id}-${getConf(track, 'configId')}`}
         >
@@ -124,7 +123,6 @@ TrackControls.propTypes = {
   track: PropTypes.objectOrObservableObject.isRequired,
   view: PropTypes.objectOrObservableObject.isRequired,
   onConfigureClick: ReactPropTypes.func,
-  index: ReactPropTypes.number.isRequired,
   children: ReactPropTypes.node,
 }
 TrackControls.defaultProps = {
