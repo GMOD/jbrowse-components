@@ -251,35 +251,43 @@ ipcMain.on('saveConfig', async (event, configSnapshot) => {
 })
 
 ipcMain.handle('listSessions', async () => {
-  const sessionFiles = await fsReaddir(sessionDirectory)
-  const sessionFilesData = []
-  for (const sessionFile of sessionFiles) {
-    if (path.extname(sessionFile) === '.thumbnail')
-      sessionFilesData.push(
-        fsReadFile(path.join(sessionDirectory, sessionFile), {
-          encoding: 'utf8',
-        }),
-      )
-    else sessionFilesData.push(fsStat(path.join(sessionDirectory, sessionFile)))
-  }
-  const data = await Promise.all(sessionFilesData)
-  const sessions = {}
-  sessionFiles.forEach((sessionFile, idx) => {
-    if (path.extname(sessionFile) === '.thumbnail') {
-      const sessionName = decodeURIComponent(
-        path.basename(sessionFile, '.thumbnail'),
-      )
-      if (!sessions[sessionName]) sessions[sessionName] = {}
-      sessions[sessionName].screenshot = data[idx]
-    } else if (path.extname(sessionFile) === '.json') {
-      const sessionName = decodeURIComponent(
-        path.basename(sessionFile, '.json'),
-      )
-      if (!sessions[sessionName]) sessions[sessionName] = {}
-      sessions[sessionName].stats = data[idx]
+  try {
+    const sessionFiles = await fsReaddir(sessionDirectory)
+    const sessionFilesData = []
+    for (const sessionFile of sessionFiles) {
+      if (path.extname(sessionFile) === '.thumbnail')
+        sessionFilesData.push(
+          fsReadFile(path.join(sessionDirectory, sessionFile), {
+            encoding: 'utf8',
+          }),
+        )
+      else
+        sessionFilesData.push(fsStat(path.join(sessionDirectory, sessionFile)))
     }
-  })
-  return sessions
+    const data = await Promise.all(sessionFilesData)
+    const sessions = {}
+    sessionFiles.forEach((sessionFile, idx) => {
+      if (path.extname(sessionFile) === '.thumbnail') {
+        const sessionName = decodeURIComponent(
+          path.basename(sessionFile, '.thumbnail'),
+        )
+        if (!sessions[sessionName]) sessions[sessionName] = {}
+        sessions[sessionName].screenshot = data[idx]
+      } else if (path.extname(sessionFile) === '.json') {
+        const sessionName = decodeURIComponent(
+          path.basename(sessionFile, '.json'),
+        )
+        if (!sessions[sessionName]) sessions[sessionName] = {}
+        sessions[sessionName].stats = data[idx]
+      }
+    })
+    return sessions
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
+      return []
+    }
+    throw error
+  }
 })
 
 ipcMain.handle('loadSession', async (event, sessionName) => {

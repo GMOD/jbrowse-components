@@ -8,6 +8,7 @@ import {
   Stats,
 } from 'generic-filehandle'
 import ElectronLocalFile from './ElectronLocalFile'
+import { isAbortException } from '../index'
 
 declare global {
   interface Window {
