@@ -5,19 +5,11 @@ export default pluginManager => {
   const { transaction } = jbrequire('mobx')
   const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema, readConfObject } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
-  )
+  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(
     require('./slices'),
-  )
-
-  const configSchema = ConfigurationSchema(
-    'CircularView',
-    {},
-    { explicitlyTyped: true },
   )
 
   const minHeight = 40
@@ -45,7 +37,6 @@ export default pluginManager => {
         defaultHeight,
       ),
       minimumRadiusPx: 25,
-      configuration: configSchema,
       spacingPx: 10,
       paddingPx: 80,
       lockedPaddingPx: 100,
@@ -256,10 +247,6 @@ export default pluginManager => {
         if (root.updateAssemblies) root.updateAssemblies()
       },
 
-      activateConfigurationUI() {
-        getRoot(self).editConfiguration(self.configuration)
-      },
-
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -313,7 +300,7 @@ export default pluginManager => {
       },
     }))
 
-  return { stateModel, configSchema }
+  return { stateModel }
 }
 
 /*

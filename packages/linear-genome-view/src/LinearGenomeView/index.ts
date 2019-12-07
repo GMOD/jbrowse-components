@@ -97,7 +97,6 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
-      configuration: types.frozen(),
     })
     .volatile((): { draggingTrackId?: string } => ({
       draggingTrackId: undefined,
@@ -479,11 +478,6 @@ export function stateModelFactory(pluginManager: any) {
        */
       centerAt(/* bp, refName */) {
         /* TODO */
-      },
-
-      activateConfigurationUI() {
-        const session: any = getSession(self)
-        session.editConfiguration(self.configuration)
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {

@@ -4,17 +4,10 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { types, getParent, getRoot, getEnv } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
 
   const SpreadsheetModel = jbrequire(require('./Spreadsheet'))
   const ImportWizardModel = jbrequire(require('./ImportWizard'))
   const FilterControlsModel = jbrequire(require('./FilterControls'))
-
-  const configSchema = ConfigurationSchema(
-    'SpreadsheetView',
-    {},
-    { explicitlyTyped: true },
-  )
 
   const minHeight = 40
   const defaultHeight = 400
@@ -32,7 +25,6 @@ export default pluginManager => {
         ),
         defaultHeight,
       ),
-      configuration: configSchema,
 
       hideViewControls: false,
       hideVerticalResizeHandle: false,
@@ -121,11 +113,7 @@ export default pluginManager => {
       closeView() {
         getParent(self, 2).removeView(self)
       },
-
-      activateConfigurationUI() {
-        getRoot(self).editConfiguration(self.configuration)
-      },
     }))
 
-  return { stateModel, configSchema }
+  return { stateModel }
 }
