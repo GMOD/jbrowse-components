@@ -6,6 +6,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
 import { getSession } from '@gmod/jbrowse-core/util'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { addDisposer, types, Instance } from 'mobx-state-tree'
 import RBush from 'rbush'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -29,9 +30,6 @@ const blockBasedTrack = types
       })),
   )
   .views(self => {
-    let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: { [key: string]: typeof RBush | undefined } = {}
-
     return {
       get blockType() {
         return 'staticBlocks'
@@ -55,7 +53,6 @@ const blockBasedTrack = types
           if (block.data && block.data.features)
             featureMaps.push(block.data.features)
         }
-        stale = true
         return new CompositeMap<string, Feature>(featureMaps)
       },
 
@@ -73,8 +70,19 @@ const blockBasedTrack = types
             layoutMaps.set(block.key, block.data.layout.rectangles)
           }
         }
-        stale = true // make rtree refresh
         return layoutMaps
+      },
+
+      get featToBlock() {
+        const m: { [key: string]: IRegion } = {}
+        for (const block of self.blockState.values()) {
+          if (block.data && block.data.features) {
+            for (const [featId] of block.data.features) {
+              m[featId] = block.region
+            }
+          }
+        }
+        return m
       },
 
       /**
@@ -93,27 +101,23 @@ const blockBasedTrack = types
             layoutMaps.push(block.data.layout.rectangles)
           }
         }
-        stale = true // make rtree refresh
         return new CompositeMap<string, LayoutRecord>(layoutMaps)
       },
 
       get rtree() {
-        if (stale) {
-          rbush = {}
-          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
-            rbush[blockKey] = new RBush()
-            const r = rbush[blockKey]
-            for (const [key, layout] of layoutFeatures) {
-              r.insert({
-                minX: layout[0],
-                minY: layout[1],
-                maxX: layout[2],
-                maxY: layout[3],
-                name: key,
-              })
-            }
+        const rbush: { [key: string]: typeof RBush | undefined } = {}
+        for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
+          rbush[blockKey] = new RBush()
+          const r = rbush[blockKey]
+          for (const [key, layout] of layoutFeatures) {
+            r.insert({
+              minX: layout[0],
+              minY: layout[1],
+              maxX: layout[2],
+              maxY: layout[3],
+              name: key,
+            })
           }
-          stale = false
         }
         return rbush
       },

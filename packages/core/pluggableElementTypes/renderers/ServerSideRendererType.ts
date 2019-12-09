@@ -124,7 +124,6 @@ export default class ServerSideRenderer extends RendererType {
   getExpandedGlyphRegion(region: IRegion, renderArgs: RenderArgs) {
     if (!region) return region
     const { bpPerPx, config } = renderArgs
-    // @ts-ignore
     const maxFeatureGlyphExpansion = readConfObject(
       config,
       'maxFeatureGlyphExpansion',
@@ -161,9 +160,12 @@ export default class ServerSideRenderer extends RendererType {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
       const requestRegion = { ...r }
-      if (requestRegion.start)
+      if (requestRegion.start) {
         requestRegion.start = Math.floor(requestRegion.start)
-      if (requestRegion.end) requestRegion.end = Math.floor(requestRegion.end)
+      }
+      if (requestRegion.end) {
+        requestRegion.end = Math.floor(requestRegion.end)
+      }
       return requestRegion
     })
 
@@ -174,7 +176,6 @@ export default class ServerSideRenderer extends RendererType {
           signal,
           bpPerPx,
           originalRegion,
-          originalRegions,
         },
       )
     } else {
@@ -183,6 +184,7 @@ export default class ServerSideRenderer extends RendererType {
         {
           signal,
           bpPerPx,
+          originalRegions,
         },
       )
     }

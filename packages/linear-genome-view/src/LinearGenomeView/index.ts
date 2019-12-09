@@ -168,21 +168,20 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
-        let offsetPx = 0
+        let offsetBp = 0
         const index = this.displayedRegionsInOrder.findIndex(r => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetPx += (coord - r.start) / self.bpPerPx
+            offsetBp += coord - r.start
             return true
           }
-          offsetPx += (r.end - r.start) / self.bpPerPx
+          offsetBp += r.end - r.start
           return false
         })
         const foundRegion = self.displayedRegions[index]
-        offsetPx = Math.round(offsetPx)
         if (foundRegion) {
           return {
             index,
-            offsetPx,
+            offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
         return undefined

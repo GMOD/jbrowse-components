@@ -59,7 +59,6 @@ export default (pluginManager: any) => {
   const SyntenyView = observer(({ model }: { model: SyntenyViewModel }) => {
     const classes = useStyles()
     const { views, controlsWidth } = model
-    console.log(model.syntenyGroups)
     return (
       <div>
         <Header model={model} />

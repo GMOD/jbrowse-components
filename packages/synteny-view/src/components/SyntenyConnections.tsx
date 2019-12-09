@@ -1,5 +1,4 @@
-import Path from 'svg-path-generator'
-import { SyntenyViewModel, LayoutRecord } from '../model'
+import { SyntenyViewModel } from '../model'
 import { yPos, getPxFromCoordinate, cheight } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
@@ -28,7 +27,6 @@ export default (pluginManager: any) => {
         syntenyGroup,
         features,
       )
-      const [mouseoverElt, setMouseoverElt] = useState()
       return (
         <g
           stroke="#333"
@@ -42,8 +40,18 @@ export default (pluginManager: any) => {
             // we follow a path in the list of chunks, not from top to bottom, just in series
             // following x1,y1 -> x2,y2
             for (let i = 0; i < chunk.length - 1; i += 1) {
-              const { layout: c1, feature: f1, level: level1 } = chunk[i]
-              const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+              const {
+                layout: c1,
+                feature: f1,
+                level: level1,
+                block: block1,
+              } = chunk[i]
+              const {
+                layout: c2,
+                feature: f2,
+                level: level2,
+                block: block2,
+              } = chunk[i + 1]
 
               if (!c1 || !c2) {
                 console.warn('received null layout for a overlay feature')
@@ -54,23 +62,8 @@ export default (pluginManager: any) => {
               if (!showIntraviewLinks && level1 === level2) {
                 return null
               }
-              // const process = (
-              //   f: {,
-              //   c: LayoutRecord,
-              //   l: number,
-              //   t: number,
-              // ) => {
-              //   return (
-              //     (
-              //       views[l].bpToPx({
-              //         refName: f.get('refName'),
-              //         coord: c[t],
-              //       }) || {}
-              //     ).offsetPx || 0
-              //   )
-              // }
-              const r1 = f1.get('refName')
-              const r2 = f2.get('refName')
+              const r1 = block1.refName
+              const r2 = block2.refName
 
               const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])
