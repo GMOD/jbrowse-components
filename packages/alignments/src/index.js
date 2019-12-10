@@ -13,6 +13,10 @@ import {
   modelFactory as alignmentsTrackModelFactory,
 } from './AlignmentsTrack'
 import {
+  configSchemaFactory as snpTrackConfigSchemaFactory,
+  modelFactory as snpTrackModelFactory,
+} from './SNPTrack'
+import {
   AdapterClass as BamAdapterClass,
   configSchema as bamAdapterConfigSchema,
 } from './BamAdapter'
@@ -46,7 +50,14 @@ export default class extends Plugin {
           LazyReactComponent: lazy(() => AlignmentsFeatureDetailReactComponent),
         }),
     )
-
+    pluginManager.addTrackType(() => {
+      const configSchema = snpTrackConfigSchemaFactory(pluginManager)
+      return new TrackType({
+        name: 'SNPTrack',
+        configSchema,
+        stateModel: snpTrackModelFactory(configSchema),
+      })
+    })
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

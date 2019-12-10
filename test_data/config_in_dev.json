@@ -905,15 +905,12 @@
           }
         },
         {
-          "configId": "volvox-long-reads-bam",
+          "configId": "volvox-long-reads-bam (SNP)",
           "type": "SNPTrack",
           "name": "volvox-SNP (bam)",
-          "category": [
-            "Alignments"
-          ],
           "adapter": {
             "configId": "_m5epcAGu6",
-            "type": "SNPAdapter",
+            "type": "BamAdapter",
             "bamLocation":{
               "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
