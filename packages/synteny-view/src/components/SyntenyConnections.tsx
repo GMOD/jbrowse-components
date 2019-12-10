@@ -9,7 +9,6 @@ export default (pluginManager: any) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { useState } = jbrequire('react')
 
   return observer(
     ({
@@ -22,7 +21,7 @@ export default (pluginManager: any) => {
       syntenyGroup: string
     }) => {
       const { views, showIntraviewLinks } = model
-      const features = model.getMatchedSyntenyFeatures(syntenyGroup)
+      const features = model.allMatchedSyntenyFeatures[syntenyGroup]
       const layoutMatches = model.getMatchedFeaturesInLayout(
         syntenyGroup,
         features,
@@ -64,35 +63,17 @@ export default (pluginManager: any) => {
               }
               const r1 = block1.refName
               const r2 = block2.refName
+              const l1 = f1.get('end') - f1.get('start')
+              const l2 = f2.get('end') - f2.get('start')
+              if (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx) {
+                // eslint-disable-next-line no-continue
+                continue
+              }
 
               const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])
               const x21 = getPxFromCoordinate(views[level2], r2, c2[LEFT])
               const x22 = getPxFromCoordinate(views[level2], r2, c2[RIGHT])
-              // views[level1].bpToPx({
-              //   refName: r1,
-              //   coord: c1[LEFT],
-              // }) || 0
-              // const x12 =
-              // views[level1].bpToPx({
-              //   refName: r1,
-              //   coord: c1[RIGHT],
-              // }) || 0
-              // const x21 =
-              // views[level2].bpToPx({
-              //   refName: r2,
-              //   coord: c2[LEFT],
-              // }) || {}
-              // const x22 =
-              // views[level2].bpToPx({
-              //   refName: r2,
-              //   coord: c2[RIGHT],
-              // }).offsetPx || {}
-
-              if (Math.abs(x11 - x12) < 3 || Math.abs(x21 - x22) < 3) {
-                // eslint-disable-next-line no-continue
-                continue
-              }
 
               const tracks = views.map(view => ({
                 view,

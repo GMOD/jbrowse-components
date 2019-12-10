@@ -26,9 +26,6 @@ function heightFromSpecificLevel(
   )
 }
 
-// TODO: this is only working because the breakpoint
-// split view is displaying a single refseq on the top region
-// need to update to use a proper bpToPx which is in dev
 export function getPxFromCoordinate(
   view: Instance<LinearGenomeViewStateModel>,
   refName: string,

@@ -9,7 +9,13 @@ import { getConf } from '@gmod/jbrowse-core/configuration'
 export type LayoutRecord = [number, number, number, number]
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
+type ConfigRelationship = { type: string; target: string }
+// Get the syntenyGroup type from the tracks configRelationships
+function getSyntenyGroup(track: Instance<BaseTrackStateModel>) {
+  const rels: ConfigRelationship[] = getConf(track, 'configRelationships')
+  const t = rels.find(f => f.type === 'syntenyGroup')
+  return t ? t.target : undefined
+}
 export default function stateModelFactory(pluginManager: any) {
   const { jbrequire } = pluginManager
   const {
@@ -58,37 +64,30 @@ export default function stateModelFactory(pluginManager: any) {
         return self.views.length ? self.views[0].controlsWidth : 0
       },
 
-      getTrackSyntenyGroup(track: Instance<BaseTrackStateModel>) {
-        const rels = getConf(track, 'configRelationships')
-        const t = rels.find(
-          (f: { type: string; target: string }) => f.type === 'syntenyGroup',
-        )
-        return t ? t.target : undefined
-      },
-
+      // Looks at the syntenyGroup type in the configRelationships and determines
+      // all the unique ones
       get syntenyGroups(): string[] {
         const groups = new Set<string>()
         self.views.forEach(view => {
           view.tracks.forEach(track => {
-            groups.add(this.getTrackSyntenyGroup(track))
+            const g = getSyntenyGroup(track)
+            if (g) groups.add(g)
           })
         })
-        return Array.from(groups).filter(f => !!f)
+        return Array.from(groups)
       },
 
       // Get tracks with a given syntenyGroup across multiple views
       getMatchedTracks(syntenyGroup: string) {
         return self.views.map(view =>
-          view.tracks.find(
-            track => this.getTrackSyntenyGroup(track) === syntenyGroup,
-          ),
+          view.tracks.find(track => getSyntenyGroup(track) === syntenyGroup),
         )
       },
 
       // Get tracks with a given syntenyGroup across multiple views
       getSyntenyTrackFromView(view: LGV, syntenyGroup: string) {
         return view.tracks.find(
-          track => this.getTrackSyntenyGroup(track) === syntenyGroup,
+          track => getSyntenyGroup(track) === syntenyGroup,
         )
       },
 
@@ -97,6 +96,14 @@ export default function stateModelFactory(pluginManager: any) {
       getTrackFeatures(syntenyGroup: string) {
         const tracks = this.getMatchedTracks(syntenyGroup).filter(f => !!f)
         return new CompositeMap<string, Feature>(tracks.map(t => t.features))
+      },
+
+      get allMatchedSyntenyFeatures() {
+        const r: { [key: string]: Feature[][] } = {}
+        this.syntenyGroups.forEach(group => {
+          r[group] = this.getMatchedSyntenyFeatures(group)
+        })
+        return r
       },
 
       // This finds candidate syntenic connections
