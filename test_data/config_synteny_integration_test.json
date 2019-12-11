@@ -93,35 +93,6 @@
               "hideCloseButton": true,
               "trackSelectorType": "hierarchical",
               "minimumBlockWidth": 20
-            },
-            {
-              "type": "LinearGenomeView",
-              "offsetPx": 0,
-              "bpPerPx": 100000,
-              "displayedRegions": [
-                {
-                  "refName": "chr4",
-                  "start": 0,
-                  "end": 201115067,
-                  "assemblyName": "rn6"
-                }
-              ],
-              "reversed": false,
-              "tracks": [
-                {
-                  "type": "BasicTrack",
-                  "height": 100,
-                  "configuration": "bigchain_rn6_to_mm10",
-                  "selectedRendering": ""
-                }
-              ],
-              "controlsWidth": 120,
-              "width": 800,
-              "hideControls": false,
-              "hideHeader": true,
-              "hideCloseButton": true,
-              "trackSelectorType": "hierarchical",
-              "minimumBlockWidth": 20
             }
           ]
         }
@@ -167,6 +138,15 @@
           "rendering": {
             "type": "DivSequenceRenderer"
           }
+        },
+        "refNameAliases": {
+          "configId": "mm10_aliases",
+          "adapter": {
+            "type": "RefNameAliasAdapter",
+            "location": {
+              "uri": "test_data/mm10_aliases.txt"
+            }
+          }
         }
       },
       "tracks": [
@@ -204,7 +184,7 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10.hg38.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/mm10ToHg38.orthologs.bb"
             }
           },
           "renderer": {
@@ -334,7 +314,7 @@
           "adapter": {
             "type": "BigBedAdapter",
             "bigBedLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38.mm10.bigChain.bb"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/hg38ToMm10.orthologs.bb"
             }
           },
           "renderer": {

@@ -39,5 +39,5 @@ export default [
   SpreadsheetViewPlugin,
   BreakpointSplitView,
   SvInspectorPlugin,
-  SyntenyView
+  SyntenyView,
 ]
