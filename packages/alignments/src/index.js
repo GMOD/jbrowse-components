@@ -28,6 +28,10 @@ import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
+import SNPXYRenderer, {
+  configSchema as SNPRendererConfigSchema,
+  ReactComponent as SNPRendererReactComponent,
+} from './SNPXYRenderer'
 
 export default class extends Plugin {
   install(pluginManager) {
@@ -82,6 +86,14 @@ export default class extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+        }),
+    )
+    pluginManager.addRendererType(
+      () =>
+        new SNPXYRenderer({
+          name: 'SNPXYRenderer',
+          ReactComponent: SNPRendererReactComponent,
+          configSchema: SNPRendererConfigSchema,
         }),
     )
   }

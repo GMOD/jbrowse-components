@@ -50,7 +50,7 @@ const YScaleBar = observer(
     )
   },
 )
-function WiggleTrackComponent(props: { model: Instance<SNPTrackModel> }) {
+function SNPTrackComponent(props: { model: Instance<SNPTrackModel> }) {
   const { model } = props
   const { ready } = model
 
@@ -60,13 +60,13 @@ function WiggleTrackComponent(props: { model: Instance<SNPTrackModel> }) {
 
   return (
     <BlockBasedTrack {...props}>
-      {ready && needsScalebar ? <YScaleBar model={model} /> : null}
+      {/* {ready && needsScalebar ? <YScaleBar model={model} /> : null} */}
     </BlockBasedTrack>
   )
 }
 
-WiggleTrackComponent.propTypes = {
+SNPTrackComponent.propTypes = {
   model: MobxPropTypes.observableObject.isRequired,
 }
 
-export default observer(WiggleTrackComponent)
+export default observer(SNPTrackComponent)

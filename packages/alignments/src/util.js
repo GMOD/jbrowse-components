@@ -18,6 +18,7 @@ export function getScale({
   pivotValue,
   inverted,
 }) {
+  console.table({ domain, range, scaleType, pivotValue, inverted })
   let scale
   const [min, max] = domain
   if (min === undefined || max === undefined) throw new Error('invalid domain')

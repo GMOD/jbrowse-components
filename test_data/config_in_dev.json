@@ -908,6 +908,9 @@
           "configId": "volvox-long-reads-bam (SNP)",
           "type": "SNPTrack",
           "name": "volvox-SNP (bam)",
+          "category": [
+            "Coverage"
+          ],
           "adapter": {
             "configId": "_m5epcAGu6",
             "type": "BamAdapter",

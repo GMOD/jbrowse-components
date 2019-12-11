@@ -3,14 +3,17 @@ import { BaseTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
 export default pluginManager => {
-  const XYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'XYPlotRenderer',
-  ).configSchema
-  const DensityRendererConfigSchema = pluginManager.getRendererType(
-    'DensityRenderer',
-  ).configSchema
-  const LinePlotRendererConfigSchema = pluginManager.getRendererType(
-    'LinePlotRenderer',
+  // const XYPlotRendererConfigSchema = pluginManager.getRendererType(
+  //   'XYPlotRenderer',
+  // ).configSchema
+  // const DensityRendererConfigSchema = pluginManager.getRendererType(
+  //   'DensityRenderer',
+  // ).configSchema
+  // const LinePlotRendererConfigSchema = pluginManager.getRendererType(
+  //   'LinePlotRenderer',
+  // ).configSchema
+  const SNPXYRendererConfigSchema = pluginManager.getRendererType(
+    'SNPXYRenderer',
   ).configSchema
 
   return ConfigurationSchema(
@@ -47,14 +50,18 @@ export default pluginManager => {
 
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
-        defaultValue: 'xyplot',
+        model: types.enumeration(
+          'Rendering',
+          ['snpxy'] /* ['density', 'xyplot', 'line'] */,
+        ),
+        defaultValue: 'snpxy',
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
-        DensityRenderer: DensityRendererConfigSchema,
-        XYPlotRenderer: XYPlotRendererConfigSchema,
-        LinePlotRenderer: LinePlotRendererConfigSchema,
+        // DensityRenderer: DensityRendererConfigSchema,
+        // XYPlotRenderer: XYPlotRendererConfigSchema,
+        // LinePlotRenderer: LinePlotRendererConfigSchema,
+        SNPXYRenderer: SNPXYRendererConfigSchema,
       }),
     },
     {

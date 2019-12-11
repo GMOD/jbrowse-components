@@ -19,9 +19,7 @@ import {
   
   // using a map because it preserves order
   const rendererTypes = new Map([
-    ['xyplot', 'XYPlotRenderer'],
-    ['density', 'DensityRenderer'],
-    ['line', 'LinePlotRenderer'],
+    ['snpxy', 'SNPXYRenderer'],
   ])
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +37,7 @@ import {
           .volatile(() => ({
             // avoid circular reference since SNPTrackComponent receives this model
             ReactComponent: (SNPTrackComponent as unknown) as React.FC,
-            ready: false,
+            ready: true, //false,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             stats: undefined as undefined | any,
             statsFetchInProgress: undefined as undefined | AbortController,
@@ -102,7 +100,7 @@ import {
         },
       }))
       .actions(self => {
-        function getStats(signal: AbortSignal) {
+        function getStats(signal: AbortSignal) { // main source of problem, look here, not getting stats
           const { rpcManager } = getSession(self) as {
             rpcManager: { call: Function }
           }
@@ -135,28 +133,28 @@ import {
           return {}
         }
         return {
-          afterAttach() {
-            addDisposer(
-              self,
-              autorun(
-                async () => {
-                  try {
-                    const aborter = new AbortController()
-                    self.setLoading(aborter)
-                    const stats = await getStats(aborter.signal)
-                    if (isAlive(self)) {
-                      self.updateStats(stats)
-                    }
-                  } catch (e) {
-                    if (!isAbortException(e)) {
-                      self.setError(e)
-                    }
-                  }
-                },
-                { delay: 1000 },
-              ),
-            )
-          },
+          // afterAttach() {
+          //   addDisposer(
+          //     self,
+          //     autorun(
+          //       async () => {
+          //         try {
+          //           const aborter = new AbortController()
+          //           self.setLoading(aborter)
+          //           const stats = await getStats(aborter.signal)
+          //           if (isAlive(self)) {
+          //             self.updateStats(stats) // will not work for alignment tracks, only works in wiggle folder
+          //           }
+          //         } catch (e) {
+          //           if (!isAbortException(e)) {
+          //             self.setError(e)
+          //           }
+          //         }
+          //       },
+          //       { delay: 1000 },
+          //     ),
+          //   )
+          // },
         }
       })
   
