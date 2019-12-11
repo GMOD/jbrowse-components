@@ -125,14 +125,19 @@ export function ConfigurationSchema(
     }
   }
 
+  let modelDefinition = {}
+
   // now assemble the MST model of the configuration schema
-  const modelDefinition = {
-    configId: options.singleton
-      ? types.optional(
-          types.refinement(types.identifier, t => t === modelName),
-          modelName,
-        )
-      : ElementId,
+  // this adapter stuff is a temporary stepping stone to getting rid of configId
+  if (!modelName.toLowerCase().includes('adapter')) {
+    modelDefinition = {
+      configId: options.singleton
+        ? types.optional(
+            types.refinement(types.identifier, t => t === modelName),
+            modelName,
+          )
+        : ElementId,
+    }
   }
 
   if (options.explicitlyTyped) {

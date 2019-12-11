@@ -8,7 +8,6 @@ Object {
 
 exports[`Config editing creates proper FromConfigAdapter 1`] = `
 Object {
-  "configId": Any<String>,
   "type": "FromConfigAdapter",
 }
 `;

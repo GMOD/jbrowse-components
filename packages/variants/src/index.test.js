@@ -13,7 +13,6 @@ test('plugin in a stock JBrowse', () => {
     type: 'VcfTabixAdapter',
   })
   expect(getSnapshot(config)).toMatchSnapshot({
-    configId: expect.any(String),
     index: { configId: expect.any(String) },
   })
 
@@ -24,7 +23,6 @@ test('plugin in a stock JBrowse', () => {
   })
   expect(getSnapshot(config2)).toMatchSnapshot({
     adapter: {
-      configId: expect.any(String),
       index: {
         configId: expect.any(String),
       },

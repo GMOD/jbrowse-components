@@ -39,7 +39,6 @@ test('create bam adapter config', () => {
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot({
-    configId: expect.any(String),
     index: { configId: expect.any(String) },
   })
 })
@@ -52,7 +51,6 @@ test('create track config', async () => {
   })
   expect(getSnapshot(config2)).toMatchSnapshot({
     adapter: {
-      configId: expect.any(String),
       index: {
         configId: expect.any(String),
       },

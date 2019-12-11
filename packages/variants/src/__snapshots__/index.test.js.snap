@@ -2,7 +2,6 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "configId": Any<String>,
   "index": Object {
     "configId": Any<String>,
   },
@@ -13,7 +12,6 @@ Object {
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "adapter": Object {
-    "configId": Any<String>,
     "index": Object {
       "configId": Any<String>,
     },

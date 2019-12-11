@@ -40,6 +40,7 @@
     "clsx": "^1.0.4",
     "core-js": "^3.2.1",
     "deepmerge": "^4.2.2",
+    "json-stable-stringify": "^1.0.1",
     "merge-deep": "^3.0.2",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",

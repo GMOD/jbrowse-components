@@ -67,7 +67,6 @@ describe('Root MST model', () => {
     expect(getSnapshot(newTrackConf)).toMatchSnapshot({
       configId: expect.any(String),
       adapter: {
-        configId: expect.any(String),
         index: { configId: expect.any(String) },
       },
       renderer: { configId: expect.any(String) },

@@ -2,7 +2,6 @@
 
 exports[`create bam adapter config 1`] = `
 Object {
-  "configId": Any<String>,
   "index": Object {
     "configId": Any<String>,
   },
@@ -13,7 +12,6 @@ Object {
 exports[`create track config 1`] = `
 Object {
   "adapter": Object {
-    "configId": Any<String>,
     "index": Object {
       "configId": Any<String>,
     },

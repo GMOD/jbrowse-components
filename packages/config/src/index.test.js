@@ -32,8 +32,6 @@ describe('Config editing', () => {
     const config = adapter.configSchema.create({
       type: 'FromConfigAdapter',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 })
