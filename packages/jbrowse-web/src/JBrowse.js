@@ -63,12 +63,12 @@ function useJBrowseWeb(config, initialState) {
       window.history.replaceState(
         {},
         '',
-        `${origin}${pathname}?session=${toUrlSafeB64(
+        `${origin}${pathname}?config=${config.uri}&session=${toUrlSafeB64(
           JSON.stringify(debouncedUrlSnapshot),
         )}`,
       )
     }
-  }, [debouncedUrlSnapshot])
+  }, [config, debouncedUrlSnapshot])
 
   // This updates savedSession list on the rootModel
   useEffect(() => {
