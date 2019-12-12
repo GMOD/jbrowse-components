@@ -16,5 +16,32 @@
       },
       "tracks": []
     }
+  ],
+  "savedSessions": [
+    {
+      "name": "Chrom sizes",
+      "views": [
+        {
+          "id": "chrom_sizes",
+          "type": "LinearGenomeView",
+          "offsetPx": 0,
+          "bpPerPx": 1,
+          "displayRegionsFromAssemblyName": "grape",
+          "tracks": []
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": "",
+          "view": "chrom_sizes"
+        }
+      },
+      "activeDrawerWidgets": {
+        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      }
+    }
   ]
 }

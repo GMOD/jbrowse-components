@@ -18,7 +18,9 @@ import breakpointConfig from '../test_data/config_breakpoint_integration_test.js
 import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
-
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => cb()
@@ -504,4 +506,16 @@ test('cause an exception in the jbrowse module loading', async () => {
   expect(await getByText('Fatal error')).toBeTruthy()
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
+})
+
+test('404 sequence file', async () => {
+  const { getByText } = render(
+    <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
+  )
+  await timeout(1000)
+  expect(
+    await waitForElement(() => {
+      getByText('Error: HTTP 404 fetching test_data/grape.chrom.sizes')
+    }),
+  ).toBeTruthy()
 })
