@@ -105,56 +105,57 @@ import {
             rpcManager: { call: Function }
           }
           const autoscaleType = getConf(self, 'autoscale', {})
-          if (autoscaleType === 'global') {
-            return rpcManager.call('statsGathering', 'getGlobalStats', {
-              adapterConfig: getSnapshot(self.configuration.adapter),
-              adapterType: self.configuration.adapter.type,
-              signal,
-            })
-          }
-          if (autoscaleType === 'local') {
-            const { dynamicBlocks, bpPerPx } = getContainingView(self)
-            return rpcManager.call('statsGathering', 'getMultiRegionStats', {
-              adapterConfig: getSnapshot(self.configuration.adapter),
-              adapterType: self.configuration.adapter.type,
-              assemblyName: getTrackAssemblyName(self),
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-              signal,
-              bpPerPx,
-            })
-          }
-          if (autoscaleType === 'zscale') {
-            return rpcManager.call('statsGathering', 'getGlobalStats', {
-              adapterConfig: getSnapshot(self.configuration.adapter),
-              adapterType: self.configuration.adapter.type,
-              signal,
-            })
-          }
-          return {}
+          // if (autoscaleType === 'global') {
+          //   return rpcManager.call('statsGathering', 'getGlobalStats', {
+          //     adapterConfig: getSnapshot(self.configuration.adapter),
+          //     adapterType: self.configuration.adapter.type,
+          //     signal,
+          //   })
+          // } // most likely removed, not needed for bam/cram
+          // if (autoscaleType === 'local') {
+          //   const { dynamicBlocks, bpPerPx } = getContainingView(self)
+          //   return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+          //     adapterConfig: getSnapshot(self.configuration.adapter),
+          //     adapterType: self.configuration.adapter.type,
+          //     assemblyName: getTrackAssemblyName(self),
+          //     regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+          //     signal,
+          //     bpPerPx,
+          //   })
+          // }
+          // if (autoscaleType === 'zscale') {
+          //   return rpcManager.call('statsGathering', 'getGlobalStats', {
+          //     adapterConfig: getSnapshot(self.configuration.adapter),
+          //     adapterType: self.configuration.adapter.type,
+          //     signal,
+          //   })
+        
+          // most likely removed, not needed for bam/cram
+          return {scoreMin: 0, scoreMax: 50}// return a constant, min: 0 max: 50 and fill out rest too
         }
         return {
-          // afterAttach() {
-          //   addDisposer(
-          //     self,
-          //     autorun(
-          //       async () => {
-          //         try {
-          //           const aborter = new AbortController()
-          //           self.setLoading(aborter)
-          //           const stats = await getStats(aborter.signal)
-          //           if (isAlive(self)) {
-          //             self.updateStats(stats) // will not work for alignment tracks, only works in wiggle folder
-          //           }
-          //         } catch (e) {
-          //           if (!isAbortException(e)) {
-          //             self.setError(e)
-          //           }
-          //         }
-          //       },
-          //       { delay: 1000 },
-          //     ),
-          //   )
-          // },
+          afterAttach() {
+            addDisposer(
+              self,
+              autorun(
+                async () => {
+                  try {
+                    const aborter = new AbortController()
+                    self.setLoading(aborter)
+                    const stats = await getStats(aborter.signal)
+                    if (isAlive(self)) {
+                      self.updateStats(stats) // will not work for alignment tracks, only works in wiggle folder
+                    }
+                  } catch (e) {
+                    if (!isAbortException(e)) {
+                      self.setError(e)
+                    }
+                  }
+                },
+                { delay: 1000 },
+              ),
+            )
+          },
         }
       })
   
