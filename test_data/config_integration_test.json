@@ -209,9 +209,9 @@
           }
         },
         {
-          "configId": "volvox_alignments_nonexist",
+          "configId": "volvox_alignments_bam_nonexist",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue (nonexist 404)",
+          "name": "volvox-sorted red/blue (bam nonexist 404)",
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -219,8 +219,35 @@
             },
             "index": {
               "location": {
+                "uri": "test_data/volvox-sorted.bam.bai"
+              }
+            }
+          }
+        },
+        {
+          "configId": "volvox_alignments_bai_nonexist",
+          "type": "AlignmentsTrack",
+          "name": "volvox-sorted red/blue (bai nonexist 404)",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
                 "uri": "test_data/volvox-sorted.bam.bai.nonexist"
               }
+            }
+          }
+        },
+        {
+          "configId": "volvox_bigwig_nonexist",
+          "type": "WiggleTrack",
+          "name": "wiggle_track nonexist",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "test_data/volvox.bw.nonexist"
             }
           }
         },
