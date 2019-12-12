@@ -9,6 +9,7 @@ import {
   mergeConfigs,
 } from '@gmod/jbrowse-core/util'
 import ErrorBoundary from 'react-error-boundary'
+import queryString from 'query-string'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
@@ -59,14 +60,9 @@ function useJBrowseWeb(config, initialState) {
   // This serializes the session to URL
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const { origin, pathname } = document.location
-      window.history.replaceState(
-        {},
-        '',
-        `${origin}${pathname}?config=${config.uri}&session=${toUrlSafeB64(
-          JSON.stringify(debouncedUrlSnapshot),
-        )}`,
-      )
+      const parsed = queryString.parse(document.location.search)
+      parsed.session = toUrlSafeB64(JSON.stringify(debouncedUrlSnapshot))
+      document.location.search = queryString.stringify(parsed)
     }
   }, [config, debouncedUrlSnapshot])
 
