@@ -225,55 +225,13 @@ describe('some error state', () => {
     )
     fireEvent.click(
       await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
+        getByTestId('htsTrackEntry-volvox_alignments_bai_nonexist'),
       ),
     )
     await expect(
       waitForElement(() =>
         getAllByText(
           'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist',
-        ),
-      ),
-    ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
-  })
-  it('test that BAM with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId, getAllByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    fireEvent.click(
-      await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
-      ),
-    )
-    await expect(
-      waitForElement(() =>
-        getAllByText(
-          'HTTP 404 fetching test_data/volvox-sorted.bam.bai.nonexist bytes 0-196607',
-        ),
-      ),
-    ).resolves.toBeTruthy()
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
-  })
-  it('test that BigWig track with 404 file displays error', async () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId, getAllByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    fireEvent.click(
-      await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_bigwig_nonexist'),
-      ),
-    )
-    await expect(
-      waitForElement(() =>
-        getAllByText(
-          'HTTP 404 fetching test_data/volvox.bw.nonexist bytes 0-65535',
         ),
       ),
     ).resolves.toBeTruthy()
