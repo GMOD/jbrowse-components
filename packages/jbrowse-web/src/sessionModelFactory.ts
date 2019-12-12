@@ -162,7 +162,8 @@ export default function sessionModelFactory(pluginManager: any) {
                   }
                 })
                 .catch((error: Error) => {
-                  view.setError(error)
+                  console.error(error)
+                  view.setError && view.setError(error)
                 })
             }
             view.setError(undefined)

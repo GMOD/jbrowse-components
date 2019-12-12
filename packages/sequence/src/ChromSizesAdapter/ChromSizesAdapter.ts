@@ -19,7 +19,6 @@ export default class extends BaseAdapter {
 
   public constructor(config: { chromSizesLocation: IFileLocation }) {
     super()
-    console.log('here', config)
     const { chromSizesLocation } = config
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')
@@ -30,7 +29,6 @@ export default class extends BaseAdapter {
   }
 
   async init(file: GenericFilehandle) {
-    console.log('here', file)
     const data = (await file.readFile('utf8')) as string
     const refSeqs: { [key: string]: number } = {}
     if (!data.length) {
@@ -42,12 +40,10 @@ export default class extends BaseAdapter {
         refSeqs[name] = +length
       }
     })
-    console.log(refSeqs)
     return refSeqs
   }
 
   public async getRefNames() {
-    console.log('here', await this.refSeqs)
     return Object.keys(await this.refSeqs)
   }
 

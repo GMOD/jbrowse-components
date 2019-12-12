@@ -513,9 +513,9 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
     ? {
         display: 'grid',
         position: 'relative',
-        gridTemplateRows: `${!model.hideHeader ? '[header] auto ' : ''}  ${
-          error ? '[error] auto' : ''
-        }  [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
+        gridTemplateRows: `${!model.hideHeader ? '[header] auto ' : ''}${
+          error ? '[error] auto ' : ''
+        }[scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
           .map(
             t =>
               `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,

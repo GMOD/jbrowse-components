@@ -1,13 +1,15 @@
 import { toArray } from 'rxjs/operators'
-import Adapter from './IndexedFastaAdapter'
+import Adapter from './ChromSizesAdapter'
 
-test('adapter can fetch sequence from volvox.fa', async () => {
+test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
   const adapter = new Adapter({
-    fastaLocation: { localPath: require.resolve('../../test_data/volvox.fa') },
-    faiLocation: {
-      localPath: require.resolve('../../test_data/volvox.fa.fai'),
+    chromSizesLocation: {
+      localPath: require.resolve('../../../../test_data/volvox.chrom.sizes'),
     },
   })
+
+  const names = await adapter.getRefNames()
+  expect(names).toMatchSnapshot()
 
   const features = await adapter.getFeatures({
     refName: 'ctgA',
@@ -25,7 +27,7 @@ test('adapter can fetch sequence from volvox.fa', async () => {
   })
 
   const featuresArray2 = await features2.pipe(toArray()).toPromise()
-  expect(featuresArray2[0].get('end')).toBe(50001)
+  expect(featuresArray2.length).toBe(0)
 
   const features3 = await adapter.getFeatures({
     refName: 'ctgC',
