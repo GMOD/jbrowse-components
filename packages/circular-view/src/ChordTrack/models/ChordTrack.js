@@ -48,7 +48,7 @@ export default pluginManager => {
         defaultValue: [],
       },
     },
-    { explicitlyTyped: true },
+    { explicitlyTyped: true, explicitIdentifier: 'trackId' },
   )
 
   const stateModel = types

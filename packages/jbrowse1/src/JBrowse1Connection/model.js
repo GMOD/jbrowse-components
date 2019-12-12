@@ -30,10 +30,10 @@ export default function(pluginManager) {
                 const jb2Tracks = config.tracks.map(track =>
                   convertTrackConfig(track, config.dataRoot),
                 )
-                self.setSequence({
-                  type: 'ReferenceSequenceTrack',
-                  adapter,
-                })
+                // self.setSequence({
+                //   type: 'ReferenceSequenceTrack',
+                //   adapter,
+                // })
                 self.setTrackConfs(jb2Tracks)
               }),
             )

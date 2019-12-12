@@ -8,7 +8,7 @@ describe('<ConfirmTrack />', () => {
   let session
 
   beforeAll(() => {
-    session = createTestSession({ configId: 'testing' })
+    session = createTestSession()
   })
 
   afterEach(cleanup)

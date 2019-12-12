@@ -6,7 +6,7 @@ describe('Data management', () => {
   let pluginManager
 
   beforeAll(() => {
-    ;({ pluginManager } = createTestSession({ configId: 'testing' }))
+    ;({ pluginManager } = createTestSession())
   })
 
   it("won't add if already added", () => {
@@ -22,9 +22,7 @@ describe('Data management', () => {
     const config = AddTrackDrawerWidget.configSchema.create({
       type: 'AddTrackDrawerWidget',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('adds config editor drawer widget', () => {
@@ -34,9 +32,7 @@ describe('Data management', () => {
     const config = ConfigurationEditorDrawerWidget.configSchema.create({
       type: 'ConfigurationEditorDrawerWidget',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('adds connection add widget', () => {
@@ -46,9 +42,7 @@ describe('Data management', () => {
     const config = AddConnectionDrawerWidget.configSchema.create({
       type: 'AddConnectionDrawerWidget',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('adds hierarchical track selector', () => {
@@ -58,8 +52,6 @@ describe('Data management', () => {
     const config = HierarchicalTrackSelectorDrawerWidget.configSchema.create({
       type: 'HierarchicalTrackSelectorDrawerWidget',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 })

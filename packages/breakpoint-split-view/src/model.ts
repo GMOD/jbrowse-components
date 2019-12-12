@@ -58,7 +58,7 @@ export default function stateModelFactory(pluginManager: any) {
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
-          view.tracks.map(t => t.configuration.configId),
+          view.tracks.map(t => t.configuration.trackId),
         )
         return intersection(...viewTracks)
       },

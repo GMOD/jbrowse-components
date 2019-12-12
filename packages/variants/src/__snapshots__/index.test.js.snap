@@ -2,9 +2,6 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "index": Object {
-    "configId": Any<String>,
-  },
   "type": "VcfTabixAdapter",
 }
 `;
@@ -12,26 +9,17 @@ Object {
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "adapter": Object {
-    "index": Object {
-      "configId": Any<String>,
-    },
     "type": "VcfTabixAdapter",
   },
-  "configId": Any<String>,
   "renderers": Object {
     "PileupRenderer": Object {
-      "configId": Any<String>,
       "type": "PileupRenderer",
     },
     "SvgFeatureRenderer": Object {
-      "configId": Any<String>,
-      "labels": Object {
-        "configId": Any<String>,
-      },
       "type": "SvgFeatureRenderer",
     },
-    "configId": Any<String>,
   },
+  "trackId": "trackId0",
   "type": "VariantTrack",
 }
 `;

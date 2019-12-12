@@ -52,7 +52,7 @@ export const MenuItemModel = types
       const configuration = getRoot(self)
       const initialSnap = JSON.stringify(getSnapshot(configuration))
       const filter = (key, value) => {
-        if (key === 'configId' || key === 'id') {
+        if (key === 'id') {
           const re = new RegExp(`"${value}"`, 'g')
           if ((initialSnap.match(re) || []).length < 2) return undefined
         }

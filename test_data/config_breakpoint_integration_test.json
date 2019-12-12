@@ -209,6 +209,7 @@
       "tracks": [
         {
           "type": "StructuralVariantChordTrack",
+          "trackId": "sv_chord_track",
           "name": "human chord test",
           "adapter": {
             "type": "VcfTabixAdapter",
@@ -226,7 +227,7 @@
           }
         },
         {
-          "configId": "pacbio_vcf",
+          "trackId": "pacbio_vcf",
           "type": "VariantTrack",
           "name": "HG002.hs37d5.bnds",
           "category": [
@@ -246,7 +247,7 @@
           }
         },
         {
-          "configId": "pacbio_hg002_breakpoints",
+          "trackId": "pacbio_hg002_breakpoints",
           "type": "AlignmentsTrack",
           "name": "HG002.hs37d5.11kb",
           "category": [

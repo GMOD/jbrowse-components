@@ -28,6 +28,7 @@ const createMockTrack = track =>
     track: {
       configuration: track.configSchema.create({
         type: 'AlignmentsTrack',
+        trackId: 'track0',
       }),
       type: 'AlignmentsTrack',
     },
@@ -38,9 +39,7 @@ test('create bam adapter config', () => {
 
   const BamAdapter = pluginManager.getAdapterType('BamAdapter')
   const config = BamAdapter.configSchema.create({ type: 'BamAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot({
-    index: { configId: expect.any(String) },
-  })
+  expect(getSnapshot(config)).toMatchSnapshot()
 })
 test('create track config', async () => {
   const { pluginManager } = createTestSession()
@@ -48,27 +47,9 @@ test('create track config', async () => {
   const AlignmentsTrack = pluginManager.getTrackType('AlignmentsTrack')
   const config2 = AlignmentsTrack.configSchema.create({
     type: 'AlignmentsTrack',
+    trackId: 'track0',
   })
-  expect(getSnapshot(config2)).toMatchSnapshot({
-    adapter: {
-      index: {
-        configId: expect.any(String),
-      },
-    },
-    configId: expect.any(String),
-    renderers: {
-      PileupRenderer: {
-        configId: expect.any(String),
-      },
-      SvgFeatureRenderer: {
-        configId: expect.any(String),
-        labels: {
-          configId: expect.any(String),
-        },
-      },
-      configId: expect.any(String),
-    },
-  })
+  expect(getSnapshot(config2)).toMatchSnapshot()
 })
 
 test('test selection in alignments track model with mock session', async () => {

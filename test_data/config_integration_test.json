@@ -5,7 +5,7 @@
       "assembly": {
         "name": "volvox",
         "sequence": {
-          "configId": "volvox_refseq",
+          "trackId": "volvox_refseq",
           "type": "ReferenceSequenceTrack",
           "adapter": {
             "type": "TwoBitAdapter",
@@ -46,7 +46,7 @@
       },
       "tracks": [
         {
-          "configId": "volvox_chord_test",
+          "trackId": "volvox_chord_test",
           "type": "StructuralVariantChordTrack",
           "name": "volvox chord test",
           "adapter": {
@@ -65,7 +65,7 @@
           }
         },
         {
-          "configId": "volvox_cram_alignments",
+          "trackId": "volvox_cram_alignments",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted.cram (contigA)",
           "adapter": {
@@ -89,7 +89,7 @@
           }
         },
         {
-          "configId": "volvox_alignments",
+          "trackId": "volvox_alignments",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (ctgA)",
           "adapter": {
@@ -115,7 +115,7 @@
           }
         },
         {
-          "configId": "volvox_bam_altname",
+          "trackId": "volvox_bam_altname",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (contigA)",
           "adapter": {
@@ -141,7 +141,7 @@
           }
         },
         {
-          "configId": "volvox_bam_small_max_height",
+          "trackId": "volvox_bam_small_max_height",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (small max height)",
           "adapter": {
@@ -168,7 +168,7 @@
         },
         {
           "type": "VariantTrack",
-          "configId": "volvox_filtered_vcf",
+          "trackId": "volvox_filtered_vcf",
           "defaultRendering": "svg",
           "name": "volvox filtered vcf",
           "category": [
@@ -197,7 +197,7 @@
         },
         {
           "type": "BasicTrack",
-          "configId": "nclist_long_names",
+          "trackId": "nclist_long_names",
           "name": "nclist with long names/descriptions",
           "adapter": {
             "type": "NCListAdapter",
@@ -209,7 +209,7 @@
           }
         },
         {
-          "configId": "volvox_alignments_nonexist",
+          "trackId": "volvox_alignments_nonexist",
           "type": "AlignmentsTrack",
           "name": "volvox-sorted red/blue (nonexist 404)",
           "adapter": {
@@ -225,7 +225,7 @@
           }
         },
         {
-          "configId": "volvox_microarray",
+          "trackId": "volvox_microarray",
           "type": "WiggleTrack",
           "name": "wiggle_track xyplot",
           "adapter": {
@@ -236,7 +236,7 @@
           }
         },
         {
-          "configId": "volvox_microarray_line",
+          "trackId": "volvox_microarray_line",
           "defaultRendering": "line",
           "type": "WiggleTrack",
           "name": "wiggle_track lineplot",
@@ -248,7 +248,7 @@
           }
         },
         {
-          "configId": "volvox_microarray_density",
+          "trackId": "volvox_microarray_density",
           "type": "WiggleTrack",
           "defaultRendering": "density",
           "name": "wiggle_track density",
@@ -260,7 +260,7 @@
           }
         },
         {
-          "configId": "volvox_microarray_density_altname",
+          "trackId": "volvox_microarray_density_altname",
           "type": "WiggleTrack",
           "defaultRendering": "xyplot",
           "autoscale": "local",
@@ -273,7 +273,7 @@
           }
         },
         {
-          "configId": "lollipop_track",
+          "trackId": "lollipop_track",
           "type": "DynamicTrack",
           "name": "Lollipop track",
           "category": [

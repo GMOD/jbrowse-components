@@ -12,7 +12,7 @@ Array [
     "start": 34960388,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0",
   },
   Object {
     "end": 34960580,
@@ -24,7 +24,7 @@ Array [
     "start": 34960490,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,0",
   },
   Object {
     "end": 34960688,
@@ -36,7 +36,7 @@ Array [
     "start": 34960626,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,1",
   },
   Object {
     "end": 34960646,
@@ -47,7 +47,7 @@ Array [
     "start": 34960644,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,1,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,1,0",
   },
   Object {
     "end": 34960721,
@@ -58,7 +58,7 @@ Array [
     "start": 34960720,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,2",
   },
   Object {
     "end": 34960919,
@@ -70,7 +70,7 @@ Array [
     "start": 34960792,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,3",
   },
   Object {
     "end": 34960853,
@@ -81,7 +81,7 @@ Array [
     "start": 34960849,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,3,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,3,0",
   },
   Object {
     "end": 34960965,
@@ -93,7 +93,7 @@ Array [
     "start": 34960903,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,4",
   },
   Object {
     "end": 34960941,
@@ -104,7 +104,7 @@ Array [
     "start": 34960938,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,4,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,4,0",
   },
   Object {
     "end": 34960960,
@@ -115,7 +115,7 @@ Array [
     "start": 34960951,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,4,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,4,1",
   },
   Object {
     "end": 34960968,
@@ -126,7 +126,7 @@ Array [
     "start": 34960963,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,5",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,5",
   },
   Object {
     "end": 34960975,
@@ -137,7 +137,7 @@ Array [
     "start": 34960973,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,6",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,6",
   },
   Object {
     "end": 34960996,
@@ -148,7 +148,7 @@ Array [
     "start": 34960991,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,7",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,7",
   },
   Object {
     "end": 34961015,
@@ -159,7 +159,7 @@ Array [
     "start": 34961008,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,8",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,8",
   },
   Object {
     "end": 34961050,
@@ -170,7 +170,7 @@ Array [
     "start": 34961047,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,0,9",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,0,9",
   },
   Object {
     "biotype": "protein_coding",
@@ -5239,7 +5239,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,19,22,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,1",
     "version": "7",
   },
   Object {
@@ -5252,7 +5252,7 @@ Array [
     "start": 35013815,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,1,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,1,0",
   },
   Object {
     "end": 35015792,
@@ -5264,7 +5264,7 @@ Array [
     "start": 35013876,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,19,22,1,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,22,1,1",
   },
   Object {
     "biotype": "protein_coding",
@@ -19209,7 +19209,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,19,23,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,19,23,0",
     "version": "9",
   },
   Object {
@@ -22106,7 +22106,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,21,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,21,3",
     "version": "13",
   },
   Object {
@@ -22282,7 +22282,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,21,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,21,4",
     "version": "1",
   },
   Object {
@@ -22295,7 +22295,7 @@ Array [
     "start": 34959981,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,21,4,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,21,4,0",
   },
   Object {
     "end": 35015112,
@@ -22306,7 +22306,7 @@ Array [
     "start": 35015108,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,0",
   },
   Object {
     "end": 35015130,
@@ -22317,7 +22317,7 @@ Array [
     "start": 35015125,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,1",
   },
   Object {
     "end": 35015631,
@@ -22329,7 +22329,7 @@ Array [
     "start": 35015325,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,2",
   },
   Object {
     "end": 35015540,
@@ -22341,7 +22341,7 @@ Array [
     "start": 35015325,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,2,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,2,0",
   },
   Object {
     "end": 35015344,
@@ -22352,7 +22352,7 @@ Array [
     "start": 35015336,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,2,0,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,2,0,0",
   },
   Object {
     "end": 35015479,
@@ -22363,7 +22363,7 @@ Array [
     "start": 35015475,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,2,0,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,2,0,1",
   },
   Object {
     "end": 35230847,
@@ -22375,7 +22375,7 @@ Array [
     "start": 35230432,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,3",
   },
   Object {
     "end": 35237645,
@@ -22387,7 +22387,7 @@ Array [
     "start": 35237435,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,4",
   },
   Object {
     "end": 35237638,
@@ -22399,7 +22399,7 @@ Array [
     "start": 35237469,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,4,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,4,0",
   },
   Object {
     "biotype": "protein_coding",
@@ -23663,7 +23663,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,5",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,5",
     "version": "2",
   },
   Object {
@@ -23676,7 +23676,7 @@ Array [
     "start": 35287176,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,5,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,5,0",
   },
   Object {
     "end": 35288208,
@@ -23688,7 +23688,7 @@ Array [
     "start": 35287803,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,5,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,5,1",
   },
   Object {
     "biotype": "antisense",
@@ -24812,7 +24812,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,6",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6",
     "version": "3",
   },
   Object {
@@ -24825,7 +24825,7 @@ Array [
     "start": 35288172,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,6,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6,0",
   },
   Object {
     "biotype": "misc_RNA",
@@ -24875,7 +24875,7 @@ Array [
       },
     ],
     "type": "RNA",
-    "uniqueId": "test_adapter-0,0,24,6,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6,1",
     "version": "2",
   },
   Object {
@@ -24888,7 +24888,7 @@ Array [
     "start": 35321166,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,6,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6,2",
   },
   Object {
     "biotype": "lincRNA",
@@ -24955,7 +24955,7 @@ Array [
       },
     ],
     "type": "lincRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,6,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6,3",
     "version": "1",
   },
   Object {
@@ -24968,7 +24968,7 @@ Array [
     "start": 35348710,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,6,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,6,4",
   },
   Object {
     "end": 35445225,
@@ -24980,7 +24980,7 @@ Array [
     "start": 35444770,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,7",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,7",
   },
   Object {
     "end": 35446567,
@@ -24992,7 +24992,7 @@ Array [
     "start": 35445087,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,8",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,8",
   },
   Object {
     "end": 35445244,
@@ -25004,7 +25004,7 @@ Array [
     "start": 35445145,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,8,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,8,0",
   },
   Object {
     "end": 35445385,
@@ -25015,7 +25015,7 @@ Array [
     "start": 35445379,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,8,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,8,1",
   },
   Object {
     "end": 35445592,
@@ -25027,7 +25027,7 @@ Array [
     "start": 35445474,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,8,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,8,2",
   },
   Object {
     "biotype": "protein_coding",
@@ -25478,7 +25478,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,9",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9",
     "version": "1",
   },
   Object {
@@ -25491,7 +25491,7 @@ Array [
     "start": 35445579,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0",
   },
   Object {
     "end": 35445791,
@@ -25502,7 +25502,7 @@ Array [
     "start": 35445786,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0,0",
   },
   Object {
     "end": 35445811,
@@ -25513,7 +25513,7 @@ Array [
     "start": 35445804,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0,1",
   },
   Object {
     "end": 35445828,
@@ -25524,7 +25524,7 @@ Array [
     "start": 35445818,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0,2",
   },
   Object {
     "end": 35445844,
@@ -25535,7 +25535,7 @@ Array [
     "start": 35445841,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0,3",
   },
   Object {
     "end": 35445857,
@@ -25546,7 +25546,7 @@ Array [
     "start": 35445852,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,0,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,0,4",
   },
   Object {
     "biotype": "protein_coding",
@@ -25652,7 +25652,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,9,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,1",
     "version": "1",
   },
   Object {
@@ -25761,7 +25761,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,9,1,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,1,0",
     "version": "5",
   },
   Object {
@@ -25773,7 +25773,7 @@ Array [
     "start": 35445875,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,1,0,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,1,0,0",
   },
   Object {
     "end": 35445892,
@@ -25784,7 +25784,7 @@ Array [
     "start": 35445882,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,9,1,0,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,9,1,0,1",
   },
   Object {
     "biotype": "processed_transcript",
@@ -25915,7 +25915,7 @@ Array [
       },
     ],
     "type": "processed_transcript",
-    "uniqueId": "test_adapter-0,0,24,10",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10",
     "version": "1",
   },
   Object {
@@ -25927,7 +25927,7 @@ Array [
     "start": 35446123,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,0",
   },
   Object {
     "end": 35446230,
@@ -25938,7 +25938,7 @@ Array [
     "start": 35446223,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,1",
   },
   Object {
     "end": 35446324,
@@ -25949,7 +25949,7 @@ Array [
     "start": 35446319,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,2",
   },
   Object {
     "end": 35446408,
@@ -25960,7 +25960,7 @@ Array [
     "start": 35446400,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,3",
   },
   Object {
     "end": 35446422,
@@ -25971,7 +25971,7 @@ Array [
     "start": 35446419,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,4",
   },
   Object {
     "end": 35446444,
@@ -25982,7 +25982,7 @@ Array [
     "start": 35446438,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,5",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,5",
   },
   Object {
     "end": 35446469,
@@ -25993,7 +25993,7 @@ Array [
     "start": 35446465,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,6",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,6",
   },
   Object {
     "end": 35446501,
@@ -26004,7 +26004,7 @@ Array [
     "start": 35446491,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,7",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,7",
   },
   Object {
     "end": 35446536,
@@ -26015,7 +26015,7 @@ Array [
     "start": 35446531,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,8",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,8",
   },
   Object {
     "biotype": "pseudogene",
@@ -26067,7 +26067,7 @@ Array [
       },
     ],
     "type": "pseudogene",
-    "uniqueId": "test_adapter-0,0,24,10,9",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,9",
     "version": "1",
   },
   Object {
@@ -26434,7 +26434,7 @@ Array [
       },
     ],
     "type": "lincRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,10,10",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,10",
     "version": "3",
   },
   Object {
@@ -26447,7 +26447,7 @@ Array [
     "start": 35574422,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,10,11",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,11",
   },
   Object {
     "biotype": "lincRNA",
@@ -26562,7 +26562,7 @@ Array [
       },
     ],
     "type": "lincRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,10,12",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,12",
     "version": "5",
   },
   Object {
@@ -26612,7 +26612,7 @@ Array [
       },
     ],
     "type": "miRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,10,12,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,10,12,0",
     "version": "1",
   },
   Object {
@@ -26721,7 +26721,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,11",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,11",
     "version": "3",
   },
   Object {
@@ -26789,7 +26789,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,12",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,12",
     "version": "1",
   },
   Object {
@@ -26802,7 +26802,7 @@ Array [
     "start": 35747326,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,13",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,13",
   },
   Object {
     "end": 35747670,
@@ -26814,7 +26814,7 @@ Array [
     "start": 35747417,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,13,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,13,0",
   },
   Object {
     "biotype": "protein_coding",
@@ -27625,7 +27625,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,14",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,14",
     "version": "6",
   },
   Object {
@@ -27638,7 +27638,7 @@ Array [
     "start": 35748196,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,14,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,14,0",
   },
   Object {
     "end": 35751815,
@@ -27650,7 +27650,7 @@ Array [
     "start": 35751663,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,14,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,14,1",
   },
   Object {
     "biotype": "protein_coding",
@@ -27715,7 +27715,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,14,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,14,2",
     "version": "1",
   },
   Object {
@@ -27728,7 +27728,7 @@ Array [
     "start": 35776937,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,14,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,14,3",
   },
   Object {
     "biotype": "lincRNA",
@@ -27779,7 +27779,7 @@ Array [
       },
     ],
     "type": "lincRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,15",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,15",
     "version": "1",
   },
   Object {
@@ -27889,7 +27889,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,16",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,16",
     "version": "4",
   },
   Object {
@@ -27941,7 +27941,7 @@ Array [
       },
     ],
     "type": "lincRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,17",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,17",
     "version": "1",
   },
   Object {
@@ -28683,7 +28683,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,24,18",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18",
     "version": "7",
   },
   Object {
@@ -28734,7 +28734,7 @@ Array [
       },
     ],
     "type": "snoRNA_gene",
-    "uniqueId": "test_adapter-0,0,24,18,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,0",
     "version": "1",
   },
   Object {
@@ -28747,7 +28747,7 @@ Array [
     "start": 35830845,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,1",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,1",
   },
   Object {
     "end": 35831579,
@@ -28759,7 +28759,7 @@ Array [
     "start": 35830951,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,2",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,2",
   },
   Object {
     "end": 35831579,
@@ -28771,7 +28771,7 @@ Array [
     "start": 35831017,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,3",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,3",
   },
   Object {
     "end": 35831579,
@@ -28783,7 +28783,7 @@ Array [
     "start": 35831349,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,4",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,4",
   },
   Object {
     "end": 35832365,
@@ -28795,7 +28795,7 @@ Array [
     "start": 35831697,
     "strand": 0,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,5",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,5",
   },
   Object {
     "end": 35832591,
@@ -28807,7 +28807,7 @@ Array [
     "start": 35831913,
     "strand": 1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,24,18,6",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,24,18,6",
   },
   Object {
     "biotype": "protein_coding",
@@ -30361,7 +30361,7 @@ Array [
       },
     ],
     "type": "gene",
-    "uniqueId": "test_adapter-0,0,25,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,25,0",
     "version": "13",
   },
   Object {
@@ -30374,7 +30374,7 @@ Array [
     "start": 35893796,
     "strand": -1,
     "type": "biological_region",
-    "uniqueId": "test_adapter-0,0,25,0,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,0,25,0,0",
   },
   Object {
     "alias": Array [
@@ -30388,7 +30388,7 @@ Array [
     "start": 0,
     "strand": 0,
     "type": "chromosome",
-    "uniqueId": "test_adapter-0,1,0",
+    "uniqueId": "4246b3a9477c990562afd5a5d8b2b76d9e8b9e02-0,1,0",
   },
 ]
 `;

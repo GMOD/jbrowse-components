@@ -6,10 +6,8 @@ Object {
     "aliases": Array [
       "assemblyA",
     ],
-    "configId": Any<String>,
     "name": "assembly1",
   },
-  "configId": Any<String>,
   "name": "dataset1",
 }
 `;
@@ -17,32 +15,26 @@ Object {
 exports[`Root MST model adds track and connection configs to a dataset 2`] = `
 Object {
   "adapter": Object {
-    "index": Object {
-      "configId": Any<String>,
-    },
     "type": "BamAdapter",
   },
-  "configId": Any<String>,
   "renderer": Object {
-    "configId": Any<String>,
     "type": "PileupRenderer",
   },
+  "trackId": "trackId0",
   "type": "BasicTrack",
 }
 `;
 
 exports[`Root MST model adds track and connection configs to a dataset 3`] = `
 Object {
-  "configId": Any<String>,
+  "connectionId": "connectionId0",
   "type": "JBrowse1Connection",
 }
 `;
 
 exports[`Root MST model creates with defaults 1`] = `
 Object {
-  "configId": Any<String>,
   "rpc": Object {
-    "configId": Any<String>,
     "defaultDriver": "MainThreadRpcDriver",
   },
 }
