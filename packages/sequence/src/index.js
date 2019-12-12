@@ -45,7 +45,7 @@ export default class extends Plugin {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'ChromSizes',
+          name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
           AdapterClass: ChromSizesAdapterClass,
         }),

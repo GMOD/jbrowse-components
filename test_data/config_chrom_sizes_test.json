@@ -5,10 +5,8 @@
       "assembly": {
         "name": "grape",
         "sequence": {
-          "configId": "Pd8Wh30ei9R",
           "type": "ReferenceSequenceTrack",
           "adapter": {
-            "configId": "YK3RiyLKJq4",
             "type": "ChromSizesAdapter",
             "chromSizesLocation": {
               "uri": "test_data/grape.chrom.sizes"

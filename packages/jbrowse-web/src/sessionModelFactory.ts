@@ -141,7 +141,7 @@ export default function sessionModelFactory(pluginManager: any) {
         })
         addDisposer(self, disposer)
 
-        const displayedRegionsDisposer = autorun(async () => {
+        const displayedRegionsDisposer = autorun(() => {
           for (const view of self.views) {
             const assemblyName = view.displayRegionsFromAssemblyName
             if (
@@ -149,21 +149,23 @@ export default function sessionModelFactory(pluginManager: any) {
               self.assemblyData.get(assemblyName) &&
               self.assemblyData.get(assemblyName).sequence
             ) {
-              // eslint-disable-next-line no-await-in-loop
-              const displayedRegions = await this.getRegionsForAssembly(
-                assemblyName,
-                self.assemblyData,
-              )
-              if (isAlive(self)) {
-                getParent(self).history.withoutUndo(() => {
-                  if (
-                    JSON.stringify(view.displayedRegions) !==
-                    JSON.stringify(displayedRegions)
-                  )
-                    view.setDisplayedRegions(displayedRegions, true)
+              this.getRegionsForAssembly(assemblyName, self.assemblyData)
+                .then((displayedRegions: any) => {
+                  if (isAlive(self)) {
+                    getParent(self).history.withoutUndo(() => {
+                      if (
+                        JSON.stringify(view.displayedRegions) !==
+                        JSON.stringify(displayedRegions)
+                      )
+                        view.setDisplayedRegions(displayedRegions, true)
+                    })
+                  }
                 })
-              }
+                .catch((error: Error) => {
+                  view.setError(error)
+                })
             }
+            view.setError(undefined)
           }
         })
         addDisposer(self, displayedRegionsDisposer)
@@ -473,7 +475,6 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       setSelection(thing: any) {
         self.selection = thing
-        // console.log('selected', thing)
       },
 
       /**
@@ -481,7 +482,6 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       clearSelection() {
         self.selection = undefined
-        // console.log('selection cleared')
       },
 
       /**
