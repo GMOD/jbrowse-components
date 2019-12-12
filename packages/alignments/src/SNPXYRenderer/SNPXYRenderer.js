@@ -2,6 +2,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import Color from 'color'
 import SNPBaseRenderer from '../SNPBaseRenderer'
+import NestedFrequencyTable from '../NestedFrequencyTable'
 import { getOrigin, getScale } from '../util'
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
@@ -35,7 +36,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     // } else {
     //   colorCallback = feature => readConfObject(config, 'color', [feature])
     // }
-    let strand
 
     const leftBase = props.region.start
     const rightBase = props.region.end
@@ -53,9 +53,12 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     }
 
     const coverageBins = new Array(binMax)
-    coverageBins.forEach(function(value, i) {
-      coverageBins[i] = new NestedFrequencyTable()
-      if (binWidth === 1) coverageBins[i].snpsCounted = true
+    coverageBins.forEach(function(item, index) {
+      coverageBins[index] = new NestedFrequencyTable()
+      // try below if nested doest work
+      // const item = { mutationCount: 0, currentBp: '', snpsCounted: false }
+      // coverageBins[i].push(item)
+      if (binWidth === 1) coverageBins[index].snpsCounted = true
     })
 
     const forEachBin = function forEachBin(start, end, callback) {
@@ -91,7 +94,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     function getFeatures(feature) {
       // move to stats potentially!!!!
       console.log('feature: ', feature)
-      strand =
+      const strand =
         { '-1': '-', '1': '+' }[`${feature.get('strand')}`] || 'unstranded'
       if (!this.filter(feature)) return
 
@@ -112,13 +115,13 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           forEachBin(
             feature.get('start') + mismatch.start,
             feature.get('start') + mismatch.start + mismatch.length,
-            function(binNumber, overlap) {
+            function calcSNPCoverage(binNum, overlap) {
               // Note: we decrement 'reference' so that total of the score is the total coverage
-              const bin = coverageBins[binNumber]
+              const bin = coverageBins[binNum]
               bin.getNested('reference').decrement(strand, overlap)
               let { base } = mismatch
-              if (mismatch.type == 'insertion') base = `ins ${base}`
-              else if (mismatch.type == 'skip') base = 'skip'
+              if (mismatch.type === 'insertion') base = `ins ${base}`
+              else if (mismatch.type === 'skip') base = 'skip'
               bin.getNested(base).increment(strand, overlap)
             },
           )
