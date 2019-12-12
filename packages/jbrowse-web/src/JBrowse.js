@@ -28,7 +28,7 @@ import JBrowseRootModel from './rootModel'
 
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
-  if (inDevelopment) {
+  if (configLoc === 'test_data/config.json' && inDevelopment) {
     config.datasets = mergeConfigs(
       config,
       JSON.parse(
@@ -61,8 +61,13 @@ function useJBrowseWeb(config, initialState) {
   useEffect(() => {
     if (debouncedUrlSnapshot) {
       const parsed = queryString.parse(document.location.search)
+      const urlSplit = window.location.href.split('?')
       parsed.session = toUrlSafeB64(JSON.stringify(debouncedUrlSnapshot))
-      document.location.search = queryString.stringify(parsed)
+      window.history.replaceState(
+        {},
+        '',
+        `${urlSplit[0]}?${queryString.stringify(parsed)}`,
+      )
     }
   }, [config, debouncedUrlSnapshot])
 
