@@ -341,7 +341,7 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.regions.bw"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw"
             }
           }
         },
