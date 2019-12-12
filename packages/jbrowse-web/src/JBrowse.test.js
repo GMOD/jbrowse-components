@@ -490,7 +490,7 @@ describe('breakpoint split view', () => {
       await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
     ).toMatchSnapshot()
     spy.mockRestore()
-  })
+  }, 10000)
 })
 
 test('cause an exception in the jbrowse module loading', async () => {
