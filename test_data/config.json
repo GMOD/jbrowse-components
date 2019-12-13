@@ -379,39 +379,7 @@
     "name": "New Session",
     "menuBars": [
       {
-        "type": "MainMenuBar",
-        "menus": [
-          {
-            "name": "File",
-            "menuItems": [
-              {
-                "name": "New linear genome view",
-                "icon": "line_style",
-                "callback": "function(session) { session.addView('LinearGenomeView', {})}"
-              },
-              {
-                "name": "New circular view",
-                "icon": "data_usage",
-                "callback": "function(session) { session.addView('CircularView', {})}"
-              }
-            ]
-          },
-          {
-            "name": "Help",
-            "menuItems": [
-              {
-                "name": "About",
-                "icon": "info",
-                "callback": "openAbout"
-              },
-              {
-                "name": "Help",
-                "icon": "help",
-                "callback": "openHelp"
-              }
-            ]
-          }
-        ]
+        "type": "MainMenuBar"
       }
     ]
   }
