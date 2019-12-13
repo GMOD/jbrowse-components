@@ -147,7 +147,7 @@ describe('configuration schemas', () => {
     expect(getSnapshot(model)).toEqual({
       configuration: {
         someInteger: 42,
-        mySubConfiguration: {},
+        // mySubConfiguration is set to the default, so doesn't appear in snapshot
         myArrayOfSubConfigurations: [{}, { someNumber: 11.1 }],
       },
     })
