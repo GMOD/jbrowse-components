@@ -206,6 +206,24 @@ export default function sessionModelFactory(pluginManager: any) {
         return Promise.resolve(undefined)
       },
 
+      getRegionsForAssemblyName(
+        assemblyName: string,
+        opts: { signal?: AbortSignal } = {},
+      ) {
+        if (
+          assemblyName &&
+          self.assemblyData.get(assemblyName) &&
+          self.assemblyData.get(assemblyName).sequence
+        ) {
+          return this.getRegionsForAssembly(
+            assemblyName,
+            self.assemblyData,
+            opts,
+          )
+        }
+        return Promise.resolve(undefined)
+      },
+
       makeConnection(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
