@@ -228,11 +228,21 @@ const JBrowse = observer(({ config, initialState }) => {
   )
 })
 
+async function factoryReset() {
+  localStorage.removeItem('jbrowse-web-data')
+  localStorage.removeItem('jbrowse-web-session')
+  window.location.reload()
+}
+
+const PlatformSpecificFatalErrorDialog = props => {
+  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+}
+
 export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
+      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
         <JBrowse {...props} />
       </ErrorBoundary>
     </ThemeProvider>
