@@ -1,19 +1,17 @@
 {
+  "configuration": {},
   "datasets": [
     {
-      "configId": "GbR-gJfAC9M",
       "name": "Human (hg19)",
       "assembly": {
-        "configId": "LxT4lkflYm1",
         "name": "hg19",
         "aliases": [
           "GRCh37"
         ],
         "sequence": {
-          "configId": "Pd8Wh30ei9R",
           "type": "ReferenceSequenceTrack",
+          "trackId": "Pd8Wh30ei9R",
           "adapter": {
-            "configId": "YK3RiyLKJq4",
             "type": "BgzipFastaAdapter",
             "fastaLocation": {
               "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
@@ -26,12 +24,10 @@
             }
           },
           "rendering": {
-            "configId": "_Ta2aorot0V",
             "type": "DivSequenceRenderer"
           }
         },
         "refNameAliases": {
-          "configId": "hg19_aliases",
           "adapter": {
             "type": "RefNameAliasAdapter",
             "location": {
@@ -40,20 +36,10 @@
           }
         }
       },
-      "connections": [
-        {
-          "configId": "COSMIC_connection_grch37",
-          "type": "JBrowse1Connection",
-          "dataDirLocation": {
-            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
-          },
-          "name": "COSMIC (GRCh37)"
-        }
-      ],
       "tracks": [
         {
-          "configId": "repeats_hg19",
           "type": "BasicTrack",
+          "trackId": "repeats_hg19",
           "name": "Repeats",
           "category": [
             "Annotation"
@@ -69,8 +55,8 @@
           }
         },
         {
-          "configId": "nclist_genes_hg19",
           "type": "BasicTrack",
+          "trackId": "nclist_genes_hg19",
           "name": "Gencode v19",
           "category": [
             "Annotation"
@@ -115,8 +101,8 @@
           }
         },
         {
-          "configId": "hg19_gaps",
           "type": "BasicTrack",
+          "trackId": "hg19_gaps",
           "name": "Gaps",
           "category": [
             "Annotation"
@@ -132,8 +118,8 @@
           }
         },
         {
-          "configId": "clinvar_cnv_hg19",
           "type": "BasicTrack",
+          "trackId": "clinvar_cnv_hg19",
           "name": "Clinvar CNV",
           "category": [
             "Annotation"
@@ -149,8 +135,8 @@
           }
         },
         {
-          "configId": "clinvar_hg19",
           "type": "BasicTrack",
+          "trackId": "clinvar_hg19",
           "name": "Clinvar variants",
           "category": [
             "Annotation"
@@ -165,22 +151,29 @@
             "type": "SvgFeatureRenderer"
           }
         }
+      ],
+      "connections": [
+        {
+          "type": "JBrowse1Connection",
+          "connectionId": "COSMIC_connection_grch37",
+          "name": "COSMIC (GRCh37)",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+          }
+        }
       ]
     },
     {
-      "configId": "VkIXFcSSJ",
       "name": "Human (hg38)",
       "assembly": {
-        "configId": "ZcKi-0FaG9",
         "name": "hg38",
         "aliases": [
           "GRCh38"
         ],
         "sequence": {
-          "configId": "P6R5xbRqRr",
           "type": "ReferenceSequenceTrack",
+          "trackId": "P6R5xbRqRr",
           "adapter": {
-            "configId": "BY0uXnap-Z",
             "type": "BgzipFastaAdapter",
             "fastaLocation": {
               "uri": "http://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
@@ -193,12 +186,10 @@
             }
           },
           "rendering": {
-            "configId": "FVLPrs1AWM",
             "type": "DivSequenceRenderer"
           }
         },
         "refNameAliases": {
-          "configId": "hg38_aliases",
           "adapter": {
             "type": "RefNameAliasAdapter",
             "location": {
@@ -207,20 +198,10 @@
           }
         }
       },
-      "connections": [
-        {
-          "configId": "COSMIC_connection_grch38",
-          "type": "JBrowse1Connection",
-          "dataDirLocation": {
-            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
-          },
-          "name": "COSMIC (GRCh38)"
-        }
-      ],
       "tracks": [
         {
-          "configId": "repeats_hg38",
           "type": "BasicTrack",
+          "trackId": "repeats_hg38",
           "name": "Repeats",
           "category": [
             "Annotation"
@@ -236,8 +217,8 @@
           }
         },
         {
-          "configId": "gencode_nclist_hg38",
           "type": "BasicTrack",
+          "trackId": "gencode_nclist_hg38",
           "name": "Gencode v32",
           "category": [
             "Annotation"
@@ -282,8 +263,8 @@
           }
         },
         {
-          "configId": "clinvar_cnv_hg38",
           "type": "BasicTrack",
+          "trackId": "clinvar_cnv_hg38",
           "name": "Clinvar CNV",
           "category": [
             "Annotation"
@@ -299,8 +280,8 @@
           }
         },
         {
-          "configId": "clinvar_hg38",
           "type": "BasicTrack",
+          "trackId": "clinvar_hg38",
           "name": "Clinvar variants",
           "category": [
             "Annotation"
@@ -316,8 +297,8 @@
           }
         },
         {
-          "configId": "mane_hg38",
           "type": "BasicTrack",
+          "trackId": "mane_hg38",
           "name": "MANE 0.6",
           "category": [
             "Annotation"
@@ -336,8 +317,8 @@
           }
         },
         {
-          "configId": "gdc_features",
           "type": "BasicTrack",
+          "trackId": "gdc_features",
           "name": "GDC Cancer",
           "category": [
             "Annotation"
@@ -353,8 +334,8 @@
           }
         },
         {
-          "configId": "hg38_gaps",
           "type": "BasicTrack",
+          "trackId": "hg38_gaps",
           "name": "Gaps",
           "category": [
             "Annotation"
@@ -369,12 +350,19 @@
             "type": "SvgFeatureRenderer"
           }
         }
+      ],
+      "connections": [
+        {
+          "type": "JBrowse1Connection",
+          "connectionId": "COSMIC_connection_grch38",
+          "name": "COSMIC (GRCh38)",
+          "dataDirLocation": {
+            "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
+          }
+        }
       ]
     }
   ],
-  "configuration": {
-    "updateUrl": true
-  },
   "defaultSession": {
     "name": "New Session",
     "menuBars": [
@@ -414,5 +402,6 @@
         ]
       }
     ]
-  }
+  },
+  "savedSessions": []
 }

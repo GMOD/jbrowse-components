@@ -1,4 +1,98 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false
+  },
+  "datasets": [
+    {
+      "name": "Homo sapiens",
+      "assembly": {
+        "name": "hg19",
+        "aliases": [
+          "GRCh37"
+        ]
+      },
+      "tracks": [
+        {
+          "type": "StructuralVariantChordTrack",
+          "trackId": "sv_chord_track",
+          "name": "human chord test",
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "type": "VariantTrack",
+          "trackId": "pacbio_vcf",
+          "name": "HG002.hs37d5.bnds",
+          "category": [
+            "PacBio",
+            "VCF"
+          ],
+          "adapter": {
+            "type": "VcfTabixAdapter",
+            "vcfGzLocation": {
+              "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
+          }
+        },
+        {
+          "type": "AlignmentsTrack",
+          "trackId": "pacbio_hg002_breakpoints",
+          "name": "HG002.hs37d5.11kb",
+          "category": [
+            "PacBio",
+            "BAM"
+          ],
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/pacbio_chr3_chr6.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/pacbio_chr3_chr6.bam.bai"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
+          }
+        }
+      ]
+    }
+  ],
   "defaultSession": {
     "name": "New Session",
     "menuBars": [
@@ -20,10 +114,6 @@
           "width": 1850,
           "height": 400,
           "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
-          "configuration": {
-            "configId": "If_2Pn2OmT",
-            "type": "BreakpointSplitView"
-          },
           "trackSelectorType": "hierarchical",
           "views": [
             {
@@ -196,92 +286,5 @@
       ],
       "connections": {}
     }
-  ],
-  "datasets": [
-    {
-      "name": "Homo sapiens",
-      "assembly": {
-        "name": "hg19",
-        "aliases": [
-          "GRCh37"
-        ]
-      },
-      "tracks": [
-        {
-          "type": "StructuralVariantChordTrack",
-          "trackId": "sv_chord_track",
-          "name": "human chord test",
-          "adapter": {
-            "type": "VcfTabixAdapter",
-            "vcfGzLocation": {
-              "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-              }
-            }
-          },
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
-        },
-        {
-          "trackId": "pacbio_vcf",
-          "type": "VariantTrack",
-          "name": "HG002.hs37d5.bnds",
-          "category": [
-            "PacBio",
-            "VCF"
-          ],
-          "adapter": {
-            "type": "VcfTabixAdapter",
-            "vcfGzLocation": {
-              "uri": "test_data/pacbio_chr3_chr6.vcf.gz"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/pacbio_chr3_chr6.vcf.gz.tbi"
-              }
-            }
-          }
-        },
-        {
-          "trackId": "pacbio_hg002_breakpoints",
-          "type": "AlignmentsTrack",
-          "name": "HG002.hs37d5.11kb",
-          "category": [
-            "PacBio",
-            "BAM"
-          ],
-          "adapter": {
-            "type": "BamAdapter",
-            "bamLocation": {
-              "uri": "test_data/pacbio_chr3_chr6.bam"
-            },
-            "index": {
-              "location": {
-                "uri": "test_data/pacbio_chr3_chr6.bam.bai"
-              }
-            }
-          },
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer"
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    },
-    "updateUrl": false
-  }
+  ]
 }
