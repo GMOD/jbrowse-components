@@ -132,21 +132,32 @@ export function ConfigurationSchema(
 
   // now assemble the MST model of the configuration schema
   const modelDefinition = {}
+  let identifier
 
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
 
+  if (options.explicitIdentifier && options.implicitIdentifier)
+    throw new Error(
+      `Cannot have both explicit and implicit identifiers in ${modelName}`,
+    )
   if (options.explicitIdentifier) {
-    if (typeof options.explicitIdentifier === 'string')
+    if (typeof options.explicitIdentifier === 'string') {
       modelDefinition[options.explicitIdentifier] = types.identifier
-    else modelDefinition.id = types.identifier
-  }
-
-  if (options.implicitIdentifier) {
-    if (typeof options.implicitIdentifier === 'string')
+      identifier = options.explicitIdentifier
+    } else {
+      modelDefinition.id = types.identifier
+      identifier = 'id'
+    }
+  } else if (options.implicitIdentifier) {
+    if (typeof options.implicitIdentifier === 'string') {
       modelDefinition[options.implicitIdentifier] = ElementId
-    else modelDefinition.id = ElementId
+      identifier = options.implicitIdentifier
+    } else {
+      modelDefinition.id = ElementId
+      identifier = 'id'
+    }
   }
 
   const volatileConstants = {
@@ -228,12 +239,12 @@ export function ConfigurationSchema(
     return newSnap
   })
 
-  // TODO: Fix this for general id names
+  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const schemaType = types.optional(
     completeModel,
     options.explicitlyTyped
-      ? { type: modelName, trackId: 'abc', connectionId: 'def' }
-      : { trackId: 'abc', connectionId: 'def' },
+      ? { type: modelName, ...identifierDefault }
+      : identifierDefault,
   )
 
   // save a couple of jbrowse-specific things in the type object. hope nobody gets mad.
