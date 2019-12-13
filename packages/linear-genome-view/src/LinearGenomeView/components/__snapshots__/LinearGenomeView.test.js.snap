@@ -115,7 +115,7 @@ exports[`LinearGenomeView genome view component renders two tracks, two regions 
 >
   <div
     class="makeStyles-linearGenomeView"
-    style="display: grid; width: 1024px; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
+    style="display: grid; position: relative; grid-template-rows: [header] auto  [scale-bar] 40px [track-foo] 20px [resize-foo] 3px [track-bar] 20px [resize-bar] 3px; grid-template-columns: [controls] 100px [blocks] auto;"
   >
     <div
       class="makeStyles-headerBar"
