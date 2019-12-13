@@ -68,7 +68,6 @@ function useJBrowseWeb(config, initialState) {
         '',
         `${urlSplit[0]}?${queryString.stringify(parsed)}`,
       )
-      console.log(urlSplit[0])
     }
   }, [config, debouncedUrlSnapshot])
 

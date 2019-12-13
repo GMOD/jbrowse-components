@@ -18,9 +18,7 @@ import breakpointConfig from '../test_data/config_breakpoint_integration_test.js
 import JBrowseRootModel from './rootModel'
 
 expect.extend({ toMatchImageSnapshot })
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 window.requestAnimationFrame = cb => cb()
@@ -484,7 +482,7 @@ describe('breakpoint split view', () => {
   it('open a split view', async () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { findByTestId, getByText } = render(<JBrowse initialState={state} />)
+    const { findByTestId } = render(<JBrowse initialState={state} />)
 
     expect(
       await findByTestId('pacbio_hg002_breakpoints-loaded'),
