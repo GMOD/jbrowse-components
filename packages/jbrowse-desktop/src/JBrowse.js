@@ -17,6 +17,7 @@ import { onSnapshot } from 'mobx-state-tree'
 import ErrorBoundary from 'react-error-boundary'
 import React, { useEffect, useState } from 'react'
 import rootModel from './rootModel'
+import factoryReset from './factoryReset'
 import 'typeface-roboto'
 
 const debounceMs = 1000
@@ -114,7 +115,11 @@ const JBrowse = observer(() => {
     return root.session ? (
       <App session={root.session} />
     ) : (
-      <StartScreen root={root} bypass={firstLoad} />
+      <StartScreen
+        root={root}
+        bypass={firstLoad}
+        onFactoryReset={factoryReset}
+      />
     )
   }
   return (
@@ -130,13 +135,6 @@ const JBrowse = observer(() => {
     />
   )
 })
-
-async function factoryReset() {
-  const { electronBetterIpc = {} } = window
-  const { ipcRenderer } = electronBetterIpc
-  await ipcRenderer.invoke('reset')
-  window.location.reload()
-}
 
 const PlatformSpecificFatalErrorDialog = props => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
