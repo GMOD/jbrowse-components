@@ -19,8 +19,15 @@ export default pluginManager => {
       autoscale: {
         type: 'stringEnum',
         defaultValue: 'local',
-        model: types.enumeration('Autoscale type', ['global', 'local']),
-        description: 'performs local or global autoscaling',
+        model: types.enumeration('Autoscale type', [
+          'global',
+          'local',
+          'globalsd',
+          'localsd',
+          'zscore',
+        ]),
+        description:
+          'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
       },
       minScore: {
         type: 'number',
@@ -31,6 +38,12 @@ export default pluginManager => {
         type: 'number',
         description: 'maximum value for the y-scale',
         defaultValue: Number.MAX_VALUE,
+      },
+      numStdDev: {
+        type: 'number',
+        description:
+          'number of standard deviations to use for autoscale types globalsd or localsd',
+        defaultValue: 3,
       },
       scaleType: {
         type: 'stringEnum',

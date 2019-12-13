@@ -122,6 +122,7 @@ export default pluginManager => {
     }))
     .actions(self => ({
       afterCreate() {
+        // bind our views widths to our self.viewsWidth member
         addDisposer(
           self,
           autorun(() => {
@@ -131,6 +132,8 @@ export default pluginManager => {
           }),
         )
 
+        // views with have displayRegionsFromAssemblyName will have their
+        // displayed regions set to the refs in an assembly
         addDisposer(
           self,
           autorun(() => {

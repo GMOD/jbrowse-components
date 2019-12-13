@@ -217,7 +217,7 @@ describe('valid file tests', () => {
 })
 
 describe('some error state', () => {
-  it('test that track with 404 file displays error', async () => {
+  it('test that BAI with 404 file displays error', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -225,7 +225,7 @@ describe('some error state', () => {
     )
     fireEvent.click(
       await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
+        getByTestId('htsTrackEntry-volvox_alignments_bai_nonexist'),
       ),
     )
     await expect(
@@ -238,7 +238,9 @@ describe('some error state', () => {
     expect(spy).toHaveBeenCalled()
     spy.mockRestore()
   })
+})
 
+describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
@@ -276,6 +278,25 @@ describe('some error state', () => {
       waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).resolves.toBeTruthy()
   })
+  it('open a bigwig with a renamed reference', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_microarray_density_altname'),
+      ),
+    )
+    await expect(
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
+  })
+})
+
+describe('max height test', () => {
   it('test that bam with small max height displays message', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -412,22 +433,6 @@ describe('bigwig', () => {
     fireEvent.click(
       await waitForElement(() =>
         byId('htsTrackEntry-volvox_microarray_density'),
-      ),
-    )
-    await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
-    ).resolves.toBeTruthy()
-  })
-  it('open a bigwig with a renamed reference', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(0.05, 5000)
-    fireEvent.click(
-      await waitForElement(() =>
-        byId('htsTrackEntry-volvox_microarray_density_altname'),
       ),
     )
     await expect(

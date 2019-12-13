@@ -1,4 +1,3 @@
-import Slide from '@material-ui/core/Slide'
 import Typography from '@material-ui/core/Typography'
 import AppBar from '@material-ui/core/AppBar'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -11,9 +10,7 @@ import React from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
-  defaultDrawer: {
-    flex: '1 100%',
-  },
+  defaultDrawer: {},
   components: {
     display: 'block',
   },
@@ -42,44 +39,39 @@ const DrawerWidget = observer(props => {
 
   return (
     <Drawer session={session} open={Boolean(session.activeDrawerWidgets.size)}>
-      <Slide direction="left" in>
-        <div className={classes.defaultDrawer}>
-          <AppBar position="static" color="secondary">
-            <Toolbar
-              variant="dense"
-              disableGutters
-              className={classes.drawerToolbar}
-            >
-              <Typography variant="h6" color="inherit">
-                {HeadingComponent ? (
-                  <HeadingComponent model={visibleDrawerWidget} />
-                ) : (
-                  heading || undefined
-                )}
-              </Typography>
-              <div className={classes.drawerToolbarCloseButton} />
-              <IconButton
-                className={classes.drawerCloseButton}
-                color="inherit"
-                aria-label="Close"
-                onClick={() => session.hideDrawerWidget(visibleDrawerWidget)}
-              >
-                <Icon fontSize="small">close</Icon>
-              </IconButton>
-            </Toolbar>
-          </AppBar>
-          <React.Suspense
-            fallback={
-              <CircularProgress
-                disableShrink
-                className={classes.drawerLoading}
-              />
-            }
+      <div className={classes.defaultDrawer}>
+        <AppBar position="static" color="secondary">
+          <Toolbar
+            variant="dense"
+            disableGutters
+            className={classes.drawerToolbar}
           >
-            <LazyReactComponent model={visibleDrawerWidget} session={session} />
-          </React.Suspense>
-        </div>
-      </Slide>
+            <Typography variant="h6" color="inherit">
+              {HeadingComponent ? (
+                <HeadingComponent model={visibleDrawerWidget} />
+              ) : (
+                heading || undefined
+              )}
+            </Typography>
+            <div className={classes.drawerToolbarCloseButton} />
+            <IconButton
+              className={classes.drawerCloseButton}
+              color="inherit"
+              aria-label="Close"
+              onClick={() => session.hideDrawerWidget(visibleDrawerWidget)}
+            >
+              <Icon fontSize="small">close</Icon>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <React.Suspense
+          fallback={
+            <CircularProgress disableShrink className={classes.drawerLoading} />
+          }
+        >
+          <LazyReactComponent model={visibleDrawerWidget} session={session} />
+        </React.Suspense>
+      </div>
     </Drawer>
   )
 })

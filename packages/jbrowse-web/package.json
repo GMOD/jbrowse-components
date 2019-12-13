@@ -30,6 +30,7 @@
     "@gmod/jbrowse-plugin-rdf": "^2.0.0",
     "@gmod/jbrowse-plugin-sequence": "^2.0.0",
     "@gmod/jbrowse-plugin-spreadsheet-view": "^2.0.0",
+    "@gmod/jbrowse-plugin-sv-inspector": "^2.0.0",
     "@gmod/jbrowse-plugin-svg": "^2.0.0",
     "@gmod/jbrowse-plugin-trackhub-registry": "^2.0.0",
     "@gmod/jbrowse-plugin-variants": "^2.0.0",
