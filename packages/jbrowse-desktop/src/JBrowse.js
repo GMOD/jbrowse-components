@@ -131,11 +131,22 @@ const JBrowse = observer(() => {
   )
 })
 
+async function factoryReset() {
+  const { electronBetterIpc = {} } = window
+  const { ipcRenderer } = electronBetterIpc
+  await ipcRenderer.invoke('reset')
+  window.location.reload()
+}
+
+const PlatformSpecificFatalErrorDialog = props => {
+  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+}
+
 export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
+      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
         <JBrowse {...props} />
       </ErrorBoundary>
     </ThemeProvider>

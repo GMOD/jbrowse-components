@@ -6,17 +6,18 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogActions from '@material-ui/core/DialogActions'
 import React from 'react'
 
-const { electronBetterIpc = {} } = window
-const { ipcRenderer } = electronBetterIpc
-
-export default ({ onClose, open }: { onClose: Function; open: boolean }) => {
+export default ({
+  onClose,
+  open,
+  onFactoryReset,
+}: {
+  onClose: Function
+  open: boolean
+  onFactoryReset: Function
+}) => {
   function handleDialogClose(action?: string) {
     if (action === 'reset') {
-      ;(async () => {
-        // @ts-ignore
-        await ipcRenderer.invoke('reset')
-        window.location.reload()
-      })()
+      onFactoryReset()
     }
     onClose()
   }
