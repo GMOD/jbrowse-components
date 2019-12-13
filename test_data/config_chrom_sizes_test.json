@@ -43,5 +43,11 @@
         "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
     }
-  ]
+  ],
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false
+  }
 }
