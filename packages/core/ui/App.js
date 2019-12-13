@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
   menuBarsAndComponents: {
     gridColumn: 'main',
     display: 'grid',
-    gridTemplateRows: '[menubars] auto [components] auto',
+    gridTemplateRows: '[menubars] min-content [components] auto',
     height: '100vh',
   },
   menuBars: {
