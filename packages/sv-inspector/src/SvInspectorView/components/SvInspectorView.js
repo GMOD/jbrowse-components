@@ -120,7 +120,6 @@ export default pluginManager => {
     const classes = useStyles()
 
     const {
-      configuration,
       resizeHeight,
       dragHandleHeight,
       SpreadsheetViewReactComponent,

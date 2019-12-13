@@ -26,7 +26,7 @@ export default function(pluginManager) {
           )
           fetchJb1(dataDirLocation)
             .then(config =>
-              createRefSeqsAdapter(config.refSeqs).then(adapter => {
+              createRefSeqsAdapter(config.refSeqs).then((/* adapter */) => {
                 const jb2Tracks = config.tracks.map(track =>
                   convertTrackConfig(track, config.dataRoot),
                 )
