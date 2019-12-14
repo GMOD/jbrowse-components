@@ -4,7 +4,7 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import Color from 'color'
 import SNPBaseRenderer from '../SNPBaseRenderer'
 import NestedFrequencyTable from '../NestedFrequencyTable'
-import {  Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
+import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
 export default class SNPXYRenderer extends SNPBaseRenderer {

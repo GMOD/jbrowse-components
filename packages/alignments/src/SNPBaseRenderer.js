@@ -24,7 +24,7 @@ export default class extends ServerSideRendererType {
     return { imageData, height, width }
   }
 
-  draw(/* ctx, props */) {
+  draw(ctx, props) {
     /* draw features to context given props */
   }
 

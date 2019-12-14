@@ -8,7 +8,7 @@ import {
   createImageBitmap,
 } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { Mismatch } from '../BamAdapter/BamSlightlyLazyFeature'
+import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 
 // most likely need to change whats included
 interface SNPRenderProps {

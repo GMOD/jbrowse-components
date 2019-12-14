@@ -1,6 +1,3 @@
-import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
-
 export default class NestedFrequencyTable {
   constructor(initialData) {
     this.categories = {}
@@ -11,7 +8,7 @@ export default class NestedFrequencyTable {
   total() {
     // calculate total if necessary
     let t = 0
-    this.categories.forEach(function(item, index) {
+    this.categories.forEach(function iterate(item, index) {
       const v = this.categories[index].k
       t += v.total ? v.total() : v
     })
@@ -95,13 +92,12 @@ export default class NestedFrequencyTable {
   //   }, this );
   //
   forEach(func, ctx) {
-    const c = this.categories
     if (ctx) {
-      this.categories.forEach(function(item, index) {
+      this.categories.forEach(function iterate(item, index) {
         func.call(ctx, this.categories[index], this.categories[index].slotName)
       })
     } else {
-      this.categories.forEach(function(item, index) {
+      this.categories.forEach(function iterate(item, index) {
         func(this.categories[index], this.categories[index].slotName)
       })
     }
