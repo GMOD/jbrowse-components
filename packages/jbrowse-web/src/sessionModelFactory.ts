@@ -134,6 +134,7 @@ export default function sessionModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterCreate() {
+        // bind our views widths to our self.viewsWidth member
         addDisposer(
           self,
           autorun(() => {
@@ -143,6 +144,8 @@ export default function sessionModelFactory(pluginManager: any) {
           }),
         )
 
+        // views with have displayRegionsFromAssemblyName will have their
+        // displayed regions set to the refs in an assembly
         addDisposer(
           self,
           autorun(() => {
@@ -155,6 +158,7 @@ export default function sessionModelFactory(pluginManager: any) {
               ) {
                 this.getRegionsForAssembly(assemblyName, self.assemblyData)
                   .then((displayedRegions: any) => {
+                    // remember nothing inside here is tracked by the autorun
                     if (isAlive(self)) {
                       getParent(self).history.withoutUndo(() => {
                         if (
