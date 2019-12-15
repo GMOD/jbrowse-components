@@ -9,6 +9,22 @@
           "adapter": {
             "type": "ChromSizesAdapter",
             "chromSizesLocation": {
+              "uri": "test_data/grape.chrom.sizes.nonexist"
+            }
+          }
+        }
+      },
+      "tracks": []
+    },
+    {
+      "name": "Grape2",
+      "assembly": {
+        "name": "grape2",
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter",
+            "chromSizesLocation": {
               "uri": "test_data/grape.chrom.sizes"
             }
           }
@@ -27,6 +43,14 @@
           "offsetPx": 0,
           "bpPerPx": 1,
           "displayRegionsFromAssemblyName": "grape",
+          "tracks": []
+        },
+        {
+          "id": "chrom_sizes2",
+          "type": "LinearGenomeView",
+          "offsetPx": 0,
+          "bpPerPx": 1,
+          "displayRegionsFromAssemblyName": "grape2",
           "tracks": []
         }
       ],
