@@ -146,7 +146,7 @@ export default function sessionModelFactory(pluginManager: any) {
         addDisposer(
           self,
           autorun(() => {
-            for (const view of self.views) {
+            self.views.forEach(view => {
               const assemblyName = view.displayRegionsFromAssemblyName
               if (
                 assemblyName &&
@@ -173,7 +173,7 @@ export default function sessionModelFactory(pluginManager: any) {
                     }
                   })
               }
-            }
+            })
           }),
         )
       },
