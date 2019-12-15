@@ -159,12 +159,14 @@ export default function sessionModelFactory(pluginManager: any) {
                       )
                         view.setDisplayedRegions(displayedRegions, true)
                     })
+                    view.setError && view.setError(undefined)
                   }
-                  view.setError && view.setError(undefined)
                 })
                 .catch((error: Error) => {
                   console.error(error)
-                  view.setError && view.setError(error)
+                  if (isAlive(self)) {
+                    view.setError && view.setError(error)
+                  }
                 })
             }
           }
