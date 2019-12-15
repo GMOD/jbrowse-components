@@ -1,21 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
 import { autorun } from 'mobx'
 import {
   addDisposer,
   getMembers,
   getParent,
+  getSnapshot,
   getType,
+  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
+  SnapshotIn,
   types,
   walk,
-  getSnapshot,
 } from 'mobx-state-tree'
 
-export default pluginManager => {
+declare interface ReferringNode {
+  node: IAnyStateTreeNode
+  key: string
+}
+
+export default function sessionModelFactory(pluginManager: any) {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
@@ -23,7 +32,7 @@ export default pluginManager => {
       name: types.identifier,
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
-        512,
+        1024,
       ),
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
@@ -60,7 +69,7 @@ export default pluginManager => {
        */
       task: undefined,
 
-      snackbarMessage: undefined,
+      snackbarMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -75,6 +84,9 @@ export default pluginManager => {
       get datasets() {
         return getParent(self).jbrowse.datasets
       },
+      get savedSessions() {
+        return getParent(self).jbrowse.savedSessions
+      },
       get savedSessionNames() {
         return getParent(self).jbrowse.savedSessionNames
       },
@@ -83,7 +95,7 @@ export default pluginManager => {
       },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
-        return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
+        return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
       },
       get maxDrawerWidth() {
         return self.width - 256
@@ -104,12 +116,13 @@ export default pluginManager => {
        * to the object and the second element is they property name the node is
        * using to refer to the object
        */
-      getReferring(object) {
-        const refs = []
+      getReferring(object: IAnyStateTreeNode) {
+        const refs: ReferringNode[] = []
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
+              // @ts-ignore
               if (isReferenceType(value) && node[key] === object) {
                 refs.push({ node, key })
               }
@@ -143,43 +156,41 @@ export default pluginManager => {
                 self.assemblyData.get(assemblyName) &&
                 self.assemblyData.get(assemblyName).sequence
               ) {
-                const session = getParent(self)
-                self
-                  .getRegionsForAssembly(assemblyName, self.assemblyData)
-                  .then(displayedRegions => {
+                this.getRegionsForAssembly(assemblyName, self.assemblyData)
+                  .then((displayedRegions: any) => {
                     // remember nothing inside here is tracked by the autorun
-                    session.history.withoutUndo(() =>
-                      view.setDisplayedRegions(displayedRegions || [], true),
-                    )
+                    if (isAlive(self)) {
+                      getParent(self).history.withoutUndo(() => {
+                        if (
+                          JSON.stringify(view.displayedRegions) !==
+                          JSON.stringify(displayedRegions)
+                        )
+                          view.setDisplayedRegions(displayedRegions, true)
+                      })
+                      view.setError && view.setError(undefined)
+                    }
                   })
-
-                // TODO: this needs some error handling
+                  .catch((error: Error) => {
+                    console.error(error)
+                    if (isAlive(self)) {
+                      view.setError && view.setError(error)
+                    }
+                  })
               }
             })
           }),
         )
       },
 
-      setSnackbarMessage(str) {
+      setSnackbarMessage(str: string | undefined) {
         self.snackbarMessage = str
       },
 
-      getRegionsForAssemblyName(assemblyName, opts = {}) {
-        if (
-          assemblyName &&
-          self.assemblyData.get(assemblyName) &&
-          self.assemblyData.get(assemblyName).sequence
-        ) {
-          return self.getRegionsForAssembly(
-            assemblyName,
-            self.assemblyData,
-            opts,
-          )
-        }
-        return Promise.resolve(undefined)
-      },
-
-      getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
+      getRegionsForAssembly(
+        assemblyName: string,
+        assemblyData: any,
+        opts: { signal?: AbortSignal } = {},
+      ) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
@@ -195,7 +206,7 @@ export default pluginManager => {
               },
               { timeout: 1000000 },
             )
-            .then(adapterRegions => {
+            .then((adapterRegions: IRegion[]) => {
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -208,7 +219,25 @@ export default pluginManager => {
         return Promise.resolve(undefined)
       },
 
-      makeConnection(configuration, initialSnapshot = {}) {
+      getRegionsForAssemblyName(
+        assemblyName: string,
+        opts: { signal?: AbortSignal } = {},
+      ) {
+        if (
+          assemblyName &&
+          self.assemblyData.get(assemblyName) &&
+          self.assemblyData.get(assemblyName).sequence
+        ) {
+          return this.getRegionsForAssembly(
+            assemblyName,
+            self.assemblyData,
+            opts,
+          )
+        }
+        return Promise.resolve(undefined)
+      },
+
+      makeConnection(configuration: any, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -223,25 +252,26 @@ export default pluginManager => {
         if (!self.connections.has(assemblyName))
           self.connections.set(assemblyName, [])
         const assemblyConnections = self.connections.get(assemblyName)
+        if (!assemblyConnections)
+          throw new Error(`assembly ${assemblyName} not found`)
         const length = assemblyConnections.push(connectionData)
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration) {
+      prepareToBreakConnection(configuration: any) {
         const name = readConfObject(configuration, 'name')
         let confParent = configuration
         do {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const connection = self.connections
-          .get(assemblyName)
-          .find(c => c.name === name)
-        const callbacksToDereferenceTrack = []
-        const dereferenceTypeCount = {}
-        connection.tracks.forEach(track => {
+        const assemblyConnections = self.connections.get(assemblyName) || []
+        const connection = assemblyConnections.find(c => c.name === name)
+        const callbacksToDereferenceTrack: Function[] = []
+        const dereferenceTypeCount: Record<string, number> = {}
+        connection.tracks.forEach((track: any) => {
           const referring = self.getReferring(track)
-          referring.forEach(({ node }) => {
+          referring.forEach(({ node }: ReferringNode) => {
             let dereferenced = false
             try {
               // If a view is referring to the track config, remove the track
@@ -255,12 +285,12 @@ export default pluginManager => {
             } catch (err1) {
               // ignore
             }
-            if (self.hasDrawerWidget(node)) {
+            if (this.hasDrawerWidget(node)) {
               // If a configuration editor drawer widget has the track config
               // open, close the drawer widget
               const type = 'configuration editor drawer widget(s)'
               callbacksToDereferenceTrack.push(() =>
-                self.hideDrawerWidget(node),
+                this.hideDrawerWidget(node),
               )
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
@@ -276,25 +306,26 @@ export default pluginManager => {
         })
         const safelyBreakConnection = () => {
           callbacksToDereferenceTrack.forEach(cb => cb())
-          self.breakConnection(configuration)
+          this.breakConnection(configuration)
         }
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration) {
+      breakConnection(configuration: any) {
         const name = readConfObject(configuration, 'name')
         let confParent = configuration
         do {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const connection = self.connections
-          .get(assemblyName)
-          .find(c => c.name === name)
-        self.connections.get(assemblyName).remove(connection)
+        const connections = self.connections.get(assemblyName)
+        if (!connections)
+          throw new Error(`connections for ${assemblyName} not found`)
+        const connection = connections.find(c => c.name === name)
+        connections.remove(connection)
       },
 
-      updateWidth(width) {
+      updateWidth(width: number) {
         let newWidth = Math.floor(width)
         if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
@@ -303,7 +334,7 @@ export default pluginManager => {
           self.drawerWidth = self.maxDrawerWidth
       },
 
-      updateDrawerWidth(drawerWidth) {
+      updateDrawerWidth(drawerWidth: number) {
         if (drawerWidth === self.drawerWidth) return self.drawerWidth
         let newDrawerWidth = drawerWidth
         if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
@@ -313,14 +344,14 @@ export default pluginManager => {
         return newDrawerWidth
       },
 
-      resizeDrawer(distance) {
+      resizeDrawer(distance: number) {
         const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = self.updateDrawerWidth(oldDrawerWidth - distance)
+        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
         const actualDistance = oldDrawerWidth - newDrawerWidth
         return actualDistance
       },
 
-      addView(typeName, initialState = {}) {
+      addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
 
@@ -331,33 +362,37 @@ export default pluginManager => {
         return self.views[length - 1]
       },
 
-      removeView(view) {
+      removeView(view: any) {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
             id === 'hierarchicalTrackSelector' &&
             drawerWidget.view &&
             drawerWidget.view.id === view.id
           )
-            self.hideDrawerWidget(drawerWidget)
+            this.hideDrawerWidget(drawerWidget)
         }
         self.views.remove(view)
       },
 
-      addDataset(datasetConf) {
+      addDataset(datasetConf: any) {
         return getParent(self).jbrowse.addDataset(datasetConf)
       },
 
-      addLinearGenomeViewOfDataset(datasetName, initialState = {}) {
-        return self.addViewOfDataset(
+      addLinearGenomeViewOfDataset(datasetName: string, initialState = {}) {
+        return this.addViewOfDataset(
           'LinearGenomeView',
           datasetName,
           initialState,
         )
       },
 
-      addViewOfDataset(viewType, datasetName, initialState = {}) {
+      addViewOfDataset(
+        viewType: any,
+        datasetName: string,
+        initialState: any = {},
+      ) {
         const dataset = self.datasets.find(
-          s => readConfObject(s.name) === datasetName,
+          (s: { name: string }) => readConfObject(s.name) === datasetName,
         )
         if (!dataset)
           throw new Error(
@@ -367,10 +402,17 @@ export default pluginManager => {
           dataset.assembly,
           'name',
         )
-        return self.addView(viewType, initialState)
+        return this.addView(viewType, initialState)
       },
 
-      addViewFromAnotherView(viewType, otherView, initialState = {}) {
+      addViewFromAnotherView(
+        viewType: any,
+        otherView: any,
+        initialState: {
+          displayedRegions?: IRegion[]
+          displayRegionsFromAssemblyName?: boolean
+        } = {},
+      ) {
         const state = { ...initialState }
         if (otherView.displayRegionsFromAssemblyName) {
           state.displayRegionsFromAssemblyName =
@@ -378,12 +420,12 @@ export default pluginManager => {
         } else {
           state.displayedRegions = otherView.displayedRegions
         }
-        return self.addView(viewType, state)
+        return this.addView(viewType, state)
       },
 
       addDrawerWidget(
-        typeName,
-        id,
+        typeName: string,
+        id: string,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -403,17 +445,17 @@ export default pluginManager => {
         return self.drawerWidgets.get(id)
       },
 
-      showDrawerWidget(drawerWidget) {
+      showDrawerWidget(drawerWidget: any) {
         if (self.activeDrawerWidgets.has(drawerWidget.id))
           self.activeDrawerWidgets.delete(drawerWidget.id)
         self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
       },
 
-      hasDrawerWidget(drawerWidget) {
+      hasDrawerWidget(drawerWidget: any) {
         return self.activeDrawerWidgets.has(drawerWidget.id)
       },
 
-      hideDrawerWidget(drawerWidget) {
+      hideDrawerWidget(drawerWidget: any) {
         self.activeDrawerWidgets.delete(drawerWidget.id)
       },
 
@@ -422,7 +464,7 @@ export default pluginManager => {
       },
 
       addMenuBar(
-        typeName,
+        typeName: string,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -442,9 +484,8 @@ export default pluginManager => {
        * can be a feature, a view, just about anything
        * @param {object} thing
        */
-      setSelection(thing) {
+      setSelection(thing: any) {
         self.selection = thing
-        // console.log('selected', thing)
       },
 
       /**
@@ -452,7 +493,6 @@ export default pluginManager => {
        */
       clearSelection() {
         self.selection = undefined
-        // console.log('selection cleared')
       },
 
       /**
@@ -460,33 +500,33 @@ export default pluginManager => {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration) {
+      editConfiguration(configuration: any) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = self.addDrawerWidget(
+        const editor = this.addDrawerWidget(
           'ConfigurationEditorDrawerWidget',
           'configEditor',
           { target: configuration },
         )
-        self.showDrawerWidget(editor)
+        this.showDrawerWidget(editor)
       },
 
       clearConnections() {
         self.connections.clear()
       },
 
-      addSavedSession(sessionSnapshot) {
+      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
         return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
-      removeSavedSession(sessionSnapshot) {
+      removeSavedSession(sessionSnapshot: any) {
         return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
-      renameCurrentSession(sessionName) {
+      renameCurrentSession(sessionName: string) {
         return getParent(self).renameCurrentSession(sessionName)
       },
 
@@ -494,8 +534,8 @@ export default pluginManager => {
         return getParent(self).duplicateCurrentSession()
       },
 
-      activateSession(sessionSnapshot) {
-        return getParent(self).activateSession(sessionSnapshot)
+      activateSession(sessionName: any) {
+        return getParent(self).activateSession(sessionName)
       },
 
       setDefaultSession() {
@@ -503,6 +543,8 @@ export default pluginManager => {
       },
     }))
 }
+
+export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // a track is a combination of a dataset and a renderer, along with some conditions
 // specifying in which contexts it is available (which assemblies, which views, etc)
