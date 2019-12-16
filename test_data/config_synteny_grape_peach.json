@@ -1,0 +1,199 @@
+{
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "savedSessions": [
+    {
+      "name": "Grape vs Peach Demo",
+      "width": 1850,
+      "drawerWidth": 384,
+      "views": [
+        {
+          "type": "SyntenyView",
+          "headerHeight": 44,
+          "width": 1850,
+          "height": 400,
+          "displayName": "Grape vs Peach",
+          "configuration": {
+            "type": "SyntenyView"
+          },
+          "trackSelectorType": "hierarchical",
+          "views": [
+            {
+              "type": "LinearGenomeView",
+              "offsetPx": 0,
+              "bpPerPx": 100000,
+              "displayedRegions": [
+                {
+                  "refName": "7",
+                  "start": 0,
+                  "end": 198022430,
+                  "assemblyName": "peach"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "mcscan_peach_to_grape",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            },
+            {
+              "type": "LinearGenomeView",
+              "offsetPx": 0,
+              "bpPerPx": 100000,
+              "displayedRegions": [
+                {
+                  "refName": "chr5",
+                  "start": 0,
+                  "end": 171115067,
+                  "assemblyName": "grape"
+                }
+              ],
+              "reversed": false,
+              "tracks": [
+                {
+                  "type": "BasicTrack",
+                  "height": 100,
+                  "configuration": "mcscan_grape_to_peach",
+                  "selectedRendering": ""
+                }
+              ],
+              "controlsWidth": 120,
+              "width": 800,
+              "hideControls": false,
+              "hideHeader": true,
+              "hideCloseButton": true,
+              "trackSelectorType": "hierarchical",
+              "minimumBlockWidth": 20
+            }
+          ]
+        }
+      ],
+      "drawerWidgets": {
+        "hierarchicalTrackSelector": {
+          "id": "hierarchicalTrackSelector",
+          "type": "HierarchicalTrackSelectorDrawerWidget",
+          "collapsed": {},
+          "filterText": ""
+        },
+        "sessionManager": {
+          "id": "sessionManager",
+          "type": "SessionManager"
+        }
+      },
+      "activeDrawerWidgets": {},
+      "connections": {}
+    }
+  ],
+  "datasets": [
+    {
+      "name": "Grape",
+      "assembly": {
+        "name": "grape",
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter",
+            "chromSizesLocation": {
+              "uri": "test_data/grape.chrom.sizes"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "mcscan_grape_to_peach",
+          "type": "BasicTrack",
+          "name": "mcscan",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group2"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "test_data/grape_vs_peach.anchors"
+            }
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Peach",
+      "assembly": {
+        "name": "peach",
+        "sequence": {
+          "type": "ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter",
+            "chromSizesLocation": {
+              "uri": "test_data/peach.chrom.sizes"
+            }
+          },
+          "rendering": {
+            "type": "DivSequenceRenderer"
+          }
+        }
+      },
+      "tracks": [
+        {
+          "configId": "mcscan_peach_to_grape",
+          "type": "BasicTrack",
+          "name": "mcscan",
+          "configRelationships": [
+            {
+              "type": "syntenyGroup",
+              "target": "group2"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "test_data/grape_vs_peach.anchors"
+            }
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false,
+    "useLocalStorage": true
+  }
+}
