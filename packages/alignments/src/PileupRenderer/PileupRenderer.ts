@@ -45,6 +45,8 @@ export default class extends BoxRendererType {
     region: IRegion,
     horizontallyFlipped = false,
   ): LayoutRecord | null {
+    console.log('Props in PileupRenderer', this.props)
+    console.log('Features in PileupRenderer', feature)
     const startPx = bpToPx(
       feature.get('start'),
       region,

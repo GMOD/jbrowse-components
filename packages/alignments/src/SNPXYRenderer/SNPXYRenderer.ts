@@ -8,10 +8,9 @@ import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  draw(ctx, props) {
-    console.log('props', props)
+  draw(ctx: any, props: any, features: Feature) {
     const {
-      features,
+      // features,
       region,
       bpPerPx,
       scaleOpts,
@@ -38,6 +37,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     // } else {
     //   colorCallback = feature => readConfObject(config, 'color', [feature])
     // }
+    console.log('Props in SNPXYRend', props)
+    console.log('Feature in SNPXYRend', features)
 
     const leftBase = region.start
     const rightBase = region.end
@@ -47,7 +48,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
-    function binNumber(bp) {
+    function binNumber(bp: number) {
       return Math.floor((bp - leftBase) / binWidth)
     }
 
@@ -65,7 +66,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     //   if (binWidth === 1) coverageBins[index].snpsCounted = true
     // })
 
-    const forEachBin = function forEachBin(start, end, callback) {
+    const forEachBin = function forEachBin(start: number, end: number, callback: any) {
       let s = (start - leftBase) / binWidth
       let e = (end - 1 - leftBase) / binWidth
       let sb = Math.floor(s)
@@ -93,22 +94,36 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         callback(eb, e - eb)
       }
     }
+
     // move to stats potentially!!!!
     function getStrand(feature: Feature) {
-      const strand =
-        { '-1': '-', '1': '+' }[`${feature.get('strand')}`] || 'unstranded'
+      const result = features.get('strand');
+      let strand = ''
+      switch(result){
+        case -1:
+          strand = '-'
+          break;
+        case 1:
+          strand = '+'
+          break;
+        default:
+          strand = 'unstranded'
+          break;
+      }
+      // const strand =
+      //   { '-1': '-', '1': '+' }[`${features.get('strand')}`] || 'unstranded'
       // if (!this.filter(features)) return
       return strand
     }
 
     const strand = getStrand(features)
     // increment start and end partial-overlap bins by proportion of overlap
-    forEachBin(region.start, region.end, function(bin, overlap) {
+    forEachBin(region.start, region.end, function(bin: any, overlap: any) {
       coverageBins[bin].getNested('reference').increment(strand, overlap)
     })
 
-    console.log(props)
-    console.log(coverageBins)
+    // console.log(props)
+    // console.log(coverageBins)
 
     // Calculate SNP coverage
     if (binWidth === 1) {
@@ -122,7 +137,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         forEachBin(
           features.get('start') + mismatch.start,
           features.get('start') + mismatch.start + mismatch.length,
-          function calcSNPCoverage(binNum, overlap) {
+          function calcSNPCoverage(binNum: number, overlap: any) {
             // Note: we decrement 'reference' so that total of the score is the total coverage
             const bin = coverageBins[binNum]
             bin.getNested('reference').decrement(strand, overlap)

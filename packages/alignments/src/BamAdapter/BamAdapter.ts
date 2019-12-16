@@ -89,6 +89,7 @@ export default class extends BaseAdapter {
     { refName, start, end }: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
+    console.log('Bam Adapter Get Features')
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
         this.samHeader = await setup(this.bam)
@@ -100,6 +101,7 @@ export default class extends BaseAdapter {
         )
         checkAbortSignal(opts.signal)
         records.forEach(record => {
+          console.log('record', record)
           observer.next(new BamSlightlyLazyFeature(record, this))
         })
         observer.complete()

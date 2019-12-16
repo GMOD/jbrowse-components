@@ -93,6 +93,7 @@ export default class extends BaseAdapter {
     { refName, start, end }: IRegion,
     opts: BaseOptions = {},
   ): Observable<Feature> {
+    console.log('SNP Adapter Get Features')
     return ObservableCreate(
       async (observer: Observer<Feature>): Promise<void> => {
         this.samHeader = await setup(this.snp)
