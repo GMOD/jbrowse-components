@@ -294,58 +294,68 @@ export default pluginManager => {
         }}
         data-testid={model.id}
       >
-        {showImportForm ? <ImportForm model={model} /> : null}
-        <>
-          {!showFigure ? null : (
-            <div
-              className={classes.scroller}
-              style={{
-                width: model.width,
-                height: model.height,
-              }}
-            >
-              <div
-                className={classes.rotator}
-                style={{
-                  transform: [`rotate(${model.offsetRadians}rad)`].join(' '),
-                  transition: 'transform 0.5s',
-                  transformOrigin: model.centerXY.map(x => `${x}px`).join(' '),
-                }}
-              >
-                <svg
+        {model.error ? (
+          <p style={{ color: 'red' }}>{model.error.message}</p>
+        ) : (
+          <>
+            {showImportForm ? <ImportForm model={model} /> : null}
+            <>
+              {!showFigure ? null : (
+                <div
+                  className={classes.scroller}
                   style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
+                    width: model.width,
+                    height: model.height,
                   }}
-                  className={classes.sliceRoot}
-                  width={`${model.figureWidth}px`}
-                  height={`${model.figureHeight}px`}
-                  version="1.1"
                 >
-                  <g transform={`translate(${model.centerXY})`}>
-                    <Slices model={model} />
-                  </g>
-                </svg>
-              </div>
-            </div>
-          )}
-          <Controls model={model} showingFigure={showFigure} />
-          {model.hideVerticalResizeHandle ? null : (
-            <ResizeHandle
-              onDrag={model.resizeHeight}
-              style={{
-                height: dragHandleHeight,
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                background: '#ccc',
-                boxSizing: 'border-box',
-                borderTop: '1px solid #fafafa',
-              }}
-            />
-          )}
-        </>
+                  <div
+                    className={classes.rotator}
+                    style={{
+                      transform: [`rotate(${model.offsetRadians}rad)`].join(
+                        ' ',
+                      ),
+                      transition: 'transform 0.5s',
+                      transformOrigin: model.centerXY
+                        .map(x => `${x}px`)
+                        .join(' '),
+                    }}
+                  >
+                    <svg
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                      }}
+                      className={classes.sliceRoot}
+                      width={`${model.figureWidth}px`}
+                      height={`${model.figureHeight}px`}
+                      version="1.1"
+                    >
+                      <g transform={`translate(${model.centerXY})`}>
+                        <Slices model={model} />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              )}
+              <Controls model={model} showingFigure={showFigure} />
+              {model.hideVerticalResizeHandle ? null : (
+                <ResizeHandle
+                  onDrag={model.resizeHeight}
+                  style={{
+                    height: dragHandleHeight,
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    background: '#ccc',
+                    boxSizing: 'border-box',
+                    borderTop: '1px solid #fafafa',
+                  }}
+                />
+              )}
+            </>
+          </>
+        )}
       </div>
     )
   }

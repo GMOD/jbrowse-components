@@ -482,18 +482,13 @@ describe('breakpoint split view', () => {
   it('open a split view', async () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    await waitForElement(() => getByText('Help'))
+    const { findByTestId } = render(<JBrowse initialState={state} />)
 
     expect(
-      await waitForElement(() =>
-        getByTestId('pacbio_hg002_breakpoints-loaded'),
-      ),
+      await findByTestId('pacbio_hg002_breakpoints-loaded'),
     ).toMatchSnapshot()
 
-    expect(
-      await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
-    ).toMatchSnapshot()
+    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
     spy.mockRestore()
   }, 10000)
 })
@@ -502,6 +497,16 @@ test('cause an exception in the jbrowse module loading', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { getByText } = render(<JBrowse config={{ configuration: [] }} />)
   expect(await getByText('Fatal error')).toBeTruthy()
+  expect(spy).toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+test('404 sequence file', async () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { findByText } = render(
+    <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
+  )
+  await findByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
 })

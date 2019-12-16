@@ -15,6 +15,10 @@ import {
   configSchema as indexedFastaAdapterConfigSchema,
 } from './IndexedFastaAdapter'
 import {
+  AdapterClass as ChromSizesAdapterClass,
+  configSchema as chromSizesAdapterConfigSchema,
+} from './ChromSizesAdapter'
+import {
   configSchemaFactory as referenceSequenceTrackConfigSchemaFactory,
   modelFactory as referenceSequenceTrackModelFactory,
 } from './ReferenceSequenceTrack'
@@ -35,6 +39,15 @@ export default class extends Plugin {
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
           AdapterClass: TwoBitAdapterClass,
+        }),
+    )
+
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'ChromSizesAdapter',
+          configSchema: chromSizesAdapterConfigSchema,
+          AdapterClass: ChromSizesAdapterClass,
         }),
     )
 

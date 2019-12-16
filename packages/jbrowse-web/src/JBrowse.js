@@ -9,6 +9,7 @@ import {
   mergeConfigs,
 } from '@gmod/jbrowse-core/util'
 import ErrorBoundary from 'react-error-boundary'
+import queryString from 'query-string'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
@@ -27,7 +28,7 @@ import JBrowseRootModel from './rootModel'
 
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
-  if (inDevelopment) {
+  if (configLoc.uri === 'test_data/config.json' && inDevelopment) {
     config.datasets = mergeConfigs(
       config,
       JSON.parse(
@@ -59,16 +60,16 @@ function useJBrowseWeb(config, initialState) {
   // This serializes the session to URL
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const { origin, pathname } = document.location
+      const parsed = queryString.parse(document.location.search)
+      const urlSplit = window.location.href.split('?')
+      parsed.session = toUrlSafeB64(JSON.stringify(debouncedUrlSnapshot))
       window.history.replaceState(
         {},
         '',
-        `${origin}${pathname}?session=${toUrlSafeB64(
-          JSON.stringify(debouncedUrlSnapshot),
-        )}`,
+        `${urlSplit[0]}?${queryString.stringify(parsed)}`,
       )
     }
-  }, [debouncedUrlSnapshot])
+  }, [config, debouncedUrlSnapshot])
 
   // This updates savedSession list on the rootModel
   useEffect(() => {

@@ -135,39 +135,52 @@ export default function sessionModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterCreate() {
-        const disposer = autorun(() => {
-          self.views.forEach(view => {
-            view.setWidth(self.viewsWidth)
-          })
-        })
-        addDisposer(self, disposer)
+        // bind our views widths to our self.viewsWidth member
+        addDisposer(
+          self,
+          autorun(() => {
+            self.views.forEach(view => {
+              view.setWidth(self.viewsWidth)
+            })
+          }),
+        )
 
-        const displayedRegionsDisposer = autorun(async () => {
-          for (const view of self.views) {
-            const assemblyName = view.displayRegionsFromAssemblyName
-            if (
-              assemblyName &&
-              self.assemblyData.get(assemblyName) &&
-              self.assemblyData.get(assemblyName).sequence
-            ) {
-              // eslint-disable-next-line no-await-in-loop
-              const displayedRegions = await this.getRegionsForAssembly(
-                assemblyName,
-                self.assemblyData,
-              )
-              if (isAlive(self)) {
-                getParent(self).history.withoutUndo(() => {
-                  if (
-                    JSON.stringify(view.displayedRegions) !==
-                    JSON.stringify(displayedRegions)
-                  )
-                    view.setDisplayedRegions(displayedRegions, true)
-                })
+        // views with have displayRegionsFromAssemblyName will have their
+        // displayed regions set to the refs in an assembly
+        addDisposer(
+          self,
+          autorun(() => {
+            self.views.forEach(view => {
+              const assemblyName = view.displayRegionsFromAssemblyName
+              if (
+                assemblyName &&
+                self.assemblyData.get(assemblyName) &&
+                self.assemblyData.get(assemblyName).sequence
+              ) {
+                this.getRegionsForAssembly(assemblyName, self.assemblyData)
+                  .then((displayedRegions: any) => {
+                    // remember nothing inside here is tracked by the autorun
+                    if (isAlive(self)) {
+                      getParent(self).history.withoutUndo(() => {
+                        if (
+                          JSON.stringify(view.displayedRegions) !==
+                          JSON.stringify(displayedRegions)
+                        )
+                          view.setDisplayedRegions(displayedRegions, true)
+                      })
+                      view.setError && view.setError(undefined)
+                    }
+                  })
+                  .catch((error: Error) => {
+                    console.error(error)
+                    if (isAlive(self)) {
+                      view.setError && view.setError(error)
+                    }
+                  })
               }
-            }
-          }
-        })
-        addDisposer(self, displayedRegionsDisposer)
+            })
+          }),
+        )
       },
 
       setSnackbarMessage(str: string | undefined) {
@@ -475,7 +488,6 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       setSelection(thing: any) {
         self.selection = thing
-        // console.log('selected', thing)
       },
 
       /**
@@ -483,7 +495,6 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       clearSelection() {
         self.selection = undefined
-        // console.log('selection cleared')
       },
 
       /**

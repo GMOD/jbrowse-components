@@ -48,6 +48,7 @@
     "mobx-state-tree": "3.14.1",
     "mst-middlewares": "3.10.2",
     "prop-types": "^15.7.2",
+    "query-string": "^6.9.0",
     "raf": "^3.4.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",

@@ -171,6 +171,9 @@ export default pluginManager => {
         return visible
       },
     }))
+    .volatile(() => ({
+      error: undefined,
+    }))
     .actions(self => ({
       // toggle action with a flag stating which mode it's in
       setWidth(newWidth) {
@@ -266,6 +269,10 @@ export default pluginManager => {
         const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
         if (!hiddenCount) self.showTrack(configuration)
+      },
+
+      setError(error) {
+        self.error = error
       },
 
       showTrack(configuration, initialSnapshot = {}) {

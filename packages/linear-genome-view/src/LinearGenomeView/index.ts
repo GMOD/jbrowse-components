@@ -98,8 +98,9 @@ export function stateModelFactory(pluginManager: any) {
       ),
       minimumBlockWidth: 20,
     })
-    .volatile((): { draggingTrackId?: string } => ({
-      draggingTrackId: undefined,
+    .volatile(() => ({
+      draggingTrackId: undefined as undefined | string,
+      error: undefined as undefined | Error,
     }))
     .views(self => ({
       get viewingRegionWidth() {
@@ -239,6 +240,10 @@ export function stateModelFactory(pluginManager: any) {
     .actions(self => ({
       setWidth(newWidth: number) {
         self.width = newWidth
+      },
+
+      setError(error: Error) {
+        self.error = error
       },
 
       setDisplayName(name: string) {
@@ -490,7 +495,7 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = 0
       },
 
-      setDraggingTrackId(idx?: string | undefined) {
+      setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
     }))
