@@ -9,6 +9,10 @@ export const configSchema = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/species1.species2.anchors' },
     },
+    featuresLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/species.gff' },
+    },
   },
   { explicitlyTyped: true },
 )

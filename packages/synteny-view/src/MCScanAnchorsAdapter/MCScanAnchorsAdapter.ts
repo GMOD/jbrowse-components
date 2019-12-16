@@ -10,37 +10,64 @@ export default class extends BaseAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected data: any
 
-  // the map of refSeq to length
-  protected refSeqs: Promise<{ [key: string]: number }>
+  protected featureToSyntenyBlock: any
+
+  protected syntenyBlockToFeature: any
 
   protected source: string
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  public constructor(config: { mcscanAnchorsLocation: IFileLocation }) {
+  public constructor(config: {
+    featuresLocation: IFileLocation
+    mcscanAnchorsLocation: IFileLocation
+  }) {
     super()
-    const { mcscanAnchorsLocation } = config
+    const { mcscanAnchorsLocation, featuresLocation } = config
     if (!mcscanAnchorsLocation) {
       throw new Error('must provide mcscanAnchorsLocation')
     }
-    const file = openLocation(mcscanAnchorsLocation)
-    this.source = file.toString()
-    this.refSeqs = this.init(file)
+    const mcscan = openLocation(mcscanAnchorsLocation)
+    const features = openLocation(featuresLocation)
+    this.source = `${mcscan.toString()}-${features.toString()}`
+    this.featureToSyntenyBlock = {}
+    this.syntenyBlockToFeature = {}
+    ;(async () => {
+      const { featureToSyntenyBlock, syntenyBlockToFeatures } = await this.init(
+        mcscan,
+        features,
+      )
+      this.featureToSyntenyBlock = featureToSyntenyBlock
+      this.syntenyBlockToFeature = syntenyBlockToFeatures
+    })()
   }
 
-  async init(file: GenericFilehandle) {
+  async init(file: GenericFilehandle, features: GenericFilehandle) {
     const data = (await file.readFile('utf8')) as string
-    const refSeqs: { [key: string]: number } = {}
+    const m: { [key: string]: string } = {}
+    const r: {
+      [key: string]: {
+        name1: string
+        name2: string
+        name3: string
+        name4: string
+        score: number
+      }
+    } = {}
     if (!data.length) {
       throw new Error(`Could not read file ${file.toString()}`)
     }
-    data.split('\n').forEach((line: string) => {
+    data.split('\n').forEach((line: string, index: number) => {
       if (line.length) {
-        const [name, length] = line.split('\t')
-        refSeqs[name] = +length
+        const [name1, name2, name3, name4, score] = line.split('\t')
+        m[name1] = `line-${index}`
+        m[name2] = `line-${index}`
+        m[name3] = `line-${index}`
+        m[name4] = `line-${index}`
+        r[index] = { name1, name2, name3, name4, score: +score }
       }
     })
-    return refSeqs
+    return { syntenyBlockToFeatures: r, featureToSyntenyBlock: m }
   }
 
   public async getRefNames() {
