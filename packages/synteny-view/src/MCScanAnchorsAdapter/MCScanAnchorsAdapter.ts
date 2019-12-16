@@ -17,13 +17,13 @@ export default class extends BaseAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
 
-  public constructor(config: { chromSizesLocation: IFileLocation }) {
+  public constructor(config: { mcscanAnchorsLocation: IFileLocation }) {
     super()
-    const { chromSizesLocation } = config
-    if (!chromSizesLocation) {
-      throw new Error('must provide chromSizesLocation')
+    const { mcscanAnchorsLocation } = config
+    if (!mcscanAnchorsLocation) {
+      throw new Error('must provide mcscanAnchorsLocation')
     }
-    const file = openLocation(chromSizesLocation)
+    const file = openLocation(mcscanAnchorsLocation)
     this.source = file.toString()
     this.refSeqs = this.init(file)
   }

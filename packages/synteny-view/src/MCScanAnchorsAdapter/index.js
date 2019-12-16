@@ -1,13 +1,13 @@
 import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 
-export { default as AdapterClass } from './ChromSizesAdapter'
+export { default as AdapterClass } from './MCScanAnchorsAdapter'
 
 export const configSchema = ConfigurationSchema(
-  'ChromSizesAdapter',
+  'MCScanAnchorsAdapter',
   {
-    chromSizesLocation: {
+    mcscanAnchorsLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/species.chrom.sizes' },
+      defaultValue: { uri: '/path/to/species1.species2.anchors' },
     },
   },
   { explicitlyTyped: true },

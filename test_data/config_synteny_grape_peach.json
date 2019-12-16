@@ -107,6 +107,7 @@
       "assembly": {
         "name": "grape",
         "sequence": {
+          "trackId": "grape_seq",
           "type": "ReferenceSequenceTrack",
           "adapter": {
             "type": "ChromSizesAdapter",
@@ -121,7 +122,7 @@
       },
       "tracks": [
         {
-          "configId": "mcscan_grape_to_peach",
+          "trackId": "mcscan_grape_to_peach",
           "type": "BasicTrack",
           "name": "mcscan",
           "configRelationships": [
@@ -134,9 +135,9 @@
             "Annotation"
           ],
           "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "test_data/grape_vs_peach.anchors"
+            "type": "MCScanAnchorsAdapter",
+            "mcscanAnchorsLocation": {
+              "uri": "test_data/grape.peach.anchors.simple"
             }
           },
           "renderer": {
@@ -150,6 +151,7 @@
       "assembly": {
         "name": "peach",
         "sequence": {
+          "trackId": "peach_seq",
           "type": "ReferenceSequenceTrack",
           "adapter": {
             "type": "ChromSizesAdapter",
@@ -164,7 +166,7 @@
       },
       "tracks": [
         {
-          "configId": "mcscan_peach_to_grape",
+          "trackId": "mcscan_peach_to_grape",
           "type": "BasicTrack",
           "name": "mcscan",
           "configRelationships": [
@@ -177,9 +179,9 @@
             "Annotation"
           ],
           "adapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "test_data/grape_vs_peach.anchors"
+            "type": "MCScanAnchorsAdapter",
+            "mcscanAnchorsLocation": {
+              "uri": "test_data/grape.peach.anchors.simple"
             }
           },
           "renderer": {
