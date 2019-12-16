@@ -912,15 +912,13 @@
             "Coverage"
           ],
           "adapter": {
-            "configId": "_m5epcAGu6",
             "type": "BamAdapter",
-            "bamLocation":{
-              "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
+            "bamLocation": {
+              "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
-              "configId": "-bETsJYDd9",
               "location": {
-                "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
+                "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
           }
