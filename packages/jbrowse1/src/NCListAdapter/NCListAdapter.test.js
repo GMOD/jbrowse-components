@@ -36,7 +36,9 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   expect(featuresArray[0].id()).toBe(`${hash}-21,0,0,19,22,0`)
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(94)
-  expect(featuresJsonArray).toMatchSnapshot()
+  for (const feature of featuresJsonArray) {
+    expect(feature).toMatchSnapshot({ uniqueId: expect.any(String) })
+  }
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
   expect(await adapter.hasDataForRefName('21')).toBe(true)
