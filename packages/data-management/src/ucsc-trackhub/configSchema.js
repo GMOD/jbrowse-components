@@ -14,5 +14,5 @@ export default ConfigurationSchema(
       description: 'location of the hub file (usually called hub.txt)',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, explicitIdentifier: 'connectionId' },
 )

@@ -97,7 +97,6 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
-      configuration: types.frozen(),
     })
     .volatile(() => ({
       draggingTrackId: undefined as undefined | string,
@@ -224,12 +223,12 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       getTrack(id: string) {
-        return self.tracks.find(t => t.configuration.configId === id)
+        return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      getTrackPos(trackConfigId: string) {
+      getTrackPos(trackId: string) {
         const idx = self.tracks.findIndex(
-          t => t.configuration.configId === trackConfigId,
+          t => t.configuration.trackId === trackId,
         )
         let accum = 0
         for (let i = 0; i < idx; i += 1) {
@@ -484,11 +483,6 @@ export function stateModelFactory(pluginManager: any) {
        */
       centerAt(/* bp, refName */) {
         /* TODO */
-      },
-
-      activateConfigurationUI() {
-        const session: any = getSession(self)
-        session.editConfiguration(self.configuration)
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {

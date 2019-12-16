@@ -9,8 +9,5 @@ export default class ViewType extends PluggableElementType {
     if (!this.stateModel) {
       throw new Error(`no stateModel defined for view ${this.name}`)
     }
-    if (!this.configSchema) {
-      throw new Error(`no configSchema defined for view ${this.name}`)
-    }
   }
 }

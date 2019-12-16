@@ -8,7 +8,7 @@ export function generateTracks(trackDb) {
   return subTracks.map(subTrack => {
     // eslint-disable-next-line no-underscore-dangle
     const ret = makeTrackConfig(subTrack, trackDb._source.hub.url)
-    ret.configId = `trackhub-registry-${objectHash(ret)}`
+    ret.trackId = `trackhub-registry-${objectHash(ret)}`
     return ret
   })
 

@@ -43,6 +43,7 @@
     "electron-better-ipc-extra": "garrettjstevens/electron-better-ipc-extra#c8648bdea088312107ffc4d176cc5e6ae67a7cfd",
     "electron-debug": "^3.0.1",
     "electron-is-dev": "^1.1.0",
+    "json-stable-stringify": "^1.0.1",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
     "mobx-state-tree": "3.14.1",

@@ -3,6 +3,7 @@ import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
+import jsonStableStringify from 'json-stable-stringify'
 import { autorun } from 'mobx'
 import {
   addDisposer,
@@ -194,9 +195,10 @@ export default function sessionModelFactory(pluginManager: any) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
+          const adapterConfigId = jsonStableStringify(adapterConfig)
           return self.rpcManager
             .call(
-              adapterConfig.configId,
+              adapterConfigId,
               'getRegions',
               {
                 sessionId: assemblyName,

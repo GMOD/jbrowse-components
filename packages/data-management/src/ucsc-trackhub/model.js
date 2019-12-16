@@ -10,7 +10,7 @@ import {
   fetchHubFile,
   fetchTrackDbFile,
   generateTracks,
-  ucscAssemblies,
+  // ucscAssemblies,
 } from './ucscTrackHub'
 
 export default function(pluginManager) {
@@ -50,38 +50,38 @@ export default function(pluginManager) {
                 throw new Error(
                   `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
                 )
-              const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
+              // const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
               let sequence
-              if (twoBitPath) {
-                let twoBitLocation
-                if (hubFileLocation.uri)
-                  twoBitLocation = {
-                    uri: new URL(
-                      twoBitPath,
-                      new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                    ).href,
-                  }
-                else
-                  twoBitLocation = {
-                    localPath: twoBitPath,
-                  }
-                sequence = {
-                  type: 'ReferenceSequenceTrack',
-                  adapter: {
-                    type: 'TwoBitAdapter',
-                    twoBitLocation,
-                  },
-                }
-              } else if (ucscAssemblies.includes(assemblyName))
-                sequence = {
-                  type: 'ReferenceSequenceTrack',
-                  adapter: {
-                    type: 'TwoBitAdapter',
-                    twoBitLocation: {
-                      uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
-                    },
-                  },
-                }
+              // if (twoBitPath) {
+              //   let twoBitLocation
+              //   if (hubFileLocation.uri)
+              //     twoBitLocation = {
+              //       uri: new URL(
+              //         twoBitPath,
+              //         new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+              //       ).href,
+              //     }
+              //   else
+              //     twoBitLocation = {
+              //       localPath: twoBitPath,
+              //     }
+              //   sequence = {
+              //     type: 'ReferenceSequenceTrack',
+              //     adapter: {
+              //       type: 'TwoBitAdapter',
+              //       twoBitLocation,
+              //     },
+              //   }
+              // } else if (ucscAssemblies.includes(assemblyName))
+              //   sequence = {
+              //     type: 'ReferenceSequenceTrack',
+              //     adapter: {
+              //       type: 'TwoBitAdapter',
+              //       twoBitLocation: {
+              //         uri: `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
+              //       },
+              //     },
+              //   }
               let trackDbFileLocation
               if (hubFileLocation.uri)
                 trackDbFileLocation = {

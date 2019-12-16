@@ -74,6 +74,7 @@ export class ProteinWidget {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           sequenceTrack: {
             name: 'Sequence',
+            trackId: 'sequence_track',
             description:
               'Amino acid sequence, and the underlying DNA sequence if available',
             renderer: { type: 'ProteinReferenceSequenceTrackRenderer' },
@@ -81,6 +82,7 @@ export class ProteinWidget {
           },
           domainsTrack: {
             name: 'Domains',
+            trackId: 'domains_track',
             renderer: {
               type: 'SvgFeatureRenderer',
               color1: `
@@ -97,6 +99,7 @@ function(feature) {
           },
           variantTrack: {
             name: 'Variants',
+            trackId: 'variants_track',
             renderer: {
               type: 'LollipopRenderer',
               caption: "function(f) { return f.id() + ': ' + f.get('note')}",

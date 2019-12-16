@@ -292,7 +292,7 @@ export default pluginManager => {
           width: model.width,
           height: model.height,
         }}
-        data-testid={model.configuration.configId}
+        data-testid={model.id}
       >
         {model.error ? (
           <p style={{ color: 'red' }}>{model.error.message}</p>
