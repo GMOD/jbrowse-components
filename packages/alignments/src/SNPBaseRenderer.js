@@ -18,13 +18,13 @@ export default class extends ServerSideRendererType {
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    this.draw(ctx, props, props.features)
+    this.draw(ctx, props)
 
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width }
   }
 
-  draw(ctx, props, features) {
+  draw(ctx, props) {
     /* draw features to context given props */
   }
 

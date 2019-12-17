@@ -8,9 +8,9 @@ import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  draw(ctx: any, props: any, features: Feature) {
+  draw(ctx: any, props: any) {
     const {
-      // features,
+      features,
       region,
       bpPerPx,
       scaleOpts,
@@ -95,9 +95,9 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       }
     }
 
-    // move to stats potentially!!!!
     function getStrand(feature: Feature) {
-      const result = features.get('strand');
+      const result = feature.get('strand');
+      console.log('result', result)
       let strand = ''
       switch(result){
         case -1:
@@ -113,46 +113,53 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       // const strand =
       //   { '-1': '-', '1': '+' }[`${features.get('strand')}`] || 'unstranded'
       // if (!this.filter(features)) return
+      console.log('strand', strand)
       return strand
     }
 
-    const strand = getStrand(features)
-    // increment start and end partial-overlap bins by proportion of overlap
-    forEachBin(region.start, region.end, function(bin: any, overlap: any) {
-      coverageBins[bin].getNested('reference').increment(strand, overlap)
-    })
+    // move to stats potentially!!!!
+    for(const feature of features.values()){ 
 
-    // console.log(props)
-    // console.log(coverageBins)
+      const strand = getStrand(feature)
+      // increment start and end partial-overlap bins by proportion of overlap
+      forEachBin(region.start, region.end, function(bin: any, overlap: any) {
+        coverageBins[bin].getNested('reference').increment(strand, overlap)
+      })
 
-    // Calculate SNP coverage
-    if (binWidth === 1) {
-      const mismatches: Mismatch[] =
-        bpPerPx < 10
-          ? features.get('mismatches')
-          : features.get('skips_and_dels')
-      // loops through mismatches and updates coverage variables accordingly.
-      for (let i = 0; i < mismatches.length; i++) {
-        const mismatch = mismatches[i]
-        forEachBin(
-          features.get('start') + mismatch.start,
-          features.get('start') + mismatch.start + mismatch.length,
-          function calcSNPCoverage(binNum: number, overlap: any) {
-            // Note: we decrement 'reference' so that total of the score is the total coverage
-            const bin = coverageBins[binNum]
-            bin.getNested('reference').decrement(strand, overlap)
-            let { base } = mismatch
-            if (mismatch.type === 'insertion') base = `ins ${base}`
-            else if (mismatch.type === 'skip') base = 'skip'
-            bin.getNested(base).increment(strand, overlap)
-          },
-        )
+      // console.log(props)
+      console.log(coverageBins)
+
+      // Calculate SNP coverage
+      if (binWidth === 1) {
+        const mismatches: Mismatch[] =
+          bpPerPx < 10
+            ? feature.get('mismatches')
+            : feature.get('skips_and_dels')
+        // loops through mismatches and updates coverage variables accordingly.
+        for (let i = 0; i < mismatches.length; i++) {
+          const mismatch = mismatches[i]
+          forEachBin(
+            feature.get('start') + mismatch.start,
+            feature.get('start') + mismatch.start + mismatch.length,
+            function calcSNPCoverage(binNum: number, overlap: any) {
+              // Note: we decrement 'reference' so that total of the score is the total coverage
+              const bin = coverageBins[binNum]
+              bin.getNested('reference').decrement(strand, overlap)
+              let { base } = mismatch
+              if (mismatch.type === 'insertion') base = `ins ${base}`
+              else if (mismatch.type === 'skip') base = 'skip'
+              bin.getNested(base).increment(strand, overlap)
+            },
+          )
+        }
       }
     }
-    for (const feature of features.values()) {
-      console.log(feature)
-      ctx.fillRect(0, 100, 100, 100)
-    }
+
+    
+    // for (const feature of features.values()) {
+    //   console.log(feature)
+    //   ctx.fillRect(0, 100, 100, 100)
+    // }
     /** ****** IN PROGRESS ***************/
     //   const [leftPx, rightPx] = featureSpanPx(
     //     feature,
