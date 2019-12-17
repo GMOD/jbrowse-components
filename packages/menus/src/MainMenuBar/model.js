@@ -124,16 +124,48 @@ export default types
                 'function(session) {session.duplicateCurrentSession();}',
             },
             {
-              name: 'Import tabular data',
-              icon: 'table_chart',
+              name: 'New linear genome view',
+              icon: 'line_style',
               callback:
-                "function(session) { session.addView('SpreadsheetView', {})}",
+                "function(session) { session.addView('LinearGenomeView', {})}",
+            },
+            {
+              name: 'New circular view',
+              icon: 'data_usage',
+              callback:
+                "function(session) { session.addView('CircularView', {})}",
             },
             {
               name: 'New SV inspector',
               icon: 'table_chart',
               callback:
                 "function(session) { session.addView('SvInspectorView', {})}",
+            },
+            {
+              name: 'Open tabular data',
+              icon: 'view_comfy',
+              callback:
+                "function(session) { session.addView('SpreadsheetView', {})}",
+            },
+            {
+              name: 'Open new track',
+              icon: 'note_add',
+              callback: `function(session) {
+const drawerWidget = session.addDrawerWidget(
+      'AddTrackDrawerWidget',
+      'addTrackDrawerWidget',
+    )
+    session.showDrawerWidget(drawerWidget)`,
+            },
+            {
+              name: 'Open new connection',
+              icon: 'input',
+              callback: `function(session) {
+const drawerWidget = session.addDrawerWidget(
+      'AddConnectionDrawerWidget',
+      'addConnectionDrawerWidget',
+    )
+    session.showDrawerWidget(drawerWidget)`,
             },
           ],
         })
