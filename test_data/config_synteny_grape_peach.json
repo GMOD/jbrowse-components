@@ -15,24 +15,26 @@
       "views": [
         {
           "type": "SyntenyView",
+          "mcscan": true,
           "headerHeight": 44,
           "width": 1850,
           "height": 400,
           "displayName": "Grape vs Peach",
           "configuration": {
-            "type": "SyntenyView"
+            "type": "SyntenyView",
+            "mcscan": true
           },
           "trackSelectorType": "hierarchical",
           "views": [
             {
               "type": "LinearGenomeView",
               "offsetPx": 0,
-              "bpPerPx": 100000,
+              "bpPerPx": 1000,
               "displayedRegions": [
                 {
-                  "refName": "7",
+                  "refName": "Pp01",
                   "start": 0,
-                  "end": 198022430,
+                  "end": 50022430,
                   "assemblyName": "peach"
                 }
               ],
@@ -56,12 +58,12 @@
             {
               "type": "LinearGenomeView",
               "offsetPx": 0,
-              "bpPerPx": 100000,
+              "bpPerPx": 1000,
               "displayedRegions": [
                 {
                   "refName": "chr5",
                   "start": 0,
-                  "end": 171115067,
+                  "end": 25000000,
                   "assemblyName": "grape"
                 }
               ],
@@ -135,10 +137,8 @@
             "Annotation"
           ],
           "adapter": {
-            "type": "MCScanAnchorsAdapter",
-            "mcscanAnchorsLocation": {
-              "uri": "test_data/grape.peach.anchors.simple"
-            }
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
           },
           "renderer": {
             "type": "PileupRenderer"
@@ -179,10 +179,8 @@
             "Annotation"
           ],
           "adapter": {
-            "type": "MCScanAnchorsAdapter",
-            "mcscanAnchorsLocation": {
-              "uri": "test_data/grape.peach.anchors.simple"
-            }
+            "type": "NCListAdapter",
+            "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
           },
           "renderer": {
             "type": "PileupRenderer"

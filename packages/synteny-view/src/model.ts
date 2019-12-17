@@ -3,7 +3,7 @@ import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { getConf } from '@gmod/jbrowse-core/configuration'
 
 export type LayoutRecord = [number, number, number, number]
@@ -30,7 +30,12 @@ export default function stateModelFactory(pluginManager: any) {
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const configSchema = ConfigurationSchema(
     'SyntenyView',
-    {},
+    {
+      mcscan: {
+        type: 'boolean',
+        defaultValue: false,
+      },
+    },
     { explicitlyTyped: true },
   )
 
@@ -59,6 +64,10 @@ export default function stateModelFactory(pluginManager: any) {
       views: types.array(pluginManager.getViewType('LinearGenomeView')
         .stateModel as LinearGenomeViewStateModel),
     })
+    .volatile(self => ({
+      mcscanData: undefined as any,
+      mcscanLookupData: undefined as any,
+    }))
     .views(self => ({
       get controlsWidth() {
         return self.views.length ? self.views[0].controlsWidth : 0
@@ -104,6 +113,68 @@ export default function stateModelFactory(pluginManager: any) {
           r[group] = this.getMatchedSyntenyFeatures(group)
         })
         return r
+      },
+
+      get allMatchedMCScanFeatures() {
+        const r: { [key: string]: string[] } = {}
+        this.syntenyGroups.forEach(group => {
+          r[group] = this.getMCScanFeatures(group)
+        })
+        return r
+      },
+
+      // This finds candidate syntenic connections
+      getMCScanFeatures(syntenyGroup: string) {
+        const features = this.getTrackFeatures(syntenyGroup)
+        const alreadySeen = new Set<string>()
+        const featNameMap: any = {}
+
+        // this finds candidate features that share the same name
+        for (const feature of features.values()) {
+          const n = self.mcscanData[feature.get('name')]
+          featNameMap[feature.get('name')] = feature
+
+          if (n) {
+            alreadySeen.add(n)
+          }
+        }
+
+        const blocks = Array.from(alreadySeen)
+        const ret = []
+        for (const block of blocks) {
+          const r = self.mcscanLookupData[block]
+          if (r) {
+            const r1 = featNameMap[r.name1]
+            const r2 = featNameMap[r.name2]
+            const r3 = featNameMap[r.name3]
+            const r4 = featNameMap[r.name4]
+            if (!(r1 && r2) || !(r3 && r4)) continue
+            const s1 = Math.min(r1.get('start'), r2.get('start'))
+            const e1 = Math.max(r1.get('end'), r2.get('end'))
+            const s2 = Math.min(r3.get('start'), r4.get('start'))
+            const e2 = Math.max(r3.get('end'), r4.get('end'))
+
+            ret.push([
+              {
+                layout: [s1, 0, e1, 10],
+                feature: new SimpleFeature({
+                  data: { uniqueId: `${block}-1`, start: s1, end: e1 },
+                }),
+                level: 1,
+                block: { refName: r1.get('refName') },
+              },
+              {
+                layout: [s2, 0, e2, 10],
+                feature: new SimpleFeature({
+                  data: { uniqueId: `${block}-2`, start: s2, end: e2 },
+                }),
+                level: 0,
+                block: { refName: r3.get('refName') },
+              },
+            ])
+          }
+        }
+        return ret
       },
 
       // This finds candidate syntenic connections
@@ -197,6 +268,11 @@ export default function stateModelFactory(pluginManager: any) {
 
       removeView(view: LGV) {
         self.views.remove(view)
+      },
+
+      setMCScanData(mcscanData: any, mcscanLookupData: any) {
+        self.mcscanData = mcscanData
+        self.mcscanLookupData = mcscanLookupData
       },
 
       closeView() {

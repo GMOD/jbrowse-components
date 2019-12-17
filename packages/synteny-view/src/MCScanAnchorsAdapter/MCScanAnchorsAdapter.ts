@@ -14,6 +14,8 @@ export default class extends BaseAdapter {
 
   protected syntenyBlockToFeature: any
 
+  protected loaded: Promise<boolean>
+
   protected source: string
 
   public static capabilities = ['getFeatures', 'getRefNames', 'getRegions']
@@ -32,14 +34,7 @@ export default class extends BaseAdapter {
     this.source = `${mcscan.toString()}-${features.toString()}`
     this.featureToSyntenyBlock = {}
     this.syntenyBlockToFeature = {}
-    ;(async () => {
-      const { featureToSyntenyBlock, syntenyBlockToFeatures } = await this.init(
-        mcscan,
-        features,
-      )
-      this.featureToSyntenyBlock = featureToSyntenyBlock
-      this.syntenyBlockToFeature = syntenyBlockToFeatures
-    })()
+    this.loaded = this.init(mcscan, features)
   }
 
   async init(file: GenericFilehandle, features: GenericFilehandle) {
@@ -67,20 +62,24 @@ export default class extends BaseAdapter {
         r[index] = { name1, name2, name3, name4, score: +score }
       }
     })
-    return { syntenyBlockToFeatures: r, featureToSyntenyBlock: m }
+    this.syntenyBlockToFeature = r
+    this.featureToSyntenyBlock = m
+    return true
   }
 
   public async getRefNames() {
-    return Object.keys(await this.refSeqs)
+    await this.loaded
+    return []
   }
 
   public async getRegions() {
-    const refSeqs = await this.refSeqs
-    return Object.keys(refSeqs).map(refName => ({
-      refName,
-      start: 0,
-      end: refSeqs[refName],
-    }))
+    const refSeqs = await this.loaded
+    return {}
+    // return Object.keys(refSeqs).map(refName => ({
+    //   refName,
+    //   start: 0,
+    //   end: refSeqs[refName],
+    // }))
   }
 
   /**

@@ -9,6 +9,7 @@ export default (pluginManager: any) => {
   const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { useState, useEffect } = jbrequire('react')
 
   return observer(
     ({
@@ -21,11 +22,41 @@ export default (pluginManager: any) => {
       syntenyGroup: string
     }) => {
       const { views, showIntraviewLinks } = model
-      const features = model.allMatchedSyntenyFeatures[syntenyGroup]
-      const layoutMatches = model.getMatchedFeaturesInLayout(
-        syntenyGroup,
-        features,
-      )
+      const [initialized, setInitialized] = useState(false)
+      const mcscan = getConf(model, 'mcscan')
+      if (mcscan)
+        useEffect(() => {
+          ;(async () => {
+            if (getConf(model, 'mcscan')) {
+              const data = await fetch('test_data/grape.peach.anchors.simple')
+              const text = await data.text()
+              const m: any = {}
+              const r: any = {}
+              text.split('\n').forEach((line: string, index: number) => {
+                if (line.length) {
+                  const [name1, name2, name3, name4, score] = line.split('\t')
+                  m[name1] = index
+                  m[name2] = index
+                  m[name3] = index
+                  m[name4] = index
+                  r[index] = { name1, name2, name3, name4, score: +score }
+                }
+              })
+
+              model.setMCScanData(m, r)
+              setInitialized(true)
+            }
+          })()
+        }, [model])
+
+      if (mcscan && !initialized) return null
+
+      const layoutMatches = mcscan
+        ? model.getMCScanFeatures(syntenyGroup)
+        : model.getMatchedFeaturesInLayout(
+            syntenyGroup,
+            model.allMatchedSyntenyFeatures[syntenyGroup],
+          )
       return (
         <g
           stroke="#333"
@@ -65,10 +96,10 @@ export default (pluginManager: any) => {
               const r2 = block2.refName
               const l1 = f1.get('end') - f1.get('start')
               const l2 = f2.get('end') - f2.get('start')
-              if (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx) {
-                // eslint-disable-next-line no-continue
-                continue
-              }
+              // if (l1 < views[level1].bpPerPx || l2 < views[level2].bpPerPx) {
+              //   // eslint-disable-next-line no-continue
+              //   continue
+              // }
 
               const x11 = getPxFromCoordinate(views[level1], r1, c1[LEFT])
               const x12 = getPxFromCoordinate(views[level1], r1, c1[RIGHT])
@@ -84,11 +115,12 @@ export default (pluginManager: any) => {
               const nc = tracks.filter(f => !!f.track)
 
               const y1 =
-                yPos(getConf(nc[0].track, 'configId'), level1, nv, nt, c1) +
+                yPos(getConf(nc[0].track, 'trackId'), level1, nv, nt, c1) +
                 (level1 < level2 ? cheight(c1) : 0)
               const y2 =
-                yPos(getConf(nc[1].track, 'configId'), level2, nv, nt, c2) +
+                yPos(getConf(nc[1].track, 'trackId'), level2, nv, nt, c2) +
                 (level2 < level1 ? cheight(c2) : 0)
+
               ret.push(
                 <polygon
                   key={`${f1.id()}-${f2.id()}`}
