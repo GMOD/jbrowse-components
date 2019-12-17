@@ -118,6 +118,7 @@ export default pluginManager => {
       get featuresCircularTrackConfiguration() {
         const configuration = {
           type: 'StructuralVariantChordTrack',
+          trackId: `sv-inspector-sv-chord-track-${self.id}`,
           name: 'features from tabular data',
           renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
