@@ -43,9 +43,11 @@ async function parseConfig(configLoc) {
 
 function useJBrowseWeb(config, initialState) {
   const [loaded, setLoaded] = useState(false)
-  const [rootModel, setRootModel] = useState(initialState || {})
+  const [rootModel, setRootModel] = useState(
+    initialState ? JBrowseRootModel.create(initialState) : undefined,
+  )
   const [urlSnapshot, setUrlSnapshot] = useState()
-  const [configSnapshot, setConfigSnapshot] = useState(config || {})
+  const [configSnapshot, setConfigSnapshot] = useState()
   const debouncedUrlSnapshot = useDebounce(urlSnapshot, 400)
 
   const { session, jbrowse } = rootModel || {}
@@ -78,16 +80,18 @@ function useJBrowseWeb(config, initialState) {
     }
   }, [debouncedUrlSnapshot, rootModel])
   useEffect(() => {
-    try {
-      setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
-    } catch (error) {
-      // if it failed to load, it's probably a problem with the saved sessions,
-      // so just delete them and try again
-      setRootModel(
-        JBrowseRootModel.create({
-          jbrowse: { ...configSnapshot, savedSessions: [] },
-        }),
-      )
+    if (configSnapshot) {
+      try {
+        setRootModel(JBrowseRootModel.create({ jbrowse: configSnapshot }))
+      } catch (error) {
+        // if it failed to load, it's probably a problem with the saved sessions,
+        // so just delete them and try again
+        setRootModel(
+          JBrowseRootModel.create({
+            jbrowse: { ...configSnapshot, savedSessions: [] },
+          }),
+        )
+      }
     }
   }, [configSnapshot])
 
@@ -96,16 +100,17 @@ function useJBrowseWeb(config, initialState) {
     ;(async () => {
       try {
         if (initialState) {
-          setRootModel(initialState)
+          setRootModel(JBrowseRootModel.create(initialState))
         } else {
           const localStorageConfig =
             useLocalStorage && localStorage.getItem('jbrowse-web-data')
 
           if (localStorageConfig) {
             setConfigSnapshot(JSON.parse(localStorageConfig))
-          }
-          if (configSnapshot.uri || configSnapshot.localPath) {
+          } else if (config.uri || config.localPath) {
             setConfigSnapshot(await parseConfig(config))
+          } else {
+            setConfigSnapshot(config)
           }
         }
       } catch (e) {
@@ -115,13 +120,7 @@ function useJBrowseWeb(config, initialState) {
         })
       }
     })()
-  }, [
-    config,
-    configSnapshot.localPath,
-    configSnapshot.uri,
-    initialState,
-    useLocalStorage,
-  ])
+  }, [config, initialState, useLocalStorage])
 
   // finalize rootModel and setLoaded
   useEffect(() => {
