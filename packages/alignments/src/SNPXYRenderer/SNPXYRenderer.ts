@@ -74,6 +74,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     //   return Math.floor((bp - leftBase) / binWidth)
     // }
 
+    console.log(props)
+
     const coverageBins = new Array(binMax).fill(0)
 
     for (let i = 0; i < binMax; i++) {
@@ -184,25 +186,19 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
-    // const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    // const negColor = readConfObject(config, 'negColor')
-    // const posColor = readConfObject(config, 'posColor')
-    // const filled = readConfObject(config, 'filled')
-    // const clipColor = readConfObject(config, 'clipColor')
-    // const highlightColor = readConfObject(config, 'highlightColor')
-    // const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-    // const scale = getScale({ ...scaleOpts, range: [0, height] })
-    // const originY = getOrigin(scaleOpts.scaleType)
+    const pivotValue = readConfObject(config, 'bicolorPivotValue')
+    const negColor = readConfObject(config, 'negColor')
+    const posColor = readConfObject(config, 'posColor')
+    const filled = readConfObject(config, 'filled')
+    const clipColor = readConfObject(config, 'clipColor')
+    const highlightColor = readConfObject(config, 'highlightColor')
+    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+    const viewScale = getScale({ ...scaleOpts, range: [0, height] })
+    const originY = getOrigin(scaleOpts.scaleType)
     // const [niceMin, niceMax] = scale.domain()
-    // const toY = rawscore => height - scale(rawscore)
-    // const toHeight = rawscore => toY(originY) - toY(rawscore)
-    // let colorCallback
-    // if (readConfObject(config, 'color') === '#f0f') {
-    //   colorCallback = feature =>
-    //     feature.get('score') < pivotValue ? negColor : posColor
-    // } else {
-    //   colorCallback = feature => readConfObject(config, 'color', [feature])
-    // }
+    const toY = (rawscore: number) => height - viewScale(rawscore)
+    const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
+    let colorCallback = readConfObject(config, 'color', [features])
     // console.log('Props in SNPXYRend', props)
     // console.log('Feature in SNPXYRend', features)
 
@@ -219,12 +215,16 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
-    ctx.fillStyle = 'darkgray'
+    ctx.fillStyle = 'darkgrey'
+    console.log(originY)
 
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
       //console.log(currentBin, index)
-      console.log(leftBase + (binWidth * index), rightBase, binWidth, currentBin.total())
-      ctx.fillRect(leftBase + (binWidth * index), rightBase, binWidth, currentBin.total())
+      const offset = binWidth * index
+      const score = currentBin.total()
+      //console.log(currentBin)
+      //console.log(leftBase + offset, toY(score), binWidth, toHeight(score))
+      ctx.fillRect(leftBase + offset, toY(score), binWidth, toHeight(score))
     })
     // for (const feature of features.values()) {
     //   console.log(feature)
