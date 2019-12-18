@@ -5,7 +5,7 @@ describe('Data management', () => {
   let pluginManager
 
   beforeAll(() => {
-    ;({ pluginManager } = createTestSession({ configId: 'testing' }))
+    ;({ pluginManager } = createTestSession())
   })
 
   it("won't add if already added", () => {

@@ -3,11 +3,11 @@ import { generateHierarchy } from './model'
 test('can generate hierarchy correctly', () => {
   const trackConfigurations = [
     {
-      configId: 'zonker',
+      trackId: 'zonker',
       category: { func: () => ['Bar', 'Baz'] },
     },
-    { configId: 'zoo' },
-    { configId: 'bee', category: { func: () => ['Bar'] } },
+    { trackId: 'zoo' },
+    { trackId: 'bee', category: { func: () => ['Bar'] } },
   ]
   expect(generateHierarchy(trackConfigurations)).toEqual(
     new Map([

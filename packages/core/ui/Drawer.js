@@ -14,10 +14,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     flex: '1 0 auto',
     zIndex: theme.zIndex.drawer,
-    top: 0,
     outline: 'none',
-    left: 'auto',
-    right: 0,
     background: theme.palette.background.default,
   },
 }))

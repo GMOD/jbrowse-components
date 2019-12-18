@@ -34,6 +34,7 @@ describe('ScaleBar genome view component', () => {
       assembly: {
         assemblyName: 'volMyt1',
         sequence: {
+          trackId: 'ref0',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -78,6 +79,7 @@ describe('ScaleBar genome view component', () => {
       assembly: {
         assemblyName: 'volMyt1',
         sequence: {
+          trackId: 'ref0',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -125,6 +127,7 @@ describe('ScaleBar genome view component', () => {
       assembly: {
         assemblyName: 'volMyt1',
         sequence: {
+          trackId: 'ref0',
           adapter: {
             type: 'FromConfigAdapter',
             features: [

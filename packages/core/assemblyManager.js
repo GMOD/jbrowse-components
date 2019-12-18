@@ -1,4 +1,5 @@
-import { observable } from 'mobx'
+import jsonStableStringify from 'json-stable-stringify'
+import { observable, toJS } from 'mobx'
 import { getParent } from 'mobx-state-tree'
 import { readConfObject } from './configuration'
 
@@ -88,8 +89,11 @@ export default self => ({
       const refNameAliases = {}
       const assemblyConfig = self.assemblyData.get(assemblyName)
       if (assemblyConfig.refNameAliases) {
+        const adapterConfigId = jsonStableStringify(
+          toJS(assemblyConfig.refNameAliases.adapter),
+        )
         const adapterRefNameAliases = await self.rpcManager.call(
-          assemblyConfig.refNameAliases.adapter.configId,
+          adapterConfigId,
           'getRefNameAliases',
           {
             sessionId: assemblyName,
@@ -112,11 +116,11 @@ export default self => ({
      */
     async addRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
       const refNameAliases = await self.getRefNameAliases(assemblyName, opts)
-      const adapterConfigId = readConfObject(adapterConf, 'configId')
+      const adapterConfigId = jsonStableStringify(adapterConf)
       const refNameMap = observable.map({})
 
       const refNames = await self.rpcManager.call(
-        readConfObject(adapterConf, 'configId'),
+        adapterConfigId,
         'getRefNames',
         {
           sessionId: assemblyName,
@@ -147,11 +151,11 @@ export default self => ({
     },
 
     async getRefNameMapForAdapter(adapterConf, assemblyName, opts = {}) {
-      const configId = readConfObject(adapterConf, 'configId')
-      if (!self.refNameMaps.has(configId)) {
+      const adapterConfigId = jsonStableStringify(adapterConf)
+      if (!self.refNameMaps.has(adapterConfigId)) {
         return self.addRefNameMapForAdapter(adapterConf, assemblyName, opts)
       }
-      return self.refNameMaps.get(configId)
+      return self.refNameMaps.get(adapterConfigId)
     },
   },
 })

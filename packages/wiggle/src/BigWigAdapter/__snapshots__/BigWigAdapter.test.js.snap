@@ -3,11 +3,11 @@
 exports[`adapter can fetch features from volvox.bw adapter can fetch stats from volvox.bw 1`] = `
 Object {
   "basesCovered": 49984,
-  "featureDensity": 0,
+  "featureDensity": 0.00002000640204865557,
   "scoreMax": 38,
-  "scoreMean": 0,
+  "scoreMean": 19.197983354673497,
   "scoreMin": 1,
-  "scoreStdDev": 0,
+  "scoreStdDev": 4.55961443138808,
   "scoreSum": 959592,
   "scoreSumSquares": 19461382,
 }

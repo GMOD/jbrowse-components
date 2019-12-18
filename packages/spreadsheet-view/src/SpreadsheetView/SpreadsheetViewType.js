@@ -4,14 +4,7 @@ export default ({ jbrequire }) => {
   )
 
   const ReactComponent = jbrequire(require('./components/SpreadsheetView'))
-  const { stateModel, configSchema } = jbrequire(
-    require('./models/SpreadsheetView'),
-  )
+  const { stateModel } = jbrequire(require('./models/SpreadsheetView'))
 
-  return new ViewType({
-    name: 'SpreadsheetView',
-    stateModel,
-    configSchema,
-    ReactComponent,
-  })
+  return new ViewType({ name: 'SpreadsheetView', stateModel, ReactComponent })
 }

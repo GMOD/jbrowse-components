@@ -22,7 +22,6 @@ describe('<DropDownMenu />', () => {
 
   beforeAll(() => {
     session = createTestSession({
-      configId: 'testing',
       rpc: { defaultDriver: 'MainThreadRpcDriver' },
     })
     session.menuBars[0].unshiftMenu({

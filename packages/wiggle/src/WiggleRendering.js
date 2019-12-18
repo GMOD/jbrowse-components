@@ -2,7 +2,7 @@ import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/mst-types'
 import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { Component } from 'react'
+import React, { useState, useRef } from 'react'
 import './WiggleRendering.scss'
 
 const toP = s => parseFloat(s.toPrecision(6))
@@ -38,101 +38,77 @@ Tooltip.propTypes = {
   feature: ReactPropTypes.shape({ get: ReactPropTypes.func }).isRequired,
 }
 
-class WiggleRendering extends Component {
-  static propTypes = {
-    height: ReactPropTypes.number.isRequired,
-    width: ReactPropTypes.number.isRequired,
-    region: CommonPropTypes.Region.isRequired,
-    features: ReactPropTypes.instanceOf(Map).isRequired,
-    bpPerPx: ReactPropTypes.number.isRequired,
-    horizontallyFlipped: ReactPropTypes.bool,
-    trackModel: ReactPropTypes.shape({
-      /** id of the currently selected feature, if any */
-      selectedFeatureId: ReactPropTypes.string,
-    }),
-  }
+function WiggleRendering(props) {
+  const {
+    region,
+    features,
+    bpPerPx,
+    horizontallyFlipped,
+    width,
+    height,
+  } = props
+  const ref = useRef()
+  const [featureUnderMouse, setFeatureUnderMouse] = useState()
+  const [clientX, setClientX] = useState()
 
-  static defaultProps = {
-    horizontallyFlipped: false,
-    trackModel: {},
+  let offset = 0
+  if (ref.current) {
+    offset = ref.current.getBoundingClientRect().left
   }
-
-  constructor(props) {
-    super(props)
-    this.state = {}
-    this.ref = React.createRef()
-  }
-
-  onMouseMove(evt) {
-    const { region, features, bpPerPx, horizontallyFlipped, width } = this.props
-    const { clientX } = evt
-    let offset = 0
-    if (this.ref.current) {
-      offset = this.ref.current.getBoundingClientRect().left
-    }
-    const offsetX = clientX - offset
+  function onMouseMove(evt) {
+    const offsetX = evt.clientX - offset
     const px = horizontallyFlipped ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
-
     for (const feature of features.values()) {
       if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
-        this.setState({ clientX, featureUnderMouse: feature })
-        return
+        setFeatureUnderMouse(feature)
+        break
       }
     }
+    setClientX(evt.clientX)
   }
 
-  onMouseLeave() {
-    this.setState({ featureUnderMouse: undefined })
+  function onMouseLeave() {
+    setFeatureUnderMouse(undefined)
   }
 
-  /**
-   * @param {string} handlerName
-   * @param {*} event - the actual mouse event
-   * @param {bool} always - call this handler even if there is no feature
-   */
-  callMouseHandler(handlerName, event, always = false) {
-    // eslint-disable-next-line react/destructuring-assignment
-    const featureHandler = this.props[`onFeature${handlerName}`]
-    // eslint-disable-next-line react/destructuring-assignment
-    const canvasHandler = this.props[`on${handlerName}`]
-    const { featureUnderMouse } = this.state
-    if (featureHandler && (always || featureUnderMouse)) {
-      featureHandler(event, featureUnderMouse)
-    } else if (canvasHandler) {
-      canvasHandler(event, featureUnderMouse)
-    }
-  }
-
-  render() {
-    const { featureUnderMouse, clientX } = this.state
-    const { height } = this.props
-    let offset = 0
-    if (this.ref.current) {
-      offset = this.ref.current.getBoundingClientRect().left
-    }
-
-    return (
-      <div
-        ref={this.ref}
-        onMouseMove={this.onMouseMove.bind(this)}
-        onMouseLeave={this.onMouseLeave.bind(this)}
-        role="presentation"
-        onFocus={() => {}}
-        className="WiggleRendering"
-        style={{
-          overflow: 'visible',
-          position: 'relative',
-          height,
-        }}
-      >
-        <PrerenderedCanvas {...this.props} />
-        {featureUnderMouse ? (
-          <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
-        ) : null}
-      </div>
-    )
-  }
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      role="presentation"
+      onFocus={() => {}}
+      className="WiggleRendering"
+      style={{
+        overflow: 'visible',
+        position: 'relative',
+        height,
+      }}
+    >
+      <PrerenderedCanvas {...props} />
+      {featureUnderMouse ? (
+        <Tooltip feature={featureUnderMouse} offsetX={clientX - offset} />
+      ) : null}
+    </div>
+  )
 }
 
+WiggleRendering.propTypes = {
+  height: ReactPropTypes.number.isRequired,
+  width: ReactPropTypes.number.isRequired,
+  region: CommonPropTypes.Region.isRequired,
+  features: ReactPropTypes.instanceOf(Map).isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  horizontallyFlipped: ReactPropTypes.bool,
+  trackModel: ReactPropTypes.shape({
+    /** id of the currently selected feature, if any */
+    selectedFeatureId: ReactPropTypes.string,
+  }),
+}
+
+WiggleRendering.defaultProps = {
+  horizontallyFlipped: false,
+  trackModel: {},
+}
 export default observer(WiggleRendering)

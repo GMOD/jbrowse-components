@@ -55,7 +55,7 @@ test('has a viewType attr', () => {
   )
   const config = configSchema.create({
     type: 'VariantTrack',
-
+    trackId: 'trackId0',
     name: 'Zonker Track',
   })
   expect(config.viewType).toEqual('LinearGenomeView')

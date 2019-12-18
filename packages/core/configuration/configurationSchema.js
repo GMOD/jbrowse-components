@@ -42,8 +42,7 @@ export function isConfigurationSchemaType(thing) {
   if (
     isModelType(thing) &&
     (!!thing.isJBrowseConfigurationSchema ||
-      (thing.identifierAttribute === 'configId' &&
-        thing.name.includes('ConfigurationSchema')))
+      thing.name.includes('ConfigurationSchema'))
   ) {
     return true
   }
@@ -104,7 +103,7 @@ export function isConfigurationSlotType(thing) {
 export function ConfigurationSchema(
   modelName,
   inputSchemaDefinition,
-  options = {},
+  inputOptions = {},
 ) {
   if (typeof modelName !== 'string') {
     throw new Error(
@@ -115,28 +114,50 @@ export function ConfigurationSchema(
   // if we have a base configuration schema that we are
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
+  let options = inputOptions
   if (
-    options.baseConfiguration &&
-    options.baseConfiguration.jbrowseSchemaDefinition
+    inputOptions.baseConfiguration &&
+    inputOptions.baseConfiguration.jbrowseSchemaDefinition
   ) {
     schemaDefinition = {
-      ...options.baseConfiguration.jbrowseSchemaDefinition,
+      ...inputOptions.baseConfiguration.jbrowseSchemaDefinition,
       ...schemaDefinition,
     }
+    options = {
+      ...(inputOptions.baseConfiguration.jbrowseSchemaOptions || {}),
+      ...inputOptions,
+    }
+    delete options.baseConfiguration
   }
 
   // now assemble the MST model of the configuration schema
-  const modelDefinition = {
-    configId: options.singleton
-      ? types.optional(
-          types.refinement(types.identifier, t => t === modelName),
-          modelName,
-        )
-      : ElementId,
-  }
+  const modelDefinition = {}
+  let identifier
 
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
+  }
+
+  if (options.explicitIdentifier && options.implicitIdentifier)
+    throw new Error(
+      `Cannot have both explicit and implicit identifiers in ${modelName}`,
+    )
+  if (options.explicitIdentifier) {
+    if (typeof options.explicitIdentifier === 'string') {
+      modelDefinition[options.explicitIdentifier] = types.identifier
+      identifier = options.explicitIdentifier
+    } else {
+      modelDefinition.id = types.identifier
+      identifier = 'id'
+    }
+  } else if (options.implicitIdentifier) {
+    if (typeof options.implicitIdentifier === 'string') {
+      modelDefinition[options.implicitIdentifier] = ElementId
+      identifier = options.implicitIdentifier
+    } else {
+      modelDefinition.id = ElementId
+      identifier = 'id'
+    }
   }
 
   const volatileConstants = {
@@ -218,14 +239,18 @@ export function ConfigurationSchema(
     return newSnap
   })
 
+  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const schemaType = types.optional(
     completeModel,
-    options.explicitlyTyped ? { type: modelName } : {},
+    options.explicitlyTyped
+      ? { type: modelName, ...identifierDefault }
+      : identifierDefault,
   )
 
   // save a couple of jbrowse-specific things in the type object. hope nobody gets mad.
   schemaType.isJBrowseConfigurationSchema = true
   schemaType.jbrowseSchemaDefinition = schemaDefinition
+  schemaType.jbrowseSchemaOptions = options
   return schemaType
 }
 
