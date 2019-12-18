@@ -55,7 +55,7 @@ function TrackControls({
   }
   return (
     <div
-      data-testid={`trackControls-${view.id}-${getConf(track, 'trackId')}`}
+      data-testid={`trackControls-${view.id}-${getConf(track, 'configId')}`}
       {...other}
     >
       <IconButton
@@ -75,10 +75,8 @@ function TrackControls({
           selected={
             session.visibleDrawerWidget &&
             session.visibleDrawerWidget.id === 'configEditor' &&
-            session.visibleDrawerWidget.target &&
-            session.visibleDrawerWidget.target.trackId &&
-            session.visibleDrawerWidget.target.trackId ===
-              track.configuration.trackId
+            session.visibleDrawerWidget.target.configId ===
+              track.configuration.configId
           }
           value="configure"
           onClick={onConfigureClick}
@@ -97,7 +95,7 @@ function TrackControls({
           }}
           onDragEnd={() => view.setDraggingTrackId(undefined)}
           item
-          data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
+          data-testid={`dragHandle-${view.id}-${getConf(track, 'configId')}`}
         >
           <Icon className={classes.dragHandle} fontSize="small">
             drag_indicator

@@ -10,5 +10,7 @@ test('plugin in a stock JBrowse', () => {
 
   const BigBedAdapter = pluginManager.getAdapterType('BigBedAdapter')
   const config = BigBedAdapter.configSchema.create({ type: 'BigBedAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+  })
 })

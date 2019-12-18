@@ -45,7 +45,6 @@ export default pluginManager => {
         self.refNameMap = result
       },
       loadAssemblyRefNameMapError(error) {
-        self.error = error
         console.error(error)
       },
     }))

@@ -12,13 +12,35 @@ test('plugin in a stock JBrowse', () => {
   const config = VcfTabixAdapter.configSchema.create({
     type: 'VcfTabixAdapter',
   })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+    index: { configId: expect.any(String) },
+  })
 
   const VariantTrack = pluginManager.getTrackType('VariantTrack')
   const config2 = VariantTrack.configSchema.create({
     type: 'VariantTrack',
-    trackId: 'trackId0',
     adapter: { type: 'VcfTabixAdapter' },
   })
-  expect(getSnapshot(config2)).toMatchSnapshot()
+  expect(getSnapshot(config2)).toMatchSnapshot({
+    adapter: {
+      configId: expect.any(String),
+      index: {
+        configId: expect.any(String),
+      },
+    },
+    configId: expect.any(String),
+    renderers: {
+      PileupRenderer: {
+        configId: expect.any(String),
+      },
+      SvgFeatureRenderer: {
+        configId: expect.any(String),
+        labels: {
+          configId: expect.any(String),
+        },
+      },
+      configId: expect.any(String),
+    },
+  })
 })

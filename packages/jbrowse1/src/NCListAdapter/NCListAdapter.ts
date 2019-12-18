@@ -6,7 +6,6 @@ import BaseAdapter, { BaseOptions } from '@gmod/jbrowse-core/BaseAdapter'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import objectHash from 'object-hash'
 
 import NCListFeature from './NCListFeature'
 
@@ -18,13 +17,17 @@ export default class extends BaseAdapter {
 
   static capabilities = ['getFeatures']
 
-  private id: string
+  private configId: string
 
-  constructor(args: { refNames?: string[]; rootUrlTemplate: string }) {
+  constructor(args: {
+    configId: string
+    refNames?: string[]
+    rootUrlTemplate: string
+  }) {
     super()
-    const { refNames, rootUrlTemplate } = args
+    const { configId, refNames, rootUrlTemplate } = args
     this.configRefNames = refNames
-    this.id = objectHash(args)
+    this.configId = configId
 
     this.nclist = new NCListStore({
       baseUrl: '',
@@ -57,7 +60,7 @@ export default class extends BaseAdapter {
     return new NCListFeature(
       ncFeature,
       undefined,
-      `${this.id}-${ncFeature.id()}`,
+      `${this.configId}-${ncFeature.id()}`,
     )
   }
 

@@ -2,6 +2,10 @@
 
 exports[`create bam adapter config 1`] = `
 Object {
+  "configId": Any<String>,
+  "index": Object {
+    "configId": Any<String>,
+  },
   "type": "BamAdapter",
 }
 `;
@@ -9,17 +13,27 @@ Object {
 exports[`create track config 1`] = `
 Object {
   "adapter": Object {
+    "configId": Any<String>,
+    "index": Object {
+      "configId": Any<String>,
+    },
     "type": "BamAdapter",
   },
+  "configId": Any<String>,
   "renderers": Object {
     "PileupRenderer": Object {
+      "configId": Any<String>,
       "type": "PileupRenderer",
     },
     "SvgFeatureRenderer": Object {
+      "configId": Any<String>,
+      "labels": Object {
+        "configId": Any<String>,
+      },
       "type": "SvgFeatureRenderer",
     },
+    "configId": Any<String>,
   },
-  "trackId": "track0",
   "type": "AlignmentsTrack",
 }
 `;

@@ -97,10 +97,10 @@ export function stateModelFactory(pluginManager: any) {
         'hierarchical',
       ),
       minimumBlockWidth: 20,
+      configuration: types.frozen(),
     })
-    .volatile(() => ({
-      draggingTrackId: undefined as undefined | string,
-      error: undefined as undefined | Error,
+    .volatile((): { draggingTrackId?: string } => ({
+      draggingTrackId: undefined,
     }))
     .views(self => ({
       get viewingRegionWidth() {
@@ -223,12 +223,12 @@ export function stateModelFactory(pluginManager: any) {
       },
 
       getTrack(id: string) {
-        return self.tracks.find(t => t.configuration.trackId === id)
+        return self.tracks.find(t => t.configuration.configId === id)
       },
 
-      getTrackPos(trackId: string) {
+      getTrackPos(trackConfigId: string) {
         const idx = self.tracks.findIndex(
-          t => t.configuration.trackId === trackId,
+          t => t.configuration.configId === trackConfigId,
         )
         let accum = 0
         for (let i = 0; i < idx; i += 1) {
@@ -240,10 +240,6 @@ export function stateModelFactory(pluginManager: any) {
     .actions(self => ({
       setWidth(newWidth: number) {
         self.width = newWidth
-      },
-
-      setError(error: Error) {
-        self.error = error
       },
 
       setDisplayName(name: string) {
@@ -485,6 +481,11 @@ export function stateModelFactory(pluginManager: any) {
         /* TODO */
       },
 
+      activateConfigurationUI() {
+        const session: any = getSession(self)
+        session.editConfiguration(self.configuration)
+      },
+
       setNewView(bpPerPx: number, offsetPx: number) {
         self.bpPerPx = bpPerPx
         self.offsetPx = offsetPx
@@ -495,7 +496,7 @@ export function stateModelFactory(pluginManager: any) {
         self.offsetPx = 0
       },
 
-      setDraggingTrackId(idx?: string) {
+      setDraggingTrackId(idx?: string | undefined) {
         self.draggingTrackId = idx
       },
     }))

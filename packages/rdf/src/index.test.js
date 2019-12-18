@@ -12,5 +12,7 @@ test('plugin in a stock JBrowse', () => {
   const config = SPARQLAdapter.configSchema.create({
     type: 'SPARQLAdapter',
   })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+  })
 })

@@ -11,11 +11,13 @@ const baseprops = {
   sessionId: 'knickers the cow',
   adapterType: 'BamAdapter',
   adapterConfig: {
+    configId: '7Hc9NkuD4x',
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../public/test_data/volvox-sorted.bam'),
     },
     index: {
+      configId: 'sGW8va26pr',
       location: {
         localPath: require.resolve('../public/test_data/volvox-sorted.bam.bai'),
       },

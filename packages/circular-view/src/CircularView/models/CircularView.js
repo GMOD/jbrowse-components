@@ -5,11 +5,19 @@ export default pluginManager => {
   const { transaction } = jbrequire('mobx')
   const { types, getParent, getRoot } = jbrequire('mobx-state-tree')
   const { ElementId, Region } = jbrequire('@gmod/jbrowse-core/mst-types')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { ConfigurationSchema, readConfObject } = jbrequire(
+    '@gmod/jbrowse-core/configuration',
+  )
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(
     require('./slices'),
+  )
+
+  const configSchema = ConfigurationSchema(
+    'CircularView',
+    {},
+    { explicitlyTyped: true },
   )
 
   const minHeight = 40
@@ -37,6 +45,7 @@ export default pluginManager => {
         defaultHeight,
       ),
       minimumRadiusPx: 25,
+      configuration: configSchema,
       spacingPx: 10,
       paddingPx: 80,
       lockedPaddingPx: 100,
@@ -171,9 +180,6 @@ export default pluginManager => {
         return visible
       },
     }))
-    .volatile(() => ({
-      error: undefined,
-    }))
     .actions(self => ({
       // toggle action with a flag stating which mode it's in
       setWidth(newWidth) {
@@ -250,6 +256,10 @@ export default pluginManager => {
         if (root.updateAssemblies) root.updateAssemblies()
       },
 
+      activateConfigurationUI() {
+        getRoot(self).editConfiguration(self.configuration)
+      },
+
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -269,10 +279,6 @@ export default pluginManager => {
         const hiddenCount = self.hideTrack(configuration)
         // if none had that configuration, turn one on
         if (!hiddenCount) self.showTrack(configuration)
-      },
-
-      setError(error) {
-        self.error = error
       },
 
       showTrack(configuration, initialSnapshot = {}) {
@@ -307,7 +313,7 @@ export default pluginManager => {
       },
     }))
 
-  return { stateModel }
+  return { stateModel, configSchema }
 }
 
 /*

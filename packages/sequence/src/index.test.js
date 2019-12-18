@@ -10,7 +10,9 @@ test('plugin in a stock JBrowse', () => {
 
   const TwoBitAdapter = pluginManager.getAdapterType('TwoBitAdapter')
   const config = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+  })
 
   const IndexedFastaAdapter = pluginManager.getAdapterType(
     'IndexedFastaAdapter',
@@ -18,5 +20,7 @@ test('plugin in a stock JBrowse', () => {
   const config2 = IndexedFastaAdapter.configSchema.create({
     type: 'IndexedFastaAdapter',
   })
-  expect(getSnapshot(config2)).toMatchSnapshot()
+  expect(getSnapshot(config2)).toMatchSnapshot({
+    configId: expect.any(String),
+  })
 })

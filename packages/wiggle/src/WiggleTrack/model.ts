@@ -40,9 +40,8 @@ const stateModelFactory = (configSchema: any) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
-          stats: undefined as
-            | undefined
-            | { scoreMin: number; scoreMax: number; [key: string]: number },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stats: undefined as undefined | any,
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
     )
@@ -103,59 +102,33 @@ const stateModelFactory = (configSchema: any) =>
       },
     }))
     .actions(self => {
-      async function getStats(signal: AbortSignal) {
+      function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
           rpcManager: { call: Function }
         }
-        const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', {})
-        const { adapter } = self.configuration
-        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
+        if (autoscaleType === 'global') {
+          return rpcManager.call('statsGathering', 'getGlobalStats', {
+            adapterConfig: getSnapshot(self.configuration.adapter),
+            adapterType: self.configuration.adapter.type,
             signal,
           })
-          return autoscaleType === 'globalsd'
-            ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
-              }
-            : r
         }
-        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
+        if (autoscaleType === 'local') {
           const { dynamicBlocks, bpPerPx } = getContainingView(self)
-          const r = await rpcManager.call(
-            'statsGathering',
-            'getMultiRegionStats',
-            {
-              adapterConfig: getSnapshot(adapter),
-              adapterType: adapter.type,
-              assemblyName: getTrackAssemblyName(self),
-              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-              signal,
-              bpPerPx,
-            },
-          )
-          return autoscaleType === 'localsd'
-            ? {
-                ...r,
-                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
-                // helps with most bigwigs just being >0
-                scoreMin:
-                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
-                scoreMax: r.scoreMean + nd * r.scoreStdDev,
-              }
-            : r
+          return rpcManager.call('statsGathering', 'getMultiRegionStats', {
+            adapterConfig: getSnapshot(self.configuration.adapter),
+            adapterType: self.configuration.adapter.type,
+            assemblyName: getTrackAssemblyName(self),
+            regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+            signal,
+            bpPerPx,
+          })
         }
         if (autoscaleType === 'zscale') {
           return rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(adapter),
-            adapterType: adapter.type,
+            adapterConfig: getSnapshot(self.configuration.adapter),
+            adapterType: self.configuration.adapter.type,
             signal,
           })
         }
@@ -175,7 +148,7 @@ const stateModelFactory = (configSchema: any) =>
                     self.updateStats(stats)
                   }
                 } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
+                  if (!isAbortException(e)) {
                     self.setError(e)
                   }
                 }

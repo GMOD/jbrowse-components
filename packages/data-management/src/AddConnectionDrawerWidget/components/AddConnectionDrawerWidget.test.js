@@ -21,7 +21,6 @@ describe('<AddConnectionDrawerWidget />', () => {
       assembly: {
         name: 'volMyt1',
         sequence: {
-          trackId: 'ref0',
           type: 'ReferenceSequenceTrack',
           adapter: {
             type: 'FromConfigAdapter',

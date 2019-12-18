@@ -52,7 +52,7 @@ export const MenuItemModel = types
       const configuration = getRoot(self)
       const initialSnap = JSON.stringify(getSnapshot(configuration))
       const filter = (key, value) => {
-        if (key === 'id') {
+        if (key === 'configId' || key === 'id') {
           const re = new RegExp(`"${value}"`, 'g')
           if ((initialSnap.match(re) || []).length < 2) return undefined
         }
@@ -124,48 +124,16 @@ export default types
                 'function(session) {session.duplicateCurrentSession();}',
             },
             {
-              name: 'New linear genome view',
-              icon: 'line_style',
+              name: 'Import tabular data',
+              icon: 'table_chart',
               callback:
-                "function(session) { session.addView('LinearGenomeView', {})}",
-            },
-            {
-              name: 'New circular view',
-              icon: 'data_usage',
-              callback:
-                "function(session) { session.addView('CircularView', {})}",
+                "function(session) { session.addView('SpreadsheetView', {})}",
             },
             {
               name: 'New SV inspector',
               icon: 'table_chart',
               callback:
                 "function(session) { session.addView('SvInspectorView', {})}",
-            },
-            {
-              name: 'Open tabular data',
-              icon: 'view_comfy',
-              callback:
-                "function(session) { session.addView('SpreadsheetView', {})}",
-            },
-            {
-              name: 'Open new track',
-              icon: 'note_add',
-              callback: `function(session) {
-const drawerWidget = session.addDrawerWidget(
-      'AddTrackDrawerWidget',
-      'addTrackDrawerWidget',
-    )
-    session.showDrawerWidget(drawerWidget)`,
-            },
-            {
-              name: 'Open new connection',
-              icon: 'input',
-              callback: `function(session) {
-const drawerWidget = session.addDrawerWidget(
-      'AddConnectionDrawerWidget',
-      'addConnectionDrawerWidget',
-    )
-    session.showDrawerWidget(drawerWidget)`,
             },
           ],
         })

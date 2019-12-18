@@ -142,7 +142,7 @@ export default pluginManager => {
               ? {
                   type: trackConfig.type,
                   height: 100,
-                  configuration: trackConfig.trackId,
+                  configuration: trackConfig.configId,
                   selectedRendering: '',
                 }
               : null

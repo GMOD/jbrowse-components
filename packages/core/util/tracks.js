@@ -1,5 +1,4 @@
 import { getParent, isRoot } from 'mobx-state-tree'
-import objectHash from 'object-hash'
 import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */
@@ -257,23 +256,19 @@ export function guessTrackType(adapterType) {
 }
 
 export function generateUnsupportedTrackConf(trackName, trackUrl, categories) {
-  const conf = {
+  return {
     type: 'BasicTrack',
     name: `${trackName} (Unsupported)`,
     description: `Support not yet implemented for "${trackUrl}"`,
     category: categories,
   }
-  conf.trackId = objectHash(conf)
-  return conf
 }
 
 export function generateUnknownTrackConf(trackName, trackUrl, categories) {
-  const conf = {
+  return {
     type: 'BasicTrack',
     name: `${trackName} (Unknown)`,
     description: `Could not determine track type for "${trackUrl}"`,
     category: categories,
   }
-  conf.trackId = objectHash(conf)
-  return conf
 }

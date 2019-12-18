@@ -14,7 +14,10 @@ describe('Root MST model', () => {
     expect(root.session).toBeTruthy()
     expect(root.jbrowse.savedSessions.length).toBe(1)
     expect(root.jbrowse.datasets.length).toBe(0)
-    expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
+    expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot({
+      configId: expect.any(String),
+      rpc: { configId: expect.any(String) },
+    })
   })
 
   it('creates with a minimal session', () => {
@@ -52,18 +55,30 @@ describe('Root MST model', () => {
       },
     })
     expect(root.jbrowse.datasets.length).toBe(1)
-    expect(getSnapshot(root.jbrowse.datasets[0])).toMatchSnapshot()
+    expect(getSnapshot(root.jbrowse.datasets[0])).toMatchSnapshot({
+      configId: expect.any(String),
+      assembly: {
+        configId: expect.any(String),
+      },
+    })
     const newTrackConf = root.jbrowse.datasets[0].addTrackConf({
       type: 'BasicTrack',
-      trackId: 'trackId0',
     })
-    expect(getSnapshot(newTrackConf)).toMatchSnapshot()
+    expect(getSnapshot(newTrackConf)).toMatchSnapshot({
+      configId: expect.any(String),
+      adapter: {
+        configId: expect.any(String),
+        index: { configId: expect.any(String) },
+      },
+      renderer: { configId: expect.any(String) },
+    })
     expect(root.jbrowse.datasets[0].tracks.length).toBe(1)
     const newConnectionConf = root.jbrowse.datasets[0].addConnectionConf({
       type: 'JBrowse1Connection',
-      connectionId: 'connectionId0',
     })
-    expect(getSnapshot(newConnectionConf)).toMatchSnapshot()
+    expect(getSnapshot(newConnectionConf)).toMatchSnapshot({
+      configId: expect.any(String),
+    })
     expect(root.jbrowse.datasets[0].connections.length).toBe(1)
   })
 

@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { withContentRect } from 'react-measure'
 
 import { inDevelopment } from '../util'
@@ -18,55 +18,27 @@ const useStyles = makeStyles(theme => ({
     },
   },
   root: {
-    display: 'grid',
     height: '100vh',
-    width: '100%',
-  },
-  menuBarsAndComponents: {
-    gridColumn: 'main',
-    display: 'grid',
-    gridTemplateRows: '[menubars] min-content [components] auto',
-    height: '100vh',
+    display: 'flex',
+    overflow: 'hidden',
+    // background: '#808080',
   },
   menuBars: {
-    gridRow: 'menubars',
+    display: 'block',
+  },
+  menuBarsAndComponents: {
+    flex: '1 100%',
+    height: '100%',
+    overflowY: 'auto',
+  },
+  defaultDrawer: {
+    flex: '1 100%',
   },
   components: {
+    display: 'block',
     background: theme.palette.background.mainApp,
-    overflowY: 'auto',
-    gridRow: 'components',
   },
 }))
-
-function ViewContainer({ session, view }) {
-  const { pluginManager } = session
-  const classes = useStyles()
-  const { ReactComponent } = pluginManager.getViewType(view.type)
-  const containerNodeRef = useRef()
-
-  // scroll the view into view when first mounted
-  // note that this effect will run only once, because of
-  // the empty array second param
-  useEffect(() => {
-    if (containerNodeRef.current.scrollIntoView)
-      containerNodeRef.current.scrollIntoView({ block: 'center' })
-  }, [])
-
-  return (
-    <div ref={containerNodeRef} className={classes.viewContainer}>
-      <ReactComponent
-        model={view}
-        session={session}
-        getTrackType={pluginManager.getTrackType}
-      />
-    </div>
-  )
-}
-
-ViewContainer.propTypes = {
-  session: PropTypes.observableObject.isRequired,
-  view: PropTypes.objectOrObservableObject.isRequired,
-}
 
 function App({ contentRect, measureRef, session }) {
   const classes = useStyles()
@@ -79,18 +51,10 @@ function App({ contentRect, measureRef, session }) {
     }
   }, [session, contentRect])
 
-  const { visibleDrawerWidget, viewsWidth, drawerWidth } = session
+  const { visibleDrawerWidget } = session
 
   return (
-    <div
-      ref={measureRef}
-      className={classes.root}
-      style={{
-        gridTemplateColumns: `[main] ${viewsWidth}px${
-          visibleDrawerWidget ? ` [drawer] ${drawerWidth}px` : ''
-        }`,
-      }}
-    >
+    <div ref={measureRef} className={classes.root}>
       <div className={classes.menuBarsAndComponents}>
         <div className={classes.menuBars}>
           {session.menuBars.map(menuBar => {
@@ -112,13 +76,17 @@ function App({ contentRect, measureRef, session }) {
           })}
         </div>
         <div className={classes.components}>
-          {session.views.map(view => (
-            <ViewContainer
-              key={`view-${view.id}`}
-              session={session}
-              view={view}
-            />
-          ))}
+          {session.views.map(view => {
+            const { ReactComponent } = pluginManager.getViewType(view.type)
+            return (
+              <ReactComponent
+                key={`view-${view.id}`}
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            )
+          })}
           {inDevelopment ? <DevTools session={session} /> : null}
           <div style={{ height: 300 }} />
         </div>

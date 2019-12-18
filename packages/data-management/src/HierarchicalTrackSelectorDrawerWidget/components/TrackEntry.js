@@ -50,7 +50,6 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
     readConfObject(trackConf, 'name') &&
     (readConfObject(trackConf, 'name').endsWith('(Unsupported)') ||
       readConfObject(trackConf, 'name').endsWith('(Unknown)'))
-  const trackConfigId = readConfObject(trackConf, 'trackId')
   return (
     <Fade in>
       <div className={classes.track}>
@@ -60,7 +59,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             control={
               <Checkbox
                 inputProps={{
-                  'data-testid': `htsTrackEntry-${trackConfigId}`,
+                  'data-testid': `htsTrackEntry-${trackConf.configId}`,
                 }}
                 className={classes.checkbox}
               />

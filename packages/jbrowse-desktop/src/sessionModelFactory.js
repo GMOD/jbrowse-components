@@ -1,31 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { isConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import { getContainingView } from '@gmod/jbrowse-core/util/tracks'
-import jsonStableStringify from 'json-stable-stringify'
 import { autorun } from 'mobx'
 import {
   addDisposer,
   getMembers,
   getParent,
-  getSnapshot,
   getType,
-  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
-  SnapshotIn,
   types,
   walk,
+  getSnapshot,
 } from 'mobx-state-tree'
 
-declare interface ReferringNode {
-  node: IAnyStateTreeNode
-  key: string
-}
-
-export default function sessionModelFactory(pluginManager: any) {
+export default pluginManager => {
   const minWidth = 384
   const minDrawerWidth = 128
   return types
@@ -33,7 +23,7 @@ export default function sessionModelFactory(pluginManager: any) {
       name: types.identifier,
       width: types.optional(
         types.refinement(types.integer, width => width >= minWidth),
-        1024,
+        512,
       ),
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
@@ -70,7 +60,7 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       task: undefined,
 
-      snackbarMessage: undefined as string | undefined,
+      snackbarMessage: undefined,
     }))
     .views(self => ({
       get rpcManager() {
@@ -85,9 +75,6 @@ export default function sessionModelFactory(pluginManager: any) {
       get datasets() {
         return getParent(self).jbrowse.datasets
       },
-      get savedSessions() {
-        return getParent(self).jbrowse.savedSessions
-      },
       get savedSessionNames() {
         return getParent(self).jbrowse.savedSessionNames
       },
@@ -96,7 +83,7 @@ export default function sessionModelFactory(pluginManager: any) {
       },
       get viewsWidth() {
         // TODO: when drawer is permanent, subtract its width
-        return self.width - (this.visibleDrawerWidget ? self.drawerWidth : 0)
+        return self.width - (self.visibleDrawerWidget ? self.drawerWidth : 0)
       },
       get maxDrawerWidth() {
         return self.width - 256
@@ -117,13 +104,12 @@ export default function sessionModelFactory(pluginManager: any) {
        * to the object and the second element is they property name the node is
        * using to refer to the object
        */
-      getReferring(object: IAnyStateTreeNode) {
-        const refs: ReferringNode[] = []
+      getReferring(object) {
+        const refs = []
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
-              // @ts-ignore
               if (isReferenceType(value) && node[key] === object) {
                 refs.push({ node, key })
               }
@@ -135,7 +121,6 @@ export default function sessionModelFactory(pluginManager: any) {
     }))
     .actions(self => ({
       afterCreate() {
-        // bind our views widths to our self.viewsWidth member
         addDisposer(
           self,
           autorun(() => {
@@ -145,8 +130,6 @@ export default function sessionModelFactory(pluginManager: any) {
           }),
         )
 
-        // views with have displayRegionsFromAssemblyName will have their
-        // displayed regions set to the refs in an assembly
         addDisposer(
           self,
           autorun(() => {
@@ -157,48 +140,49 @@ export default function sessionModelFactory(pluginManager: any) {
                 self.assemblyData.get(assemblyName) &&
                 self.assemblyData.get(assemblyName).sequence
               ) {
-                this.getRegionsForAssembly(assemblyName, self.assemblyData)
-                  .then((displayedRegions: any) => {
+                const session = getParent(self)
+                self
+                  .getRegionsForAssembly(assemblyName, self.assemblyData)
+                  .then(displayedRegions => {
                     // remember nothing inside here is tracked by the autorun
-                    if (isAlive(self)) {
-                      getParent(self).history.withoutUndo(() => {
-                        if (
-                          JSON.stringify(view.displayedRegions) !==
-                          JSON.stringify(displayedRegions)
-                        )
-                          view.setDisplayedRegions(displayedRegions, true)
-                      })
-                      view.setError && view.setError(undefined)
-                    }
+                    session.history.withoutUndo(() =>
+                      view.setDisplayedRegions(displayedRegions || [], true),
+                    )
                   })
-                  .catch((error: Error) => {
-                    console.error(error)
-                    if (isAlive(self)) {
-                      view.setError && view.setError(error)
-                    }
-                  })
+
+                // TODO: this needs some error handling
               }
             })
           }),
         )
       },
 
-      setSnackbarMessage(str: string | undefined) {
+      setSnackbarMessage(str) {
         self.snackbarMessage = str
       },
 
-      getRegionsForAssembly(
-        assemblyName: string,
-        assemblyData: any,
-        opts: { signal?: AbortSignal } = {},
-      ) {
+      getRegionsForAssemblyName(assemblyName, opts = {}) {
+        if (
+          assemblyName &&
+          self.assemblyData.get(assemblyName) &&
+          self.assemblyData.get(assemblyName).sequence
+        ) {
+          return self.getRegionsForAssembly(
+            assemblyName,
+            self.assemblyData,
+            opts,
+          )
+        }
+        return Promise.resolve(undefined)
+      },
+
+      getRegionsForAssembly(assemblyName, assemblyData, opts = {}) {
         const assembly = assemblyData.get(assemblyName)
         if (assembly) {
           const adapterConfig = readConfObject(assembly.sequence, 'adapter')
-          const adapterConfigId = jsonStableStringify(adapterConfig)
           return self.rpcManager
             .call(
-              adapterConfigId,
+              adapterConfig.configId,
               'getRegions',
               {
                 sessionId: assemblyName,
@@ -208,7 +192,7 @@ export default function sessionModelFactory(pluginManager: any) {
               },
               { timeout: 1000000 },
             )
-            .then((adapterRegions: IRegion[]) => {
+            .then(adapterRegions => {
               const adapterRegionsWithAssembly = adapterRegions.map(
                 adapterRegion => ({
                   ...adapterRegion,
@@ -221,25 +205,7 @@ export default function sessionModelFactory(pluginManager: any) {
         return Promise.resolve(undefined)
       },
 
-      getRegionsForAssemblyName(
-        assemblyName: string,
-        opts: { signal?: AbortSignal } = {},
-      ) {
-        if (
-          assemblyName &&
-          self.assemblyData.get(assemblyName) &&
-          self.assemblyData.get(assemblyName).sequence
-        ) {
-          return this.getRegionsForAssembly(
-            assemblyName,
-            self.assemblyData,
-            opts,
-          )
-        }
-        return Promise.resolve(undefined)
-      },
-
-      makeConnection(configuration: any, initialSnapshot = {}) {
+      makeConnection(configuration, initialSnapshot = {}) {
         const { type } = configuration
         if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
@@ -254,26 +220,25 @@ export default function sessionModelFactory(pluginManager: any) {
         if (!self.connections.has(assemblyName))
           self.connections.set(assemblyName, [])
         const assemblyConnections = self.connections.get(assemblyName)
-        if (!assemblyConnections)
-          throw new Error(`assembly ${assemblyName} not found`)
         const length = assemblyConnections.push(connectionData)
         return assemblyConnections[length - 1]
       },
 
-      prepareToBreakConnection(configuration: any) {
+      prepareToBreakConnection(configuration) {
         const name = readConfObject(configuration, 'name')
         let confParent = configuration
         do {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const assemblyConnections = self.connections.get(assemblyName) || []
-        const connection = assemblyConnections.find(c => c.name === name)
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        connection.tracks.forEach((track: any) => {
+        const connection = self.connections
+          .get(assemblyName)
+          .find(c => c.name === name)
+        const callbacksToDereferenceTrack = []
+        const dereferenceTypeCount = {}
+        connection.tracks.forEach(track => {
           const referring = self.getReferring(track)
-          referring.forEach(({ node }: ReferringNode) => {
+          referring.forEach(({ node }) => {
             let dereferenced = false
             try {
               // If a view is referring to the track config, remove the track
@@ -287,12 +252,12 @@ export default function sessionModelFactory(pluginManager: any) {
             } catch (err1) {
               // ignore
             }
-            if (this.hasDrawerWidget(node)) {
+            if (self.hasDrawerWidget(node)) {
               // If a configuration editor drawer widget has the track config
               // open, close the drawer widget
               const type = 'configuration editor drawer widget(s)'
               callbacksToDereferenceTrack.push(() =>
-                this.hideDrawerWidget(node),
+                self.hideDrawerWidget(node),
               )
               dereferenced = true
               if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
@@ -308,26 +273,25 @@ export default function sessionModelFactory(pluginManager: any) {
         })
         const safelyBreakConnection = () => {
           callbacksToDereferenceTrack.forEach(cb => cb())
-          this.breakConnection(configuration)
+          self.breakConnection(configuration)
         }
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
-      breakConnection(configuration: any) {
+      breakConnection(configuration) {
         const name = readConfObject(configuration, 'name')
         let confParent = configuration
         do {
           confParent = getParent(confParent)
         } while (!confParent.assembly)
         const assemblyName = readConfObject(confParent.assembly, 'name')
-        const connections = self.connections.get(assemblyName)
-        if (!connections)
-          throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connections.find(c => c.name === name)
-        connections.remove(connection)
+        const connection = self.connections
+          .get(assemblyName)
+          .find(c => c.name === name)
+        self.connections.get(assemblyName).remove(connection)
       },
 
-      updateWidth(width: number) {
+      updateWidth(width) {
         let newWidth = Math.floor(width)
         if (newWidth === self.width) return
         if (newWidth < minWidth) newWidth = minWidth
@@ -336,7 +300,7 @@ export default function sessionModelFactory(pluginManager: any) {
           self.drawerWidth = self.maxDrawerWidth
       },
 
-      updateDrawerWidth(drawerWidth: number) {
+      updateDrawerWidth(drawerWidth) {
         if (drawerWidth === self.drawerWidth) return self.drawerWidth
         let newDrawerWidth = drawerWidth
         if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
@@ -346,14 +310,14 @@ export default function sessionModelFactory(pluginManager: any) {
         return newDrawerWidth
       },
 
-      resizeDrawer(distance: number) {
+      resizeDrawer(distance) {
         const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
+        const newDrawerWidth = self.updateDrawerWidth(oldDrawerWidth - distance)
         const actualDistance = oldDrawerWidth - newDrawerWidth
         return actualDistance
       },
 
-      addView(typeName: string, initialState = {}) {
+      addView(typeName, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
 
@@ -364,37 +328,33 @@ export default function sessionModelFactory(pluginManager: any) {
         return self.views[length - 1]
       },
 
-      removeView(view: any) {
+      removeView(view) {
         for (const [id, drawerWidget] of self.activeDrawerWidgets) {
           if (
             id === 'hierarchicalTrackSelector' &&
             drawerWidget.view &&
             drawerWidget.view.id === view.id
           )
-            this.hideDrawerWidget(drawerWidget)
+            self.hideDrawerWidget(drawerWidget)
         }
         self.views.remove(view)
       },
 
-      addDataset(datasetConf: any) {
+      addDataset(datasetConf) {
         return getParent(self).jbrowse.addDataset(datasetConf)
       },
 
-      addLinearGenomeViewOfDataset(datasetName: string, initialState = {}) {
-        return this.addViewOfDataset(
+      addLinearGenomeViewOfDataset(datasetName, initialState = {}) {
+        return self.addViewOfDataset(
           'LinearGenomeView',
           datasetName,
           initialState,
         )
       },
 
-      addViewOfDataset(
-        viewType: any,
-        datasetName: string,
-        initialState: any = {},
-      ) {
+      addViewOfDataset(viewType, datasetName, initialState = {}) {
         const dataset = self.datasets.find(
-          (s: { name: string }) => readConfObject(s.name) === datasetName,
+          s => readConfObject(s.name) === datasetName,
         )
         if (!dataset)
           throw new Error(
@@ -404,17 +364,10 @@ export default function sessionModelFactory(pluginManager: any) {
           dataset.assembly,
           'name',
         )
-        return this.addView(viewType, initialState)
+        return self.addView(viewType, initialState)
       },
 
-      addViewFromAnotherView(
-        viewType: any,
-        otherView: any,
-        initialState: {
-          displayedRegions?: IRegion[]
-          displayRegionsFromAssemblyName?: boolean
-        } = {},
-      ) {
+      addViewFromAnotherView(viewType, otherView, initialState = {}) {
         const state = { ...initialState }
         if (otherView.displayRegionsFromAssemblyName) {
           state.displayRegionsFromAssemblyName =
@@ -422,12 +375,12 @@ export default function sessionModelFactory(pluginManager: any) {
         } else {
           state.displayedRegions = otherView.displayedRegions
         }
-        return this.addView(viewType, state)
+        return self.addView(viewType, state)
       },
 
       addDrawerWidget(
-        typeName: string,
-        id: string,
+        typeName,
+        id,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -447,17 +400,17 @@ export default function sessionModelFactory(pluginManager: any) {
         return self.drawerWidgets.get(id)
       },
 
-      showDrawerWidget(drawerWidget: any) {
+      showDrawerWidget(drawerWidget) {
         if (self.activeDrawerWidgets.has(drawerWidget.id))
           self.activeDrawerWidgets.delete(drawerWidget.id)
         self.activeDrawerWidgets.set(drawerWidget.id, drawerWidget)
       },
 
-      hasDrawerWidget(drawerWidget: any) {
+      hasDrawerWidget(drawerWidget) {
         return self.activeDrawerWidgets.has(drawerWidget.id)
       },
 
-      hideDrawerWidget(drawerWidget: any) {
+      hideDrawerWidget(drawerWidget) {
         self.activeDrawerWidgets.delete(drawerWidget.id)
       },
 
@@ -466,7 +419,7 @@ export default function sessionModelFactory(pluginManager: any) {
       },
 
       addMenuBar(
-        typeName: string,
+        typeName,
         initialState = {},
         configuration = { type: typeName },
       ) {
@@ -486,8 +439,9 @@ export default function sessionModelFactory(pluginManager: any) {
        * can be a feature, a view, just about anything
        * @param {object} thing
        */
-      setSelection(thing: any) {
+      setSelection(thing) {
         self.selection = thing
+        // console.log('selected', thing)
       },
 
       /**
@@ -495,6 +449,7 @@ export default function sessionModelFactory(pluginManager: any) {
        */
       clearSelection() {
         self.selection = undefined
+        // console.log('selection cleared')
       },
 
       /**
@@ -502,33 +457,33 @@ export default function sessionModelFactory(pluginManager: any) {
        * and sets the current task to be configuring it
        * @param {*} configuration
        */
-      editConfiguration(configuration: any) {
+      editConfiguration(configuration) {
         if (!isConfigurationModel(configuration)) {
           throw new Error(
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = this.addDrawerWidget(
+        const editor = self.addDrawerWidget(
           'ConfigurationEditorDrawerWidget',
           'configEditor',
           { target: configuration },
         )
-        this.showDrawerWidget(editor)
+        self.showDrawerWidget(editor)
       },
 
       clearConnections() {
         self.connections.clear()
       },
 
-      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
+      addSavedSession(sessionSnapshot) {
         return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
-      removeSavedSession(sessionSnapshot: any) {
+      removeSavedSession(sessionSnapshot) {
         return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
-      renameCurrentSession(sessionName: string) {
+      renameCurrentSession(sessionName) {
         return getParent(self).renameCurrentSession(sessionName)
       },
 
@@ -536,8 +491,8 @@ export default function sessionModelFactory(pluginManager: any) {
         return getParent(self).duplicateCurrentSession()
       },
 
-      activateSession(sessionName: any) {
-        return getParent(self).activateSession(sessionName)
+      activateSession(sessionSnapshot) {
+        return getParent(self).activateSession(sessionSnapshot)
       },
 
       setDefaultSession() {
@@ -545,8 +500,6 @@ export default function sessionModelFactory(pluginManager: any) {
       },
     }))
 }
-
-export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // a track is a combination of a dataset and a renderer, along with some conditions
 // specifying in which contexts it is available (which assemblies, which views, etc)

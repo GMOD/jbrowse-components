@@ -2,12 +2,14 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
+  "configId": Any<String>,
   "type": "TwoBitAdapter",
 }
 `;
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
+  "configId": Any<String>,
   "type": "IndexedFastaAdapter",
 }
 `;

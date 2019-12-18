@@ -27,7 +27,6 @@ test('config schema renderer type', () => {
   const configSchema = configSchemaFactory(stubPluginManager)
   const instance = configSchema.create({
     type: 'BasicTrack',
-    trackId: 'trackId0',
     renderer: { type: 'renderer_TypeTwo' },
   })
   expect(instance.renderer.type).toBe('renderer_TypeTwo')

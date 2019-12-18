@@ -100,13 +100,21 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create({ configuration: { someInteger: 42 } })
+    const model = container.create({
+      configuration: { configId: 'fogbat', someInteger: 42 },
+    })
     expect(getConf(model, 'someInteger')).toEqual(42)
-    expect(getSnapshot(model)).toEqual({ configuration: { someInteger: 42 } })
+    expect(getSnapshot(model)).toEqual({
+      configuration: { configId: 'fogbat', someInteger: 42 },
+    })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
-    const model2 = container.create({ configuration: {} })
-    expect(getSnapshot(model2)).toEqual({ configuration: {} })
+    const model2 = container.create({
+      configuration: { configId: 'one' },
+    })
+    expect(getSnapshot(model2)).toEqual({
+      configuration: { configId: 'one' },
+    })
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
   test('can snapshot a nested schema 1', () => {
@@ -139,16 +147,24 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
+        configId: 'one',
         someInteger: 42,
-        mySubConfiguration: {},
-        myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+        mySubConfiguration: { configId: 'four' },
+        myArrayOfSubConfigurations: [
+          { configId: 'two', someNumber: 3.5 },
+          { configId: 'three', someNumber: 11.1 },
+        ],
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
+        configId: 'one',
         someInteger: 42,
-        // mySubConfiguration is set to the default, so doesn't appear in snapshot
-        myArrayOfSubConfigurations: [{}, { someNumber: 11.1 }],
+        mySubConfiguration: { configId: 'four' },
+        myArrayOfSubConfigurations: [
+          { configId: 'two' },
+          { configId: 'three', someNumber: 11.1 },
+        ],
       },
     })
   })
@@ -191,15 +207,19 @@ describe('configuration schemas', () => {
     const model = container.create({
       type: 'Foo',
       configuration: {
+        configId: 'two',
         someInteger: 12,
-        myConfigurationMap: { nog: {} },
-        mySubConfiguration: { someNumber: 12 },
+        myConfigurationMap: {
+          nog: { configId: 'nog' },
+        },
+        mySubConfiguration: { configId: 'one', someNumber: 12 },
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
-        myConfigurationMap: { nog: {} },
-        mySubConfiguration: { someNumber: 12 },
+        configId: 'two',
+        myConfigurationMap: { nog: { configId: 'nog' } },
+        mySubConfiguration: { configId: 'one', someNumber: 12 },
       },
     })
 

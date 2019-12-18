@@ -120,6 +120,7 @@ export default pluginManager => {
     const classes = useStyles()
 
     const {
+      configuration,
       resizeHeight,
       dragHandleHeight,
       SpreadsheetViewReactComponent,
@@ -128,7 +129,7 @@ export default pluginManager => {
     } = model
 
     return (
-      <div className={classes.root} data-testid={model.id}>
+      <div className={classes.root} data-testid={configuration.configId}>
         <Grid container direction="row" className={classes.header}>
           <Grid item>
             <ViewControls model={model} />

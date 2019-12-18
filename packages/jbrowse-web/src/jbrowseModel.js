@@ -57,6 +57,12 @@ window.resolveIdentifier = resolveIdentifier
 
 const JBrowseWeb = types
   .model('JBrowseWeb', {
+    defaultSession: types.optional(types.frozen(Session), {
+      name: `New Session`,
+      menuBars: [{ type: 'MainMenuBar' }],
+    }),
+    savedSessions: types.array(types.frozen(Session)),
+    datasets: types.array(DatasetConfigSchema),
     configuration: ConfigurationSchema('Root', {
       rpc: RpcManager.configSchema,
       // possibly consider this for global config editor
@@ -73,12 +79,6 @@ const JBrowseWeb = types
         defaultValue: false,
       },
     }),
-    datasets: types.array(DatasetConfigSchema),
-    defaultSession: types.optional(types.frozen(Session), {
-      name: `New Session`,
-      menuBars: [{ type: 'MainMenuBar' }],
-    }),
-    savedSessions: types.array(types.frozen(Session)),
   })
   .actions(self => ({
     addSavedSession(sessionSnapshot) {

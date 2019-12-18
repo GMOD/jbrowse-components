@@ -19,7 +19,7 @@ const getView = () => {
   const stubManager = new PluginManager()
   const FakeTrack = types
     .model('FakeTrack', {
-      trackId: 'FakeTrack',
+      configId: 'FakeTrack',
       type: 'FakeTrack',
       features: types.frozen(),
       layoutFeatures: types.frozen(),
@@ -41,9 +41,9 @@ const getView = () => {
             tracks: types.array(FakeTrack),
           })
           .views(self => ({
-            getTrack(trackConfigId: string) {
+            getTrack(configId: string) {
               return self.tracks.find(
-                t => t.configuration.trackId === trackConfigId,
+                t => t.configuration.configId === configId,
               )
             },
           })),
@@ -88,7 +88,10 @@ test('BreakpointSplitView with soft clipping', () => {
           type: 'LinearGenomeView',
           tracks: [
             {
-              configuration: { trackId: 'pacbio_hg002' },
+              configId: 'pacbio_hg002',
+              configuration: {
+                configId: 'pacbio_hg002',
+              },
               layoutFeatures: {
                 456: [0, 0, 100, 10],
                 789: [0, 0, 100, 10],
@@ -128,8 +131,9 @@ test('BreakpointSplitView with soft clipping', () => {
           type: 'LinearGenomeView',
           tracks: [
             {
+              configId: 'pacbio_hg002',
               layoutFeatures: { 123: [0, 0, 100, 10] },
-              configuration: { trackId: 'pacbio_hg002' },
+              configuration: { configId: 'pacbio_hg002' },
               features: {
                 123: new SimpleFeature({
                   id: 123,
@@ -192,7 +196,9 @@ test('BreakpointSplitView with hard clipping', () => {
           type: 'LinearGenomeView',
           tracks: [
             {
-              configuration: { trackId: 'volvox_samspec' },
+              configuration: {
+                configId: 'volvox_samspec',
+              },
               layoutFeatures: {
                 123: [0, 0, 100, 10],
                 456: [0, 0, 100, 10],
@@ -228,7 +234,7 @@ test('BreakpointSplitView with hard clipping', () => {
           tracks: [
             {
               layoutFeatures: {},
-              configuration: { trackId: 'volvox_samspec' },
+              configuration: { configId: 'volvox_samspec' },
               features: {},
               type: 'AlignmentsTrack',
             },

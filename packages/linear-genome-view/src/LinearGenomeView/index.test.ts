@@ -1,4 +1,3 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
 import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { types, Instance } from 'mobx-state-tree'
@@ -12,11 +11,6 @@ stubManager.addTrackType(
   () =>
     new TrackType({
       name: 'Base',
-      configSchema: ConfigurationSchema(
-        'BaseTrack',
-        {},
-        { explicitlyTyped: true },
-      ),
       stateModel: BaseTrack,
       RenderingComponent: true,
     }),
@@ -74,6 +68,7 @@ test('can instantiate a model that lets you navigate', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
+      configuration: {},
     }),
   )
   model.setDisplayedRegions([
@@ -131,6 +126,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
+      configuration: {},
     }),
   )
   model.setDisplayedRegions([
@@ -170,6 +166,7 @@ test('can instantiate a model that tests navTo/moveTo', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
+      configuration: {},
     }),
   )
   model.setDisplayedRegions([
@@ -209,6 +206,7 @@ test('can instantiate a model that >2 regions', () => {
       type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'AlignmentsTrack' }],
       controlsWidth: 0,
+      configuration: {},
     }),
   )
   model.setDisplayedRegions([

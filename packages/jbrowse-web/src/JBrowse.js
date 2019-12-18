@@ -9,7 +9,6 @@ import {
   mergeConfigs,
 } from '@gmod/jbrowse-core/util'
 import ErrorBoundary from 'react-error-boundary'
-import queryString from 'query-string'
 
 import { openLocation } from '@gmod/jbrowse-core/util/io'
 
@@ -28,7 +27,7 @@ import JBrowseRootModel from './rootModel'
 
 async function parseConfig(configLoc) {
   const config = JSON.parse(await openLocation(configLoc).readFile('utf8'))
-  if (configLoc.uri === 'test_data/config.json' && inDevelopment) {
+  if (inDevelopment) {
     config.datasets = mergeConfigs(
       config,
       JSON.parse(
@@ -60,16 +59,16 @@ function useJBrowseWeb(config, initialState) {
   // This serializes the session to URL
   useEffect(() => {
     if (debouncedUrlSnapshot) {
-      const parsed = queryString.parse(document.location.search)
-      const urlSplit = window.location.href.split('?')
-      parsed.session = toUrlSafeB64(JSON.stringify(debouncedUrlSnapshot))
+      const { origin, pathname } = document.location
       window.history.replaceState(
         {},
         '',
-        `${urlSplit[0]}?${queryString.stringify(parsed)}`,
+        `${origin}${pathname}?session=${toUrlSafeB64(
+          JSON.stringify(debouncedUrlSnapshot),
+        )}`,
       )
     }
-  }, [config, debouncedUrlSnapshot])
+  }, [debouncedUrlSnapshot])
 
   // This updates savedSession list on the rootModel
   useEffect(() => {
@@ -229,21 +228,11 @@ const JBrowse = observer(({ config, initialState }) => {
   )
 })
 
-async function factoryReset() {
-  localStorage.removeItem('jbrowse-web-data')
-  localStorage.removeItem('jbrowse-web-session')
-  window.location.reload()
-}
-
-const PlatformSpecificFatalErrorDialog = props => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
-}
-
 export default props => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+      <ErrorBoundary FallbackComponent={FatalErrorDialog}>
         <JBrowse {...props} />
       </ErrorBoundary>
     </ThemeProvider>

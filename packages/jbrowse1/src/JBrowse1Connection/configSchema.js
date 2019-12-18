@@ -15,5 +15,5 @@ export default ConfigurationSchema(
         'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
     },
   },
-  { explicitlyTyped: true, explicitIdentifier: 'connectionId' },
+  { explicitlyTyped: true },
 )

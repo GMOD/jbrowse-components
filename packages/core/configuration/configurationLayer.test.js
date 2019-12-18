@@ -19,8 +19,8 @@ test('can make a layer over a very simple schema', () => {
     pluginManager: 'mockPluginManager',
   })
   const session = sessionType.create({
-    parent: {},
-    layer: { parentConfigPath: '../parent' },
+    parent: { configId: 'yellow' },
+    layer: { parentConfigId: 'yellow' },
   })
   const { layer, parent } = session
 
@@ -71,15 +71,17 @@ test('can make a layer over a complex nested schema', () => {
   })
   const session = sessionType.create({
     parent: {
+      configId: 'blue',
       arrayOfSubs: [{}],
-      mapOfSubs: { one: {} },
+      mapOfSubs: { one: { configId: 'one' } },
     },
     layer: {
-      parentConfigPath: '../parent',
+      parentConfigId: 'blue',
       sub1: { parentConfigPath: '../../parent/sub1' },
       arrayOfSubs: [{ parentConfigPath: '../../../parent/arrayOfSubs/0' }],
       mapOfSubs: {
         three: {
+          configId: 'three',
           parentConfigPath: '../../../parent/mapOfSubs/one',
         },
       },
@@ -143,5 +145,10 @@ test('can make a layer over a complex nested schema', () => {
     readConfObject(parent, ['mapOfSubs', 'one', 'mapMemberAttr1']),
   ).toEqual('pluto')
 
-  expect(getSnapshot(session)).toMatchSnapshot()
+  expect(getSnapshot(session)).toMatchSnapshot({
+    parent: {
+      arrayOfSubs: [{ configId: expect.any(String) }],
+      sub1: { configId: expect.any(String) },
+    },
+  })
 })

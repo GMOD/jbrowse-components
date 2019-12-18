@@ -3,12 +3,13 @@ import {
   getParent,
   isArrayType,
   isMapType,
+  resolveIdentifier,
   resolvePath,
   isUnionType,
   isOptionalType,
 } from 'mobx-state-tree'
 
-import { inDevelopment } from '../util'
+import { inDevelopment, getSession } from '../util'
 import { stringToFunction } from '../util/functionStrings'
 import ConfigurationSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './configurationSchema'
@@ -71,6 +72,7 @@ function ConfigurationLayer(parentSchemaType) {
   // iterate over the slots in the parent type and make layerSlots in this object for each of them
 
   const layerModelDefinition = {
+    parentConfigId: types.maybe(types.string),
     parentConfigPath: types.maybe(types.string),
   }
 
@@ -83,6 +85,7 @@ function ConfigurationLayer(parentSchemaType) {
     ) {
       // this is a constant
       layerModelDefinition[memberName] = types.literal(slotDefinition)
+      // throw new Error('fu')
     } else {
       let parentActualType = parentSchemaType
       if (isOptionalType(parentSchemaType)) {
@@ -131,16 +134,24 @@ function ConfigurationLayer(parentSchemaType) {
     .model(layerModelDefinition)
     .views(self => ({
       get parent() {
+        if (self.parentConfigId) {
+          return resolveIdentifier(
+            parentSchemaType,
+            getSession(self),
+            self.parentConfigId,
+          )
+        }
         if (self.parentConfigPath) {
           return resolvePath(self, self.parentConfigPath)
         }
 
         throw new TypeError(
-          'configuration layer node does not have parentConfigPath set',
+          'node has neither parentConfigId nor parentConfigPath set',
         )
       },
     }))
     .postProcessSnapshot(snap => {
+      if (!snap.parentConfigId) delete snap.parentConfigId
       if (!snap.parentConfigPath) delete snap.parentConfigPath
       return snap
     })

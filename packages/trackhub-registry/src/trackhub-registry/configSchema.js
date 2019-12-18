@@ -14,5 +14,5 @@ export default ConfigurationSchema(
       description: 'id of the trackDb in The Track Hub Registry',
     },
   },
-  { explicitlyTyped: true, explicitIdentifier: 'connectionId' },
+  { explicitlyTyped: true },
 )

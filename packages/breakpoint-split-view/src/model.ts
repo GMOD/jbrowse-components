@@ -20,11 +20,18 @@ export default function stateModelFactory(pluginManager: any) {
   const {
     types: jbrequiredTypes,
     getParent,
+    getRoot,
     onAction,
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
+  const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
+  const configSchema = ConfigurationSchema(
+    'BreakpointSplitView',
+    {},
+    { explicitlyTyped: true },
+  )
 
   const minHeight = 40
   const defaultHeight = 400
@@ -43,6 +50,7 @@ export default function stateModelFactory(pluginManager: any) {
         defaultHeight,
       ),
       displayName: 'breakpoint detail',
+      configuration: configSchema,
       trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
       linkViews: false,
@@ -58,7 +66,7 @@ export default function stateModelFactory(pluginManager: any) {
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         const viewTracks = self.views.map(view =>
-          view.tracks.map(t => t.configuration.trackId),
+          view.tracks.map(t => t.configuration.configId),
         )
         return intersection(...viewTracks)
       },
@@ -263,6 +271,10 @@ export default function stateModelFactory(pluginManager: any) {
         self.headerHeight = height
       },
 
+      activateConfigurationUI() {
+        getRoot(self).editConfiguration(self.configuration)
+      },
+
       toggleInteract() {
         self.interactToggled = !self.interactToggled
       },
@@ -274,7 +286,7 @@ export default function stateModelFactory(pluginManager: any) {
       },
     }))
 
-  return { stateModel }
+  return { stateModel, configSchema }
 }
 
 export type BreakpointView = ReturnType<typeof stateModelFactory>

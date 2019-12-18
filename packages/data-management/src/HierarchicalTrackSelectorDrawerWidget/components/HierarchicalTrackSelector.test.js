@@ -31,7 +31,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       assembly: {
         name: 'volMyt1',
         sequence: {
-          trackId: 'sequenceConfigId',
+          configId: 'sequenceConfigId',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -48,12 +48,12 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       },
       tracks: [
         {
-          trackId: 'fooC',
+          configId: 'fooC',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
         },
         {
-          trackId: 'barC',
+          configId: 'barC',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
         },
@@ -80,7 +80,7 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       assembly: {
         name: 'volvox',
         sequence: {
-          trackId: 'sequenceConfigId',
+          configId: 'sequenceConfigId',
           adapter: {
             name: 'volMyt1',
             type: 'FromConfigAdapter',
@@ -98,12 +98,12 @@ describe('HierarchicalTrackSelector drawer widget', () => {
       },
       tracks: [
         {
-          trackId: 'fooC',
+          configId: 'fooC',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
         },
         {
-          trackId: 'barC',
+          configId: 'barC',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
         },

@@ -4,8 +4,20 @@
 
 import jsonStableStringify from 'json-stable-stringify'
 
+function removeConfigIds(thing) {
+  if (typeof thing === 'object') {
+    const filtered = { ...thing }
+    delete filtered.configId
+    Object.entries(filtered).forEach(([k, v]) => {
+      filtered[k] = removeConfigIds(v)
+    })
+    return filtered
+  }
+  return thing
+}
+
 function adapterConfigCacheKey(adapterType, adapterConfig) {
-  return `${adapterType}|${jsonStableStringify(adapterConfig)}`
+  return `${adapterType}|${jsonStableStringify(removeConfigIds(adapterConfig))}`
 }
 
 const adapterCache = {}

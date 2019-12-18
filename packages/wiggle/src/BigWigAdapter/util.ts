@@ -53,13 +53,13 @@ export function calcStdFromSums(
 export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   return {
     ...s,
-    scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
+    scoreMean: s.featureCount ? s.scoreSum / s.featureCount : 0,
     scoreStdDev: calcStdFromSums(
       s.scoreSum,
       s.scoreSumSquares,
-      s.featureCount || s.basesCovered,
+      s.featureCount || 0,
     ),
-    featureDensity: (s.featureCount || 1) / s.basesCovered,
+    featureDensity: (s.featureCount || 0) / s.basesCovered,
   }
 }
 

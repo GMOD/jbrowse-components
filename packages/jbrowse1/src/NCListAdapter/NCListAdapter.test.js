@@ -2,7 +2,6 @@ import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { URL } from 'url'
 import { toArray } from 'rxjs/operators'
-import objectHash from 'object-hash'
 
 import Adapter from './NCListAdapter'
 
@@ -19,11 +18,10 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
     )
     .replace(/\\/g, '\\\\')
   await fsPromises.stat(rootTemplate.replace('{refseq}', 21)) // will throw if doesnt exist
-  const args = {
+  const adapter = new Adapter({
     rootUrlTemplate: decodeURI(new URL(`file://${rootTemplate}`).href),
-  }
-  const hash = objectHash(args)
-  const adapter = new Adapter(args)
+    configId: 'test_adapter',
+  })
 
   const features = await adapter.getFeatures({
     refName: '21',
@@ -33,12 +31,10 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray[0].get('refName')).toBe('21')
-  expect(featuresArray[0].id()).toBe(`${hash}-21,0,0,19,22,0`)
+  expect(featuresArray[0].id()).toBe('test_adapter-0,0,19,22,0')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(94)
-  for (const feature of featuresJsonArray) {
-    expect(feature).toMatchSnapshot({ uniqueId: expect.any(String) })
-  }
+  expect(featuresJsonArray).toMatchSnapshot()
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
   expect(await adapter.hasDataForRefName('21')).toBe(true)

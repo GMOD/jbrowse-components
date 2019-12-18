@@ -10,5 +10,7 @@ test('plugin in a stock JBrowse', () => {
 
   const BigWigAdapter = pluginManager.getAdapterType('BigWigAdapter')
   const config = BigWigAdapter.configSchema.create({ type: 'BigWigAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+  })
 })

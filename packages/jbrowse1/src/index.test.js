@@ -10,5 +10,8 @@ test('plugin in a stock JBrowse', () => {
 
   const NCListAdapter = pluginManager.getAdapterType('NCListAdapter')
   const config = NCListAdapter.configSchema.create({ type: 'NCListAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot({
+    configId: expect.any(String),
+    type: 'NCListAdapter',
+  })
 })

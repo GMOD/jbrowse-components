@@ -9,7 +9,7 @@ import TrackBlocks from './TrackBlocks'
 function BlockBasedTrack(props) {
   const { model, children } = props
   return (
-    <Track {...props} trackId={getConf(model, 'trackId')}>
+    <Track {...props} trackId={getConf(model, 'configId')}>
       {model.trackMessageComponent ? (
         <model.trackMessageComponent model={model} />
       ) : (

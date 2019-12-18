@@ -4,7 +4,14 @@ export default ({ jbrequire }) => {
   )
 
   const ReactComponent = jbrequire(require('./components/CircularView'))
-  const { stateModel } = jbrequire(require('./models/CircularView'))
+  const { stateModel, configSchema } = jbrequire(
+    require('./models/CircularView'),
+  )
 
-  return new ViewType({ name: 'CircularView', stateModel, ReactComponent })
+  return new ViewType({
+    name: 'CircularView',
+    stateModel,
+    configSchema,
+    ReactComponent,
+  })
 }

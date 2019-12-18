@@ -51,7 +51,6 @@ describe('LinearGenomeView genome view component', () => {
       assembly: {
         name: 'volMyt1',
         sequence: {
-          trackId: 'ref0',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -68,7 +67,7 @@ describe('LinearGenomeView genome view component', () => {
       },
       tracks: [
         {
-          trackId: 'testConfig',
+          configId: 'testConfig',
           name: 'Foo Track',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
@@ -120,7 +119,6 @@ describe('LinearGenomeView genome view component', () => {
       assembly: {
         assemblyName: 'volMyt1',
         sequence: {
-          trackId: 'ref0',
           adapter: {
             type: 'FromConfigAdapter',
             features: [
@@ -137,13 +135,13 @@ describe('LinearGenomeView genome view component', () => {
       },
       tracks: [
         {
-          trackId: 'testConfig',
+          configId: 'testConfig',
           name: 'Foo Track',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },
         },
         {
-          trackId: 'testConfig2',
+          configId: 'testConfig2',
           name: 'Bar Track',
           type: 'BasicTrack',
           adapter: { type: 'FromConfigAdapter', features: [] },

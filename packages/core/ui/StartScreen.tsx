@@ -173,11 +173,9 @@ const RenameSessionDialog = ({
 export default function StartScreen({
   root,
   bypass,
-  onFactoryReset,
 }: {
   root: any
   bypass: boolean
-  onFactoryReset: Function
 }) {
   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [sessions, setSessions] = useState()
@@ -251,7 +249,6 @@ export default function StartScreen({
     <>
       <FactoryResetDialog
         open={reset}
-        onFactoryReset={onFactoryReset}
         onClose={() => {
           setReset(false)
         }}

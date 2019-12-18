@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import FactoryResetDialog from './FactoryResetDialog'
 
-const ResetComponent = ({ onFactoryReset }: { onFactoryReset: Function }) => {
+const ResetComponent = () => {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -22,23 +22,16 @@ const ResetComponent = ({ onFactoryReset }: { onFactoryReset: Function }) => {
       <FactoryResetDialog
         onClose={() => setDialogOpen(false)}
         open={dialogOpen}
-        onFactoryReset={onFactoryReset}
       />
     </>
   )
 }
-ResetComponent.propTypes = {
-  onFactoryReset: PropTypes.func.isRequired,
-}
-
 const FatalErrorDialog = ({
   componentStack,
   error,
-  onFactoryReset,
 }: {
   componentStack: string
   error: Error
-  onFactoryReset: Function
 }) => {
   return (
     <Dialog open={true}>
@@ -57,7 +50,7 @@ const FatalErrorDialog = ({
         >
           Refresh
         </Button>
-        <ResetComponent onFactoryReset={onFactoryReset} />
+        {window.electron ? <ResetComponent /> : null}
       </DialogActions>
     </Dialog>
   )
@@ -66,7 +59,6 @@ const FatalErrorDialog = ({
 FatalErrorDialog.propTypes = {
   componentStack: PropTypes.string,
   error: PropTypes.shape({}),
-  onFactoryReset: PropTypes.func.isRequired,
 }
 
 FatalErrorDialog.defaultProps = {

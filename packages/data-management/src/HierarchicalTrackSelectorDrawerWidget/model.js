@@ -15,7 +15,7 @@ export function generateHierarchy(trackConfigurations) {
       if (!currLevel.has(category)) currLevel.set(category, new Map())
       currLevel = currLevel.get(category)
     }
-    currLevel.set(trackConf.trackId, trackConf)
+    currLevel.set(trackConf.configId, trackConf)
   })
   return hierarchy
 }
@@ -105,8 +105,8 @@ export default pluginManager =>
         })
         let tracks = {}
         currentHier.forEach((contents, name) => {
-          if (contents.trackId) {
-            tracks[contents.trackId] = contents
+          if (contents.configId) {
+            tracks[contents.configId] = contents
           } else {
             tracks = Object.assign(
               tracks,

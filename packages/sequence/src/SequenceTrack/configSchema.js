@@ -24,7 +24,7 @@ export default (pluginManager, trackType) => {
         adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         rendering: DivSequenceRendererConfigurationSchema,
       },
-      { explicitIdentifier: 'trackId', explicitlyTyped: true },
+      { explicitlyTyped: true },
     )
 
   return null

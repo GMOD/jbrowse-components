@@ -41,7 +41,7 @@ function Contents({
   Array.from(hierarchy)
     .slice(0, 50)
     .forEach(([name, contents]) => {
-      if (contents.trackId) {
+      if (contents.configId) {
         initialTrackConfigurations.push(contents)
       } else {
         initialCategories.push([name, contents])
@@ -60,7 +60,7 @@ function Contents({
       Array.from(hierarchy)
         .slice(numLoaded, numLoaded + 10)
         .forEach(([name, contents]) => {
-          if (contents.trackId) {
+          if (contents.configId) {
             loadedTrackConfigurations.push(contents)
           } else {
             loadedCategories.push([name, contents])
@@ -110,7 +110,7 @@ function Contents({
         {trackConfigurations.filter(filterPredicate).map(trackConf => {
           return (
             <TrackEntry
-              key={trackConf.trackId}
+              key={trackConf.configId}
               model={model}
               trackConf={trackConf}
               disabled={disabled}

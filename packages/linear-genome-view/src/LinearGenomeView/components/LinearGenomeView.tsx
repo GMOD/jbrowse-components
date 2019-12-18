@@ -504,7 +504,7 @@ const ImportForm = observer(({ model }) => {
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, controlsWidth, error } = model
+  const { tracks, controlsWidth } = model
   const classes = useStyles()
 
   const initialized =
@@ -513,9 +513,9 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
     ? {
         display: 'grid',
         position: 'relative',
-        gridTemplateRows: `${!model.hideHeader ? '[header] auto ' : ''}${
-          error ? '[error] auto ' : ''
-        }[scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
+        gridTemplateRows: `${
+          !model.hideHeader ? '[header] auto ' : ''
+        } [scale-bar] ${SCALE_BAR_HEIGHT}px ${tracks
           .map(
             t =>
               `[track-${t.id}] ${t.height}px [resize-${t.id}] ${dragHandleHeight}px`,
@@ -545,42 +545,29 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
             <Rubberband height={SCALE_BAR_HEIGHT} model={model}>
               <ScaleBar model={model} height={SCALE_BAR_HEIGHT} />
             </Rubberband>
-            {error ? (
+
+            {model.hideHeader ? (
               <div
-                style={{ gridRow: 'error', textAlign: 'center', color: 'red' }}
+                className={classes.zoomControls}
+                style={{
+                  right: 4,
+                  zIndex: 1000,
+                }}
               >
-                {error.message}
+                <ZoomControls model={model} />
               </div>
+            ) : null}
+            {!tracks.length ? (
+              <Container className={classes.noTracksMessage}>
+                <Typography>
+                  No tracks active, click the "select tracks" button to choose
+                  some.
+                </Typography>
+              </Container>
             ) : (
-              <>
-                {model.hideHeader ? (
-                  <div
-                    className={classes.zoomControls}
-                    style={{
-                      right: 4,
-                      zIndex: 1000,
-                    }}
-                  >
-                    <ZoomControls model={model} />
-                  </div>
-                ) : null}
-                {!tracks.length ? (
-                  <Container className={classes.noTracksMessage}>
-                    <Typography>
-                      No tracks active, click the "select tracks" button to
-                      choose some.
-                    </Typography>
-                  </Container>
-                ) : (
-                  tracks.map(track => (
-                    <TrackContainer
-                      key={track.id}
-                      model={model}
-                      track={track}
-                    />
-                  ))
-                )}
-              </>
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))
             )}
           </>
         )}

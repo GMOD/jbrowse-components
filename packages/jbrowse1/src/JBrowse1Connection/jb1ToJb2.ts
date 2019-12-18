@@ -10,7 +10,7 @@ import {
 } from '@gmod/jbrowse-core/util/tracks'
 
 interface Jb2Track {
-  trackId: string
+  configId: string
   name?: string
   description?: string
   category?: string[]
@@ -30,6 +30,7 @@ interface Jb2Adapter {
 
 interface Jb2Renderer {
   type: string
+  configId: string
 }
 
 interface Jb2Feature {
@@ -50,7 +51,7 @@ export function convertTrackConfig(
   dataRoot: string,
 ): Jb2Track {
   const jb2TrackConfig: Jb2Track = {
-    trackId: objectHash(jb1TrackConfig),
+    configId: jb1TrackConfig.label,
     name: jb1TrackConfig.key || jb1TrackConfig.label,
   }
 
@@ -111,10 +112,12 @@ export function convertTrackConfig(
     }
   } else if (jb2TrackConfig.type === 'BasicTrack') {
     jb2TrackConfig.renderer = {
+      configId: `${objectHash(jb2TrackConfig)}-renderer`,
       type: 'SvgFeatureRenderer',
     }
   }
 
+  jb2TrackConfig.configId = objectHash(jb2TrackConfig)
   return jb2TrackConfig
 }
 
@@ -139,8 +142,10 @@ function generateFromConfigTrackConfig(
   }
   jb2TrackConfig.type = 'BasicTrack'
   jb2TrackConfig.renderer = {
+    configId: `${objectHash(jb2TrackConfig)}-renderer`,
     type: 'SvgFeatureRenderer',
   }
+  jb2TrackConfig.configId = objectHash(jb2TrackConfig)
   return jb2TrackConfig
 }
 

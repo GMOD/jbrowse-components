@@ -7,7 +7,10 @@ export default pluginManager =>
       id: ElementId,
       type: types.literal('ConfigurationEditorDrawerWidget'),
       target: types.safeReference(
-        pluginManager.pluggableConfigSchemaType('track'),
+        types.union(
+          pluginManager.pluggableConfigSchemaType('track'),
+          pluginManager.pluggableConfigSchemaType('view'),
+        ),
       ),
     })
     // .volatile(() => ({
