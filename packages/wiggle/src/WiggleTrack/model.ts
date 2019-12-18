@@ -40,8 +40,9 @@ const stateModelFactory = (configSchema: any) =>
           // avoid circular reference since WiggleTrackComponent receives this model
           ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          stats: undefined as undefined | any,
+          stats: undefined as
+            | undefined
+            | { scoreMin: number; scoreMax: number; [key: string]: number },
           statsFetchInProgress: undefined as undefined | AbortController,
         })),
     )
@@ -102,33 +103,59 @@ const stateModelFactory = (configSchema: any) =>
       },
     }))
     .actions(self => {
-      function getStats(signal: AbortSignal) {
+      async function getStats(signal: AbortSignal) {
         const { rpcManager } = getSession(self) as {
           rpcManager: { call: Function }
         }
+        const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', {})
-        if (autoscaleType === 'global') {
-          return rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(self.configuration.adapter),
-            adapterType: self.configuration.adapter.type,
+        const { adapter } = self.configuration
+        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
+          const r = await rpcManager.call('statsGathering', 'getGlobalStats', {
+            adapterConfig: getSnapshot(adapter),
+            adapterType: adapter.type,
             signal,
           })
+          return autoscaleType === 'globalsd'
+            ? {
+                ...r,
+                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
+                // helps with most bigwigs just being >0
+                scoreMin:
+                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
+                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+              }
+            : r
         }
-        if (autoscaleType === 'local') {
+        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
           const { dynamicBlocks, bpPerPx } = getContainingView(self)
-          return rpcManager.call('statsGathering', 'getMultiRegionStats', {
-            adapterConfig: getSnapshot(self.configuration.adapter),
-            adapterType: self.configuration.adapter.type,
-            assemblyName: getTrackAssemblyName(self),
-            regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
-            signal,
-            bpPerPx,
-          })
+          const r = await rpcManager.call(
+            'statsGathering',
+            'getMultiRegionStats',
+            {
+              adapterConfig: getSnapshot(adapter),
+              adapterType: adapter.type,
+              assemblyName: getTrackAssemblyName(self),
+              regions: JSON.parse(JSON.stringify(dynamicBlocks.blocks)),
+              signal,
+              bpPerPx,
+            },
+          )
+          return autoscaleType === 'localsd'
+            ? {
+                ...r,
+                // avoid unnecessary scoreMin<0 if the scoreMin is never less than 0
+                // helps with most bigwigs just being >0
+                scoreMin:
+                  r.scoreMin >= 0 ? 0 : r.scoreMean - nd * r.scoreStdDev,
+                scoreMax: r.scoreMean + nd * r.scoreStdDev,
+              }
+            : r
         }
         if (autoscaleType === 'zscale') {
           return rpcManager.call('statsGathering', 'getGlobalStats', {
-            adapterConfig: getSnapshot(self.configuration.adapter),
-            adapterType: self.configuration.adapter.type,
+            adapterConfig: getSnapshot(adapter),
+            adapterType: adapter.type,
             signal,
           })
         }
@@ -148,7 +175,7 @@ const stateModelFactory = (configSchema: any) =>
                     self.updateStats(stats)
                   }
                 } catch (e) {
-                  if (!isAbortException(e)) {
+                  if (!isAbortException(e) && isAlive(self)) {
                     self.setError(e)
                   }
                 }

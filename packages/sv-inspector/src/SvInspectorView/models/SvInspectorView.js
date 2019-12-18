@@ -6,14 +6,8 @@ export default pluginManager => {
   )
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { ConfigurationSchema, getConf, readConfObject } = jbrequire(
+  const { getConf, readConfObject } = jbrequire(
     '@gmod/jbrowse-core/configuration',
-  )
-
-  const configSchema = ConfigurationSchema(
-    'SvInspectorView',
-    {},
-    { explicitlyTyped: true },
   )
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
@@ -38,7 +32,6 @@ export default pluginManager => {
         ),
         defaultHeight,
       ),
-      configuration: configSchema,
 
       onlyDisplayRelevantRegionsInCircularView: false,
 
@@ -125,6 +118,7 @@ export default pluginManager => {
       get featuresCircularTrackConfiguration() {
         const configuration = {
           type: 'StructuralVariantChordTrack',
+          trackId: `sv-inspector-sv-chord-track-${self.id}`,
           name: 'features from tabular data',
           renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
@@ -291,5 +285,5 @@ export default pluginManager => {
       },
     }))
 
-  return { stateModel, configSchema }
+  return { stateModel }
 }

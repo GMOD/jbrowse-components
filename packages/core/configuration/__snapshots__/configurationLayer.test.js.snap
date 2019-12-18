@@ -16,7 +16,7 @@ Object {
         "parentConfigPath": "../../../parent/mapOfSubs/one",
       },
     },
-    "parentConfigId": "blue",
+    "parentConfigPath": "../parent",
     "sub1": Object {
       "parentConfigPath": "../../parent/sub1",
       "sub1attr1": "zook",
@@ -27,19 +27,15 @@ Object {
     "arrayOfSubs": Array [
       Object {
         "arrayMemberAttr1": "marge",
-        "configId": Any<String>,
       },
     ],
-    "configId": "blue",
     "foo": "zonk",
     "mapOfSubs": Object {
       "one": Object {
-        "configId": "one",
         "mapMemberAttr1": "pluto",
       },
     },
     "sub1": Object {
-      "configId": Any<String>,
       "sub1attr1": "zonk",
     },
   },

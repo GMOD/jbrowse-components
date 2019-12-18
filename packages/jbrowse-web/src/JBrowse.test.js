@@ -217,7 +217,7 @@ describe('valid file tests', () => {
 })
 
 describe('some error state', () => {
-  it('test that track with 404 file displays error', async () => {
+  it('test that BAI with 404 file displays error', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -225,7 +225,7 @@ describe('some error state', () => {
     )
     fireEvent.click(
       await waitForElement(() =>
-        getByTestId('htsTrackEntry-volvox_alignments_nonexist'),
+        getByTestId('htsTrackEntry-volvox_alignments_bai_nonexist'),
       ),
     )
     await expect(
@@ -238,7 +238,9 @@ describe('some error state', () => {
     expect(spy).toHaveBeenCalled()
     spy.mockRestore()
   })
+})
 
+describe('test renamed refs', () => {
   it('open a cram with alternate renamed ref', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId: byId, getAllByTestId, getByText } = render(
@@ -276,6 +278,25 @@ describe('some error state', () => {
       waitForElement(() => getAllByText('ctgA_110_638_0:0:0_3:0:0_15b')),
     ).resolves.toBeTruthy()
   })
+  it('open a bigwig with a renamed reference', async () => {
+    const state = JBrowseRootModel.create({ jbrowse: config })
+    const { getByTestId: byId, getAllByTestId, getByText } = render(
+      <JBrowse initialState={state} />,
+    )
+    await waitForElement(() => getByText('Help'))
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(
+      await waitForElement(() =>
+        byId('htsTrackEntry-volvox_microarray_density_altname'),
+      ),
+    )
+    await expect(
+      waitForElement(() => getAllByTestId('prerendered_canvas')),
+    ).resolves.toBeTruthy()
+  })
+})
+
+describe('max height test', () => {
   it('test that bam with small max height displays message', async () => {
     const state = JBrowseRootModel.create({ jbrowse: config })
     const { getByTestId, getAllByText } = render(
@@ -418,22 +439,6 @@ describe('bigwig', () => {
       waitForElement(() => getAllByTestId('prerendered_canvas')),
     ).resolves.toBeTruthy()
   })
-  it('open a bigwig with a renamed reference', async () => {
-    const state = JBrowseRootModel.create({ jbrowse: config })
-    const { getByTestId: byId, getAllByTestId, getByText } = render(
-      <JBrowse initialState={state} />,
-    )
-    await waitForElement(() => getByText('Help'))
-    state.session.views[0].setNewView(0.05, 5000)
-    fireEvent.click(
-      await waitForElement(() =>
-        byId('htsTrackEntry-volvox_microarray_density_altname'),
-      ),
-    )
-    await expect(
-      waitForElement(() => getAllByTestId('prerendered_canvas')),
-    ).resolves.toBeTruthy()
-  })
 })
 
 describe('circular views', () => {
@@ -477,26 +482,31 @@ describe('breakpoint split view', () => {
   it('open a split view', async () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const state = JBrowseRootModel.create({ jbrowse: breakpointConfig })
-    const { getByTestId, getByText } = render(<JBrowse initialState={state} />)
-    await waitForElement(() => getByText('Help'))
+    const { findByTestId } = render(<JBrowse initialState={state} />)
 
     expect(
-      await waitForElement(() =>
-        getByTestId('pacbio_hg002_breakpoints-loaded'),
-      ),
+      await findByTestId('pacbio_hg002_breakpoints-loaded'),
     ).toMatchSnapshot()
 
-    expect(
-      await waitForElement(() => getByTestId('pacbio_vcf-loaded')),
-    ).toMatchSnapshot()
+    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
     spy.mockRestore()
-  })
+  }, 10000)
 })
 
 test('cause an exception in the jbrowse module loading', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { getByText } = render(<JBrowse config={{ configuration: [] }} />)
   expect(await getByText('Fatal error')).toBeTruthy()
+  expect(spy).toHaveBeenCalled()
+  spy.mockRestore()
+})
+
+test('404 sequence file', async () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { findByText } = render(
+    <JBrowse config={{ uri: 'test_data/config_chrom_sizes_test.json' }} />,
+  )
+  await findByText(/HTTP 404/)
   expect(spy).toHaveBeenCalled()
   spy.mockRestore()
 })

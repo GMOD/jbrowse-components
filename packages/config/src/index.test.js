@@ -6,7 +6,7 @@ describe('Config editing', () => {
   let pluginManager
 
   beforeAll(() => {
-    ;({ pluginManager } = createTestSession({ configId: 'testing' }))
+    ;({ pluginManager } = createTestSession())
   })
 
   it("won't add if already added", () => {
@@ -22,9 +22,7 @@ describe('Config editing', () => {
     const config = ConfigurationEditorDrawerWidget.configSchema.create({
       type: 'ConfigurationEditorDrawerWidget',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 
   it('creates proper FromConfigAdapter', () => {
@@ -32,8 +30,6 @@ describe('Config editing', () => {
     const config = adapter.configSchema.create({
       type: 'FromConfigAdapter',
     })
-    expect(getSnapshot(config)).toMatchSnapshot({
-      configId: expect.any(String),
-    })
+    expect(getSnapshot(config)).toMatchSnapshot()
   })
 })

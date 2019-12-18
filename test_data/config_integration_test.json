@@ -1,12 +1,21 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
+    "updateUrl": false
+  },
   "datasets": [
     {
       "name": "volvox",
       "assembly": {
         "name": "volvox",
+        "aliases": [
+          "vvx"
+        ],
         "sequence": {
-          "configId": "volvox_refseq",
           "type": "ReferenceSequenceTrack",
+          "trackId": "volvox_refseq",
           "adapter": {
             "type": "TwoBitAdapter",
             "twoBitLocation": {
@@ -17,9 +26,6 @@
             "type": "DivSequenceRenderer"
           }
         },
-        "aliases": [
-          "vvx"
-        ],
         "refNameAliases": {
           "adapter": {
             "type": "FromConfigAdapter",
@@ -46,8 +52,8 @@
       },
       "tracks": [
         {
-          "configId": "volvox_chord_test",
           "type": "StructuralVariantChordTrack",
+          "trackId": "volvox_chord_test",
           "name": "volvox chord test",
           "adapter": {
             "type": "VcfTabixAdapter",
@@ -65,8 +71,8 @@
           }
         },
         {
-          "configId": "volvox_cram_alignments",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_cram_alignments",
           "name": "volvox-sorted.cram (contigA)",
           "adapter": {
             "type": "CramAdapter",
@@ -77,20 +83,18 @@
               "uri": "test_data/volvox-sorted-altname.cram.crai"
             }
           },
-          "defaultRendering": "pileup",
           "renderers": {
             "PileupRenderer": {
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "volvox_alignments",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_alignments",
           "name": "volvox-sorted red/blue (ctgA)",
           "adapter": {
             "type": "BamAdapter",
@@ -109,14 +113,13 @@
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "volvox_bam_altname",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_bam_altname",
           "name": "volvox-sorted red/blue (contigA)",
           "adapter": {
             "type": "BamAdapter",
@@ -135,14 +138,13 @@
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "volvox_bam_small_max_height",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_bam_small_max_height",
           "name": "volvox-sorted red/blue (small max height)",
           "adapter": {
             "type": "BamAdapter",
@@ -161,15 +163,13 @@
               "maxHeight": 10
             },
             "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
           "type": "VariantTrack",
-          "configId": "volvox_filtered_vcf",
-          "defaultRendering": "svg",
+          "trackId": "volvox_filtered_vcf",
           "name": "volvox filtered vcf",
           "category": [
             "Bee Category",
@@ -181,37 +181,37 @@
               "uri": "test_data/volvox.filtered.vcf.gz"
             },
             "index": {
-              "index": "TBI",
               "location": {
                 "uri": "test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
             "SvgFeatureRenderer": {
               "type": "SvgFeatureRenderer",
-              "maxFeatureGlyphExpansion": 0,
-              "labels": {}
+              "maxFeatureGlyphExpansion": 0
             }
           }
         },
         {
           "type": "BasicTrack",
-          "configId": "nclist_long_names",
+          "trackId": "nclist_long_names",
           "name": "nclist with long names/descriptions",
           "adapter": {
             "type": "NCListAdapter",
             "rootUrlTemplate": "test_data/volvox_long_names_nclist/{refseq}/trackData.json"
           },
           "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {}
+            "type": "SvgFeatureRenderer"
           }
         },
         {
-          "configId": "volvox_alignments_nonexist",
           "type": "AlignmentsTrack",
-          "name": "volvox-sorted red/blue (nonexist 404)",
+          "trackId": "volvox_alignments_bam_nonexist",
+          "name": "volvox-sorted red/blue (bam nonexist 404)",
           "adapter": {
             "type": "BamAdapter",
             "bamLocation": {
@@ -219,62 +219,139 @@
             },
             "index": {
               "location": {
-                "uri": "test_data/volvox-sorted.bam.bai.nonexist"
+                "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
           }
         },
         {
-          "configId": "volvox_microarray",
+          "type": "AlignmentsTrack",
+          "trackId": "volvox_alignments_bai_nonexist",
+          "name": "volvox-sorted red/blue (bai nonexist 404)",
+          "adapter": {
+            "type": "BamAdapter",
+            "bamLocation": {
+              "uri": "test_data/volvox-sorted.bam"
+            },
+            "index": {
+              "location": {
+                "uri": "test_data/volvox-sorted.bam.bai.nonexist"
+              }
+            }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
+          }
+        },
+        {
           "type": "WiggleTrack",
+          "trackId": "volvox_bigwig_nonexist",
+          "name": "wiggle_track nonexist",
+          "adapter": {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "test_data/volvox.bw.nonexist"
+            }
+          }
+        },
+        {
+          "type": "WiggleTrack",
+          "trackId": "volvox_microarray",
           "name": "wiggle_track xyplot",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
             }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_microarray_line",
-          "defaultRendering": "line",
           "type": "WiggleTrack",
+          "trackId": "volvox_microarray_line",
           "name": "wiggle_track lineplot",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
             }
+          },
+          "defaultRendering": "line",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_microarray_density",
           "type": "WiggleTrack",
-          "defaultRendering": "density",
+          "trackId": "volvox_microarray_density",
           "name": "wiggle_track density",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
             }
+          },
+          "defaultRendering": "density",
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_microarray_density_altname",
           "type": "WiggleTrack",
-          "defaultRendering": "xyplot",
-          "autoscale": "local",
+          "trackId": "volvox_microarray_density_altname",
           "name": "wiggle_track density (altname)",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.altname.bw"
             }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
           }
         },
         {
-          "configId": "lollipop_track",
           "type": "DynamicTrack",
+          "trackId": "lollipop_track",
           "name": "Lollipop track",
           "category": [
             "Miscellaneous"
@@ -327,6 +404,14 @@
       ]
     }
   ],
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
   "savedSessions": [
     {
       "name": "Integration test example",
@@ -373,11 +458,5 @@
         "hierarchicalTrackSelector": "hierarchicalTrackSelector"
       }
     }
-  ],
-  "configuration": {
-    "rpc": {
-      "defaultDriver": "MainThreadRpcDriver"
-    },
-    "updateUrl": false
-  }
+  ]
 }

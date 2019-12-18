@@ -1,17 +1,16 @@
 {
+  "configuration": {},
   "datasets": [
     {
       "assembly": {
-        "configId": "LxT4lkflYm1",
         "name": "hg19",
         "aliases": [
           "GRCh37"
         ],
         "sequence": {
-          "configId": "Pd8Wh30ei9R",
           "type": "ReferenceSequenceTrack",
+          "trackId": "Pd8Wh30ei9R",
           "adapter": {
-            "configId": "YK3RiyLKJq4",
             "type": "BgzipFastaAdapter",
             "fastaLocation": {
               "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
@@ -24,15 +23,14 @@
             }
           },
           "rendering": {
-            "configId": "_Ta2aorot0V",
             "type": "DivSequenceRenderer"
           }
         }
       },
       "tracks": [
         {
-          "configId": "human_chord_test",
           "type": "StructuralVariantChordTrack",
+          "trackId": "human_chord_test",
           "name": "HG002 PacBio PBSV BND",
           "configRelationships": [
             {
@@ -40,31 +38,28 @@
               "target": "pacbio_hg002"
             },
             {
-              "target": "pacbio_sv_vcf",
-              "type": "VariantCalls"
+              "type": "VariantCalls",
+              "target": "pacbio_sv_vcf"
             }
           ],
           "adapter": {
-            "configId": "JjSnfYk0a",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
             },
             "index": {
-              "configId": "WGiJIFVWgx",
               "location": {
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
-            "configId": "cnlG3T7NSc",
             "type": "StructuralVariantChordRenderer"
           }
         },
         {
-          "configId": "breast_cancer_hg19_chords",
           "type": "StructuralVariantChordTrack",
+          "trackId": "breast_cancer_hg19_chords",
           "name": "SKBR3 Sniffles TRA",
           "configRelationships": [
             {
@@ -72,8 +67,8 @@
               "target": "ngmlr"
             },
             {
-              "target": "breast_cancer_sniffles_hg19",
-              "type": "VariantCalls"
+              "type": "VariantCalls",
+              "target": "breast_cancer_sniffles_hg19"
             }
           ],
           "adapter": {
@@ -88,13 +83,12 @@
             }
           },
           "renderer": {
-            "configId": "cnlG3T7NSc",
             "type": "StructuralVariantChordRenderer"
           }
         },
         {
-          "configId": "ngmlr",
           "type": "AlignmentsTrack",
+          "trackId": "ngmlr",
           "name": "Breast cancer pacbio (NGMLR)",
           "category": [
             "SKBR3"
@@ -109,11 +103,19 @@
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "ngmlr_splitters",
           "type": "AlignmentsTrack",
+          "trackId": "ngmlr_splitters",
           "name": "Breast cancer pacbio (NGMLR) splitters only",
           "category": [
             "SKBR3"
@@ -128,11 +130,19 @@
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "ngmlr_downsample",
           "type": "AlignmentsTrack",
+          "trackId": "ngmlr_downsample",
           "name": "Breast cancer pacbio (NGMLR) 0.3 downsample",
           "category": [
             "SKBR3"
@@ -147,26 +157,44 @@
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "ngmlr_cov",
           "type": "WiggleTrack",
+          "trackId": "ngmlr_cov",
           "name": "Breast cancer pacbio coverage (NGMLR)",
           "category": [
             "SKBR3"
           ],
-          "autoscale": "local",
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
             }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
+            }
           }
         },
         {
-          "configId": "illumina_hg002",
           "type": "AlignmentsTrack",
+          "trackId": "illumina_hg002",
           "name": "HG002.hs37d5.2x250",
           "adapter": {
             "type": "BamAdapter",
@@ -184,156 +212,123 @@
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer",
-              "labels": {}
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "pacbio_hg002",
           "type": "AlignmentsTrack",
+          "trackId": "pacbio_hg002",
           "name": "HG002.hs37d5.11kb",
           "category": [
             "PacBio",
             "BAM"
           ],
           "adapter": {
-            "configId": "yqdN4rtSSS",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
             },
             "index": {
-              "configId": "z0jYC37_2h",
               "location": {
                 "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "XKcazRjYUO",
             "PileupRenderer": {
-              "configId": "G71Pm63GoW",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "r7zVi_Jgrt",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "tVwnQLG0u4"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "na12878_exome",
           "type": "AlignmentsTrack",
+          "trackId": "na12878_exome",
           "name": "NA12878 Exome",
           "category": [
             "1000 genomes"
           ],
           "adapter": {
-            "configId": "OTDepV9NVQj",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
             },
             "index": {
-              "configId": "cS35TbI08yD",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "YiOyYnupJa8",
             "PileupRenderer": {
-              "configId": "Lhb2lIWJnTd",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "s8YU2XWWehv",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "743qj43cJrD"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "chm1_pacbio",
           "type": "AlignmentsTrack",
+          "trackId": "chm1_pacbio",
           "name": "CHM1 pacbio",
           "category": [
             "PacBio",
             "BAM"
           ],
           "adapter": {
-            "configId": "fA7-Knm3_z",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
             },
             "index": {
-              "configId": "mOiFQ3uzLT",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "UuqCkHFZ5t",
             "PileupRenderer": {
-              "configId": "8macjrkylb",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "-Yj1bHW27k",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "Bt9BQUTZ4J"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "hg00096_highcov",
           "type": "AlignmentsTrack",
+          "trackId": "hg00096_highcov",
           "name": "HG00096 Illumina high coverage",
           "category": [
             "1000 genomes"
           ],
           "adapter": {
-            "configId": "EwF71672lBA",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
             },
             "index": {
-              "configId": "OR-n1OqwE3X",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "wa7xGT9bmhU",
             "PileupRenderer": {
-              "configId": "6OSKh0L8UMC",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "ZM4tP6_Qbcw",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "NG04oARDu88"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "nanopore_ultralong_cram_coverage",
           "type": "WiggleTrack",
+          "trackId": "nanopore_ultralong_cram_coverage",
           "name": "HG002 Nanopore ultralong coverage",
           "category": [
             "GIAB"
@@ -341,13 +336,24 @@
           "adapter": {
             "type": "BigWigAdapter",
             "bigWigLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.regions.bw"
+              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw"
+            }
+          },
+          "renderers": {
+            "DensityRenderer": {
+              "type": "DensityRenderer"
+            },
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer"
+            },
+            "LinePlotRenderer": {
+              "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "nanopore_ultralong_cram",
           "type": "AlignmentsTrack",
+          "trackId": "nanopore_ultralong_cram",
           "name": "HG002 Nanopore ultralong (CRAM)",
           "category": [
             "GIAB"
@@ -360,11 +366,19 @@
             "craiLocation": {
               "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "nanopore_ultralong",
           "type": "AlignmentsTrack",
+          "trackId": "nanopore_ultralong",
           "name": "HG002 Nanopore ultralong (BAM)",
           "category": [
             "GIAB"
@@ -379,127 +393,114 @@
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "rJxR1X2T0yu",
           "type": "AlignmentsTrack",
+          "trackId": "rJxR1X2T0yu",
           "name": "HG00096 Illumina low coverage",
           "category": [
             "1000 genomes"
           ],
           "adapter": {
-            "configId": "BWBdaUrgsOP",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
             },
             "index": {
-              "configId": "Wo7_uXtLj-L",
               "location": {
                 "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
               }
             }
           },
           "renderers": {
-            "configId": "l6ri1CJuYRh",
             "PileupRenderer": {
-              "configId": "mjcRxahq0QK",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "SiP2Xpddy3_",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "8OxyEW_afFb"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "wiggle_global_autoscale",
           "type": "WiggleTrack",
+          "trackId": "wiggle_global_autoscale",
           "name": "Encode global autoscale",
-          "autoscale": "global",
           "category": [
             "ENCODE bigWigs"
           ],
+          "autoscale": "global",
           "adapter": {
-            "configId": "8L8nA9qpjRe",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
             }
           },
           "renderers": {
-            "configId": "Q6WzvBzOnbL",
             "DensityRenderer": {
-              "configId": "j7Hr8HSBoh_",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "YtuFWYpGQlt",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "YYY_eV2iQ7S",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "wiggle_local_autoscale",
           "type": "WiggleTrack",
+          "trackId": "wiggle_local_autoscale",
           "name": "Encode local autoscale",
           "category": [
             "ENCODE bigWigs"
           ],
-          "autoscale": "local",
           "adapter": {
-            "configId": "vARzwjicxgq",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
             }
           },
           "renderers": {
-            "configId": "Hu3KQHJ-RLX",
             "DensityRenderer": {
-              "configId": "Nrh4xydmujo",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "QRAw8coHW1i",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "aazgDbgS8qm",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "bigbed_peaks",
           "type": "BasicTrack",
+          "trackId": "bigbed_peaks",
           "name": "Encode peaks",
           "category": [
             "ENCODE bigWigs"
           ],
           "adapter": {
-            "configId": "wCI0N1qJgMe",
             "type": "BigBedAdapter",
             "bigBedLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
             }
           },
           "renderer": {
-            "configId": "lqGk6Jefctk",
             "type": "PileupRenderer"
           }
         },
         {
-          "configId": "breast_cancer_sniffles_hg19",
           "type": "VariantTrack",
+          "trackId": "breast_cancer_sniffles_hg19",
           "name": "Breast cancer pacbio (sniffles VCF)",
           "category": [
             "SKBR3"
@@ -514,46 +515,46 @@
                 "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "1000genomes_indels",
           "type": "VariantTrack",
+          "trackId": "1000genomes_indels",
           "name": "InDels",
           "category": [
             "1000 genomes"
           ],
           "adapter": {
-            "configId": "5cVzXc0r4sO",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
             },
             "index": {
-              "configId": "bmWtGbNWnlD",
               "location": {
                 "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
               }
             }
           },
           "renderers": {
-            "configId": "GXEKwN52kO0",
             "PileupRenderer": {
-              "configId": "Oz9nuyem1z2",
               "type": "PileupRenderer"
             },
             "SvgFeatureRenderer": {
-              "configId": "7wSZSPLj8Kn",
-              "type": "SvgFeatureRenderer",
-              "labels": {
-                "configId": "TFb1J4Uz4gH"
-              }
+              "type": "SvgFeatureRenderer"
             }
           }
         },
         {
-          "configId": "pacbio_sv_vcf",
           "type": "VariantTrack",
+          "trackId": "pacbio_sv_vcf",
           "name": "hs37d5.HG002-SequelII-CCS",
           "category": [
             "PacBio",
@@ -569,39 +570,52 @@
                 "uri": "test_data/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "chm_variants",
           "type": "VariantTrack",
+          "trackId": "chm_variants",
           "name": "chm.full.37d5.vcf.gz",
           "category": [
             "PacBio",
             "VCF"
           ],
           "adapter": {
-            "configId": "Wd1VtBmf9Ms",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
             },
             "index": {
-              "configId": "9Z6Sihn9Hwx",
               "location": {
                 "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "sparql_togogenome",
           "type": "BasicTrack",
+          "trackId": "sparql_togogenome",
           "name": "TogoGenome SPARQL Genes",
           "category": [
             "Genes"
           ],
           "adapter": {
-            "configId": "ALCFDT789I",
             "type": "SPARQLAdapter",
             "endpoint": {
               "uri": "https://togovar.biosciencedbc.jp/sparql"
@@ -640,22 +654,17 @@
             ]
           },
           "renderer": {
-            "configId": "lu4lp9S_S9",
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "configId": "9m6o3wEqAf"
-            }
+            "type": "SvgFeatureRenderer"
           }
         },
         {
-          "configId": "sparql_togovar",
           "type": "BasicTrack",
+          "trackId": "sparql_togovar",
           "name": "TogoVar SPARQL Variants",
           "category": [
             "Variants"
           ],
           "adapter": {
-            "configId": "JOaFDT74Jk",
             "type": "SPARQLAdapter",
             "endpoint": {
               "uri": "https://togovar.biosciencedbc.jp/sparql"
@@ -694,43 +703,33 @@
             ]
           },
           "renderer": {
-            "configId": "ad4lp9S_S0",
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "configId": "4g3o3wEqAl"
-            }
+            "type": "SvgFeatureRenderer"
           }
         }
       ]
     },
     {
-      "configId": "C1c60gOB4",
       "name": "volvox",
       "assembly": {
-        "configId": "8oWn_kpVRo",
         "name": "volvox",
         "aliases": [
           "vvx"
         ],
         "sequence": {
-          "configId": "volvox_refseq_track",
           "type": "ReferenceSequenceTrack",
+          "trackId": "volvox_refseq_track",
           "adapter": {
-            "configId": "Rzzq0j7cBQ",
             "type": "TwoBitAdapter",
             "twoBitLocation": {
               "uri": "test_data/volvox.2bit"
             }
           },
           "rendering": {
-            "configId": "bD6rgA1_Ww",
             "type": "DivSequenceRenderer"
           }
         },
         "refNameAliases": {
-          "configId": "5rcBDyVD6r",
           "adapter": {
-            "configId": "Pvc34PLyvv",
             "type": "FromConfigAdapter",
             "features": [
               {
@@ -755,36 +754,32 @@
       },
       "tracks": [
         {
-          "configId": "QGoUN4vNq",
           "type": "StructuralVariantChordTrack",
+          "trackId": "QGoUN4vNq",
           "name": "volvox chord test",
           "adapter": {
-            "configId": "vfwu9uSr4",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/volvox.dup.vcf.gz"
             },
             "index": {
-              "configId": "igopEZIOv6",
               "location": {
                 "uri": "test_data/volvox.dup.vcf.gz.tbi"
               }
             }
           },
           "renderer": {
-            "configId": "10T-sIm_mX",
             "type": "StructuralVariantChordRenderer"
           }
         },
         {
-          "configId": "FDN0zpD_B6",
           "type": "DynamicTrack",
+          "trackId": "FDN0zpD_B6",
           "name": "Lollipop track",
           "category": [
             "Miscellaneous"
           ],
           "adapter": {
-            "configId": "KdPxlEm9QN",
             "type": "FromConfigAdapter",
             "features": [
               {
@@ -826,13 +821,12 @@
             ]
           },
           "renderer": {
-            "configId": "qNOcBblcYe",
             "type": "LollipopRenderer"
           }
         },
         {
-          "configId": "volvox-long-reads-sv-bam",
           "type": "AlignmentsTrack",
+          "trackId": "volvox-long-reads-sv-bam",
           "name": "volvox-long reads with SV",
           "category": [
             "Alignments"
@@ -847,11 +841,19 @@
                 "uri": "test_data/volvox-long-reads-sv.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox-long-reads-sv-cram",
           "type": "AlignmentsTrack",
+          "trackId": "volvox-long-reads-sv-cram",
           "name": "volvox-long reads with SV (cram)",
           "category": [
             "Alignments"
@@ -864,11 +866,19 @@
             "craiLocation": {
               "uri": "test_data/volvox-long-reads-sv.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox-long-reads-cram",
           "type": "AlignmentsTrack",
+          "trackId": "volvox-long-reads-cram",
           "name": "volvox-long reads (cram)",
           "category": [
             "Alignments"
@@ -881,31 +891,44 @@
             "craiLocation": {
               "uri": "test_data/volvox-long-reads.fastq.sorted.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox-long-reads-bam",
           "type": "AlignmentsTrack",
+          "trackId": "volvox-long-reads-bam",
           "name": "volvox-long reads",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "_m5epcAGu6",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-long-reads.fastq.sorted.bam"
             },
             "index": {
-              "configId": "-bETsJYDd9",
               "location": {
                 "uri": "test_data/volvox-long-reads.fastq.sorted.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox-long-reads-bam (SNP)",
           "type": "SNPTrack",
           "name": "volvox-SNP (bam)",
           "category": [
@@ -924,8 +947,8 @@
           }
         },
         {
-          "configId": "volvox_samspec_cram",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_samspec_cram",
           "name": "volvox-samspec (cram)",
           "category": [
             "Alignments"
@@ -938,32 +961,46 @@
             "craiLocation": {
               "uri": "test_data/volvox-samspec.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_samspec",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_samspec",
           "name": "volvox-samspec",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "9puQ7cL6Ao",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-samspec.bam"
             },
             "index": {
-              "configId": "SmWNBY459d",
               "location": {
                 "uri": "test_data/volvox-samspec.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_sv_cram",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_sv_cram",
           "name": "volvox-sv (cram)",
           "category": [
             "Alignments"
@@ -976,11 +1013,19 @@
             "craiLocation": {
               "uri": "test_data/volvox-sv.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_sv",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_sv",
           "name": "volvox-sv",
           "category": [
             "Alignments"
@@ -995,11 +1040,19 @@
                 "uri": "test_data/volvox-sv.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_cram",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_cram",
           "name": "volvox-sorted red/blue (CRAM)",
           "category": [
             "Alignments"
@@ -1012,81 +1065,95 @@
             "craiLocation": {
               "uri": "test_data/volvox-sorted.cram.crai"
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "volvox_bam",
           "type": "AlignmentsTrack",
+          "trackId": "volvox_bam",
           "name": "volvox-sorted red/blue",
           "category": [
             "Alignments"
           ],
           "adapter": {
-            "configId": "PphRAaR1y4_",
             "type": "BamAdapter",
             "bamLocation": {
               "uri": "test_data/volvox-sorted.bam"
             },
             "index": {
-              "configId": "PB2zR_KB-RN",
               "location": {
                 "uri": "test_data/volvox-sorted.bam.bai"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "TBggZ1Rwy_p",
           "type": "VariantTrack",
+          "trackId": "TBggZ1Rwy_p",
           "name": "volvox filtered vcf",
           "category": [
             "Variants"
           ],
           "adapter": {
-            "configId": "bzyhJPlur4p",
             "type": "VcfTabixAdapter",
             "vcfGzLocation": {
               "uri": "test_data/volvox.filtered.vcf.gz"
             },
             "index": {
-              "configId": "5c3arnyCBht",
               "location": {
                 "uri": "test_data/volvox.filtered.vcf.gz.tbi"
               }
             }
+          },
+          "renderers": {
+            "PileupRenderer": {
+              "type": "PileupRenderer"
+            },
+            "SvgFeatureRenderer": {
+              "type": "SvgFeatureRenderer"
+            }
           }
         },
         {
-          "configId": "bigbed_genes",
           "type": "BasicTrack",
+          "trackId": "bigbed_genes",
           "name": "BigBed genes",
           "category": [
             "Miscellaneous"
           ],
           "adapter": {
-            "configId": "JxEowEEheuJ",
             "type": "BigBedAdapter",
             "bigBedLocation": {
               "uri": "test_data/volvox.bb"
             }
           },
           "renderer": {
-            "configId": "sJ2wkCzLE0V",
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "configId": "qOXCMCGvVIh"
-            }
+            "type": "SvgFeatureRenderer"
           }
         },
         {
-          "configId": "gp2w9yFU-MS",
           "type": "FilteringTrack",
+          "trackId": "gp2w9yFU-MS",
           "name": "Filter track",
           "category": [
             "Miscellaneous"
           ],
           "adapter": {
-            "configId": "BXP519m7XD1",
             "type": "FromConfigAdapter",
             "features": [
               {
@@ -1128,11 +1195,7 @@
             ]
           },
           "renderer": {
-            "configId": "rIiWfqGDR2e",
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "configId": "Q2RhRL_R9Uc"
-            }
+            "type": "SvgFeatureRenderer"
           },
           "filterAttributes": [
             "type",
@@ -1141,15 +1204,14 @@
           ]
         },
         {
-          "configId": "LrM3WWJR0tj",
           "type": "WiggleTrack",
+          "trackId": "LrM3WWJR0tj",
           "name": "Volvox microarray",
           "category": [
             "BigWig",
             "Line"
           ],
           "adapter": {
-            "configId": "DB-sDX31tgH",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
@@ -1157,51 +1219,41 @@
           },
           "defaultRendering": "line",
           "renderers": {
-            "configId": "J6w-gKGWCU6",
             "DensityRenderer": {
-              "configId": "baW5RG40D_U",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "n8SJdzGDf8y",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "fMLjaOxPONU",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "EA_0Jp4oPKg",
           "type": "BasicTrack",
+          "trackId": "EA_0Jp4oPKg",
           "name": "NCList genes",
           "category": [
             "Miscellaneous"
           ],
           "adapter": {
-            "configId": "nm8UCY3U92c",
             "type": "NCListAdapter",
             "rootUrlTemplate": "test_data/volvox_genes_nclist/{refseq}/trackData.json"
           },
           "renderer": {
-            "configId": "HuIa2_kFIDY",
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "configId": "qRT9PpIQv0U"
-            }
+            "type": "SvgFeatureRenderer"
           }
         },
         {
-          "configId": "VUyE25kYsQo",
           "type": "WiggleTrack",
+          "trackId": "VUyE25kYsQo",
           "name": "Volvox microarray",
           "category": [
             "BigWig",
             "Density"
           ],
           "adapter": {
-            "configId": "ex8Em3Ozuno",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
@@ -1209,62 +1261,52 @@
           },
           "defaultRendering": "density",
           "renderers": {
-            "configId": "UEDdYEgdKdZ",
             "DensityRenderer": {
-              "configId": "CbulhYGNzxO",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "qJTOyZsX3Se",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "vAu2hO7WUMq",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "24eGIUSM86l",
           "type": "WiggleTrack",
+          "trackId": "24eGIUSM86l",
           "name": "Volvox microarray",
           "category": [
             "BigWig",
             "XYPlot"
           ],
           "adapter": {
-            "configId": "26uNqVISq5X",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray.bw"
             }
           },
           "renderers": {
-            "configId": "UHh4zfs8_3p",
             "DensityRenderer": {
-              "configId": "22nXUsvX0lp",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "BBE3UhdC0lY",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "06FZ33dngGC",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "oMVFQozR9NO",
           "type": "WiggleTrack",
+          "trackId": "oMVFQozR9NO",
           "name": "Volvox microarray - negative",
           "category": [
             "BigWig",
             "Density"
           ],
           "adapter": {
-            "configId": "M_yb4o2pnJQ",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray_negative.bw"
@@ -1272,62 +1314,52 @@
           },
           "defaultRendering": "density",
           "renderers": {
-            "configId": "zn4amagA7Sn",
             "DensityRenderer": {
-              "configId": "i0nXW3sOUyw",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "ill8FKNk39c",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "qAjokjmfxsT",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "1at1sLO1Gsl",
           "type": "WiggleTrack",
+          "trackId": "1at1sLO1Gsl",
           "name": "Volvox microarray - negative",
           "category": [
             "BigWig",
             "XYPlot"
           ],
           "adapter": {
-            "configId": "mvznsyIjAbx",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray_negative.bw"
             }
           },
           "renderers": {
-            "configId": "9uGraHzzooZ",
             "DensityRenderer": {
-              "configId": "KLYbOiwHHXW",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "3W_yji6qKA-",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "urS9x7n3bvj",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "FKQP7kvWcgO",
           "type": "WiggleTrack",
+          "trackId": "FKQP7kvWcgO",
           "name": "Volvox microarray with +/- values",
           "category": [
             "BigWig",
             "Line"
           ],
           "adapter": {
-            "configId": "deTs4XSQOI6",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray_posneg.bw"
@@ -1335,62 +1367,52 @@
           },
           "defaultRendering": "line",
           "renderers": {
-            "configId": "948zZcpQx92",
             "DensityRenderer": {
-              "configId": "BGpnqrXfHSp",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "MNlwaajEFRD",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "jr6nU5Eyl34",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "jdYHuGnpAc_",
           "type": "WiggleTrack",
+          "trackId": "jdYHuGnpAc_",
           "name": "Volvox microarray with +/- values",
           "category": [
             "BigWig",
             "XYPlot"
           ],
           "adapter": {
-            "configId": "cRHHbdsiAPC",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox_microarray_posneg.bw"
             }
           },
           "renderers": {
-            "configId": "xYfs1FnzFzf",
             "DensityRenderer": {
-              "configId": "ulZyLBGC1EV",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "t4RVxTGhGvm",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "d2CSXQM3nYO",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "p7FU-K6WqS_",
           "type": "WiggleTrack",
+          "trackId": "p7FU-K6WqS_",
           "name": "Volvox - BAM coverage",
           "category": [
             "BigWig",
             "Line"
           ],
           "adapter": {
-            "configId": "tti4u-USnnP",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox-sorted.bam.coverage.bw"
@@ -1398,47 +1420,38 @@
           },
           "defaultRendering": "line",
           "renderers": {
-            "configId": "xKSmDn4GuKz",
             "DensityRenderer": {
-              "configId": "bt3NVEPJgjS",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "jr1uPz9XF3d",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "aMVo9_keTfm",
               "type": "LinePlotRenderer"
             }
           }
         },
         {
-          "configId": "pOOtg9wxcUC",
           "type": "WiggleTrack",
+          "trackId": "pOOtg9wxcUC",
           "name": "Volvox - BAM coverage",
           "category": [
             "BigWig"
           ],
           "adapter": {
-            "configId": "LqumLPc7aJg",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "test_data/volvox-sorted.bam.coverage.bw"
             }
           },
           "renderers": {
-            "configId": "-VoVmJv7sG2",
             "DensityRenderer": {
-              "configId": "83c1U3n8QWf",
               "type": "DensityRenderer"
             },
             "XYPlotRenderer": {
-              "configId": "7kdSqURZrMf",
               "type": "XYPlotRenderer"
             },
             "LinePlotRenderer": {
-              "configId": "TqEQ6lglNRk",
               "type": "LinePlotRenderer"
             }
           }
@@ -1446,16 +1459,16 @@
       ],
       "connections": [
         {
-          "configId": "pyz7l1IaODm",
           "type": "UCSCTrackHubConnection",
+          "connectionId": "pyz7l1IaODm",
           "name": "Volvox UCSC TrackHub",
           "hubTxtLocation": {
             "uri": "https://jbrowse.org/volvoxhub/hub.txt"
           }
         },
         {
-          "configId": "yRhZxX1BTm4",
           "type": "JBrowse1Connection",
+          "connectionId": "yRhZxX1BTm4",
           "name": "Volvox JBrowse 1 Data",
           "dataDirLocation": {
             "uri": "https://jbrowse.org/code/JBrowse-1.16.4/sample_data/json/volvox/"
@@ -1464,6 +1477,14 @@
       ]
     }
   ],
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
   "savedSessions": [
     {
       "name": "Volvox Example",
@@ -1522,59 +1543,7 @@
       "menuBars": [
         {
           "id": "83YVdWHrWt",
-          "type": "MainMenuBar",
-          "menus": [
-            {
-              "name": "File",
-              "menuItems": [
-                {
-                  "name": "New Session",
-                  "icon": "add",
-                  "callback": "function(session) {session.setDefaultSession();}"
-                },
-                {
-                  "name": "Open Session...",
-                  "icon": "folder_open",
-                  "callback": "function(session) {const drawerWidget = session.addDrawerWidget('SessionManager','sessionManager',);session.showDrawerWidget(drawerWidget);}"
-                },
-                {
-                  "name": "Duplicate Session",
-                  "icon": "file_copy",
-                  "callback": "function(session) {session.duplicateCurrentSession();}"
-                },
-                {
-                  "name": "divider",
-                  "icon": "",
-                  "callback": "function(model){console.log(model)}"
-                },
-                {
-                  "name": "Export configuration",
-                  "icon": "cloud_download",
-                  "callback": "exportConfiguration"
-                },
-                {
-                  "name": "Import configuration",
-                  "icon": "cloud_upload",
-                  "callback": "importConfiguration"
-                }
-              ]
-            },
-            {
-              "name": "Help",
-              "menuItems": [
-                {
-                  "name": "About",
-                  "icon": "info",
-                  "callback": "openAbout"
-                },
-                {
-                  "name": "Help",
-                  "icon": "help",
-                  "callback": "openHelp"
-                }
-              ]
-            }
-          ]
+          "type": "MainMenuBar"
         }
       ]
     }

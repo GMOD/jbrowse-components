@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch sequence from volvox.chrom.sizes 1`] = `
+Array [
+  "ctgA",
+  "ctgB",
+]
+`;
+
+exports[`adapter can fetch sequence from volvox.chrom.sizes 2`] = `Array []`;
+
+exports[`adapter can fetch sequence from volvox.chrom.sizes 3`] = `Array []`;

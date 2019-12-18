@@ -40,6 +40,7 @@ export default configSchema => {
           const filters = makeFilters(self)
           return {
             ...getParentRenderProps(self),
+            ...this.composedRenderProps,
             trackModel: self,
             config: self.configuration.renderer,
             filters,

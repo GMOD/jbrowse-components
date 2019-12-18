@@ -16,46 +16,50 @@ import React from 'react'
 // session.configuration.assemblies.get(assemblyName).tracks).
 
 const generateBaseTrackConfig = (base: any) =>
-  ConfigurationSchema('BaseTrack', {
-    viewType: 'LinearGenomeView',
-    name: {
-      description: 'descriptive name of the track',
-      type: 'string',
-      defaultValue: 'Track',
-    },
-    description: {
-      description: 'a description of the track',
-      type: 'string',
-      defaultValue: '',
-    },
-    category: {
-      description: 'the category and sub-categories of a track',
-      type: 'stringArray',
-      defaultValue: [],
-    },
+  ConfigurationSchema(
+    'BaseTrack',
+    {
+      viewType: 'LinearGenomeView',
+      name: {
+        description: 'descriptive name of the track',
+        type: 'string',
+        defaultValue: 'Track',
+      },
+      description: {
+        description: 'a description of the track',
+        type: 'string',
+        defaultValue: '',
+      },
+      category: {
+        description: 'the category and sub-categories of a track',
+        type: 'stringArray',
+        defaultValue: [],
+      },
 
-    mouseover: {
-      type: 'string',
-      description: 'what to display in a given mouseover',
-      defaultValue: `function(feature) {
+      mouseover: {
+        type: 'string',
+        description: 'what to display in a given mouseover',
+        defaultValue: `function(feature) {
       return feature.get('name')
       }`,
-      functionSignature: ['feature'],
-    },
+        functionSignature: ['feature'],
+      },
 
-    // see corresponding entry in circular-view ChordTrack
-    // no config slot editor exists for this at the time being
-    configRelationships: {
-      type: 'configRelationships',
-      model: types.array(
-        types.model('Relationship', {
-          type: types.string,
-          target: types.maybe(types.reference(base)),
-        }),
-      ),
-      defaultValue: [],
+      // see corresponding entry in circular-view ChordTrack
+      // no config slot editor exists for this at the time being
+      configRelationships: {
+        type: 'configRelationships',
+        model: types.array(
+          types.model('Relationship', {
+            type: types.string,
+            target: types.maybe(types.reference(base)),
+          }),
+        ),
+        defaultValue: [],
+      },
     },
-  })
+    { explicitIdentifier: 'trackId' },
+  )
 
 // note that multiple displayed tracks could use the same configuration.
 const minTrackHeight = 20

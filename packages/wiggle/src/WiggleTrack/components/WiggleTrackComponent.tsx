@@ -52,7 +52,7 @@ const YScaleBar = observer(
 )
 function WiggleTrackComponent(props: { model: Instance<WiggleTrackModel> }) {
   const { model } = props
-  const { ready } = model
+  const { stats } = model
 
   const needsScalebar =
     model.rendererTypeName === 'XYPlotRenderer' ||
@@ -60,7 +60,7 @@ function WiggleTrackComponent(props: { model: Instance<WiggleTrackModel> }) {
 
   return (
     <BlockBasedTrack {...props}>
-      {ready && needsScalebar ? <YScaleBar model={model} /> : null}
+      {stats && needsScalebar ? <YScaleBar model={model} /> : null}
     </BlockBasedTrack>
   )
 }

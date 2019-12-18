@@ -19,6 +19,7 @@ describe('<AddTrackDrawerWidget />', () => {
       assembly: {
         name: 'volMyt1',
         sequence: {
+          trackId: 'ref0',
           type: 'ReferenceSequenceTrack',
           adapter: {
             type: 'FromConfigAdapter',
@@ -37,7 +38,7 @@ describe('<AddTrackDrawerWidget />', () => {
       },
       tracks: [
         {
-          configId: 'i3jUPmrgMOS',
+          trackId: 'i3jUPmrgMOS',
           type: 'FilteringTrack',
           name: 'Filter Test',
           adapter: {

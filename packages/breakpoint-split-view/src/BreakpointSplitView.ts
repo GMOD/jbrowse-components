@@ -7,7 +7,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
   )
 
   const ReactComponent = jbrequire(require('./components/BreakpointSplitView'))
-  const { stateModel, configSchema } = jbrequire(require('./model'))
+  const { stateModel } = jbrequire(require('./model'))
 
   class BreakpointSplitViewType extends ViewType {
     async snapshotFromBreakendFeature(
@@ -122,7 +122,6 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
     stateModel,
-    configSchema,
     ReactComponent,
   })
 }

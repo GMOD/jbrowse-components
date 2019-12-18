@@ -174,7 +174,7 @@ export default pluginManager => {
       <div
         className={classes.root}
         style={{ height: model.height, width: model.width }}
-        data-testid={model.configuration.configId}
+        data-testid={model.id}
       >
         <Grid container direction="row" className={classes.header}>
           {model.hideViewControls ? null : (

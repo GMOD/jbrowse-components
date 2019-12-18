@@ -82,9 +82,13 @@ function AddTrackDrawerWidget({ model }) {
       return
     }
     trackAdapter.features = trackData.config
+    const trackId = `${trackName
+      .toLowerCase()
+      .replace(/ /g, '_')}-${Date.now()}`
     const trackConf = session.datasets
       .find(dataset => readConfObject(dataset, 'name') === datasetName)
       .addTrackConf({
+        trackId,
         type: trackType,
         name: trackName,
         adapter: trackAdapter,
