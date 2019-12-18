@@ -70,11 +70,17 @@ export function convertTrackConfig(
         jb1TrackConfig.storeClass &&
         jb1TrackConfig.storeClass.endsWith('FromConfig')
       )
-    )
-      throw new Error(
-        `JBrowse1 track "${jb1TrackConfig.key ||
-          jb1TrackConfig.label}" must have a "urlTemplate" or be a "FromConfig" track`,
+    ) {
+      const trackIdentifier = jb1TrackConfig.key || jb1TrackConfig.label
+      console.warn(
+        `Could not import JBrowse1 track "${trackIdentifier}" because it does not have a "urlTemplate" or is not a "FromConfig" track`,
       )
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        trackIdentifier,
+        jb2TrackConfig.category,
+      )
+    }
     return generateFromConfigTrackConfig(jb1TrackConfig, jb2TrackConfig)
   }
 
