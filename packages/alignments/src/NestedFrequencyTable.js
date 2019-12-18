@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 export default class NestedFrequencyTable {
   constructor(initialData) {
     this.categories = {}
@@ -8,10 +9,17 @@ export default class NestedFrequencyTable {
   total() {
     // calculate total if necessary
     let t = 0
-    this.categories.forEach(function iterate(item, index) {
-      const v = this.categories[index].k
+    // for(let i = 0; )
+    // this.categories.forEach(function iterate(item, index) {
+    //   const v = this.categories[index].k
+    //   t += v.total ? v.total() : v
+    // })
+
+    for (const k in this.categories) {
+      const v = this.categories[k]
       t += v.total ? v.total() : v
-    })
+    }
+
     return t
   }
 
@@ -93,13 +101,13 @@ export default class NestedFrequencyTable {
   //
   forEach(func, ctx) {
     if (ctx) {
-      this.categories.forEach(function iterate(item, index) {
-        func.call(ctx, this.categories[index], this.categories[index].slotName)
-      })
+      for (const slotName in this.categories) {
+        func.call(ctx, this.categories[slotName], slotName)
+      }
     } else {
-      this.categories.forEach(function iterate(item, index) {
-        func(this.categories[index], this.categories[index].slotName)
-      })
+      for (const slotName in this.categories) {
+        func(this.categories[slotName], slotName)
+      }
     }
   }
 }

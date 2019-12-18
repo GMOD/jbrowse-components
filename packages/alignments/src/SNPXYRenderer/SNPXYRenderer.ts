@@ -1,14 +1,56 @@
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { featureSpanPx } from '@gmod/jbrowse-core/util'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { IRegion } from '@gmod/jbrowse-core/mst-types'
 import Color from 'color'
 import SNPBaseRenderer from '../SNPBaseRenderer'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 import { Mismatch } from '../SNPAdapter/SNPSlightlyLazyFeature'
 import { getOrigin, getScale } from '../util'
 
+interface SNPXYRendererProps{
+  features: Map<string, Feature>
+  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  config: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  region: IRegion
+  bpPerPx: number
+  height: number
+  width: number
+  horizontallyFlipped: boolean
+  highResolutionScaling: number
+  blockKey: string
+  dataAdapter: any
+  notReady: boolean
+  originalRegion: IRegion
+  scaleOpts: any
+  sessionId: string
+  signal: any
+  trackModel: any
+}
+
 export default class SNPXYRenderer extends SNPBaseRenderer {
-  draw(ctx: any, props: any) {
+  // Uncomment Below if extra time, make code cleaner by not redeclaring the consts
+  // scale(props: SNPXYRendererProps){
+  //   return 1 / props.bpPerPx
+  // }
+
+  // widthBp(leftBase: number, rightBase: number){
+  //   return leftBase - rightBase
+  // }
+
+  // widthPx(widthBp: number, scale: number){
+  //   return widthBp * scale
+  // }
+
+  // binWidth(bpPerPx: number){
+  //   return Math.ceil(bpPerPx)
+  // }
+
+  // binMax(leftBase: number, rightBase: number, binWidth: number){
+  //   return Math.ceil((rightBase - leftBase) / binWidth)
+  // }
+
+  generateCoverageBins(props: SNPXYRendererProps){
     const {
       features,
       region,
@@ -18,27 +60,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
-    // const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    // const negColor = readConfObject(config, 'negColor')
-    // const posColor = readConfObject(config, 'posColor')
-    // const filled = readConfObject(config, 'filled')
-    // const clipColor = readConfObject(config, 'clipColor')
-    // const highlightColor = readConfObject(config, 'highlightColor')
-    // const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-    // const scale = getScale({ ...scaleOpts, range: [0, height] })
-    // const originY = getOrigin(scaleOpts.scaleType)
-    // const [niceMin, niceMax] = scale.domain()
-    // const toY = rawscore => height - scale(rawscore)
-    // const toHeight = rawscore => toY(originY) - toY(rawscore)
-    // let colorCallback
-    // if (readConfObject(config, 'color') === '#f0f') {
-    //   colorCallback = feature =>
-    //     feature.get('score') < pivotValue ? negColor : posColor
-    // } else {
-    //   colorCallback = feature => readConfObject(config, 'color', [feature])
-    // }
-    console.log('Props in SNPXYRend', props)
-    console.log('Feature in SNPXYRend', features)
 
     const leftBase = region.start
     const rightBase = region.end
@@ -48,9 +69,10 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
-    function binNumber(bp: number) {
-      return Math.floor((bp - leftBase) / binWidth)
-    }
+    // maybe unused below
+    // function binNumber(bp: number) {
+    //   return Math.floor((bp - leftBase) / binWidth)
+    // }
 
     const coverageBins = new Array(binMax).fill(0)
 
@@ -97,7 +119,6 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
 
     function getStrand(feature: Feature) {
       const result = feature.get('strand');
-      console.log('result', result)
       let strand = ''
       switch(result){
         case -1:
@@ -113,21 +134,16 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       // const strand =
       //   { '-1': '-', '1': '+' }[`${features.get('strand')}`] || 'unstranded'
       // if (!this.filter(features)) return
-      console.log('strand', strand)
       return strand
     }
 
     // move to stats potentially!!!!
     for(const feature of features.values()){ 
-
       const strand = getStrand(feature)
       // increment start and end partial-overlap bins by proportion of overlap
-      forEachBin(region.start, region.end, function(bin: any, overlap: any) {
+      forEachBin(region.start, region.end, function(bin: number, overlap: number) {
         coverageBins[bin].getNested('reference').increment(strand, overlap)
       })
-
-      // console.log(props)
-      console.log(coverageBins)
 
       // Calculate SNP coverage
       if (binWidth === 1) {
@@ -141,7 +157,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
           forEachBin(
             feature.get('start') + mismatch.start,
             feature.get('start') + mismatch.start + mismatch.length,
-            function calcSNPCoverage(binNum: number, overlap: any) {
+            function calcSNPCoverage(binNum: number, overlap: number) {
               // Note: we decrement 'reference' so that total of the score is the total coverage
               const bin = coverageBins[binNum]
               bin.getNested('reference').decrement(strand, overlap)
@@ -154,13 +170,67 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
         }
       }
     }
+    //console.log(coverageBins)
+    return coverageBins
+  }
 
-    
+  draw(ctx: CanvasRenderingContext2D, props: SNPXYRendererProps, coverageBins: Array<NestedFrequencyTable>) {
+    const {
+      features,
+      region,
+      bpPerPx,
+      scaleOpts,
+      height,
+      config,
+      horizontallyFlipped,
+    } = props
+    // const pivotValue = readConfObject(config, 'bicolorPivotValue')
+    // const negColor = readConfObject(config, 'negColor')
+    // const posColor = readConfObject(config, 'posColor')
+    // const filled = readConfObject(config, 'filled')
+    // const clipColor = readConfObject(config, 'clipColor')
+    // const highlightColor = readConfObject(config, 'highlightColor')
+    // const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+    // const scale = getScale({ ...scaleOpts, range: [0, height] })
+    // const originY = getOrigin(scaleOpts.scaleType)
+    // const [niceMin, niceMax] = scale.domain()
+    // const toY = rawscore => height - scale(rawscore)
+    // const toHeight = rawscore => toY(originY) - toY(rawscore)
+    // let colorCallback
+    // if (readConfObject(config, 'color') === '#f0f') {
+    //   colorCallback = feature =>
+    //     feature.get('score') < pivotValue ? negColor : posColor
+    // } else {
+    //   colorCallback = feature => readConfObject(config, 'color', [feature])
+    // }
+    // console.log('Props in SNPXYRend', props)
+    // console.log('Feature in SNPXYRend', features)
+
+    //const coverageBins = this.generateCoverageBins(props)
+
+    //start with leftbase, for each bin, draw rect ctx.fillREct with binWidth width, height depending on total coverage (maybe coverageBin[bin].total)
+    // go to next bin, start next rect at leftbase + binWidth * 1, then * 2 etc
+
+    const leftBase = region.start
+    const rightBase = region.end
+    const scale = 1 / bpPerPx
+    const widthBp = rightBase - leftBase
+    const widthPx = widthBp * scale
+    const binWidth = Math.ceil(bpPerPx)
+    const binMax = Math.ceil((rightBase - leftBase) / binWidth)
+
+    ctx.fillStyle = 'darkgray'
+
+    coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
+      //console.log(currentBin, index)
+      console.log(leftBase + (binWidth * index), rightBase, binWidth, currentBin.total())
+      ctx.fillRect(leftBase + (binWidth * index), rightBase, binWidth, currentBin.total())
+    })
     // for (const feature of features.values()) {
     //   console.log(feature)
     //   ctx.fillRect(0, 100, 100, 100)
     // }
-    /** ****** IN PROGRESS ***************/
+
     //   const [leftPx, rightPx] = featureSpanPx(
     //     feature,
     //     region,

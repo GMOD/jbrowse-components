@@ -18,13 +18,18 @@ export default class extends ServerSideRendererType {
     )
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    this.draw(ctx, props)
+    const coverageBins = this.generateCoverageBins(props)
+    this.draw(ctx, props, coverageBins)
 
     const imageData = await createImageBitmap(canvas)
     return { imageData, height, width }
   }
 
-  draw(ctx, props) {
+  generateCoverageBins(props) {
+    /* generate coverage bins*/
+  }
+
+  draw(ctx, props, coverageBins) {
     /* draw features to context given props */
   }
 
