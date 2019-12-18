@@ -44,7 +44,11 @@ function AddConnectionDrawerWidget({ model }) {
 
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)
-    setConfigModel(newConnectionType.configSchema.create())
+    setConfigModel(
+      newConnectionType.configSchema.create({
+        connectionId: `${newConnectionType.name}-${datasetName}-${Date.now()}`,
+      }),
+    )
   }
 
   function stepContent() {
