@@ -5,9 +5,6 @@ export default pluginManager => {
     .model('Connection', {
       name: types.identifier,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-      sequence:
-        pluginManager.elementTypes.track.ReferenceSequenceTrack.configSchema,
-      defaultSequence: false,
     })
     .views(self => ({
       get assemblyConf() {
@@ -29,13 +26,6 @@ export default pluginManager => {
       setTrackConfs(trackConfs) {
         self.tracks = trackConfs
         return self.track
-      },
-      setSequence(sequenceConf) {
-        self.sequence = sequenceConf
-        return self.sequence
-      },
-      setDefaultSequence(isDefault) {
-        self.defaultSequence = isDefault
       },
       clear() {},
     }))

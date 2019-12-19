@@ -23,17 +23,8 @@ export function getTrackAssemblyName(track) {
   let trackConfParent = trackConf
   do {
     trackConfParent = getParent(trackConfParent)
-  } while (
-    !(trackConfParent.assembly || 'defaultSequence' in trackConfParent) &&
-    !isRoot(trackConfParent)
-  )
+  } while (!trackConfParent.assembly && !isRoot(trackConfParent))
 
-  if ('defaultSequence' in trackConfParent) {
-    trackConfParent = trackConfParent.configuration
-    do {
-      trackConfParent = getParent(trackConfParent)
-    } while (!trackConfParent.assembly && !isRoot(trackConfParent))
-  }
   const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
   return assemblyName
 }

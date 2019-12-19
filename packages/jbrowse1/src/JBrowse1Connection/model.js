@@ -7,7 +7,7 @@ import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 
 import { fetchJb1 } from './jb1ConfigLoad'
-import { convertTrackConfig, createRefSeqsAdapter } from './jb1ToJb2'
+import { convertTrackConfig } from './jb1ToJb2'
 
 export default function(pluginManager) {
   return types.compose(
@@ -25,18 +25,12 @@ export default function(pluginManager) {
             'dataDirLocation',
           )
           fetchJb1(dataDirLocation)
-            .then(config =>
-              createRefSeqsAdapter(config.refSeqs).then((/* adapter */) => {
-                const jb2Tracks = config.tracks.map(track =>
-                  convertTrackConfig(track, config.dataRoot),
-                )
-                // self.setSequence({
-                //   type: 'ReferenceSequenceTrack',
-                //   adapter,
-                // })
-                self.setTrackConfs(jb2Tracks)
-              }),
-            )
+            .then(config => {
+              const jb2Tracks = config.tracks.map(track =>
+                convertTrackConfig(track, config.dataRoot),
+              )
+              self.setTrackConfs(jb2Tracks)
+            })
             .catch(error => {
               console.error(error)
             })
