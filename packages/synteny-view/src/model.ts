@@ -118,6 +118,7 @@ export default function stateModelFactory(pluginManager: any) {
       get allMatchedMCScanFeatures() {
         const r: { [key: string]: string[] } = {}
         this.syntenyGroups.forEach(group => {
+          // @ts-ignore
           r[group] = this.getMCScanFeatures(group)
         })
         return r
@@ -295,6 +296,20 @@ export default function stateModelFactory(pluginManager: any) {
       },
       toggleLinkViews() {
         self.linkViews = !self.linkViews
+      },
+
+      activateTrackSelector() {
+        if (self.trackSelectorType === 'hierarchical') {
+          const session: any = getSession(self)
+          const selector = session.addDrawerWidget(
+            'HierarchicalTrackSelectorDrawerWidget',
+            'hierarchicalTrackSelector',
+            { view: self },
+          )
+          session.showDrawerWidget(selector)
+          return selector
+        }
+        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
     }))
 

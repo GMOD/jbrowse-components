@@ -169,6 +169,14 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           <InteractWithSquiggles model={model} />
           <Sync model={model} />
 
+          <IconButton
+            onClick={model.activateTrackSelector}
+            title="select tracks"
+            value="track_select"
+            color="secondary"
+          >
+            <Icon fontSize="small">line_style</Icon>
+          </IconButton>
           <div className={classes.spacer} />
         </div>
       )
