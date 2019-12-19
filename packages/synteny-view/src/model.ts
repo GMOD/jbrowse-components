@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import { getSession } from '@gmod/jbrowse-core/util'
 import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
 import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/BasicTrack/baseTrackModel'
 import { types, Instance } from 'mobx-state-tree'
@@ -84,6 +85,10 @@ export default function stateModelFactory(pluginManager: any) {
           })
         })
         return Array.from(groups)
+      },
+
+      get assemblyNames() {
+        return [...new Set(self.views.map(v => v.assemblyNames).flat())]
       },
 
       // Get tracks with a given syntenyGroup across multiple views

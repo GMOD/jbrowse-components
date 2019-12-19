@@ -543,6 +543,15 @@ export function stateModelFactory(pluginManager: any) {
         get dynamicBlocks() {
           return calculateDynamicBlocks(cast(self), self.horizontallyFlipped)
         },
+
+        get assemblyNames() {
+          const assemblyNames: string[] = []
+          self.displayedRegions.forEach(displayedRegion => {
+            if (!assemblyNames.includes(displayedRegion.assemblyName))
+              assemblyNames.push(displayedRegion.assemblyName)
+          })
+          return assemblyNames
+        },
       }
     })
     .postProcessSnapshot(self => {

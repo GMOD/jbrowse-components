@@ -170,6 +170,15 @@ export default pluginManager => {
         }
         return visible
       },
+
+      get assemblyNames() {
+        const assemblyNames = []
+        self.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName))
+            assemblyNames.push(displayedRegion.assemblyName)
+        })
+        return assemblyNames
+      },
     }))
     .volatile(() => ({
       error: undefined,
