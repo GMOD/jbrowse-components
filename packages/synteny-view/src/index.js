@@ -9,10 +9,10 @@ import {
   configSchemaFactory as linearSyntenyTrackConfigSchema,
 } from './LinearSyntenyTrack'
 
-export default class SyntenyViewPlugin {
+export default class LinearSyntenyViewPlugin {
   install(pluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./SyntenyView')),
+      pluginManager.jbrequire(require('./LinearSyntenyView')),
     )
     pluginManager.addAdapterType(
       () =>
