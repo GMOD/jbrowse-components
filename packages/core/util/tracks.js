@@ -21,10 +21,28 @@ export function getTrackAssemblyName(track) {
   // otherwise use the assembly from the dataset that it is part of
   const trackConf = track.configuration
   let trackConfParent = trackConf
+  let isConnectionTrack = false
+  // If it's a normal track, go up the tree until you find the assembly
+  // If it's a connection track, go up the tree until you find the connection
   do {
     trackConfParent = getParent(trackConfParent)
-  } while (!trackConfParent.assembly && !isRoot(trackConfParent))
+    isConnectionTrack = Boolean(
+      trackConfParent.configuration &&
+        trackConfParent.configuration.connectionId,
+    )
+  } while (
+    !(trackConfParent.assembly || isConnectionTrack) &&
+    !isRoot(trackConfParent)
+  )
 
+  // If a connection was found above, go up the tree from that connection's
+  // configuration until you find the assembly
+  if (isConnectionTrack) {
+    trackConfParent = trackConfParent.configuration
+    do {
+      trackConfParent = getParent(trackConfParent)
+    } while (!trackConfParent.assembly && !isRoot(trackConfParent))
+  }
   const assemblyName = readConfObject(trackConfParent, ['assembly', 'name'])
   return assemblyName
 }
