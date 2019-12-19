@@ -23,9 +23,18 @@ interface Jb2Track {
 interface Jb2Adapter {
   type: string
   features?: Jb2Feature[]
+  bamLocation?: Jb2Location
+  cramLocation?: JBLocation
+  craiLocation?: JBLocation
   fastaLocation?: Jb2Location
   faiLocation?: Jb2Location
+  gziLocation?: Jb2Location
   twoBitLocation?: Jb2Location
+  bigWigLocation?: Jb2Location
+  bigBedLocation?: Jb2Location
+  vcfGzLocation?: Jb2Location
+  index?: { location: Jb2Location; indexType?: string }
+  rootUrlTemplate?: string
 }
 
 interface Jb2Renderer {
@@ -64,13 +73,9 @@ export function convertTrackConfig(
     (jb1TrackConfig.metadata && jb1TrackConfig.metadata.category)
   jb2TrackConfig.category = category ? category.split(/\s*\/\s*/) : []
 
+  const { storeClass } = jb1TrackConfig
   if (!jb1TrackConfig.urlTemplate) {
-    if (
-      !(
-        jb1TrackConfig.storeClass &&
-        jb1TrackConfig.storeClass.endsWith('FromConfig')
-      )
-    ) {
+    if (!(storeClass && storeClass.endsWith('FromConfig'))) {
       const trackIdentifier = jb1TrackConfig.key || jb1TrackConfig.label
       console.warn(
         `Could not import JBrowse1 track "${trackIdentifier}" because it does not have a "urlTemplate" or is not a "FromConfig" track`,
@@ -84,9 +89,220 @@ export function convertTrackConfig(
     return generateFromConfigTrackConfig(jb1TrackConfig, jb2TrackConfig)
   }
 
-  const urlTemplate = new URL(jb1TrackConfig.urlTemplate, `${dataRoot}/`).href
-    .replace(/%7B/gi, '{')
-    .replace(/%7D/gi, '}')
+  const resolveUrlTemplate = (urlTemplate: string) => {
+    return new URL(urlTemplate, `${dataRoot}/`).href
+      .replace(/%7B/gi, '{')
+      .replace(/%7D/gi, '}')
+  }
+  const urlTemplate = resolveUrlTemplate(jb1TrackConfig.urlTemplate)
+
+  if (storeClass) {
+    if (storeClass === 'JBrowse/Store/SeqFeature/BAM') {
+      const adapter: Jb2Adapter = {
+        type: 'BamAdapter',
+        bamLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.baiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.baiUrlTemplate) },
+        }
+      else if (jb1TrackConfig.csiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          indexType: 'CSI',
+        }
+      else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
+      return {
+        ...jb2TrackConfig,
+        type: 'AlignmentsTrack',
+        adapter,
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/CRAM') {
+      const adapter: Jb2Adapter = {
+        type: 'CramAdapter',
+        cramLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.craiUrlTemplate)
+        adapter.craiLocation = {
+          uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
+        }
+      else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
+      return {
+        ...jb2TrackConfig,
+        type: 'AlignmentsTrack',
+        adapter,
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/NCList') {
+      return {
+        ...jb2TrackConfig,
+        type: 'BasicTrack',
+        adapter: { type: 'NCListAdapter', rootUrlTemplate: urlTemplate },
+        renderer: { type: 'SvgFeatureRenderer' },
+      }
+    }
+    if (
+      storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
+      storeClass === 'JBrowse/Store/BigWig'
+    ) {
+      if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+        jb2TrackConfig.defaultRendering = 'xyplot'
+      } else if (
+        jb1TrackConfig.type &&
+        jb1TrackConfig.type.endsWith('Density')
+      ) {
+        jb2TrackConfig.defaultRendering = 'density'
+      }
+      return {
+        ...jb2TrackConfig,
+        type: 'WiggleTrack',
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: { uri: urlTemplate },
+        },
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/VCFTabix') {
+      const adapter: Jb2Adapter = {
+        type: 'VcfTabixAdapter',
+        vcfGzLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.tbiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+        }
+      else if (jb1TrackConfig.csiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          indexType: 'CSI',
+        }
+      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      return {
+        ...jb2TrackConfig,
+        type: 'VariantTrack',
+        adapter,
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/VCFTribble') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `VCFTribble (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/GFF3') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `GFF3 (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/BigBed') {
+      return {
+        ...jb2TrackConfig,
+        type: 'BasicTrack',
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: { uri: urlTemplate },
+        },
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/GFF3Tabix') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `GFF3Tabix (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/BED') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `BED (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/BEDTabix') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `BEDTabix (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/GTF') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `GTF (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (
+      storeClass === 'JBrowse/Store/SeqFeature/StaticChunked' ||
+      storeClass === 'JBrowse/Store/Sequence/StaticChunked'
+    ) {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `StaticChunked (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/UnindexedFasta') {
+      return generateUnsupportedTrackConf(
+        jb2TrackConfig.name,
+        `UnindexedFasta (${urlTemplate})`,
+        jb2TrackConfig.category,
+      )
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/IndexedFasta') {
+      const adapter: Jb2Adapter = {
+        type: 'IndexedFastaAdapter',
+        fastaLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.faiUrlTemplate)
+        adapter.faiLocation = {
+          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+        }
+      else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      return {
+        ...jb2TrackConfig,
+        type: 'SequenceTrack',
+        adapter,
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/BgzipIndexedFasta') {
+      const adapter: Jb2Adapter = {
+        type: 'BgzipFastaAdapter',
+        fastaLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.faiUrlTemplate)
+        adapter.faiLocation = {
+          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+        }
+      else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      if (jb1TrackConfig.gziUrlTemplate)
+        adapter.gziLocation = {
+          uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
+        }
+      else adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
+      return {
+        ...jb2TrackConfig,
+        type: 'SequenceTrack',
+        adapter,
+      }
+    }
+    if (storeClass === 'JBrowse/Store/SeqFeature/TwoBit') {
+      return {
+        ...jb2TrackConfig,
+        type: 'SequenceTrack',
+        adapter: {
+          type: 'TwoBitAdapter',
+          twoBitLocation: { uri: urlTemplate },
+        },
+      }
+    }
+  }
+
+  // If we don't recogize the store class, make a best effort to guess by file type
   jb2TrackConfig.adapter = guessAdapter(urlTemplate, 'uri')
   if (!jb2TrackConfig.adapter) {
     throw new Error('Could not determine adapter')
