@@ -14,14 +14,14 @@
       "drawerWidth": 384,
       "views": [
         {
-          "type": "SyntenyView",
+          "type": "LinearSyntenyView",
           "mcscan": true,
           "headerHeight": 44,
           "width": 1850,
           "height": 400,
           "displayName": "Grape vs Peach",
           "configuration": {
-            "type": "SyntenyView",
+            "type": "LinearSyntenyView",
             "mcscan": true
           },
           "trackSelectorType": "hierarchical",
