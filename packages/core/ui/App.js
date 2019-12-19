@@ -41,7 +41,11 @@ const useStyles = makeStyles(theme => ({
 function ViewContainer({ session, view }) {
   const { pluginManager } = session
   const classes = useStyles()
-  const { ReactComponent } = pluginManager.getViewType(view.type)
+  const viewType = pluginManager.getViewType(view.type)
+  if (!viewType) {
+    throw new Error(`unknown view type ${view.type}`)
+  }
+  const { ReactComponent } = viewType
   const containerNodeRef = useRef()
 
   // scroll the view into view when first mounted
