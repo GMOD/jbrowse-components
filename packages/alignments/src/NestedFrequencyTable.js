@@ -23,6 +23,22 @@ export default class NestedFrequencyTable {
     return t
   }
 
+  totalBase() {
+    let tb = 0
+    const base = 'A' || 'T' || 'C' || 'G'
+    // only go into categories with mismatch
+    if (Object.keys(this.categories).includes(base)) {
+      const baseCategories = this.categories[base]
+      for (const k in baseCategories) {
+        const v = baseCategories[k]
+        // add up all strands in mismatch
+        tb = Object.values(v).reduce((a, b) => a + b, 0)
+      }
+    }
+
+    return tb
+  }
+
   // decrement the count for the given category
   decrement(slotName, amount) {
     if (!amount) amount = 1

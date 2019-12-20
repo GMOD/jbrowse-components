@@ -60,21 +60,18 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
-
     const leftBase = region.start
     const rightBase = region.end
     const scale = 1 / bpPerPx
     const widthBp = rightBase - leftBase
     const widthPx = widthBp * scale
-    const binWidth = Math.ceil(bpPerPx)
+    const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
     // maybe unused below
     // function binNumber(bp: number) {
     //   return Math.floor((bp - leftBase) / binWidth)
     // }
-
-    console.log(props)
 
     const coverageBins = new Array(binMax).fill(0)
 
@@ -143,7 +140,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     for(const feature of features.values()){ 
       const strand = getStrand(feature)
       // increment start and end partial-overlap bins by proportion of overlap
-      forEachBin(region.start, region.end, function(bin: number, overlap: number) {
+      forEachBin(feature.get('start'), feature.get('end'), function(bin: number, overlap: number) {
         coverageBins[bin].getNested('reference').increment(strand, overlap)
       })
 
@@ -186,6 +183,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       config,
       horizontallyFlipped,
     } = props
+
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -195,7 +193,7 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
-    // const [niceMin, niceMax] = scale.domain()
+    const [niceMin, niceMax] = viewScale.domain()
     const toY = (rawscore: number) => height - viewScale(rawscore)
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
     let colorCallback = readConfObject(config, 'color', [features])
@@ -207,24 +205,40 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     //start with leftbase, for each bin, draw rect ctx.fillREct with binWidth width, height depending on total coverage (maybe coverageBin[bin].total)
     // go to next bin, start next rect at leftbase + binWidth * 1, then * 2 etc
 
+    //37 displays the score, feature.get('score') is probably wrong
+
     const leftBase = region.start
     const rightBase = region.end
     const scale = 1 / bpPerPx
     const widthBp = rightBase - leftBase
     const widthPx = widthBp * scale
-    const binWidth = Math.ceil(bpPerPx)
+    const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
+    const colorForBase: { [key: string]: string } = {
+      A: '#00bf00',
+      C: '#4747ff',
+      G: '#ffa500',
+      T: '#f00',
+      total: 'darkgrey',
+    }
 
-    ctx.fillStyle = 'darkgrey'
-    console.log(originY)
+    //ctx.fillStyle = 'darkgrey'
 
     coverageBins.forEach( function(currentBin: NestedFrequencyTable, index: number){
       //console.log(currentBin, index)
       const offset = binWidth * index
       const score = currentBin.total()
-      //console.log(currentBin)
+      // console.log(base)
       //console.log(leftBase + offset, toY(score), binWidth, toHeight(score))
+
+      ctx.fillStyle = colorForBase['total']
       ctx.fillRect(leftBase + offset, toY(score), binWidth, toHeight(score))
+
+      const baseTotal = currentBin.totalBase()
+      if(baseTotal > 0){
+        ctx.fillStyle = colorForBase['red']
+        ctx.fillRect(leftBase + offset, toY(baseTotal), binWidth, toHeight(baseTotal))
+      }
     })
     // for (const feature of features.values()) {
     //   console.log(feature)
