@@ -26,7 +26,8 @@ export class LayoutSession {
     return (
       cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
-      deepEqual(readConfObject(this.config), cachedLayout.config)
+      deepEqual(readConfObject(this.config), cachedLayout.config) &&
+      deepEqual(this.filters, cachedLayout.filters)
     )
   }
 
@@ -35,6 +36,7 @@ export class LayoutSession {
       this.cachedLayout = {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
+        filters: this.filters,
       }
     }
     return this.cachedLayout.layout
