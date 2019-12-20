@@ -105,6 +105,36 @@
   ],
   "datasets": [
     {
+      "name": "Grape vs Peach synteny",
+      "tracks": [
+        {
+          "trackId": "mcscan_anchors_grape",
+          "type": "LinearSyntenyTrack",
+          "name": "mcscan_anchors",
+          "configRelationships": [
+            {
+              "type": "mcscanGeneTrack",
+              "target": "grape_genes"
+            },
+            {
+              "type": "mcscanGeneTrack",
+              "target": "peach_genes"
+            }
+          ],
+          "category": [
+            "Annotation"
+          ],
+          "adapter": {
+            "type": "MCScanAnchorsAdapter",
+            "urlTemplate": "test_data/grape.peach.anchors.simple"
+          },
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
       "name": "Grape",
       "assembly": {
         "name": "grape",
@@ -139,31 +169,6 @@
           "adapter": {
             "type": "NCListAdapter",
             "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        },
-        {
-          "trackId": "mcscan_anchors_grape",
-          "type": "LinearSyntenyTrack",
-          "name": "mcscan_anchors",
-          "configRelationships": [
-            {
-              "type": "mcscanGeneTrack",
-              "target": "grape_genes"
-            },
-            {
-              "type": "mcscanGeneTrack",
-              "target": "peach_genes"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "MCScanAnchorsAdapter",
-            "urlTemplate": "test_data/grape.peach.anchors.simple"
           },
           "renderer": {
             "type": "PileupRenderer"
@@ -206,31 +211,6 @@
           "adapter": {
             "type": "NCListAdapter",
             "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
-          },
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        },
-        {
-          "trackId": "mcscan_anchors_peach",
-          "type": "LinearSyntenyTrack",
-          "name": "mcscan_anchors",
-          "configRelationships": [
-            {
-              "type": "mcscanGeneTrack",
-              "target": "grape_genes"
-            },
-            {
-              "type": "mcscanGeneTrack",
-              "target": "peach_genes"
-            }
-          ],
-          "category": [
-            "Annotation"
-          ],
-          "adapter": {
-            "type": "MCScanAnchorsAdapter",
-            "urlTemplate": "test_data/grape.peach.anchors.simple"
           },
           "renderer": {
             "type": "PileupRenderer"

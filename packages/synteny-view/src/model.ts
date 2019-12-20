@@ -30,7 +30,7 @@ export default function stateModelFactory(pluginManager: any) {
   const { ElementId } = jbrequire('@gmod/jbrowse-core/mst-types')
   const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
   const configSchema = ConfigurationSchema(
-    'SyntenyView',
+    'LinearSyntenyView',
     {
       mcscan: {
         type: 'boolean',
@@ -43,9 +43,9 @@ export default function stateModelFactory(pluginManager: any) {
   const minHeight = 40
   const defaultHeight = 400
   const stateModel = (jbrequiredTypes as Instance<typeof types>)
-    .model('SyntenyView', {
+    .model('LinearSyntenyView', {
       id: ElementId,
-      type: types.literal('SyntenyView'),
+      type: types.literal('LinearSyntenyView'),
       headerHeight: 0,
       width: 800,
       height: types.optional(
@@ -321,6 +321,6 @@ export default function stateModelFactory(pluginManager: any) {
   return { stateModel, configSchema }
 }
 
-export type SyntenyView = ReturnType<typeof stateModelFactory>
-export type SyntenyViewStateModel = SyntenyView['stateModel']
-export type SyntenyViewModel = Instance<SyntenyViewStateModel>
+export type LinearSyntenyView = ReturnType<typeof stateModelFactory>
+export type LinearSyntenyViewStateModel = LinearSyntenyView['stateModel']
+export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
