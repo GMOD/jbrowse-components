@@ -9,11 +9,6 @@ export default class NestedFrequencyTable {
   total() {
     // calculate total if necessary
     let t = 0
-    // for(let i = 0; )
-    // this.categories.forEach(function iterate(item, index) {
-    //   const v = this.categories[index].k
-    //   t += v.total ? v.total() : v
-    // })
 
     for (const k in this.categories) {
       const v = this.categories[k]
@@ -23,20 +18,23 @@ export default class NestedFrequencyTable {
     return t
   }
 
-  totalBase() {
-    let tb = 0
-    const base = 'A' || 'T' || 'C' || 'G'
-    // only go into categories with mismatch
+  totalBaseList() {
+    const totalBaseList = []
+    const base = 'A' || 'T' || 'C' || 'G' // need to account for deletion * and insertion 1
+    // only go into categories with mismatch, reference unneeded
     if (Object.keys(this.categories).includes(base)) {
-      const baseCategories = this.categories[base]
-      for (const k in baseCategories) {
-        const v = baseCategories[k]
-        // add up all strands in mismatch
-        tb = Object.values(v).reduce((a, b) => a + b, 0)
+      delete this.categories.reference
+      // looping thru all mismatch bases
+      for (const key of Object.keys(this.categories)) {
+        const v = this.categories[key].categories
+        const totalInBase = Object.values(v).reduce((a, b) => a + b, 0)
+        totalBaseList.push({
+          base: key,
+          total: totalInBase,
+        })
       }
     }
-
-    return tb
+    return totalBaseList
   }
 
   // decrement the count for the given category

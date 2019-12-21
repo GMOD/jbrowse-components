@@ -68,6 +68,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
     const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(bpPerPx)
     const binMax = Math.ceil((rightBase - leftBase) / binWidth)
 
+    console.log('running')
+
     // maybe unused below
     // function binNumber(bp: number) {
     //   return Math.floor((bp - leftBase) / binWidth)
@@ -184,6 +186,8 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       horizontallyFlipped,
     } = props
 
+    scaleOpts.domain = [0, 50]
+    console.log('drawing')
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -234,11 +238,11 @@ export default class SNPXYRenderer extends SNPBaseRenderer {
       ctx.fillStyle = colorForBase['total']
       ctx.fillRect(leftBase + offset, toY(score), binWidth, toHeight(score))
 
-      const baseTotal = currentBin.totalBase()
-      if(baseTotal > 0){
-        ctx.fillStyle = colorForBase['red']
-        ctx.fillRect(leftBase + offset, toY(baseTotal), binWidth, toHeight(baseTotal))
-      }
+      const baseArray = currentBin.totalBaseList()
+      baseArray.forEach(function iterate(mismatch, index){
+        ctx.fillStyle = colorForBase[mismatch.base]
+        ctx.fillRect(leftBase + offset, toY(mismatch.total), binWidth, toHeight(mismatch.total))
+      })
     })
     // for (const feature of features.values()) {
     //   console.log(feature)
